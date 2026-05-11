@@ -1,4 +1,4 @@
-# phase-training2 — TestFlight Plan
+# phase-training2 — TestFlight Plan (v2, agent-ready)
 
 Thin vertical slice from `handoff/` → installable iOS app on TestFlight.
 
@@ -13,6 +13,7 @@ Ship the 4-screen vertical slice in `handoff/` (sourced from `~/Downloads/design
 - All 4 screens pixel-faithful to `handoff/`: dark `#0A0B0D`, electric lime `#D4FF3D`, Space Grotesk + JetBrains Mono + Inter fonts.
 - One full workout loggable end-to-end: start → 6 exercises logged with rest timer → complete → appears in History → "Previous" column populated on next session.
 - Active session survives app kill (resumes on cold launch).
+- PR detection on Complete screen working (compares max weight per exercise to previous session, per `handoff/proto/complete.jsx:11-19`).
 
 ## Out of scope
 
@@ -22,116 +23,191 @@ Ship the 4-screen vertical slice in `handoff/` (sourced from `~/Downloads/design
 - Charts, progress screens, settings, coach, onboarding.
 - Android, watchOS, iPad-specific layouts.
 - Push notifications, HealthKit, Apple Watch rest timer.
+- UI snapshot tests, Playwright/XCUITest. Unit tests on data layer only.
 
-## Stack decision: native SwiftUI
+## Locked decisions
 
-- TestFlight = iOS, native is the no-friction path.
-- React Native / Capacitor / PWA all add build complexity for a 4-screen app.
-- SwiftData for persistence (Apple's `localStorage` analog; clean fit for the prototype's two-key model).
-- iOS 17+ deployment target (unlocks SwiftData; Wilbur is on a modern phone).
-- `xcodegen` for project generation (declarative `Project.yml` → `.xcodeproj`) so multi-agent work doesn't fight an Xcode GUI.
+| Decision | Value | Rationale |
+|---|---|---|
+| Stack | Native SwiftUI | TestFlight = iOS; no-friction path. |
+| Project generation | `xcodegen` (declarative `Project.yml`) | Multi-agent work doesn't fight an Xcode GUI. |
+| Persistence | `UserDefaults` + `Codable` | Two-key model too small to justify SwiftData macros. ~0.5 day saved. |
+| Routing | `@State currentScreen: Screen` enum, single root view | Matches `proto/app.jsx`; simplest for 4 screens. |
+| Rest timer state | View-local `@State` in `LogScreen` | Doesn't survive backgrounding for v1 — acceptable. |
+| Min iOS | 17.0 | Modern phone, no compatibility burden. |
+| Bundle id | `art.wilburwing.phasetraining` (no `2` suffix) | No existing App Store record at that id; the repo name `-2` is git noise, not product noise. |
+| App display name | "Phase Training" | — |
+| Apple Developer Team | `A2Z2RXR65P` | Lives in `Project.yml` `DEVELOPMENT_TEAM`. |
+| Fonts | Space Grotesk, Inter, JetBrains Mono — bundled `.ttf` from Google Fonts (OFL) | Phase 1 agent fetches and registers. |
+| Crash reporting / analytics | None | Out of scope for slice. |
+| Phase 3 integration protocol | Each screen agent owns exactly one file under `Screens/`. Orchestrator owns `App.swift` routing. No branches; direct edits to `main`. | Minimizes merge surface to one file (orchestrator-owned). |
 
-If hedging for Android later matters, switch to React Native or Flutter (+1-2 days, worse iOS feel).
+## Verification commands (agents reference these)
 
-## Defaults being taken
+```bash
+# Project regen after Project.yml edits
+cd ~/repos/phase-training2 && xcodegen generate
 
-| Decision | Default |
-|---|---|
-| App name | "Phase Training" |
-| Bundle id | `art.wilburwing.phasetraining2` |
-| Min iOS | 17.0 |
-| Persistence | SwiftData (`ActiveSession` + `SavedSession`) |
-| Fonts | Bundled `.ttf` (Space Grotesk, JetBrains Mono, Inter — all OFL) |
-| Analytics | None for the slice |
-| Crash reporting | None for the slice |
-| App Store Connect screenshots | Placeholder for first TestFlight; finalize before App Store submission |
-| Apple Developer Program | Confirmed active by Wilbur |
+# Build for simulator (lightweight, primary check)
+xcodebuild -scheme PhaseTraining \
+  -destination 'platform=iOS Simulator,name=iPhone 15' \
+  -configuration Debug build | xcbeautify
+
+# Run data-layer unit tests
+xcodebuild -scheme PhaseTraining \
+  -destination 'platform=iOS Simulator,name=iPhone 15' \
+  test | xcbeautify
+
+# Archive (Phase 5 only)
+xcodebuild -scheme PhaseTraining -configuration Release \
+  -archivePath build/PhaseTraining.xcarchive archive
+```
+
+`xcbeautify` optional. If absent, raw `xcodebuild` output is fine.
 
 ## Phases
 
-### Phase 0 — Bootstrap (0.5 day, orchestrator)
+### Phase 0 — Bootstrap (orchestrator; ~70% complete)
 
-- `mkdir ~/repos/phase-training2`, `git init`, copy `handoff/` into repo.
-- `Project.yml` for xcodegen (target `PhaseTraining`, bundle `art.wilburwing.phasetraining2`, iOS 17, SwiftUI).
-- Stub `PhaseTrainingApp.swift`, `ContentView.swift` so `xcodegen generate` succeeds.
-- `.gitignore` for Xcode (`xcuserdata`, `*.xcuserstate`, `DerivedData`, `.build`).
-- `README.md` with build instructions.
-- Initial commit, create GitHub `wilburwing-art/phase-training2` (private), push.
+**Done:**
+- `~/repos/phase-training2/` created, `git init`, `handoff/` copied in.
+- `.gitignore`, `README.md`, `PLAN.md` committed.
 
-### Phase 1 — Design system (0.5 day, agent `systems`)
+**Remaining (orchestrator finishes before fan-out):**
+- Write `Project.yml` (`PhaseTraining` target, iOS 17, bundle `art.wilburwing.phasetraining`, team `A2Z2RXR65P`, SwiftUI).
+- Stub `PhaseTraining/App/PhaseTrainingApp.swift` + `PhaseTraining/App/ContentView.swift` so `xcodegen generate` succeeds and project opens in Xcode.
+- Stub `PhaseTraining/Info.plist` (empty `UIAppFonts` array — Phase 1 fills).
+- Run `xcodegen generate`, verify `xcodebuild build` succeeds.
+- Create GitHub `wilburwing-art/phase-training2` (private), push.
 
-- `Theme.swift`: all 14 color tokens from `handoff/README.md` lines 228-247 as `Color` extensions.
-- `Typography.swift`: `Font` extensions for Display L/M/S, Body, Mono L/M/S/XS, Micro per `handoff/README.md` lines 248-260.
-- Bundle 3 font families into `Resources/Fonts/`, register in `Info.plist` (`UIAppFonts`).
-- `StyleGuidePreview.swift`: SwiftUI preview that renders every token (port of `hd-style.jsx`). Proves the system before screen work.
+**Acceptance:** `xcodegen generate && xcodebuild -scheme PhaseTraining -destination 'platform=iOS Simulator,name=iPhone 15' build` succeeds on an empty SwiftUI app.
 
-### Phase 2 — Data layer (0.5 day, agent `data`) — parallel with Phase 1
+### Phase 1 — Design system (agent `systems`) — parallel with Phase 2
 
-Translate `handoff/proto/data.jsx` lines 1-99 to Swift:
+**Tasks:**
+1. Fetch Google Fonts (all OFL):
+   - Space Grotesk (weights 400, 500, 600) → `PhaseTraining/Resources/Fonts/SpaceGrotesk-{Regular,Medium,SemiBold}.ttf`
+   - Inter (weights 400) → `Inter-Regular.ttf`
+   - JetBrains Mono (weights 400, 500, 600) → `JetBrainsMono-{Regular,Medium,SemiBold}.ttf`
+   - Download from `https://fonts.google.com/download?family=...` or use `curl` against the static font URLs on `fonts.gstatic.com`. Add to `Project.yml` resources.
+2. Register fonts in `Info.plist` `UIAppFonts` array.
+3. Write `PhaseTraining/Theme/Theme.swift`: all 14 color tokens from `handoff/README.md:232-246` as `extension Color` static members (`Color.bg`, `Color.surface`, `Color.elevated`, `Color.line`, `Color.lineSoft`, `Color.ink`, `Color.ink2`, `Color.ink3`, `Color.accent`, `Color.accentInk`, `Color.accentDim`, `Color.accentWash`, `Color.accentBorder`, `Color.ok`, `Color.danger`).
+4. Write `PhaseTraining/Theme/Typography.swift`: `Font` extensions for all 9 type styles from `handoff/README.md:251-259` (`Font.displayL`, `Font.displayM`, `Font.displayS`, `Font.body`, `Font.monoL`, `Font.monoM`, `Font.monoS`, `Font.monoXS`, `Font.micro`). Apply size, weight, and kerning per spec.
+5. Write `PhaseTraining/Theme/StyleGuidePreview.swift`: SwiftUI `#Preview` rendering every color swatch + every type style. Port of `handoff/hd-style.jsx`. Used as visual smoke test.
 
-- `WorkoutTemplate`, `ExerciseTemplate` structs (hardcoded `upper-1` only).
-- `@Model` types: `ActiveSession`, `SavedSession`, `LoggedExercise`, `LoggedSet`.
-- `SessionStore`: `createSession`, `getPreviousSession`, `saveActive`, `clearActive`, `saveCompleted`, `sessionStats`.
-- Two SwiftData containers: active session (single row, replaces `pt_active_session`), saved sessions (array, replaces `pt_sessions`).
-- Unit tests against the prototype's behavior (use `XCTest`).
+**Acceptance:**
+- `xcodebuild build` succeeds.
+- Opening `StyleGuidePreview.swift` in Xcode shows all 14 colors and all 9 type styles with custom fonts rendering (not system fallback). Visual confirmation via Xcode Preview.
 
-### Phase 3 — Screens (3-4 days, 4 agents fan out)
+### Phase 2 — Data layer (agent `data`) — parallel with Phase 1
 
-Lock `Theme.swift` and `SessionStore` interface before fan-out. Each screen owns one file; orchestrator integrates routing in `App.swift`.
+Translate `handoff/proto/data.jsx` (98 lines) to Swift.
 
-1. **Start** (`screen-start`) — `hd-session-start.jsx`, `proto/start.jsx`. Read-only. Validates fonts, colors, card pattern, "last session" via `getPreviousSession`.
-2. **Log** (`screen-log`) — `hd-training-log.jsx`, `proto/log.jsx`. Hardest screen. Sticky header (elapsed timer + progress bar), scrollable exercise blocks, inline number inputs, set check circles, rest timer with +15/skip, "+ Add Set", active-row left border. `TimelineView(.periodic)` for both timers. Auto-save on every change.
-3. **Complete** (`screen-complete`) — `hd-session-complete.jsx`, `proto/complete.jsx`. Stat grid, PR detection, feel chips, note textarea, save action.
-4. **History** (`screen-history`) — `hd-history.jsx`, `proto/history.jsx`. List with expand/collapse accordion, empty state.
+**Tasks:**
+1. Write `PhaseTraining/Data/WorkoutTemplate.swift`:
+   - `struct WorkoutTemplate: Identifiable, Codable` with id, name, category, exercises.
+   - `struct ExerciseTemplate: Identifiable, Codable` with id, name, type (optional), unit, targetSets, targetReps, rest.
+   - Static constant `WorkoutTemplate.upper1` matching `data.jsx:4-17` exactly (6 exercises: Bench, Pull Up, OHP, Incline Row, Skullcrusher, Face Pull).
+2. Write `PhaseTraining/Data/Session.swift`:
+   - `struct LoggedSet: Codable` with `num: Int`, `weight: String`, `reps: String`, `rpe: String`, `done: Bool`. **String for numeric fields** to match prototype's TextField binding semantics.
+   - `struct LoggedExercise: Codable, Identifiable` with template fields + `sets: [LoggedSet]` + `prevSets: [LoggedSet]`.
+   - `struct ActiveSession: Codable` with `templateId`, `name`, `category`, `startTime: Date`, `exercises: [LoggedExercise]`, optional `feel: String?`, optional `note: String?`.
+   - `struct SavedSession: Codable, Identifiable` — same shape plus `endTime: Date`, `duration: Int` (seconds).
+3. Write `PhaseTraining/Data/SessionStore.swift`:
+   - Class with `@Published` properties for SwiftUI, backed by `UserDefaults.standard`.
+   - Keys: `pt_active_session`, `pt_sessions` (match prototype).
+   - Methods, all matching `data.jsx`:
+     - `loadSessions() -> [SavedSession]`
+     - `saveSessions(_:)`
+     - `loadActive() -> ActiveSession?`
+     - `saveActive(_:)`
+     - `clearActive()`
+     - `getPreviousSession(templateId:) -> SavedSession?`
+     - `createSession(templateId:) -> ActiveSession` — pulls previous set values forward (`data.jsx:51-77`).
+     - `sessionStats(_:) -> SessionStats` (returns totalSets, doneSets, avgRpe).
+4. Write `PhaseTrainingTests/SessionStoreTests.swift` (XCTest):
+   - Test `createSession` produces 6 exercises with correct set counts.
+   - Test `createSession` with no prior history leaves weight strings empty and reps strings = target.
+   - Test `createSession` with prior history populates weight + reps from previous.
+   - Test `sessionStats` math on a hand-built session.
+   - Test active-session roundtrip through UserDefaults survives an instance swap.
 
-Navigation: `NavigationStack` with `Route` enum, or single `@State currentScreen` (prototype does the latter; fine for the slice).
+**Acceptance:** `xcodebuild test` passes all 5 unit tests.
 
-### Phase 4 — Polish + device test (1 day, orchestrator)
+### Phase 3 — Screens (4 agents fan out) — sequential after Phases 1 + 2 land
 
-- Active session resume on cold launch (`proto/app.jsx` reference).
-- Pulse animation on rest timer dot (`handoff/README.md` line 296).
-- Haptic on set-check tap (`UIImpactFeedbackGenerator`).
-- App icon (lime "PT" square) and launch screen (`Assets.xcassets`).
-- Test on Wilbur's iPhone via Xcode for one real workout. Adjust spacing where mock and reality diverge.
+**Pre-fan-out lock:** Phase 1 and Phase 2 must be merged and `xcodebuild build && xcodebuild test` green. `Theme.swift` and `SessionStore` public API are frozen.
 
-### Phase 5 — TestFlight (0.5 day, orchestrator + human-in-loop signing)
+**Integration protocol:** each agent owns exactly the file listed below. No agent touches `App.swift` — orchestrator wires routing after each screen lands.
 
-- App Store Connect: create app record (name, bundle id, SKU, Health & Fitness category, age rating, privacy nutrition label — no data collected, easy).
-- Xcode: archive, distribute to App Store Connect, wait for processing.
-- TestFlight internal tester: add Wilbur, install via TestFlight app (~5-15min after processing).
-- External testers / Beta App Review only if needed (~24h).
+| Agent | Owns | References |
+|---|---|---|
+| `screen-start` | `PhaseTraining/Screens/StartScreen.swift` | `handoff/hd-session-start.jsx`, `handoff/proto/start.jsx` |
+| `screen-log` | `PhaseTraining/Screens/LogScreen.swift` + `PhaseTraining/Components/RestTimer.swift` | `handoff/hd-training-log.jsx`, `handoff/proto/log.jsx` |
+| `screen-complete` | `PhaseTraining/Screens/CompleteScreen.swift` | `handoff/hd-session-complete.jsx`, `handoff/proto/complete.jsx` |
+| `screen-history` | `PhaseTraining/Screens/HistoryScreen.swift` | `handoff/hd-history.jsx`, `handoff/proto/history.jsx` |
 
-## Timeline
+**Per-screen acceptance:** opens via `#Preview` in Xcode, renders pixel-faithful to JSX reference (margins, colors, typography, layout), all interactions wired to `SessionStore`. `xcodebuild build` green.
 
-| Phase | Effort |
+**Per-screen specifics:**
+
+- **StartScreen** — `SessionStore.getPreviousSession("upper-1")` drives "last session" card. Start button → `currentScreen = .log`. History button → `currentScreen = .history`.
+- **LogScreen** — *hardest*. Sticky header: elapsed `Mono M` timer + progress bar (done sets / total sets). Scrollable `List` of exercises. Each set row: weight `TextField` + reps `TextField` + rpe `TextField` (all `Mono S`, decimal keyboard) + check circle. Toggling check on a non-final set triggers `RestTimer` overlay (counts down from `ex.rest`, +15 button, skip button, pulse-dot animation per `README.md:296`). "+ Add Set" button per exercise. Auto-save to `SessionStore` on every change. Active row has left border `Color.accent`. Use `TimelineView(.periodic(from: .now, by: 1.0))` for elapsed timer + rest timer.
+- **CompleteScreen** — Stat grid (sets done / time / avg RPE). PR detection block per `proto/complete.jsx:11-19` (compare max weight per exercise to previous session). Feel chips (HARD / OK / EASY) bound to `session.feel`. Note `TextEditor` bound to `session.note`. Save button → builds `SavedSession`, prepends to `sessions`, calls `clearActive()`, returns to Start.
+- **HistoryScreen** — `List(SessionStore.savedSessions)` with disclosure rows (expand/collapse). Empty state message when none. Back button → Start.
+
+### Phase 4 — Polish + device test (orchestrator)
+
+**Tasks:**
+- Wire active-session resume on cold launch in `App.swift` (`onAppear`: if `loadActive()` returns non-nil, jump to `.log`).
+- Confirm pulse animation on rest timer dot is smooth at 60fps.
+- Add `UIImpactFeedbackGenerator(style: .light)` on set-check tap.
+- App icon: generate 1024×1024 PNG (lime `#D4FF3D` background, black `PT` in Space Grotesk SemiBold). Tool: Python+PIL one-shot, or `magick convert`. Save to `Assets.xcassets/AppIcon.appiconset`. Use Xcode's automatic icon-set scaling.
+- Launch screen: SwiftUI launch screen, lime background, no text. Configured via `Info.plist` `UILaunchScreen`.
+- Install on Wilbur's iPhone via Xcode, run one real workout. Note any spacing/padding deltas vs JSX reference, fix.
+
+**Acceptance:** One full workout logged on a physical device. Active session survives an app kill mid-workout. No layout regressions vs JSX mockups.
+
+### Phase 5 — TestFlight (orchestrator + human-in-loop)
+
+**Tasks:**
+- App Store Connect: create app record (name "Phase Training", bundle `art.wilburwing.phasetraining`, SKU `phase-training-1`, primary category Health & Fitness, secondary Sports, age rating 4+, privacy nutrition label: "Data Not Collected").
+- Xcode → Product → Archive. Distribute to App Store Connect.
+- Wait for processing (~10-15min).
+- TestFlight: add Wilbur as internal tester (`wilburwing@gmail.com`). Install via TestFlight app on iPhone.
+
+**Acceptance:** Build appears in TestFlight, installs cleanly on device, launches and runs.
+
+## Timeline (revised)
+
+| Phase | Effort (orchestrator + agent wall clock) |
 |---|---|
-| 0 — Bootstrap | 0.5 day |
-| 1 — Design system *(parallel with 2)* | 0.5 day |
-| 2 — Data layer *(parallel with 1)* | 0.5 day |
-| 3 — Screens (4 agents fan out) | 3-4 days wall-clock if parallel, 5-6 serial |
+| 0 — Bootstrap (finish) | 0.25 day |
+| 1 + 2 — Parallel design system + data layer | 0.5 day |
+| 3 — 4 screens parallel | 1.5-2 days (Log dominates) |
 | 4 — Polish + device test | 1 day |
 | 5 — TestFlight | 0.5 day |
-| **Total** | **6-7 working days** |
+| **Total wall clock** | **~3.5-4.5 days** |
 
-## Agent team shape
+Serial equivalent (no team): 6-7 working days. Parallelism gain: ~2.5 days, paid in integration overhead.
 
-| Role | Phase | Type | Parallel? |
-|---|---|---|---|
-| `orchestrator` (this thread) | 0, 4, 5; integration | (me) | — |
-| `systems` | 1 | general-purpose | with `data` |
-| `data` | 2 | general-purpose | with `systems` |
-| `screen-start` | 3 | general-purpose | with 3 siblings |
-| `screen-log` | 3 | general-purpose | with 3 siblings |
-| `screen-complete` | 3 | general-purpose | with 3 siblings |
-| `screen-history` | 3 | general-purpose | with 3 siblings |
+## Team shape
 
-Phase 3 fan-out only after `Theme.swift` and `SessionStore` interface are locked, so the shared-surface conflict is just `App.swift`'s screen registration (orchestrator integrates).
+| Role | Phase | Agent type |
+|---|---|---|
+| `orchestrator` (this thread) | 0 finish, 4, 5; integration of App.swift | (me) |
+| `systems` | 1 | general-purpose |
+| `data` | 2 | general-purpose |
+| `screen-start` | 3 | general-purpose |
+| `screen-log` | 3 | general-purpose |
+| `screen-complete` | 3 | general-purpose |
+| `screen-history` | 3 | general-purpose |
 
-## Open questions for review
+## Risks tracked
 
-1. **Native SwiftUI vs React Native** — RN preserves the existing JSX prototype as production code and hedges Android. Worth it?
-2. **SwiftData vs UserDefaults** — SwiftData is overkill for two keys but scales to multi-template Phase 2. Or use `Codable` + `UserDefaults` for the slice and refactor when complexity demands?
-3. **App identity** — bundle id `art.wilburwing.phasetraining2` collides namespace with the existing `phase-training/` repo. Should the App Store-visible name just be "Phase Training" or signal it's the v2 (`Phase Training 2`, `Phase Log`)?
-4. **Multi-agent risk** — 4 parallel screen agents share `Theme.swift` + `SessionStore`. Locking those first is the mitigation, but a single sequential builder might still be lower-risk for a slice this small.
-5. **Migration path from `phase-training/`** — should the slice's `WorkoutTemplate` Swift struct be a strict subset of the existing SQLite schema so adaptive-coach migration is mechanical, or punt that alignment to v2?
-6. **TestFlight scope** — internal-only (just Wilbur) ships immediately; external testers trigger Beta App Review (~24h). Slice assumes internal-only. Confirm?
+| Risk | Mitigation |
+|---|---|
+| First-time signing for new bundle id fails | Wilbur on standby for one-time Xcode signing prompt; orchestrator drives. |
+| Log screen exceeds 2-day budget | Agent reports blockers via SendMessage; orchestrator descopes "+ Add Set" or auto-save aggressiveness if needed. |
+| Font fetch fails behind a captcha | Fallback: include TTFs from `/System/Library/Fonts/Supplemental/` lookalikes (Helvetica, SF Mono) and skip custom fonts for slice. Visual regression; cosmetic. |
+| Multi-agent integration churn eats the parallelism win | If Phase 3 integration burns >0.5 day, orchestrator absorbs remaining screens solo. |
