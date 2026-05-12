@@ -68,7 +68,7 @@ targets:
         UIUserInterfaceStyle: Dark
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: art.wilburwing.phasetraining
+        PRODUCT_BUNDLE_IDENTIFIER: com.phasetraining.app
         TARGETED_DEVICE_FAMILY: "1"
         IPHONEOS_DEPLOYMENT_TARGET: "17.0"
         ENABLE_PREVIEWS: YES
@@ -86,7 +86,7 @@ targets:
       - target: PhaseTraining
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: art.wilburwing.phasetraining.tests
+        PRODUCT_BUNDLE_IDENTIFIER: com.phasetraining.app.tests
         BUNDLE_LOADER: $(TEST_HOST)
         TEST_HOST: $(BUILT_PRODUCTS_DIR)/PhaseTraining.app/PhaseTraining
         GENERATE_INFOPLIST_FILE: YES

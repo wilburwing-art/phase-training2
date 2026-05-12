@@ -35,7 +35,7 @@ Ship the 4-screen vertical slice in `handoff/` (sourced from `~/Downloads/design
 | Routing | `@State currentScreen: Screen` enum, single root view | Matches `proto/app.jsx`; simplest for 4 screens. |
 | Rest timer state | View-local `@State` in `LogScreen` | Doesn't survive backgrounding for v1 — acceptable. |
 | Min iOS | 17.0 | Modern phone, no compatibility burden. |
-| Bundle id | `art.wilburwing.phasetraining` (no `2` suffix) | No existing App Store record at that id; the repo name `-2` is git noise, not product noise. |
+| Bundle id | `com.phasetraining.app` | Existing App Store Connect record (Apple ID 6763437550, status "Prepare for Submission") was already registered with this bundle id; reusing it instead of creating a parallel record. Changed 2026-05-12. |
 | App display name | "Phase Training" | — |
 | Apple Developer Team | `A2Z2RXR65P` | Lives in `Project.yml` `DEVELOPMENT_TEAM`. |
 | Fonts | Space Grotesk, Inter, JetBrains Mono — bundled `.ttf` from Google Fonts (OFL) | Phase 1 agent fetches and registers. |
