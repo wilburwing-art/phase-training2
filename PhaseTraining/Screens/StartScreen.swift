@@ -227,7 +227,7 @@ struct StartScreen: View {
     private var startButton: some View {
         Button(action: onStart) {
             HStack(spacing: 6) {
-                Text("Start workout")
+                Text(store.active == nil ? "Start workout" : "Resume workout")
                     .font(.custom("SpaceGrotesk-SemiBold", size: 15))
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))

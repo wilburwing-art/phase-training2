@@ -40,15 +40,21 @@ struct RoutineDetailScreen: View {
                             .padding(.top, 18)
                             .padding(.bottom, 10)
 
-                        LazyVStack(spacing: 6) {
-                            ForEach(Array(exercises.enumerated()), id: \.element.id) { idx, ex in
-                                SwipeableExerciseRow(
-                                    onReplace: { onReplaceExercise(idx) },
-                                    onDelete: { exercises.remove(at: idx) }
-                                ) {
-                                    rowCard(idx: idx, ex: ex)
-                                }
+                        if exercises.isEmpty {
+                            emptyState
                                 .padding(.horizontal, 20)
+                                .padding(.top, 8)
+                        } else {
+                            LazyVStack(spacing: 6) {
+                                ForEach(Array(exercises.enumerated()), id: \.element.id) { idx, ex in
+                                    SwipeableExerciseRow(
+                                        onReplace: { onReplaceExercise(idx) },
+                                        onDelete: { exercises.remove(at: idx) }
+                                    ) {
+                                        rowCard(idx: idx, ex: ex)
+                                    }
+                                    .padding(.horizontal, 20)
+                                }
                             }
                         }
 
@@ -220,6 +226,27 @@ struct RoutineDetailScreen: View {
         if let r = ex.reps, !r.isEmpty { parts.append(r.uppercased()) }
         if let rest = ex.rest, !rest.isEmpty { parts.append("\(rest.uppercased()) REST") }
         return parts.joined(separator: " · ")
+    }
+
+    // MARK: - Empty state
+
+    private var emptyState: some View {
+        VStack(spacing: 6) {
+            Text("No exercises")
+                .font(.custom("SpaceGrotesk-SemiBold", size: 18))
+                .foregroundStyle(Color.ink)
+            Text("Tap + below to add one.")
+                .font(.custom("Inter-Regular", size: 13))
+                .foregroundStyle(Color.ink2)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 32)
+        .background(Color.surface)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.line, lineWidth: 0.5)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 
     // MARK: - Add button
