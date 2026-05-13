@@ -23,9 +23,11 @@ struct CompleteScreen: View {
 
     let session: ActiveSession
     let onSave: () -> Void
+    var onDiscard: (() -> Void)? = nil
 
     @State private var feel: String? = nil
     @State private var note: String = ""
+    @State private var showDiscardConfirm = false
 
     private static let feelOptions = ["Too easy", "Easy", "Right", "Hard", "Too much"]
 
@@ -111,11 +113,24 @@ struct CompleteScreen: View {
                 }
             }
 
-            saveButton
-                .padding(.horizontal, 20)
-                .padding(.bottom, 32)
+            VStack(spacing: 10) {
+                saveButton
+                if onDiscard != nil {
+                    discardButton
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 32)
         }
         .preferredColorScheme(.dark)
+        .alert("Discard workout?", isPresented: $showDiscardConfirm) {
+            Button("Discard", role: .destructive) {
+                onDiscard?()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This session won't be saved to history. You can't undo this.")
+        }
     }
 
     // MARK: - Sections
@@ -390,6 +405,25 @@ struct CompleteScreen: View {
                 RoundedRectangle(cornerRadius: 14)
                     .fill(Color.accent)
             )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var discardButton: some View {
+        Button {
+            showDiscardConfirm = true
+        } label: {
+            Text("Discard workout")
+                .font(.custom("JetBrainsMono-Medium", size: 11))
+                .tracking(0.14 * 11)
+                .textCase(.uppercase)
+                .foregroundStyle(Color.ink2)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.line, lineWidth: 0.5)
+                )
         }
         .buttonStyle(.plain)
     }

@@ -56,7 +56,14 @@ struct ContentView: View {
             })
 
         case .complete(let session):
-            CompleteScreen(session: session, onSave: { transition(.start) })
+            CompleteScreen(
+                session: session,
+                onSave: { transition(.start) },
+                onDiscard: {
+                    store.clearActive()
+                    transition(.start)
+                }
+            )
 
         case .history:
             HistoryScreen(onBack: { transition(.start) })
