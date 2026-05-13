@@ -10,6 +10,7 @@ struct StartScreen: View {
 
     let onStart: () -> Void
     let onHistory: () -> Void
+    var onBrowseRoutines: (() -> Void)? = nil
 
     private let template = WorkoutTemplate.upper1
 
@@ -74,7 +75,12 @@ struct StartScreen: View {
             // Bottom CTA stack
             VStack(spacing: 10) {
                 startButton
-                historyButton
+                HStack(spacing: 10) {
+                    if onBrowseRoutines != nil {
+                        browseButton
+                    }
+                    historyButton
+                }
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 24)
@@ -226,6 +232,27 @@ struct StartScreen: View {
                 Image(systemName: "clock.arrow.circlepath")
                     .font(.system(size: 12, weight: .medium))
                 Text("HISTORY")
+                    .styled(.micro)
+            }
+            .foregroundStyle(Color.ink2)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(Color.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.line, lineWidth: 0.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var browseButton: some View {
+        Button(action: { onBrowseRoutines?() }) {
+            HStack(spacing: 6) {
+                Image(systemName: "books.vertical")
+                    .font(.system(size: 12, weight: .medium))
+                Text("ROUTINES")
                     .styled(.micro)
             }
             .foregroundStyle(Color.ink2)

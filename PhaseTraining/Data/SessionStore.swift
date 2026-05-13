@@ -143,6 +143,45 @@ final class SessionStore: ObservableObject {
         )
     }
 
+    /// Build a fresh ActiveSession from an ad-hoc template (e.g. one assembled
+    /// from coach.db). Same prev-pull semantics as the templateId path.
+    func createSession(from tmpl: WorkoutTemplate) -> ActiveSession {
+        let prev = getPreviousSession(templateId: tmpl.id)
+        let exercises: [LoggedExercise] = tmpl.exercises.map { ex in
+            let prevEx = prev?.exercises.first(where: { $0.id == ex.id })
+            let sets: [LoggedSet] = (0..<ex.targetSets).map { i in
+                let prevSet: LoggedSet? = (prevEx?.sets.indices.contains(i) ?? false) ? prevEx?.sets[i] : nil
+                return LoggedSet(
+                    num: i + 1,
+                    weight: prevSet.map { $0.weight } ?? "",
+                    reps: prevSet.map { $0.reps } ?? String(ex.targetReps),
+                    rpe: "",
+                    done: false
+                )
+            }
+            return LoggedExercise(
+                id: ex.id,
+                name: ex.name,
+                type: ex.type,
+                unit: ex.unit,
+                targetSets: ex.targetSets,
+                targetReps: ex.targetReps,
+                rest: ex.rest,
+                sets: sets,
+                prevSets: prevEx?.sets ?? []
+            )
+        }
+        return ActiveSession(
+            templateId: tmpl.id,
+            name: tmpl.name,
+            category: tmpl.category,
+            startTime: Date(),
+            exercises: exercises,
+            feel: nil,
+            note: nil
+        )
+    }
+
     /// Persist a completed session: prepend to savedSessions, clear active.
     @discardableResult
     func saveCompleted(_ active: ActiveSession, feel: String?, note: String?) -> SavedSession {

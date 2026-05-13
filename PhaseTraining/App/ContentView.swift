@@ -5,6 +5,7 @@ enum Route {
     case log
     case complete(ActiveSession)
     case history
+    case routines
 }
 
 struct ContentView: View {
@@ -27,6 +28,9 @@ struct ContentView: View {
                     },
                     onHistory: {
                         withAnimation(.easeInOut(duration: 0.18)) { route = .history }
+                    },
+                    onBrowseRoutines: {
+                        withAnimation(.easeInOut(duration: 0.18)) { route = .routines }
                     }
                 )
             case .log:
@@ -45,6 +49,18 @@ struct ContentView: View {
                 HistoryScreen(onBack: {
                     withAnimation(.easeInOut(duration: 0.18)) { route = .start }
                 })
+            case .routines:
+                RoutinePickerScreen(
+                    onBack: {
+                        withAnimation(.easeInOut(duration: 0.18)) { route = .start }
+                    },
+                    onPick: { routine in
+                        let exercises = CoachDatabase.shared.exercises(forRoutineId: routine.id)
+                        let template = routine.toWorkoutTemplate(with: exercises)
+                        store.saveActive(store.createSession(from: template))
+                        withAnimation(.easeInOut(duration: 0.18)) { route = .log }
+                    }
+                )
             }
         }
         .onAppear {
