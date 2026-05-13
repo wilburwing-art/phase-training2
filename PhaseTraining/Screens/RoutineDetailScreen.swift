@@ -1,7 +1,9 @@
 // RoutineDetailScreen.swift — Preview a routine before starting; tweak in-session.
-// Reference: design handoff workout-swipe.jsx. SwiftUI `.swipeActions` replaces
-// the JSX hand-rolled translate-X swipe. Edits are in-memory only (coach.db stays
-// read-only); the modified list is what gets converted into the ActiveSession.
+// Rows use a custom swipe gesture (see `SwipeableExerciseRow`) because the
+// screen is a ScrollView/LazyVStack rather than a List, and SwiftUI's native
+// `.swipeActions` is a no-op outside of List. Edits are in-memory only
+// (coach.db stays read-only); the modified list is what gets converted into
+// the ActiveSession.
 
 import SwiftUI
 
@@ -40,21 +42,13 @@ struct RoutineDetailScreen: View {
 
                         LazyVStack(spacing: 6) {
                             ForEach(Array(exercises.enumerated()), id: \.element.id) { idx, ex in
-                                rowCard(idx: idx, ex: ex)
-                                    .padding(.horizontal, 20)
-                                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                        Button(role: .destructive) {
-                                            exercises.remove(at: idx)
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
-                                        }
-                                        Button {
-                                            onReplaceExercise(idx)
-                                        } label: {
-                                            Label("Replace", systemImage: "arrow.left.arrow.right")
-                                        }
-                                        .tint(Color(red: 0.10, green: 0.10, blue: 0.15))
-                                    }
+                                SwipeableExerciseRow(
+                                    onReplace: { onReplaceExercise(idx) },
+                                    onDelete: { exercises.remove(at: idx) }
+                                ) {
+                                    rowCard(idx: idx, ex: ex)
+                                }
+                                .padding(.horizontal, 20)
                             }
                         }
 
@@ -280,4 +274,137 @@ struct RoutineDetailScreen: View {
 
 private extension String {
     var nilIfEmpty: String? { isEmpty ? nil : self }
+}
+
+// MARK: - Swipeable row
+
+private struct SwipeableExerciseRow<Content: View>: View {
+    let onReplace: () -> Void
+    let onDelete: () -> Void
+    @ViewBuilder var content: () -> Content
+
+    @State private var settledOffset: CGFloat = 0
+    @GestureState private var dragWidth: CGFloat = 0
+    @State private var rowHeight: CGFloat = 0
+
+    private let actionWidth: CGFloat = 88
+    private let actionGap: CGFloat = 6
+    private var openOffset: CGFloat { -(actionWidth * 2 + actionGap) }
+
+    private var rawOffset: CGFloat { settledOffset + dragWidth }
+    private var clampedOffset: CGFloat {
+        // Allow a small rubber-band past the open position; hard-stop at 0.
+        min(0, max(openOffset * 1.15, rawOffset))
+    }
+    private var isOpen: Bool { settledOffset <= openOffset / 2 }
+
+    var body: some View {
+        ZStack(alignment: .trailing) {
+            actions
+                .frame(height: rowHeight > 0 ? rowHeight : nil)
+                .opacity(clampedOffset < -1 ? 1 : 0)
+                .allowsHitTesting(clampedOffset < -8)
+
+            content()
+                .background(
+                    GeometryReader { geo in
+                        Color.clear.preference(key: RowHeightKey.self, value: geo.size.height)
+                    }
+                )
+                .overlay {
+                    if isOpen {
+                        // Transparent tap-catcher so tapping the swiped row closes it
+                        // instead of triggering the underlying row button.
+                        Color.black.opacity(0.0001)
+                            .contentShape(Rectangle())
+                            .onTapGesture { snap(to: 0) }
+                    }
+                }
+                .offset(x: clampedOffset)
+                .gesture(swipe)
+        }
+        .onPreferenceChange(RowHeightKey.self) { rowHeight = $0 }
+    }
+
+    private var actions: some View {
+        HStack(spacing: actionGap) {
+            actionButton(
+                title: "REPLACE",
+                icon: "arrow.left.arrow.right",
+                background: Color(red: 0x1A / 255, green: 0x1C / 255, blue: 0x22 / 255),
+                foreground: Color.accent
+            ) {
+                snap(to: 0) { onReplace() }
+            }
+            actionButton(
+                title: "DELETE",
+                icon: "trash",
+                background: Color.danger,
+                foreground: Color.accentInk
+            ) {
+                snap(to: 0) { onDelete() }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func actionButton(
+        title: String,
+        icon: String,
+        background: Color,
+        foreground: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .semibold))
+                Text(title)
+                    .font(.custom("JetBrainsMono-Regular", size: 10))
+                    .tracking(0.05 * 10)
+            }
+            .foregroundStyle(foreground)
+            .frame(width: actionWidth)
+            .frame(maxHeight: .infinity)
+            .background(background)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var swipe: some Gesture {
+        DragGesture(minimumDistance: 12)
+            .updating($dragWidth) { value, state, _ in
+                // Ignore predominantly vertical drags so the ScrollView wins.
+                guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                state = value.translation.width
+            }
+            .onEnded { value in
+                guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                // Commit drag distance into the persistent offset before
+                // @GestureState resets to 0, so there's no one-frame jump
+                // before the spring animation takes over.
+                settledOffset += value.translation.width
+                let projection = value.predictedEndTranslation.width - value.translation.width
+                let predicted = settledOffset + projection
+                let target: CGFloat = predicted < openOffset / 2 ? openOffset : 0
+                snap(to: target)
+            }
+    }
+
+    private func snap(to target: CGFloat, then action: (() -> Void)? = nil) {
+        withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+            settledOffset = target
+        }
+        if let action {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { action() }
+        }
+    }
+}
+
+private struct RowHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
 }
