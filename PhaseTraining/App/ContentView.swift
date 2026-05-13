@@ -47,13 +47,19 @@ struct ContentView: View {
             )
 
         case .log:
-            LogScreen(onFinish: {
-                if let active = store.active {
-                    transition(.complete(active))
-                } else {
+            LogScreen(
+                onFinish: {
+                    if let active = store.active {
+                        transition(.complete(active))
+                    } else {
+                        transition(.start)
+                    }
+                },
+                onCancel: {
+                    store.clearActive()
                     transition(.start)
                 }
-            })
+            )
 
         case .complete(let session):
             CompleteScreen(

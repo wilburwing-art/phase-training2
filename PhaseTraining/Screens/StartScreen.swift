@@ -12,7 +12,22 @@ struct StartScreen: View {
     let onHistory: () -> Void
     var onBrowseRoutines: (() -> Void)? = nil
 
-    private let template = WorkoutTemplate.upper1
+    private var template: WorkoutTemplate {
+        if let active = store.active, !active.exercises.isEmpty {
+            return WorkoutTemplate(
+                id: active.templateId,
+                name: active.name,
+                category: active.category,
+                exercises: active.exercises.map { ex in
+                    ExerciseTemplate(
+                        id: ex.id, name: ex.name, type: ex.type, unit: ex.unit,
+                        targetSets: ex.targetSets, targetReps: ex.targetReps, rest: ex.rest
+                    )
+                }
+            )
+        }
+        return WorkoutTemplate.upper1
+    }
 
     // MARK: - Derived
 

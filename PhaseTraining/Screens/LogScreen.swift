@@ -24,9 +24,11 @@ import UIKit
 struct LogScreen: View {
     @EnvironmentObject private var store: SessionStore
     let onFinish: () -> Void
+    var onCancel: (() -> Void)? = nil
 
     @State private var session: ActiveSession = Self.placeholder
     @State private var didLoad = false
+    @State private var showCancelConfirm = false
 
     // Rest timer state (view-local, intentionally non-persistent per spec).
     @State private var restExIdx: Int? = nil
@@ -47,6 +49,12 @@ struct LogScreen: View {
         .onChange(of: session) { _, newValue in
             // Auto-save on every mutation (per README.md:286).
             store.saveActive(newValue)
+        }
+        .alert("Discard workout?", isPresented: $showCancelConfirm) {
+            Button("Discard", role: .destructive) { onCancel?() }
+            Button("Keep going", role: .cancel) {}
+        } message: {
+            Text("Your in-progress sets won't be saved.")
         }
     }
 
@@ -88,7 +96,21 @@ struct LogScreen: View {
         let progress = CGFloat(stats.doneSets) / CGFloat(totalSets)
 
         return VStack(spacing: 0) {
-            HStack(spacing: 8) {
+            HStack(spacing: 12) {
+                if onCancel != nil {
+                    Button {
+                        showCancelConfirm = true
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(Color.ink2)
+                            .frame(width: 28, height: 28)
+                            .background(Color.surface)
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+                }
+
                 Image(systemName: "timer")
                     .font(.system(size: 14, weight: .regular))
                     .foregroundStyle(Color.ink3)
