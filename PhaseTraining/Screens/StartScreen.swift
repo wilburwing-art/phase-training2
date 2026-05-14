@@ -281,6 +281,7 @@ struct StartScreen: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("start-routines-button")
     }
 
     // MARK: - Helpers

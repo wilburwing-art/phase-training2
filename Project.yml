@@ -15,12 +15,14 @@ schemes:
       targets:
         PhaseTraining: all
         PhaseTrainingTests: [test]
+        PhaseTrainingUITests: [test]
     run:
       config: Debug
     test:
       config: Debug
       targets:
         - PhaseTrainingTests
+        - PhaseTrainingUITests
     profile:
       config: Release
     analyze:
@@ -33,7 +35,7 @@ settings:
     DEVELOPMENT_TEAM: A2Z2RXR65P
     SWIFT_VERSION: "5.9"
     MARKETING_VERSION: "1.1.0"
-    CURRENT_PROJECT_VERSION: "16"
+    CURRENT_PROJECT_VERSION: "17"
     ENABLE_USER_SCRIPT_SANDBOXING: NO
 
 targets:
@@ -90,4 +92,18 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.phasetraining.app.tests
         BUNDLE_LOADER: $(TEST_HOST)
         TEST_HOST: $(BUILT_PRODUCTS_DIR)/PhaseTraining.app/PhaseTraining
+        GENERATE_INFOPLIST_FILE: YES
+
+  PhaseTrainingUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: PhaseTrainingUITests
+    dependencies:
+      - target: PhaseTraining
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.phasetraining.app.uitests
+        TEST_TARGET_NAME: PhaseTraining
         GENERATE_INFOPLIST_FILE: YES

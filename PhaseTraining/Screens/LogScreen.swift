@@ -252,10 +252,13 @@ struct LogScreen: View {
     private func columnHeaders(unit: String) -> some View {
         HStack(spacing: 4) {
             headerLabel("SET").frame(width: 22)
-            headerLabel("PREV", align: .leading).frame(width: 58)
+            Rectangle()
+                .fill(Color.line)
+                .frame(width: 0.5, height: 12)
+            headerLabel("Last", align: .leading, color: .ink2).frame(width: 58)
             headerLabel((unit.isEmpty ? "lbs" : unit).uppercased()).frame(maxWidth: .infinity)
             headerLabel("REPS").frame(maxWidth: .infinity)
-            headerLabel("RPE").frame(width: 34)
+            headerLabel("Effort").frame(width: 52)
             Color.clear.frame(width: 24)
         }
         .padding(.bottom, 5)
@@ -264,10 +267,10 @@ struct LogScreen: View {
         }
     }
 
-    private func headerLabel(_ text: String, align: TextAlignment = .center) -> some View {
+    private func headerLabel(_ text: String, align: TextAlignment = .center, color: Color = .ink3) -> some View {
         Text(text)
             .styled(.micro)
-            .foregroundStyle(Color.ink3)
+            .foregroundStyle(color)
             .textCase(.uppercase)
             .multilineTextAlignment(align)
             .frame(maxWidth: .infinity, alignment: align == .leading ? .leading : .center)
@@ -308,9 +311,13 @@ struct LogScreen: View {
                     .frame(width: 22, alignment: .center)
                     .monospacedDigit()
 
+                Rectangle()
+                    .fill(Color.line)
+                    .frame(width: 0.5, height: 18)
+
                 Text(prevLabel)
                     .styled(.monoXS)
-                    .foregroundStyle(Color.ink3)
+                    .foregroundStyle(Color.ink2)
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .monospacedDigit()
@@ -332,13 +339,12 @@ struct LogScreen: View {
                 )
                 .frame(maxWidth: .infinity)
 
-                numCell(
+                effortCell(
                     text: $session.exercises[exIdx].sets[setIdx].rpe,
-                    placeholder: "—",
                     done: set.done,
                     active: isActive
                 )
-                .frame(width: 34)
+                .frame(width: 52)
 
                 checkDot(done: set.done) {
                     toggleSet(exIdx: exIdx, setIdx: setIdx)
@@ -373,6 +379,44 @@ struct LogScreen: View {
                         .strokeBorder(active ? Color.accentBorder : Color.line, lineWidth: 0.5)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+        }
+    }
+
+    private static let effortOptions = ["6", "7", "8", "9", "10"]
+
+    @ViewBuilder
+    private func effortCell(text: Binding<String>, done: Bool, active: Bool) -> some View {
+        let display = text.wrappedValue.isEmpty ? "—" : text.wrappedValue
+        if done {
+            Text(display)
+                .styled(.monoS)
+                .foregroundStyle(Color.ink2)
+                .monospacedDigit()
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.vertical, 6)
+        } else {
+            Menu {
+                ForEach(Self.effortOptions, id: \.self) { v in
+                    Button(v) { text.wrappedValue = v }
+                }
+                Button("Clear") { text.wrappedValue = "" }
+            } label: {
+                Text(display)
+                    .styled(.monoS)
+                    .foregroundStyle(active ? Color.accent : Color.ink)
+                    .monospacedDigit()
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 7)
+                    .padding(.horizontal, 2)
+                    .background(active ? Color.accent.opacity(0.06) : Color.elevated)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .strokeBorder(active ? Color.accentBorder : Color.line, lineWidth: 0.5)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                    .contentShape(Rectangle())
+            }
+            .menuStyle(.borderlessButton)
         }
     }
 

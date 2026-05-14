@@ -205,9 +205,6 @@ struct RoutineDetailScreen: View {
                         .textCase(.uppercase)
                 }
                 Spacer(minLength: 0)
-                Image(systemName: "line.3.horizontal")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(Color.ink3)
             }
             .padding(14)
             .background(Color.surface)
@@ -218,6 +215,7 @@ struct RoutineDetailScreen: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("routine-row-\(idx)")
     }
 
     private func rowMeta(_ ex: RoutineExercise) -> String {
@@ -327,10 +325,11 @@ private struct SwipeableExerciseRow<Content: View>: View {
 
     var body: some View {
         ZStack(alignment: .trailing) {
-            actions
-                .frame(height: rowHeight > 0 ? rowHeight : nil)
-                .opacity(clampedOffset < -1 ? 1 : 0)
-                .allowsHitTesting(clampedOffset < -8)
+            if rawOffset < -1 {
+                actions
+                    .frame(height: rowHeight > 0 ? rowHeight : nil)
+                    .allowsHitTesting(clampedOffset < -8)
+            }
 
             content()
                 .background(
@@ -348,7 +347,7 @@ private struct SwipeableExerciseRow<Content: View>: View {
                     }
                 }
                 .offset(x: clampedOffset)
-                .gesture(swipe)
+                .highPriorityGesture(swipe)
         }
         .onPreferenceChange(RowHeightKey.self) { rowHeight = $0 }
     }
@@ -363,6 +362,8 @@ private struct SwipeableExerciseRow<Content: View>: View {
             ) {
                 snap(to: 0) { onReplace() }
             }
+            .accessibilityIdentifier("routine-row-replace")
+
             actionButton(
                 title: "DELETE",
                 icon: "trash",
@@ -371,6 +372,7 @@ private struct SwipeableExerciseRow<Content: View>: View {
             ) {
                 snap(to: 0) { onDelete() }
             }
+            .accessibilityIdentifier("routine-row-delete")
         }
     }
 

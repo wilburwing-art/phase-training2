@@ -262,6 +262,7 @@ struct RoutinePickerScreen: View {
             .clipShape(RoundedRectangle(cornerRadius: 18))
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("routine-card-\(r.id)")
     }
 
     private func statBlock(value: String, label: String) -> some View {
