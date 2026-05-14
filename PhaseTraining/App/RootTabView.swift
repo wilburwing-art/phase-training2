@@ -31,7 +31,7 @@ struct RootTabView: View {
                 .tabItem { Label("Progress", systemImage: "chart.line.uptrend.xyaxis") }
                 .tag(AppTab.progress)
 
-            ProfileTabPlaceholder()
+            ProfileScreen()
                 .tabItem { Label("Profile", systemImage: "person.crop.circle") }
                 .tag(AppTab.profile)
         }
@@ -43,4 +43,5 @@ struct RootTabView: View {
 #Preview("Cold launch") {
     RootTabView()
         .environmentObject(SessionStore(defaults: UserDefaults(suiteName: "RootTabView.preview")!))
+        .environmentObject(MemoryStore(defaults: UserDefaults(suiteName: "RootTabView.preview.mem")!))
 }
