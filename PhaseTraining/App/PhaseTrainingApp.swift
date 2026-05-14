@@ -6,7 +6,7 @@ struct PhaseTrainingApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootTabView()
                 .environmentObject(store)
                 .preferredColorScheme(.dark)
         }

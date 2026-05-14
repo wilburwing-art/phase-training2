@@ -1,82 +1,37 @@
+// TrainTab.swift — Phase 8 split: owns the routine library + exercise picker/detail flow.
+// On "Start workout" we save the ActiveSession and ask RootTabView to switch to Today;
+// TodayTab's bootstrap+route logic surfaces the Log screen automatically.
+
 import SwiftUI
 
-enum Route: Equatable {
-    case start
-    case log
-    case complete(ActiveSession)
-    case history
-    case routines
-    case routineDetail
-    case exercisePicker(ExercisePickerMode)
-    case exerciseDetail(Int, canAdd: Bool)
-}
-
-struct ContentView: View {
+struct TrainTab: View {
     @EnvironmentObject private var store: SessionStore
-    @State private var route: Route = .start
-    @State private var bootstrapped = false
+    let switchToToday: () -> Void
 
+    @State private var route: TrainRoute = .routines
     @State private var editingRoutine: Routine? = nil
     @State private var editingExercises: [RoutineExercise] = []
+
+    enum TrainRoute: Equatable {
+        case routines
+        case routineDetail
+        case exercisePicker(ExercisePickerMode)
+        case exerciseDetail(Int, canAdd: Bool)
+    }
 
     var body: some View {
         ZStack {
             Color.bg.ignoresSafeArea()
             content
         }
-        .onAppear {
-            guard !bootstrapped else { return }
-            bootstrapped = true
-            if store.active != nil { route = .log }
-        }
     }
 
     @ViewBuilder
     private var content: some View {
         switch route {
-        case .start:
-            StartScreen(
-                onStart: {
-                    if store.active == nil {
-                        store.saveActive(store.createSession(templateId: "upper-1"))
-                    }
-                    transition(.log)
-                },
-                onHistory: { transition(.history) },
-                onBrowseRoutines: { transition(.routines) }
-            )
-
-        case .log:
-            LogScreen(
-                onFinish: {
-                    if let active = store.active {
-                        transition(.complete(active))
-                    } else {
-                        transition(.start)
-                    }
-                },
-                onCancel: {
-                    store.clearActive()
-                    transition(.start)
-                }
-            )
-
-        case .complete(let session):
-            CompleteScreen(
-                session: session,
-                onSave: { transition(.start) },
-                onDiscard: {
-                    store.clearActive()
-                    transition(.start)
-                }
-            )
-
-        case .history:
-            HistoryScreen(onBack: { transition(.start) })
-
         case .routines:
             RoutinePickerScreen(
-                onBack: { transition(.start) },
+                onBack: {}, // Train is a root tab — Back is a no-op.
                 onPick: { routine in
                     editingRoutine = routine
                     editingExercises = CoachDatabase.shared.exercises(forRoutineId: routine.id)
@@ -135,7 +90,7 @@ struct ContentView: View {
         }
     }
 
-    private func transition(_ next: Route) {
+    private func transition(_ next: TrainRoute) {
         withAnimation(.easeInOut(duration: 0.18)) { route = next }
     }
 
@@ -143,7 +98,9 @@ struct ContentView: View {
         guard let routine = editingRoutine else { return }
         let template = routine.toWorkoutTemplate(with: editingExercises)
         store.saveActive(store.createSession(from: template))
-        transition(.log)
+        // Reset Train back to its library entry so reopening the tab is fresh.
+        transition(.routines)
+        switchToToday()
     }
 
     private func applyPicks(_ picks: [Exercise], mode: ExercisePickerMode) {
@@ -179,9 +136,4 @@ struct ContentView: View {
             )
         }
     }
-}
-
-#Preview("Cold launch, no active") {
-    ContentView()
-        .environmentObject(SessionStore(defaults: UserDefaults(suiteName: "preview-cold")!))
 }

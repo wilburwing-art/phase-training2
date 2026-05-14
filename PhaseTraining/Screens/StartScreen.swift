@@ -10,7 +10,6 @@ struct StartScreen: View {
 
     let onStart: () -> Void
     let onHistory: () -> Void
-    var onBrowseRoutines: (() -> Void)? = nil
 
     private var template: WorkoutTemplate {
         if let active = store.active, !active.exercises.isEmpty {
@@ -90,12 +89,7 @@ struct StartScreen: View {
             // Bottom CTA stack
             VStack(spacing: 10) {
                 startButton
-                HStack(spacing: 10) {
-                    if onBrowseRoutines != nil {
-                        browseButton
-                    }
-                    historyButton
-                }
+                historyButton
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 24)
@@ -260,28 +254,6 @@ struct StartScreen: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
-    }
-
-    private var browseButton: some View {
-        Button(action: { onBrowseRoutines?() }) {
-            HStack(spacing: 6) {
-                Image(systemName: "books.vertical")
-                    .font(.system(size: 12, weight: .medium))
-                Text("ROUTINES")
-                    .styled(.micro)
-            }
-            .foregroundStyle(Color.ink2)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(Color.surface)
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(Color.line, lineWidth: 0.5)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("start-routines-button")
     }
 
     // MARK: - Helpers
