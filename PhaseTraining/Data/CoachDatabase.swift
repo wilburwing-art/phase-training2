@@ -31,7 +31,7 @@ final class CoachDatabase {
         if let s = search?.trimmingCharacters(in: .whitespaces), !s.isEmpty {
             clauses.append("r.name LIKE ?")
         }
-        if let g = goal {
+        if goal != nil {
             clauses.append("r.goal = ?")
         }
         if !clauses.isEmpty { sql += " WHERE " + clauses.joined(separator: " AND ") }
