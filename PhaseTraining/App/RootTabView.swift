@@ -19,7 +19,7 @@ struct RootTabView: View {
                 .tabItem { Label("Today", systemImage: "bolt.fill") }
                 .tag(AppTab.today)
 
-            WeekTabPlaceholder()
+            WeekScreen()
                 .tabItem { Label("Week", systemImage: "calendar") }
                 .tag(AppTab.week)
 
@@ -44,4 +44,5 @@ struct RootTabView: View {
     RootTabView()
         .environmentObject(SessionStore(defaults: UserDefaults(suiteName: "RootTabView.preview")!))
         .environmentObject(MemoryStore(defaults: UserDefaults(suiteName: "RootTabView.preview.mem")!))
+        .environmentObject(PlanStore(defaults: UserDefaults(suiteName: "RootTabView.preview.plan")!))
 }

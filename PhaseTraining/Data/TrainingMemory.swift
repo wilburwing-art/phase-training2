@@ -94,11 +94,19 @@ struct Sport: Codable, Hashable, Identifiable {
 
     init(from decoder: Decoder) throws {
         let c = try decoder.singleValueContainer()
-        let slug = try c.decode(String.self)
-        if let known = Sport.catalog.first(where: { $0.slug == slug }) {
+        let raw = try c.decode(String.self)
+        // Normalize legacy underscore slugs (build 20-22 wrote these) to the
+        // hyphenated form coach.db actually uses. Falls back to a synthetic
+        // entry if the slug never matched any catalog row.
+        let normalized = raw.replacingOccurrences(of: "_", with: "-")
+        if let known = Sport.catalog.first(where: { $0.slug == normalized }) {
+            self = known
+        } else if let known = Sport.catalog.first(where: { $0.slug == raw }) {
             self = known
         } else {
-            self = Sport(slug: slug, name: slug.replacingOccurrences(of: "_", with: " ").capitalized)
+            self = Sport(slug: raw, name: raw.replacingOccurrences(of: "_", with: " ")
+                                              .replacingOccurrences(of: "-", with: " ")
+                                              .capitalized)
         }
     }
 
@@ -108,9 +116,11 @@ struct Sport: Codable, Hashable, Identifiable {
     }
 
     /// Curated subset of coach.db sport_categories — the ones onboarding offers.
-    /// Keep slugs aligned with the DB; add liberally as needs arise.
+    /// Slugs are hyphenated to match `coach.db` exactly so the Planner can
+    /// join on `sport_categories.slug`. "general-fitness" is synthetic (no DB
+    /// row) — the planner falls back to a default WeeklyShape when seen.
     static let catalog: [Sport] = [
-        Sport(slug: "general_fitness",        name: "General Fitness"),
+        Sport(slug: "general-fitness",        name: "General Fitness"),
         Sport(slug: "climbing",               name: "Climbing"),
         Sport(slug: "running",                name: "Running"),
         Sport(slug: "cycling",                name: "Cycling"),
@@ -122,27 +132,26 @@ struct Sport: Codable, Hashable, Identifiable {
         Sport(slug: "volleyball",             name: "Volleyball"),
         Sport(slug: "golf",                   name: "Golf"),
         Sport(slug: "surfing",                name: "Surfing"),
-        Sport(slug: "snow_sports",            name: "Skiing / Snowboarding"),
-        Sport(slug: "alpine_skiing",          name: "Alpine Skiing"),
-        Sport(slug: "ski_mountaineering",     name: "Ski Mountaineering"),
+        Sport(slug: "snow-sports",            name: "Skiing / Snowboarding"),
+        Sport(slug: "alpine-skiing",          name: "Alpine Skiing"),
+        Sport(slug: "ski-mountaineering",     name: "Ski Mountaineering"),
         Sport(slug: "mountaineering",         name: "Mountaineering"),
-        Sport(slug: "hiking_trekking",        name: "Hiking / Trekking"),
-        Sport(slug: "trail_running",          name: "Trail Running"),
+        Sport(slug: "hiking-trekking",        name: "Hiking / Trekking"),
+        Sport(slug: "trail-running",          name: "Trail Running"),
         Sport(slug: "yoga",                   name: "Yoga"),
         Sport(slug: "pilates",                name: "Pilates"),
         Sport(slug: "crossfit",               name: "CrossFit"),
         Sport(slug: "powerlifting",           name: "Powerlifting"),
-        Sport(slug: "olympic_weightlifting",  name: "Olympic Weightlifting"),
+        Sport(slug: "olympic-weightlifting",  name: "Olympic Weightlifting"),
         Sport(slug: "bodybuilding",           name: "Bodybuilding"),
-        Sport(slug: "martial_arts",           name: "Martial Arts"),
-        Sport(slug: "brazilian_jiu_jitsu",    name: "Brazilian Jiu-Jitsu"),
+        Sport(slug: "martial-arts",           name: "Martial Arts"),
+        Sport(slug: "bjj",                    name: "Brazilian Jiu-Jitsu"),
         Sport(slug: "boxing",                 name: "Boxing"),
-        Sport(slug: "muay_thai",              name: "Muay Thai"),
+        Sport(slug: "muay-thai",              name: "Muay Thai"),
         Sport(slug: "rowing",                 name: "Rowing"),
-        Sport(slug: "paddle_sports",          name: "Paddle Sports"),
-        Sport(slug: "stand_up_paddleboarding", name: "Stand-Up Paddleboarding"),
-        Sport(slug: "obstacle_course_racing", name: "Obstacle Course Racing"),
-        Sport(slug: "dance",                  name: "Dance")
+        Sport(slug: "paddle-sports",          name: "Paddle Sports"),
+        Sport(slug: "stand-up-paddleboarding", name: "Stand-Up Paddleboarding"),
+        Sport(slug: "obstacle-course-racing", name: "Obstacle Course Racing")
     ]
 }
 

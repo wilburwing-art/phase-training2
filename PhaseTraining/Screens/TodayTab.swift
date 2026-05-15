@@ -31,13 +31,10 @@ struct TodayTab: View {
     private var content: some View {
         switch route {
         case .start:
-            StartScreen(
-                onStart: {
-                    if store.active == nil {
-                        store.saveActive(store.createSession(templateId: "upper-1"))
-                    }
-                    transition(.log)
-                },
+            // TodayScreen owns its own session-create logic so it can build
+            // from today's coach.db routine instead of always upper-1.
+            TodayScreen(
+                onStart: { transition(.log) },
                 onHistory: { transition(.history) }
             )
 

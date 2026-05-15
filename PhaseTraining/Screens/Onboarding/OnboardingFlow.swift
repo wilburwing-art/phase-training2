@@ -21,10 +21,17 @@ enum OnboardingStep: Int, CaseIterable {
     case equipment
     case experience
     case constraints
+    /// Final confirmation: shows the generated plan + Accept CTA. Not counted
+    /// in the questionnaire numerator/denominator since it's not a question.
+    case planPreview
 
-    /// Numbered position the user sees ("Step 2 of 8"). Welcome is step 1.
-    var humanIndex: Int { rawValue + 1 }
-    static var total: Int { OnboardingStep.allCases.count }
+    /// Numbered position shown to the user ("Step 2 of 8"). Welcome is step 1.
+    /// planPreview returns 0 — the scaffold hides the counter for it.
+    var humanIndex: Int {
+        self == .planPreview ? 0 : rawValue + 1
+    }
+    /// Denominator for "Step X of Y". Excludes planPreview.
+    static var total: Int { OnboardingStep.allCases.count - 1 }
 
     func next() -> OnboardingStep? { OnboardingStep(rawValue: rawValue + 1) }
     func prev() -> OnboardingStep? { OnboardingStep(rawValue: rawValue - 1) }
@@ -34,6 +41,7 @@ enum OnboardingStep: Int, CaseIterable {
 
 struct OnboardingFlow: View {
     @EnvironmentObject private var store: MemoryStore
+    @EnvironmentObject private var planStore: PlanStore
     @State private var step: OnboardingStep = .welcome
     @State private var draft = TrainingMemory()
 
@@ -69,7 +77,9 @@ struct OnboardingFlow: View {
         case .experience:
             OnboardingExperienceScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .constraints:
-            OnboardingConstraintsScreen(draft: $draft, onFinish: finish, onBack: { back() })
+            OnboardingConstraintsScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
+        case .planPreview:
+            OnboardingPlanPreviewScreen(memory: draft, onAccept: finish, onBack: { back() })
         }
     }
 
@@ -86,6 +96,9 @@ struct OnboardingFlow: View {
     private func finish() {
         store.memory = draft
         store.completeOnboarding()
+        // Generate + persist the plan against the just-committed memory so the
+        // Today + Week tabs have something live the moment the cover dismisses.
+        planStore.generate(from: store.memory)
     }
 }
 
@@ -174,9 +187,11 @@ struct OnboardingScaffold<Content: View>: View {
                     Color.clear.frame(width: 32, height: 32)
                 }
                 Spacer()
-                Text("STEP \(step.humanIndex) OF \(OnboardingStep.total)")
-                    .styled(.micro)
-                    .foregroundStyle(Color.ink3)
+                if step.humanIndex > 0 {
+                    Text("STEP \(step.humanIndex) OF \(OnboardingStep.total)")
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                }
                 Spacer()
                 Color.clear.frame(width: 32, height: 32)
             }
@@ -194,6 +209,13 @@ struct OnboardingScaffold<Content: View>: View {
 struct OnboardingProgressBar: View {
     let step: OnboardingStep
 
+    private var fillFraction: CGFloat {
+        // planPreview is post-questionnaire — bar shows full.
+        step == .planPreview
+            ? 1.0
+            : CGFloat(step.humanIndex) / CGFloat(OnboardingStep.total)
+    }
+
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
@@ -202,10 +224,7 @@ struct OnboardingProgressBar: View {
                     .frame(height: 2)
                 Rectangle()
                     .fill(Color.accent)
-                    .frame(
-                        width: geo.size.width * CGFloat(step.humanIndex) / CGFloat(OnboardingStep.total),
-                        height: 2
-                    )
+                    .frame(width: geo.size.width * fillFraction, height: 2)
                     .animation(.easeInOut(duration: 0.25), value: step)
             }
         }
@@ -329,4 +348,5 @@ struct OnboardingSectionLabel: View {
 #Preview("Flow") {
     OnboardingFlow()
         .environmentObject(MemoryStore(defaults: UserDefaults(suiteName: "Onboarding.preview")!))
+        .environmentObject(PlanStore(defaults: UserDefaults(suiteName: "Onboarding.preview.plan")!))
 }

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct OnboardingConstraintsScreen: View {
     @Binding var draft: TrainingMemory
-    let onFinish: () -> Void
+    let onNext: () -> Void
     let onBack: () -> Void
 
     @State private var dislikeInput = ""
@@ -20,8 +20,8 @@ struct OnboardingConstraintsScreen: View {
             step: .constraints,
             title: "Anything we should know?",
             subtitle: "Optional — exercises you hate, joints to be careful with, time blocks that change weekly.",
-            nextLabel: "Finish setup",
-            onNext: onFinish,
+            nextLabel: "See my plan",
+            onNext: onNext,
             onBack: onBack
         ) {
             VStack(alignment: .leading, spacing: 24) {
@@ -141,5 +141,5 @@ private struct RemovableTag: View {
 
 #Preview {
     @Previewable @State var draft = TrainingMemory()
-    return OnboardingConstraintsScreen(draft: $draft, onFinish: {}, onBack: {})
+    return OnboardingConstraintsScreen(draft: $draft, onNext: {}, onBack: {})
 }

@@ -1,17 +1,44 @@
-// StartScreen.swift — Session start screen.
-// Port of handoff/proto/start.jsx + handoff/hd-session-start.jsx.
-// Shows today's workout (hardcoded upper-1), last-session summary, exercise
-// preview, and the primary "Start workout" CTA + secondary "History" button.
+// TodayScreen.swift — Phase 10 successor to StartScreen.
+//
+// Renders today's hero based on PlanStore.plan?.today(). DayKind drives the
+// treatment:
+//   - .lift / .mobility → workout-style hero (date, last-session card,
+//     exercise preview from coach.db routine, "Start workout" CTA)
+//   - .sport            → sport-day card; no exercise list, no CTA (log
+//     externally for now; sport-flavored logging is a Phase 12 surface)
+//   - .rest             → rest card; encourages mobility
+//   - .event            → event card
+//   - no plan / pre-onboard → falls back to upper-1 hardcoded template
+//     (so cold launches before onboarding completes still work; same path
+//     UI tests use)
+//
+// Active sessions always win — if `store.active` exists we render its
+// template regardless of today's plan, so the user can resume a workout
+// even on a day the planner now thinks should be rest.
 
 import SwiftUI
 
-struct StartScreen: View {
+struct TodayScreen: View {
     @EnvironmentObject var store: SessionStore
+    @EnvironmentObject var planStore: PlanStore
 
     let onStart: () -> Void
     let onHistory: () -> Void
 
-    private var template: WorkoutTemplate {
+    // MARK: - Derived state
+
+    private var todayPlan: DayPlan? { planStore.plan?.today() }
+
+    /// Effective DayKind for rendering. Active session forces a workout
+    /// hero. Otherwise, follow today's plan; default to lift if no plan.
+    private var effectiveKind: DayKind {
+        if store.active != nil { return .lift }
+        return todayPlan?.kind ?? .lift
+    }
+
+    /// Template for the workout hero. nil on sport/rest/event days when
+    /// there's no active session.
+    private var template: WorkoutTemplate? {
         if let active = store.active, !active.exercises.isEmpty {
             return WorkoutTemplate(
                 id: active.templateId,
@@ -25,22 +52,31 @@ struct StartScreen: View {
                 }
             )
         }
-        return WorkoutTemplate.upper1
+        if let routineId = todayPlan?.routineId {
+            return loadTemplate(routineId: routineId)
+        }
+        // No plan yet → upper-1 fallback. Guarantees TodayScreen always has
+        // a usable template before onboarding runs.
+        if planStore.plan == nil {
+            return WorkoutTemplate.upper1
+        }
+        return nil
     }
 
-    // MARK: - Derived
+    private func loadTemplate(routineId: Int) -> WorkoutTemplate? {
+        let routines = CoachDatabase.shared.listRoutines()
+        guard let r = routines.first(where: { $0.id == routineId }) else { return nil }
+        let exercises = CoachDatabase.shared.exercises(forRoutineId: routineId)
+        return r.toWorkoutTemplate(with: exercises)
+    }
 
     private var totalSets: Int {
-        template.exercises.reduce(0) { $0 + $1.targetSets }
+        template?.exercises.reduce(0) { $0 + $1.targetSets } ?? 0
     }
 
     private var previous: SavedSession? {
-        store.getPreviousSession(templateId: template.id)
-    }
-
-    /// Match JSX hard-wrap "Upper Body\nDay 1".
-    private var heroTitle: String {
-        template.name.replacingOccurrences(of: " Day ", with: "\nDay ")
+        guard let template else { return nil }
+        return store.getPreviousSession(templateId: template.id)
     }
 
     private var dateLabel: String {
@@ -49,16 +85,31 @@ struct StartScreen: View {
         return f.string(from: Date()).uppercased()
     }
 
-    private var daysAgoShort: String {
-        guard let prev = previous else { return "—" }
-        let days = Calendar.current.dateComponents([.day], from: prev.startTime, to: Date()).day ?? 0
-        return "\(days)d ago"
+    private var heroTitle: String {
+        switch effectiveKind {
+        case .lift, .mobility:
+            return template?.name.replacingOccurrences(of: " Day ", with: "\nDay ")
+                ?? (todayPlan?.title ?? "Train")
+        case .sport:
+            return todayPlan?.sport.map { "\($0.name)\nday" } ?? "Sport day"
+        case .rest:
+            return "Rest day"
+        case .event:
+            return "Event day"
+        }
     }
 
-    private var lastSessionDetail: String {
-        guard let prev = previous else { return "First time — weights will be empty" }
-        let stats = computeStats(prev)
-        return "\(formatDuration(prev.duration)) · \(stats.doneSets) sets · avg rpe \(stats.avgRpe)"
+    private var heroSubtitle: String {
+        switch effectiveKind {
+        case .lift, .mobility:
+            return template?.category ?? ""
+        case .sport:
+            return todayPlan?.sport != nil ? "Log it after." : "Sport day."
+        case .rest:
+            return "Sleep, food, walk. The work is in recovery."
+        case .event:
+            return todayPlan?.title ?? "Today's event."
+        }
     }
 
     // MARK: - Body
@@ -74,12 +125,21 @@ struct StartScreen: View {
                         hero
                             .padding(.horizontal, 20)
                             .padding(.top, 24)
-                        lastSessionCard
-                            .padding(.horizontal, 20)
-                            .padding(.top, 20)
-                        exerciseList
-                            .padding(.horizontal, 20)
-                            .padding(.top, 20)
+                        if let reason = todayPlan?.generatedReason {
+                            reasonRow(reason)
+                                .padding(.horizontal, 20)
+                                .padding(.top, 14)
+                        }
+                        if effectiveKind.isWorkout {
+                            lastSessionCard
+                                .padding(.horizontal, 20)
+                                .padding(.top, 20)
+                            if let template {
+                                exerciseList(template)
+                                    .padding(.horizontal, 20)
+                                    .padding(.top, 20)
+                            }
+                        }
                         Spacer().frame(height: 160)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -88,7 +148,7 @@ struct StartScreen: View {
 
             // Bottom CTA stack
             VStack(spacing: 10) {
-                startButton
+                primaryButton
                 historyButton
             }
             .padding(.horizontal, 20)
@@ -107,9 +167,15 @@ struct StartScreen: View {
                     .styled(.micro)
                     .foregroundStyle(Color.ink3)
                 Spacer()
-                Text("~45 MIN · \(template.exercises.count) EX · \(totalSets) SETS")
-                    .styled(.micro)
-                    .foregroundStyle(Color.ink3)
+                if effectiveKind.isWorkout, let template {
+                    Text("~\(template.exercises.count) EX · \(totalSets) SETS")
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                } else {
+                    Text(effectiveKind.label)
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                }
             }
             .padding(.horizontal, 20)
             .padding(.top, 12)
@@ -128,13 +194,26 @@ struct StartScreen: View {
             Text(heroTitle)
                 .styled(.displayL)
                 .foregroundStyle(Color.ink)
-                .lineSpacing(-2) // tight per JSX line-height:1
+                .lineSpacing(-2)
                 .fixedSize(horizontal: false, vertical: true)
-            Text(template.category)
+            Text(heroSubtitle)
                 .styled(.body)
                 .foregroundStyle(Color.ink2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func reasonRow(_ reason: String) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            Image(systemName: "sparkle")
+                .font(.system(size: 10))
+                .foregroundStyle(Color.accent)
+                .padding(.top, 2)
+            Text(reason)
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     // MARK: - Last session card
@@ -166,9 +245,21 @@ struct StartScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
+    private var daysAgoShort: String {
+        guard let prev = previous else { return "—" }
+        let days = Calendar.current.dateComponents([.day], from: prev.startTime, to: Date()).day ?? 0
+        return "\(days)d ago"
+    }
+
+    private var lastSessionDetail: String {
+        guard let prev = previous else { return "First time — weights will be empty" }
+        let stats = computeStats(prev)
+        return "\(formatDuration(prev.duration)) · \(stats.doneSets) sets · avg rpe \(stats.avgRpe)"
+    }
+
     // MARK: - Exercise list
 
-    private var exerciseList: some View {
+    private func exerciseList(_ template: WorkoutTemplate) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("TODAY'S EXERCISES")
                 .styled(.micro)
@@ -218,8 +309,19 @@ struct StartScreen: View {
 
     // MARK: - Buttons
 
-    private var startButton: some View {
-        Button(action: onStart) {
+    @ViewBuilder
+    private var primaryButton: some View {
+        switch effectiveKind {
+        case .lift, .mobility:
+            workoutStartButton
+        case .sport, .rest, .event:
+            // No primary action — the user sees today's status, no session to start.
+            EmptyView()
+        }
+    }
+
+    private var workoutStartButton: some View {
+        Button(action: startWorkout) {
             HStack(spacing: 6) {
                 Text(store.active == nil ? "Start workout" : "Resume workout")
                     .font(.custom("SpaceGrotesk-SemiBold", size: 15))
@@ -233,6 +335,7 @@ struct StartScreen: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
+        .disabled(template == nil)
     }
 
     private var historyButton: some View {
@@ -256,10 +359,15 @@ struct StartScreen: View {
         .buttonStyle(.plain)
     }
 
+    private func startWorkout() {
+        if store.active == nil, let template {
+            store.saveActive(store.createSession(from: template))
+        }
+        onStart()
+    }
+
     // MARK: - Helpers
 
-    /// Computes done-set count + 1-decimal avg RPE for a SavedSession.
-    /// Mirrors `SessionStore.stats(for:)` but operates on the saved shape.
     private func computeStats(_ session: SavedSession) -> (doneSets: Int, avgRpe: String) {
         var doneSets = 0
         var totalRpe: Double = 0
@@ -289,42 +397,19 @@ struct StartScreen: View {
 
 // MARK: - Preview
 
-#Preview("Empty history") {
-    StartScreen(onStart: {}, onHistory: {})
-        .environmentObject(SessionStore(defaults: UserDefaults(suiteName: "StartScreen.preview.empty")!))
-}
-
-#Preview("With previous session") {
-    let suite = "StartScreen.preview.populated"
+#Preview("Lift day with plan") {
+    let suite = "TodayScreen.preview.lift"
     let defaults = UserDefaults(suiteName: suite)!
     defaults.removePersistentDomain(forName: suite)
-    let store = SessionStore(defaults: defaults)
+    let plan = PlanStore(defaults: defaults)
+    plan.setPlan(.sample())
+    return TodayScreen(onStart: {}, onHistory: {})
+        .environmentObject(SessionStore(defaults: defaults))
+        .environmentObject(plan)
+}
 
-    // Seed a previous session four days ago.
-    let prevExercises = WorkoutTemplate.upper1.exercises.map { ex in
-        LoggedExercise(
-            id: ex.id, name: ex.name, type: ex.type, unit: ex.unit,
-            targetSets: ex.targetSets, targetReps: ex.targetReps, rest: ex.rest,
-            sets: (0..<ex.targetSets).map { i in
-                LoggedSet(num: i + 1, weight: "135", reps: String(ex.targetReps), rpe: "7", done: true)
-            },
-            prevSets: []
-        )
-    }
-    let fourDaysAgo = Calendar.current.date(byAdding: .day, value: -4, to: Date())!
-    let saved = SavedSession(
-        templateId: "upper-1",
-        name: "Upper Body Day 1",
-        category: "Push / Pull / Accessories",
-        startTime: fourDaysAgo,
-        exercises: prevExercises,
-        feel: "Right",
-        note: nil,
-        endTime: fourDaysAgo.addingTimeInterval(2528),
-        duration: 2528
-    )
-    store.saveAll([saved])
-
-    return StartScreen(onStart: {}, onHistory: {})
-        .environmentObject(store)
+#Preview("No plan (fallback)") {
+    TodayScreen(onStart: {}, onHistory: {})
+        .environmentObject(SessionStore(defaults: UserDefaults(suiteName: "TodayScreen.preview.fallback")!))
+        .environmentObject(PlanStore(defaults: UserDefaults(suiteName: "TodayScreen.preview.fallback.plan")!))
 }

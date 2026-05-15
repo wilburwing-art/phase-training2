@@ -4,6 +4,7 @@ import SwiftUI
 struct PhaseTrainingApp: App {
     @StateObject private var session = SessionStore()
     @StateObject private var memory  = MemoryStore()
+    @StateObject private var plan    = PlanStore()
 
     /// UI tests pass `--ui-test-onboarded` to skip the first-launch onboarding cover
     /// without persisting state to UserDefaults.
@@ -14,10 +15,12 @@ struct PhaseTrainingApp: App {
             RootTabView()
                 .environmentObject(session)
                 .environmentObject(memory)
+                .environmentObject(plan)
                 .preferredColorScheme(.dark)
                 .fullScreenCover(isPresented: .constant(!memory.isOnboarded && !uiTestSkipsOnboarding)) {
                     OnboardingFlow()
                         .environmentObject(memory)
+                        .environmentObject(plan)
                         .preferredColorScheme(.dark)
                 }
         }
