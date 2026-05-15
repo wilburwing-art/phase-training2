@@ -21,17 +21,21 @@ struct ProfileScreen: View {
 
                     sportsSection
                     Divider().background(Color.lineSoft)
-                    focusSection
+                    seasonsSection
                     Divider().background(Color.lineSoft)
-                    seasonSection
+                    focusSection
                     Divider().background(Color.lineSoft)
                     daysSection
                     Divider().background(Color.lineSoft)
                     sessionLengthSection
                     Divider().background(Color.lineSoft)
+                    liftDaysSection
+                    Divider().background(Color.lineSoft)
                     equipmentSection
                     Divider().background(Color.lineSoft)
                     experienceSection
+                    Divider().background(Color.lineSoft)
+                    aboutSection
                     Divider().background(Color.lineSoft)
                     dislikesSection
                     Divider().background(Color.lineSoft)
@@ -99,33 +103,80 @@ struct ProfileScreen: View {
         }
     }
 
+    private var seasonsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            section("SEASONS")
+            if store.memory.sports.isEmpty {
+                Text("DEFAULT")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                seasonChips(
+                    selected: store.memory.defaultSeason,
+                    onPick: { s in store.update { $0.defaultSeason = s } }
+                )
+            } else {
+                ForEach(store.memory.sports) { sport in
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(sport.name.uppercased())
+                            .styled(.micro)
+                            .foregroundStyle(Color.ink3)
+                        seasonChips(
+                            selected: store.memory.seasonsBySport[sport] ?? store.memory.defaultSeason,
+                            onPick: { s in store.update { $0.seasonsBySport[sport] = s } }
+                        )
+                    }
+                }
+                Text("OTHERWISE")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                    .padding(.top, 4)
+                seasonChips(
+                    selected: store.memory.defaultSeason,
+                    onPick: { s in store.update { $0.defaultSeason = s } }
+                )
+            }
+        }
+    }
+
+    private func seasonChips(selected: SeasonPhase, onPick: @escaping (SeasonPhase) -> Void) -> some View {
+        WrappingFlow(spacing: 6) {
+            ForEach(SeasonPhase.allCases) { phase in
+                OnboardingChip(
+                    label: phase.label,
+                    selected: selected == phase,
+                    action: { onPick(phase) }
+                )
+            }
+        }
+    }
+
     private var focusSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            section("FOCUS")
+        VStack(alignment: .leading, spacing: 12) {
+            section("FOCUSES")
             VStack(spacing: 8) {
                 ForEach(PrimaryFocus.allCases) { focus in
                     OnboardingPickRow(
                         title: focus.label,
                         subtitle: focus.subtitle,
-                        selected: store.memory.primaryFocus == focus,
-                        action: { store.update { $0.primaryFocus = focus } }
+                        selected: store.memory.focuses.contains(focus),
+                        action: { toggleFocus(focus) }
                     )
                 }
             }
-        }
-    }
-
-    private var seasonSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            section("SEASON")
-            VStack(spacing: 8) {
-                ForEach(SeasonPhase.allCases) { season in
-                    OnboardingPickRow(
-                        title: season.label,
-                        subtitle: season.subtitle,
-                        selected: store.memory.season == season,
-                        action: { store.update { $0.season = season } }
-                    )
+            if store.memory.focuses.count > 1 {
+                Text("PRIMARY")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                    .padding(.top, 8)
+                VStack(spacing: 8) {
+                    ForEach(store.memory.focuses) { focus in
+                        OnboardingPickRow(
+                            title: focus.label,
+                            subtitle: nil,
+                            selected: store.memory.focuses.first == focus,
+                            action: { setPrimaryFocus(focus) }
+                        )
+                    }
                 }
             }
         }
@@ -157,37 +208,69 @@ struct ProfileScreen: View {
     private var sessionLengthSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             section("SESSION LENGTH")
-            HStack(spacing: 14) {
-                stepperBtn("minus") { adjustMinutes(-15) }
-                VStack(spacing: 0) {
-                    Text("\(store.memory.sessionMinutes)")
-                        .font(.custom("JetBrainsMono-SemiBold", size: 28))
-                        .foregroundStyle(Color.ink)
-                    Text("MIN")
-                        .styled(.micro)
-                        .foregroundStyle(Color.ink3)
-                }
-                .frame(maxWidth: .infinity)
-                stepperBtn("plus") { adjustMinutes(15) }
-            }
-            .padding(.vertical, 10)
-            .padding(.horizontal, 14)
-            .background(Color.surface)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            valueStepper(
+                value: "\(store.memory.sessionMinutes)",
+                unit: "MIN",
+                onMinus: { adjustMinutes(-15) },
+                onPlus:  { adjustMinutes(15) }
+            )
+        }
+    }
+
+    private var liftDaysSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            section("LIFT DAYS PER WEEK")
+            valueStepper(
+                value: "\(store.memory.liftDaysPerWeek)",
+                unit: store.memory.liftDaysPerWeek == 1 ? "DAY" : "DAYS",
+                onMinus: { adjustLifts(-1) },
+                onPlus:  { adjustLifts(1) }
+            )
         }
     }
 
     private var equipmentSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             section("EQUIPMENT")
-            WrappingFlow(spacing: 8) {
-                ForEach(Equipment.allCases) { eq in
-                    OnboardingChip(
-                        label: eq.label,
-                        selected: store.memory.equipment.contains(eq),
-                        action: { toggleEquipment(eq) }
-                    )
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
+                ForEach(EquipmentTier.allCases) { tier in
+                    Button {
+                        selectTier(tier)
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: tier.icon)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(currentTier == tier ? Color.accent : Color.ink2)
+                            Text(tier.label)
+                                .styled(.body)
+                                .foregroundStyle(Color.ink)
+                                .multilineTextAlignment(.leading)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Spacer(minLength: 0)
+                        }
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(currentTier == tier ? Color.accentWash : Color.surface)
+                        .overlay(RoundedRectangle(cornerRadius: 12)
+                            .stroke(currentTier == tier ? Color.accentBorder : Color.line, lineWidth: 0.5))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            if currentTier == .custom {
+                Text("PICK WHAT YOU HAVE")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                    .padding(.top, 6)
+                WrappingFlow(spacing: 8) {
+                    ForEach(Equipment.allCases.filter { $0 != .fullGym }) { eq in
+                        OnboardingChip(
+                            label: eq.label,
+                            selected: store.memory.equipment.contains(eq),
+                            action: { toggleCustomEquipment(eq) }
+                        )
+                    }
                 }
             }
         }
@@ -203,6 +286,51 @@ struct ProfileScreen: View {
                         subtitle: lvl.subtitle,
                         selected: store.memory.experience == lvl,
                         action: { store.update { $0.experience = lvl } }
+                    )
+                }
+            }
+        }
+    }
+
+    private var aboutSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            section("ABOUT YOU")
+
+            HStack {
+                Text("AGE")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                Spacer()
+                if store.memory.age != nil {
+                    Button("Clear") { store.update { $0.age = nil } }
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                }
+            }
+            valueStepper(
+                value: store.memory.age.map(String.init) ?? "—",
+                unit: "YEARS",
+                onMinus: { adjustAge(-1) },
+                onPlus:  { adjustAge(1) }
+            )
+
+            HStack {
+                Text("GENDER")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                Spacer()
+                if store.memory.gender != nil {
+                    Button("Clear") { store.update { $0.gender = nil } }
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                }
+            }
+            WrappingFlow(spacing: 8) {
+                ForEach(Gender.allCases) { g in
+                    OnboardingChip(
+                        label: g.label,
+                        selected: store.memory.gender == g,
+                        action: { store.update { $0.gender = $0.gender == g ? nil : g } }
                     )
                 }
             }
@@ -239,6 +367,29 @@ struct ProfileScreen: View {
             .foregroundStyle(Color.ink3)
     }
 
+    private func valueStepper(value: String, unit: String,
+                              onMinus: @escaping () -> Void,
+                              onPlus:  @escaping () -> Void) -> some View {
+        HStack(spacing: 14) {
+            stepperBtn("minus", action: onMinus)
+            VStack(spacing: 0) {
+                Text(value)
+                    .font(.custom("JetBrainsMono-SemiBold", size: 28))
+                    .foregroundStyle(Color.ink)
+                Text(unit)
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+            }
+            .frame(maxWidth: .infinity)
+            stepperBtn("plus", action: onPlus)
+        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
+        .background(Color.surface)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
     private func stepperBtn(_ symbol: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
@@ -250,6 +401,14 @@ struct ProfileScreen: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)
+    }
+
+    private var currentTier: EquipmentTier {
+        let eq = store.memory.equipment
+        if eq == [.bodyweight] { return .bodyweight }
+        if eq == [.dumbbells]  { return .dumbbells  }
+        if eq == [.fullGym]    { return .fullGym    }
+        return .custom
     }
 
     private func tagList(
@@ -328,11 +487,30 @@ struct ProfileScreen: View {
         store.update { mem in
             if let idx = mem.sports.firstIndex(of: sport) {
                 mem.sports.remove(at: idx)
+                mem.seasonsBySport.removeValue(forKey: sport)
                 if mem.primarySport == sport { mem.primarySport = mem.sports.first }
             } else {
                 mem.sports.append(sport)
                 if mem.primarySport == nil { mem.primarySport = sport }
             }
+        }
+    }
+
+    private func toggleFocus(_ focus: PrimaryFocus) {
+        store.update { mem in
+            if let idx = mem.focuses.firstIndex(of: focus) {
+                mem.focuses.remove(at: idx)
+            } else {
+                mem.focuses.append(focus)
+            }
+        }
+    }
+
+    private func setPrimaryFocus(_ focus: PrimaryFocus) {
+        store.update { mem in
+            guard let idx = mem.focuses.firstIndex(of: focus), idx != 0 else { return }
+            mem.focuses.remove(at: idx)
+            mem.focuses.insert(focus, at: 0)
         }
     }
 
@@ -344,19 +522,32 @@ struct ProfileScreen: View {
                 mem.availableDays.append(day)
                 mem.availableDays.sort { $0.rawValue < $1.rawValue }
             }
+            if !mem.availableDays.isEmpty {
+                mem.liftDaysPerWeek = min(mem.liftDaysPerWeek, mem.availableDays.count)
+            }
         }
     }
 
-    private func toggleEquipment(_ eq: Equipment) {
+    private func selectTier(_ tier: EquipmentTier) {
         store.update { mem in
-            if mem.equipment.contains(eq) {
-                mem.equipment.removeAll { $0 == eq }
-                return
+            switch tier {
+            case .bodyweight: mem.equipment = [.bodyweight]
+            case .dumbbells:  mem.equipment = [.dumbbells]
+            case .fullGym:    mem.equipment = [.fullGym]
+            case .custom:
+                if mem.equipment == [.bodyweight] || mem.equipment == [.fullGym] {
+                    mem.equipment = []
+                }
             }
-            if eq == .bodyweight {
-                mem.equipment = [.bodyweight]
+        }
+    }
+
+    private func toggleCustomEquipment(_ eq: Equipment) {
+        store.update { mem in
+            if let idx = mem.equipment.firstIndex(of: eq) {
+                mem.equipment.remove(at: idx)
             } else {
-                mem.equipment.removeAll { $0 == .bodyweight }
+                mem.equipment.removeAll { $0 == .bodyweight || $0 == .fullGym }
                 mem.equipment.append(eq)
             }
         }
@@ -365,6 +556,20 @@ struct ProfileScreen: View {
     private func adjustMinutes(_ delta: Int) {
         store.update { mem in
             mem.sessionMinutes = min(max(mem.sessionMinutes + delta, 15), 120)
+        }
+    }
+
+    private func adjustLifts(_ delta: Int) {
+        store.update { mem in
+            let cap = mem.availableDays.isEmpty ? 7 : mem.availableDays.count
+            mem.liftDaysPerWeek = min(max(mem.liftDaysPerWeek + delta, 0), cap)
+        }
+    }
+
+    private func adjustAge(_ delta: Int) {
+        store.update { mem in
+            let next = (mem.age ?? 30) + delta
+            mem.age = min(max(next, 13), 99)
         }
     }
 
@@ -388,11 +593,15 @@ struct ProfileScreen: View {
     store.update { mem in
         mem.sports = [Sport.catalog[1], Sport.catalog[2]]
         mem.primarySport = Sport.catalog[1]
-        mem.primaryFocus = .sportPerformance
-        mem.season = .preSeason
+        mem.focuses = [.sportPerformance, .mobility]
+        mem.defaultSeason = .preSeason
+        mem.seasonsBySport = [Sport.catalog[1]: .inSeason]
         mem.availableDays = [.monday, .wednesday, .friday]
-        mem.equipment = [.dumbbells, .pullUpBar]
+        mem.liftDaysPerWeek = 2
+        mem.equipment = [.dumbbells]
         mem.experience = .intermediate
+        mem.age = 32
+        mem.gender = .male
         mem.dislikes = ["burpees"]
         mem.constraints = ["left knee"]
         mem.onboardedAt = Date()

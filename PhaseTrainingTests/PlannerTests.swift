@@ -61,7 +61,7 @@ final class PlannerTests: XCTestCase {
 
     func testProducesExactlySevenContiguousDays() {
         var memory = TrainingMemory()
-        memory.primaryFocus = .generalStrength
+        memory.focuses = [.generalStrength]
         memory.availableDays = Weekday.allCases
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -78,8 +78,9 @@ final class PlannerTests: XCTestCase {
 
     func testInputsHashMatchesMemory() {
         var memory = TrainingMemory()
-        memory.primaryFocus = .hypertrophy
+        memory.focuses = [.hypertrophy]
         memory.availableDays = [.monday, .wednesday, .friday]
+        memory.liftDaysPerWeek = 3
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
         XCTAssertEqual(plan.inputsHash, memory.planInputsHash)
@@ -89,7 +90,7 @@ final class PlannerTests: XCTestCase {
 
     func testUnavailableDaysAreForcedRest() {
         var memory = TrainingMemory()
-        memory.primaryFocus = .generalStrength
+        memory.focuses = [.generalStrength]
         memory.availableDays = [.monday, .wednesday, .friday]   // 3 days only
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -108,7 +109,7 @@ final class PlannerTests: XCTestCase {
         // If user picked zero days (degenerate), the planner shouldn't blanket-rest;
         // it should treat the schedule as unconstrained.
         var memory = TrainingMemory()
-        memory.primaryFocus = .generalStrength
+        memory.focuses = [.generalStrength]
         memory.availableDays = []
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -122,7 +123,7 @@ final class PlannerTests: XCTestCase {
         let climbing = Sport.catalog.first { $0.slug == "climbing" }!
         var memory = TrainingMemory()
         memory.primarySport = climbing
-        memory.season = .maintenance
+        memory.seasonsBySport = [climbing: .maintenance]
         memory.availableDays = Weekday.allCases
         memory.fixedSportDays = [.tuesday: climbing, .friday: climbing]
 
@@ -147,8 +148,9 @@ final class PlannerTests: XCTestCase {
         let climbing = Sport.catalog.first { $0.slug == "climbing" }!
         var memory = TrainingMemory()
         memory.primarySport = climbing
-        memory.season = .inSeason
+        memory.seasonsBySport = [climbing: .inSeason]
         memory.availableDays = Weekday.allCases
+        memory.liftDaysPerWeek = 1   // shape says 1, user agrees
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
         let kinds = plan.days.map(\.kind)
@@ -163,8 +165,9 @@ final class PlannerTests: XCTestCase {
         let running = Sport.catalog.first { $0.slug == "running" }!
         var memory = TrainingMemory()
         memory.primarySport = running
-        memory.season = .offSeason
+        memory.seasonsBySport = [running: .offSeason]
         memory.availableDays = Weekday.allCases
+        memory.liftDaysPerWeek = 3   // shape default = 3 lifts
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
         let kinds = plan.days.map(\.kind)
@@ -176,8 +179,9 @@ final class PlannerTests: XCTestCase {
     func testGeneralFitnessFallbackProducesUsableShape() {
         var memory = TrainingMemory()
         memory.primarySport = nil          // no sport
-        memory.primaryFocus = .generalStrength
+        memory.focuses = [.generalStrength]
         memory.availableDays = Weekday.allCases
+        memory.liftDaysPerWeek = 3
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
         let liftCount = plan.days.filter { $0.kind == .lift }.count
@@ -188,10 +192,11 @@ final class PlannerTests: XCTestCase {
 
     func testLiftDaysCarryRoutineId() {
         var memory = TrainingMemory()
-        memory.primaryFocus = .generalStrength
+        memory.focuses = [.generalStrength]
         memory.experience = .intermediate
         memory.sessionMinutes = 45
         memory.availableDays = Weekday.allCases
+        memory.liftDaysPerWeek = 3
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
         for day in plan.days where day.kind == .lift {
@@ -202,10 +207,11 @@ final class PlannerTests: XCTestCase {
 
     func testBeginnerExperienceExcludesAdvancedRoutines() {
         var memory = TrainingMemory()
-        memory.primaryFocus = .generalStrength
+        memory.focuses = [.generalStrength]
         memory.experience = .beginner
         memory.sessionMinutes = 45
         memory.availableDays = Weekday.allCases
+        memory.liftDaysPerWeek = 3
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
         let routineIds = plan.days.compactMap(\.routineId)
@@ -215,10 +221,11 @@ final class PlannerTests: XCTestCase {
 
     func testDeterministicGivenSameInputs() {
         var memory = TrainingMemory()
-        memory.primaryFocus = .generalStrength
+        memory.focuses = [.generalStrength]
         memory.experience = .intermediate
         memory.sessionMinutes = 45
         memory.availableDays = Weekday.allCases
+        memory.liftDaysPerWeek = 3
 
         let a = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
         let b = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -232,17 +239,137 @@ final class PlannerTests: XCTestCase {
         let climbing = Sport.catalog.first { $0.slug == "climbing" }!
         var climberInSeason = TrainingMemory()
         climberInSeason.primarySport = climbing
-        climberInSeason.season = .inSeason
+        climberInSeason.seasonsBySport = [climbing: .inSeason]
         climberInSeason.availableDays = Weekday.allCases
+        climberInSeason.liftDaysPerWeek = 1
 
         var liftHeavy = TrainingMemory()
-        liftHeavy.primaryFocus = .hypertrophy
+        liftHeavy.focuses = [.hypertrophy]
         liftHeavy.availableDays = Weekday.allCases
+        liftHeavy.liftDaysPerWeek = 5
 
         let a = Planner.generate(memory: climberInSeason, routines: catalog(), today: mondayAnchor())
         let b = Planner.generate(memory: liftHeavy,       routines: catalog(), today: mondayAnchor())
 
         XCTAssertNotEqual(a.days.map(\.kind), b.days.map(\.kind))
         XCTAssertNotEqual(a.inputsHash, b.inputsHash)
+    }
+
+    // MARK: - liftDaysPerWeek override
+
+    func testLiftDaysOverrideAddsLiftsBeyondShape() {
+        // General-strength shape gives 3 lifts; user wants 5.
+        var memory = TrainingMemory()
+        memory.focuses = [.generalStrength]
+        memory.availableDays = Weekday.allCases
+        memory.liftDaysPerWeek = 5
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        let lifts = plan.days.filter { $0.kind == .lift }.count
+        XCTAssertEqual(lifts, 5, "User's lift target should override the shape's default")
+    }
+
+    func testLiftDaysOverrideRemovesLiftsBelowShape() {
+        // Hypertrophy shape gives 5 lifts; user wants 2.
+        var memory = TrainingMemory()
+        memory.focuses = [.hypertrophy]
+        memory.availableDays = Weekday.allCases
+        memory.liftDaysPerWeek = 2
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        let lifts = plan.days.filter { $0.kind == .lift }.count
+        XCTAssertEqual(lifts, 2)
+    }
+
+    func testLiftDaysCappedByAvailableDayCount() {
+        // 3 available days, user asks for 5 lifts → planner caps at 3.
+        var memory = TrainingMemory()
+        memory.focuses = [.hypertrophy]
+        memory.availableDays = [.monday, .wednesday, .friday]
+        memory.liftDaysPerWeek = 5
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        let lifts = plan.days.filter { $0.kind == .lift }.count
+        XCTAssertLessThanOrEqual(lifts, 3,
+                                 "Lift count must not exceed available day count")
+    }
+
+    func testZeroLiftDaysProducesNoLifts() {
+        var memory = TrainingMemory()
+        memory.focuses = [.generalStrength]
+        memory.availableDays = Weekday.allCases
+        memory.liftDaysPerWeek = 0
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        let lifts = plan.days.filter { $0.kind == .lift }.count
+        XCTAssertEqual(lifts, 0)
+    }
+
+    // MARK: - Per-sport season
+
+    func testPerSportSeasonDrivesShapeForPrimary() {
+        // Two sports with different seasons: primary's season is what shapes the week.
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        let skiing   = Sport.catalog.first { $0.slug == "alpine-skiing" }!
+        var memory = TrainingMemory()
+        memory.sports = [climbing, skiing]
+        memory.primarySport = climbing
+        memory.seasonsBySport = [climbing: .inSeason, skiing: .preSeason]
+        memory.availableDays = Weekday.allCases
+        memory.liftDaysPerWeek = 1
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        let kinds = plan.days.map(\.kind)
+        // Climbing in-season: 2 sport + 1 lift + 1 mobility + 3 rest.
+        XCTAssertEqual(kinds.filter { $0 == .sport }.count, 2)
+        XCTAssertEqual(kinds.filter { $0 == .lift }.count, 1)
+    }
+
+    func testPerSportSeasonFallsThroughToDefault() {
+        // Primary sport has no entry in seasonsBySport → defaultSeason used.
+        let cycling = Sport.catalog.first { $0.slug == "cycling" }!
+        var memory = TrainingMemory()
+        memory.sports = [cycling]
+        memory.primarySport = cycling
+        memory.seasonsBySport = [:]                  // empty
+        memory.defaultSeason = .inSeason
+        memory.availableDays = Weekday.allCases
+        memory.liftDaysPerWeek = 1
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        let kinds = plan.days.map(\.kind)
+        // Cycling in-season: 3 rides + 1 lift + 3 rest.
+        XCTAssertEqual(kinds.filter { $0 == .sport }.count, 3)
+    }
+
+    // MARK: - Multi-focus
+
+    func testMultiFocusUsesFirstAsPrimary() {
+        var memory = TrainingMemory()
+        memory.focuses = [.mobility, .hypertrophy]    // primary = mobility
+        memory.availableDays = Weekday.allCases
+        memory.liftDaysPerWeek = 1
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        let mobs = plan.days.filter { $0.kind == .mobility }.count
+        // Mobility focus shape: 4 mobility / 3 rest. With liftDaysPerWeek=1 we
+        // promote 1 of the 4 mobilities → lift, leaving ≥3 mobilities.
+        XCTAssertGreaterThanOrEqual(mobs, 3)
+    }
+
+    // MARK: - adjustForLiftBudget unit
+
+    func testAdjustDemotesExcessLiftsFromTheEnd() {
+        let queue: [DayKind] = [.lift, .rest, .lift, .rest, .lift, .mobility, .rest]
+        let result = Planner.adjustForLiftBudget(queue, target: 1)
+        XCTAssertEqual(result.filter { $0 == .lift }.count, 1)
+        XCTAssertEqual(result.first, .lift, "First lift should survive (early-week emphasis)")
+    }
+
+    func testAdjustPromotesRestsFromTheFront() {
+        let queue: [DayKind] = [.rest, .rest, .lift, .rest, .mobility, .rest, .rest]
+        let result = Planner.adjustForLiftBudget(queue, target: 4)
+        XCTAssertEqual(result.filter { $0 == .lift }.count, 4)
+        XCTAssertEqual(result[0], .lift, "Front rests should promote first")
     }
 }

@@ -15,17 +15,18 @@ import SwiftUI
 enum OnboardingStep: Int, CaseIterable {
     case welcome = 0
     case sports
-    case focus
-    case season
-    case availability
-    case equipment
+    case sportSeasons       // per-sport season picker (replaces single .season)
+    case focus              // multi-select
+    case availability       // days + minutes + lift target
+    case equipment          // tier-based
     case experience
+    case about              // age + gender (optional)
     case constraints
     /// Final confirmation: shows the generated plan + Accept CTA. Not counted
     /// in the questionnaire numerator/denominator since it's not a question.
     case planPreview
 
-    /// Numbered position shown to the user ("Step 2 of 8"). Welcome is step 1.
+    /// Numbered position shown to the user ("Step 2 of 9"). Welcome is step 1.
     /// planPreview returns 0 — the scaffold hides the counter for it.
     var humanIndex: Int {
         self == .planPreview ? 0 : rawValue + 1
@@ -66,16 +67,18 @@ struct OnboardingFlow: View {
             OnboardingWelcomeScreen(onStart: { advance() })
         case .sports:
             OnboardingSportsScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
+        case .sportSeasons:
+            OnboardingSportSeasonsScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .focus:
             OnboardingFocusScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
-        case .season:
-            OnboardingSeasonScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .availability:
             OnboardingAvailabilityScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .equipment:
             OnboardingEquipmentScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .experience:
             OnboardingExperienceScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
+        case .about:
+            OnboardingAboutScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .constraints:
             OnboardingConstraintsScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .planPreview:

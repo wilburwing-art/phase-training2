@@ -1,6 +1,10 @@
-// OnboardingFocusScreen.swift — step 3 of 8.
-// Single-select PrimaryFocus. Drives planner emphasis: which DayKind to favor,
-// rep ranges, time allocation between strength / power / endurance / mobility.
+// OnboardingFocusScreen.swift — multi-select with primary marker.
+//
+// draft.focuses is an ordered list; first entry is the primary the planner
+// uses for shape resolution. Tapping a focus toggles it in/out; tapping
+// a non-primary picked focus while the "set as primary" flow is implicit
+// — primary is always focuses[0], so re-ordering happens via the second
+// "primary?" picker that appears once 2+ are selected.
 
 import SwiftUI
 
@@ -13,21 +17,57 @@ struct OnboardingFocusScreen: View {
         OnboardingScaffold(
             step: .focus,
             title: "What's the goal?",
-            subtitle: "Pick the one that matters most right now. You can change it later.",
+            subtitle: "Pick anything that matters — you can stack a few.",
+            nextEnabled: !draft.focuses.isEmpty,
             onNext: onNext,
             onBack: onBack
         ) {
-            VStack(spacing: 10) {
-                ForEach(PrimaryFocus.allCases) { focus in
-                    OnboardingPickRow(
-                        title: focus.label,
-                        subtitle: focus.subtitle,
-                        selected: draft.primaryFocus == focus,
-                        action: { draft.primaryFocus = focus }
-                    )
+            VStack(alignment: .leading, spacing: 16) {
+                OnboardingSectionLabel(text: "Focuses")
+                VStack(spacing: 10) {
+                    ForEach(PrimaryFocus.allCases) { focus in
+                        OnboardingPickRow(
+                            title: focus.label,
+                            subtitle: focus.subtitle,
+                            selected: draft.focuses.contains(focus),
+                            action: { toggle(focus) }
+                        )
+                    }
+                }
+
+                if draft.focuses.count > 1 {
+                    Divider().background(Color.lineSoft).padding(.vertical, 4)
+                    OnboardingSectionLabel(text: "Which is primary?")
+                    Text("This is the one we plan around first.")
+                        .styled(.body)
+                        .foregroundStyle(Color.ink3)
+                    VStack(spacing: 8) {
+                        ForEach(draft.focuses) { focus in
+                            OnboardingPickRow(
+                                title: focus.label,
+                                subtitle: nil,
+                                selected: draft.focuses.first == focus,
+                                action: { setPrimary(focus) }
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
+
+    private func toggle(_ focus: PrimaryFocus) {
+        if let idx = draft.focuses.firstIndex(of: focus) {
+            draft.focuses.remove(at: idx)
+        } else {
+            draft.focuses.append(focus)
+        }
+    }
+
+    private func setPrimary(_ focus: PrimaryFocus) {
+        guard let idx = draft.focuses.firstIndex(of: focus), idx != 0 else { return }
+        draft.focuses.remove(at: idx)
+        draft.focuses.insert(focus, at: 0)
     }
 }
 

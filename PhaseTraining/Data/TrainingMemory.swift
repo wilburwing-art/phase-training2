@@ -14,22 +14,32 @@ import Foundation
 // MARK: - Top-level
 
 struct TrainingMemory: Codable {
-    var schemaVersion: Int = 1
+    var schemaVersion: Int = 2
 
     // Identity / intent
     var sports: [Sport] = []
     var primarySport: Sport? = nil
-    var primaryFocus: PrimaryFocus = .generalStrength
-    var season: SeasonPhase = .maintenance
+    /// Multi-select. First entry is primary; planner uses focuses.first for shape resolution.
+    var focuses: [PrimaryFocus] = [.generalStrength]
+    /// Per-sport season. Allows pre-season skiing + year-round climbing simultaneously.
+    var seasonsBySport: [Sport: SeasonPhase] = [:]
+    /// Used when no sport is set OR for any sport without a per-sport entry.
+    var defaultSeason: SeasonPhase = .maintenance
 
     // Schedule / capacity
     var availableDays: [Weekday] = []
     var fixedSportDays: [Weekday: Sport] = [:]
     var sessionMinutes: Int = 45
+    /// Target lift days per week (planner enforces). 0–7. Capped at availableDays.count at use-time.
+    var liftDaysPerWeek: Int = 3
 
     // Resources / level
     var equipment: [Equipment] = [.bodyweight]
     var experience: ExperienceLevel = .beginner
+
+    // About you (optional)
+    var age: Int? = nil
+    var gender: Gender? = nil
 
     // Free-text guardrails
     var dislikes: [String] = []
@@ -47,9 +57,12 @@ struct TrainingMemory: Codable {
     init() {}
 
     enum CodingKeys: String, CodingKey {
-        case schemaVersion, sports, primarySport, primaryFocus, season
-        case availableDays, fixedSportDays, sessionMinutes
+        case schemaVersion, sports, primarySport
+        case focuses, seasonsBySport, defaultSeason
+        case primaryFocus, season         // legacy (build 20-23) — read for migration
+        case availableDays, fixedSportDays, sessionMinutes, liftDaysPerWeek
         case equipment, experience
+        case age, gender
         case dislikes, constraints
         case feedback, soreness, weeklyCheckIns
         case onboardedAt
@@ -57,22 +70,89 @@ struct TrainingMemory: Codable {
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
-        self.schemaVersion   = (try? c.decode(Int.self,            forKey: .schemaVersion))   ?? 1
+        self.schemaVersion   = (try? c.decode(Int.self,            forKey: .schemaVersion))   ?? 2
         self.sports          = (try? c.decode([Sport].self,        forKey: .sports))          ?? []
         self.primarySport    =  try? c.decodeIfPresent(Sport.self, forKey: .primarySport)
-        self.primaryFocus    = (try? c.decode(PrimaryFocus.self,   forKey: .primaryFocus))    ?? .generalStrength
-        self.season          = (try? c.decode(SeasonPhase.self,    forKey: .season))          ?? .maintenance
+
+        // Focus migration: prefer focuses[]; fall back to legacy primaryFocus singleton.
+        if let arr = try? c.decode([PrimaryFocus].self, forKey: .focuses), !arr.isEmpty {
+            self.focuses = arr
+        } else if let legacy = try? c.decode(PrimaryFocus.self, forKey: .primaryFocus) {
+            self.focuses = [legacy]
+        } else {
+            self.focuses = [.generalStrength]
+        }
+
+        // Season migration: prefer seasonsBySport map + defaultSeason; fall back to legacy
+        // single `season` (which becomes both the default and per-primary-sport entry).
+        self.seasonsBySport = (try? c.decode([Sport: SeasonPhase].self, forKey: .seasonsBySport)) ?? [:]
+        if let ds = try? c.decode(SeasonPhase.self, forKey: .defaultSeason) {
+            self.defaultSeason = ds
+        } else if let legacySeason = try? c.decode(SeasonPhase.self, forKey: .season) {
+            self.defaultSeason = legacySeason
+            if let s = self.primarySport, self.seasonsBySport[s] == nil {
+                self.seasonsBySport[s] = legacySeason
+            }
+        } else {
+            self.defaultSeason = .maintenance
+        }
+
         self.availableDays   = (try? c.decode([Weekday].self,      forKey: .availableDays))   ?? []
         self.fixedSportDays  = (try? c.decode([Weekday: Sport].self, forKey: .fixedSportDays)) ?? [:]
         self.sessionMinutes  = (try? c.decode(Int.self,            forKey: .sessionMinutes))  ?? 45
+        self.liftDaysPerWeek = (try? c.decode(Int.self,            forKey: .liftDaysPerWeek)) ?? 3
         self.equipment       = (try? c.decode([Equipment].self,    forKey: .equipment))       ?? [.bodyweight]
         self.experience      = (try? c.decode(ExperienceLevel.self, forKey: .experience))     ?? .beginner
+        self.age             =  try? c.decodeIfPresent(Int.self,    forKey: .age)
+        self.gender          =  try? c.decodeIfPresent(Gender.self, forKey: .gender)
         self.dislikes        = (try? c.decode([String].self,       forKey: .dislikes))        ?? []
         self.constraints     = (try? c.decode([String].self,       forKey: .constraints))     ?? []
         self.feedback        = (try? c.decode([FeedbackEntry].self, forKey: .feedback))       ?? []
         self.soreness        = (try? c.decode([SorenessEntry].self, forKey: .soreness))       ?? []
         self.weeklyCheckIns  = (try? c.decode([WeeklyCheckIn].self, forKey: .weeklyCheckIns)) ?? []
         self.onboardedAt     =  try? c.decodeIfPresent(Date.self,  forKey: .onboardedAt)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(schemaVersion,   forKey: .schemaVersion)
+        try c.encode(sports,          forKey: .sports)
+        try c.encodeIfPresent(primarySport, forKey: .primarySport)
+        try c.encode(focuses,         forKey: .focuses)
+        try c.encode(seasonsBySport,  forKey: .seasonsBySport)
+        try c.encode(defaultSeason,   forKey: .defaultSeason)
+        try c.encode(availableDays,   forKey: .availableDays)
+        try c.encode(fixedSportDays,  forKey: .fixedSportDays)
+        try c.encode(sessionMinutes,  forKey: .sessionMinutes)
+        try c.encode(liftDaysPerWeek, forKey: .liftDaysPerWeek)
+        try c.encode(equipment,       forKey: .equipment)
+        try c.encode(experience,      forKey: .experience)
+        try c.encodeIfPresent(age,    forKey: .age)
+        try c.encodeIfPresent(gender, forKey: .gender)
+        try c.encode(dislikes,        forKey: .dislikes)
+        try c.encode(constraints,     forKey: .constraints)
+        try c.encode(feedback,        forKey: .feedback)
+        try c.encode(soreness,        forKey: .soreness)
+        try c.encode(weeklyCheckIns,  forKey: .weeklyCheckIns)
+        try c.encodeIfPresent(onboardedAt, forKey: .onboardedAt)
+    }
+}
+
+// MARK: - Convenience accessors
+
+extension TrainingMemory {
+    /// Primary focus — first entry in focuses, or .generalStrength if empty.
+    var primaryFocus: PrimaryFocus {
+        focuses.first ?? .generalStrength
+    }
+
+    /// Season the planner should use to pick a WeeklyShape. Reads
+    /// seasonsBySport[primarySport] first, then falls back to defaultSeason.
+    var seasonForPlanner: SeasonPhase {
+        if let s = primarySport, let season = seasonsBySport[s] {
+            return season
+        }
+        return defaultSeason
     }
 }
 
@@ -315,6 +395,19 @@ enum ExperienceLevel: String, Codable, CaseIterable, Identifiable {
         case .beginner:     return "New to structured training, or returning after a long break"
         case .intermediate: return "1+ year consistent, comfortable with main lifts"
         case .advanced:     return "Multiple years, push close to true limits"
+        }
+    }
+}
+
+enum Gender: String, Codable, CaseIterable, Identifiable {
+    case female, male, nonbinary, preferNotToSay = "prefer_not_to_say"
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .female:         return "Female"
+        case .male:           return "Male"
+        case .nonbinary:      return "Non-binary"
+        case .preferNotToSay: return "Prefer not to say"
         }
     }
 }

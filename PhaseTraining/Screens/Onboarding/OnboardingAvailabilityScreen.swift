@@ -39,33 +39,68 @@ struct OnboardingAvailabilityScreen: View {
 
                 VStack(alignment: .leading, spacing: 12) {
                     OnboardingSectionLabel(text: "Session length")
-                    HStack(spacing: 14) {
-                        StepperButton(symbol: "minus") { adjustMinutes(-stepSize) }
-                        VStack(spacing: 0) {
-                            Text("\(draft.sessionMinutes)")
-                                .font(.custom("JetBrainsMono-SemiBold", size: 34))
-                                .foregroundStyle(Color.ink)
-                            Text("MIN")
-                                .styled(.micro)
-                                .foregroundStyle(Color.ink3)
-                        }
-                        .frame(maxWidth: .infinity)
-                        StepperButton(symbol: "plus") { adjustMinutes(stepSize) }
-                    }
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 14)
-                    .background(Color.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(Color.line, lineWidth: 0.5)
+                    stepperCard(
+                        value: "\(draft.sessionMinutes)",
+                        unit: "MIN",
+                        valueSize: 34,
+                        onMinus: { adjustMinutes(-stepSize) },
+                        onPlus:  { adjustMinutes(stepSize) }
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
                     Text("Most users land between 30 and 60 min.")
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    OnboardingSectionLabel(text: "Lift days per week")
+                    stepperCard(
+                        value: "\(draft.liftDaysPerWeek)",
+                        unit: draft.liftDaysPerWeek == 1 ? "DAY" : "DAYS",
+                        valueSize: 28,
+                        onMinus: { adjustLifts(-1) },
+                        onPlus:  { adjustLifts(1) }
+                    )
+                    Text(liftHint)
                         .font(.monoXS)
                         .foregroundStyle(Color.ink3)
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private func stepperCard(value: String, unit: String, valueSize: CGFloat,
+                             onMinus: @escaping () -> Void,
+                             onPlus:  @escaping () -> Void) -> some View {
+        HStack(spacing: 14) {
+            StepperButton(symbol: "minus", action: onMinus)
+            VStack(spacing: 0) {
+                Text(value)
+                    .font(.custom("JetBrainsMono-SemiBold", size: valueSize))
+                    .foregroundStyle(Color.ink)
+                Text(unit)
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+            }
+            .frame(maxWidth: .infinity)
+            StepperButton(symbol: "plus", action: onPlus)
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 14)
+        .background(Color.surface)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(Color.line, lineWidth: 0.5)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    private var liftHint: String {
+        let cap = draft.availableDays.isEmpty ? 7 : draft.availableDays.count
+        if draft.liftDaysPerWeek > cap {
+            return "Capped at \(cap) — only \(cap) day\(cap == 1 ? "" : "s") available."
+        }
+        return "0 = no lift slots in your week."
     }
 
     private func toggleDay(_ day: Weekday) {
@@ -75,11 +110,21 @@ struct OnboardingAvailabilityScreen: View {
             draft.availableDays.append(day)
             draft.availableDays.sort { $0.rawValue < $1.rawValue }
         }
+        // Keep liftDaysPerWeek ≤ availableDays.count when day count drops.
+        if !draft.availableDays.isEmpty {
+            draft.liftDaysPerWeek = min(draft.liftDaysPerWeek, draft.availableDays.count)
+        }
     }
 
     private func adjustMinutes(_ delta: Int) {
         let next = draft.sessionMinutes + delta
         draft.sessionMinutes = min(max(next, stepperBounds.lowerBound), stepperBounds.upperBound)
+    }
+
+    private func adjustLifts(_ delta: Int) {
+        let cap = draft.availableDays.isEmpty ? 7 : draft.availableDays.count
+        let next = draft.liftDaysPerWeek + delta
+        draft.liftDaysPerWeek = min(max(next, 0), cap)
     }
 }
 

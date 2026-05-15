@@ -98,15 +98,21 @@ extension WeekPlan {
 
 extension TrainingMemory {
     var planInputsHash: String {
+        let seasons = seasonsBySport
+            .sorted { $0.key.slug < $1.key.slug }
+            .map { "\($0.key.slug):\($0.value.rawValue)" }
+            .joined(separator: ",")
         let canonical = [
             "v\(schemaVersion)",
             "ps:\(primarySport?.slug ?? "_")",
             "sp:\(sports.map(\.slug).sorted().joined(separator: ","))",
-            "fc:\(primaryFocus.rawValue)",
-            "se:\(season.rawValue)",
+            "fc:\(focuses.map(\.rawValue).joined(separator: ","))",
+            "ds:\(defaultSeason.rawValue)",
+            "ss:\(seasons)",
             "dy:\(availableDays.map(\.rawValue).sorted().map(String.init).joined(separator: ","))",
             "fx:\(fixedSportDays.keys.sorted { $0.rawValue < $1.rawValue }.map { "\($0.rawValue):\(fixedSportDays[$0]?.slug ?? "")" }.joined(separator: ","))",
             "mn:\(sessionMinutes)",
+            "ld:\(liftDaysPerWeek)",
             "eq:\(equipment.map(\.rawValue).sorted().joined(separator: ","))",
             "ex:\(experience.rawValue)"
         ].joined(separator: "|")

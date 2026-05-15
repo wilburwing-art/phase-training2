@@ -33,7 +33,7 @@ enum Planner {
         let dates: [Date] = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: start) }
         let shape = WeeklyShape.resolve(
             primarySport: memory.primarySport,
-            season: memory.season,
+            season: memory.seasonForPlanner,
             focus: memory.primaryFocus
         )
 
@@ -84,10 +84,19 @@ enum Planner {
             queue.append(kind)
         }
 
-        // Step 4 — walk queue, fill empty slots.
+        // Step 4 — apply user's lift-days target. Shape's lift count is a default;
+        // the user override wins. Demote excess lifts from the end (preserves the
+        // shape's early-week emphasis) and promote rest → lift → mobility from the
+        // front when adding.
+        let emptyCount = slots.filter { $0 == nil }.count
+        let usedQueue = Array(queue.prefix(emptyCount))
+        let liftBudget = max(0, min(memory.liftDaysPerWeek, emptyCount))
+        let adjustedQueue = adjustForLiftBudget(usedQueue, target: liftBudget)
+
+        // Step 5 — walk adjusted queue, fill empty slots.
         var qi = 0
         for (i, date) in dates.enumerated() where slots[i] == nil {
-            guard !queue.isEmpty else {
+            guard qi < adjustedQueue.count else {
                 slots[i] = DayPlan(
                     date: date,
                     kind: .rest,
@@ -96,7 +105,7 @@ enum Planner {
                 )
                 continue
             }
-            let kind = queue[qi % queue.count]
+            let kind = adjustedQueue[qi]
             qi += 1
             slots[i] = makeSlot(
                 date: date, kind: kind, memory: memory,
@@ -167,6 +176,48 @@ enum Planner {
         case .rest:     return "Rest"
         case .event:    return "Event"
         }
+    }
+
+    // MARK: - Lift budget adjustment
+
+    /// Shape kinds → adjusted to hit `target` lifts. Demotes extras from the
+    /// end (keeps the shape's early-week emphasis intact) and promotes
+    /// rest → mobility → sport in that order when the shape is light on lifts.
+    static func adjustForLiftBudget(_ queue: [DayKind], target: Int) -> [DayKind] {
+        var result = queue
+        let current = result.filter { $0 == .lift }.count
+
+        if current > target {
+            var excess = current - target
+            for i in result.indices.reversed() where excess > 0 {
+                if result[i] == .lift {
+                    result[i] = .rest
+                    excess -= 1
+                }
+            }
+            return result
+        }
+
+        if current < target {
+            var needed = target - current
+            // Promote rest first.
+            for i in result.indices where needed > 0 {
+                if result[i] == .rest {
+                    result[i] = .lift
+                    needed -= 1
+                }
+            }
+            // Then mobility.
+            for i in result.indices where needed > 0 {
+                if result[i] == .mobility {
+                    result[i] = .lift
+                    needed -= 1
+                }
+            }
+            // We never demote sports — fixed sports are protected, and shape sports
+            // express the user's intent through their primary sport.
+        }
+        return result
     }
 
     // MARK: - Routine selection

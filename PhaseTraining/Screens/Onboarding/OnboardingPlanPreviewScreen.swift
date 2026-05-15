@@ -61,7 +61,7 @@ struct OnboardingPlanPreviewScreen: View {
 
     private var subtitleText: String {
         if let sport = memory.primarySport {
-            return "Built around \(sport.name.lowercased()), \(memory.season.label.lowercased())."
+            return "Built around \(sport.name.lowercased()), \(memory.seasonForPlanner.label.lowercased())."
         }
         return "Built around \(memory.primaryFocus.label.lowercased())."
     }
@@ -142,10 +142,16 @@ private struct DayPreviewRow: View {
 }
 
 #Preview {
-    var memory = TrainingMemory()
-    memory.primarySport = Sport.catalog.first { $0.slug == "climbing" }
-    memory.season = .inSeason
-    memory.availableDays = Weekday.allCases
-    memory.experience = .intermediate
+    @Previewable @State var memory: TrainingMemory = {
+        var m = TrainingMemory()
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        m.sports = [climbing]
+        m.primarySport = climbing
+        m.seasonsBySport = [climbing: .inSeason]
+        m.availableDays = Weekday.allCases
+        m.experience = .intermediate
+        m.liftDaysPerWeek = 1
+        return m
+    }()
     return OnboardingPlanPreviewScreen(memory: memory, onAccept: {}, onBack: {})
 }
