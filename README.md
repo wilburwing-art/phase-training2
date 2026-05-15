@@ -1,17 +1,15 @@
 # phase-training2
 
-iOS workout-logging app. Thin vertical slice of the `phase-training` family, headed to TestFlight.
+![CI](https://github.com/wilburwing-art/phase-training2/actions/workflows/test.yml/badge.svg)
+
+iOS workout-logging app. Thin vertical slice of the `phase-training` family, on TestFlight.
 
 See [PLAN.md](PLAN.md) for the build plan.
 See [handoff/](handoff/) for the source design + JSX prototype.
 
-## Build (once Phase 0 lands)
+## Build
 
 ```
 xcodegen generate
 open PhaseTraining.xcodeproj
 ```
-
-## Status
-
-Pre-bootstrap. PLAN.md captures intent; no Swift code yet.
