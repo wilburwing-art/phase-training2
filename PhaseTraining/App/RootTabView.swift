@@ -1,16 +1,15 @@
-// RootTabView.swift — Phase 8 nav shell.
-// 5 tabs: Today (live workout flow), Week (Phase 10), Train (routine library),
-// Progress (Phase 12), Profile (Phase 9). Train signals "go to Today" via a
-// closure when a workout starts, so the live session surfaces immediately.
+// RootTabView.swift — Phase 11 nav shell.
+// 4 tabs: Today (live workout flow), Week (per-week planning + edits),
+// Progress (Phase 12), Profile. The routine library lives behind sheets
+// reachable from Today + Week — no longer a primary tab.
 
 import SwiftUI
 
 enum AppTab: Hashable {
-    case today, week, train, progress, profile
+    case today, week, progress, profile
 }
 
 struct RootTabView: View {
-    @EnvironmentObject private var store: SessionStore
     @State private var selected: AppTab = .today
 
     var body: some View {
@@ -22,10 +21,6 @@ struct RootTabView: View {
             WeekScreen()
                 .tabItem { Label("Week", systemImage: "calendar") }
                 .tag(AppTab.week)
-
-            TrainTab(switchToToday: { selected = .today })
-                .tabItem { Label("Train", systemImage: "figure.strengthtraining.traditional") }
-                .tag(AppTab.train)
 
             ProgressTabPlaceholder()
                 .tabItem { Label("Progress", systemImage: "chart.line.uptrend.xyaxis") }

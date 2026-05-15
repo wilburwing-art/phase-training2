@@ -109,8 +109,6 @@ extension TrainingMemory {
             "fc:\(focuses.map(\.rawValue).joined(separator: ","))",
             "ds:\(defaultSeason.rawValue)",
             "ss:\(seasons)",
-            "dy:\(availableDays.map(\.rawValue).sorted().map(String.init).joined(separator: ","))",
-            "fx:\(fixedSportDays.keys.sorted { $0.rawValue < $1.rawValue }.map { "\($0.rawValue):\(fixedSportDays[$0]?.slug ?? "")" }.joined(separator: ","))",
             "mn:\(sessionMinutes)",
             "ld:\(liftDaysPerWeek)",
             "eq:\(equipment.map(\.rawValue).sorted().joined(separator: ","))",

@@ -25,6 +25,9 @@ struct TodayScreen: View {
     let onStart: () -> Void
     let onHistory: () -> Void
 
+    /// Drives the "Pick a different routine" sheet on lift/mobility days.
+    @State private var pickingRoutine = false
+
     // MARK: - Derived state
 
     private var todayPlan: DayPlan? { planStore.plan?.today() }
@@ -139,6 +142,9 @@ struct TodayScreen: View {
                                     .padding(.horizontal, 20)
                                     .padding(.top, 20)
                             }
+                            pickRoutineLink
+                                .padding(.horizontal, 20)
+                                .padding(.top, 18)
                         }
                         Spacer().frame(height: 160)
                     }
@@ -156,6 +162,38 @@ struct TodayScreen: View {
         }
         .foregroundStyle(Color.ink)
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $pickingRoutine) {
+            RoutineLibraryFlow(
+                onWorkoutStarted: {
+                    pickingRoutine = false
+                    onStart()
+                },
+                onDismiss: { pickingRoutine = false }
+            )
+            .presentationBackground(Color.bg)
+        }
+    }
+
+    private var pickRoutineLink: some View {
+        Button { pickingRoutine = true } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "books.vertical")
+                    .font(.system(size: 11, weight: .medium))
+                Text("PICK A DIFFERENT ROUTINE")
+                    .styled(.micro)
+            }
+            .foregroundStyle(Color.ink2)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(Color.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.line, lineWidth: 0.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("today-pick-routine")
     }
 
     // MARK: - Top bar

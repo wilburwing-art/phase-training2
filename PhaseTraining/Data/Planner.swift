@@ -1,23 +1,21 @@
 // Planner.swift — pure rules-based week generator.
 //
-// Inputs: TrainingMemory + the routine catalog (passed in, not loaded here so
-// this stays unit-testable without coach.db). Outputs a WeekPlan whose
-// inputsHash matches `memory.planInputsHash` (set on WeekPlan struct so PlanStore
-// can detect drift).
+// Inputs: TrainingMemory (long-term truth) + WeekOverrides (per-week edits)
+// + the routine catalog. Output: a WeekPlan whose inputsHash is the memory
+// hash so PlanStore can detect drift.
 //
 // Algorithm (deterministic):
 //   1. Resolve a WeeklyShape from (primarySport, season, focus).
-//   2. Place fixed sport days (memory.fixedSportDays) — protected.
-//   3. Force rest on weekdays not in memory.availableDays.
+//   2. Place WeekOverrides.events (sport sessions + races) — protected.
+//   3. Force rest on weekdays in WeekOverrides.unavailableDays.
 //   4. Fill remaining empty slots from the shape queue (skipping shape sport
-//      slots already satisfied by fixed sports).
-//   5. For each .lift / .mobility slot, pick a coach.db routine whose goal
-//      matches the kind, difficulty ≤ user experience, duration ≈ target.
-//      Selection within the candidate set is deterministic via inputsHash +
-//      slot offset, so the same memory always produces the same plan.
-//
-// Phase 13 (LLM coach) will mutate plans via PlanEdit; this generator is
-// untouched by that — it only re-runs on weekly check-in or onboarding.
+//      slots already satisfied by event sport-sessions).
+//   5. Apply the user's lift-days target.
+//   6. For each .lift / .mobility slot, pick a coach.db routine matching
+//      goal + difficulty + duration. Selection is deterministic via
+//      inputsHash + slot offset.
+//   7. Taper: for each .race event marked .hard intensity, the immediately
+//      preceding lift slot is converted to .rest so the user isn't sore.
 
 import Foundation
 
@@ -25,6 +23,7 @@ enum Planner {
 
     static func generate(
         memory: TrainingMemory,
+        overrides: WeekOverrides? = nil,
         routines: [Routine],
         today: Date = Date(),
         calendar: Calendar = .current
@@ -39,43 +38,37 @@ enum Planner {
 
         var slots: [DayPlan?] = Array(repeating: nil, count: 7)
 
-        // Step 1 — fixed sport days (protected).
-        for (i, date) in dates.enumerated() {
-            let weekday = Weekday.from(date: date, calendar: calendar)
-            if let sport = memory.fixedSportDays[weekday] {
-                slots[i] = DayPlan(
-                    date: date,
-                    kind: .sport,
-                    title: "\(sport.name) session",
-                    sport: sport,
-                    protected: true,
-                    generatedReason: "Fixed: you said \(weekday.short) is for \(sport.name)"
-                )
+        // Step 1 — events from the per-week overrides (sport sessions + races).
+        if let overrides {
+            for (i, date) in dates.enumerated() {
+                guard let event = overrides.events(on: date, calendar: calendar).first else { continue }
+                slots[i] = makeEventSlot(date: date, event: event)
             }
         }
 
-        // Step 2 — force rest on unavailable weekdays. Skip if user picked no days
-        // (empty availableDays means "don't constrain"; otherwise we'd rest the
-        // entire week).
-        if !memory.availableDays.isEmpty {
+        // Step 2 — force rest on overridden unavailable weekdays.
+        if let overrides, !overrides.unavailableDays.isEmpty {
             for (i, date) in dates.enumerated() where slots[i] == nil {
                 let weekday = Weekday.from(date: date, calendar: calendar)
-                if !memory.availableDays.contains(weekday) {
+                if overrides.unavailableDays.contains(weekday) {
                     slots[i] = DayPlan(
                         date: date,
                         kind: .rest,
                         title: "Rest",
-                        generatedReason: "\(weekday.short) isn't in your training days"
+                        generatedReason: "You marked \(weekday.short) as off this week"
                     )
                 }
             }
         }
 
-        // Step 3 — build remaining shape queue, accounting for shape-allocated
-        // sport slots already satisfied by fixed sports.
-        let placedSportCount = slots.compactMap { $0 }.filter { $0.kind == .sport }.count
+        // Step 3 — build remaining shape queue, accounting for shape sport slots
+        // already satisfied by sport-session events (NOT race events; races
+        // express something different and shouldn't consume a sport quota).
+        let placedSportSessions = slots.compactMap { $0 }
+            .filter { $0.kind == .sport }
+            .count
         var queue: [DayKind] = []
-        var sportsToSkip = placedSportCount
+        var sportsToSkip = placedSportSessions
         for kind in shape.kinds {
             if kind == .sport && sportsToSkip > 0 {
                 sportsToSkip -= 1
@@ -86,7 +79,7 @@ enum Planner {
 
         // Step 4 — apply user's lift-days target. Shape's lift count is a default;
         // the user override wins. Demote excess lifts from the end (preserves the
-        // shape's early-week emphasis) and promote rest → lift → mobility from the
+        // shape's early-week emphasis) and promote rest → mobility from the
         // front when adding.
         let emptyCount = slots.filter { $0 == nil }.count
         let usedQueue = Array(queue.prefix(emptyCount))
@@ -113,12 +106,44 @@ enum Planner {
             )
         }
 
+        // Step 6 — taper before hard races.
+        if let overrides {
+            applyHardEventTaper(&slots, dates: dates, overrides: overrides, calendar: calendar)
+        }
+
         let days = slots.compactMap { $0 }
         return WeekPlan(
             days: days,
             generatedAt: Date(),
             inputsHash: memory.planInputsHash
         )
+    }
+
+    // MARK: - Event slot
+
+    private static func makeEventSlot(date: Date, event: WeekEvent) -> DayPlan {
+        switch event.kind {
+        case .sportSession:
+            return DayPlan(
+                date: date,
+                kind: .sport,
+                title: event.title.isEmpty
+                    ? (event.sport.map { "\($0.name) session" } ?? "Sport session")
+                    : event.title,
+                sport: event.sport,
+                protected: true,
+                generatedReason: "You scheduled this for \(weekdayShort(date))"
+            )
+        case .race:
+            return DayPlan(
+                date: date,
+                kind: .event,
+                title: event.title.isEmpty ? "Event" : event.title,
+                sport: event.sport,
+                protected: true,
+                generatedReason: "Event you scheduled (\(event.intensity.label.lowercased()) intensity)"
+            )
+        }
     }
 
     // MARK: - Slot construction
@@ -176,6 +201,39 @@ enum Planner {
         case .rest:     return "Rest"
         case .event:    return "Event"
         }
+    }
+
+    // MARK: - Hard-event taper
+
+    /// For each race event with .hard intensity, convert the slot immediately
+    /// preceding it from .lift → .rest. Sport sessions don't taper; only races.
+    /// Protected slots (sport sessions, other events) are never touched.
+    private static func applyHardEventTaper(
+        _ slots: inout [DayPlan?],
+        dates: [Date],
+        overrides: WeekOverrides,
+        calendar: Calendar
+    ) {
+        for event in overrides.events where event.kind == .race && event.intensity == .hard {
+            guard let eventIdx = dates.firstIndex(where: { calendar.isDate($0, inSameDayAs: event.date) }) else {
+                continue
+            }
+            let priorIdx = eventIdx - 1
+            guard priorIdx >= 0,
+                  let prior = slots[priorIdx],
+                  !prior.protected,
+                  prior.kind == .lift else { continue }
+            slots[priorIdx] = DayPlan(
+                date: prior.date,
+                kind: .rest,
+                title: "Rest (taper)",
+                generatedReason: "Tapering before \(event.title.isEmpty ? "your event" : event.title)"
+            )
+        }
+    }
+
+    private static func weekdayShort(_ date: Date, calendar: Calendar = .current) -> String {
+        Weekday.from(date: date, calendar: calendar).short
     }
 
     // MARK: - Lift budget adjustment

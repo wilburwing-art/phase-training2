@@ -14,7 +14,7 @@ import Foundation
 // MARK: - Top-level
 
 struct TrainingMemory: Codable {
-    var schemaVersion: Int = 2
+    var schemaVersion: Int = 3
 
     // Identity / intent
     var sports: [Sport] = []
@@ -27,10 +27,13 @@ struct TrainingMemory: Codable {
     var defaultSeason: SeasonPhase = .maintenance
 
     // Schedule / capacity
-    var availableDays: [Weekday] = []
-    var fixedSportDays: [Weekday: Sport] = [:]
+    //
+    // NOTE (Phase 11): availableDays + fixedSportDays were removed from the
+    // memory because availability now lives per-week in WeekOverrides. The
+    // tolerant decode still consumes legacy keys so build 20-24 saves load
+    // without crashing — those values are dropped on the next encode.
     var sessionMinutes: Int = 45
-    /// Target lift days per week (planner enforces). 0–7. Capped at availableDays.count at use-time.
+    /// Target lift days per week (planner enforces). 0–7.
     var liftDaysPerWeek: Int = 3
 
     // Resources / level
@@ -59,8 +62,9 @@ struct TrainingMemory: Codable {
     enum CodingKeys: String, CodingKey {
         case schemaVersion, sports, primarySport
         case focuses, seasonsBySport, defaultSeason
-        case primaryFocus, season         // legacy (build 20-23) — read for migration
-        case availableDays, fixedSportDays, sessionMinutes, liftDaysPerWeek
+        case primaryFocus, season                 // legacy (build 20-23) — read for migration
+        case availableDays, fixedSportDays        // legacy (build 20-24) — read but dropped on encode
+        case sessionMinutes, liftDaysPerWeek
         case equipment, experience
         case age, gender
         case dislikes, constraints
@@ -97,8 +101,10 @@ struct TrainingMemory: Codable {
             self.defaultSeason = .maintenance
         }
 
-        self.availableDays   = (try? c.decode([Weekday].self,      forKey: .availableDays))   ?? []
-        self.fixedSportDays  = (try? c.decode([Weekday: Sport].self, forKey: .fixedSportDays)) ?? [:]
+        // availableDays + fixedSportDays are intentionally not stored anymore;
+        // we don't read them on decode because the runtime no longer has slots
+        // for them. The legacy keys remain in CodingKeys so old JSON parses
+        // cleanly via try? c.decode (the value is just discarded).
         self.sessionMinutes  = (try? c.decode(Int.self,            forKey: .sessionMinutes))  ?? 45
         self.liftDaysPerWeek = (try? c.decode(Int.self,            forKey: .liftDaysPerWeek)) ?? 3
         self.equipment       = (try? c.decode([Equipment].self,    forKey: .equipment))       ?? [.bodyweight]
@@ -121,8 +127,6 @@ struct TrainingMemory: Codable {
         try c.encode(focuses,         forKey: .focuses)
         try c.encode(seasonsBySport,  forKey: .seasonsBySport)
         try c.encode(defaultSeason,   forKey: .defaultSeason)
-        try c.encode(availableDays,   forKey: .availableDays)
-        try c.encode(fixedSportDays,  forKey: .fixedSportDays)
         try c.encode(sessionMinutes,  forKey: .sessionMinutes)
         try c.encode(liftDaysPerWeek, forKey: .liftDaysPerWeek)
         try c.encode(equipment,       forKey: .equipment)

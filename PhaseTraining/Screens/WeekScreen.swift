@@ -1,14 +1,14 @@
-// WeekScreen.swift — Phase 10 Week tab.
+// WeekScreen.swift — Phase 11 Week tab. The planning surface.
 //
-// Read-only render of PlanStore.plan. 7 rows, each: day-of-week + date,
-// kind badge (color-coded), title, optional protected-day lock. Today gets
-// an accent left border + a 'TODAY' eyebrow. Empty state when plan is nil.
-// Phase 11 will add long-press → PlanEdit.
+// Renders PlanStore.plan + tap-to-edit on each day. Tapping a row presents
+// WeekDayEditSheet which mutates PlanStore.overrides + auto-regenerates.
+// "Customize this week" copy nudges users to actually use the edit affordance.
 
 import SwiftUI
 
 struct WeekScreen: View {
     @EnvironmentObject private var planStore: PlanStore
+    @State private var editingDate: Date? = nil
 
     var body: some View {
         ZStack {
@@ -19,6 +19,21 @@ struct WeekScreen: View {
                 emptyState
             }
         }
+        .sheet(item: editingDateBinding) { wrapped in
+            WeekDayEditSheet(date: wrapped.date, dayPlan: dayPlan(for: wrapped.date))
+        }
+    }
+
+    /// Bridge editingDate (Date?) → Identifiable wrapper for `.sheet(item:)`.
+    private var editingDateBinding: Binding<EditingDate?> {
+        Binding(
+            get: { editingDate.map(EditingDate.init) },
+            set: { editingDate = $0?.date }
+        )
+    }
+
+    private func dayPlan(for date: Date) -> DayPlan? {
+        planStore.plan?.days.first { Calendar.current.isDate($0.date, inSameDayAs: date) }
     }
 
     // MARK: - Empty state
@@ -54,7 +69,12 @@ struct WeekScreen: View {
 
                 VStack(spacing: 10) {
                     ForEach(plan.days) { day in
-                        DayRow(day: day, isToday: isToday(day.date))
+                        Button {
+                            editingDate = day.date
+                        } label: {
+                            DayRow(day: day, isToday: isToday(day.date))
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -76,6 +96,10 @@ struct WeekScreen: View {
             Text(planSummary(plan))
                 .font(.monoXS)
                 .foregroundStyle(Color.ink3)
+            Text("Tap any day to customize.")
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+                .padding(.top, 2)
         }
     }
 
@@ -92,6 +116,17 @@ struct WeekScreen: View {
 
     private func isToday(_ date: Date) -> Bool {
         Calendar.current.isDateInToday(date)
+    }
+}
+
+// MARK: - Identifiable wrapper for `.sheet(item:)`
+
+private struct EditingDate: Identifiable {
+    let date: Date
+    var id: String {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        return f.string(from: date)
     }
 }
 
@@ -214,9 +249,14 @@ private struct KindBadge: View {
     store.setPlan(.sample())
     return WeekScreen()
         .environmentObject(store)
+        .environmentObject(MemoryStore(defaults: defaults))
+        .environmentObject(SessionStore(defaults: defaults))
 }
 
 #Preview("Empty") {
-    WeekScreen()
-        .environmentObject(PlanStore(defaults: UserDefaults(suiteName: "WeekScreen.preview.empty")!))
+    let defaults = UserDefaults(suiteName: "WeekScreen.preview.empty")!
+    return WeekScreen()
+        .environmentObject(PlanStore(defaults: defaults))
+        .environmentObject(MemoryStore(defaults: defaults))
+        .environmentObject(SessionStore(defaults: defaults))
 }

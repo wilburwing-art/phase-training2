@@ -8,13 +8,19 @@ final class RoutineDetailSwipeTests: XCTestCase {
 
     func testSwipeRevealsActionsAndDeleteRemovesRow() throws {
         let app = XCUIApplication()
-        app.launchArguments += ["--ui-test-onboarded"]
+        app.launchArguments += ["--ui-test-onboarded", "--ui-test-reset"]
         app.launch()
 
-        // Switch to the Train tab (replaces the old Browse-routines entry on Start).
-        let trainTab = app.tabBars.buttons["Train"]
-        XCTAssertTrue(trainTab.waitForExistence(timeout: 4), "Train tab should be present")
-        trainTab.tap()
+        // Phase 11 dropped the Train tab. Library is reachable from Today's
+        // "Pick a different routine" link instead — it's below the exercise list
+        // so we may need to scroll the ScrollView.
+        let pickLink = app.buttons["today-pick-routine"]
+        XCTAssertTrue(pickLink.waitForExistence(timeout: 4), "Today's pick-routine link should exist")
+        if !pickLink.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(pickLink.isHittable, "pick-routine link should be tappable after scroll")
+        pickLink.tap()
 
         // First routine card (coach.db id=1 → Climber Antagonist & Push).
         let firstCard = app.buttons["routine-card-1"]

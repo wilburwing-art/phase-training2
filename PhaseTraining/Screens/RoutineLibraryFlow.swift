@@ -1,18 +1,25 @@
-// TrainTab.swift — Phase 8 split: owns the routine library + exercise picker/detail flow.
-// On "Start workout" we save the ActiveSession and ask RootTabView to switch to Today;
-// TodayTab's bootstrap+route logic surfaces the Log screen automatically.
+// RoutineLibraryFlow.swift — coach.db routine library, presented modally.
+//
+// Was the Train tab in builds 19-24. Phase 11 dropped Train from the tab
+// bar; the library is now a sheet you reach from Today ("Pick a different
+// routine") or from a Week-day edit ("Change routine"). The flow itself —
+// Routines → RoutineDetail → ExercisePicker → ExerciseDetail — is unchanged.
+//
+// `onWorkoutStarted` fires after a session is created from a routine; the
+// presenter (Today or Week) dismisses the sheet in response.
 
 import SwiftUI
 
-struct TrainTab: View {
+struct RoutineLibraryFlow: View {
     @EnvironmentObject private var store: SessionStore
-    let switchToToday: () -> Void
+    let onWorkoutStarted: () -> Void
+    let onDismiss: () -> Void
 
-    @State private var route: TrainRoute = .routines
+    @State private var route: Route = .routines
     @State private var editingRoutine: Routine? = nil
     @State private var editingExercises: [RoutineExercise] = []
 
-    enum TrainRoute: Equatable {
+    enum Route: Equatable {
         case routines
         case routineDetail
         case exercisePicker(ExercisePickerMode)
@@ -31,7 +38,7 @@ struct TrainTab: View {
         switch route {
         case .routines:
             RoutinePickerScreen(
-                onBack: {}, // Train is a root tab — Back is a no-op.
+                onBack: onDismiss,
                 onPick: { routine in
                     editingRoutine = routine
                     editingExercises = CoachDatabase.shared.exercises(forRoutineId: routine.id)
@@ -90,7 +97,7 @@ struct TrainTab: View {
         }
     }
 
-    private func transition(_ next: TrainRoute) {
+    private func transition(_ next: Route) {
         withAnimation(.easeInOut(duration: 0.18)) { route = next }
     }
 
@@ -98,9 +105,7 @@ struct TrainTab: View {
         guard let routine = editingRoutine else { return }
         let template = routine.toWorkoutTemplate(with: editingExercises)
         store.saveActive(store.createSession(from: template))
-        // Reset Train back to its library entry so reopening the tab is fresh.
-        transition(.routines)
-        switchToToday()
+        onWorkoutStarted()
     }
 
     private func applyPicks(_ picks: [Exercise], mode: ExercisePickerMode) {

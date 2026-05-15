@@ -62,7 +62,6 @@ final class PlannerTests: XCTestCase {
     func testProducesExactlySevenContiguousDays() {
         var memory = TrainingMemory()
         memory.focuses = [.generalStrength]
-        memory.availableDays = Weekday.allCases
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
         XCTAssertEqual(plan.days.count, 7)
@@ -79,67 +78,126 @@ final class PlannerTests: XCTestCase {
     func testInputsHashMatchesMemory() {
         var memory = TrainingMemory()
         memory.focuses = [.hypertrophy]
-        memory.availableDays = [.monday, .wednesday, .friday]
         memory.liftDaysPerWeek = 3
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
         XCTAssertEqual(plan.inputsHash, memory.planInputsHash)
     }
 
-    // MARK: - Availability gating
+    // MARK: - Per-week overrides
 
-    func testUnavailableDaysAreForcedRest() {
+    func testUnavailableDaysFromOverridesForceRest() {
         var memory = TrainingMemory()
         memory.focuses = [.generalStrength]
-        memory.availableDays = [.monday, .wednesday, .friday]   // 3 days only
 
-        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.unavailableDays = [.tuesday, .thursday, .saturday, .sunday]
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
         let cal = Calendar.current
 
         for day in plan.days {
             let weekday = Weekday.from(date: day.date, calendar: cal)
-            if !memory.availableDays.contains(weekday) {
+            if overrides.unavailableDays.contains(weekday) {
                 XCTAssertEqual(day.kind, .rest,
-                               "\(weekday.short) should be rest (not in availableDays)")
+                               "\(weekday.short) should be rest (marked unavailable)")
             }
         }
     }
 
-    func testEmptyAvailableDaysDoesNotForceAllRest() {
-        // If user picked zero days (degenerate), the planner shouldn't blanket-rest;
-        // it should treat the schedule as unconstrained.
+    func testNoOverridesAllowsAllSevenDays() {
         var memory = TrainingMemory()
         memory.focuses = [.generalStrength]
-        memory.availableDays = []
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
         let restCount = plan.days.filter { $0.kind == .rest }.count
         XCTAssertLessThan(restCount, 7, "All-rest week is the failure mode we're guarding against")
     }
 
-    // MARK: - Fixed sport days
-
-    func testFixedSportDaysStickAndAreProtected() {
+    func testSportSessionEventLandsAsProtectedSportDay() {
         let climbing = Sport.catalog.first { $0.slug == "climbing" }!
         var memory = TrainingMemory()
         memory.primarySport = climbing
         memory.seasonsBySport = [climbing: .maintenance]
-        memory.availableDays = Weekday.allCases
-        memory.fixedSportDays = [.tuesday: climbing, .friday: climbing]
 
-        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
         let cal = Calendar.current
+        let tuesday = cal.date(byAdding: .day, value: 1, to: mondayAnchor())!
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.events = [
+            WeekEvent(date: tuesday, title: "Climb gym", kind: .sportSession, sport: climbing)
+        ]
 
-        for day in plan.days {
-            let weekday = Weekday.from(date: day.date, calendar: cal)
-            if memory.fixedSportDays.keys.contains(weekday) {
-                XCTAssertEqual(day.kind, .sport,
-                               "\(weekday.short) should be sport (fixed)")
-                XCTAssertTrue(day.protected,
-                              "\(weekday.short) sport should be protected")
-                XCTAssertEqual(day.sport?.slug, "climbing")
-            }
-        }
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        let tuesPlan = plan.days.first { cal.isDate($0.date, inSameDayAs: tuesday) }
+        XCTAssertEqual(tuesPlan?.kind, .sport)
+        XCTAssertTrue(tuesPlan?.protected ?? false)
+        XCTAssertEqual(tuesPlan?.sport?.slug, "climbing")
+    }
+
+    func testRaceEventWithHardIntensityTapersPreviousLift() {
+        var memory = TrainingMemory()
+        memory.focuses = [.generalStrength]   // shape gives lifts on Mon, Wed, Fri
+        memory.liftDaysPerWeek = 3
+
+        let cal = Calendar.current
+        // Race on Saturday — taper Friday.
+        let saturday = cal.date(byAdding: .day, value: 5, to: mondayAnchor())!
+        let friday   = cal.date(byAdding: .day, value: 4, to: mondayAnchor())!
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.events = [
+            WeekEvent(date: saturday, title: "10K Race", kind: .race, intensity: .hard)
+        ]
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        let fridayPlan = plan.days.first { cal.isDate($0.date, inSameDayAs: friday) }
+        XCTAssertEqual(fridayPlan?.kind, .rest, "Friday should be tapered to rest before a hard race")
+    }
+
+    func testRaceEventWithLightIntensityDoesNotTaper() {
+        var memory = TrainingMemory()
+        memory.focuses = [.generalStrength]
+        memory.liftDaysPerWeek = 3
+
+        let cal = Calendar.current
+        let saturday = cal.date(byAdding: .day, value: 5, to: mondayAnchor())!
+        let friday   = cal.date(byAdding: .day, value: 4, to: mondayAnchor())!
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.events = [
+            WeekEvent(date: saturday, title: "Casual jog", kind: .race, intensity: .light)
+        ]
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        let fridayPlan = plan.days.first { cal.isDate($0.date, inSameDayAs: friday) }
+        // Friday should remain whatever the shape said (lift in this shape).
+        XCTAssertNotEqual(fridayPlan?.kind, .event, "Friday shouldn't have an event slot itself")
+    }
+
+    func testMultipleEventsAcrossWeekAllStick() {
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        var memory = TrainingMemory()
+        memory.primarySport = climbing
+
+        let cal = Calendar.current
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.events = [
+            WeekEvent(date: cal.date(byAdding: .day, value: 0, to: mondayAnchor())!,
+                      title: "Climb", kind: .sportSession, sport: climbing),
+            WeekEvent(date: cal.date(byAdding: .day, value: 2, to: mondayAnchor())!,
+                      title: "Climb", kind: .sportSession, sport: climbing),
+            WeekEvent(date: cal.date(byAdding: .day, value: 5, to: mondayAnchor())!,
+                      title: "10K", kind: .race, intensity: .moderate)
+        ]
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        let sportCount = plan.days.filter { $0.kind == .sport && $0.protected }.count
+        let eventCount = plan.days.filter { $0.kind == .event }.count
+        XCTAssertEqual(sportCount, 2)
+        XCTAssertEqual(eventCount, 1)
     }
 
     // MARK: - Shape distribution
@@ -149,7 +207,6 @@ final class PlannerTests: XCTestCase {
         var memory = TrainingMemory()
         memory.primarySport = climbing
         memory.seasonsBySport = [climbing: .inSeason]
-        memory.availableDays = Weekday.allCases
         memory.liftDaysPerWeek = 1   // shape says 1, user agrees
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -166,7 +223,6 @@ final class PlannerTests: XCTestCase {
         var memory = TrainingMemory()
         memory.primarySport = running
         memory.seasonsBySport = [running: .offSeason]
-        memory.availableDays = Weekday.allCases
         memory.liftDaysPerWeek = 3   // shape default = 3 lifts
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -180,7 +236,6 @@ final class PlannerTests: XCTestCase {
         var memory = TrainingMemory()
         memory.primarySport = nil          // no sport
         memory.focuses = [.generalStrength]
-        memory.availableDays = Weekday.allCases
         memory.liftDaysPerWeek = 3
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -195,7 +250,6 @@ final class PlannerTests: XCTestCase {
         memory.focuses = [.generalStrength]
         memory.experience = .intermediate
         memory.sessionMinutes = 45
-        memory.availableDays = Weekday.allCases
         memory.liftDaysPerWeek = 3
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -210,7 +264,6 @@ final class PlannerTests: XCTestCase {
         memory.focuses = [.generalStrength]
         memory.experience = .beginner
         memory.sessionMinutes = 45
-        memory.availableDays = Weekday.allCases
         memory.liftDaysPerWeek = 3
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -224,7 +277,6 @@ final class PlannerTests: XCTestCase {
         memory.focuses = [.generalStrength]
         memory.experience = .intermediate
         memory.sessionMinutes = 45
-        memory.availableDays = Weekday.allCases
         memory.liftDaysPerWeek = 3
 
         let a = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -240,12 +292,10 @@ final class PlannerTests: XCTestCase {
         var climberInSeason = TrainingMemory()
         climberInSeason.primarySport = climbing
         climberInSeason.seasonsBySport = [climbing: .inSeason]
-        climberInSeason.availableDays = Weekday.allCases
         climberInSeason.liftDaysPerWeek = 1
 
         var liftHeavy = TrainingMemory()
         liftHeavy.focuses = [.hypertrophy]
-        liftHeavy.availableDays = Weekday.allCases
         liftHeavy.liftDaysPerWeek = 5
 
         let a = Planner.generate(memory: climberInSeason, routines: catalog(), today: mondayAnchor())
@@ -261,7 +311,6 @@ final class PlannerTests: XCTestCase {
         // General-strength shape gives 3 lifts; user wants 5.
         var memory = TrainingMemory()
         memory.focuses = [.generalStrength]
-        memory.availableDays = Weekday.allCases
         memory.liftDaysPerWeek = 5
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -273,7 +322,6 @@ final class PlannerTests: XCTestCase {
         // Hypertrophy shape gives 5 lifts; user wants 2.
         var memory = TrainingMemory()
         memory.focuses = [.hypertrophy]
-        memory.availableDays = Weekday.allCases
         memory.liftDaysPerWeek = 2
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -281,23 +329,26 @@ final class PlannerTests: XCTestCase {
         XCTAssertEqual(lifts, 2)
     }
 
-    func testLiftDaysCappedByAvailableDayCount() {
-        // 3 available days, user asks for 5 lifts → planner caps at 3.
+    func testLiftDaysCappedByAvailableSlotsAfterUnavailable() {
+        // User asks for 5 lifts but marks 4 days unavailable → only 3 slots
+        // remain. Planner should cap the lift count at the empty slot count.
         var memory = TrainingMemory()
         memory.focuses = [.hypertrophy]
-        memory.availableDays = [.monday, .wednesday, .friday]
         memory.liftDaysPerWeek = 5
 
-        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.unavailableDays = [.tuesday, .thursday, .saturday, .sunday]
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
         let lifts = plan.days.filter { $0.kind == .lift }.count
         XCTAssertLessThanOrEqual(lifts, 3,
-                                 "Lift count must not exceed available day count")
+                                 "Lift count must not exceed empty slot count")
     }
 
     func testZeroLiftDaysProducesNoLifts() {
         var memory = TrainingMemory()
         memory.focuses = [.generalStrength]
-        memory.availableDays = Weekday.allCases
         memory.liftDaysPerWeek = 0
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -315,7 +366,6 @@ final class PlannerTests: XCTestCase {
         memory.sports = [climbing, skiing]
         memory.primarySport = climbing
         memory.seasonsBySport = [climbing: .inSeason, skiing: .preSeason]
-        memory.availableDays = Weekday.allCases
         memory.liftDaysPerWeek = 1
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -333,7 +383,6 @@ final class PlannerTests: XCTestCase {
         memory.primarySport = cycling
         memory.seasonsBySport = [:]                  // empty
         memory.defaultSeason = .inSeason
-        memory.availableDays = Weekday.allCases
         memory.liftDaysPerWeek = 1
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -347,7 +396,6 @@ final class PlannerTests: XCTestCase {
     func testMultiFocusUsesFirstAsPrimary() {
         var memory = TrainingMemory()
         memory.focuses = [.mobility, .hypertrophy]    // primary = mobility
-        memory.availableDays = Weekday.allCases
         memory.liftDaysPerWeek = 1
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())

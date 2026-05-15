@@ -148,7 +148,6 @@ private struct DayPreviewRow: View {
         m.sports = [climbing]
         m.primarySport = climbing
         m.seasonsBySport = [climbing: .inSeason]
-        m.availableDays = Weekday.allCases
         m.experience = .intermediate
         m.liftDaysPerWeek = 1
         return m

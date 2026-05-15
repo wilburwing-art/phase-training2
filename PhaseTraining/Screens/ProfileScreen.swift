@@ -25,8 +25,6 @@ struct ProfileScreen: View {
                     Divider().background(Color.lineSoft)
                     focusSection
                     Divider().background(Color.lineSoft)
-                    daysSection
-                    Divider().background(Color.lineSoft)
                     sessionLengthSection
                     Divider().background(Color.lineSoft)
                     liftDaysSection
@@ -177,29 +175,6 @@ struct ProfileScreen: View {
                             action: { setPrimaryFocus(focus) }
                         )
                     }
-                }
-            }
-        }
-    }
-
-    private var daysSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            section("DAYS PER WEEK")
-            HStack(spacing: 8) {
-                ForEach(Weekday.allCases) { day in
-                    Button {
-                        toggleDay(day)
-                    } label: {
-                        Text(day.letter)
-                            .font(.custom("SpaceGrotesk-SemiBold", size: 14))
-                            .foregroundStyle(store.memory.availableDays.contains(day) ? Color.accentInk : Color.ink)
-                            .frame(maxWidth: .infinity).frame(height: 44)
-                            .background(store.memory.availableDays.contains(day) ? Color.accent : Color.surface)
-                            .overlay(RoundedRectangle(cornerRadius: 10)
-                                .stroke(store.memory.availableDays.contains(day) ? Color.clear : Color.line, lineWidth: 0.5))
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                    }
-                    .buttonStyle(.plain)
                 }
             }
         }
@@ -514,20 +489,6 @@ struct ProfileScreen: View {
         }
     }
 
-    private func toggleDay(_ day: Weekday) {
-        store.update { mem in
-            if let idx = mem.availableDays.firstIndex(of: day) {
-                mem.availableDays.remove(at: idx)
-            } else {
-                mem.availableDays.append(day)
-                mem.availableDays.sort { $0.rawValue < $1.rawValue }
-            }
-            if !mem.availableDays.isEmpty {
-                mem.liftDaysPerWeek = min(mem.liftDaysPerWeek, mem.availableDays.count)
-            }
-        }
-    }
-
     private func selectTier(_ tier: EquipmentTier) {
         store.update { mem in
             switch tier {
@@ -561,8 +522,7 @@ struct ProfileScreen: View {
 
     private func adjustLifts(_ delta: Int) {
         store.update { mem in
-            let cap = mem.availableDays.isEmpty ? 7 : mem.availableDays.count
-            mem.liftDaysPerWeek = min(max(mem.liftDaysPerWeek + delta, 0), cap)
+            mem.liftDaysPerWeek = min(max(mem.liftDaysPerWeek + delta, 0), 7)
         }
     }
 
@@ -596,7 +556,6 @@ struct ProfileScreen: View {
         mem.focuses = [.sportPerformance, .mobility]
         mem.defaultSeason = .preSeason
         mem.seasonsBySport = [Sport.catalog[1]: .inSeason]
-        mem.availableDays = [.monday, .wednesday, .friday]
         mem.liftDaysPerWeek = 2
         mem.equipment = [.dumbbells]
         mem.experience = .intermediate

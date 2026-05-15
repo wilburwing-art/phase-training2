@@ -1,0 +1,448 @@
+// WeekDayEditSheet.swift — bottom sheet that edits a single day's overrides.
+//
+// Presented from WeekScreen when the user taps a day row. All mutations go
+// through PlanStore.updateOverrides (regenerates the plan) so the user sees
+// the day re-render the moment they apply a change.
+//
+// Action set:
+//   - Mark off this week     (toggles WeekOverrides.unavailableDays)
+//   - Add sport session      (WeekEvent kind=.sportSession)
+//   - Add event              (WeekEvent kind=.race, intensity .light/.moderate/.hard)
+//   - Pick a different routine (for lift/mobility days — opens RoutineLibraryFlow)
+//   - Clear overrides for this day
+
+import SwiftUI
+
+struct WeekDayEditSheet: View {
+    let date: Date
+    let dayPlan: DayPlan?
+    @EnvironmentObject private var memory: MemoryStore
+    @EnvironmentObject private var planStore: PlanStore
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var pickingSport = false
+    @State private var addingEvent = false
+    @State private var pickingRoutine = false
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.bg.ignoresSafeArea()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        header
+                        actionList
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 18)
+                    .padding(.bottom, 32)
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .foregroundStyle(Color.accent)
+                }
+            }
+            .toolbarBackground(.hidden, for: .navigationBar)
+        }
+        .presentationDetents([.medium, .large])
+        .presentationBackground(Color.bg)
+        .sheet(isPresented: $pickingSport) {
+            SportPickerSheet { sport in
+                addSportSession(sport: sport)
+                pickingSport = false
+            }
+        }
+        .sheet(isPresented: $addingEvent) {
+            EventEditorSheet(date: date) { event in
+                addEvent(event)
+                addingEvent = false
+            }
+        }
+        .sheet(isPresented: $pickingRoutine) {
+            RoutineLibraryFlow(
+                onWorkoutStarted: {
+                    pickingRoutine = false
+                    dismiss()
+                },
+                onDismiss: { pickingRoutine = false }
+            )
+            .presentationBackground(Color.bg)
+        }
+    }
+
+    // MARK: - Header
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(weekdayLabel)
+                .styled(.micro)
+                .foregroundStyle(Color.accent)
+            Text(dateLabel)
+                .font(.custom("SpaceGrotesk-SemiBold", size: 26))
+                .tracking(-0.025 * 26)
+                .foregroundStyle(Color.ink)
+            if let dayPlan {
+                Text("Currently: \(dayPlan.kind.label.lowercased()) — \(dayPlan.title)")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+            }
+        }
+    }
+
+    private var weekdayLabel: String {
+        let f = DateFormatter()
+        f.dateFormat = "EEEE"
+        return f.string(from: date).uppercased()
+    }
+
+    private var dateLabel: String {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        return f.string(from: date)
+    }
+
+    // MARK: - Action list
+
+    private var actionList: some View {
+        VStack(spacing: 8) {
+            ActionRow(
+                title: isMarkedUnavailable ? "Re-enable this day" : "Mark off this week",
+                subtitle: isMarkedUnavailable
+                    ? "Will use your normal plan again"
+                    : "Forces rest for today only",
+                icon: isMarkedUnavailable ? "checkmark.circle" : "moon.zzz.fill",
+                action: toggleUnavailable
+            )
+
+            ActionRow(
+                title: "Add sport session",
+                subtitle: "Climb, ski, run — slot a sport on this day",
+                icon: "figure.outdoor.cycle",
+                action: { pickingSport = true }
+            )
+
+            ActionRow(
+                title: "Add event or race",
+                subtitle: "Hard events trigger a taper the day before",
+                icon: "flag.checkered",
+                action: { addingEvent = true }
+            )
+
+            if dayPlan?.kind == .lift || dayPlan?.kind == .mobility {
+                ActionRow(
+                    title: "Pick a different routine",
+                    subtitle: "Browse the library — replaces the plan's pick",
+                    icon: "books.vertical",
+                    action: { pickingRoutine = true }
+                )
+            }
+
+            if hasAnyOverride {
+                ActionRow(
+                    title: "Clear overrides for this day",
+                    subtitle: "Remove sport sessions, events, and unavailable mark",
+                    icon: "arrow.counterclockwise",
+                    destructive: true,
+                    action: clearOverrides
+                )
+            }
+        }
+    }
+
+    // MARK: - Mutations
+
+    private var weekday: Weekday {
+        Weekday.from(date: date)
+    }
+
+    private var isMarkedUnavailable: Bool {
+        planStore.overrides.unavailableDays.contains(weekday)
+    }
+
+    private var hasAnyOverride: Bool {
+        planStore.overrides.hasAnythingFor(date: date)
+    }
+
+    private func toggleUnavailable() {
+        planStore.updateOverrides(memory: memory.memory) { o in
+            if o.unavailableDays.contains(weekday) {
+                o.unavailableDays.remove(weekday)
+            } else {
+                o.unavailableDays.insert(weekday)
+            }
+        }
+    }
+
+    private func addSportSession(sport: Sport) {
+        planStore.updateOverrides(memory: memory.memory) { o in
+            // Replace any existing event on this date so we don't pile up.
+            o.events.removeAll { Calendar.current.isDate($0.date, inSameDayAs: date) }
+            o.events.append(WeekEvent(
+                date: date,
+                title: "\(sport.name) session",
+                kind: .sportSession,
+                sport: sport
+            ))
+        }
+    }
+
+    private func addEvent(_ event: WeekEvent) {
+        planStore.updateOverrides(memory: memory.memory) { o in
+            o.events.removeAll { Calendar.current.isDate($0.date, inSameDayAs: date) }
+            o.events.append(event)
+        }
+    }
+
+    private func clearOverrides() {
+        planStore.updateOverrides(memory: memory.memory) { o in
+            o.unavailableDays.remove(weekday)
+            o.events.removeAll { Calendar.current.isDate($0.date, inSameDayAs: date) }
+        }
+    }
+}
+
+// MARK: - ActionRow
+
+private struct ActionRow: View {
+    let title: String
+    let subtitle: String
+    let icon: String
+    var destructive: Bool = false
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(destructive ? Color.danger : Color.accent)
+                    .frame(width: 24, alignment: .center)
+                    .padding(.top, 2)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .styled(.displayS)
+                        .foregroundStyle(destructive ? Color.danger : Color.ink)
+                    Text(subtitle)
+                        .styled(.body)
+                        .foregroundStyle(Color.ink3)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.ink3)
+            }
+            .padding(14)
+            .background(Color.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.line, lineWidth: 0.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Sport picker (uses memory.sports if any, else full catalog)
+
+struct SportPickerSheet: View {
+    @EnvironmentObject private var memory: MemoryStore
+    @Environment(\.dismiss) private var dismiss
+    let onPick: (Sport) -> Void
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.bg.ignoresSafeArea()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        if !memory.memory.sports.isEmpty {
+                            section("YOUR SPORTS")
+                            VStack(spacing: 8) {
+                                ForEach(memory.memory.sports) { sport in
+                                    sportRow(sport)
+                                }
+                            }
+                            section("ALL SPORTS")
+                                .padding(.top, 14)
+                        }
+                        VStack(spacing: 8) {
+                            ForEach(Sport.catalog) { sport in
+                                sportRow(sport)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 18)
+                    .padding(.bottom, 32)
+                }
+            }
+            .navigationTitle("Pick a sport")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundStyle(Color.accent)
+                }
+            }
+        }
+        .presentationBackground(Color.bg)
+    }
+
+    private func sportRow(_ sport: Sport) -> some View {
+        Button {
+            onPick(sport)
+        } label: {
+            HStack {
+                Text(sport.name)
+                    .styled(.displayS)
+                    .foregroundStyle(Color.ink)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.ink3)
+            }
+            .padding(14)
+            .background(Color.surface)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func section(_ s: String) -> some View {
+        Text(s)
+            .styled(.micro)
+            .foregroundStyle(Color.ink3)
+    }
+}
+
+// MARK: - Event editor
+
+struct EventEditorSheet: View {
+    let date: Date
+    let onSave: (WeekEvent) -> Void
+    @EnvironmentObject private var memory: MemoryStore
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var title = ""
+    @State private var sport: Sport? = nil
+    @State private var intensity: EventIntensity = .moderate
+    @State private var pickingSport = false
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.bg.ignoresSafeArea()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 18) {
+                        section("EVENT")
+                        TextField("", text: $title,
+                                  prompt: Text("e.g. 10K Race").foregroundColor(Color.ink3))
+                            .styled(.body)
+                            .foregroundStyle(Color.ink)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 12)
+                            .background(Color.surface)
+                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                        section("SPORT (OPTIONAL)")
+                        Button { pickingSport = true } label: {
+                            HStack {
+                                Text(sport?.name ?? "None")
+                                    .styled(.body)
+                                    .foregroundStyle(sport == nil ? Color.ink3 : Color.ink)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundStyle(Color.ink3)
+                            }
+                            .padding(14)
+                            .background(Color.surface)
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                        .buttonStyle(.plain)
+
+                        section("INTENSITY")
+                        WrappingFlow(spacing: 8) {
+                            ForEach(EventIntensity.allCases, id: \.self) { i in
+                                OnboardingChip(
+                                    label: i.label,
+                                    selected: intensity == i,
+                                    action: { intensity = i }
+                                )
+                            }
+                        }
+                        if intensity == .hard {
+                            Text("Hard events: the day before will be reset to recover.")
+                                .font(.monoXS)
+                                .foregroundStyle(Color.ink3)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 18)
+                    .padding(.bottom, 100)
+                }
+
+                VStack {
+                    Spacer()
+                    Button(action: save) {
+                        Text("Save event")
+                            .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+                            .foregroundStyle(canSave ? Color.accentInk : Color.ink3)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(canSave ? Color.accent : Color.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canSave)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 24)
+                }
+            }
+            .navigationTitle("New event")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundStyle(Color.accent)
+                }
+            }
+        }
+        .presentationBackground(Color.bg)
+        .sheet(isPresented: $pickingSport) {
+            SportPickerSheet { picked in
+                sport = picked
+                pickingSport = false
+            }
+        }
+    }
+
+    private var canSave: Bool {
+        !title.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    private func save() {
+        onSave(WeekEvent(
+            date: date,
+            title: title.trimmingCharacters(in: .whitespaces),
+            kind: .race,
+            sport: sport,
+            intensity: intensity
+        ))
+        dismiss()
+    }
+
+    private func section(_ s: String) -> some View {
+        Text(s)
+            .styled(.micro)
+            .foregroundStyle(Color.ink3)
+    }
+}
