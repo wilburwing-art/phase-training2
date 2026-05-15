@@ -8,6 +8,7 @@ final class RoutineDetailSwipeTests: XCTestCase {
 
     func testSwipeRevealsActionsAndDeleteRemovesRow() throws {
         let app = XCUIApplication()
+        app.launchArguments += ["--ui-test-onboarded"]
         app.launch()
 
         // Switch to the Train tab (replaces the old Browse-routines entry on Start).

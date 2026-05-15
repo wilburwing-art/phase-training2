@@ -86,7 +86,7 @@ private struct EntryList: View {
             }
 
             if !items.isEmpty {
-                FlowLayout(spacing: 8) {
+                WrappingFlow(spacing: 8) {
                     ForEach(items, id: \.self) { item in
                         RemovableTag(label: item) { remove(item) }
                     }

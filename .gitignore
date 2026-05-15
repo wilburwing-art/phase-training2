@@ -39,3 +39,6 @@ fastlane/test_output
 
 # macOS
 .DS_Store
+
+# Claude Code local settings (per-machine permission overrides)
+.claude/settings.local.json

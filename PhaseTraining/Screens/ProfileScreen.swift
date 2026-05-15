@@ -69,7 +69,7 @@ struct ProfileScreen: View {
     private var sportsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             section("SPORTS")
-            FlowLayout(spacing: 8) {
+            WrappingFlow(spacing: 8) {
                 ForEach(Sport.catalog) { sport in
                     OnboardingChip(
                         label: sport.name,
@@ -181,7 +181,7 @@ struct ProfileScreen: View {
     private var equipmentSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             section("EQUIPMENT")
-            FlowLayout(spacing: 8) {
+            WrappingFlow(spacing: 8) {
                 ForEach(Equipment.allCases) { eq in
                     OnboardingChip(
                         label: eq.label,
@@ -287,7 +287,7 @@ struct ProfileScreen: View {
                 .disabled(!canCommit(input.wrappedValue))
             }
             if !items.isEmpty {
-                FlowLayout(spacing: 8) {
+                WrappingFlow(spacing: 8) {
                     ForEach(items, id: \.self) { item in
                         HStack(spacing: 6) {
                             Text(item)

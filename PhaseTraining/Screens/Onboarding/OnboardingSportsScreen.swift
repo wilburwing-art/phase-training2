@@ -29,7 +29,7 @@ struct OnboardingSportsScreen: View {
         ) {
             VStack(alignment: .leading, spacing: 16) {
                 OnboardingSectionLabel(text: "Sports")
-                FlowLayout(spacing: 8) {
+                WrappingFlow(spacing: 8) {
                     ForEach(Sport.catalog) { sport in
                         OnboardingChip(
                             label: sport.name,
@@ -77,7 +77,7 @@ struct OnboardingSportsScreen: View {
 
 /// Minimal flow layout: lays children left-to-right, wraps to next row on overflow.
 /// SwiftUI ships `Layout` in iOS 16+; we're on 17 so this is safe.
-struct FlowLayout: Layout {
+struct WrappingFlow: Layout {
     var spacing: CGFloat = 8
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
