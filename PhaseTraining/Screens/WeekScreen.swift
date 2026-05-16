@@ -8,7 +8,10 @@ import SwiftUI
 
 struct WeekScreen: View {
     @EnvironmentObject private var planStore: PlanStore
+    /// Tap-to-edit (overrides path; cofounder's phase 11).
     @State private var editingDate: Date? = nil
+    /// Long-press menu → PlanDiff preview (PLAN spec path; for the Phase 13 coach).
+    @State private var pendingDiff: PlanDiff?
 
     var body: some View {
         ZStack {
@@ -22,6 +25,19 @@ struct WeekScreen: View {
         .sheet(item: editingDateBinding) { wrapped in
             WeekDayEditSheet(date: wrapped.date, dayPlan: dayPlan(for: wrapped.date))
         }
+        .sheet(item: Binding(
+            get: { pendingDiff.map(IdentifiedDiff.init) },
+            set: { pendingDiff = $0?.diff }
+        )) { wrapper in
+            PlanDiffSheet(
+                diff: wrapper.diff,
+                onApply: {
+                    planStore.apply(wrapper.diff)
+                    pendingDiff = nil
+                },
+                onCancel: { pendingDiff = nil }
+            )
+        }
     }
 
     /// Bridge editingDate (Date?) → Identifiable wrapper for `.sheet(item:)`.
@@ -34,6 +50,12 @@ struct WeekScreen: View {
 
     private func dayPlan(for date: Date) -> DayPlan? {
         planStore.plan?.days.first { Calendar.current.isDate($0.date, inSameDayAs: date) }
+    }
+
+    private func propose(_ edits: [PlanEdit]) {
+        if let diff = planStore.propose(edits), !diff.isNoop {
+            pendingDiff = diff
+        }
     }
 
     // MARK: - Empty state
@@ -75,6 +97,7 @@ struct WeekScreen: View {
                             DayRow(day: day, isToday: isToday(day.date))
                         }
                         .buttonStyle(.plain)
+                        .contextMenu { menuItems(for: day, plan: plan) }
                     }
                 }
                 .padding(.horizontal, 20)
@@ -117,6 +140,73 @@ struct WeekScreen: View {
     private func isToday(_ date: Date) -> Bool {
         Calendar.current.isDateInToday(date)
     }
+
+    // MARK: - Context menu (Phase 11)
+
+    @ViewBuilder
+    private func menuItems(for day: DayPlan, plan: WeekPlan) -> some View {
+        Menu("Move to…") {
+            ForEach(plan.days.filter { $0.id != day.id }) { target in
+                Button(weekdayLabel(target.date)) {
+                    propose([.move(dayId: day.id, toDate: target.date)])
+                }
+            }
+        }
+        Menu("Change to…") {
+            ForEach([DayKind.lift, .sport, .mobility, .rest], id: \.self) { newKind in
+                if newKind != day.kind {
+                    Button(newKind.label.capitalized) {
+                        propose([.swapKind(
+                            dayId: day.id,
+                            to: newKind,
+                            title: defaultTitle(for: newKind),
+                            routineId: nil
+                        )])
+                    }
+                }
+            }
+        }
+        Menu("Shorten to…") {
+            ForEach([30, 45, 60], id: \.self) { mins in
+                Button("\(mins) min") {
+                    propose([.shorten(dayId: day.id, toMinutes: mins)])
+                }
+            }
+        }
+        Button(day.protected ? "Unprotect" : "Protect day") {
+            if day.protected {
+                propose([.swapKind(dayId: day.id, to: .rest, title: "Rest", routineId: nil)])
+            } else {
+                propose([.protectDay(dayId: day.id, eventTitle: day.title)])
+            }
+        }
+        if day.kind != .rest {
+            Button("Remove session", role: .destructive) {
+                propose([.removeSession(dayId: day.id)])
+            }
+        }
+    }
+
+    private func weekdayLabel(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "EEEE"
+        return f.string(from: date)
+    }
+
+    private func defaultTitle(for kind: DayKind) -> String {
+        switch kind {
+        case .lift:     return "Lift"
+        case .sport:    return "Sport"
+        case .mobility: return "Mobility"
+        case .rest:     return "Rest"
+        case .event:    return "Event"
+        }
+    }
+}
+
+private struct IdentifiedDiff: Identifiable {
+    let diff: PlanDiff
+    var id: Int { diff.hashValue }
 }
 
 // MARK: - Identifiable wrapper for `.sheet(item:)`

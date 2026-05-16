@@ -102,6 +102,21 @@ struct TodayScreen: View {
         }
     }
 
+    /// Phase 11: static insight copy. Phase 13 coach pipes dynamic text in.
+    /// nil = no card rendered. Picks first matching rule.
+    private var insightCopy: String? {
+        guard let plan = planStore.plan else { return nil }
+        if let day = plan.today() {
+            if day.protected {
+                return "Today is protected. I won't shuffle it without asking."
+            }
+            if let mins = day.durationMinutes {
+                return "Today's session is shortened to \(mins) min."
+            }
+        }
+        return nil
+    }
+
     private var heroSubtitle: String {
         switch effectiveKind {
         case .lift, .mobility:
@@ -125,18 +140,26 @@ struct TodayScreen: View {
                 topBar
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
+                        if let body = insightCopy {
+                            InsightCard(body: body)
+                                .padding(.horizontal, 20)
+                                .padding(.top, 14)
+                        }
                         hero
                             .padding(.horizontal, 20)
-                            .padding(.top, 24)
+                            .padding(.top, insightCopy == nil ? 24 : 14)
                         if let reason = todayPlan?.generatedReason {
                             reasonRow(reason)
                                 .padding(.horizontal, 20)
                                 .padding(.top, 14)
                         }
                         if effectiveKind.isWorkout {
+                            PreWorkoutCheckIn()
+                                .padding(.horizontal, 20)
+                                .padding(.top, 18)
                             lastSessionCard
                                 .padding(.horizontal, 20)
-                                .padding(.top, 20)
+                                .padding(.top, 14)
                             if let template {
                                 exerciseList(template)
                                     .padding(.horizontal, 20)
@@ -444,10 +467,15 @@ struct TodayScreen: View {
     return TodayScreen(onStart: {}, onHistory: {})
         .environmentObject(SessionStore(defaults: defaults))
         .environmentObject(plan)
+        .environmentObject(MemoryStore(defaults: defaults))
 }
 
 #Preview("No plan (fallback)") {
-    TodayScreen(onStart: {}, onHistory: {})
-        .environmentObject(SessionStore(defaults: UserDefaults(suiteName: "TodayScreen.preview.fallback")!))
-        .environmentObject(PlanStore(defaults: UserDefaults(suiteName: "TodayScreen.preview.fallback.plan")!))
+    let suite = "TodayScreen.preview.fallback"
+    let defaults = UserDefaults(suiteName: suite)!
+    defaults.removePersistentDomain(forName: suite)
+    return TodayScreen(onStart: {}, onHistory: {})
+        .environmentObject(SessionStore(defaults: defaults))
+        .environmentObject(PlanStore(defaults: defaults))
+        .environmentObject(MemoryStore(defaults: defaults))
 }

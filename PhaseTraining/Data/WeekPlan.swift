@@ -55,6 +55,9 @@ struct DayPlan: Codable, Identifiable, Hashable {
     /// User-locked day (Phase 11 protectDay edit) — planner will not auto-move.
     var protected: Bool = false
     var notes: String?
+    /// Override session length in minutes; nil = use TrainingMemory.sessionMinutes.
+    /// Set by the Phase 11 PlanEdit.shorten op.
+    var durationMinutes: Int?
     /// Human-readable rule trace ("4-day plan, day 2 → strength").
     var generatedReason: String?
 }
