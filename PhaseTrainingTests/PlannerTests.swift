@@ -414,10 +414,218 @@ final class PlannerTests: XCTestCase {
         XCTAssertEqual(result.first, .lift, "First lift should survive (early-week emphasis)")
     }
 
-    func testAdjustPromotesRestsFromTheFront() {
-        let queue: [DayKind] = [.rest, .rest, .lift, .rest, .mobility, .rest, .rest]
-        let result = Planner.adjustForLiftBudget(queue, target: 4)
-        XCTAssertEqual(result.filter { $0 == .lift }.count, 4)
-        XCTAssertEqual(result[0], .lift, "Front rests should promote first")
+    func testAdjustPromotesRestsBiasedToMaxSpacing() {
+        // Single lift at index 2; need 3 total. Spacing-aware promotion should
+        // pick the rest furthest from index 2 each round → not cluster.
+        let queue: [DayKind] = [.rest, .rest, .lift, .rest, .rest, .rest, .rest]
+        let result = Planner.adjustForLiftBudget(queue, target: 3)
+
+        XCTAssertEqual(result.filter { $0 == .lift }.count, 3)
+        // Adjacent-lift count: number of indices i where both i and i+1 are .lift.
+        let adjacent = (0..<6).filter { result[$0] == .lift && result[$0+1] == .lift }.count
+        XCTAssertEqual(adjacent, 0,
+                       "Spacing-aware promotion shouldn't produce back-to-back lifts when slack exists: \(result)")
+    }
+
+    func testAdjustEvenlyDistributesLiftsInEmptyWeek() {
+        // All-rest queue, target 3: ideal placement is roughly indices 0, 3, 6.
+        let queue: [DayKind] = Array(repeating: .rest, count: 7)
+        let result = Planner.adjustForLiftBudget(queue, target: 3)
+        let lifts = result.indices.filter { result[$0] == .lift }
+        XCTAssertEqual(lifts.count, 3)
+        let adjacent = (0..<6).filter { result[$0] == .lift && result[$0+1] == .lift }.count
+        XCTAssertEqual(adjacent, 0,
+                       "All-rest week with 3 lift target should never cluster: \(lifts)")
+    }
+
+    // MARK: - DayKindOverride + Move/swap
+
+    func testDayOverrideForcesKindThroughRegeneration() {
+        var memory = TrainingMemory()
+        memory.focuses = [.generalStrength]
+        memory.liftDaysPerWeek = 3
+
+        let cal = Calendar.current
+        let tuesday = cal.date(byAdding: .day, value: 1, to: mondayAnchor())!
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.dayOverrides[cal.startOfDay(for: tuesday)] = .lift(routineId: 2)
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        let tuesPlan = plan.days.first { cal.isDate($0.date, inSameDayAs: tuesday) }
+        XCTAssertEqual(tuesPlan?.kind, .lift)
+        XCTAssertEqual(tuesPlan?.routineId, 2,
+                       "Override should preserve the user-picked routine id")
+        XCTAssertTrue(tuesPlan?.protected ?? false)
+    }
+
+    func testSwapOverridesCarryRoutineIdsBothWays() {
+        var memory = TrainingMemory()
+        memory.focuses = [.generalStrength]
+        memory.liftDaysPerWeek = 3
+
+        let cal = Calendar.current
+        let tuesday  = cal.date(byAdding: .day, value: 1, to: mondayAnchor())!
+        let thursday = cal.date(byAdding: .day, value: 3, to: mondayAnchor())!
+
+        // Simulate a swap: Tue ↔ Thu where Tue was lift(routineId 1), Thu was rest.
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.dayOverrides[cal.startOfDay(for: tuesday)]  = .rest
+        overrides.dayOverrides[cal.startOfDay(for: thursday)] = .lift(routineId: 1)
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        XCTAssertEqual(plan.days.first(where: { cal.isDate($0.date, inSameDayAs: tuesday) })?.kind, .rest)
+        XCTAssertEqual(plan.days.first(where: { cal.isDate($0.date, inSameDayAs: thursday) })?.kind, .lift)
+        XCTAssertEqual(plan.days.first(where: { cal.isDate($0.date, inSameDayAs: thursday) })?.routineId, 1)
+    }
+
+    // MARK: - Multi-day taper
+
+    func testHardRaceTriggersTwoDayTaper() {
+        var memory = TrainingMemory()
+        memory.focuses = [.generalStrength]
+        memory.liftDaysPerWeek = 5
+
+        let cal = Calendar.current
+        let saturday = cal.date(byAdding: .day, value: 5, to: mondayAnchor())!
+        let friday   = cal.date(byAdding: .day, value: 4, to: mondayAnchor())!
+        let thursday = cal.date(byAdding: .day, value: 3, to: mondayAnchor())!
+
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.events = [
+            WeekEvent(date: saturday, title: "10K", kind: .race, intensity: .hard)
+        ]
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+
+        XCTAssertEqual(plan.days.first { cal.isDate($0.date, inSameDayAs: friday) }?.kind, .rest,
+                       "Friday (Day -1) should be rest before a hard race")
+        XCTAssertEqual(plan.days.first { cal.isDate($0.date, inSameDayAs: thursday) }?.kind, .mobility,
+                       "Thursday (Day -2) should be mobility before a hard race")
+    }
+
+    func testModerateRaceOnlyTapersDayMinusOne() {
+        var memory = TrainingMemory()
+        memory.focuses = [.generalStrength]
+        memory.liftDaysPerWeek = 5
+
+        let cal = Calendar.current
+        let saturday = cal.date(byAdding: .day, value: 5, to: mondayAnchor())!
+        let friday   = cal.date(byAdding: .day, value: 4, to: mondayAnchor())!
+        let thursday = cal.date(byAdding: .day, value: 3, to: mondayAnchor())!
+
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.events = [
+            WeekEvent(date: saturday, title: "10K", kind: .race, intensity: .moderate)
+        ]
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+
+        XCTAssertEqual(plan.days.first { cal.isDate($0.date, inSameDayAs: friday) }?.kind, .rest,
+                       "Friday (Day -1) should be rest before a moderate race")
+        XCTAssertNotEqual(plan.days.first { cal.isDate($0.date, inSameDayAs: thursday) }?.kind, .mobility,
+                          "Thursday should NOT be tapered for a moderate race")
+    }
+
+    // MARK: - Post-event recovery
+
+    func testHardRaceTriggersDayAfterRest() {
+        var memory = TrainingMemory()
+        memory.focuses = [.generalStrength]
+        memory.liftDaysPerWeek = 5
+
+        let cal = Calendar.current
+        let wednesday = cal.date(byAdding: .day, value: 2, to: mondayAnchor())!
+        let thursday  = cal.date(byAdding: .day, value: 3, to: mondayAnchor())!
+
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.events = [
+            WeekEvent(date: wednesday, title: "Race", kind: .race, intensity: .hard)
+        ]
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        XCTAssertEqual(plan.days.first { cal.isDate($0.date, inSameDayAs: thursday) }?.kind, .rest,
+                       "Day after a hard race should be rest")
+    }
+
+    func testHardSportSessionTriggersDayAfterRest() {
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        var memory = TrainingMemory()
+        memory.primarySport = climbing
+        memory.liftDaysPerWeek = 5
+
+        let cal = Calendar.current
+        let wednesday = cal.date(byAdding: .day, value: 2, to: mondayAnchor())!
+        let thursday  = cal.date(byAdding: .day, value: 3, to: mondayAnchor())!
+
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.events = [
+            WeekEvent(date: wednesday, title: "Hard climb", kind: .sportSession,
+                      sport: climbing, intensity: .hard)
+        ]
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        XCTAssertEqual(plan.days.first { cal.isDate($0.date, inSameDayAs: thursday) }?.kind, .rest,
+                       "Day after a hard sport session should be rest")
+    }
+
+    // MARK: - Pre-sport buffer
+
+    func testHardSportSessionDemotesPreviousLiftToMobility() {
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        var memory = TrainingMemory()
+        memory.primarySport = climbing
+        memory.liftDaysPerWeek = 5
+
+        let cal = Calendar.current
+        let tuesday  = cal.date(byAdding: .day, value: 1, to: mondayAnchor())!
+        let wednesday = cal.date(byAdding: .day, value: 2, to: mondayAnchor())!
+
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.events = [
+            WeekEvent(date: wednesday, title: "Hard climb", kind: .sportSession,
+                      sport: climbing, intensity: .hard)
+        ]
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        let tuesKind = plan.days.first { cal.isDate($0.date, inSameDayAs: tuesday) }?.kind
+        XCTAssertEqual(tuesKind, .mobility,
+                       "Lift day before a hard sport session should be demoted to mobility")
+    }
+
+    func testModerateSportSessionDoesNotDemotePreviousLift() {
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        var memory = TrainingMemory()
+        memory.primarySport = climbing
+        memory.liftDaysPerWeek = 5
+
+        let cal = Calendar.current
+        let wednesday = cal.date(byAdding: .day, value: 2, to: mondayAnchor())!
+
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.events = [
+            WeekEvent(date: wednesday, title: "Moderate climb", kind: .sportSession,
+                      sport: climbing, intensity: .moderate)
+        ]
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        // Day before moderate sport session keeps the planner's normal pick — i.e.
+        // not forced to mobility. Since this is data-shape dependent, we only
+        // assert that the buffer rule didn't fire (i.e., day before isn't a
+        // taper/buffer-titled mobility).
+        let tuesPlan = plan.days[1]
+        if tuesPlan.kind == .mobility {
+            XCTAssertFalse(
+                tuesPlan.title.contains("buffer"),
+                "Buffer rule shouldn't fire for moderate sport sessions"
+            )
+        }
     }
 }

@@ -61,7 +61,16 @@ enum Planner {
             }
         }
 
-        // Step 3 — build remaining shape queue, accounting for shape sport slots
+        // Step 3 — apply per-day kind overrides (Move-to-day swaps, force-kind).
+        // These are protected so subsequent rules can't undo them.
+        if let overrides {
+            for (i, date) in dates.enumerated() where slots[i] == nil {
+                guard let ov = overrides.override(on: date, calendar: calendar) else { continue }
+                slots[i] = makeOverrideSlot(date: date, override: ov, memory: memory, routines: routines)
+            }
+        }
+
+        // Step 4 — build remaining shape queue, accounting for shape sport slots
         // already satisfied by sport-session events (NOT race events; races
         // express something different and shouldn't consume a sport quota).
         let placedSportSessions = slots.compactMap { $0 }
@@ -77,16 +86,18 @@ enum Planner {
             queue.append(kind)
         }
 
-        // Step 4 — apply user's lift-days target. Shape's lift count is a default;
-        // the user override wins. Demote excess lifts from the end (preserves the
-        // shape's early-week emphasis) and promote rest → mobility from the
-        // front when adding.
+        // Step 5 — apply user's lift-days target, accounting for lifts already
+        // placed via dayOverrides. Shape's lift count is a default; the user
+        // override wins. Demote excess lifts from the end (preserves the
+        // shape's early-week emphasis); promote rest → lift biased to maximum
+        // spacing from existing lifts when adding.
+        let placedLifts = slots.compactMap { $0 }.filter { $0.kind == .lift }.count
         let emptyCount = slots.filter { $0 == nil }.count
         let usedQueue = Array(queue.prefix(emptyCount))
-        let liftBudget = max(0, min(memory.liftDaysPerWeek, emptyCount))
+        let liftBudget = max(0, min(memory.liftDaysPerWeek - placedLifts, emptyCount))
         let adjustedQueue = adjustForLiftBudget(usedQueue, target: liftBudget)
 
-        // Step 5 — walk adjusted queue, fill empty slots.
+        // Step 6 — walk adjusted queue, fill empty slots.
         var qi = 0
         for (i, date) in dates.enumerated() where slots[i] == nil {
             guard qi < adjustedQueue.count else {
@@ -106,9 +117,11 @@ enum Planner {
             )
         }
 
-        // Step 6 — taper before hard races.
+        // Step 7 — best-practice rules. Each pass mutates only NON-protected slots.
         if let overrides {
-            applyHardEventTaper(&slots, dates: dates, overrides: overrides, calendar: calendar)
+            applyPreEventTaper(&slots, dates: dates, overrides: overrides, calendar: calendar)
+            applyPostEventRecovery(&slots, dates: dates, overrides: overrides, calendar: calendar)
+            applyPreSportBuffer(&slots, dates: dates, overrides: overrides, calendar: calendar)
         }
 
         let days = slots.compactMap { $0 }
@@ -117,6 +130,49 @@ enum Planner {
             generatedAt: Date(),
             inputsHash: memory.planInputsHash
         )
+    }
+
+    // MARK: - Day-override slot
+
+    private static func makeOverrideSlot(
+        date: Date,
+        override: DayKindOverride,
+        memory: TrainingMemory,
+        routines: [Routine]
+    ) -> DayPlan {
+        switch override {
+        case .rest:
+            return DayPlan(date: date, kind: .rest, title: "Rest",
+                           protected: true,
+                           generatedReason: "You set this day to rest")
+
+        case .mobility(let routineId):
+            let r = routineId.flatMap { id in routines.first(where: { $0.id == id }) }
+            return DayPlan(date: date, kind: .mobility,
+                           title: r?.name ?? "Mobility",
+                           routineId: r?.id,
+                           protected: true,
+                           generatedReason: "You set this day to mobility")
+
+        case .lift(let routineId):
+            let r = routineId.flatMap { id in routines.first(where: { $0.id == id }) }
+                ?? pickRoutine(routines: routines, kind: .lift, memory: memory, slotOffset: 0)
+            return DayPlan(date: date, kind: .lift,
+                           title: r?.name ?? "Strength",
+                           routineId: r?.id,
+                           protected: true,
+                           generatedReason: "You set this day to lift")
+
+        case .sport(let slug):
+            let sport = (slug ?? memory.primarySport?.slug).flatMap { s in
+                Sport.catalog.first(where: { $0.slug == s })
+            } ?? memory.primarySport
+            return DayPlan(date: date, kind: .sport,
+                           title: sport.map { "\($0.name) session" } ?? "Sport day",
+                           sport: sport,
+                           protected: true,
+                           generatedReason: "You set this day to sport")
+        }
     }
 
     // MARK: - Event slot
@@ -203,33 +259,128 @@ enum Planner {
         }
     }
 
-    // MARK: - Hard-event taper
+    // MARK: - Best-practice rule passes
+    //
+    // Each pass mutates only NON-protected slots. Protected slots are: events
+    // (sport_session, race) and dayOverrides — both express explicit user intent
+    // and shouldn't be auto-rewritten.
 
-    /// For each race event with .hard intensity, convert the slot immediately
-    /// preceding it from .lift → .rest. Sport sessions don't taper; only races.
-    /// Protected slots (sport sessions, other events) are never touched.
-    private static func applyHardEventTaper(
+    /// Pre-event taper for races. Hard race → preceding day = rest, day -2 = mobility.
+    /// Moderate race → preceding day = rest only. Light race → no taper.
+    private static func applyPreEventTaper(
         _ slots: inout [DayPlan?],
         dates: [Date],
         overrides: WeekOverrides,
         calendar: Calendar
     ) {
-        for event in overrides.events where event.kind == .race && event.intensity == .hard {
+        for event in overrides.events where event.kind == .race {
+            guard event.intensity != .light else { continue }
             guard let eventIdx = dates.firstIndex(where: { calendar.isDate($0, inSameDayAs: event.date) }) else {
                 continue
             }
+
+            // Day -1: rest (always for moderate + hard).
+            demote(
+                &slots, at: eventIdx - 1,
+                to: .rest, title: "Rest (taper)",
+                reason: "Tapering before \(eventTitle(event))"
+            )
+
+            // Day -2: mobility (hard only).
+            if event.intensity == .hard {
+                demote(
+                    &slots, at: eventIdx - 2,
+                    to: .mobility, title: "Mobility (taper)",
+                    reason: "Light prep before \(eventTitle(event))"
+                )
+            }
+        }
+    }
+
+    /// Post-event recovery. Day after a hard race OR hard sport session = rest
+    /// (no heavy lift). Moderate / light events don't trigger recovery.
+    private static func applyPostEventRecovery(
+        _ slots: inout [DayPlan?],
+        dates: [Date],
+        overrides: WeekOverrides,
+        calendar: Calendar
+    ) {
+        for event in overrides.events where event.intensity == .hard {
+            guard let eventIdx = dates.firstIndex(where: { calendar.isDate($0, inSameDayAs: event.date) }) else {
+                continue
+            }
+            demote(
+                &slots, at: eventIdx + 1,
+                to: .rest, title: "Rest (recovery)",
+                reason: "Recovery after \(eventTitle(event))"
+            )
+        }
+    }
+
+    /// Pre-sport buffer. Day before a hard SPORT SESSION (not race — races
+    /// already get the pre-event taper) → no heavy lift, demoted to mobility.
+    /// Lets the user show up fresh for hard climbing/grappling/etc.
+    private static func applyPreSportBuffer(
+        _ slots: inout [DayPlan?],
+        dates: [Date],
+        overrides: WeekOverrides,
+        calendar: Calendar
+    ) {
+        for event in overrides.events
+        where event.kind == .sportSession && event.intensity == .hard {
+            guard let eventIdx = dates.firstIndex(where: { calendar.isDate($0, inSameDayAs: event.date) }) else {
+                continue
+            }
+            // Only demote if the preceding slot is a lift (.mobility/.rest already fine).
             let priorIdx = eventIdx - 1
             guard priorIdx >= 0,
                   let prior = slots[priorIdx],
                   !prior.protected,
                   prior.kind == .lift else { continue }
-            slots[priorIdx] = DayPlan(
-                date: prior.date,
-                kind: .rest,
-                title: "Rest (taper)",
-                generatedReason: "Tapering before \(event.title.isEmpty ? "your event" : event.title)"
+            demote(
+                &slots, at: priorIdx,
+                to: .mobility, title: "Mobility (buffer)",
+                reason: "Lighter day before \(eventTitle(event))"
             )
         }
+    }
+
+    /// Convert slot at `idx` to `kind` if (a) idx is in range, (b) the slot is
+    /// not protected, and (c) the existing kind isn't already at-or-below the
+    /// target severity. Skips no-op cases (e.g., asking to demote a rest to a
+    /// rest).
+    private static func demote(
+        _ slots: inout [DayPlan?],
+        at idx: Int,
+        to kind: DayKind,
+        title: String,
+        reason: String
+    ) {
+        guard slots.indices.contains(idx),
+              let current = slots[idx],
+              !current.protected else { return }
+        // Demotion ranking: lift > sport > mobility > rest. Don't promote.
+        guard severity(current.kind) > severity(kind) else { return }
+        slots[idx] = DayPlan(
+            date: current.date,
+            kind: kind,
+            title: title,
+            generatedReason: reason
+        )
+    }
+
+    private static func severity(_ kind: DayKind) -> Int {
+        switch kind {
+        case .lift:     return 4
+        case .sport:    return 3
+        case .event:    return 3
+        case .mobility: return 2
+        case .rest:     return 1
+        }
+    }
+
+    private static func eventTitle(_ event: WeekEvent) -> String {
+        event.title.isEmpty ? "your event" : event.title
     }
 
     private static func weekdayShort(_ date: Date, calendar: Calendar = .current) -> String {
@@ -238,9 +389,15 @@ enum Planner {
 
     // MARK: - Lift budget adjustment
 
-    /// Shape kinds → adjusted to hit `target` lifts. Demotes extras from the
-    /// end (keeps the shape's early-week emphasis intact) and promotes
-    /// rest → mobility → sport in that order when the shape is light on lifts.
+    /// Shape kinds → adjusted to hit `target` lifts.
+    ///
+    /// Demotes extras from the end (preserves the shape's early-week emphasis).
+    ///
+    /// When PROMOTING (current < target), picks the rest position with the
+    /// MAX distance from any existing lift — so a shape like
+    /// `[lift, rest, lift, rest, rest, rest, rest]` with target 4 becomes
+    /// `[lift, rest, lift, rest, lift, rest, lift]` (M-W-F-Sun spacing) rather
+    /// than `[lift, lift, lift, lift, rest, rest, rest]` (front-clustered).
     static func adjustForLiftBudget(_ queue: [DayKind], target: Int) -> [DayKind] {
         var result = queue
         let current = result.filter { $0 == .lift }.count
@@ -258,14 +415,20 @@ enum Planner {
 
         if current < target {
             var needed = target - current
-            // Promote rest first.
-            for i in result.indices where needed > 0 {
-                if result[i] == .rest {
-                    result[i] = .lift
-                    needed -= 1
-                }
+
+            // Promote rests one at a time, picking the rest with max distance
+            // to any existing lift each round so additions spread evenly.
+            while needed > 0 {
+                let liftPositions = result.indices.filter { result[$0] == .lift }
+                let restPositions = result.indices.filter { result[$0] == .rest }
+                guard let bestRest = restPositions.max(by: { lhs, rhs in
+                    minDistance(from: lhs, to: liftPositions) < minDistance(from: rhs, to: liftPositions)
+                }) else { break }
+                result[bestRest] = .lift
+                needed -= 1
             }
-            // Then mobility.
+
+            // If we still need more, promote mobility slots (front-first).
             for i in result.indices where needed > 0 {
                 if result[i] == .mobility {
                     result[i] = .lift
@@ -276,6 +439,11 @@ enum Planner {
             // express the user's intent through their primary sport.
         }
         return result
+    }
+
+    private static func minDistance(from idx: Int, to positions: [Int]) -> Int {
+        if positions.isEmpty { return Int.max }
+        return positions.map { abs($0 - idx) }.min() ?? Int.max
     }
 
     // MARK: - Routine selection

@@ -4,10 +4,13 @@
 // is long-term truth) and onto a per-week struct. The user sets these from
 // the Week tab; a new week starts with a fresh empty WeekOverrides.
 //
-// Two pieces:
+// Three pieces:
 //   - unavailableDays: weekdays the user is OUT this week → forced rest
 //   - events: WeekEvent[] anchored to specific dates → sport sessions, races,
 //     anything that should pre-empt the planner's default kind for that day
+//   - dayOverrides: per-date forced kind (rest / mobility / lift / sport).
+//     Survives regeneration. Used by the Move-workout-to-another-day swap
+//     and any future force-kind edits.
 //
 // PlanStore persists the active WeekOverrides under `pt_week_overrides`. When
 // `weekStart` no longer matches the current week's Monday-anchor, PlanStore
@@ -47,6 +50,44 @@ struct WeekEvent: Codable, Identifiable, Hashable {
     var intensity: EventIntensity = .moderate
 }
 
+// MARK: - DayKindOverride
+//
+// User-forced kind for a specific date. Survives plan regeneration. The
+// "Move workout to another day" swap writes two of these in one shot.
+//
+// .lift carries an optional routineId so a moved lift keeps its picked
+// routine (otherwise the planner would re-pick deterministically and might
+// land on a different one).
+
+enum DayKindOverride: Codable, Hashable {
+    case rest
+    case mobility(routineId: Int? = nil)
+    case lift(routineId: Int? = nil)
+    case sport(sportSlug: String? = nil)
+
+    var asKind: DayKind {
+        switch self {
+        case .rest:     return .rest
+        case .mobility: return .mobility
+        case .lift:     return .lift
+        case .sport:    return .sport
+        }
+    }
+
+    var routineId: Int? {
+        switch self {
+        case .lift(let id):     return id
+        case .mobility(let id): return id
+        case .rest, .sport:     return nil
+        }
+    }
+
+    var sportSlug: String? {
+        if case .sport(let slug) = self { return slug }
+        return nil
+    }
+}
+
 // MARK: - WeekOverrides
 
 struct WeekOverrides: Codable {
@@ -55,6 +96,7 @@ struct WeekOverrides: Codable {
     var weekStart: Date
     var unavailableDays: Set<Weekday> = []
     var events: [WeekEvent] = []
+    var dayOverrides: [Date: DayKindOverride] = [:]
 
     init(weekStart: Date) {
         self.weekStart = weekStart
@@ -64,18 +106,38 @@ struct WeekOverrides: Codable {
 // MARK: - Convenience
 
 extension WeekOverrides {
-    /// True if the unavailableDays / events reference anything for `date`.
+    /// True if the unavailableDays / events / dayOverrides reference anything for `date`.
     func hasAnythingFor(date: Date, calendar: Calendar = .current) -> Bool {
         if unavailableDays.contains(Weekday.from(date: date, calendar: calendar)) {
             return true
         }
-        return events.contains { calendar.isDate($0.date, inSameDayAs: date) }
+        if events.contains(where: { calendar.isDate($0.date, inSameDayAs: date) }) {
+            return true
+        }
+        return dayOverrides.keys.contains(where: { calendar.isDate($0, inSameDayAs: date) })
     }
 
     /// All events landing on `date`. Usually 0 or 1; planner defends against >1
     /// by taking the first.
     func events(on date: Date, calendar: Calendar = .current) -> [WeekEvent] {
         events.filter { calendar.isDate($0.date, inSameDayAs: date) }
+    }
+
+    /// Day-kind override that lands on `date`, if any.
+    func override(on date: Date, calendar: Calendar = .current) -> DayKindOverride? {
+        for (k, v) in dayOverrides where calendar.isDate(k, inSameDayAs: date) {
+            return v
+        }
+        return nil
+    }
+
+    /// Mutate to clear every per-date trace for `date` (events + override).
+    /// unavailableDays is keyed by weekday so we don't touch it here — the
+    /// caller decides whether to also clear that.
+    mutating func clearDate(_ date: Date, calendar: Calendar = .current) {
+        events.removeAll { calendar.isDate($0.date, inSameDayAs: date) }
+        let stale = dayOverrides.keys.filter { calendar.isDate($0, inSameDayAs: date) }
+        for k in stale { dayOverrides.removeValue(forKey: k) }
     }
 }
 

@@ -23,6 +23,8 @@ struct WeekDayEditSheet: View {
     @State private var pickingSport = false
     @State private var addingEvent = false
     @State private var pickingRoutine = false
+    @State private var pickingMoveTarget = false
+    @State private var editingIntensity = false
 
     var body: some View {
         NavigationStack {
@@ -69,6 +71,24 @@ struct WeekDayEditSheet: View {
                 onDismiss: { pickingRoutine = false }
             )
             .presentationBackground(Color.bg)
+        }
+        .sheet(isPresented: $pickingMoveTarget) {
+            MoveDayPickerSheet(
+                source: date,
+                onPick: { target in
+                    swap(source: date, target: target)
+                    pickingMoveTarget = false
+                    dismiss()
+                }
+            )
+        }
+        .sheet(isPresented: $editingIntensity) {
+            if let event = currentEvent {
+                IntensityEditorSheet(event: event) { newIntensity in
+                    setIntensity(for: event, to: newIntensity)
+                    editingIntensity = false
+                }
+            }
         }
     }
 
@@ -130,12 +150,30 @@ struct WeekDayEditSheet: View {
                 action: { addingEvent = true }
             )
 
+            if dayPlan?.kind == .lift || dayPlan?.kind == .mobility || dayPlan?.kind == .sport {
+                ActionRow(
+                    title: "Move workout to another day",
+                    subtitle: "Swap with another day this week",
+                    icon: "arrow.left.arrow.right",
+                    action: { pickingMoveTarget = true }
+                )
+            }
+
             if dayPlan?.kind == .lift || dayPlan?.kind == .mobility {
                 ActionRow(
                     title: "Pick a different routine",
                     subtitle: "Browse the library — replaces the plan's pick",
                     icon: "books.vertical",
                     action: { pickingRoutine = true }
+                )
+            }
+
+            if currentEvent != nil {
+                ActionRow(
+                    title: "Edit intensity",
+                    subtitle: intensitySubtitle,
+                    icon: "flame",
+                    action: { editingIntensity = true }
                 )
             }
 
@@ -149,6 +187,15 @@ struct WeekDayEditSheet: View {
                 )
             }
         }
+    }
+
+    private var intensitySubtitle: String {
+        guard let event = currentEvent else { return "" }
+        return "Currently \(event.intensity.label.lowercased())"
+    }
+
+    private var currentEvent: WeekEvent? {
+        planStore.overrides.events(on: date).first
     }
 
     // MARK: - Mutations
@@ -198,7 +245,48 @@ struct WeekDayEditSheet: View {
     private func clearOverrides() {
         planStore.updateOverrides(memory: memory.memory) { o in
             o.unavailableDays.remove(weekday)
-            o.events.removeAll { Calendar.current.isDate($0.date, inSameDayAs: date) }
+            o.clearDate(date)
+        }
+    }
+
+    /// Swap kinds + routine ids between source (this sheet's day) and target.
+    /// Reads the current plan to capture each day's kind, writes a dayOverride
+    /// for both. Events on the swapped days are NOT moved — they're anchored to
+    /// real dates (the user added them deliberately, would be confusing to move).
+    private func swap(source: Date, target: Date) {
+        guard let plan = planStore.plan else { return }
+        let cal = Calendar.current
+        guard let sourcePlan = plan.days.first(where: { cal.isDate($0.date, inSameDayAs: source) }),
+              let targetPlan = plan.days.first(where: { cal.isDate($0.date, inSameDayAs: target) })
+        else { return }
+
+        let sourceOverride = override(from: sourcePlan)
+        let targetOverride = override(from: targetPlan)
+
+        planStore.updateOverrides(memory: memory.memory) { o in
+            o.dayOverrides[cal.startOfDay(for: source)] = targetOverride
+            o.dayOverrides[cal.startOfDay(for: target)] = sourceOverride
+        }
+    }
+
+    /// Map a current DayPlan into the corresponding DayKindOverride. Captures
+    /// routineId so a moved lift keeps its picked routine.
+    private func override(from plan: DayPlan) -> DayKindOverride {
+        switch plan.kind {
+        case .rest:     return .rest
+        case .mobility: return .mobility(routineId: plan.routineId)
+        case .lift:     return .lift(routineId: plan.routineId)
+        case .sport:    return .sport(sportSlug: plan.sport?.slug)
+        case .event:    return .rest // events shouldn't be swapped — fall back to rest
+        }
+    }
+
+    /// Update an event's intensity in-place.
+    private func setIntensity(for event: WeekEvent, to intensity: EventIntensity) {
+        planStore.updateOverrides(memory: memory.memory) { o in
+            if let idx = o.events.firstIndex(where: { $0.id == event.id }) {
+                o.events[idx].intensity = intensity
+            }
         }
     }
 }
@@ -444,5 +532,160 @@ struct EventEditorSheet: View {
         Text(s)
             .styled(.micro)
             .foregroundStyle(Color.ink3)
+    }
+}
+
+// MARK: - Move-day picker
+
+/// Pick which day to swap with. Lists the other 6 days of the current plan,
+/// each row showing weekday + date + current kind so the user can see what
+/// they're trading.
+struct MoveDayPickerSheet: View {
+    let source: Date
+    let onPick: (Date) -> Void
+
+    @EnvironmentObject private var planStore: PlanStore
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.bg.ignoresSafeArea()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("MOVE TO")
+                            .styled(.micro)
+                            .foregroundStyle(Color.ink3)
+                        VStack(spacing: 8) {
+                            ForEach(targetDays, id: \.id) { day in
+                                row(day: day)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 18)
+                    .padding(.bottom, 32)
+                }
+            }
+            .navigationTitle("Move to which day?")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundStyle(Color.accent)
+                }
+            }
+        }
+        .presentationBackground(Color.bg)
+    }
+
+    private var targetDays: [DayPlan] {
+        let cal = Calendar.current
+        return planStore.plan?.days.filter {
+            !cal.isDate($0.date, inSameDayAs: source)
+        } ?? []
+    }
+
+    private func row(day: DayPlan) -> some View {
+        Button { onPick(day.date) } label: {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(weekdayLabel(day.date).uppercased())
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                    Text(day.title)
+                        .styled(.displayS)
+                        .foregroundStyle(Color.ink)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 8)
+                Text(day.kind.label)
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink2)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.elevated)
+                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.ink3)
+            }
+            .padding(14)
+            .background(Color.surface)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func weekdayLabel(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "EEE MMM d"
+        return f.string(from: date)
+    }
+}
+
+// MARK: - Intensity editor
+
+/// Tiny sheet that flips an event's intensity (light / moderate / hard).
+struct IntensityEditorSheet: View {
+    let event: WeekEvent
+    let onPick: (EventIntensity) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.bg.ignoresSafeArea()
+                VStack(alignment: .leading, spacing: 18) {
+                    Text("INTENSITY")
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                    Text(event.title)
+                        .styled(.displayS)
+                        .foregroundStyle(Color.ink)
+                    WrappingFlow(spacing: 8) {
+                        ForEach(EventIntensity.allCases, id: \.self) { i in
+                            OnboardingChip(
+                                label: i.label,
+                                selected: event.intensity == i,
+                                action: { onPick(i) }
+                            )
+                        }
+                    }
+                    Text(intensityHint)
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 24)
+            }
+            .navigationTitle("Set intensity")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .foregroundStyle(Color.accent)
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .presentationBackground(Color.bg)
+    }
+
+    private var intensityHint: String {
+        switch event.intensity {
+        case .light:
+            return "Light = no taper, no buffer."
+        case .moderate:
+            return "Moderate = the day before is reset to rest."
+        case .hard:
+            return event.kind == .race
+                ? "Hard race = day before = rest, day -2 = mobility, day after = recovery."
+                : "Hard sport day = day before lift becomes mobility, day after = recovery."
+        }
     }
 }
