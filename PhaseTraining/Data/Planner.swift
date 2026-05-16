@@ -324,7 +324,7 @@ enum Planner {
             // Day -1: rest (always for moderate + hard).
             demote(
                 &slots, at: eventIdx - 1,
-                to: .rest, title: "Rest (taper)",
+                to: .rest, title: "Rest",
                 reason: "Tapering before \(eventTitle(event))"
             )
 
@@ -332,8 +332,8 @@ enum Planner {
             if event.intensity == .hard {
                 demote(
                     &slots, at: eventIdx - 2,
-                    to: .mobility, title: "Mobility (taper)",
-                    reason: "Light prep before \(eventTitle(event))"
+                    to: .mobility, title: "Mobility",
+                    reason: "Easing into \(eventTitle(event))"
                 )
             }
         }
@@ -353,8 +353,8 @@ enum Planner {
             }
             demote(
                 &slots, at: eventIdx + 1,
-                to: .rest, title: "Rest (recovery)",
-                reason: "Recovery after \(eventTitle(event))"
+                to: .rest, title: "Rest",
+                reason: "Recovering from \(eventTitle(event))"
             )
         }
     }
@@ -381,8 +381,8 @@ enum Planner {
                   prior.kind == .lift else { continue }
             demote(
                 &slots, at: priorIdx,
-                to: .mobility, title: "Mobility (buffer)",
-                reason: "Lighter day before \(eventTitle(event))"
+                to: .mobility, title: "Mobility",
+                reason: "Going light before \(eventTitle(event))"
             )
         }
     }
