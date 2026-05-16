@@ -42,29 +42,23 @@ final class RoutineDetailSwipeTests: XCTestCase {
         XCTAssertTrue(deleteButton.waitForExistence(timeout: 2), "DELETE should appear after swipe")
         XCTAssertTrue(replaceButton.exists, "REPLACE should also be visible")
 
-        // Tap Delete and assert the row count drops.
+        // Tap Delete and poll for the row count to drop. The snap-back triggers a
+        // 0.2s asyncAfter + spring animation + state mutation; on slower CI sims
+        // a fixed sleep can race the deletion. Poll up to 5s in 200ms ticks.
         deleteButton.tap()
 
-        // Allow the snap-back + 0.2s asyncAfter + spring + state mutation.
-        Thread.sleep(forTimeInterval: 1.0)
-        let originalFirstRow = firstRowLabel(in: app)
-        print("UITEST: first row label after delete: \(originalFirstRow)")
-        print("UITEST: row count after delete: \(rowCount(in: app))")
-        // Soft assertion — initial intent: deleted row disappears.
+        let deadline = Date().addingTimeInterval(5.0)
+        while Date() < deadline && rowCount(in: app) >= initialRowCount {
+            Thread.sleep(forTimeInterval: 0.2)
+        }
+
         XCTAssertLessThan(rowCount(in: app), initialRowCount,
-                          "row count should drop after Delete")
+                          "row count should drop after Delete (waited up to 5s)")
     }
 
     private func rowCount(in app: XCUIApplication) -> Int {
         app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier BEGINSWITH 'routine-row-'"))
             .count
-    }
-
-    private func firstRowLabel(in app: XCUIApplication) -> String {
-        let row = app.descendants(matching: .button)
-            .matching(NSPredicate(format: "identifier == 'routine-row-0'"))
-            .firstMatch
-        return row.exists ? (row.label) : ""
     }
 }
