@@ -249,36 +249,10 @@ struct WeekDayEditSheet: View {
         }
     }
 
-    /// Swap kinds + routine ids between source (this sheet's day) and target.
-    /// Reads the current plan to capture each day's kind, writes a dayOverride
-    /// for both. Events on the swapped days are NOT moved — they're anchored to
-    /// real dates (the user added them deliberately, would be confusing to move).
+    /// Delegate to PlanStore.swap so the edit-sheet picker and Week-tab drag
+    /// share one code path. Events stay anchored to their dates.
     private func swap(source: Date, target: Date) {
-        guard let plan = planStore.plan else { return }
-        let cal = Calendar.current
-        guard let sourcePlan = plan.days.first(where: { cal.isDate($0.date, inSameDayAs: source) }),
-              let targetPlan = plan.days.first(where: { cal.isDate($0.date, inSameDayAs: target) })
-        else { return }
-
-        let sourceOverride = override(from: sourcePlan)
-        let targetOverride = override(from: targetPlan)
-
-        planStore.updateOverrides(memory: memory.memory) { o in
-            o.dayOverrides[cal.startOfDay(for: source)] = targetOverride
-            o.dayOverrides[cal.startOfDay(for: target)] = sourceOverride
-        }
-    }
-
-    /// Map a current DayPlan into the corresponding DayKindOverride. Captures
-    /// routineId so a moved lift keeps its picked routine.
-    private func override(from plan: DayPlan) -> DayKindOverride {
-        switch plan.kind {
-        case .rest:     return .rest
-        case .mobility: return .mobility(routineId: plan.routineId)
-        case .lift:     return .lift(routineId: plan.routineId)
-        case .sport:    return .sport(sportSlug: plan.sport?.slug)
-        case .event:    return .rest // events shouldn't be swapped — fall back to rest
-        }
+        planStore.swap(sourceDate: source, targetDate: target, memory: memory.memory)
     }
 
     /// Update an event's intensity in-place.

@@ -86,6 +86,21 @@ enum DayKindOverride: Codable, Hashable {
         if case .sport(let slug) = self { return slug }
         return nil
     }
+
+    /// Map a currently-rendered DayPlan back into the override that would
+    /// reproduce it. Used by the Move / drag-and-drop swap so a moved lift
+    /// keeps its picked routine id, a moved sport keeps its sport, etc.
+    /// Event days fall back to rest because events are date-anchored and
+    /// shouldn't be swapped.
+    static func from(plan: DayPlan) -> DayKindOverride {
+        switch plan.kind {
+        case .rest:     return .rest
+        case .mobility: return .mobility(routineId: plan.routineId)
+        case .lift:     return .lift(routineId: plan.routineId)
+        case .sport:    return .sport(sportSlug: plan.sport?.slug)
+        case .event:    return .rest
+        }
+    }
 }
 
 // MARK: - WeekOverrides

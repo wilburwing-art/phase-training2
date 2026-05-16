@@ -91,7 +91,11 @@ final class PlanStore: ObservableObject {
         }
     }
 
-    // MARK: - PlanEdit pipeline (Phase 11)
+    // MARK: - PlanEdit pipeline (Wilbur's phase 11)
+    //
+    // Preview-then-apply edits via PlanDiff. Used by the long-press context
+    // menu on the Week tab. Mutates the WeekPlan directly (does NOT round-trip
+    // through overrides / Planner) so the diff is an exact before→after.
 
     /// Build a PlanDiff by replaying edits against the current plan. Pure —
     /// does not mutate. Returns nil if there's no current plan.
@@ -166,6 +170,35 @@ final class PlanStore: ObservableObject {
             plan.days[idx].routineId = nil
             plan.days[idx].sport = nil
             plan.days[idx].durationMinutes = nil
+        }
+    }
+
+    // MARK: - Drag-and-drop swap (my phase 11c)
+    //
+    // Direct (no preview) swap via paired dayOverrides. Used by drag-and-drop
+    // on the Week tab and by the WeekDayEditSheet "Move workout to…" picker.
+    // Goes through the planner regeneration path so taper/buffer/recovery
+    // rules re-apply against the new arrangement.
+
+    /// Swap two days' kinds (and routine ids / sports) via paired dayOverrides.
+    /// No-op when source == target or when either date isn't in the current plan.
+    func swap(sourceDate: Date,
+              targetDate: Date,
+              memory: TrainingMemory,
+              today: Date = Date()) {
+        let cal = Calendar.current
+        guard !cal.isDate(sourceDate, inSameDayAs: targetDate) else { return }
+        guard let plan,
+              let sourcePlan = plan.days.first(where: { cal.isDate($0.date, inSameDayAs: sourceDate) }),
+              let targetPlan = plan.days.first(where: { cal.isDate($0.date, inSameDayAs: targetDate) })
+        else { return }
+
+        let sourceOverride = DayKindOverride.from(plan: sourcePlan)
+        let targetOverride = DayKindOverride.from(plan: targetPlan)
+
+        updateOverrides(memory: memory, today: today) { o in
+            o.dayOverrides[cal.startOfDay(for: sourceDate)] = targetOverride
+            o.dayOverrides[cal.startOfDay(for: targetDate)] = sourceOverride
         }
     }
 

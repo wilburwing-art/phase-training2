@@ -1,10 +1,13 @@
 // WeekScreen.swift — Phase 11 Week tab. The planning surface.
 //
-// Renders PlanStore.plan + tap-to-edit on each day. Tapping a row presents
-// WeekDayEditSheet which mutates PlanStore.overrides + auto-regenerates.
-// "Customize this week" copy nudges users to actually use the edit affordance.
+// Renders PlanStore.plan + per-day affordances:
+//   - Tap a row → WeekDayEditSheet for fine-grained edits
+//   - Long-press + drag a row onto another → swap the two days
+//
+// Both routes mutate PlanStore.overrides + auto-regenerate.
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct WeekScreen: View {
     @EnvironmentObject private var planStore: PlanStore
@@ -91,12 +94,11 @@ struct WeekScreen: View {
 
                 VStack(spacing: 10) {
                     ForEach(plan.days) { day in
-                        Button {
-                            editingDate = day.date
-                        } label: {
-                            DayRow(day: day, isToday: isToday(day.date))
-                        }
-                        .buttonStyle(.plain)
+                        DraggableDayRow(
+                            day: day,
+                            isToday: isToday(day.date),
+                            onTap: { editingDate = day.date }
+                        )
                         .contextMenu { menuItems(for: day, plan: plan) }
                     }
                 }
@@ -119,7 +121,7 @@ struct WeekScreen: View {
             Text(planSummary(plan))
                 .font(.monoXS)
                 .foregroundStyle(Color.ink3)
-            Text("Tap any day to customize.")
+            Text("Tap to customize · long-press and drag to swap days.")
                 .font(.monoXS)
                 .foregroundStyle(Color.ink3)
                 .padding(.top, 2)
@@ -220,11 +222,86 @@ private struct EditingDate: Identifiable {
     }
 }
 
+// MARK: - Draggable row wrapper
+//
+// Per-day view that owns its own `isTargeted` state for the drop highlight,
+// and forwards taps + drops up to the planStore. Drag payload is a MovableDay
+// (date string) — using Transferable's CodableRepresentation so the drag works
+// across the SwiftUI process without manual NSItemProvider plumbing.
+
+private struct DraggableDayRow: View {
+    let day: DayPlan
+    let isToday: Bool
+    let onTap: () -> Void
+
+    @EnvironmentObject private var planStore: PlanStore
+    @EnvironmentObject private var memory: MemoryStore
+    @State private var isTargeted = false
+
+    var body: some View {
+        Button(action: onTap) {
+            DayRow(day: day, isToday: isToday, isTargeted: isTargeted)
+        }
+        .buttonStyle(.plain)
+        .draggable(MovableDay(date: day.date)) {
+            // Lightweight drag preview — same row but de-saturated.
+            DayRow(day: day, isToday: false, isTargeted: false)
+                .frame(maxWidth: 340)
+                .opacity(0.92)
+        }
+        .dropDestination(for: MovableDay.self) { items, _ in
+            guard let source = items.first else { return false }
+            // Self-drop is a no-op; PlanStore.swap already guards but we exit
+            // early to avoid the haptic.
+            if Calendar.current.isDate(source.date, inSameDayAs: day.date) {
+                return false
+            }
+            planStore.swap(sourceDate: source.date,
+                           targetDate: day.date,
+                           memory: memory.memory)
+            let haptic = UIImpactFeedbackGenerator(style: .medium)
+            haptic.impactOccurred()
+            return true
+        } isTargeted: { targeted in
+            isTargeted = targeted
+        }
+    }
+}
+
+// MARK: - Transferable drag payload
+
+/// Date wrapper used as the drag payload between day rows.
+struct MovableDay: Codable, Transferable {
+    /// ISO yyyy-MM-dd. Decoded back to a Date on drop via DateFormatter.
+    let dateISO: String
+
+    init(date: Date) {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.timeZone = .current
+        self.dateISO = f.string(from: date)
+    }
+
+    var date: Date {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.timeZone = .current
+        return f.date(from: dateISO) ?? Date()
+    }
+
+    static var transferRepresentation: some TransferRepresentation {
+        CodableRepresentation(contentType: .text)
+    }
+}
+
 // MARK: - DayRow
 
 private struct DayRow: View {
     let day: DayPlan
     let isToday: Bool
+    /// True while a drag hovers over this row — render an accent ring so the
+    /// user knows where the drop will land.
+    var isTargeted: Bool = false
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
@@ -270,7 +347,7 @@ private struct DayRow: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 14)
-        .background(isToday ? Color.accentWash : Color.surface)
+        .background(isTargeted ? Color.accentWash : (isToday ? Color.accentWash : Color.surface))
         .overlay(alignment: .leading) {
             if isToday {
                 Rectangle()
@@ -280,9 +357,15 @@ private struct DayRow: View {
         }
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(isToday ? Color.accentBorder : Color.line, lineWidth: 0.5)
+                .stroke(borderColor, lineWidth: isTargeted ? 1.5 : 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .animation(.easeOut(duration: 0.12), value: isTargeted)
+    }
+
+    private var borderColor: Color {
+        if isTargeted { return Color.accent }
+        return isToday ? Color.accentBorder : Color.line
     }
 
     private var weekdayShort: String {
