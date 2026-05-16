@@ -25,8 +25,50 @@ enum Planner {
         memory: TrainingMemory,
         overrides: WeekOverrides? = nil,
         routines: [Routine],
+        previousFeedback: [FeedbackEntry] = [],
         today: Date = Date(),
         calendar: Calendar = .current
+    ) -> WeekPlan {
+        let biased = applyFeedbackBias(memory: memory, feedback: previousFeedback, calendar: calendar)
+        return generateUnbiased(
+            memory: biased,
+            overrides: overrides,
+            routines: routines,
+            today: today,
+            calendar: calendar
+        )
+    }
+
+    /// Inspect the most recent 7-day feedback window and nudge the memory
+    /// before planning. Conservative — at most ±1 lift day per regen so
+    /// repeated "too hard" weeks don't collapse to zero in one shot.
+    static func applyFeedbackBias(
+        memory: TrainingMemory,
+        feedback: [FeedbackEntry],
+        calendar: Calendar = .current
+    ) -> TrainingMemory {
+        guard !feedback.isEmpty else { return memory }
+        let cutoff = calendar.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
+        let recent = feedback.filter { $0.date >= cutoff }
+        let tooHard = recent.filter { $0.difficulty == "too_hard" }.count
+        let tooEasy = recent.filter { $0.difficulty == "too_easy" }.count
+
+        var adjusted = memory
+        if tooHard >= 2 && tooHard > tooEasy {
+            adjusted.liftDaysPerWeek = max(0, adjusted.liftDaysPerWeek - 1)
+        } else if tooEasy >= 2 && tooEasy > tooHard {
+            // Planner's per-week loop already caps against actual empty slots.
+            adjusted.liftDaysPerWeek = min(6, adjusted.liftDaysPerWeek + 1)
+        }
+        return adjusted
+    }
+
+    private static func generateUnbiased(
+        memory: TrainingMemory,
+        overrides: WeekOverrides?,
+        routines: [Routine],
+        today: Date,
+        calendar: Calendar
     ) -> WeekPlan {
         let start = calendar.startOfDay(for: today)
         let dates: [Date] = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: start) }

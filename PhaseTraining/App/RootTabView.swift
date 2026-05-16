@@ -22,7 +22,7 @@ struct RootTabView: View {
                 .tabItem { Label("Week", systemImage: "calendar") }
                 .tag(AppTab.week)
 
-            ProgressTabPlaceholder()
+            ProgressScreen()
                 .tabItem { Label("Progress", systemImage: "chart.line.uptrend.xyaxis") }
                 .tag(AppTab.progress)
 

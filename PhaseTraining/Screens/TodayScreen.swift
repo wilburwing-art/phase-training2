@@ -28,6 +28,9 @@ struct TodayScreen: View {
     /// Drives the "Pick a different routine" sheet on lift/mobility days.
     @State private var pickingRoutine = false
 
+    /// Drives the weekly check-in flow when the current plan is almost done.
+    @State private var weeklyCheckInPresented = false
+
     // MARK: - Derived state
 
     private var todayPlan: DayPlan? { planStore.plan?.today() }
@@ -102,6 +105,17 @@ struct TodayScreen: View {
         }
     }
 
+    /// True when the current plan's last day is within 2 days (or already past).
+    /// Drives the "Plan next week" pill.
+    private var planEndingSoon: Bool {
+        guard let last = planStore.plan?.days.last?.date else { return false }
+        let cal = Calendar.current
+        let now = cal.startOfDay(for: Date())
+        let lastDay = cal.startOfDay(for: last)
+        let daysLeft = cal.dateComponents([.day], from: now, to: lastDay).day ?? 0
+        return daysLeft <= 2
+    }
+
     /// Phase 11: static insight copy. Phase 13 coach pipes dynamic text in.
     /// nil = no card rendered. Picks first matching rule.
     private var insightCopy: String? {
@@ -140,14 +154,19 @@ struct TodayScreen: View {
                 topBar
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        if let body = insightCopy {
-                            InsightCard(body: body)
+                        if planEndingSoon {
+                            planNextWeekPill
                                 .padding(.horizontal, 20)
                                 .padding(.top, 14)
                         }
+                        if let body = insightCopy {
+                            InsightCard(body: body)
+                                .padding(.horizontal, 20)
+                                .padding(.top, planEndingSoon ? 10 : 14)
+                        }
                         hero
                             .padding(.horizontal, 20)
-                            .padding(.top, insightCopy == nil ? 24 : 14)
+                            .padding(.top, (insightCopy == nil && !planEndingSoon) ? 24 : 14)
                         if let reason = todayPlan?.generatedReason {
                             reasonRow(reason)
                                 .padding(.horizontal, 20)
@@ -195,6 +214,35 @@ struct TodayScreen: View {
             )
             .presentationBackground(Color.bg)
         }
+        .sheet(isPresented: $weeklyCheckInPresented) {
+            WeeklyCheckInFlow(onDismiss: { weeklyCheckInPresented = false })
+                .presentationBackground(Color.bg)
+        }
+    }
+
+    private var planNextWeekPill: some View {
+        Button { weeklyCheckInPresented = true } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "calendar.badge.plus")
+                    .font(.system(size: 12, weight: .semibold))
+                Text("PLAN NEXT WEEK")
+                    .styled(.micro)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .semibold))
+            }
+            .foregroundStyle(Color.accent)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color.accentWash)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.accentBorder, lineWidth: 0.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("today-plan-next-week")
     }
 
     private var pickRoutineLink: some View {

@@ -20,6 +20,7 @@ import SwiftUI
 
 struct CompleteScreen: View {
     @EnvironmentObject var store: SessionStore
+    @EnvironmentObject var memoryStore: MemoryStore
 
     let session: ActiveSession
     let onSave: () -> Void
@@ -28,6 +29,14 @@ struct CompleteScreen: View {
     @State private var feel: String? = nil
     @State private var note: String = ""
     @State private var showDiscardConfirm = false
+    @State private var feedback: FeedbackEntry
+
+    init(session: ActiveSession, onSave: @escaping () -> Void, onDiscard: (() -> Void)? = nil) {
+        self.session = session
+        self.onSave = onSave
+        self.onDiscard = onDiscard
+        self._feedback = State(initialValue: FeedbackEntry(date: Date(), sessionId: session.templateId))
+    }
 
     private static let feelOptions = ["Too easy", "Easy", "Right", "Hard", "Too much"]
 
@@ -101,6 +110,10 @@ struct CompleteScreen: View {
                             .padding(.top, 20)
 
                         feelSection
+                            .padding(.horizontal, 20)
+                            .padding(.top, 20)
+
+                        FeedbackChips(entry: $feedback, exerciseOptions: feedbackExerciseOptions)
                             .padding(.horizontal, 20)
                             .padding(.top, 20)
 
@@ -386,9 +399,28 @@ struct CompleteScreen: View {
         }
     }
 
+    /// Exercises that had at least one logged set, used as hurt-area options.
+    private var feedbackExerciseOptions: [(id: String, name: String)] {
+        session.exercises
+            .filter { ex in ex.sets.contains(where: { $0.done }) }
+            .map { ex in (id: ex.id, name: ex.name) }
+    }
+
+    /// True when the user touched any structured-feedback control.
+    /// Avoids polluting memory with empty entries when they only logged sets.
+    private var hasStructuredFeedback: Bool {
+        feedback.difficulty != nil || !feedback.hurtAreas.isEmpty || feedback.ranLong
+    }
+
     private var saveButton: some View {
         Button {
             store.saveCompleted(session, feel: feel, note: note.isEmpty ? nil : note)
+            if hasStructuredFeedback {
+                var stamped = feedback
+                stamped.date = Date()
+                if !note.isEmpty { stamped.notes = note }
+                memoryStore.update { $0.feedback.append(stamped) }
+            }
             onSave()
         } label: {
             HStack(spacing: 8) {
@@ -514,18 +546,22 @@ private struct FlowLayout: Layout {
 // MARK: - Preview
 
 #Preview("With PRs") {
-    let store = SessionStore(defaults: previewDefaults(seedHistory: true))
+    let defaults = previewDefaults(seedHistory: true)
+    let store = SessionStore(defaults: defaults)
     let session = previewSession(withSomeDone: true)
     return CompleteScreen(session: session, onSave: {})
         .environmentObject(store)
+        .environmentObject(MemoryStore(defaults: defaults))
         .background(Color.bg)
 }
 
 #Preview("No history (no PR block)") {
-    let store = SessionStore(defaults: previewDefaults(seedHistory: false))
+    let defaults = previewDefaults(seedHistory: false)
+    let store = SessionStore(defaults: defaults)
     let session = previewSession(withSomeDone: true)
     return CompleteScreen(session: session, onSave: {})
         .environmentObject(store)
+        .environmentObject(MemoryStore(defaults: defaults))
         .background(Color.bg)
 }
 
