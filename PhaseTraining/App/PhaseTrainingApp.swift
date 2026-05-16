@@ -39,13 +39,24 @@ struct PhaseTrainingApp: App {
                         .environmentObject(plan)
                         .preferredColorScheme(.dark)
                 }
+                .sheet(isPresented: $tabSelection.showWeeklyCheckIn) {
+                    WeeklyCheckInFlow(onDismiss: { tabSelection.showWeeklyCheckIn = false })
+                        .environmentObject(memory)
+                        .environmentObject(plan)
+                        .presentationBackground(Color.bg)
+                }
                 .onOpenURL { url in
                     guard url.scheme == "phasetraining" else { return }
                     switch url.host {
-                    case "today":    tabSelection.selected = .today
-                    case "week":     tabSelection.selected = .week
-                    case "progress": tabSelection.selected = .progress
-                    case "profile":  tabSelection.selected = .profile
+                    case "today":     tabSelection.selected = .today
+                    case "week":      tabSelection.selected = .week
+                    case "progress":  tabSelection.selected = .progress
+                    case "profile":   tabSelection.selected = .profile
+                    case "plan-week":
+                        // Notification deep link: jump to Today and pop the
+                        // interactive planning flow on top.
+                        tabSelection.selected = .today
+                        tabSelection.showWeeklyCheckIn = true
                     default: break
                     }
                 }

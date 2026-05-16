@@ -351,7 +351,7 @@ struct ProfileScreen: View {
                         Text("Weekly plan reminder")
                             .styled(.body)
                             .foregroundStyle(Color.ink)
-                        Text("Sundays at 6:00 PM · opens the Week tab")
+                        Text("Sundays at 6:00 PM · walks through next week's plan")
                             .font(.monoXS)
                             .foregroundStyle(Color.ink3)
                     }

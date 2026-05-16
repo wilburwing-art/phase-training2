@@ -5,8 +5,10 @@
 //   - Profile "Weekly plan reminder" toggle calls enable()/disable()
 //   - enable() requests UNAuthorizationOptions [.alert, .badge, .sound] and
 //     schedules a UNCalendarNotificationTrigger for Sunday 6:00 PM, repeating
-//   - Tap → NotificationDelegate opens phasetraining://week → PhaseTrainingApp
-//     .onOpenURL flips RootTabView's selected tab to .week
+//   - Tap → NotificationDelegate opens phasetraining://plan-week →
+//     PhaseTrainingApp .onOpenURL pops the WeeklyCheckInFlow on top of the
+//     Today tab so the user walks through intent → days off → events →
+//     feedback → preview before the planner regenerates next week's plan
 //   - URL scheme registered via Project.yml info.properties CFBundleURLTypes
 //
 // `isEnabled` reads a UserDefaults flag (synchronous) instead of calling
@@ -45,7 +47,7 @@ enum WeeklyReminderScheduler {
         content.title = "Plan your week"
         content.body = "Mark unavailable days and add events for the week ahead."
         content.sound = .default
-        content.userInfo = ["deepLink": "phasetraining://week"]
+        content.userInfo = ["deepLink": "phasetraining://plan-week"]
 
         // weekday: 1 == Sunday in Apple's Gregorian Calendar. Repeats weekly.
         var when = DateComponents()

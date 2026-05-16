@@ -21,15 +21,13 @@ import SwiftUI
 struct TodayScreen: View {
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject var planStore: PlanStore
+    @EnvironmentObject var tabSelection: TabSelectionStore
 
     let onStart: () -> Void
     let onHistory: () -> Void
 
     /// Drives the "Pick a different routine" sheet on lift/mobility days.
     @State private var pickingRoutine = false
-
-    /// Drives the weekly check-in flow when the current plan is almost done.
-    @State private var weeklyCheckInPresented = false
 
     // MARK: - Derived state
 
@@ -214,14 +212,10 @@ struct TodayScreen: View {
             )
             .presentationBackground(Color.bg)
         }
-        .sheet(isPresented: $weeklyCheckInPresented) {
-            WeeklyCheckInFlow(onDismiss: { weeklyCheckInPresented = false })
-                .presentationBackground(Color.bg)
-        }
     }
 
     private var planNextWeekPill: some View {
-        Button { weeklyCheckInPresented = true } label: {
+        Button { tabSelection.showWeeklyCheckIn = true } label: {
             HStack(spacing: 8) {
                 Image(systemName: "calendar.badge.plus")
                     .font(.system(size: 12, weight: .semibold))
@@ -516,6 +510,7 @@ struct TodayScreen: View {
         .environmentObject(SessionStore(defaults: defaults))
         .environmentObject(plan)
         .environmentObject(MemoryStore(defaults: defaults))
+        .environmentObject(TabSelectionStore())
 }
 
 #Preview("No plan (fallback)") {
@@ -526,4 +521,5 @@ struct TodayScreen: View {
         .environmentObject(SessionStore(defaults: defaults))
         .environmentObject(PlanStore(defaults: defaults))
         .environmentObject(MemoryStore(defaults: defaults))
+        .environmentObject(TabSelectionStore())
 }

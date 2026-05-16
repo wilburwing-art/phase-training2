@@ -11,7 +11,7 @@ struct CheckInConstraintsScreen: View {
         CheckInScaffold(
             step: .constraints,
             title: "Days off.",
-            subtitle: "Tap any days you can't train. Events you've added to the Week tab stay protected.",
+            subtitle: "Tap any days you can't train. You'll add races and sessions in the next step.",
             nextLabel: "Continue",
             nextEnabled: true,
             onNext: onNext,

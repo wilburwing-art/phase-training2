@@ -15,6 +15,10 @@ enum AppTab: Hashable {
 
 final class TabSelectionStore: ObservableObject {
     @Published var selected: AppTab = .today
+    /// Drives the weekly check-in cover. Lives here (not on TodayScreen) so
+    /// the notification deep link `phasetraining://plan-week` can open the
+    /// flow regardless of which tab is active.
+    @Published var showWeeklyCheckIn: Bool = false
 }
 
 struct RootTabView: View {

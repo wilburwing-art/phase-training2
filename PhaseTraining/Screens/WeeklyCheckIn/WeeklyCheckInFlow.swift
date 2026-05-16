@@ -20,11 +20,21 @@ struct WeeklyCheckInDraft {
     // Constraints (drop into WeekOverrides on accept; rolling forward 7 days)
     var unavailableDays: Set<Weekday> = []
 
+    // Events for the upcoming week (races, sport sessions, hard climbs). The
+    // planner uses these to anchor specific days + apply pre-event taper and
+    // post-event recovery. Hydrated from planStore.overrides.events on first
+    // appear so the user sees / can edit any pre-existing events.
+    var events: [WeekEvent] = []
+
     // Feedback (becomes a WeeklyCheckIn record in memory.weeklyCheckIns;
     // FeedbackEntries from the CompleteScreen during the week stay where they are)
     var lastWeekRating: String? = nil        // "too_easy" | "right" | "too_hard"
     var worked: String = ""
     var didntWork: String = ""
+
+    /// Flips to true after the first .onAppear so we don't re-overwrite
+    /// user edits when the flow body re-renders.
+    var hydrated: Bool = false
 
     /// Tags shown on the Intent step.
     static let intentChips: [(String, String)] = [
@@ -42,6 +52,7 @@ struct WeeklyCheckInDraft {
 enum WeeklyCheckInStep: Int, CaseIterable {
     case intent = 0
     case constraints
+    case events
     case feedback
     case preview
 
@@ -72,6 +83,7 @@ struct WeeklyCheckInFlow: View {
                 .id(step)
                 .transition(.opacity.combined(with: .move(edge: .trailing)))
         }
+        .onAppear(perform: hydrateFromOverrides)
     }
 
     @ViewBuilder
@@ -89,6 +101,13 @@ struct WeeklyCheckInFlow: View {
                 onNext: advance,
                 onBack: back
             )
+        case .events:
+            CheckInEventsScreen(
+                draft: $draft,
+                weekStart: planStore.overrides.weekStart,
+                onNext: advance,
+                onBack: back
+            )
         case .feedback:
             CheckInFeedbackScreen(
                 draft: $draft,
@@ -102,6 +121,15 @@ struct WeeklyCheckInFlow: View {
                 onBack: back
             )
         }
+    }
+
+    /// Seed the draft with whatever the user has already entered on the Week
+    /// tab so they see + can edit it rather than starting blank.
+    private func hydrateFromOverrides() {
+        guard !draft.hydrated else { return }
+        draft.hydrated = true
+        draft.unavailableDays = planStore.overrides.unavailableDays
+        draft.events = planStore.overrides.events
     }
 
     private func advance() {
@@ -128,9 +156,13 @@ struct WeeklyCheckInFlow: View {
                 )
             )
         }
-        // Push the unavailable days into overrides so Planner respects them.
+        // Push unavailable days + pre-entered events into overrides so the
+        // Planner sees them. Replace events wholesale (not append) — the
+        // events list in the draft is hydrated from the same overrides on
+        // entry, so this is an idempotent re-write.
         planStore.updateOverrides(memory: nil) { ov in
             ov.unavailableDays = draft.unavailableDays
+            ov.events = draft.events
         }
         let routines = CoachDatabase.shared.listRoutines()
         let plan = Planner.generate(

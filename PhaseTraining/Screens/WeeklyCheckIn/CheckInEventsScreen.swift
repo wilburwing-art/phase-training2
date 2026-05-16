@@ -1,0 +1,178 @@
+// CheckInEventsScreen.swift — step 3: races, sport sessions, hard days the
+// user already knows about. These pre-empt the planner's default kind for
+// their date and (if marked hard) trigger pre-event taper + post-event
+// recovery passes.
+//
+// UI: a row of date chips covering the 7 days the planner will operate over
+// (overrides.weekStart … +6). Tap a date → EventEditorSheet → save lands in
+// draft.events. The list below shows everything currently in the draft with
+// swipe-to-delete.
+
+import SwiftUI
+
+struct CheckInEventsScreen: View {
+    @Binding var draft: WeeklyCheckInDraft
+    /// Monday-anchored start of the week the planner will use. Date chips +
+    /// EventEditorSheet anchor against this so the user sees real dates,
+    /// independent of when they happen to open the check-in.
+    let weekStart: Date
+    let onNext: () -> Void
+    let onBack: () -> Void
+
+    @State private var pickingDate: Date? = nil
+
+    var body: some View {
+        CheckInScaffold(
+            step: .events,
+            title: "Anything on the calendar?",
+            subtitle: "Add races, sport sessions, or known hard days. We'll taper into them and recover after.",
+            nextLabel: draft.events.isEmpty ? "Skip" : "Continue",
+            nextEnabled: true,
+            onNext: onNext,
+            onBack: onBack,
+            onClose: nil
+        ) {
+            VStack(alignment: .leading, spacing: 18) {
+                dayPickerSection
+                if !draft.events.isEmpty {
+                    eventList
+                }
+            }
+        }
+        .sheet(item: pickingDateBinding) { wrapped in
+            EventEditorSheet(date: wrapped.date) { event in
+                draft.events.append(event)
+            }
+        }
+    }
+
+    // MARK: - Sections
+
+    private var dayPickerSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("PICK A DAY")
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            let columns = [GridItem(.adaptive(minimum: 80), spacing: 6)]
+            LazyVGrid(columns: columns, alignment: .leading, spacing: 6) {
+                ForEach(upcomingDays, id: \.self) { date in
+                    dateChip(date)
+                }
+            }
+        }
+    }
+
+    private func dateChip(_ date: Date) -> some View {
+        Button { pickingDate = date } label: {
+            VStack(spacing: 2) {
+                Text(weekdayShort(date))
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                Text(dayNumber(date))
+                    .font(.custom("JetBrainsMono-SemiBold", size: 18))
+                    .foregroundStyle(Color.ink)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(Color.surface)
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var eventList: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("THIS WEEK")
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            VStack(spacing: 8) {
+                ForEach(draft.events.sorted(by: { $0.date < $1.date })) { event in
+                    eventRow(event)
+                }
+            }
+        }
+    }
+
+    private func eventRow(_ event: WeekEvent) -> some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text(event.title)
+                        .styled(.body)
+                        .foregroundStyle(Color.ink)
+                    intensityBadge(event.intensity)
+                }
+                Text(formattedDate(event.date))
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+            }
+            Spacer(minLength: 8)
+            Button {
+                draft.events.removeAll { $0.id == event.id }
+            } label: {
+                Image(systemName: "trash")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Color.ink3)
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(12)
+        .background(Color.surface)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func intensityBadge(_ intensity: EventIntensity) -> some View {
+        Text(intensity.label.uppercased())
+            .styled(.micro)
+            .foregroundStyle(intensity == .hard ? Color.accentInk : Color.ink3)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(intensity == .hard ? Color.danger.opacity(0.9) : Color.elevated)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+    }
+
+    // MARK: - Helpers
+
+    private var upcomingDays: [Date] {
+        let cal = Calendar.current
+        return (0..<7).compactMap { cal.date(byAdding: .day, value: $0, to: weekStart) }
+    }
+
+    private func weekdayShort(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "EEE"
+        return f.string(from: date).uppercased()
+    }
+
+    private func dayNumber(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "d"
+        return f.string(from: date)
+    }
+
+    private func formattedDate(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "EEE, MMM d"
+        return f.string(from: date)
+    }
+
+    /// Bridge pickingDate (Date?) → Identifiable wrapper for `.sheet(item:)`.
+    private var pickingDateBinding: Binding<EventPickDate?> {
+        Binding(
+            get: { pickingDate.map(EventPickDate.init) },
+            set: { pickingDate = $0?.date }
+        )
+    }
+}
+
+private struct EventPickDate: Identifiable {
+    let date: Date
+    var id: String {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        return f.string(from: date)
+    }
+}
