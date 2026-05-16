@@ -11,6 +11,8 @@ struct ProfileScreen: View {
     @EnvironmentObject private var store: MemoryStore
     @State private var dislikeInput = ""
     @State private var constraintInput = ""
+    @State private var remindersOn = WeeklyReminderScheduler.isEnabled
+    @State private var remindersPending = false
 
     var body: some View {
         ZStack {
@@ -38,6 +40,8 @@ struct ProfileScreen: View {
                     dislikesSection
                     Divider().background(Color.lineSoft)
                     constraintsSection
+                    Divider().background(Color.lineSoft)
+                    remindersSection
 
                     Spacer().frame(height: 40)
                 }
@@ -331,6 +335,56 @@ struct ProfileScreen: View {
                     placeholder: "e.g. left knee",
                     onAdd: { v in store.update { $0.constraints.append(v) } },
                     onRemove: { v in store.update { $0.constraints.removeAll { $0 == v } } })
+        }
+    }
+
+    private var remindersSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            section("REMINDERS")
+            Button(action: toggleReminders) {
+                HStack(spacing: 12) {
+                    Image(systemName: remindersOn ? "bell.fill" : "bell.slash")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(remindersOn ? Color.accent : Color.ink3)
+                        .frame(width: 24)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Weekly plan reminder")
+                            .styled(.body)
+                            .foregroundStyle(Color.ink)
+                        Text("Sundays at 6:00 PM · opens the Week tab")
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
+                    }
+                    Spacer(minLength: 8)
+                    Image(systemName: remindersOn ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 20))
+                        .foregroundStyle(remindersOn ? Color.accent : Color.ink3)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(remindersOn ? Color.accentWash : Color.surface)
+                .overlay(RoundedRectangle(cornerRadius: 12)
+                    .stroke(remindersOn ? Color.accentBorder : Color.line, lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+            .disabled(remindersPending)
+        }
+    }
+
+    private func toggleReminders() {
+        if remindersOn {
+            WeeklyReminderScheduler.disable()
+            remindersOn = false
+            return
+        }
+        remindersPending = true
+        Task {
+            let ok = await WeeklyReminderScheduler.enable()
+            await MainActor.run {
+                remindersOn = ok
+                remindersPending = false
+            }
         }
     }
 

@@ -5,6 +5,7 @@ struct PhaseTrainingApp: App {
     @StateObject private var session = SessionStore()
     @StateObject private var memory  = MemoryStore()
     @StateObject private var plan    = PlanStore()
+    @StateObject private var tabSelection = TabSelectionStore()
 
     /// UI tests pass `--ui-test-onboarded` to skip the first-launch onboarding cover
     /// without persisting state to UserDefaults.
@@ -16,10 +17,12 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--ui-test-reset") {
             for key in ["pt_active_session", "pt_sessions",
                         "pt_training_memory",
-                        "pt_week_plan", "pt_week_overrides"] {
+                        "pt_week_plan", "pt_week_overrides",
+                        "pt_weekly_reminder_enabled"] {
                 UserDefaults.standard.removeObject(forKey: key)
             }
         }
+        WeeklyReminderScheduler.registerDelegate()
     }
 
     var body: some Scene {
@@ -28,12 +31,23 @@ struct PhaseTrainingApp: App {
                 .environmentObject(session)
                 .environmentObject(memory)
                 .environmentObject(plan)
+                .environmentObject(tabSelection)
                 .preferredColorScheme(.dark)
                 .fullScreenCover(isPresented: .constant(!memory.isOnboarded && !uiTestSkipsOnboarding)) {
                     OnboardingFlow()
                         .environmentObject(memory)
                         .environmentObject(plan)
                         .preferredColorScheme(.dark)
+                }
+                .onOpenURL { url in
+                    guard url.scheme == "phasetraining" else { return }
+                    switch url.host {
+                    case "today":    tabSelection.selected = .today
+                    case "week":     tabSelection.selected = .week
+                    case "progress": tabSelection.selected = .progress
+                    case "profile":  tabSelection.selected = .profile
+                    default: break
+                    }
                 }
         }
     }
