@@ -55,12 +55,12 @@ final class RoutineDetailSwipeTests: XCTestCase {
         // The delete propagation is flaky on iOS 18 simulators (CI runs
         // iPhone 16 Pro / iOS 18.5; locally we're on iOS 26+). The tap
         // synthesizes correctly but the @State mutation doesn't surface in
-        // XCUI's accessibility tree on iOS 18. Skip the row-count assertion
-        // on CI so the rest of the test (which verifies the swipe + button
-        // affordance) still catches real regressions.
+        // XCUI's accessibility tree on iOS 18. Gate the row-count assertion
+        // by OS so the rest of the test (which verifies the swipe + button
+        // affordance) still catches real regressions on every OS.
         // TODO: investigate the iOS 18 vs 26 SwiftUI gesture/animation
-        // difference and re-enable on CI.
-        if ProcessInfo.processInfo.environment["CI"] != "true" {
+        // difference and remove the gate.
+        if #available(iOS 26, *) {
             XCTAssertLessThan(rowCount(in: app), initialRowCount,
                               "row count should drop after Delete (waited up to 5s)")
         }
