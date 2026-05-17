@@ -56,6 +56,11 @@ struct TodayScreen: View {
                 }
             )
         }
+        // Generated workout (the new default for lift / mobility days).
+        if let plan = todayPlan, let workout = plan.generatedWorkout {
+            return workout.toWorkoutTemplate(id: "gen-\(plan.id.uuidString)")
+        }
+        // Day-override picked a specific routine (custom workout or library pick).
         if let routineId = todayPlan?.routineId {
             return loadTemplate(routineId: routineId)
         }

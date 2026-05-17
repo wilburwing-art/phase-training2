@@ -255,6 +255,64 @@ final class CoachDatabase {
         return out.sorted { $0.score > $1.score }
     }
 
+    /// Exercises that hit a given movement pattern (movement_patterns.slug),
+    /// post-filtered in Swift by difficulty / environment / name-keyword
+    /// excludes / id excludes. Used by WorkoutGenerator.
+    func exercises(
+        matchingPattern pattern: String,
+        difficulties: Set<String> = [],
+        environments: Set<String> = [],
+        excludeKeywords: [String] = [],
+        excludeIds: Set<Int> = [],
+        modalities: Set<String> = []
+    ) -> [Exercise] {
+        guard let db else { return [] }
+        let sql = """
+        SELECT DISTINCT e.id, e.name, e.slug, e.description, e.instructions,
+               e.cues, e.difficulty, e.modality, e.environment,
+               e.is_compound, e.is_unilateral,
+               e.default_sets, e.default_reps, e.default_rest, e.default_duration,
+               e.regression, e.progression
+        FROM exercises e
+        JOIN exercise_movement_patterns emp ON emp.exercise_id = e.id
+        JOIN movement_patterns mp ON mp.id = emp.movement_pattern_id
+        WHERE mp.slug = ?
+        ORDER BY e.name ASC
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_text(stmt, 1, pattern, -1, SQLITE_TRANSIENT)
+
+        var raw: [Exercise] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            raw.append(decodeExercise(stmt))
+        }
+
+        let lowerExcludes = excludeKeywords.map { $0.lowercased() }
+        return raw.filter { ex in
+            if excludeIds.contains(ex.id) { return false }
+            if !difficulties.isEmpty {
+                guard let d = ex.difficulty, difficulties.contains(d) else { return false }
+            }
+            if !environments.isEmpty {
+                if let env = ex.environment, !env.isEmpty, !environments.contains(env) {
+                    return false
+                }
+            }
+            if !modalities.isEmpty {
+                guard let m = ex.modality, modalities.contains(m) else { return false }
+            }
+            if !lowerExcludes.isEmpty {
+                let lowerName = ex.name.lowercased()
+                if lowerExcludes.contains(where: { lowerName.contains($0) }) {
+                    return false
+                }
+            }
+            return true
+        }
+    }
+
     func exercises(forRoutineId routineId: Int) -> [RoutineExercise] {
         guard let db else { return [] }
         let sql = """

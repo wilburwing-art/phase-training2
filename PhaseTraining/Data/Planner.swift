@@ -140,7 +140,10 @@ enum Planner {
         let adjustedQueue = adjustForLiftBudget(usedQueue, target: liftBudget)
 
         // Step 6 — walk adjusted queue, fill empty slots.
+        // First pass: lay down the kinds. Lift indexing happens in the
+        // second pass so we know totalLifts before generating workouts.
         var qi = 0
+        var pendingKinds: [(idx: Int, date: Date, kind: DayKind)] = []
         for (i, date) in dates.enumerated() where slots[i] == nil {
             guard qi < adjustedQueue.count else {
                 slots[i] = DayPlan(
@@ -151,12 +154,30 @@ enum Planner {
                 )
                 continue
             }
-            let kind = adjustedQueue[qi]
+            pendingKinds.append((i, date, adjustedQueue[qi]))
             qi += 1
-            slots[i] = makeSlot(
-                date: date, kind: kind, memory: memory,
-                routines: routines, shapeDescription: shape.description, slotOffset: i
+        }
+
+        // Generated-workout pass: compute total lifts in this regen,
+        // then walk pendingKinds in date order assigning a lift index
+        // so the workout generator can pick A/B/push/pull/legs/etc.
+        let profile = DemographicProfile.from(memory)
+        let totalLifts = pendingKinds.filter { $0.kind == .lift }.count
+            + slots.compactMap { $0 }.filter { $0.kind == .lift }.count
+        var liftCursor = 0
+        for entry in pendingKinds {
+            slots[entry.idx] = makeSlot(
+                date: entry.date,
+                kind: entry.kind,
+                memory: memory,
+                profile: profile,
+                routines: routines,
+                shapeDescription: shape.description,
+                slotOffset: entry.idx,
+                liftIndex: entry.kind == .lift ? liftCursor : 0,
+                totalLifts: totalLifts
             )
+            if entry.kind == .lift { liftCursor += 1 }
         }
 
         // Step 7 — best-practice rules. Each pass mutates only NON-protected slots.
@@ -189,19 +210,46 @@ enum Planner {
                            generatedReason: "You set this day to rest")
 
         case .mobility(let routineId):
-            let r = routineId.flatMap { id in routines.first(where: { $0.id == id }) }
+            // User picked a specific routine → honor it; else generate a
+            // fresh mobility flow from the profile so the day isn't empty.
+            if let id = routineId, let r = routines.first(where: { $0.id == id }) {
+                return DayPlan(date: date, kind: .mobility,
+                               title: r.name,
+                               routineId: r.id,
+                               protected: true,
+                               generatedReason: "You picked this routine for this day")
+            }
+            let profile = DemographicProfile.from(memory)
+            let workout = WorkoutGenerator.generateMobility(
+                memory: memory,
+                profile: profile,
+                hashSeed: memory.planInputsHash + "-mob-override"
+            )
             return DayPlan(date: date, kind: .mobility,
-                           title: r?.name ?? "Mobility",
-                           routineId: r?.id,
+                           title: workout.title,
+                           generatedWorkout: workout,
                            protected: true,
                            generatedReason: "You set this day to mobility")
 
         case .lift(let routineId):
-            let r = routineId.flatMap { id in routines.first(where: { $0.id == id }) }
-                ?? pickRoutine(routines: routines, kind: .lift, memory: memory, slotOffset: 0)
+            if let id = routineId, let r = routines.first(where: { $0.id == id }) {
+                return DayPlan(date: date, kind: .lift,
+                               title: r.name,
+                               routineId: r.id,
+                               protected: true,
+                               generatedReason: "You picked this routine for this day")
+            }
+            let profile = DemographicProfile.from(memory)
+            let workout = WorkoutGenerator.generateLift(
+                liftIndex: 0,
+                totalLifts: 1,
+                memory: memory,
+                profile: profile,
+                hashSeed: memory.planInputsHash + "-lift-override"
+            )
             return DayPlan(date: date, kind: .lift,
-                           title: r?.name ?? "Strength",
-                           routineId: r?.id,
+                           title: workout.title,
+                           generatedWorkout: workout,
                            protected: true,
                            generatedReason: "You set this day to lift")
 
@@ -250,21 +298,41 @@ enum Planner {
         date: Date,
         kind: DayKind,
         memory: TrainingMemory,
+        profile: DemographicProfile,
         routines: [Routine],
         shapeDescription: String,
-        slotOffset: Int
+        slotOffset: Int,
+        liftIndex: Int,
+        totalLifts: Int
     ) -> DayPlan {
         switch kind {
-        case .lift, .mobility:
-            let r = pickRoutine(routines: routines, kind: kind, memory: memory, slotOffset: slotOffset)
+        case .lift:
+            let workout = WorkoutGenerator.generateLift(
+                liftIndex: liftIndex,
+                totalLifts: totalLifts,
+                memory: memory,
+                profile: profile,
+                hashSeed: memory.planInputsHash
+            )
             return DayPlan(
                 date: date,
-                kind: kind,
-                title: r?.name ?? defaultTitle(for: kind),
-                routineId: r?.id,
-                generatedReason: r != nil
-                    ? "Picked from \(shapeDescription)"
-                    : "No matching \(kind.label.lowercased()) routine — placeholder"
+                kind: .lift,
+                title: workout.title,
+                generatedWorkout: workout,
+                generatedReason: workout.provenance
+            )
+        case .mobility:
+            let workout = WorkoutGenerator.generateMobility(
+                memory: memory,
+                profile: profile,
+                hashSeed: memory.planInputsHash + "-mob-\(slotOffset)"
+            )
+            return DayPlan(
+                date: date,
+                kind: .mobility,
+                title: workout.title,
+                generatedWorkout: workout,
+                generatedReason: workout.provenance
             )
         case .sport:
             return DayPlan(

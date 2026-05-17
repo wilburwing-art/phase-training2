@@ -48,8 +48,16 @@ struct DayPlan: Codable, Identifiable, Hashable {
     var date: Date
     var kind: DayKind
     var title: String
-    /// coach.db routine id when kind == .lift / .mobility. nil otherwise.
+    /// coach.db routine id when kind == .lift / .mobility AND the slot was
+    /// satisfied by an explicit user-picked routine (day override). nil for
+    /// generated workouts — those carry exercises directly in
+    /// `generatedWorkout`.
     var routineId: Int?
+    /// Workout assembled exercise-by-exercise from the user's demographic
+    /// profile + movement-pattern recipes. Replaces routineId as the primary
+    /// source for lift / mobility days. nil for non-workout days or for days
+    /// whose slot was overridden by a routineId pick.
+    var generatedWorkout: GeneratedWorkout?
     /// Sport for kind == .sport days; nil otherwise.
     var sport: Sport?
     /// User-locked day (Phase 11 protectDay edit) — planner will not auto-move.
@@ -60,6 +68,91 @@ struct DayPlan: Codable, Identifiable, Hashable {
     var durationMinutes: Int?
     /// Human-readable rule trace ("4-day plan, day 2 → strength").
     var generatedReason: String?
+}
+
+// MARK: - GeneratedWorkout
+//
+// A workout that the app composed itself from individual coach.db exercises,
+// shaped by the user's DemographicProfile + a movement-pattern recipe.
+// Bundled routines are still browsable in the library as inspiration / custom
+// overrides — they're just no longer the primary content of a planned day.
+
+struct GeneratedWorkout: Codable, Hashable {
+    /// Display title — "Push day", "Full body A", "Mobility flow".
+    var title: String
+    /// One-line summary for the card view: "5 movements · ~45 min".
+    var summary: String
+    var exercises: [GeneratedExercise]
+    var estimatedMinutes: Int
+    /// Sentence used in the Today / Week explanation chips — explains *why*
+    /// this workout looks the way it does ("Intermediate · push/pull/legs
+    /// rotation, day 1 of 3").
+    var provenance: String
+}
+
+struct GeneratedExercise: Codable, Hashable, Identifiable {
+    /// Stable id derived from (planInputsHash, slotIndex, exerciseId) — must
+    /// NOT use UUID() so the same memory + slot yields the same id across
+    /// regenerations (the inputs-hash drift check relies on stable plans).
+    var id: String
+    /// coach.db exercises.id — used to fetch full detail / find substitutes.
+    var exerciseId: Int
+    var name: String
+    /// movement_patterns.slug the slot was filled from — for the "why this
+    /// exercise" hint and grouping in the UI.
+    var pattern: String?
+    var isCompound: Bool
+    var sets: Int
+    /// Free-form reps string ("5", "8-10", "AMRAP", "30s hold"). Bridged
+    /// to Int via leading-digit parsing for ActiveSession's targetReps.
+    var reps: String
+    var restSeconds: Int
+    var notes: String?
+}
+
+extension GeneratedWorkout {
+    /// Bridge to the existing WorkoutTemplate -> ActiveSession runtime so the
+    /// log screen + history don't need to learn a new model.
+    func toWorkoutTemplate(id: String) -> WorkoutTemplate {
+        WorkoutTemplate(
+            id: id,
+            name: title,
+            category: "Generated",
+            exercises: exercises.map { gex in
+                ExerciseTemplate(
+                    id: "gex-\(gex.id)",
+                    name: gex.name,
+                    type: nil,
+                    unit: "lbs",
+                    targetSets: gex.sets,
+                    targetReps: Self.parseRepsLeading(gex.reps) ?? 8,
+                    rest: gex.restSeconds
+                )
+            }
+        )
+    }
+
+    /// Render as a list of bundled-style RoutineExercises so the same
+    /// RoutineDetailScreen UI can edit a generated workout before starting.
+    func toRoutineExercises() -> [RoutineExercise] {
+        exercises.enumerated().map { idx, gex in
+            RoutineExercise(
+                id: -(idx + 1),
+                exerciseId: gex.exerciseId,
+                name: gex.name,
+                position: idx + 1,
+                sets: gex.sets,
+                reps: gex.reps,
+                rest: "\(gex.restSeconds)s",
+                notes: gex.notes
+            )
+        }
+    }
+
+    private static func parseRepsLeading(_ s: String) -> Int? {
+        let digits = s.prefix(while: { $0.isNumber })
+        return Int(digits)
+    }
 }
 
 // MARK: - WeekPlan

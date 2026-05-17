@@ -256,7 +256,12 @@ final class PlannerTests: XCTestCase {
 
     // MARK: - Routine selection
 
-    func testLiftDaysCarryRoutineId() {
+    func testLiftDaysCarryGeneratedWorkout() {
+        // Phase 15: the planner now generates workouts exercise-by-exercise
+        // from coach.db instead of picking a bundled routine. Every lift day
+        // should ship with a non-empty generatedWorkout. (The catalog: arg
+        // is still accepted for day overrides + custom routines, but the
+        // main planning path doesn't use it.)
         var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.experience = .intermediate
@@ -265,12 +270,17 @@ final class PlannerTests: XCTestCase {
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
         for day in plan.days where day.kind == .lift {
-            XCTAssertNotNil(day.routineId,
-                            "\(day.title) should have a routineId from the catalog")
+            XCTAssertNotNil(day.generatedWorkout,
+                            "\(day.title) should have a generated workout")
+            XCTAssertFalse(day.generatedWorkout?.exercises.isEmpty ?? true,
+                           "\(day.title) generated workout should have exercises")
         }
     }
 
-    func testBeginnerExperienceExcludesAdvancedRoutines() {
+    func testBeginnerGeneratedExercisesRespectDifficulty() {
+        // A beginner user's generated workout exercises should be
+        // difficulty=beginner (the preferred bucket for beginners is
+        // ["beginner"] only — no advanced/elite leakage).
         var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.experience = .beginner
@@ -278,57 +288,23 @@ final class PlannerTests: XCTestCase {
         memory.liftDaysPerWeek = 3
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
-        let routineIds = plan.days.compactMap(\.routineId)
-        XCTAssertFalse(routineIds.contains(3),
-                       "Advanced Lower (id 3) should never appear for a beginner")
+        for day in plan.days where day.kind == .lift {
+            for ex in day.generatedWorkout?.exercises ?? [] {
+                let underlying = CoachDatabase.shared.exercise(id: ex.exerciseId)
+                let diff = underlying?.difficulty ?? "beginner"
+                XCTAssertNotEqual(diff, "advanced",
+                                  "Beginner should not get an advanced exercise: \(ex.name)")
+                XCTAssertNotEqual(diff, "elite",
+                                  "Beginner should not get an elite exercise: \(ex.name)")
+            }
+        }
     }
 
-    // MARK: - Phase 14: demographic-driven selection
+    // MARK: - Phase 14: demographic-driven selection (now via the generator)
 
-    func testAdvancedExperiencePrefersAdvancedRoutinesFirst() {
-        // The catalog only has one advanced lift (id 3). An advanced user with
-        // 1 lift / week should land on it, not on a lower-difficulty match.
-        var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
-        memory.experience = .advanced
-        memory.sessionMinutes = 60
-        memory.liftDaysPerWeek = 1
-
-        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
-        let liftIds = plan.days.filter { $0.kind == .lift }.compactMap(\.routineId)
-        XCTAssertTrue(liftIds.contains(3),
-                      "Advanced user should be served the advanced routine when one exists")
-    }
-
-    func testIntermediateExperiencePrefersIntermediateOverBeginner() {
-        // Intermediate routine (id 2) should beat the beginner one (id 1) when
-        // both are difficulty-allowed. Catalog is small enough that the
-        // deterministic pick is forced when the candidate set is singular.
-        var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
-        memory.experience = .intermediate
-        memory.sessionMinutes = 50
-        memory.liftDaysPerWeek = 1
-
-        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
-        let liftIds = plan.days.filter { $0.kind == .lift }.compactMap(\.routineId)
-        XCTAssertEqual(liftIds.first, 2,
-                       "Intermediate user should land on the intermediate routine, not the beginner one")
-    }
-
-    func testBodyweightEquipmentExcludesGymRoutines() {
-        // Extend the catalog with one home-tagged strength routine so the
-        // test has a positive case to assert on (a bodyweight user should
-        // land on the home routine, NOT on any of the gym routines, even
-        // though gym ones match the other criteria).
-        var catalogPlus = catalog()
-        catalogPlus.append(Routine(
-            id: 200, name: "Bodyweight Push", slug: "str-bw",
-            description: nil, goal: "strength", difficulty: "intermediate",
-            phase: nil, durationMinutes: 45, environment: "home",
-            exerciseCount: 5, setCount: 15
-        ))
-
+    func testBodyweightEquipmentRestrictsExerciseEnvironment() {
+        // A bodyweight user's generated workout exercises should never hit a
+        // gym-only exercise. (Mobility flows go through the same env filter.)
         var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.experience = .intermediate
@@ -336,29 +312,19 @@ final class PlannerTests: XCTestCase {
         memory.liftDaysPerWeek = 3
         memory.equipment = [.bodyweight]
 
-        let plan = Planner.generate(memory: memory, routines: catalogPlus, today: mondayAnchor())
-        let liftRoutines = plan.days.filter { $0.kind == .lift }.compactMap(\.routineId)
-        XCTAssertFalse(liftRoutines.isEmpty,
-                       "Bodyweight user should still land on the home routine (200)")
-        for id in liftRoutines {
-            let r = catalogPlus.first { $0.id == id }!
-            XCTAssertNotEqual(r.environment, "gym",
-                              "Bodyweight user got a gym routine: \(r.name)")
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        for day in plan.days where day.kind == .lift {
+            for ex in day.generatedWorkout?.exercises ?? [] {
+                let underlying = CoachDatabase.shared.exercise(id: ex.exerciseId)
+                XCTAssertNotEqual(underlying?.environment, "gym",
+                                  "Bodyweight user got a gym exercise: \(ex.name)")
+            }
         }
     }
 
-    func testConstraintKeywordExcludesMatchingRoutine() {
-        // Inject a routine that mentions "knee" so a "left knee" constraint
-        // can filter it out. The catalog otherwise lacks knee-named items so
-        // we can't test this with the stock fixture.
-        var catalogPlus = catalog()
-        catalogPlus.append(Routine(
-            id: 99, name: "Knee Rehab Lower", slug: "str-knee",
-            description: nil, goal: "strength", difficulty: "intermediate",
-            phase: nil, durationMinutes: 50, environment: "gym",
-            exerciseCount: 5, setCount: 15
-        ))
-
+    func testConstraintKeywordExcludesMatchingExercises() {
+        // A user with a "left knee" constraint should not see any exercise
+        // whose name contains "knee" anywhere in their generated workouts.
         var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.experience = .intermediate
@@ -366,10 +332,13 @@ final class PlannerTests: XCTestCase {
         memory.liftDaysPerWeek = 3
         memory.constraints = ["left knee"]
 
-        let plan = Planner.generate(memory: memory, routines: catalogPlus, today: mondayAnchor())
-        let liftIds = plan.days.filter { $0.kind == .lift }.compactMap(\.routineId)
-        XCTAssertFalse(liftIds.contains(99),
-                       "Routine matching the 'knee' constraint should be filtered out")
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        for day in plan.days where day.kind == .lift {
+            for ex in day.generatedWorkout?.exercises ?? [] {
+                XCTAssertFalse(ex.name.lowercased().contains("knee"),
+                               "Constraint 'knee' should have filtered: \(ex.name)")
+            }
+        }
     }
 
     func testRecommendationRangesAreSurfaced() {
