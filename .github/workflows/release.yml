@@ -48,6 +48,12 @@ jobs:
       - name: Install xcodegen + xcbeautify
         run: brew install xcodegen xcbeautify
 
+      - name: Generate CoachSecrets.swift
+        env:
+          CONFIGURATION: Release
+          PHASETRAINING_CF_AIG_PROD_TOKEN: ${{ secrets.PHASETRAINING_CF_AIG_PROD_TOKEN }}
+        run: ./scripts/generate-coach-secrets.sh
+
       - name: Generate project
         run: xcodegen generate
 

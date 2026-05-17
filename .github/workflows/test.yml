@@ -18,6 +18,9 @@ jobs:
       - name: Install xcodegen + xcbeautify
         run: brew install xcodegen xcbeautify
 
+      - name: Generate CoachSecrets.swift (empty token — tests don't hit the gateway)
+        run: ./scripts/generate-coach-secrets.sh
+
       - name: Generate project
         run: xcodegen generate
 
