@@ -61,6 +61,8 @@ struct ProfileScreen: View {
                     Divider().background(Color.lineSoft)
                     remindersSection
                     Divider().background(Color.lineSoft)
+                    CoachSettingsRow()
+                    Divider().background(Color.lineSoft)
                     dataSection
 
                     Spacer().frame(height: 40)
