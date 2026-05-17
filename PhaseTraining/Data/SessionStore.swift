@@ -205,6 +205,65 @@ final class SessionStore: ObservableObject {
         return saved
     }
 
+    // MARK: - PRs
+
+    /// Personal records achieved by `exercises` — completed sets whose weight
+    /// at given rep count beats every prior set of the same exercise (matched
+    /// by name, ACROSS all templates) in stored history. Used by
+    /// CompleteScreen to celebrate before save commits, and by post-save
+    /// surfaces.
+    ///
+    /// Cross-template (so swapping a routine doesn't reset your PRs) +
+    /// per-rep (a new 5×135 PR is distinct from a 10×95 PR; both stand
+    /// independently). De-duped on the (exercise, reps) pair so a single
+    /// PR doesn't show up multiple times within one session.
+    ///
+    /// `excludingSessionId` lets a post-save call self-exclude when the
+    /// current session is already in `loadSaved()`.
+    func personalRecords(in exercises: [LoggedExercise],
+                         excludingSessionId: TimeInterval? = nil) -> [PersonalRecord] {
+        let priors = loadSaved().filter { excludingSessionId == nil || $0.id != excludingSessionId }
+
+        // best[exerciseName][reps] = max weight observed before this session
+        var best: [String: [Int: Double]] = [:]
+        for prior in priors {
+            for ex in prior.exercises {
+                for set in ex.sets where set.done {
+                    let reps = Int(set.reps) ?? 0
+                    let weight = Double(set.weight) ?? 0
+                    guard reps > 0, weight > 0 else { continue }
+                    let current = best[ex.name, default: [:]][reps] ?? 0
+                    if weight > current {
+                        best[ex.name, default: [:]][reps] = weight
+                    }
+                }
+            }
+        }
+
+        var out: [PersonalRecord] = []
+        var emitted: Set<String> = []   // dedup key: "name|reps"
+        for ex in exercises {
+            for set in ex.sets where set.done {
+                let reps = Int(set.reps) ?? 0
+                let weight = Double(set.weight) ?? 0
+                guard reps > 0, weight > 0 else { continue }
+                let prior = best[ex.name]?[reps] ?? 0
+                guard weight > prior else { continue }
+                let key = "\(ex.name)|\(reps)"
+                if emitted.contains(key) { continue }
+                emitted.insert(key)
+                out.append(PersonalRecord(
+                    exerciseName: ex.name,
+                    reps: reps,
+                    weight: weight,
+                    previousBest: prior > 0 ? prior : nil,
+                    date: Date()
+                ))
+            }
+        }
+        return out
+    }
+
     // MARK: - Stats
 
     /// Mirrors `data.jsx:80-92` — total/done set counts + 1-decimal avg RPE.

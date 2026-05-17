@@ -111,6 +111,18 @@ struct GeneratedExercise: Codable, Hashable, Identifiable {
 }
 
 extension GeneratedWorkout {
+    /// Composition-based templateId so two generated workouts with the
+    /// same exercises share a template id and the SessionStore's
+    /// getPreviousSession lookup pulls forward last week's weights even
+    /// when the day was regenerated (different DayPlan UUID, same exercise
+    /// composition).
+    var stableTemplateId: String {
+        let signature = exercises.map { String($0.exerciseId) }.joined(separator: ",")
+        var hash: UInt64 = 5381
+        for byte in signature.utf8 { hash = (hash &* 33) &+ UInt64(byte) }
+        return "gen-\(String(hash, radix: 36))"
+    }
+
     /// Bridge to the existing WorkoutTemplate -> ActiveSession runtime so the
     /// log screen + history don't need to learn a new model.
     func toWorkoutTemplate(id: String) -> WorkoutTemplate {

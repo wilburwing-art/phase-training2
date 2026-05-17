@@ -55,3 +55,14 @@ struct SessionStats: Equatable {
     var doneSets: Int
     var avgRpe: String // matches prototype's "—" sentinel when no RPEs logged
 }
+
+/// A personal-record event: highest weight ever lifted at a given rep count
+/// for a given exercise (matched by name). Emitted by `SessionStore.prs(in:)`
+/// after each saved session for CompleteScreen to celebrate.
+struct PersonalRecord: Equatable, Hashable {
+    let exerciseName: String
+    let reps: Int
+    let weight: Double
+    let previousBest: Double?
+    let date: Date
+}

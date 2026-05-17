@@ -53,25 +53,18 @@ struct CompleteScreen: View {
     }
 
     private var prs: [PRItem] {
-        let prev = store.getPreviousSession(templateId: session.templateId)
-        guard let prev else { return [] }
-
-        return session.exercises.compactMap { ex -> PRItem? in
-            guard let prevEx = prev.exercises.first(where: { $0.id == ex.id }) else { return nil }
-
-            let curWeights = ex.sets.compactMap { s -> Double? in
-                guard s.done, !s.weight.isEmpty else { return nil }
-                return Double(s.weight)
-            }
-            let prevWeights = prevEx.sets.compactMap { s -> Double? in
-                guard !s.weight.isEmpty else { return nil }
-                return Double(s.weight)
-            }
-            guard let maxW = curWeights.max(), let prevMaxW = prevWeights.max() else { return nil }
-            guard maxW > prevMaxW else { return nil }
-
-            let diff = maxW - prevMaxW
-            return PRItem(id: ex.id, name: ex.name, diff: diff, unit: ex.unit)
+        // Cross-template + per-rep PR detection via SessionStore. A PR here
+        // means "highest weight ever lifted at this rep count for this
+        // exercise, matched by name across all stored sessions". Captures
+        // PRs that the old same-template comparison missed (e.g. you swap
+        // routines, you set a new bench PR — it still counts).
+        store.personalRecords(in: session.exercises).map { record in
+            PRItem(
+                id: "\(record.exerciseName)|\(record.reps)",
+                name: record.exerciseName,
+                diff: record.previousBest.map { record.weight - $0 } ?? record.weight,
+                unit: session.exercises.first { $0.name == record.exerciseName }?.unit ?? "lbs"
+            )
         }
     }
 
