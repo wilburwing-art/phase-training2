@@ -12,7 +12,6 @@ struct ProfileScreen: View {
     @EnvironmentObject private var store: MemoryStore
     @EnvironmentObject private var planStore: PlanStore
     @State private var dislikeInput = ""
-    @State private var constraintInput = ""
     @State private var remindersOn = WeeklyReminderScheduler.isEnabled
     @State private var remindersPending = false
 
@@ -23,6 +22,9 @@ struct ProfileScreen: View {
     @State private var backupError: String? = nil
     @State private var restorePending = false
     @State private var restoreCompleted = false
+
+    // Injury picker state
+    @State private var presentingInjuryPicker = false
 
     var body: some View {
         ZStack {
@@ -91,6 +93,12 @@ struct ProfileScreen: View {
             Button("Done") {}
         } message: {
             Text("Your data was restored. Restart the app to refresh every screen.")
+        }
+        .sheet(isPresented: $presentingInjuryPicker) {
+            InjuryPickerSheet(
+                initialSelection: selectedInjurySlugs,
+                onCommit: { newSlugs in commitInjuries(newSlugs) }
+            )
         }
     }
 
@@ -491,13 +499,135 @@ struct ProfileScreen: View {
     }
 
     private var constraintsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            section("INJURIES OR CONSTRAINTS")
-            tagList(items: store.memory.constraints,
-                    input: $constraintInput,
-                    placeholder: "e.g. left knee",
-                    onAdd: { v in store.update { $0.constraints.append(v) } },
-                    onRemove: { v in store.update { $0.constraints.removeAll { $0 == v } } })
+        VStack(alignment: .leading, spacing: 12) {
+            section("INJURIES")
+            injuriesPicker
+            if !legacyConstraints.isEmpty {
+                Text("OTHER NOTES (LEGACY)")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                    .padding(.top, 6)
+                WrappingFlow(spacing: 8) {
+                    ForEach(legacyConstraints, id: \.self) { item in
+                        legacyChip(item)
+                    }
+                }
+            }
+        }
+    }
+
+    /// Slugs in TrainingMemory.constraints that match a known coach.db injury.
+    private var selectedInjurySlugs: Set<String> {
+        let known = Set(CoachDatabase.shared.listInjuries().map(\.slug))
+        return Set(store.memory.constraints.filter { known.contains($0) })
+    }
+
+    /// Free-text constraint entries (anything in memory.constraints not
+    /// matching a known injury slug). These came from the pre-picker UI;
+    /// keep them visible + removable until the user upgrades to the picker.
+    private var legacyConstraints: [String] {
+        let known = Set(CoachDatabase.shared.listInjuries().map(\.slug))
+        return store.memory.constraints.filter { !known.contains($0) }
+    }
+
+    /// Selected injuries as chips + an "Add injury" button.
+    private var injuriesPicker: some View {
+        let selected = selectedInjurySlugs
+        let all = CoachDatabase.shared.listInjuries()
+        let nameFor: (String) -> String = { slug in
+            all.first(where: { $0.slug == slug })?.name ?? slug
+        }
+        return VStack(alignment: .leading, spacing: 10) {
+            if !selected.isEmpty {
+                WrappingFlow(spacing: 8) {
+                    ForEach(Array(selected).sorted(), id: \.self) { slug in
+                        injuryChip(label: nameFor(slug), onRemove: {
+                            removeInjury(slug)
+                        })
+                    }
+                }
+            }
+            Button {
+                presentingInjuryPicker = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 12, weight: .semibold))
+                    Text(selected.isEmpty ? "Add injuries" : "Edit injuries")
+                        .styled(.body)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11, weight: .semibold))
+                }
+                .foregroundStyle(selected.isEmpty ? Color.accent : Color.ink)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .background(selected.isEmpty ? Color.accentWash : Color.surface)
+                .overlay(RoundedRectangle(cornerRadius: 12)
+                    .stroke(selected.isEmpty ? Color.accentBorder : Color.line, lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("profile-add-injury")
+            if selected.isEmpty && legacyConstraints.isEmpty {
+                Text("We'll filter out exercises that aren't safe for the injuries you pick.")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+            }
+        }
+    }
+
+    private func injuryChip(label: String, onRemove: @escaping () -> Void) -> some View {
+        HStack(spacing: 6) {
+            Text(label)
+                .font(.custom("Inter-Regular", size: 13))
+                .foregroundStyle(Color.ink)
+            Button(action: onRemove) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(Color.ink3)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.leading, 12).padding(.trailing, 10).padding(.vertical, 8)
+        .background(Color.accentWash)
+        .overlay(RoundedRectangle(cornerRadius: 999).stroke(Color.accentBorder, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 999))
+    }
+
+    private func legacyChip(_ item: String) -> some View {
+        HStack(spacing: 6) {
+            Text(item)
+                .font(.custom("Inter-Regular", size: 13))
+                .foregroundStyle(Color.ink)
+            Button {
+                store.update { $0.constraints.removeAll { $0 == item } }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(Color.ink3)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.leading, 12).padding(.trailing, 10).padding(.vertical, 8)
+        .background(Color.elevated)
+        .overlay(RoundedRectangle(cornerRadius: 999).stroke(Color.line, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 999))
+    }
+
+    /// Replace the structured-injury slugs with the picker's new set, leaving
+    /// any legacy free-text entries alone.
+    private func commitInjuries(_ newSlugs: Set<String>) {
+        let known = Set(CoachDatabase.shared.listInjuries().map(\.slug))
+        store.update { mem in
+            // Drop the previous known-slug entries, keep legacy free-text, append new picks.
+            mem.constraints = mem.constraints.filter { !known.contains($0) } + Array(newSlugs).sorted()
+        }
+    }
+
+    private func removeInjury(_ slug: String) {
+        store.update { mem in
+            mem.constraints.removeAll { $0 == slug }
         }
     }
 

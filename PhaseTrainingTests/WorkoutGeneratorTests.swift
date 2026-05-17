@@ -153,6 +153,27 @@ final class WorkoutGeneratorTests: XCTestCase {
         }
     }
 
+    func test_injuryContraindications_areExcluded() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.sessionMinutes = 60
+        m.constraints = ["acl-injury"]   // structured slug from coach.db
+        let p = DemographicProfile.from(m)
+        XCTAssertFalse(p.excludedExerciseIds.isEmpty,
+                       "Precondition: coach.db should have contraindicated exercises tagged for ACL injury")
+
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 1,
+            memory: m, profile: p,
+            hashSeed: m.planInputsHash
+        )
+        let pickedIds = Set(workout.exercises.map(\.exerciseId))
+        let overlap = pickedIds.intersection(p.excludedExerciseIds)
+        XCTAssertTrue(overlap.isEmpty,
+            "Generator picked \(overlap.count) exercises that are explicitly contraindicated for ACL injury")
+    }
+
     func test_dislikedExercise_isNeverIncluded() {
         var m = TrainingMemory()
         m.experience = .intermediate

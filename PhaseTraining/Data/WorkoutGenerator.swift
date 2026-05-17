@@ -73,7 +73,9 @@ enum WorkoutGenerator {
     ) -> GeneratedWorkout {
         let budgetSec = max(15 * 60, memory.sessionMinutes * 60 - warmupBufferSec)
         var elapsedSec = 0
-        var pickedIds: Set<Int> = []
+        // Union of: exercises already picked in THIS workout (dedup within
+        // session) + exercises the user's injuries contraindicate.
+        var pickedIds: Set<Int> = profile.excludedExerciseIds
         var picks: [GeneratedExercise] = []
 
         // Constraints applied at the SQL boundary.

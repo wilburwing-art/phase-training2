@@ -313,6 +313,61 @@ final class CoachDatabase {
         }
     }
 
+    // MARK: - Injuries
+
+    /// 56 common injuries grouped by body region. Used by the Profile screen's
+    /// injury picker and by DemographicProfile to look up contraindications.
+    func listInjuries() -> [CommonInjury] {
+        guard let db else { return [] }
+        let sql = """
+        SELECT id, name, slug, body_region, description
+        FROM common_injuries
+        ORDER BY body_region ASC, name ASC
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        var out: [CommonInjury] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            out.append(CommonInjury(
+                id: Int(sqlite3_column_int64(stmt, 0)),
+                name: text(stmt, 1) ?? "",
+                slug: text(stmt, 2) ?? "",
+                bodyRegion: text(stmt, 3),
+                description: text(stmt, 4)
+            ))
+        }
+        return out
+    }
+
+    /// Exercise ids explicitly tagged 'contraindicated' for any of the given
+    /// injury slugs. Prehab / rehab roles are NOT included — those are often
+    /// the right exercises for the injury and the planner should be free to
+    /// pick them. The generator unions this set with its in-workout dedup
+    /// before querying candidates.
+    func contraindicatedExerciseIds(forInjurySlugs slugs: Set<String>) -> Set<Int> {
+        guard !slugs.isEmpty, let db else { return [] }
+        let placeholders = slugs.map { _ in "?" }.joined(separator: ",")
+        let sql = """
+        SELECT DISTINCT eir.exercise_id
+        FROM exercise_injury_relevance eir
+        JOIN common_injuries ci ON ci.id = eir.injury_id
+        WHERE eir.role = 'contraindicated'
+          AND ci.slug IN (\(placeholders))
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        for (i, slug) in slugs.enumerated() {
+            sqlite3_bind_text(stmt, Int32(i + 1), slug, -1, SQLITE_TRANSIENT)
+        }
+        var out: Set<Int> = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            out.insert(Int(sqlite3_column_int64(stmt, 0)))
+        }
+        return out
+    }
+
     func exercises(forRoutineId routineId: Int) -> [RoutineExercise] {
         guard let db else { return [] }
         let sql = """

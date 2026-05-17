@@ -79,8 +79,14 @@ struct DemographicProfile: Equatable {
     let allowedEnvironments: Set<String>
 
     /// Substring matches (case-insensitive) used to exclude routines whose
-    /// name brushes against any user-declared constraint.
+    /// name brushes against any LEGACY free-text constraint (e.g. notes the
+    /// user typed before the structured injury picker existed).
     let excludedNameKeywords: [String]
+
+    /// Exercise ids explicitly contraindicated for the user's selected
+    /// injuries (from coach.db `exercise_injury_relevance`). Precise — won't
+    /// over-match the way name-keyword filtering does.
+    let excludedExerciseIds: Set<Int>
 
     /// Human-readable bullets explaining *why* the planner is structured
     /// the way it is. Surfaced in Profile.
@@ -146,14 +152,25 @@ extension DemographicProfile {
             return []
         }()
 
-        // --- Constraints → keyword excludes ---
+        // --- Constraints: split into known injury slugs vs legacy free-text ---
+        //
+        // The structured picker writes coach.db injury slugs into
+        // memory.constraints (e.g. "patellar-tendinopathy"). Anything not
+        // matching a known slug is treated as legacy free-text and falls
+        // back to the old keyword-substring filter.
+        let knownInjurySlugs = Set(CoachDatabase.shared.listInjuries().map(\.slug))
+        let injurySlugs = Set(m.constraints.filter { knownInjurySlugs.contains($0) })
+        let freeText = m.constraints.filter { !knownInjurySlugs.contains($0) }
+
         let stopWords: Set<String> = ["left", "right", "both", "the", "my",
                                       "a", "an", "and", "or", "with"]
-        let excludes = m.constraints.flatMap { s -> [String] in
+        let excludes = freeText.flatMap { s -> [String] in
             s.lowercased()
                 .components(separatedBy: CharacterSet.alphanumerics.inverted)
                 .filter { !$0.isEmpty && $0.count >= 3 && !stopWords.contains($0) }
         }
+
+        let contraindicated = CoachDatabase.shared.contraindicatedExerciseIds(forInjurySlugs: injurySlugs)
 
         // --- Rationale ---
         var why: [String] = []
@@ -164,8 +181,11 @@ extension DemographicProfile {
         if !envs.isEmpty {
             why.append("Equipment-aware routine pool: only \(envs.sorted().joined(separator: ", ")) routines.")
         }
+        if !injurySlugs.isEmpty {
+            why.append("Avoiding exercises contraindicated for: \(injurySlugs.count) injur\(injurySlugs.count == 1 ? "y" : "ies").")
+        }
         if !excludes.isEmpty {
-            why.append("Avoiding routines that mention: \(excludes.sorted().joined(separator: ", ")).")
+            why.append("Free-text constraint keywords filtered: \(excludes.sorted().joined(separator: ", ")).")
         }
         if let sport = m.primarySport {
             why.append("Sport-aware shape from \(sport.name) × \(m.seasonForPlanner.label).")
@@ -181,6 +201,7 @@ extension DemographicProfile {
             preferredDifficulties: difficulties,
             allowedEnvironments: envs,
             excludedNameKeywords: excludes,
+            excludedExerciseIds: contraindicated,
             rationale: why
         )
     }

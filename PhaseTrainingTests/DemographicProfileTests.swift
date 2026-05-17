@@ -161,6 +161,40 @@ final class DemographicProfileTests: XCTestCase {
         XCTAssertTrue(kws.isEmpty || kws.allSatisfy { $0.count >= 3 })
     }
 
+    // MARK: - Structured injury contraindications (coach.db-backed)
+
+    func test_knownInjurySlug_populatesExcludedExerciseIds() {
+        var m = TrainingMemory()
+        m.constraints = ["patellar-tendinopathy"]
+        let p = DemographicProfile.from(m)
+        XCTAssertFalse(p.excludedExerciseIds.isEmpty,
+                       "Known injury slug should pull contraindicated exercise ids from coach.db")
+        // And it should NOT have been mistaken for free-text keywords.
+        XCTAssertFalse(p.excludedNameKeywords.contains("patellar"),
+                       "Known slug should be consumed structurally, not tokenized")
+    }
+
+    func test_freeTextConstraint_stillProducesKeywordExclusions() {
+        var m = TrainingMemory()
+        m.constraints = ["bad ankle"]   // not a known slug
+        let p = DemographicProfile.from(m)
+        XCTAssertTrue(p.excludedNameKeywords.contains("ankle"))
+        XCTAssertTrue(p.excludedExerciseIds.isEmpty,
+                      "Free-text constraint shouldn't trigger structural contraindications")
+    }
+
+    func test_mixedConstraints_handleBoth() {
+        var m = TrainingMemory()
+        m.constraints = ["acl-injury", "weird custom thing"]
+        let p = DemographicProfile.from(m)
+        XCTAssertFalse(p.excludedExerciseIds.isEmpty,
+                       "Structural pickup from acl-injury slug")
+        XCTAssertTrue(p.excludedNameKeywords.contains("weird")
+                      || p.excludedNameKeywords.contains("custom")
+                      || p.excludedNameKeywords.contains("thing"),
+                      "Free-text should still tokenize")
+    }
+
     // MARK: - Rationale always non-empty
 
     func test_rationale_always_explains_at_least_lift_and_session_choice() {
