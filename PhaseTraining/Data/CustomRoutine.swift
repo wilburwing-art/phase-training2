@@ -9,9 +9,7 @@
 // carries its own sets / reps / rest / notes that the user picked when
 // building the workout.
 //
-// Bridges to the existing workflow via `toWorkoutTemplate()` (for starting
-// the session) and `toRoutineExercises()` (for sharing the RoutineDetailScreen
-// editing UI).
+// Bridges to the active-session runtime via `toWorkoutTemplate()`.
 
 import Foundation
 
@@ -65,51 +63,6 @@ extension CustomRoutine {
                 )
             }
         )
-    }
-
-    /// Render as a list of bundled-style RoutineExercises so the existing
-    /// RoutineDetailScreen UI can edit a custom routine. RoutineExercise.id
-    /// is Int — we use the cex's index to fabricate a stable negative id
-    /// that won't collide with the bundled coach.db rows.
-    func toRoutineExercises() -> [RoutineExercise] {
-        exercises.enumerated().map { idx, cex in
-            RoutineExercise(
-                id: -(idx + 1),
-                exerciseId: cex.exerciseId,
-                name: cex.name,
-                position: cex.position,
-                sets: cex.sets,
-                reps: cex.reps,
-                rest: cex.rest,
-                notes: cex.notes
-            )
-        }
-    }
-
-    /// Reverse: take edited RoutineExercises (from the shared detail UI) and
-    /// rebuild the CustomRoutine's exercise list, regenerating stable cex ids
-    /// for new rows + preserving existing ones by position.
-    func updatingExercises(from edited: [RoutineExercise]) -> CustomRoutine {
-        let newExercises = edited.enumerated().map { idx, rex -> CustomRoutineExercise in
-            // Preserve existing cex id when the edited row is at a slot the
-            // existing custom routine had — keeps Codable stable across edits.
-            let preservedId: String = exercises.indices.contains(idx)
-                ? exercises[idx].id
-                : UUID().uuidString
-            return CustomRoutineExercise(
-                id: preservedId,
-                exerciseId: rex.exerciseId,
-                name: rex.name,
-                position: idx + 1,
-                sets: rex.sets,
-                reps: rex.reps,
-                rest: rex.rest,
-                notes: rex.notes
-            )
-        }
-        var copy = self
-        copy.exercises = newExercises
-        return copy
     }
 
     private static func parseRepsLeading(_ s: String?) -> Int? {

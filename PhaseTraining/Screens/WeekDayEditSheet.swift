@@ -8,7 +8,8 @@
 //   - Mark off this week     (toggles WeekOverrides.unavailableDays)
 //   - Add sport session      (WeekEvent kind=.sportSession)
 //   - Add event              (WeekEvent kind=.race, intensity .light/.moderate/.hard)
-//   - Pick a different routine (for lift/mobility days — opens RoutineLibraryFlow)
+//   - Override workout (for lift/mobility days — opens OverrideTodaySheet:
+//     saved customs + coach request flow)
 //   - Clear overrides for this day
 
 import SwiftUI
@@ -22,7 +23,7 @@ struct WeekDayEditSheet: View {
 
     @State private var pickingSport = false
     @State private var addingEvent = false
-    @State private var pickingRoutine = false
+    @State private var overridingWorkout = false
     @State private var pickingMoveTarget = false
     @State private var editingIntensity = false
 
@@ -62,15 +63,11 @@ struct WeekDayEditSheet: View {
                 addingEvent = false
             }
         }
-        .sheet(isPresented: $pickingRoutine) {
-            RoutineLibraryFlow(
-                onWorkoutStarted: {
-                    pickingRoutine = false
-                    dismiss()
-                },
-                onDismiss: { pickingRoutine = false }
-            )
-            .presentationBackground(Color.bg)
+        .sheet(isPresented: $overridingWorkout) {
+            OverrideTodaySheet(onStartSession: {
+                overridingWorkout = false
+                dismiss()
+            })
         }
         .sheet(isPresented: $pickingMoveTarget) {
             MoveDayPickerSheet(
@@ -161,10 +158,10 @@ struct WeekDayEditSheet: View {
 
             if dayPlan?.kind == .lift || dayPlan?.kind == .mobility {
                 ActionRow(
-                    title: "Pick a different routine",
-                    subtitle: "Browse the library — replaces the plan's pick",
-                    icon: "books.vertical",
-                    action: { pickingRoutine = true }
+                    title: "Override workout",
+                    subtitle: "Pick a saved workout or build a new one",
+                    icon: "arrow.triangle.swap",
+                    action: { overridingWorkout = true }
                 )
             }
 

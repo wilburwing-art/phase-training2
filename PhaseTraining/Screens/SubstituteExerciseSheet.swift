@@ -1,13 +1,13 @@
-// SubstituteExerciseSheet.swift — long-press affordance for any exercise row.
+// SubstituteExerciseSheet.swift — alternative-exercise picker.
 //
 // Reads CoachDatabase.substitutes(forExerciseId:) — 1,730 pre-curated pairs
 // in the bundled coach.db tagged by context (home_friendly, lower_intensity,
 // equipment_swap, etc.). Surfaces them as a ranked list of cards. Tap one →
-// `onPick(Exercise)` → presenter wires it back into the routine / session.
+// `onPick(Exercise)` → presenter wires it back into the session.
 //
-// Same sheet is reached from RoutineDetailScreen rows (editing a routine) and
-// LogScreen rows (mid-workout swap). The caller is responsible for the actual
-// mutation; this view is pure UI.
+// Reached from LogScreen rows (mid-workout swap), via either the visible
+// arrow.left.arrow.right button or the long-press contextMenu. The caller
+// is responsible for the actual mutation; this view is pure UI.
 
 import SwiftUI
 

@@ -27,8 +27,10 @@ struct TodayScreen: View {
     let onStart: () -> Void
     let onHistory: () -> Void
 
-    /// Drives the "Pick a different routine" sheet on lift/mobility days.
-    @State private var pickingRoutine = false
+    /// Drives the "Override today" sheet on lift/mobility days. Replaces
+    /// the pre-build-42 routine library sheet — users can no longer browse
+    /// the bundled library, only pick a saved custom or build a new one.
+    @State private var overridingToday = false
 
     // MARK: - Derived state
 
@@ -221,15 +223,11 @@ struct TodayScreen: View {
         }
         .foregroundStyle(Color.ink)
         .preferredColorScheme(.dark)
-        .sheet(isPresented: $pickingRoutine) {
-            RoutineLibraryFlow(
-                onWorkoutStarted: {
-                    pickingRoutine = false
-                    onStart()
-                },
-                onDismiss: { pickingRoutine = false }
-            )
-            .presentationBackground(Color.bg)
+        .sheet(isPresented: $overridingToday) {
+            OverrideTodaySheet(onStartSession: {
+                overridingToday = false
+                onStart()
+            })
         }
     }
 
@@ -329,11 +327,11 @@ struct TodayScreen: View {
     }
 
     private var pickRoutineLink: some View {
-        Button { pickingRoutine = true } label: {
+        Button { overridingToday = true } label: {
             HStack(spacing: 6) {
-                Image(systemName: "books.vertical")
+                Image(systemName: "arrow.triangle.swap")
                     .font(.system(size: 11, weight: .medium))
-                Text("PICK A DIFFERENT ROUTINE")
+                Text("OVERRIDE TODAY")
                     .styled(.micro)
             }
             .foregroundStyle(Color.ink2)
@@ -347,7 +345,7 @@ struct TodayScreen: View {
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
-        .accessibilityIdentifier("today-pick-routine")
+        .accessibilityIdentifier("today-override")
     }
 
     // MARK: - Top bar

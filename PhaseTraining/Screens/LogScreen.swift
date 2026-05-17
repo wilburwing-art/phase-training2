@@ -251,6 +251,18 @@ struct LogScreen: View {
                         .foregroundStyle(Color.ink3)
                 }
                 Spacer()
+                Button { swappingExIdx = exIdx } label: {
+                    Image(systemName: "arrow.left.arrow.right")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color.ink3)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 6)
+                        .background(Color.elevated)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Swap with similar exercise")
+                .accessibilityIdentifier("log-swap-\(exIdx)")
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())

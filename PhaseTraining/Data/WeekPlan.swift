@@ -144,23 +144,6 @@ extension GeneratedWorkout {
         )
     }
 
-    /// Render as a list of bundled-style RoutineExercises so the same
-    /// RoutineDetailScreen UI can edit a generated workout before starting.
-    func toRoutineExercises() -> [RoutineExercise] {
-        exercises.enumerated().map { idx, gex in
-            RoutineExercise(
-                id: -(idx + 1),
-                exerciseId: gex.exerciseId,
-                name: gex.name,
-                position: idx + 1,
-                sets: gex.sets,
-                reps: gex.reps,
-                rest: "\(gex.restSeconds)s",
-                notes: gex.notes
-            )
-        }
-    }
-
     private static func parseRepsLeading(_ s: String) -> Int? {
         let digits = s.prefix(while: { $0.isNumber })
         return Int(digits)
