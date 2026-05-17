@@ -1,5 +1,30 @@
 name: release
 
+# TestFlight release pipeline.
+#
+# Signing strategy: MANUAL with a pinned distribution cert + App Store
+# provisioning profile carried as base64 GitHub Secrets. We DON'T pass
+# -allowProvisioningUpdates or signingStyle=automatic anywhere — that path
+# kept asking Apple to issue fresh certs every run and we hit the per-team
+# cert cap (~3 distribution certs). Manual signing reuses the one cert
+# forever so the cap never bites.
+#
+# Required GitHub Secrets:
+#   BUILD_CERTIFICATE_BASE64       — base64 of the .p12 distribution cert
+#                                    exported from Keychain Access
+#   P12_PASSWORD                   — password set when exporting the .p12
+#   BUILD_PROVISION_PROFILE_BASE64 — base64 of the App Store .mobileprovision
+#                                    downloaded from developer.apple.com
+#   KEYCHAIN_PASSWORD              — random string (any value); creates a
+#                                    temporary keychain on the runner
+#   ASC_API_KEY_P8                 — base64 of the App Store Connect .p8
+#                                    API key (unchanged from before)
+#   ASC_API_KEY_ID                 — key ID (unchanged)
+#   ASC_API_KEY_ISSUER_ID          — issuer ID (unchanged)
+#
+# The ASC key is used only for the TestFlight upload — signing no longer
+# touches it.
+
 on:
   workflow_dispatch:
   push:
@@ -26,10 +51,53 @@ jobs:
       - name: Generate project
         run: xcodegen generate
 
+      - name: Install distribution certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          set -o pipefail
+          CERT_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # Decode the .p12 into a temp file
+          echo "$BUILD_CERTIFICATE_BASE64" | base64 --decode > $CERT_PATH
+
+          # Create a fresh keychain dedicated to this run; -lut 21600 makes it
+          # auto-lock after 6 hours so a stuck job can't leak credentials
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Import + grant codesign access without prompting
+          security import $CERT_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+
+      - name: Install provisioning profile
+        env:
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+        run: |
+          set -o pipefail
+          PROFILE_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+
+          echo "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode > $PROFILE_PATH
+          mkdir -p "$PROFILES_DIR"
+          cp $PROFILE_PATH "$PROFILES_DIR/"
+
+          # Extract the profile's Name field so the archive step can reference
+          # it via PROVISIONING_PROFILE_SPECIFIER. Avoids hard-coding the name
+          # in this workflow (which would drift any time you rotate the profile).
+          PROFILE_NAME=$(security cms -D -i "$PROFILE_PATH" | plutil -extract Name xml1 -o - - | sed -n 's/.*<string>\(.*\)<\/string>.*/\1/p')
+          echo "Resolved profile name: $PROFILE_NAME"
+          echo "PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
+
       - name: Write ExportOptions.plist
         run: |
           mkdir -p build
-          cat > build/ExportOptions.plist <<'EOF'
+          cat > build/ExportOptions.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -41,7 +109,14 @@ jobs:
               <key>uploadSymbols</key>
               <true/>
               <key>signingStyle</key>
-              <string>automatic</string>
+              <string>manual</string>
+              <key>signingCertificate</key>
+              <string>Apple Distribution</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>com.phasetraining.app</key>
+                  <string>${PROFILE_NAME}</string>
+              </dict>
               <key>destination</key>
               <string>export</string>
           </dict>
@@ -58,9 +133,6 @@ jobs:
           chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${ASC_API_KEY_ID}.p8
 
       - name: Archive
-        env:
-          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
-          ASC_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
         run: |
           set -o pipefail
           xcodebuild \
@@ -69,26 +141,19 @@ jobs:
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath build/PhaseTraining.xcarchive \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_${ASC_API_KEY_ID}.p8 \
-            -authenticationKeyID "$ASC_API_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_API_KEY_ISSUER_ID" \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="${PROFILE_NAME}" \
+            DEVELOPMENT_TEAM=A2Z2RXR65P \
             archive | xcbeautify --renderer github-actions
 
       - name: Export IPA
-        env:
-          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
-          ASC_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
         run: |
           set -o pipefail
           xcodebuild -exportArchive \
             -archivePath build/PhaseTraining.xcarchive \
             -exportPath build/export \
             -exportOptionsPlist build/ExportOptions.plist \
-            -allowProvisioningUpdates \
-            -authenticationKeyPath ~/.appstoreconnect/private_keys/AuthKey_${ASC_API_KEY_ID}.p8 \
-            -authenticationKeyID "$ASC_API_KEY_ID" \
-            -authenticationKeyIssuerID "$ASC_API_KEY_ISSUER_ID" \
             | xcbeautify --renderer github-actions
 
       - name: Upload to TestFlight
@@ -100,6 +165,11 @@ jobs:
           xcrun altool --upload-app -f "$IPA" -t ios \
             --apiKey "$ASC_API_KEY_ID" \
             --apiIssuer "$ASC_API_KEY_ISSUER_ID"
+
+      - name: Clean up keychain
+        if: always()
+        run: |
+          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
 
       - name: Upload artifacts on failure
         if: failure()
