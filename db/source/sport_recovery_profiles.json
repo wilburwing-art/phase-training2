@@ -1,0 +1,4125 @@
+[
+  {
+    "sport_id": 1,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "hamstrings",
+      "calves",
+      "lower_back"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "high_volume_plyo",
+      "heavy_deadlift"
+    ],
+    "ideal_supplement_timing": "morning before afternoon ride; rest day ideal after hard intervals",
+    "notes": "Cycling is mostly repetitive knee extension under cardio load — legs need priority."
+  },
+  {
+    "sport_id": 2,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "upper_body_holding",
+      "neurological",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "forearms",
+      "core",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "grip_intensive"
+    ],
+    "ideal_supplement_timing": "rest day ideal after technical MTB",
+    "notes": "MTB adds upper-body bracing, forearm grip endurance, and impact load on top of cycling."
+  },
+  {
+    "sport_id": 12,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "hamstrings",
+      "calves",
+      "lower_back"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "morning before afternoon ride",
+    "notes": "Road cycling recovery is primarily cardiovascular and knee-dominant."
+  },
+  {
+    "sport_id": 21,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "core"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "hamstrings",
+      "calves",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift"
+    ],
+    "ideal_supplement_timing": "rest day after long gravel efforts",
+    "notes": "Gravel adds rougher terrain and more core demand than road."
+  },
+  {
+    "sport_id": 24,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "hamstrings",
+      "calves",
+      "hip_flexors"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "rest day after CX races",
+    "notes": "Cyclocross stacks short-effort intervals with run-ups and dismounts."
+  },
+  {
+    "sport_id": 25,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "neural",
+      "power",
+      "impact",
+      "grip"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "calves",
+      "forearms",
+      "core",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "high_volume_plyo",
+      "grip_intensive"
+    ],
+    "ideal_supplement_timing": "rest day before race day; morning before evening pump-track session OK",
+    "notes": "BMX is sub-30s maximal sprints with gate starts, jumps, and crash risk — neural and power-dominant rather than aerobic."
+  },
+  {
+    "sport_id": 28,
+    "typical_recovery_hours": 12,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "heavy_squat"
+    ],
+    "ideal_supplement_timing": "same-day acceptable; rest day only after threshold/HIIT class",
+    "notes": "Indoor cycling is smooth, low-impact, quad-dominant cardio — no terrain, wind, or upper-body bracing, so recovery is faster than road."
+  },
+  {
+    "sport_id": 30,
+    "typical_recovery_hours": 12,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "hamstrings",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "heavy_squat"
+    ],
+    "ideal_supplement_timing": "same-day acceptable; morning before afternoon ride",
+    "notes": "E-bike pedal-assist drops the cardio and neural cost of road/gravel — legs still do the work but the assist absorbs the surge cost on climbs and into-wind segments, so recovery is closer to indoor cycling than road."
+  },
+  {
+    "sport_id": 50,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "hamstrings",
+      "glutes",
+      "hip_flexors",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "morning before afternoon run; rest day after long runs",
+    "notes": "Running recovery is impact-dominant — tendon and bone stress accumulates."
+  },
+  {
+    "sport_id": 51,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "hamstrings",
+      "glutes"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift"
+    ],
+    "ideal_supplement_timing": "morning before evening run; rest day after a race",
+    "notes": "Road running is repetitive impact plus cardio."
+  },
+  {
+    "sport_id": 55,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "impact",
+      "systemic_fatigue"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "hamstrings",
+      "glutes",
+      "hip_flexors",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "rest day or easy walk only",
+    "notes": "Marathon recovery is whole-body; 48h minimum."
+  },
+  {
+    "sport_id": 57,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "impact",
+      "neuromuscular"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "hamstrings",
+      "glutes",
+      "ankles",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "rest day after long trails",
+    "notes": "Trail running adds technical terrain, ankle demand, and eccentric descent load."
+  },
+  {
+    "sport_id": 61,
+    "typical_recovery_hours": 72,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "impact",
+      "systemic"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "hamstrings",
+      "glutes",
+      "core",
+      "hip_flexors"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "rest day or easy mobility only",
+    "notes": "Ultra distances require extended recovery; avoid heavy supplemental work."
+  },
+  {
+    "sport_id": 62,
+    "typical_recovery_hours": 96,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "impact",
+      "systemic"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "hamstrings",
+      "glutes",
+      "core",
+      "hip_flexors",
+      "upper_body"
+    ],
+    "avoid_before_session": [
+      "any_heavy_lifting"
+    ],
+    "ideal_supplement_timing": "rest day",
+    "notes": "100-milers demand extended multi-day recovery; easy only for 4+ days."
+  },
+  {
+    "sport_id": 65,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "impact",
+      "neural"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "hamstrings",
+      "glutes",
+      "hip_flexors",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "rest day after long mountain runs",
+    "notes": "Mountain running stacks sustained climbing with eccentric quad load on the descents — recovery is longer than road running because of descent damage, shorter than ultra because the durations are smaller."
+  },
+  {
+    "sport_id": 66,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "impact",
+      "neural"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "hamstrings",
+      "glutes",
+      "hip_flexors",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "rest day after race or hard fell day",
+    "notes": "Fell running is the UK tradition of short steep climbs and technical unmarked descents — recovery cost mirrors mountain running with extra ankle/foot proprioceptive demand."
+  },
+  {
+    "sport_id": 67,
+    "typical_recovery_hours": 72,
+    "primary_fatigue_type": [
+      "neural",
+      "power",
+      "lower_body_endurance"
+    ],
+    "muscles_loaded": [
+      "hamstrings",
+      "glutes",
+      "quads",
+      "calves",
+      "hip_flexors",
+      "core",
+      "lower_back"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "high_volume_plyo",
+      "heavy_eccentric_quad"
+    ],
+    "ideal_supplement_timing": "two full rest days between hard sprint sessions",
+    "notes": "Masters sprinting (40+) keeps the high CNS and posterior-chain cost of maximal sprinting but recovers more slowly than youth athletes — hamstring strain risk is the dominant constraint, so heavy posterior-chain work the day before is contraindicated."
+  },
+  {
+    "sport_id": 68,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "upper_body_endurance",
+      "grip",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "glutes",
+      "forearms",
+      "lats",
+      "core",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "high_volume_pull",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "rest day after races; morning before evening rig practice OK",
+    "notes": "OCR stacks trail running with grip-endurance obstacles (rigs, monkey bars), carries, and climbs — recovery must cover both legs and pull/grip systems."
+  },
+  {
+    "sport_id": 71,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "impact",
+      "neural"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "soleus",
+      "quads",
+      "hamstrings",
+      "glutes",
+      "hip_flexors",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "rest day after long-distance events; morning before evening training run OK",
+    "notes": "Foot orienteering is variable-pace running over unpredictable terrain (forest, bog, scree) with continuous map-reading — physical cost sits between trail and mountain running, plus a cognitive-fatigue tax that lingers."
+  },
+  {
+    "sport_id": 72,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "upper_body_endurance",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "hamstrings",
+      "glutes",
+      "core",
+      "upper_back",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "rest day after race day; morning before evening training run OK",
+    "notes": "Canicross is running attached by waist harness to a pulling dog — adds constant forward tow plus unpredictable lateral jerks, recruiting upper back, core, and shoulder stabilizers on top of normal running load."
+  },
+  {
+    "sport_id": 100,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "grip",
+      "upper_body_pull",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "finger_flexors",
+      "latissimus_dorsi",
+      "biceps",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "rest day or morning before evening climbing session",
+    "notes": "Climbing is pull- and grip-dominated. Avoid stacking fatigue on those tissues the day before."
+  },
+  {
+    "sport_id": 101,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "grip",
+      "neurological",
+      "upper_body_pull"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "finger_flexors",
+      "latissimus_dorsi",
+      "biceps",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "campus",
+      "hangboard_max"
+    ],
+    "ideal_supplement_timing": "rest day; bouldering is neurologically taxing even when session length is short",
+    "notes": "Short sessions but high CNS load per attempt."
+  },
+  {
+    "sport_id": 102,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "grip",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "finger_flexors",
+      "latissimus_dorsi",
+      "biceps"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "max_hangs"
+    ],
+    "ideal_supplement_timing": "rest day or low-intensity morning",
+    "notes": "Indoor bouldering is grip- and power-heavy with short rests between attempts."
+  },
+  {
+    "sport_id": 103,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "grip",
+      "neurological",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "finger_flexors",
+      "latissimus_dorsi",
+      "biceps",
+      "core",
+      "ankles"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "lower_body_power"
+    ],
+    "ideal_supplement_timing": "rest day; outdoor bouldering also loads ankles from falls",
+    "notes": "Outdoor bouldering adds fall-impact load on ankles and spine; plan accordingly."
+  },
+  {
+    "sport_id": 104,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "grip",
+      "upper_body_pull",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "finger_flexors",
+      "latissimus_dorsi",
+      "biceps",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "rest day or light morning mobility",
+    "notes": "Sport climbing adds pump/endurance component alongside strength."
+  },
+  {
+    "sport_id": 105,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "grip",
+      "upper_body_pull",
+      "cardiovascular",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "finger_flexors",
+      "latissimus_dorsi",
+      "core",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "anterior_shoulder_volume"
+    ],
+    "ideal_supplement_timing": "rest day; leading requires a crisp head + fresh forearms",
+    "notes": "Lead climbing is mentally as well as physically taxing."
+  },
+  {
+    "sport_id": 106,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "grip",
+      "upper_body_pull"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "finger_flexors",
+      "latissimus_dorsi"
+    ],
+    "avoid_before_session": [
+      "grip_intensive",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "morning before afternoon session is acceptable",
+    "notes": "Top rope is lower-demand than lead; easier to stack with other work."
+  },
+  {
+    "sport_id": 107,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "grip",
+      "upper_body_pull",
+      "lower_body_endurance",
+      "core"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "latissimus_dorsi",
+      "core",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "heavy_squat",
+      "grip_intensive"
+    ],
+    "ideal_supplement_timing": "two-day recovery ideal",
+    "notes": "Trad adds stemming, chimneys, long approach hikes — legs and back also take a beating."
+  },
+  {
+    "sport_id": 108,
+    "typical_recovery_hours": 60,
+    "primary_fatigue_type": [
+      "grip",
+      "lower_body_endurance",
+      "cardiovascular",
+      "core"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "calves",
+      "latissimus_dorsi",
+      "core",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "heavy_squat",
+      "grip_intensive",
+      "high_impact"
+    ],
+    "ideal_supplement_timing": "rest day or easy mobility only",
+    "notes": "Multi-pitch is full-day endurance — supplemental training should be minimal within 48h."
+  },
+  {
+    "sport_id": 109,
+    "typical_recovery_hours": 72,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "grip",
+      "cold_stress"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "glutes",
+      "core",
+      "forearms"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "heavy_squat",
+      "high_intensity_conditioning"
+    ],
+    "ideal_supplement_timing": "rest day or easy mobility only",
+    "notes": "Alpine climbing includes long approaches, altitude, cold exposure."
+  },
+  {
+    "sport_id": 110,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "grip",
+      "shoulder",
+      "cold_stress",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "shoulders",
+      "calves",
+      "core"
+    ],
+    "avoid_before_session": [
+      "overhead_pressing",
+      "heavy_deadlift",
+      "grip_intensive"
+    ],
+    "ideal_supplement_timing": "rest day; swinging tools is shoulder-heavy",
+    "notes": "Ice climbing is shoulder- and grip-dominant with cold exposure adding recovery cost."
+  },
+  {
+    "sport_id": 111,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "grip",
+      "shoulder",
+      "neurological",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "shoulders",
+      "latissimus_dorsi",
+      "core"
+    ],
+    "avoid_before_session": [
+      "overhead_pressing",
+      "heavy_deadlift",
+      "grip_intensive"
+    ],
+    "ideal_supplement_timing": "rest day",
+    "notes": "Mixed climbing is technically demanding and combines tool swinging with rock moves."
+  },
+  {
+    "sport_id": 112,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "grip",
+      "upper_body_pull",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "latissimus_dorsi",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "DWS is low-fall-consequence; recovery resembles indoor bouldering."
+  },
+  {
+    "sport_id": 113,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "grip",
+      "neurological",
+      "upper_body_pull"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "latissimus_dorsi",
+      "core",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "max_hangs",
+      "campus"
+    ],
+    "ideal_supplement_timing": "rest day before any comp",
+    "notes": "Comp climbing demands peak output on-demand — treat recovery as part of performance."
+  },
+  {
+    "sport_id": 114,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "grip",
+      "upper_body_pull",
+      "cardiovascular",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "latissimus_dorsi",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "anterior_shoulder_volume"
+    ],
+    "ideal_supplement_timing": "rest day before comps",
+    "notes": "Same as sport lead with added nervous-system demand."
+  },
+  {
+    "sport_id": 115,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "grip",
+      "neurological",
+      "upper_body_pull"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "latissimus_dorsi",
+      "core",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "max_hangs",
+      "campus"
+    ],
+    "ideal_supplement_timing": "rest day before comps",
+    "notes": "Comp bouldering is the most neurologically taxing discipline."
+  },
+  {
+    "sport_id": 116,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "neurological",
+      "power",
+      "upper_body_pull"
+    ],
+    "muscles_loaded": [
+      "latissimus_dorsi",
+      "biceps",
+      "quads",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "heavy_squat"
+    ],
+    "ideal_supplement_timing": "morning the day before is OK if short",
+    "notes": "Speed is power-endurance over 6-9 seconds; short sessions, high neural peak."
+  },
+  {
+    "sport_id": 117,
+    "typical_recovery_hours": 12,
+    "primary_fatigue_type": [
+      "grip",
+      "upper_body_pull",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "latissimus_dorsi",
+      "legs"
+    ],
+    "avoid_before_session": [
+      "grip_intensive"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Via ferrata is assisted climbing with less max-strength demand but high grip endurance."
+  },
+  {
+    "sport_id": 118,
+    "typical_recovery_hours": 60,
+    "primary_fatigue_type": [
+      "grip",
+      "core",
+      "shoulder",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "core",
+      "shoulders",
+      "hip_flexors"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "heavy_squat",
+      "grip_intensive"
+    ],
+    "ideal_supplement_timing": "rest day",
+    "notes": "Aid climbing sessions are long, low-intensity, but full-body fatiguing; prioritize recovery."
+  },
+  {
+    "sport_id": 150,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "systemic",
+      "cold_stress"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "glutes",
+      "core",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift"
+    ],
+    "ideal_supplement_timing": "rest day",
+    "notes": "Mountaineering is full-day endurance plus altitude and load."
+  },
+  {
+    "sport_id": 151,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "postural",
+      "systemic"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "glutes",
+      "hamstrings",
+      "hip_flexors",
+      "core",
+      "upper_back"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "rest day; morning before afternoon ascent acceptable for shorter peaks",
+    "notes": "Non-technical mountaineering is long-day hiking on Class 2 terrain with pack weight — endurance and posterior-chain dominant, no rope/tool overhead."
+  },
+  {
+    "sport_id": 155,
+    "typical_recovery_hours": 60,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "grip",
+      "upper_body_pull",
+      "neural",
+      "cold_stress"
+    ],
+    "muscles_loaded": [
+      "forearms",
+      "shoulders",
+      "lats",
+      "calves",
+      "quads",
+      "glutes",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "heavy_squat",
+      "grip_intensive",
+      "overhead_pressing"
+    ],
+    "ideal_supplement_timing": "rest day or easy mobility only; two-day taper before alpine routes",
+    "notes": "Technical mountaineering adds rope work, tool swinging, glacier travel, and exposed climbing on top of the endurance base — shoulder, grip, and neural costs stack with cold and altitude."
+  },
+  {
+    "sport_id": 159,
+    "typical_recovery_hours": 96,
+    "primary_fatigue_type": [
+      "systemic",
+      "cardiovascular",
+      "lower_body_endurance",
+      "cold_stress",
+      "altitude"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "glutes",
+      "hamstrings",
+      "core",
+      "upper_back",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "any_heavy_lifting",
+      "high_volume_plyo",
+      "high_intensity_conditioning"
+    ],
+    "ideal_supplement_timing": "rest day or easy mobility only; multi-day depletion accumulates across the trip",
+    "notes": "Expedition mountaineering is multi-week cumulative load at altitude with heavy packs and load-carries between camps — recovery is whole-system and slow."
+  },
+  {
+    "sport_id": 163,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "systemic",
+      "cold_stress",
+      "altitude"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "hamstrings",
+      "calves",
+      "soleus",
+      "core",
+      "shoulders",
+      "lats"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "rest day or easy mobility only between tour days",
+    "notes": "Ski mountaineering combines long uphill skinning with technical downhill skiing at altitude — quads take a double hit (skin pushing + descent eccentric), and altitude/cold compound the systemic cost."
+  },
+  {
+    "sport_id": 164,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "grip",
+      "postural",
+      "systemic",
+      "neural"
+    ],
+    "muscles_loaded": [
+      "forearms",
+      "grip_support",
+      "lats",
+      "core",
+      "quads",
+      "glutes",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "grip_intensive",
+      "heavy_pulling",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "rest day before exposed routes; morning before short scrambles OK",
+    "notes": "Class 3-4 scrambling is unroped exposed climbing — grip and forearms drive the physical cost, but the dominant load is postural/neural from sustained focus over consequential terrain."
+  },
+  {
+    "sport_id": 165,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "grip",
+      "upper_body_pull",
+      "systemic",
+      "cold_stress"
+    ],
+    "muscles_loaded": [
+      "forearms",
+      "grip_support",
+      "lats",
+      "quads",
+      "glutes",
+      "adductors",
+      "core"
+    ],
+    "avoid_before_session": [
+      "grip_intensive",
+      "heavy_pulling",
+      "heavy_squat"
+    ],
+    "ideal_supplement_timing": "rest day after technical canyons",
+    "notes": "Canyoneering combines rappels (grip + pull braking), down-climbing, swimming through cold pools, and route-finding — cold immersion adds a recovery tax beyond the muscular load alone."
+  },
+  {
+    "sport_id": 166,
+    "typical_recovery_hours": 12,
+    "primary_fatigue_type": [
+      "altitude",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "glutes",
+      "core"
+    ],
+    "avoid_before_session": [
+      "high_intensity_conditioning",
+      "heavy_squat"
+    ],
+    "ideal_supplement_timing": "same-day light activity OK; sleep is the primary adaptation driver",
+    "notes": "Altitude acclimatization is deliberately low-intensity — passive sleeping at altitude or easy hikes designed to drive hematological adaptation, not training stress. Avoid stacking hard sessions that compete for the same recovery resources."
+  },
+  {
+    "sport_id": 200,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "lower_body_endurance",
+      "neurological",
+      "impact",
+      "cold_stress"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "hamstrings",
+      "core",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "rest day between ski days",
+    "notes": "Snow sports require cold-weather recovery and heavy eccentric leg load."
+  },
+  {
+    "sport_id": 201,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "lower_body_endurance",
+      "neurological",
+      "impact",
+      "cold_stress"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "hamstrings",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_eccentric_quad"
+    ],
+    "ideal_supplement_timing": "rest day between ski days",
+    "notes": "Alpine skiing is quad-eccentric dominant."
+  },
+  {
+    "sport_id": 207,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "lower_body_endurance",
+      "cardiovascular",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "hamstrings",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat"
+    ],
+    "ideal_supplement_timing": "rest day between ski days",
+    "notes": "Recreational alpine is lower-demand than race disciplines but still quad-heavy."
+  },
+  {
+    "sport_id": 212,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "upper_body_endurance"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "hamstrings",
+      "calves",
+      "shoulders",
+      "core",
+      "triceps"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "rest day after long XC",
+    "notes": "Cross-country skiing is a full-body aerobic sport."
+  },
+  {
+    "sport_id": 221,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "lower_body_endurance",
+      "neurological",
+      "impact",
+      "cold_stress"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "calves",
+      "core",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "rest day between session days",
+    "notes": "Snowboarding adds shoulder/upper-body falls compared to skiing."
+  },
+  {
+    "sport_id": 228,
+    "typical_recovery_hours": 12,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "calves",
+      "hip_flexors"
+    ],
+    "avoid_before_session": [
+      "heavy_squat"
+    ],
+    "ideal_supplement_timing": "same-day OK",
+    "notes": "Snowshoeing is low-impact cardio-dominant."
+  },
+  {
+    "sport_id": 260,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "muscular",
+      "neurological",
+      "cardiovascular",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "neck",
+      "core",
+      "hips",
+      "posterior_chain",
+      "shoulders",
+      "forearms"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "heavy_squat",
+      "grip_intensive",
+      "high_impact_plyo"
+    ],
+    "ideal_supplement_timing": "rest day or low-intensity morning before afternoon practice",
+    "notes": "Combat sports stack impact, grip, and neurological load. Strength work should respect session demand."
+  },
+  {
+    "sport_id": 261,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "muscular",
+      "grip",
+      "neurological",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "lats",
+      "posterior_chain",
+      "grip",
+      "neck",
+      "core",
+      "hip_flexors"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "heavy_pulling"
+    ],
+    "ideal_supplement_timing": "rest day or morning before evening roll",
+    "notes": "BJJ loads grip, neck, posterior chain, and core simultaneously."
+  },
+  {
+    "sport_id": 262,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "muscular",
+      "grip",
+      "neurological",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "forearms",
+      "lats",
+      "neck",
+      "posterior_chain",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive"
+    ],
+    "ideal_supplement_timing": "rest day",
+    "notes": "Gi BJJ has more grip demand than no-gi."
+  },
+  {
+    "sport_id": 263,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "muscular",
+      "neurological",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "lats",
+      "posterior_chain",
+      "core",
+      "hip_flexors"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "morning before evening session acceptable",
+    "notes": "No-gi reduces grip demand but keeps high cardio/neuromuscular cost."
+  },
+  {
+    "sport_id": 265,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "muscular",
+      "grip",
+      "neurological",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "grip",
+      "posterior_chain",
+      "glutes",
+      "core",
+      "shoulders",
+      "hamstrings"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "heavy_pulling",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "rest day or morning before evening randori",
+    "notes": "Judo combines high-grip demand with repeated throw impact — full-body fatigue accumulates quickly."
+  },
+  {
+    "sport_id": 266,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "muscular",
+      "neurological",
+      "cardiovascular",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "posterior_chain",
+      "neck",
+      "core",
+      "shoulders",
+      "glutes"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "heavy_squat"
+    ],
+    "ideal_supplement_timing": "rest day",
+    "notes": "Wrestling is full-body with high impact and neuromuscular demand."
+  },
+  {
+    "sport_id": 270,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "muscular",
+      "cardiovascular",
+      "impact",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "shins",
+      "calves",
+      "hip_flexors",
+      "obliques",
+      "shoulders",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "high_volume_plyo",
+      "heavy_deadlift"
+    ],
+    "ideal_supplement_timing": "rest day; shin and hip recovery is especially important",
+    "notes": "Muay Thai loads shins, hips, and core with knees, kicks, and clinch. Avoid stacking heavy lower-body work."
+  },
+  {
+    "sport_id": 271,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "muscular",
+      "cardiovascular",
+      "impact",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "hip_flexors",
+      "calves",
+      "shoulders",
+      "obliques",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_plyo",
+      "grip_intensive"
+    ],
+    "ideal_supplement_timing": "rest day or morning before afternoon session",
+    "notes": "Kickboxing rounds blend striking CNS demand with cardiovascular glycolytic stress."
+  },
+  {
+    "sport_id": 272,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "muscular",
+      "cardiovascular",
+      "neurological",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "shoulders",
+      "chest",
+      "obliques",
+      "core",
+      "calves",
+      "neck"
+    ],
+    "avoid_before_session": [
+      "heavy_bench",
+      "grip_intensive",
+      "overhead_pressing",
+      "high_impact_plyo"
+    ],
+    "ideal_supplement_timing": "rest day or morning; shoulder and CNS freshness matter most",
+    "notes": "Boxers over-develop anterior shoulder and pec — supplemental work should tilt antagonist."
+  },
+  {
+    "sport_id": 275,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "muscular",
+      "cardiovascular",
+      "neurological",
+      "impact",
+      "grip"
+    ],
+    "muscles_loaded": [
+      "full_body",
+      "neck",
+      "grip",
+      "hips",
+      "core",
+      "posterior_chain"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "heavy_squat",
+      "grip_intensive",
+      "high_impact_plyo"
+    ],
+    "ideal_supplement_timing": "rest day before hard sparring; 48h minimum from heavy strength work",
+    "notes": "MMA is the most demanding recovery profile — grappling + striking + conditioning all stack."
+  },
+  {
+    "sport_id": 277,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "muscular",
+      "neurological",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "hip_flexors",
+      "quads",
+      "calves",
+      "obliques",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift"
+    ],
+    "ideal_supplement_timing": "morning before evening kata or kumite",
+    "notes": "Karate is explosive and technical; recovery is fast except after heavy kumite."
+  },
+  {
+    "sport_id": 281,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "muscular",
+      "neurological",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "hip_flexors",
+      "quads",
+      "hamstrings",
+      "calves",
+      "adductors",
+      "obliques"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "high_volume_eccentric_hamstring"
+    ],
+    "ideal_supplement_timing": "morning before evening session; avoid heavy lower-body 24h out",
+    "notes": "Taekwondo's high-kick demand is hip- and hamstring-dominant. Keep lower-body volume flexible."
+  },
+  {
+    "sport_id": 289,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "muscular",
+      "neurological",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "calves",
+      "forearms",
+      "obliques"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "morning before afternoon bouts; rest day before competition",
+    "notes": "Fencing is unilateral and CNS-heavy (lunges + footwork); legs and forearm grip need priority."
+  },
+  {
+    "sport_id": 320,
+    "typical_recovery_hours": 4,
+    "primary_fatigue_type": [
+      "rotational",
+      "grip",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "obliques",
+      "forearms",
+      "glutes",
+      "lats",
+      "thoracic_spine"
+    ],
+    "avoid_before_session": [
+      "heavy_pressing_stiffening_thoracic",
+      "deep_rotational_volume"
+    ],
+    "ideal_supplement_timing": "same-day morning is fine for evening rounds",
+    "notes": "Golf is low-fatigue but rotational; avoid exercises that stiffen the T-spine before a round."
+  },
+  {
+    "sport_id": 321,
+    "typical_recovery_hours": 4,
+    "primary_fatigue_type": [
+      "rotational",
+      "grip"
+    ],
+    "muscles_loaded": [
+      "obliques",
+      "forearms",
+      "glutes",
+      "lats"
+    ],
+    "avoid_before_session": [
+      "heavy_pressing",
+      "deep_rotational_work"
+    ],
+    "ideal_supplement_timing": "morning before afternoon round",
+    "notes": null
+  },
+  {
+    "sport_id": 340,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "rotational",
+      "upper_body_push",
+      "shoulder",
+      "forearm"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "obliques",
+      "forearm_flexors",
+      "forearm_extensors",
+      "quads",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "heavy_rotational_power",
+      "grip_intensive",
+      "overhead_volume"
+    ],
+    "ideal_supplement_timing": "morning before afternoon match, or rest day",
+    "notes": "Racquet sports are rotational and overhead-heavy; avoid stacking fatigue on shoulder and forearm the day before."
+  },
+  {
+    "sport_id": 341,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "muscular",
+      "neurological",
+      "cardiovascular",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "shoulder",
+      "forearms",
+      "quads",
+      "glutes",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_pressing",
+      "heavy_deadlift",
+      "high_volume_shoulder"
+    ],
+    "ideal_supplement_timing": "morning before evening match",
+    "notes": "Tennis is full-body with heavy overhead shoulder demand and lateral impact."
+  },
+  {
+    "sport_id": 342,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "rotational",
+      "upper_body_push",
+      "shoulder",
+      "forearm",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "obliques",
+      "forearm_flexors",
+      "quads",
+      "glutes",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "heavy_rotational_power",
+      "grip_intensive",
+      "overhead_press_volume",
+      "glycolytic_intervals"
+    ],
+    "ideal_supplement_timing": "morning before match",
+    "notes": "Singles adds sustained cardio and more court coverage than doubles — account for extra leg fatigue."
+  },
+  {
+    "sport_id": 343,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "rotational",
+      "upper_body_push",
+      "shoulder"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "obliques",
+      "forearm_flexors"
+    ],
+    "avoid_before_session": [
+      "heavy_rotational_power",
+      "overhead_press_volume"
+    ],
+    "ideal_supplement_timing": "morning before match",
+    "notes": "Doubles is lower cardio load but same shoulder/rotational demand — the serve still taxes the cuff."
+  },
+  {
+    "sport_id": 344,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "rotational",
+      "upper_body_push",
+      "shoulder",
+      "forearm",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "obliques",
+      "forearm_flexors",
+      "quads",
+      "glutes",
+      "calves",
+      "adductors"
+    ],
+    "avoid_before_session": [
+      "heavy_rotational_power",
+      "grip_intensive",
+      "overhead_press_volume",
+      "glycolytic_intervals"
+    ],
+    "ideal_supplement_timing": "morning before match, or rest day",
+    "notes": "Clay adds extended rally lengths and sliding — adductors and calves take more load than hard court."
+  },
+  {
+    "sport_id": 345,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "rotational",
+      "upper_body_push",
+      "shoulder",
+      "forearm",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "obliques",
+      "forearm_flexors",
+      "quads",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "heavy_rotational_power",
+      "high_impact_plyo",
+      "overhead_press_volume"
+    ],
+    "ideal_supplement_timing": "morning before match",
+    "notes": "Hard court is faster and more impact-heavy; watch knees and Achilles."
+  },
+  {
+    "sport_id": 346,
+    "typical_recovery_hours": 12,
+    "primary_fatigue_type": [
+      "muscular",
+      "cardiovascular",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "shoulder",
+      "forearms",
+      "quads",
+      "glutes",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_pressing",
+      "high_volume_shoulder"
+    ],
+    "ideal_supplement_timing": "same-day acceptable",
+    "notes": "Pickleball is lower-demand than tennis but still shoulder-heavy."
+  },
+  {
+    "sport_id": 347,
+    "typical_recovery_hours": 18,
+    "primary_fatigue_type": [
+      "rotational",
+      "upper_body_push",
+      "forearm",
+      "lower_body_impact",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "obliques",
+      "forearm_flexors",
+      "quads",
+      "glute_med",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "heavy_rotational_power",
+      "glycolytic_intervals",
+      "high_impact_plyo"
+    ],
+    "ideal_supplement_timing": "morning before game",
+    "notes": "Singles is very lateral-movement-intensive; glute-med and Achilles take the brunt."
+  },
+  {
+    "sport_id": 348,
+    "typical_recovery_hours": 18,
+    "primary_fatigue_type": [
+      "rotational",
+      "upper_body_push",
+      "forearm"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "obliques",
+      "forearm_flexors",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "heavy_rotational_power",
+      "grip_intensive"
+    ],
+    "ideal_supplement_timing": "morning before game",
+    "notes": "Doubles is shorter rallies — focus on dinking wrist resilience and forehand shoulder."
+  },
+  {
+    "sport_id": 349,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "rotational",
+      "upper_body_push",
+      "shoulder",
+      "forearm",
+      "overhead"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "obliques",
+      "forearm_flexors",
+      "quads",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "heavy_rotational_power",
+      "overhead_press_volume",
+      "grip_intensive"
+    ],
+    "ideal_supplement_timing": "morning before match",
+    "notes": "Padel is overhead-heavy via smashes and lobs; shoulder recovery is the bottleneck."
+  },
+  {
+    "sport_id": 350,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "muscular",
+      "cardiovascular",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "shoulder",
+      "forearms",
+      "calves",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_pressing",
+      "heavy_overhead"
+    ],
+    "ideal_supplement_timing": "rest day before high-stakes match",
+    "notes": "Badminton has extreme overhead demand and explosive footwork."
+  },
+  {
+    "sport_id": 351,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "overhead",
+      "shoulder",
+      "rotational",
+      "lower_body_impact",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "delt_posterior",
+      "obliques",
+      "quads",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "overhead_press_volume",
+      "high_impact_plyo",
+      "glycolytic_intervals"
+    ],
+    "ideal_supplement_timing": "morning before match",
+    "notes": "Singles is elite cardio plus overhead demand; balance shoulder recovery with interval work."
+  },
+  {
+    "sport_id": 352,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "overhead",
+      "shoulder",
+      "rotational"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "delt_posterior",
+      "obliques"
+    ],
+    "avoid_before_session": [
+      "overhead_press_volume",
+      "shoulder_max"
+    ],
+    "ideal_supplement_timing": "morning before match",
+    "notes": "Doubles emphasizes quick overhead smashes — shoulder recovery is critical."
+  },
+  {
+    "sport_id": 353,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "muscular",
+      "impact",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "shoulder",
+      "forearms",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "high_volume_shoulder"
+    ],
+    "ideal_supplement_timing": "rest day",
+    "notes": "Squash is extremely taxing cardiovascularly and includes heavy lunging."
+  },
+  {
+    "sport_id": 354,
+    "typical_recovery_hours": 30,
+    "primary_fatigue_type": [
+      "glycolytic",
+      "cardiovascular",
+      "rotational",
+      "forearm"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "obliques",
+      "quads",
+      "glutes",
+      "calves",
+      "forearm_flexors"
+    ],
+    "avoid_before_session": [
+      "heavy_conditioning",
+      "grip_intensive",
+      "overhead_press_volume"
+    ],
+    "ideal_supplement_timing": "rest day before hard match",
+    "notes": "Racquetball is squash-adjacent; similar glycolytic load with different wrist/forearm demands."
+  },
+  {
+    "sport_id": 355,
+    "typical_recovery_hours": 12,
+    "primary_fatigue_type": [
+      "neurological",
+      "forearm",
+      "rotational"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "forearm_extensors",
+      "obliques",
+      "rotator_cuff"
+    ],
+    "avoid_before_session": [
+      "grip_intensive",
+      "forearm_max"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Table tennis is low-impact but neurologically demanding; forearm and wrist recovery dominate."
+  },
+  {
+    "sport_id": 356,
+    "typical_recovery_hours": 30,
+    "primary_fatigue_type": [
+      "rotational",
+      "upper_body_push",
+      "shoulder",
+      "forearm",
+      "lower_body_impact"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "obliques",
+      "forearm_flexors",
+      "quads",
+      "calves",
+      "glutes"
+    ],
+    "avoid_before_session": [
+      "heavy_rotational_power",
+      "overhead_press_volume",
+      "high_impact_plyo"
+    ],
+    "ideal_supplement_timing": "rest day before match",
+    "notes": "Beach tennis adds sand running — legs fatigue faster than on hard court; extra recovery needed."
+  },
+  {
+    "sport_id": 380,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "upper_body_pull",
+      "rotational_core",
+      "shoulder_endurance"
+    ],
+    "muscles_loaded": [
+      "latissimus_dorsi",
+      "posterior_shoulder",
+      "obliques",
+      "rhomboids",
+      "mid_traps",
+      "forearm_flexors"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "high_volume_pull",
+      "rotational_max"
+    ],
+    "ideal_supplement_timing": "rest day or morning before afternoon session",
+    "notes": "Paddle sports chronically load the pulling chain and trunk rotation. Avoid stacking pull volume the day before a session."
+  },
+  {
+    "sport_id": 381,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "upper_body_pull",
+      "rotational_core",
+      "grip",
+      "shoulder_endurance",
+      "hip_flexor_endurance"
+    ],
+    "muscles_loaded": [
+      "latissimus_dorsi",
+      "posterior_shoulder",
+      "obliques",
+      "forearm_flexors",
+      "hip_flexors",
+      "erector_spinae"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "rest day or morning before afternoon session",
+    "notes": "Kayakers sit flexed for hours — protect hip flexors and low back. The stroke is rotational, so rotational max work adds up quickly."
+  },
+  {
+    "sport_id": 390,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "upper_body_pull",
+      "rotational_core",
+      "shoulder_endurance"
+    ],
+    "muscles_loaded": [
+      "latissimus_dorsi",
+      "posterior_shoulder",
+      "obliques",
+      "forearm_flexors"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "rest day or morning before session",
+    "notes": "Canoeing is pull- and rotation-heavy; similar demand to kayaking but with more asymmetric single-side load."
+  },
+  {
+    "sport_id": 395,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "core",
+      "upper_body_pull",
+      "balance",
+      "shoulder_endurance",
+      "lower_body_stability"
+    ],
+    "muscles_loaded": [
+      "obliques",
+      "rectus_abdominis",
+      "transverse_abdominis",
+      "latissimus_dorsi",
+      "posterior_shoulder",
+      "calves",
+      "ankle_stabilizers"
+    ],
+    "avoid_before_session": [
+      "heavy_core_work",
+      "heavy_pull",
+      "balance_max"
+    ],
+    "ideal_supplement_timing": "rest day or morning before evening paddle",
+    "notes": "SUP is uniquely core-heavy — all-day standing balance plus paddling layers deep core fatigue."
+  },
+  {
+    "sport_id": 400,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "upper_body_pull",
+      "grip",
+      "core",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "latissimus_dorsi",
+      "posterior_shoulder",
+      "forearm_flexors",
+      "obliques"
+    ],
+    "avoid_before_session": [
+      "grip_intensive",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Rafting is shorter-bout paddling with high grip demand on technical water; recovery is faster than touring paddle."
+  },
+  {
+    "sport_id": 403,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "upper_body_pull",
+      "rotational_power",
+      "shoulder_endurance",
+      "core",
+      "cns"
+    ],
+    "muscles_loaded": [
+      "latissimus_dorsi",
+      "obliques",
+      "posterior_shoulder",
+      "forearm_flexors",
+      "rhomboids"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "rotational_max"
+    ],
+    "ideal_supplement_timing": "rest day",
+    "notes": "Dragon boat is a power sport with synchronized bursts — high CNS + rotational output demands full recovery."
+  },
+  {
+    "sport_id": 404,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "posterior_chain",
+      "upper_body_pull",
+      "core",
+      "cns",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "latissimus_dorsi",
+      "rhomboids",
+      "erector_spinae",
+      "glutes",
+      "hamstrings",
+      "quads",
+      "forearm_flexors"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "heavy_squat",
+      "grip_intensive",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "rest day; rowing is full-body CNS-heavy",
+    "notes": "Rowing loads the posterior chain and upper-body pull simultaneously with high CNS demand; stack strength work carefully."
+  },
+  {
+    "sport_id": 420,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "shoulder_endurance",
+      "upper_body_pull",
+      "lower_body_power",
+      "core"
+    ],
+    "muscles_loaded": [
+      "latissimus_dorsi",
+      "posterior_shoulder",
+      "quads",
+      "glutes",
+      "obliques",
+      "erector_spinae"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "heavy_pull",
+      "high_volume_press",
+      "rotational_max"
+    ],
+    "ideal_supplement_timing": "rest day or morning before afternoon surf",
+    "notes": "Surf/wave sports combine long shoulder endurance (paddling) with explosive lower-body pop-ups and balance demands."
+  },
+  {
+    "sport_id": 421,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "shoulder_endurance",
+      "upper_body_pull",
+      "lower_body_power",
+      "core",
+      "lumbar_extension"
+    ],
+    "muscles_loaded": [
+      "latissimus_dorsi",
+      "posterior_shoulder",
+      "quads",
+      "glutes",
+      "obliques",
+      "erector_spinae"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "heavy_pull",
+      "high_volume_press"
+    ],
+    "ideal_supplement_timing": "rest day or morning before afternoon surf",
+    "notes": "Surfing is paddle-heavy (hours of prone shoulder extension) plus ballistic pop-ups. Balance shoulder prehab with lower-body power."
+  },
+  {
+    "sport_id": 426,
+    "typical_recovery_hours": 30,
+    "primary_fatigue_type": [
+      "shoulder_endurance",
+      "upper_body_pull",
+      "hip_flexor_endurance"
+    ],
+    "muscles_loaded": [
+      "latissimus_dorsi",
+      "posterior_shoulder",
+      "hip_flexors",
+      "adductors",
+      "obliques"
+    ],
+    "avoid_before_session": [
+      "heavy_pull",
+      "high_volume_press"
+    ],
+    "ideal_supplement_timing": "morning before afternoon session is OK",
+    "notes": "Bodyboarding is paddle- and kick-heavy but removes the pop-up power demand — recovery is faster than stand-up surfing."
+  },
+  {
+    "sport_id": 427,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "shoulder_endurance",
+      "cardiovascular",
+      "lower_body_endurance"
+    ],
+    "muscles_loaded": [
+      "latissimus_dorsi",
+      "posterior_shoulder",
+      "hip_flexors",
+      "calves",
+      "cardiovascular"
+    ],
+    "avoid_before_session": [
+      "heavy_pull",
+      "high_volume_lower"
+    ],
+    "ideal_supplement_timing": "morning before afternoon session is acceptable",
+    "notes": "Bodysurfing is primarily swim-paddle + kick — lowest power demand of the surf family, fastest recovery."
+  },
+  {
+    "sport_id": 429,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "grip",
+      "shoulder_endurance",
+      "core",
+      "lower_body_stability",
+      "forearm_endurance"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "posterior_shoulder",
+      "obliques",
+      "erector_spinae",
+      "quads",
+      "glutes"
+    ],
+    "avoid_before_session": [
+      "grip_intensive",
+      "heavy_press",
+      "rotational_max"
+    ],
+    "ideal_supplement_timing": "rest day; windsurfing is grip- and back-heavy",
+    "notes": "Windsurfing layers grip endurance with full-body isometric sailing posture — back and forearms take the brunt."
+  },
+  {
+    "sport_id": 432,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "grip",
+      "core",
+      "shoulder",
+      "lower_body_stability",
+      "cns"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "obliques",
+      "rectus_abdominis",
+      "posterior_shoulder",
+      "quads",
+      "glutes",
+      "adductors"
+    ],
+    "avoid_before_session": [
+      "grip_intensive",
+      "heavy_press",
+      "balance_max"
+    ],
+    "ideal_supplement_timing": "rest day",
+    "notes": "Kitesurfing adds wind-shock load to the harness/core and high grip demand; recovery is similar to windsurfing plus CNS."
+  },
+  {
+    "sport_id": 437,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "grip",
+      "core",
+      "balance",
+      "shoulder_endurance",
+      "lower_body_stability"
+    ],
+    "muscles_loaded": [
+      "forearm_flexors",
+      "obliques",
+      "posterior_shoulder",
+      "quads",
+      "glutes",
+      "ankle_stabilizers"
+    ],
+    "avoid_before_session": [
+      "grip_intensive",
+      "balance_max",
+      "rotational_max"
+    ],
+    "ideal_supplement_timing": "rest day",
+    "notes": "Wing foiling is balance- and grip-dominant with shoulder endurance from wing handling; expect high ankle/core fatigue."
+  },
+  {
+    "sport_id": 438,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "lower_body_power",
+      "core",
+      "grip",
+      "shoulder",
+      "cns"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "adductors",
+      "obliques",
+      "forearm_flexors",
+      "posterior_shoulder"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "balance_max"
+    ],
+    "ideal_supplement_timing": "rest day; edges and falls punish the knees/shoulders",
+    "notes": "Wakeboarding is a ballistic lower-body sport with fall-impact risk; legs and shoulders both need full recovery."
+  },
+  {
+    "sport_id": 439,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "lower_body_power",
+      "core",
+      "balance"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "adductors",
+      "obliques",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "balance_max"
+    ],
+    "ideal_supplement_timing": "rest day or morning before afternoon session",
+    "notes": "Wakesurfing is ropeless post-pop — lower grip/shoulder load than wakeboarding, primary demand is legs and core."
+  },
+  {
+    "sport_id": 480,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "glutes",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "high_volume_plyo"
+    ],
+    "ideal_supplement_timing": "morning before afternoon hike",
+    "notes": "Hiking is moderate endurance; pack weight changes the profile."
+  },
+  {
+    "sport_id": 500,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "upper_body_endurance"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "hamstrings",
+      "calves",
+      "shoulders",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift"
+    ],
+    "ideal_supplement_timing": "rest day after long sessions",
+    "notes": "Triathlon etc. cumulatively load multiple systems — recovery must span them all."
+  },
+  {
+    "sport_id": 501,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance",
+      "upper_body_endurance"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "hamstrings",
+      "calves",
+      "shoulders",
+      "lats",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift"
+    ],
+    "ideal_supplement_timing": "rest day",
+    "notes": "Triathlon is swim + bike + run; recovery addresses all three."
+  },
+  {
+    "sport_id": 531,
+    "typical_recovery_hours": 60,
+    "primary_fatigue_type": [
+      "eccentric_hamstring",
+      "adductor",
+      "cardiovascular",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "hamstrings",
+      "adductors",
+      "quads",
+      "glute_med",
+      "calves",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "nordic_curl_max",
+      "long_runs",
+      "high_volume_lower_body"
+    ],
+    "ideal_supplement_timing": "rest day or morning mobility only; eccentric hamstring work 48h+ from match",
+    "notes": "Soccer combines high-eccentric hamstring demand with repeated sprints and cutting. Adductor and hamstring strains are the top injuries. Save the Nordic curls and heavy lower-body work for mid-week."
+  },
+  {
+    "sport_id": 534,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "knee_loading",
+      "ankle",
+      "jump_landing",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "calves",
+      "glute_med",
+      "ankles",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "max_plyos",
+      "high_volume_landings"
+    ],
+    "ideal_supplement_timing": "rest day or light upper-body only",
+    "notes": "Basketball loads patellar and Achilles tendons cumulatively; stack jump training far from games and protect ankles with dedicated prehab."
+  },
+  {
+    "sport_id": 537,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "knee_loading",
+      "shoulder",
+      "jump_landing"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "calves",
+      "rotator_cuff",
+      "core",
+      "thoracic_spine"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "overhead_pressing_volume",
+      "max_plyos"
+    ],
+    "ideal_supplement_timing": "rest day; 48h+ from heavy jumps before matches",
+    "notes": "Volleyball is jump-heavy and spike-heavy — both knees and shoulders accumulate wear. Schedule overhead push and plyos well away from match day."
+  },
+  {
+    "sport_id": 541,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "shoulder",
+      "rotational_core",
+      "throwing"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "obliques",
+      "hip_rotators",
+      "forearm_flexors"
+    ],
+    "avoid_before_session": [
+      "max_throws",
+      "heavy_pressing",
+      "high_volume_rotational"
+    ],
+    "ideal_supplement_timing": "rest day for throwing arm; non-throw-side work is OK",
+    "notes": "Rotator cuff is the #1 injury site. Keep arm-care (Y-T-W-L, ER) chronic and low-intensity; separate max throws from match days."
+  },
+  {
+    "sport_id": 542,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "shoulder",
+      "rotational_core",
+      "throwing",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "lats",
+      "obliques",
+      "hip_rotators",
+      "forearm_flexors"
+    ],
+    "avoid_before_session": [
+      "max_throws",
+      "heavy_pressing",
+      "overhead_volume",
+      "high_volume_rotational"
+    ],
+    "ideal_supplement_timing": "rest day for throwing arm; 48h+ from max-effort throws before a game",
+    "notes": "Adult rec baseball has the highest shoulder-injury rate (~90% of injuries are shoulder/elbow). Chronic low-intensity arm care beats periodic high-intensity."
+  },
+  {
+    "sport_id": 543,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "acceleration",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "hamstrings",
+      "quads",
+      "calves",
+      "glute_med",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_sprint_workouts",
+      "high_volume_plyos"
+    ],
+    "ideal_supplement_timing": "rest day or light upper body",
+    "notes": "Flag football is sprint- and cut-heavy. Hamstring strain is the top injury; protect acceleration work mid-week and save heavy sprinting for 48h+ before games."
+  },
+  {
+    "sport_id": 544,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "eccentric_hamstring",
+      "cutting"
+    ],
+    "muscles_loaded": [
+      "hamstrings",
+      "quads",
+      "calves",
+      "glute_med",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_sprint_workouts",
+      "long_runs",
+      "max_plyos"
+    ],
+    "ideal_supplement_timing": "rest day or easy upper body",
+    "notes": "Ultimate is long-duration cutting + sprinting. Treat it like soccer — hamstrings and adductors dominate injury rates."
+  },
+  {
+    "sport_id": 545,
+    "typical_recovery_hours": 72,
+    "primary_fatigue_type": [
+      "contact",
+      "eccentric_hamstring",
+      "cardiovascular",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "hamstrings",
+      "quads",
+      "glutes",
+      "core",
+      "neck",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "max_eccentric_work",
+      "high_volume_contact"
+    ],
+    "ideal_supplement_timing": "two full rest days ideal",
+    "notes": "Rugby combines high-eccentric running demand with full-contact load. Recovery budget is the largest of any sport here — prioritize sleep and nutrition over volume."
+  },
+  {
+    "sport_id": 549,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "hip_rotators",
+      "adductor",
+      "cardiovascular",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "adductors",
+      "glute_med",
+      "hip_rotators",
+      "quads",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "high_volume_adductor_work",
+      "max_plyos"
+    ],
+    "ideal_supplement_timing": "rest day; adductor and hip-flexor work at least 48h from ice",
+    "notes": "Hockey's skating stride chronically loads hip rotators and adductors. Groin strain is the #1 non-contact injury. Chronic Copenhagen plank work and slide board drills pay off."
+  },
+  {
+    "sport_id": 553,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "shoulder",
+      "rotational_core",
+      "cardiovascular",
+      "eccentric_hamstring"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "hamstrings",
+      "quads",
+      "core",
+      "obliques"
+    ],
+    "avoid_before_session": [
+      "heavy_overhead_work",
+      "max_throws",
+      "high_volume_lower_body"
+    ],
+    "ideal_supplement_timing": "rest day or light mobility",
+    "notes": "Lacrosse blends shoulder demand (shots, passes) with soccer-like running. Rotator cuff + hamstring/adductor injuries split the top spots."
+  },
+  {
+    "sport_id": 554,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "shoulder",
+      "rotational_core",
+      "throwing",
+      "lumbar"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "obliques",
+      "quadratus_lumborum",
+      "erector_lumbar",
+      "hip_rotators"
+    ],
+    "avoid_before_session": [
+      "heavy_overhead_work",
+      "max_throws",
+      "high_volume_rotational"
+    ],
+    "ideal_supplement_timing": "rest day for bowling arm; keep lumbar loading light the day before",
+    "notes": "Cricket — especially fast bowling — creates high lumbar rotational load plus shoulder throw demand. Fast bowlers are the highest-risk demographic."
+  },
+  {
+    "sport_id": 555,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "neurological",
+      "shoulder"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "calves",
+      "shoulders",
+      "obliques"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "max_throws"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable for most rec players",
+    "notes": "Low-to-moderate intensity rec sport — recovery is close to everyday activity. Watch for sprinting-related hamstring issues in older players."
+  },
+  {
+    "sport_id": 556,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "shoulder",
+      "cardiovascular",
+      "knee_loading",
+      "jump_landing"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "quads",
+      "calves",
+      "glute_med",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_overhead_work",
+      "max_plyos",
+      "high_volume_lower_body"
+    ],
+    "ideal_supplement_timing": "rest day or light mobility",
+    "notes": "Team handball combines basketball-like cutting and jumping with volleyball-like overhead throwing. Both knees and shoulders need chronic attention."
+  },
+  {
+    "sport_id": 580,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "lower_body",
+      "neurological",
+      "impact",
+      "wrist"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glute_med",
+      "adductors",
+      "calves",
+      "ankles",
+      "wrists"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "lateral_plyo",
+      "wrist_max_load"
+    ],
+    "ideal_supplement_timing": "morning of is OK for low-intensity; rest day before park/street sessions",
+    "notes": "Wheeled skating is lower-body CNS plus wrist fall risk. Balance lateral hip work with wrist fall prep."
+  },
+  {
+    "sport_id": 581,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "lower_body",
+      "neurological",
+      "impact",
+      "wrist"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glute_med",
+      "calves",
+      "ankles",
+      "wrists"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "lateral_plyo",
+      "wrist_max_load"
+    ],
+    "ideal_supplement_timing": "rest day before trying new tricks; morning OK for cruising",
+    "notes": "Skateboarding stacks wrist-fall risk with knee/ankle impact. Drop in days need wrist fresh."
+  },
+  {
+    "sport_id": 586,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "lower_body",
+      "cardiovascular",
+      "lateral_hip"
+    ],
+    "muscles_loaded": [
+      "glute_med",
+      "adductors",
+      "quads",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "lateral_plyo"
+    ],
+    "ideal_supplement_timing": "morning of acceptable; rest day before long distance or derby",
+    "notes": "Inline skating is lateral-hip dominant; long sessions add cardio load."
+  },
+  {
+    "sport_id": 587,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "lower_body",
+      "neurological",
+      "impact",
+      "contact"
+    ],
+    "muscles_loaded": [
+      "glute_med",
+      "adductors",
+      "quads",
+      "glute_max",
+      "core",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "lateral_plyo",
+      "contact_training"
+    ],
+    "ideal_supplement_timing": "rest day before bouts; light day before practice",
+    "notes": "Roller derby is contact + lateral skating — highest recovery cost in the skating family."
+  },
+  {
+    "sport_id": 588,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "lower_body",
+      "cardiovascular",
+      "lateral_hip"
+    ],
+    "muscles_loaded": [
+      "glute_med",
+      "adductors",
+      "quads",
+      "hamstrings",
+      "calves",
+      "cardiovascular"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "intensive_endurance"
+    ],
+    "ideal_supplement_timing": "morning of OK for low-intensity; rest before hard interval days",
+    "notes": "Roller skiing is aerobic + lateral; treat like cross-country skiing for recovery."
+  },
+  {
+    "sport_id": 589,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "lower_body",
+      "neurological",
+      "impact",
+      "wrist"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glute_med",
+      "calves",
+      "ankles",
+      "wrists",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "wrist_max_load"
+    ],
+    "ideal_supplement_timing": "rest day before park/downhill; morning OK for cruising",
+    "notes": "Mountain-boarding adds impact load compared to street skating."
+  },
+  {
+    "sport_id": 590,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "lower_body",
+      "neurological",
+      "balance"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glute_med",
+      "calves",
+      "ankles",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Sandboarding is lower-impact than wheeled variants — sandy landings absorb."
+  },
+  {
+    "sport_id": 600,
+    "typical_recovery_hours": 12,
+    "primary_fatigue_type": [
+      "spinal_mobility",
+      "lower_body_endurance",
+      "shoulder"
+    ],
+    "muscles_loaded": [
+      "core",
+      "hip_flexors",
+      "shoulders",
+      "erector_spinae"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable for most practices",
+    "notes": "Yoga/movement practices are generally low-demand; heat yoga adds cardiovascular cost."
+  },
+  {
+    "sport_id": 601,
+    "typical_recovery_hours": 12,
+    "primary_fatigue_type": [
+      "spinal_mobility",
+      "shoulder",
+      "wrist"
+    ],
+    "muscles_loaded": [
+      "core",
+      "hip_flexors",
+      "shoulders",
+      "wrists",
+      "hamstrings"
+    ],
+    "avoid_before_session": [
+      "heavy_upper_body",
+      "high_wrist_load"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Yoga is low-demand for most practitioners; hot yoga or intense vinyasa adds cardio cost."
+  },
+  {
+    "sport_id": 608,
+    "typical_recovery_hours": 12,
+    "primary_fatigue_type": [
+      "core",
+      "spinal_mobility"
+    ],
+    "muscles_loaded": [
+      "core",
+      "hip_flexors",
+      "glutes",
+      "hamstrings"
+    ],
+    "avoid_before_session": [
+      "heavy_core_max"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Pilates is core-dominant but rarely max-effort; low recovery cost."
+  },
+  {
+    "sport_id": 611,
+    "typical_recovery_hours": 12,
+    "primary_fatigue_type": [
+      "balance",
+      "joint_mobility"
+    ],
+    "muscles_loaded": [
+      "glute_med",
+      "quads",
+      "core",
+      "ankles"
+    ],
+    "avoid_before_session": [
+      "high_cns"
+    ],
+    "ideal_supplement_timing": "anytime is acceptable",
+    "notes": "Tai chi and qigong are daily-friendly with minimal recovery cost."
+  },
+  {
+    "sport_id": 612,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "joint_mobility",
+      "lower_body_endurance",
+      "core"
+    ],
+    "muscles_loaded": [
+      "core",
+      "shoulders",
+      "hip_flexors",
+      "wrists"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Movement culture practices (ground flow, natural movement) are broad; scale per intensity."
+  },
+  {
+    "sport_id": 613,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "neurological",
+      "wrist",
+      "shoulder",
+      "core"
+    ],
+    "muscles_loaded": [
+      "shoulders",
+      "wrists",
+      "core",
+      "hip_flexors",
+      "posterior_chain"
+    ],
+    "avoid_before_session": [
+      "heavy_upper_body",
+      "high_wrist_load",
+      "max_neural"
+    ],
+    "ideal_supplement_timing": "rest day before heavy gymnastics sessions",
+    "notes": "Adult gymnastics is extremely CNS-demanding — handstands, levers, vaults require long recovery."
+  },
+  {
+    "sport_id": 614,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "neurological",
+      "grip",
+      "upper_body",
+      "core"
+    ],
+    "muscles_loaded": [
+      "lats",
+      "biceps",
+      "triceps",
+      "shoulders",
+      "core",
+      "forearms"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "rest day before max-effort skill sessions",
+    "notes": "Calisthenics skill work (planche, muscle-up) is high-CNS; endurance volume is recoverable daily."
+  },
+  {
+    "sport_id": 615,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "neurological",
+      "impact",
+      "lower_body",
+      "wrist"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "calves",
+      "shoulders",
+      "wrists",
+      "core",
+      "ankles"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "lateral_plyo",
+      "wrist_max_load"
+    ],
+    "ideal_supplement_timing": "rest day before training sessions with drops or vaults",
+    "notes": "Parkour stacks high-CNS landings with wrist fall load. Highest-demand of movement-culture sports."
+  },
+  {
+    "sport_id": 616,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "grip",
+      "upper_body_pull",
+      "core",
+      "shoulder"
+    ],
+    "muscles_loaded": [
+      "lats",
+      "biceps",
+      "forearms",
+      "core",
+      "obliques"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "grip_intensive",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "rest day before intense skill sessions",
+    "notes": "Pole fitness is pull- and grip-dominant; bruising and skin-tolerance are secondary recovery factors."
+  },
+  {
+    "sport_id": 630,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "neurological",
+      "muscular",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "full_body"
+    ],
+    "avoid_before_session": [
+      "max_effort_same_pattern"
+    ],
+    "ideal_supplement_timing": "rest day between hard sessions",
+    "notes": "CrossFit-style training already spans modalities; supplemental work is recovery-first."
+  },
+  {
+    "sport_id": 631,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "neurological",
+      "muscular",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "full_body"
+    ],
+    "avoid_before_session": [
+      "max_effort_same_pattern"
+    ],
+    "ideal_supplement_timing": "rest day",
+    "notes": "Classic CrossFit programming; recovery is the bottleneck, not volume."
+  },
+  {
+    "sport_id": 632,
+    "typical_recovery_hours": 72,
+    "primary_fatigue_type": [
+      "neurological",
+      "musculoskeletal"
+    ],
+    "muscles_loaded": [
+      "quadriceps",
+      "glutes",
+      "posterior_chain",
+      "upper_back",
+      "chest",
+      "triceps",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "heavy_bench",
+      "max_effort_any_lift",
+      "high_impact"
+    ],
+    "ideal_supplement_timing": "rest day; 72h between max-effort sessions on the same pattern",
+    "notes": "Powerlifting is CNS-dominant. Max-effort work requires 72+ hours before repeating the same pattern."
+  },
+  {
+    "sport_id": 635,
+    "typical_recovery_hours": 60,
+    "primary_fatigue_type": [
+      "neurological",
+      "musculoskeletal",
+      "technical"
+    ],
+    "muscles_loaded": [
+      "quadriceps",
+      "glutes",
+      "posterior_chain",
+      "upper_back",
+      "shoulders",
+      "wrists"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "max_snatch",
+      "max_clean_jerk",
+      "high_intensity_metcon"
+    ],
+    "ideal_supplement_timing": "rest day; Oly is neurologically + technically demanding",
+    "notes": "Olympic weightlifting requires crisp CNS for technical lifts. 60-72h between max-effort sessions; fingers, wrists, and T-spine must be fresh."
+  },
+  {
+    "sport_id": 638,
+    "typical_recovery_hours": 96,
+    "primary_fatigue_type": [
+      "neurological",
+      "musculoskeletal",
+      "grip"
+    ],
+    "muscles_loaded": [
+      "posterior_chain",
+      "quadriceps",
+      "glutes",
+      "upper_back",
+      "grip_support",
+      "forearm_flexors",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "yoke_walk",
+      "atlas_stone",
+      "high_impact"
+    ],
+    "ideal_supplement_timing": "rest day; strongman events wreck grip and CNS for days",
+    "notes": "Strongman is the highest-recovery-demand strength discipline. Events hit grip + CNS + connective tissue simultaneously. 4+ days between max events."
+  },
+  {
+    "sport_id": 639,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "musculoskeletal",
+      "metabolic"
+    ],
+    "muscles_loaded": [
+      "full_body_isolation",
+      "chest",
+      "back",
+      "shoulders",
+      "arms",
+      "legs"
+    ],
+    "avoid_before_session": [
+      "max_effort",
+      "heavy_compound"
+    ],
+    "ideal_supplement_timing": "split-routine specific — avoid the target muscle in last 36h",
+    "notes": "Bodybuilding recovery is muscle-specific rather than CNS-specific. Most splits allow training the next day on a different muscle group."
+  },
+  {
+    "sport_id": 640,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "metabolic",
+      "musculoskeletal",
+      "grip"
+    ],
+    "muscles_loaded": [
+      "shoulders",
+      "hip_flexors",
+      "glutes",
+      "grip_support",
+      "forearm_flexors",
+      "cardiovascular"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "max_grip",
+      "high_volume_pulling"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable for sub-competition pace",
+    "notes": "Kettlebell sport is endurance-dominant at sub-max loads. Grip and shoulders take the longest to recover; legs recover quickly."
+  },
+  {
+    "sport_id": 641,
+    "typical_recovery_hours": 72,
+    "primary_fatigue_type": [
+      "neurological",
+      "musculoskeletal",
+      "grip",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "posterior_chain",
+      "shoulders",
+      "grip_support",
+      "rotators",
+      "core",
+      "cns"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "max_effort",
+      "high_impact"
+    ],
+    "ideal_supplement_timing": "rest day; Highland events combine throws + strongman-style demands",
+    "notes": "Highland Games athletes train rotational power, grip, and heavy lifting — recovery costs resemble strongman with added rotational shoulder stress."
+  },
+  {
+    "sport_id": 660,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "postural",
+      "grip",
+      "metabolic"
+    ],
+    "muscles_loaded": [
+      "core",
+      "quads",
+      "lats",
+      "forearms",
+      "glute_med"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_grip_work"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable for most disciplines",
+    "notes": "Sailing and air sports are generally endurance/isometric; recovery is moderate and discipline-dependent."
+  },
+  {
+    "sport_id": 661,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "postural",
+      "grip",
+      "metabolic"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "core",
+      "lats",
+      "hip_flexors",
+      "forearms"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_grip_work",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Dinghy sailing is intense isometric hiking-out work + pulling for trim. Quads and core dominate."
+  },
+  {
+    "sport_id": 662,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "postural",
+      "grip"
+    ],
+    "muscles_loaded": [
+      "core",
+      "lats",
+      "biceps",
+      "forearms",
+      "quads"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "heavy_grip_work"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Keelboat racing is pulling + trim heavy on bigger boats; less hiking-out demand than dinghy."
+  },
+  {
+    "sport_id": 663,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "postural",
+      "grip",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "core",
+      "lats",
+      "forearms",
+      "hip_flexors"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_grip_work"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Catamaran sailing demands sustained hiking out on the wire — quads and core accumulate fatigue."
+  },
+  {
+    "sport_id": 664,
+    "typical_recovery_hours": 12,
+    "primary_fatigue_type": [
+      "postural"
+    ],
+    "muscles_loaded": [
+      "core",
+      "quads",
+      "lats"
+    ],
+    "avoid_before_session": [
+      "heavy_squat"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Land sailing is lower-recovery-cost than water sailing; primarily steering + postural control."
+  },
+  {
+    "sport_id": 665,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "neurological",
+      "postural",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "neck",
+      "core",
+      "shoulders",
+      "quads",
+      "hip_flexors"
+    ],
+    "avoid_before_session": [
+      "heavy_overhead_pressing",
+      "high_impact",
+      "neck_overload"
+    ],
+    "ideal_supplement_timing": "rest day; launching and landing need a fresh neck + CNS",
+    "notes": "Paragliding launches require sustained neck and core engagement; landing impact adds eccentric quad load. Neck fatigue is the single highest-risk factor."
+  },
+  {
+    "sport_id": 666,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "neurological",
+      "postural",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "neck",
+      "core",
+      "shoulders",
+      "forearm_flexors",
+      "quads"
+    ],
+    "avoid_before_session": [
+      "heavy_overhead_pressing",
+      "high_impact",
+      "neck_overload"
+    ],
+    "ideal_supplement_timing": "rest day; similar to paragliding plus sustained arm load",
+    "notes": "Hang gliding adds sustained arm and grip demand to the paraglider profile — sustained upper-body isometric work."
+  },
+  {
+    "sport_id": 690,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "postural",
+      "asymmetric",
+      "grip"
+    ],
+    "muscles_loaded": [
+      "adductors",
+      "core",
+      "glute_med",
+      "hip_flexors",
+      "lats",
+      "forearms"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "hip_flexor_fatigue"
+    ],
+    "ideal_supplement_timing": "morning of a ride is acceptable for non-competition days",
+    "notes": "Riding load is postural and asymmetric rather than CNS-heavy. Adductors, hip flexors, and posterior chain accumulate endurance fatigue."
+  },
+  {
+    "sport_id": 691,
+    "typical_recovery_hours": 18,
+    "primary_fatigue_type": [
+      "postural",
+      "asymmetric"
+    ],
+    "muscles_loaded": [
+      "adductors",
+      "core",
+      "hip_flexors",
+      "glute_med",
+      "lats"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "hip_flexor_fatigue"
+    ],
+    "ideal_supplement_timing": "morning of the ride is acceptable",
+    "notes": "Trail riding is primarily an endurance-posture event at moderate intensity."
+  },
+  {
+    "sport_id": 692,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "postural",
+      "asymmetric",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "adductors",
+      "core",
+      "hip_flexors",
+      "glute_med",
+      "quads",
+      "lats"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "high_volume_metcon"
+    ],
+    "ideal_supplement_timing": "rest day or easy mobility only",
+    "notes": "Endurance riding is long-duration saddle work — quads, adductors, and core fatigue accumulate over hours."
+  },
+  {
+    "sport_id": 693,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "postural",
+      "asymmetric",
+      "neurological",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "adductors",
+      "core",
+      "hip_flexors",
+      "glute_med",
+      "lats",
+      "upper_back",
+      "rotator_cuff"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "max_effort",
+      "impact_work"
+    ],
+    "ideal_supplement_timing": "rest day or morning before an afternoon session",
+    "notes": "Eventing combines dressage + cross-country + show jumping. Impact from jumping adds recovery cost."
+  },
+  {
+    "sport_id": 694,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "postural",
+      "asymmetric",
+      "technical"
+    ],
+    "muscles_loaded": [
+      "adductors",
+      "core",
+      "glute_med",
+      "hip_flexors",
+      "upper_back",
+      "thoracic_spine"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "hip_flexor_fatigue"
+    ],
+    "ideal_supplement_timing": "morning of the ride is acceptable",
+    "notes": "Dressage is technical posture-heavy riding. T-spine mobility and core endurance matter more than brute strength."
+  },
+  {
+    "sport_id": 695,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "postural",
+      "impact",
+      "asymmetric"
+    ],
+    "muscles_loaded": [
+      "adductors",
+      "core",
+      "hip_flexors",
+      "quads",
+      "glutes",
+      "lats"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "max_effort",
+      "plyometric_work"
+    ],
+    "ideal_supplement_timing": "rest day before a competition; morning OK for training rides",
+    "notes": "Show jumping adds impact loading on the landing side of each jump — quads and adductors take the hit."
+  },
+  {
+    "sport_id": 696,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "asymmetric",
+      "rotational",
+      "impact",
+      "grip"
+    ],
+    "muscles_loaded": [
+      "obliques",
+      "core",
+      "adductors",
+      "lats",
+      "forearms",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_deadlift",
+      "rotational_power",
+      "max_effort"
+    ],
+    "ideal_supplement_timing": "rest day before a match",
+    "notes": "Polo is intensely rotational and asymmetric (mallet-side dominant). Recovery must address rotational + grip fatigue."
+  },
+  {
+    "sport_id": 710,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "postural",
+      "neurological_precision",
+      "upper_back_endurance"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "rhomboids",
+      "mid_traps",
+      "forearms",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_overhead_pressing",
+      "high_grip_work",
+      "fatiguing_rotator_cuff"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable for most shooting disciplines",
+    "notes": "Archery/shooting are low-metabolic but high-precision. Upper-back and rotator-cuff endurance dominate recovery."
+  },
+  {
+    "sport_id": 711,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "postural",
+      "upper_back_endurance",
+      "neurological_precision"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "rhomboids",
+      "mid_traps",
+      "lats",
+      "forearms",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_overhead_pressing",
+      "max_shoulder_fatigue",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable; avoid shoulder-fatiguing lifts day of",
+    "notes": "Archery demands crisp rotator cuff control and scap stability under sub-max load. Fresh shoulders = consistent anchor."
+  },
+  {
+    "sport_id": 715,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "postural",
+      "rotational",
+      "upper_back_endurance"
+    ],
+    "muscles_loaded": [
+      "core",
+      "rotator_cuff",
+      "mid_traps",
+      "obliques",
+      "glute_med"
+    ],
+    "avoid_before_session": [
+      "heavy_overhead_pressing",
+      "max_rotational_power"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Sporting clays require rotational stability and shoulder-mount endurance. More movement variety than trap/skeet."
+  },
+  {
+    "sport_id": 716,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "postural",
+      "upper_back_endurance"
+    ],
+    "muscles_loaded": [
+      "core",
+      "rotator_cuff",
+      "mid_traps",
+      "shoulders",
+      "glute_med"
+    ],
+    "avoid_before_session": [
+      "heavy_overhead_pressing",
+      "max_shoulder_fatigue"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Trap shooting is single-plane, repetitive mount + swing. Shoulder-mount endurance matters most."
+  },
+  {
+    "sport_id": 717,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "postural",
+      "rotational",
+      "upper_back_endurance"
+    ],
+    "muscles_loaded": [
+      "core",
+      "rotator_cuff",
+      "mid_traps",
+      "obliques",
+      "glute_med"
+    ],
+    "avoid_before_session": [
+      "heavy_overhead_pressing",
+      "max_rotational_power"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Skeet shooting demands fast crossing swings — rotational stability + scapular control dominate."
+  },
+  {
+    "sport_id": 720,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "postural",
+      "endurance",
+      "grip"
+    ],
+    "muscles_loaded": [
+      "shoulders",
+      "forearms",
+      "core",
+      "lats",
+      "quads"
+    ],
+    "avoid_before_session": [
+      "heavy_overhead_pressing",
+      "heavy_grip_work"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable for most disciplines",
+    "notes": "Fishing/hunting recovery varies widely — from low-demand fly casting to brutal backcountry pack-outs."
+  },
+  {
+    "sport_id": 721,
+    "typical_recovery_hours": 18,
+    "primary_fatigue_type": [
+      "postural",
+      "repetitive",
+      "grip"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "shoulders",
+      "forearm_flexors",
+      "biceps",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_overhead_pressing",
+      "max_shoulder_fatigue"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Fly fishing is repetitive overhead casting — wrist, elbow, and shoulder accumulate overuse over long days."
+  },
+  {
+    "sport_id": 722,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "respiratory",
+      "cardiovascular",
+      "cold_stress"
+    ],
+    "muscles_loaded": [
+      "diaphragm",
+      "hip_flexors",
+      "quads",
+      "shoulders",
+      "core"
+    ],
+    "avoid_before_session": [
+      "high_intensity_metcon",
+      "heavy_cardio",
+      "max_effort"
+    ],
+    "ideal_supplement_timing": "rest day or easy work; CO2 tolerance matters more than strength",
+    "notes": "Spearfishing combines breath-hold + finning + cold water. Respiratory system + hip-flexor endurance dominate."
+  },
+  {
+    "sport_id": 723,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "postural",
+      "neurological_precision",
+      "upper_back_endurance",
+      "cold_stress"
+    ],
+    "muscles_loaded": [
+      "rotator_cuff",
+      "mid_traps",
+      "core",
+      "glutes",
+      "quads",
+      "calves"
+    ],
+    "avoid_before_session": [
+      "heavy_overhead_pressing",
+      "max_shoulder_fatigue",
+      "high_volume_pull"
+    ],
+    "ideal_supplement_timing": "rest day before a hunt; shoulders must be crisp",
+    "notes": "Bow hunting combines archery precision demands with backcountry terrain + cold. Shoulder freshness is critical."
+  },
+  {
+    "sport_id": 724,
+    "typical_recovery_hours": 72,
+    "primary_fatigue_type": [
+      "metabolic",
+      "musculoskeletal",
+      "postural",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "quadriceps",
+      "glutes",
+      "calves",
+      "core",
+      "lats",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "heavy_deadlift",
+      "max_effort_lower_body",
+      "high_impact"
+    ],
+    "ideal_supplement_timing": "rest day; pack-outs destroy legs for multiple days",
+    "notes": "Backcountry hunting is the highest-recovery-demand outdoor sport — multi-day ruck loads on rugged terrain create deep fatigue."
+  },
+  {
+    "sport_id": 730,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "lower_body_endurance",
+      "cardiovascular",
+      "spinal_mobility"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "glute_med",
+      "hip_flexors",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "high_impact_plyo"
+    ],
+    "ideal_supplement_timing": "morning of acceptable for social dance; rest day before performance",
+    "notes": "Dance recovery varies by genre — performance days warrant a day before."
+  },
+  {
+    "sport_id": 731,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "lower_body_endurance",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "hip_flexors",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Ballroom/Latin is long-duration but moderate-intensity; typical social session rarely warrants rest day before."
+  },
+  {
+    "sport_id": 732,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "lower_body_endurance"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "glutes",
+      "cardiovascular"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Swing dance (Lindy, Charleston) is aerobic-intensive; cardio base is the bottleneck."
+  },
+  {
+    "sport_id": 733,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "lower_body_endurance",
+      "hip_rotators",
+      "core"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "adductors",
+      "hip_rotators",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Salsa/bachata demand hip isolation and quick weight shifts."
+  },
+  {
+    "sport_id": 734,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "lower_body",
+      "core",
+      "spinal_mobility",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "core",
+      "hip_flexors",
+      "hamstrings",
+      "glutes",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "high_impact_plyo"
+    ],
+    "ideal_supplement_timing": "rest day or light day before performance",
+    "notes": "Contemporary dance combines athletic leaps, floor work, and spinal articulation — higher recovery cost."
+  },
+  {
+    "sport_id": 735,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "lower_body",
+      "neurological",
+      "impact",
+      "cardiovascular"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "calves",
+      "glutes",
+      "core",
+      "hip_flexors"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "lateral_plyo"
+    ],
+    "ideal_supplement_timing": "rest day before battle/competition; morning of OK for class",
+    "notes": "Hip-hop dance is explosive and impact-heavy — treat competition days like sport events."
+  },
+  {
+    "sport_id": 736,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "lower_body",
+      "cardiovascular",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "calves",
+      "quads",
+      "tib_anterior",
+      "intrinsic_foot",
+      "cardiovascular"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "high_impact_plyo"
+    ],
+    "ideal_supplement_timing": "rest day before rehearsal or performance",
+    "notes": "Irish dance is calf- and foot-dominant with extreme cardiovascular demand — full day of rest before heavy sessions."
+  },
+  {
+    "sport_id": 750,
+    "typical_recovery_hours": 24,
+    "primary_fatigue_type": [
+      "postural",
+      "neurological",
+      "endurance"
+    ],
+    "muscles_loaded": [
+      "core",
+      "stabilizers",
+      "cardiovascular"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "high_impact"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable",
+    "notes": "Catch-all for miscellaneous outdoor sports — recovery profile varies widely."
+  },
+  {
+    "sport_id": 751,
+    "typical_recovery_hours": 18,
+    "primary_fatigue_type": [
+      "postural",
+      "neurological"
+    ],
+    "muscles_loaded": [
+      "intrinsic_foot",
+      "calves",
+      "core",
+      "glute_med",
+      "tib_anterior"
+    ],
+    "avoid_before_session": [
+      "heavy_squat",
+      "max_effort_lower_body"
+    ],
+    "ideal_supplement_timing": "morning of is acceptable; fresh feet and ankles help",
+    "notes": "Slacklining is balance + concentration dominant with minimal metabolic cost. Neurological freshness matters more than strength."
+  },
+  {
+    "sport_id": 752,
+    "typical_recovery_hours": 12,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "postural"
+    ],
+    "muscles_loaded": [
+      "quads",
+      "glutes",
+      "calves",
+      "core"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body"
+    ],
+    "ideal_supplement_timing": "anytime",
+    "notes": "Geocaching is low-intensity hiking with nav; recovery is minimal unless on rugged terrain."
+  },
+  {
+    "sport_id": 753,
+    "typical_recovery_hours": 36,
+    "primary_fatigue_type": [
+      "neurological",
+      "impact",
+      "postural"
+    ],
+    "muscles_loaded": [
+      "glutes",
+      "quads",
+      "calves",
+      "core",
+      "cardiovascular"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "max_effort",
+      "high_impact"
+    ],
+    "ideal_supplement_timing": "rest day or easy mobility before a trial",
+    "notes": "Dog agility (handler) demands explosive starts, decelerations, and fast footwork. Handler injury rates rival the dog."
+  },
+  {
+    "sport_id": 754,
+    "typical_recovery_hours": 48,
+    "primary_fatigue_type": [
+      "cardiovascular",
+      "postural",
+      "impact"
+    ],
+    "muscles_loaded": [
+      "glutes",
+      "quads",
+      "calves",
+      "core",
+      "cardiovascular",
+      "shoulders"
+    ],
+    "avoid_before_session": [
+      "heavy_lower_body",
+      "high_impact",
+      "max_effort"
+    ],
+    "ideal_supplement_timing": "rest day before a run; bikejoring is cardio-intensive for the handler",
+    "notes": "Bikejoring — dog pulls cyclist — is cardiovascular + reactive. Handler manages the dog and bike simultaneously."
+  }
+]

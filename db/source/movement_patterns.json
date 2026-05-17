@@ -1,0 +1,282 @@
+[
+  {
+    "id": 1,
+    "name": "Hip Hinge",
+    "slug": "hip-hinge",
+    "description": "Hip-dominant bend with neutral spine (deadlift, RDL).",
+    "body_region": "lower"
+  },
+  {
+    "id": 2,
+    "name": "Knee-Dominant Squat",
+    "slug": "squat",
+    "description": "Bilateral knee and hip flexion with upright torso (back squat, goblet).",
+    "body_region": "lower"
+  },
+  {
+    "id": 3,
+    "name": "Single-Leg Squat / Lunge",
+    "slug": "single-leg-squat",
+    "description": "Unilateral knee-dominant pattern (lunge, split squat, pistol).",
+    "body_region": "lower"
+  },
+  {
+    "id": 4,
+    "name": "Hip Abduction",
+    "slug": "hip-abduction",
+    "description": "Moving the leg away from midline; glute medius focus.",
+    "body_region": "lower"
+  },
+  {
+    "id": 5,
+    "name": "Hip Adduction",
+    "slug": "hip-adduction",
+    "description": "Moving the leg toward midline; adductor focus.",
+    "body_region": "lower"
+  },
+  {
+    "id": 6,
+    "name": "Calf Raise / Ankle",
+    "slug": "calf-raise",
+    "description": "Plantar flexion; gastroc/soleus.",
+    "body_region": "lower"
+  },
+  {
+    "id": 7,
+    "name": "Terminal Knee Extension",
+    "slug": "terminal-knee-extension",
+    "description": "End-range knee extension; VMO emphasis.",
+    "body_region": "lower"
+  },
+  {
+    "id": 8,
+    "name": "Step-Up / Step-Down",
+    "slug": "step-up",
+    "description": "Unilateral loaded step under control.",
+    "body_region": "lower"
+  },
+  {
+    "id": 10,
+    "name": "Horizontal Push",
+    "slug": "horizontal-push",
+    "description": "Pushing away from the chest (bench press, push-up).",
+    "body_region": "upper"
+  },
+  {
+    "id": 11,
+    "name": "Vertical Push",
+    "slug": "vertical-push",
+    "description": "Pushing overhead (press, handstand).",
+    "body_region": "upper"
+  },
+  {
+    "id": 12,
+    "name": "Scapular Protraction",
+    "slug": "scapular-protraction",
+    "description": "Scap glides forward/around the rib cage (serratus).",
+    "body_region": "upper"
+  },
+  {
+    "id": 13,
+    "name": "Elbow Extension",
+    "slug": "elbow-extension",
+    "description": "Triceps isolation.",
+    "body_region": "upper"
+  },
+  {
+    "id": 14,
+    "name": "Horizontal Pull",
+    "slug": "horizontal-pull",
+    "description": "Pulling toward the chest (row, inverted row).",
+    "body_region": "upper"
+  },
+  {
+    "id": 15,
+    "name": "Vertical Pull",
+    "slug": "vertical-pull",
+    "description": "Pulling down from overhead (pull-up, lat pulldown).",
+    "body_region": "upper"
+  },
+  {
+    "id": 16,
+    "name": "Scapular Retraction",
+    "slug": "scapular-retraction",
+    "description": "Pulling scapulae together (face pull, Y-raise).",
+    "body_region": "upper"
+  },
+  {
+    "id": 17,
+    "name": "Elbow Flexion",
+    "slug": "elbow-flexion",
+    "description": "Biceps/brachialis isolation.",
+    "body_region": "upper"
+  },
+  {
+    "id": 18,
+    "name": "Climbing Pull",
+    "slug": "climbing-pull",
+    "description": "Sport-specific pull: hangboard, pull-up, lock-off under full-body tension.",
+    "body_region": "upper"
+  },
+  {
+    "id": 20,
+    "name": "Anti-Extension",
+    "slug": "anti-extension",
+    "description": "Resist lumbar extension (plank, rollout, dead bug).",
+    "body_region": "core"
+  },
+  {
+    "id": 21,
+    "name": "Anti-Rotation",
+    "slug": "anti-rotation",
+    "description": "Resist trunk rotation (Pallof press, suitcase carry).",
+    "body_region": "core"
+  },
+  {
+    "id": 22,
+    "name": "Anti-Lateral Flexion",
+    "slug": "anti-lateral-flexion",
+    "description": "Resist side-bend under load (single-arm carry).",
+    "body_region": "core"
+  },
+  {
+    "id": 23,
+    "name": "Trunk Rotation",
+    "slug": "trunk-rotation",
+    "description": "Rotational power (medball throws, cable chop).",
+    "body_region": "core"
+  },
+  {
+    "id": 24,
+    "name": "Hip Flexion",
+    "slug": "hip-flexion",
+    "description": "Active hip flexion under load.",
+    "body_region": "core"
+  },
+  {
+    "id": 25,
+    "name": "Loaded Carry",
+    "slug": "loaded-carry",
+    "description": "Walking under asymmetric or heavy load (farmer, suitcase).",
+    "body_region": "core"
+  },
+  {
+    "id": 26,
+    "name": "Breathing / Bracing",
+    "slug": "breathing-bracing",
+    "description": "Intra-abdominal pressure and diaphragm coordination.",
+    "body_region": "core"
+  },
+  {
+    "id": 30,
+    "name": "Olympic Lift Derivative",
+    "slug": "olympic-derivative",
+    "description": "Clean/snatch pulls, hang variations.",
+    "body_region": "full"
+  },
+  {
+    "id": 31,
+    "name": "Ground-to-Standing",
+    "slug": "ground-to-standing",
+    "description": "Turkish get-up family, floor-to-feet patterns.",
+    "body_region": "full"
+  },
+  {
+    "id": 32,
+    "name": "Locomotion",
+    "slug": "locomotion",
+    "description": "Walking, running, skipping, sled pushes.",
+    "body_region": "full"
+  },
+  {
+    "id": 33,
+    "name": "Crawling Pattern",
+    "slug": "crawling",
+    "description": "Quadrupedal locomotion (bear, spider).",
+    "body_region": "full"
+  },
+  {
+    "id": 34,
+    "name": "Jumping / Landing",
+    "slug": "jumping-landing",
+    "description": "Force absorption and expression.",
+    "body_region": "full"
+  },
+  {
+    "id": 40,
+    "name": "Pedal Stroke",
+    "slug": "pedal-stroke",
+    "description": "Cycling pattern; hip extension + knee drive.",
+    "body_region": "sport"
+  },
+  {
+    "id": 41,
+    "name": "Paddle Stroke",
+    "slug": "paddle-stroke",
+    "description": "Kayak/canoe/SUP stroke.",
+    "body_region": "sport"
+  },
+  {
+    "id": 42,
+    "name": "Swim Stroke",
+    "slug": "swim-stroke",
+    "description": "Freestyle/fly pulling pattern.",
+    "body_region": "sport"
+  },
+  {
+    "id": 43,
+    "name": "Throwing / Casting",
+    "slug": "throwing-casting",
+    "description": "Overhead propulsion.",
+    "body_region": "sport"
+  },
+  {
+    "id": 44,
+    "name": "Skating Stride",
+    "slug": "skating-stride",
+    "description": "Lateral extension push-off.",
+    "body_region": "sport"
+  },
+  {
+    "id": 45,
+    "name": "Rotational Strike",
+    "slug": "rotational-strike",
+    "description": "Golf/tennis/baseball swing pattern.",
+    "body_region": "sport"
+  },
+  {
+    "id": 46,
+    "name": "Racquet Swing",
+    "slug": "racquet-swing",
+    "description": "Forehand/backhand/serve patterns.",
+    "body_region": "sport"
+  },
+  {
+    "id": 47,
+    "name": "Cutting / Change of Direction",
+    "slug": "cutting",
+    "description": "Deceleration + re-acceleration at angle.",
+    "body_region": "sport"
+  },
+  {
+    "id": 48,
+    "name": "Takedown / Sprawl",
+    "slug": "takedown-sprawl",
+    "description": "Grappling level change.",
+    "body_region": "sport"
+  },
+  {
+    "id": 49,
+    "name": "Striking (Punch/Kick)",
+    "slug": "striking",
+    "description": "Hip-driven strikes.",
+    "body_region": "sport"
+  },
+  {
+    "id": 50,
+    "name": "Deceleration",
+    "slug": "deceleration",
+    "description": "Eccentric absorption of sport forces.",
+    "body_region": "sport"
+  }
+]

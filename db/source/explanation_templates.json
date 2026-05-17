@@ -1,0 +1,394 @@
+[
+  {
+    "id": 1,
+    "trigger_type_id": 1,
+    "adjustment_type": "swap_exercise",
+    "template": "You mentioned low energy -> shifted {change} -> so you can {goal}",
+    "tone": "observational",
+    "example": "You mentioned low energy -> shifted today's squats to goblet squats at lighter load -> so you can move without digging a recovery hole"
+  },
+  {
+    "id": 2,
+    "trigger_type_id": 1,
+    "adjustment_type": "change_focus",
+    "template": "You're running light today -> swapped the lifting session for mobility and easy prehab -> so you keep momentum without adding stress",
+    "tone": "observational",
+    "example": "You're running light today -> swapped the lifting session for mobility and easy prehab -> so you keep momentum without adding stress"
+  },
+  {
+    "id": 3,
+    "trigger_type_id": 1,
+    "adjustment_type": "reduce_intensity",
+    "template": "You flagged low energy -> dropped load and volume on the main lifts -> so you still train but don't deepen fatigue",
+    "tone": "observational",
+    "example": "You flagged low energy -> dropped back squat to 60% x 3 sets of 5 -> so you still train but don't deepen fatigue"
+  },
+  {
+    "id": 4,
+    "trigger_type_id": 1,
+    "adjustment_type": "skip_day",
+    "template": "You're running on fumes -> pulled today's session -> so tomorrow's sport day isn't compromised",
+    "tone": "observational",
+    "example": "You're running on fumes -> pulled today's session -> so tomorrow's climbing day isn't compromised"
+  },
+  {
+    "id": 5,
+    "trigger_type_id": 2,
+    "adjustment_type": "swap_exercise",
+    "template": "You're sore in {trigger} -> swapped {change} -> so you can train without aggravating it",
+    "tone": "observational",
+    "example": "You're sore in your hamstrings -> swapped RDLs for hip-abduction work -> so you can train without aggravating it"
+  },
+  {
+    "id": 6,
+    "trigger_type_id": 2,
+    "adjustment_type": "reduce_volume",
+    "template": "Soreness in {trigger} -> cut volume on the related work -> so recovery can catch up",
+    "tone": "observational",
+    "example": "Soreness in your lats -> cut pulling volume in half -> so recovery can catch up"
+  },
+  {
+    "id": 7,
+    "trigger_type_id": 2,
+    "adjustment_type": "add_mobility",
+    "template": "You reported soreness -> added targeted mobility for {trigger} -> so today feels productive without loading the sore tissue",
+    "tone": "observational",
+    "example": "You reported calf soreness -> added ankle mobility and soft-tissue work -> so today feels productive without loading the sore tissue"
+  },
+  {
+    "id": 8,
+    "trigger_type_id": 3,
+    "adjustment_type": "swap_exercise",
+    "template": "You flagged {trigger} -> swapped {change} -> so you avoid the movement that provokes it",
+    "tone": "observational",
+    "example": "You flagged finger pulley discomfort -> swapped hangboard repeaters for open-hand dead hangs -> so you avoid the movement that provokes it"
+  },
+  {
+    "id": 9,
+    "trigger_type_id": 3,
+    "adjustment_type": "add_prehab",
+    "template": "Given the {trigger} concern -> added {change} -> so we build capacity around the issue",
+    "tone": "observational",
+    "example": "Given the shoulder impingement concern -> added external rotation and scapular work -> so we build capacity around the issue"
+  },
+  {
+    "id": 10,
+    "trigger_type_id": 3,
+    "adjustment_type": "skip_day",
+    "template": "You flagged pain in {trigger} -> pulled the loaded session -> so we get ahead of it instead of pushing through",
+    "tone": "observational",
+    "example": "You flagged pain in your elbow -> pulled the loaded session -> so we get ahead of it instead of pushing through"
+  },
+  {
+    "id": 11,
+    "trigger_type_id": 3,
+    "adjustment_type": "change_focus",
+    "template": "With {trigger} flagged -> shifted today to rehab-forward work -> so you're still training but supporting recovery",
+    "tone": "observational",
+    "example": "With finger pulley flagged -> shifted today to antagonist and forearm extensor work -> so you're still training but supporting recovery"
+  },
+  {
+    "id": 12,
+    "trigger_type_id": 4,
+    "adjustment_type": "reduce_volume",
+    "template": "You're not feeling it -> trimmed today's session -> so you still show up without forcing a max effort",
+    "tone": "encouraging",
+    "example": "You're not feeling it -> trimmed today's session to 20 minutes -> so you still show up without forcing a max effort"
+  },
+  {
+    "id": 13,
+    "trigger_type_id": 4,
+    "adjustment_type": "change_focus",
+    "template": "Low motivation today -> swapped the lifting for easy movement -> so the habit stays alive",
+    "tone": "encouraging",
+    "example": "Low motivation today -> swapped the lifting for 20 minutes of walking and mobility -> so the habit stays alive"
+  },
+  {
+    "id": 14,
+    "trigger_type_id": 5,
+    "adjustment_type": "rebalance_week",
+    "template": "You missed {trigger} -> redistributed the key work across the remaining days -> so the week still hits its targets",
+    "tone": "observational",
+    "example": "You missed Tuesday's session -> redistributed the antagonist work into Thursday -> so the week still hits its targets"
+  },
+  {
+    "id": 15,
+    "trigger_type_id": 5,
+    "adjustment_type": "change_focus",
+    "template": "Missed the earlier session -> shifted today's focus to cover the gap -> so nothing critical gets skipped",
+    "tone": "observational",
+    "example": "Missed Tuesday's prehab -> shifted today to include shoulder external rotation -> so nothing critical gets skipped"
+  },
+  {
+    "id": 16,
+    "trigger_type_id": 6,
+    "adjustment_type": "reduce_volume",
+    "template": "You've been cutting sessions short -> trimmed the plan to a realistic 25 minutes -> so you finish what's on the page",
+    "tone": "observational",
+    "example": "You've been cutting sessions short -> trimmed the plan to a realistic 25 minutes -> so you finish what's on the page"
+  },
+  {
+    "id": 17,
+    "trigger_type_id": 6,
+    "adjustment_type": "change_focus",
+    "template": "Your sessions have been running short -> consolidated to the highest-value work -> so the essentials always get done",
+    "tone": "observational",
+    "example": "Your sessions have been running short -> consolidated to antagonist work and the primary lift -> so the essentials always get done"
+  },
+  {
+    "id": 18,
+    "trigger_type_id": 7,
+    "adjustment_type": "swap_environment",
+    "template": "You're traveling -> swapped to a {change} version -> so the session still happens",
+    "tone": "observational",
+    "example": "You're traveling -> swapped to a bodyweight version -> so the session still happens"
+  },
+  {
+    "id": 19,
+    "trigger_type_id": 7,
+    "adjustment_type": "swap_exercise",
+    "template": "No gym this week -> subbed {change} -> so you keep the training effect",
+    "tone": "observational",
+    "example": "No gym this week -> subbed barbell rows for inverted rows under a table -> so you keep the training effect"
+  },
+  {
+    "id": 20,
+    "trigger_type_id": 8,
+    "adjustment_type": "reduce_volume",
+    "template": "Short on time today -> ran the time-efficient version -> so you still get the main work in",
+    "tone": "observational",
+    "example": "Short on time today -> ran the time-efficient version with supersets -> so you still get the main work in 20 minutes"
+  },
+  {
+    "id": 21,
+    "trigger_type_id": 8,
+    "adjustment_type": "change_focus",
+    "template": "Only {trigger} minutes available -> focused on the primary lift plus one finisher -> so volume doesn't dilute intensity",
+    "tone": "observational",
+    "example": "Only 20 minutes available -> focused on the deadlift plus one carry -> so volume doesn't dilute intensity"
+  },
+  {
+    "id": 22,
+    "trigger_type_id": 9,
+    "adjustment_type": "reduce_intensity",
+    "template": "You've got {trigger} -> reduced intensity today -> so you feel {goal}",
+    "tone": "observational",
+    "example": "You've got climbing this weekend -> reduced intensity today -> so you feel fresh and strong"
+  },
+  {
+    "id": 23,
+    "trigger_type_id": 9,
+    "adjustment_type": "swap_exercise",
+    "template": "{trigger} coming up -> swapped heavy lifts for pre-event-safe versions -> so nothing lingers into the event",
+    "tone": "observational",
+    "example": "Ski day tomorrow -> swapped heavy squats for bodyweight step-ups -> so nothing lingers into the event"
+  },
+  {
+    "id": 24,
+    "trigger_type_id": 9,
+    "adjustment_type": "taper",
+    "template": "{trigger} in two days -> shifted into taper work -> so the nervous system arrives fresh",
+    "tone": "observational",
+    "example": "Race in two days -> shifted into taper work -> so the nervous system arrives fresh"
+  },
+  {
+    "id": 25,
+    "trigger_type_id": 9,
+    "adjustment_type": "reduce_volume",
+    "template": "Event approaching -> trimmed volume on {change} -> so you're not accumulating fatigue",
+    "tone": "observational",
+    "example": "Event approaching -> trimmed volume on the main pulls -> so you're not accumulating fatigue"
+  },
+  {
+    "id": 26,
+    "trigger_type_id": 10,
+    "adjustment_type": "change_focus",
+    "template": "You just completed {trigger} -> shifted today to recovery and mobility -> so the body can absorb the stress",
+    "tone": "observational",
+    "example": "You just completed a long ride -> shifted today to recovery and mobility -> so the body can absorb the stress"
+  },
+  {
+    "id": 27,
+    "trigger_type_id": 10,
+    "adjustment_type": "reduce_intensity",
+    "template": "Post-event today -> dropped the intensity across the board -> so recovery is the work",
+    "tone": "observational",
+    "example": "Post-event today -> dropped the intensity across the board -> so recovery is the work"
+  },
+  {
+    "id": 28,
+    "trigger_type_id": 11,
+    "adjustment_type": "reduce_volume",
+    "template": "Deload week -> trimmed volume on the main lifts -> so the body consolidates gains",
+    "tone": "neutral",
+    "example": "Deload week -> trimmed volume on the main lifts to 60% -> so the body consolidates gains"
+  },
+  {
+    "id": 29,
+    "trigger_type_id": 11,
+    "adjustment_type": "reduce_intensity",
+    "template": "Deload week -> backed off intensity -> so tissue and nervous system reset before the next block",
+    "tone": "neutral",
+    "example": "Deload week -> backed off intensity to RPE 6 -> so tissue and nervous system reset before the next block"
+  },
+  {
+    "id": 30,
+    "trigger_type_id": 12,
+    "adjustment_type": "rebalance_week",
+    "template": "Your week is heavy on pulling -> added push work -> so the ratio stays healthy for your shoulders",
+    "tone": "observational",
+    "example": "Your week is heavy on pulling -> added a push day with bench and OHP -> so the ratio stays healthy for your shoulders"
+  },
+  {
+    "id": 31,
+    "trigger_type_id": 12,
+    "adjustment_type": "change_focus",
+    "template": "Pull volume is running high -> flipped today to push-focused -> so the imbalance doesn't compound",
+    "tone": "observational",
+    "example": "Pull volume is running high -> flipped today to push-focused work -> so the imbalance doesn't compound"
+  },
+  {
+    "id": 32,
+    "trigger_type_id": 13,
+    "adjustment_type": "swap_exercise",
+    "template": "{trigger} favoring one side -> swapped in unilateral work -> so the weaker side catches up",
+    "tone": "observational",
+    "example": "Right side favoring -> swapped in single-leg RDLs -> so the weaker side catches up"
+  },
+  {
+    "id": 33,
+    "trigger_type_id": 13,
+    "adjustment_type": "add_prehab",
+    "template": "Side-to-side asymmetry detected -> added targeted unilateral work -> so we close the gap over time",
+    "tone": "observational",
+    "example": "Side-to-side asymmetry detected -> added single-arm carries and split-squats -> so we close the gap over time"
+  },
+  {
+    "id": 34,
+    "trigger_type_id": 14,
+    "adjustment_type": "add_mobility",
+    "template": "Lots of strength volume lately -> added a mobility block today -> so the body stays supple",
+    "tone": "observational",
+    "example": "Lots of strength volume lately -> added a 15-minute mobility block today -> so the body stays supple"
+  },
+  {
+    "id": 35,
+    "trigger_type_id": 14,
+    "adjustment_type": "change_focus",
+    "template": "Not enough mobility work this week -> flipped today to mobility-forward -> so the ratio rebalances",
+    "tone": "observational",
+    "example": "Not enough mobility work this week -> flipped today to mobility-forward -> so the ratio rebalances"
+  },
+  {
+    "id": 36,
+    "trigger_type_id": 15,
+    "adjustment_type": "swap_exercise",
+    "template": "{trigger} has been hammered -> swapped the primary lift to give it a rest -> so recovery can catch up",
+    "tone": "observational",
+    "example": "Your quads have been hammered -> swapped back squat for hip hinge work -> so recovery can catch up"
+  },
+  {
+    "id": 37,
+    "trigger_type_id": 15,
+    "adjustment_type": "reduce_volume",
+    "template": "{trigger} overload detected -> trimmed related volume -> so the group stops accumulating damage",
+    "tone": "observational",
+    "example": "Grip overload detected -> trimmed pulling volume -> so the group stops accumulating damage"
+  },
+  {
+    "id": 38,
+    "trigger_type_id": 16,
+    "adjustment_type": "change_focus",
+    "template": "Numbers have stalled -> rotated the stimulus to new variations -> so progress resumes",
+    "tone": "observational",
+    "example": "Numbers have stalled on bench -> rotated to close-grip and floor press -> so progress resumes"
+  },
+  {
+    "id": 39,
+    "trigger_type_id": 16,
+    "adjustment_type": "reduce_volume",
+    "template": "Progress stalled -> cut volume and held intensity -> so fatigue isn't masking capacity",
+    "tone": "observational",
+    "example": "Progress stalled on the main lifts -> cut volume and held intensity -> so fatigue isn't masking capacity"
+  },
+  {
+    "id": 40,
+    "trigger_type_id": 17,
+    "adjustment_type": "increase_intensity",
+    "template": "You've been crushing the top of the range -> bumped the load -> so you keep progressing",
+    "tone": "encouraging",
+    "example": "You've been crushing the top of the range on rows -> bumped the load by 5 lbs -> so you keep progressing"
+  },
+  {
+    "id": 41,
+    "trigger_type_id": 17,
+    "adjustment_type": "swap_exercise",
+    "template": "Easy at this load -> stepped up to a harder variation -> so the stimulus matches your level",
+    "tone": "encouraging",
+    "example": "Easy at bodyweight -> stepped up to weighted pull-ups -> so the stimulus matches your level"
+  },
+  {
+    "id": 42,
+    "trigger_type_id": 18,
+    "adjustment_type": "swap_exercise",
+    "template": "{trigger} not available -> swapped to {change} -> so the session still hits the same pattern",
+    "tone": "observational",
+    "example": "Barbell not available -> swapped back squat for goblet squat -> so the session still hits the same pattern"
+  },
+  {
+    "id": 43,
+    "trigger_type_id": 18,
+    "adjustment_type": "swap_environment",
+    "template": "Equipment is out -> switched to a home-version today -> so nothing gets skipped",
+    "tone": "observational",
+    "example": "Squat rack is out -> switched to a home-version today -> so nothing gets skipped"
+  },
+  {
+    "id": 44,
+    "trigger_type_id": 19,
+    "adjustment_type": "swap_environment",
+    "template": "You're in a different space today -> swapped to a travel-friendly plan -> so the session still works",
+    "tone": "observational",
+    "example": "You're in a hotel gym today -> swapped to a dumbbell-only plan -> so the session still works"
+  },
+  {
+    "id": 45,
+    "trigger_type_id": 19,
+    "adjustment_type": "swap_exercise",
+    "template": "Environment changed -> subbed in movement-compatible alternatives -> so the training effect holds",
+    "tone": "observational",
+    "example": "Environment changed -> subbed bench press for floor press -> so the training effect holds"
+  },
+  {
+    "id": 46,
+    "trigger_type_id": 20,
+    "adjustment_type": "swap_environment",
+    "template": "Weather is blocking outdoor work -> moved today to an indoor version -> so the training still happens",
+    "tone": "observational",
+    "example": "Weather is blocking the ride -> moved today to an indoor trainer session -> so the training still happens"
+  },
+  {
+    "id": 47,
+    "trigger_type_id": 20,
+    "adjustment_type": "change_focus",
+    "template": "Can't train outside today -> flipped to indoor strength work -> so the week stays on track",
+    "tone": "observational",
+    "example": "Can't run outside today -> flipped to indoor strength work -> so the week stays on track"
+  },
+  {
+    "id": 48,
+    "trigger_type_id": 21,
+    "adjustment_type": "rebalance_week",
+    "template": "You moved {trigger} to a different day -> kept the week's volume intact -> so nothing gets double-booked",
+    "tone": "observational",
+    "example": "You moved Wednesday's pull day to Thursday -> kept the week's volume intact -> so nothing gets double-booked"
+  },
+  {
+    "id": 49,
+    "trigger_type_id": 21,
+    "adjustment_type": "change_focus",
+    "template": "You reshuffled this week -> updated the plan to match -> so the sequence still hits your recovery windows",
+    "tone": "observational",
+    "example": "You moved the power day earlier -> updated the plan to match -> so the sequence still hits your recovery windows"
+  }
+]

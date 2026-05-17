@@ -1,0 +1,772 @@
+[
+  {
+    "id": 1,
+    "name": "None (Bodyweight)",
+    "slug": "bodyweight",
+    "category": "bodyweight",
+    "portability": "any",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 2,
+    "name": "Pull-Up Bar",
+    "slug": "pull-up-bar",
+    "category": "bodyweight",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 3,
+    "name": "Dip Station",
+    "slug": "dip-station",
+    "category": "bodyweight",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 4,
+    "name": "Parallettes",
+    "slug": "parallettes",
+    "category": "bodyweight",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 5,
+    "name": "Gymnastic Rings",
+    "slug": "gymnastic-rings",
+    "category": "bodyweight",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 10,
+    "name": "Barbell",
+    "slug": "barbell",
+    "category": "free_weight",
+    "portability": "gym_only",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 11,
+    "name": "Dumbbells",
+    "slug": "dumbbells",
+    "category": "free_weight",
+    "portability": "portable",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 12,
+    "name": "Kettlebell",
+    "slug": "kettlebell",
+    "category": "free_weight",
+    "portability": "portable",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 13,
+    "name": "Medicine Ball",
+    "slug": "medicine-ball",
+    "category": "free_weight",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 14,
+    "name": "Sandbag",
+    "slug": "sandbag",
+    "category": "free_weight",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 15,
+    "name": "Slam Ball",
+    "slug": "slam-ball",
+    "category": "free_weight",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 16,
+    "name": "Landmine Attachment",
+    "slug": "landmine",
+    "category": "free_weight",
+    "portability": "gym_only",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 17,
+    "name": "Weight Plates",
+    "slug": "weight-plates",
+    "category": "free_weight",
+    "portability": "gym_only",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 18,
+    "name": "Clubbell / Mace",
+    "slug": "clubbell-mace",
+    "category": "free_weight",
+    "portability": "portable",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 19,
+    "name": "Weight Vest",
+    "slug": "weight-vest",
+    "category": "free_weight",
+    "portability": "portable",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 20,
+    "name": "Resistance Band Light",
+    "slug": "band-light",
+    "category": "band",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 21,
+    "name": "Resistance Band Medium",
+    "slug": "band-medium",
+    "category": "band",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 22,
+    "name": "Resistance Band Heavy",
+    "slug": "band-heavy",
+    "category": "band",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 23,
+    "name": "Mini Band / Hip Circle",
+    "slug": "mini-band",
+    "category": "band",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 24,
+    "name": "Cable Machine",
+    "slug": "cable-machine",
+    "category": "machine",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 25,
+    "name": "Suspension Trainer (TRX)",
+    "slug": "suspension-trainer",
+    "category": "band",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 26,
+    "name": "Battle Ropes",
+    "slug": "battle-ropes",
+    "category": "band",
+    "portability": "portable",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 27,
+    "name": "Finger Extensor Band",
+    "slug": "finger-extensor-band",
+    "category": "band",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 30,
+    "name": "Balance Board",
+    "slug": "balance-board",
+    "category": "stability",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 31,
+    "name": "BOSU Ball",
+    "slug": "bosu-ball",
+    "category": "stability",
+    "portability": "portable",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 32,
+    "name": "Stability Ball",
+    "slug": "stability-ball",
+    "category": "stability",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 33,
+    "name": "Foam Pad",
+    "slug": "foam-pad",
+    "category": "stability",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 34,
+    "name": "Slackline",
+    "slug": "slackline",
+    "category": "stability",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 35,
+    "name": "Indo Board",
+    "slug": "indo-board",
+    "category": "stability",
+    "portability": "portable",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 40,
+    "name": "Foam Roller",
+    "slug": "foam-roller",
+    "category": "mobility",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 41,
+    "name": "Lacrosse Ball",
+    "slug": "lacrosse-ball",
+    "category": "mobility",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 42,
+    "name": "Massage Gun",
+    "slug": "massage-gun",
+    "category": "mobility",
+    "portability": "portable",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 43,
+    "name": "Yoga Mat",
+    "slug": "yoga-mat",
+    "category": "mobility",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 44,
+    "name": "Stretch Strap",
+    "slug": "stretch-strap",
+    "category": "mobility",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 45,
+    "name": "PVC Pipe / Dowel",
+    "slug": "pvc-dowel",
+    "category": "mobility",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 46,
+    "name": "Yoga Block",
+    "slug": "yoga-block",
+    "category": "mobility",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 47,
+    "name": "Yoga Wheel",
+    "slug": "yoga-wheel",
+    "category": "mobility",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 50,
+    "name": "Plyo Box",
+    "slug": "plyo-box",
+    "category": "plyo",
+    "portability": "gym_only",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 51,
+    "name": "Agility Ladder",
+    "slug": "agility-ladder",
+    "category": "plyo",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 52,
+    "name": "Cones",
+    "slug": "cones",
+    "category": "plyo",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 53,
+    "name": "Hurdles",
+    "slug": "hurdles",
+    "category": "plyo",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 54,
+    "name": "Jump Rope",
+    "slug": "jump-rope",
+    "category": "plyo",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 55,
+    "name": "Slide Board",
+    "slug": "slide-board",
+    "category": "plyo",
+    "portability": "portable",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 56,
+    "name": "Reaction Ball",
+    "slug": "reaction-ball",
+    "category": "plyo",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 60,
+    "name": "Hangboard",
+    "slug": "hangboard",
+    "category": "climbing",
+    "portability": "portable",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 61,
+    "name": "Campus Board",
+    "slug": "campus-board",
+    "category": "climbing",
+    "portability": "gym_only",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 62,
+    "name": "Climbing Rings (Lock-off)",
+    "slug": "climbing-rings",
+    "category": "climbing",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 63,
+    "name": "Grip Strengthener",
+    "slug": "grip-strengthener",
+    "category": "climbing",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 64,
+    "name": "Pinch Block",
+    "slug": "pinch-block",
+    "category": "climbing",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 65,
+    "name": "Tension Block / One-Arm",
+    "slug": "tension-block",
+    "category": "climbing",
+    "portability": "portable",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 70,
+    "name": "Cycling Trainer",
+    "slug": "cycling-trainer",
+    "category": "endurance",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 71,
+    "name": "Rowing Erg",
+    "slug": "rowing-erg",
+    "category": "endurance",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 72,
+    "name": "Ski Erg",
+    "slug": "ski-erg",
+    "category": "endurance",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 73,
+    "name": "Paddle Ergometer",
+    "slug": "paddle-erg",
+    "category": "endurance",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 74,
+    "name": "Swim Cords / Paddles",
+    "slug": "swim-cords",
+    "category": "endurance",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 75,
+    "name": "Heavy Bag",
+    "slug": "heavy-bag",
+    "category": "martial",
+    "portability": "gym_only",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 76,
+    "name": "Speed Bag",
+    "slug": "speed-bag",
+    "category": "martial",
+    "portability": "gym_only",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 77,
+    "name": "Focus Mitts",
+    "slug": "focus-mitts",
+    "category": "martial",
+    "portability": "portable",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 78,
+    "name": "Thai Pads",
+    "slug": "thai-pads",
+    "category": "martial",
+    "portability": "portable",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 79,
+    "name": "Grappling Dummy",
+    "slug": "grappling-dummy",
+    "category": "martial",
+    "portability": "gym_only",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 80,
+    "name": "Wrestling Mat",
+    "slug": "wrestling-mat",
+    "category": "martial",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 85,
+    "name": "Leg Press",
+    "slug": "leg-press",
+    "category": "machine",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 86,
+    "name": "Leg Curl",
+    "slug": "leg-curl-machine",
+    "category": "machine",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 87,
+    "name": "Leg Extension",
+    "slug": "leg-extension",
+    "category": "machine",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 88,
+    "name": "Lat Pulldown",
+    "slug": "lat-pulldown",
+    "category": "machine",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 89,
+    "name": "Cable Crossover",
+    "slug": "cable-crossover",
+    "category": "machine",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 90,
+    "name": "Glute-Ham Developer (GHD)",
+    "slug": "ghd",
+    "category": "machine",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 91,
+    "name": "Reverse Hyper",
+    "slug": "reverse-hyper",
+    "category": "machine",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 92,
+    "name": "Hip Adduction/Abduction",
+    "slug": "hip-ad-ab-machine",
+    "category": "machine",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 93,
+    "name": "Hack Squat",
+    "slug": "hack-squat",
+    "category": "machine",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 94,
+    "name": "Belt Squat",
+    "slug": "belt-squat",
+    "category": "machine",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 95,
+    "name": "Flat Bench",
+    "slug": "flat-bench",
+    "category": "bench",
+    "portability": "gym_only",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 96,
+    "name": "Adjustable Bench",
+    "slug": "adjustable-bench",
+    "category": "bench",
+    "portability": "gym_only",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 97,
+    "name": "Squat Rack",
+    "slug": "squat-rack",
+    "category": "rack",
+    "portability": "gym_only",
+    "estimated_cost": "high",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 98,
+    "name": "Chair / Sturdy Elevation",
+    "slug": "chair",
+    "category": "bodyweight",
+    "portability": "any",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 99,
+    "name": "Wall",
+    "slug": "wall",
+    "category": "bodyweight",
+    "portability": "any",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 100,
+    "name": "Table (Sturdy)",
+    "slug": "table",
+    "category": "bodyweight",
+    "portability": "any",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-13 05:47:23"
+  }
+]

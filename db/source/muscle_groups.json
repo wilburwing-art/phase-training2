@@ -1,0 +1,642 @@
+[
+  {
+    "id": 1,
+    "name": "Full Body",
+    "slug": "full-body",
+    "parent_id": null,
+    "body_region": "full_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 2,
+    "name": "Upper Body",
+    "slug": "upper-body",
+    "parent_id": 1,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 3,
+    "name": "Core",
+    "slug": "core",
+    "parent_id": 1,
+    "body_region": "core",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 4,
+    "name": "Lower Body",
+    "slug": "lower-body",
+    "parent_id": 1,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 5,
+    "name": "Neck",
+    "slug": "neck",
+    "parent_id": 1,
+    "body_region": "neck",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 10,
+    "name": "Chest",
+    "slug": "chest",
+    "parent_id": 2,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 11,
+    "name": "Pectoralis Major (Clavicular)",
+    "slug": "pec-major-clav",
+    "parent_id": 10,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 12,
+    "name": "Pectoralis Major (Sternal)",
+    "slug": "pec-major-sternal",
+    "parent_id": 10,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 13,
+    "name": "Pectoralis Minor",
+    "slug": "pec-minor",
+    "parent_id": 10,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 14,
+    "name": "Serratus Anterior",
+    "slug": "serratus-anterior",
+    "parent_id": 10,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 15,
+    "name": "Shoulders",
+    "slug": "shoulders",
+    "parent_id": 2,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 16,
+    "name": "Anterior Deltoid",
+    "slug": "delt-anterior",
+    "parent_id": 15,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 17,
+    "name": "Lateral Deltoid",
+    "slug": "delt-lateral",
+    "parent_id": 15,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 18,
+    "name": "Posterior Deltoid",
+    "slug": "delt-posterior",
+    "parent_id": 15,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 19,
+    "name": "Rotator Cuff",
+    "slug": "rotator-cuff",
+    "parent_id": 15,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 20,
+    "name": "Supraspinatus",
+    "slug": "supraspinatus",
+    "parent_id": 19,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 21,
+    "name": "Infraspinatus",
+    "slug": "infraspinatus",
+    "parent_id": 19,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 22,
+    "name": "Teres Minor",
+    "slug": "teres-minor",
+    "parent_id": 19,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 23,
+    "name": "Subscapularis",
+    "slug": "subscapularis",
+    "parent_id": 19,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 25,
+    "name": "Back",
+    "slug": "back",
+    "parent_id": 2,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 26,
+    "name": "Latissimus Dorsi",
+    "slug": "lats",
+    "parent_id": 25,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 27,
+    "name": "Trapezius",
+    "slug": "traps",
+    "parent_id": 25,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 28,
+    "name": "Upper Trapezius",
+    "slug": "upper-traps",
+    "parent_id": 27,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 29,
+    "name": "Middle Trapezius",
+    "slug": "mid-traps",
+    "parent_id": 27,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 30,
+    "name": "Lower Trapezius",
+    "slug": "lower-traps",
+    "parent_id": 27,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 31,
+    "name": "Rhomboids",
+    "slug": "rhomboids",
+    "parent_id": 25,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 32,
+    "name": "Erector Spinae (Thoracic)",
+    "slug": "erector-thoracic",
+    "parent_id": 25,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 33,
+    "name": "Teres Major",
+    "slug": "teres-major",
+    "parent_id": 25,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 35,
+    "name": "Arms",
+    "slug": "arms",
+    "parent_id": 2,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 36,
+    "name": "Biceps Brachii",
+    "slug": "biceps",
+    "parent_id": 35,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 37,
+    "name": "Brachialis",
+    "slug": "brachialis",
+    "parent_id": 35,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 38,
+    "name": "Brachioradialis",
+    "slug": "brachioradialis",
+    "parent_id": 35,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 39,
+    "name": "Triceps",
+    "slug": "triceps",
+    "parent_id": 35,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 40,
+    "name": "Forearm Flexors",
+    "slug": "forearm-flexors",
+    "parent_id": 35,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 41,
+    "name": "Forearm Extensors",
+    "slug": "forearm-extensors",
+    "parent_id": 35,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 42,
+    "name": "Grip (Crush)",
+    "slug": "grip-crush",
+    "parent_id": 35,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 43,
+    "name": "Grip (Pinch)",
+    "slug": "grip-pinch",
+    "parent_id": 35,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 44,
+    "name": "Grip (Support)",
+    "slug": "grip-support",
+    "parent_id": 35,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 45,
+    "name": "Finger Flexors (FDP/FDS)",
+    "slug": "finger-flexors",
+    "parent_id": 40,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 46,
+    "name": "Finger Extensors",
+    "slug": "finger-extensors",
+    "parent_id": 41,
+    "body_region": "upper_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 50,
+    "name": "Rectus Abdominis",
+    "slug": "rectus-abdominis",
+    "parent_id": 3,
+    "body_region": "core",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 51,
+    "name": "External Obliques",
+    "slug": "external-obliques",
+    "parent_id": 3,
+    "body_region": "core",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 52,
+    "name": "Internal Obliques",
+    "slug": "internal-obliques",
+    "parent_id": 3,
+    "body_region": "core",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 53,
+    "name": "Transverse Abdominis",
+    "slug": "transverse-abdominis",
+    "parent_id": 3,
+    "body_region": "core",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 54,
+    "name": "Erector Spinae (Lumbar)",
+    "slug": "erector-lumbar",
+    "parent_id": 3,
+    "body_region": "core",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 55,
+    "name": "Multifidus",
+    "slug": "multifidus",
+    "parent_id": 3,
+    "body_region": "core",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 56,
+    "name": "Quadratus Lumborum",
+    "slug": "quadratus-lumborum",
+    "parent_id": 3,
+    "body_region": "core",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 57,
+    "name": "Diaphragm",
+    "slug": "diaphragm",
+    "parent_id": 3,
+    "body_region": "core",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 58,
+    "name": "Pelvic Floor",
+    "slug": "pelvic-floor",
+    "parent_id": 3,
+    "body_region": "core",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 59,
+    "name": "Hip Rotators",
+    "slug": "hip-rotators",
+    "parent_id": 3,
+    "body_region": "core",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 60,
+    "name": "Piriformis",
+    "slug": "piriformis",
+    "parent_id": 59,
+    "body_region": "core",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 65,
+    "name": "Quadriceps",
+    "slug": "quadriceps",
+    "parent_id": 4,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 66,
+    "name": "Rectus Femoris",
+    "slug": "rectus-femoris",
+    "parent_id": 65,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 67,
+    "name": "Vastus Lateralis",
+    "slug": "vastus-lateralis",
+    "parent_id": 65,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 68,
+    "name": "Vastus Medialis",
+    "slug": "vastus-medialis",
+    "parent_id": 65,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 69,
+    "name": "Vastus Intermedius",
+    "slug": "vastus-intermedius",
+    "parent_id": 65,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 70,
+    "name": "Hamstrings",
+    "slug": "hamstrings",
+    "parent_id": 4,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 71,
+    "name": "Biceps Femoris",
+    "slug": "biceps-femoris",
+    "parent_id": 70,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 72,
+    "name": "Semitendinosus",
+    "slug": "semitendinosus",
+    "parent_id": 70,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 73,
+    "name": "Semimembranosus",
+    "slug": "semimembranosus",
+    "parent_id": 70,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 74,
+    "name": "Glutes",
+    "slug": "glutes",
+    "parent_id": 4,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 75,
+    "name": "Gluteus Maximus",
+    "slug": "glute-max",
+    "parent_id": 74,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 76,
+    "name": "Gluteus Medius",
+    "slug": "glute-med",
+    "parent_id": 74,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 77,
+    "name": "Gluteus Minimus",
+    "slug": "glute-min",
+    "parent_id": 74,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 78,
+    "name": "Hip Flexors",
+    "slug": "hip-flexors",
+    "parent_id": 4,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 79,
+    "name": "Iliopsoas",
+    "slug": "iliopsoas",
+    "parent_id": 78,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 80,
+    "name": "TFL",
+    "slug": "tfl",
+    "parent_id": 78,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 81,
+    "name": "Sartorius",
+    "slug": "sartorius",
+    "parent_id": 78,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 82,
+    "name": "Adductors",
+    "slug": "adductors",
+    "parent_id": 4,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 83,
+    "name": "Calves",
+    "slug": "calves",
+    "parent_id": 4,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 84,
+    "name": "Gastrocnemius",
+    "slug": "gastrocnemius",
+    "parent_id": 83,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 85,
+    "name": "Soleus",
+    "slug": "soleus",
+    "parent_id": 83,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 86,
+    "name": "Tibialis Anterior",
+    "slug": "tib-anterior",
+    "parent_id": 4,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 87,
+    "name": "Peroneals",
+    "slug": "peroneals",
+    "parent_id": 4,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 88,
+    "name": "Intrinsic Foot",
+    "slug": "intrinsic-foot",
+    "parent_id": 4,
+    "body_region": "lower_body",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 90,
+    "name": "Sternocleidomastoid",
+    "slug": "scm",
+    "parent_id": 5,
+    "body_region": "neck",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 91,
+    "name": "Deep Neck Flexors",
+    "slug": "deep-neck-flexors",
+    "parent_id": 5,
+    "body_region": "neck",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 92,
+    "name": "Cervical Extensors",
+    "slug": "cervical-extensors",
+    "parent_id": 5,
+    "body_region": "neck",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 93,
+    "name": "Scalenes",
+    "slug": "scalenes",
+    "parent_id": 5,
+    "body_region": "neck",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 94,
+    "name": "Levator Scapulae",
+    "slug": "levator-scapulae",
+    "parent_id": 5,
+    "body_region": "neck",
+    "created_at": "2026-05-13 05:47:23"
+  }
+]

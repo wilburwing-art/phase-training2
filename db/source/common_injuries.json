@@ -1,0 +1,562 @@
+[
+  {
+    "id": 1,
+    "name": "Patellar Tendinopathy",
+    "slug": "patellar-tendinopathy",
+    "body_region": "knee",
+    "description": "Jumper's knee; overuse tendinopathy of the patellar tendon.",
+    "mechanism": "Repetitive high-load knee extension (jumping, running, deep squatting).",
+    "typical_recovery": "6-12 weeks with progressive loading",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 2,
+    "name": "ACL Sprain/Tear",
+    "slug": "acl-injury",
+    "body_region": "knee",
+    "description": "Partial or full tear of the anterior cruciate ligament.",
+    "mechanism": "Non-contact deceleration + rotation or contact trauma.",
+    "typical_recovery": "9-12 months post-surgery; 6 weeks sprain",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 3,
+    "name": "MCL Sprain",
+    "slug": "mcl-sprain",
+    "body_region": "knee",
+    "description": "Strain/tear of the medial collateral ligament.",
+    "mechanism": "Valgus stress to the knee.",
+    "typical_recovery": "2-8 weeks depending on grade",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 4,
+    "name": "Meniscus Tear",
+    "slug": "meniscus-tear",
+    "body_region": "knee",
+    "description": "Tear of the medial or lateral meniscus cartilage.",
+    "mechanism": "Twisting on a planted foot, often under load.",
+    "typical_recovery": "6 weeks conservative; 3-6 months surgical",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 5,
+    "name": "IT Band Syndrome",
+    "slug": "it-band-syndrome",
+    "body_region": "knee",
+    "description": "Lateral knee pain from iliotibial band friction.",
+    "mechanism": "Repetitive knee flexion with weak hip abductors (runners, cyclists).",
+    "typical_recovery": "4-8 weeks with load management",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 6,
+    "name": "Patellofemoral Pain Syndrome",
+    "slug": "pfps",
+    "body_region": "knee",
+    "description": "Anterior knee pain, often described as \"runner's knee\".",
+    "mechanism": "Overuse plus quad imbalance, poor tracking, weak glutes.",
+    "typical_recovery": "6-12 weeks with PT",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 7,
+    "name": "Chondromalacia Patella",
+    "slug": "chondromalacia",
+    "body_region": "knee",
+    "description": "Softening / degeneration of cartilage under the kneecap.",
+    "mechanism": "Repetitive compression and patellar maltracking.",
+    "typical_recovery": "Ongoing management",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 8,
+    "name": "Baker's Cyst",
+    "slug": "bakers-cyst",
+    "body_region": "knee",
+    "description": "Fluid-filled cyst in the popliteal fossa, often secondary to intra-articular pathology.",
+    "mechanism": "Joint effusion tracks posteriorly.",
+    "typical_recovery": "Resolves with treatment of underlying cause",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 10,
+    "name": "Rotator Cuff Strain/Tear",
+    "slug": "rotator-cuff-injury",
+    "body_region": "shoulder",
+    "description": "Partial or full-thickness tear of one or more rotator cuff tendons.",
+    "mechanism": "Overuse overhead or acute trauma.",
+    "typical_recovery": "6-12 weeks conservative; 4-6 months post-op",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 11,
+    "name": "Shoulder Impingement",
+    "slug": "shoulder-impingement",
+    "body_region": "shoulder",
+    "description": "Compression of subacromial structures during elevation.",
+    "mechanism": "Poor scapular mechanics + overhead volume.",
+    "typical_recovery": "6-12 weeks with PT",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 12,
+    "name": "Labral Tear (SLAP)",
+    "slug": "slap-tear",
+    "body_region": "shoulder",
+    "description": "Superior labrum anterior-posterior tear.",
+    "mechanism": "Repetitive overhead loading or acute traction injury.",
+    "typical_recovery": "3-4 months conservative; 4-6 months surgical",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 13,
+    "name": "AC Joint Sprain",
+    "slug": "ac-joint-sprain",
+    "body_region": "shoulder",
+    "description": "Sprain of the acromioclavicular ligament.",
+    "mechanism": "Fall onto the shoulder.",
+    "typical_recovery": "2-6 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 14,
+    "name": "Shoulder Dislocation/Subluxation",
+    "slug": "shoulder-dislocation",
+    "body_region": "shoulder",
+    "description": "Humeral head displaced from the glenoid.",
+    "mechanism": "Forced abduction + external rotation.",
+    "typical_recovery": "3-6 months; surgical 6+ months",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 15,
+    "name": "Frozen Shoulder",
+    "slug": "frozen-shoulder",
+    "body_region": "shoulder",
+    "description": "Adhesive capsulitis; progressive loss of ROM.",
+    "mechanism": "Often idiopathic; risk rises with diabetes, immobilization.",
+    "typical_recovery": "12-24 months",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 16,
+    "name": "Biceps Tendinopathy",
+    "slug": "biceps-tendinopathy",
+    "body_region": "shoulder",
+    "description": "Irritation of the long head of biceps tendon.",
+    "mechanism": "Repetitive pulling, overhead loading.",
+    "typical_recovery": "6-8 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 20,
+    "name": "Lumbar Disc Herniation",
+    "slug": "lumbar-disc-herniation",
+    "body_region": "back",
+    "description": "Nucleus pulposus protrusion compressing neural structures.",
+    "mechanism": "Flexion under load; heavy lifting with poor mechanics.",
+    "typical_recovery": "6-12 weeks conservative",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 21,
+    "name": "Lumbar Strain",
+    "slug": "lumbar-strain",
+    "body_region": "back",
+    "description": "Acute strain of lumbar paraspinals.",
+    "mechanism": "Sudden overload, awkward lift.",
+    "typical_recovery": "2-6 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 22,
+    "name": "SI Joint Dysfunction",
+    "slug": "si-joint-dysfunction",
+    "body_region": "back",
+    "description": "Sacroiliac joint pain from aberrant mechanics.",
+    "mechanism": "Asymmetric loading; sometimes post-partum.",
+    "typical_recovery": "4-12 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 23,
+    "name": "Spondylolysis",
+    "slug": "spondylolysis",
+    "body_region": "back",
+    "description": "Stress fracture of the pars interarticularis.",
+    "mechanism": "Repeated lumbar hyperextension (gymnasts, divers, cricket bowlers).",
+    "typical_recovery": "3-6 months",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 24,
+    "name": "Thoracic Outlet Syndrome",
+    "slug": "tos",
+    "body_region": "back",
+    "description": "Compression of neurovascular structures at the thoracic outlet.",
+    "mechanism": "Postural factors + repetitive overhead work.",
+    "typical_recovery": "3-6 months",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 25,
+    "name": "Cervical Strain",
+    "slug": "cervical-strain",
+    "body_region": "back",
+    "description": "Strain of cervical paraspinals.",
+    "mechanism": "Whiplash, prolonged poor posture.",
+    "typical_recovery": "2-6 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 30,
+    "name": "Hip Flexor Strain",
+    "slug": "hip-flexor-strain",
+    "body_region": "hip",
+    "description": "Strain of iliopsoas or rectus femoris.",
+    "mechanism": "Sprinting, high-kicking, explosive hip flexion.",
+    "typical_recovery": "2-6 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 31,
+    "name": "Labral Tear (Hip)",
+    "slug": "hip-labral-tear",
+    "body_region": "hip",
+    "description": "Tear of the acetabular labrum.",
+    "mechanism": "Repetitive hip flexion + rotation; often with FAI.",
+    "typical_recovery": "3-6 months conservative; 4-6 months surgical",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 32,
+    "name": "FAI (Femoroacetabular Impingement)",
+    "slug": "fai",
+    "body_region": "hip",
+    "description": "Bony cam or pincer morphology causing impingement.",
+    "mechanism": "Structural + activity demands exceed joint tolerance.",
+    "typical_recovery": "Ongoing management",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 33,
+    "name": "Piriformis Syndrome",
+    "slug": "piriformis-syndrome",
+    "body_region": "hip",
+    "description": "Sciatic nerve irritation by the piriformis.",
+    "mechanism": "Prolonged sitting, overuse in runners.",
+    "typical_recovery": "4-8 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 34,
+    "name": "Greater Trochanteric Bursitis",
+    "slug": "trochanteric-bursitis",
+    "body_region": "hip",
+    "description": "Lateral hip bursa inflammation.",
+    "mechanism": "Weak glute med, lateral hip compression.",
+    "typical_recovery": "6-12 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 35,
+    "name": "Adductor Strain",
+    "slug": "adductor-strain",
+    "body_region": "hip",
+    "description": "Strain of the adductor group.",
+    "mechanism": "Change of direction, kicking sports.",
+    "typical_recovery": "2-6 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 40,
+    "name": "Ankle Sprain (Lateral)",
+    "slug": "ankle-sprain-lateral",
+    "body_region": "ankle",
+    "description": "Sprain of lateral ligaments (ATFL/CFL).",
+    "mechanism": "Inversion with plantarflexion.",
+    "typical_recovery": "2-6 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 41,
+    "name": "Achilles Tendinopathy",
+    "slug": "achilles-tendinopathy",
+    "body_region": "ankle",
+    "description": "Degenerative tendinopathy of the Achilles.",
+    "mechanism": "Calf overuse + reduced recovery.",
+    "typical_recovery": "8-16 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 42,
+    "name": "Plantar Fasciitis",
+    "slug": "plantar-fasciitis",
+    "body_region": "ankle",
+    "description": "Plantar fascia degenerative overuse.",
+    "mechanism": "Running, prolonged standing, poor footwear.",
+    "typical_recovery": "6-12 months",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 43,
+    "name": "Stress Fracture (Metatarsal)",
+    "slug": "metatarsal-stress-fracture",
+    "body_region": "ankle",
+    "description": "Bone stress injury, typically 2nd-3rd metatarsal.",
+    "mechanism": "Running overload, low BMD.",
+    "typical_recovery": "6-12 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 44,
+    "name": "Posterior Tibial Tendinopathy",
+    "slug": "post-tib-tendinopathy",
+    "body_region": "ankle",
+    "description": "Posterior tibialis overuse.",
+    "mechanism": "Pronation, arch support issues.",
+    "typical_recovery": "8-12 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 45,
+    "name": "Peroneal Tendinopathy",
+    "slug": "peroneal-tendinopathy",
+    "body_region": "ankle",
+    "description": "Peroneal tendon overuse.",
+    "mechanism": "Lateral ankle stress, post-sprain.",
+    "typical_recovery": "6-12 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 46,
+    "name": "Turf Toe",
+    "slug": "turf-toe",
+    "body_region": "ankle",
+    "description": "Sprain of the great toe MTP joint.",
+    "mechanism": "Forced hyperextension (cleats on turf).",
+    "typical_recovery": "2-6 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 50,
+    "name": "Tennis Elbow",
+    "slug": "tennis-elbow",
+    "body_region": "elbow",
+    "description": "Lateral epicondylitis; common extensor origin.",
+    "mechanism": "Repetitive wrist extension; gripping.",
+    "typical_recovery": "6-12 months",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 51,
+    "name": "Golfer's Elbow",
+    "slug": "golfers-elbow",
+    "body_region": "elbow",
+    "description": "Medial epicondylitis; common flexor origin.",
+    "mechanism": "Repetitive wrist flexion + pronation; gripping.",
+    "typical_recovery": "6-12 months",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 52,
+    "name": "Wrist Sprain",
+    "slug": "wrist-sprain",
+    "body_region": "elbow",
+    "description": "Sprain of wrist ligaments.",
+    "mechanism": "Fall on outstretched hand.",
+    "typical_recovery": "2-6 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 53,
+    "name": "Carpal Tunnel Syndrome",
+    "slug": "carpal-tunnel",
+    "body_region": "elbow",
+    "description": "Median nerve compression at the wrist.",
+    "mechanism": "Repetitive wrist flexion; desk posture.",
+    "typical_recovery": "Variable; surgical for severe",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 54,
+    "name": "Finger Pulley Injury",
+    "slug": "finger-pulley",
+    "body_region": "elbow",
+    "description": "A2/A3/A4 annular pulley strain or rupture.",
+    "mechanism": "Crimp grip under load (climbing).",
+    "typical_recovery": "6-12 weeks grade I-II; 3-6 months grade III-IV",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 55,
+    "name": "De Quervain's Tenosynovitis",
+    "slug": "de-quervains",
+    "body_region": "elbow",
+    "description": "Tenosynovitis of APL/EPB at the wrist.",
+    "mechanism": "Repetitive thumb abduction.",
+    "typical_recovery": "4-12 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 56,
+    "name": "UCL Sprain (Elbow)",
+    "slug": "ucl-sprain",
+    "body_region": "elbow",
+    "description": "Ulnar collateral ligament sprain.",
+    "mechanism": "Valgus stress from throwing.",
+    "typical_recovery": "3-6 months",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 57,
+    "name": "Trigger Finger / Tenosynovitis",
+    "slug": "trigger-finger",
+    "body_region": "elbow",
+    "description": "A1 pulley flexor tendon irritation causing catching.",
+    "mechanism": "Repetitive gripping.",
+    "typical_recovery": "4-12 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 60,
+    "name": "Whiplash",
+    "slug": "whiplash",
+    "body_region": "neck",
+    "description": "Acute cervical soft tissue injury.",
+    "mechanism": "Rapid acceleration-deceleration.",
+    "typical_recovery": "4-12 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 61,
+    "name": "Stinger / Burner",
+    "slug": "stinger-burner",
+    "body_region": "neck",
+    "description": "Transient brachial plexus neuropraxia.",
+    "mechanism": "Impact driving shoulder down and head away.",
+    "typical_recovery": "Minutes to weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 65,
+    "name": "Hamstring Strain",
+    "slug": "hamstring-strain",
+    "body_region": "muscle",
+    "description": "Strain of one of the hamstring muscles.",
+    "mechanism": "Sprinting or over-stretch.",
+    "typical_recovery": "2-8 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 66,
+    "name": "Quad Strain",
+    "slug": "quad-strain",
+    "body_region": "muscle",
+    "description": "Strain of quadriceps, often rectus femoris.",
+    "mechanism": "Sprinting, kicking.",
+    "typical_recovery": "2-6 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 67,
+    "name": "Calf Strain (Gastrocnemius)",
+    "slug": "calf-strain-gastroc",
+    "body_region": "muscle",
+    "description": "Strain of the gastrocnemius.",
+    "mechanism": "Sprint start or sudden push-off.",
+    "typical_recovery": "2-6 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 68,
+    "name": "Calf Strain (Soleus)",
+    "slug": "calf-strain-soleus",
+    "body_region": "muscle",
+    "description": "Low-grade strain of soleus.",
+    "mechanism": "Endurance overuse.",
+    "typical_recovery": "4-8 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 69,
+    "name": "Groin Pull",
+    "slug": "groin-pull",
+    "body_region": "muscle",
+    "description": "Adductor muscle strain.",
+    "mechanism": "Change of direction under load.",
+    "typical_recovery": "2-6 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 70,
+    "name": "Pectoral Strain",
+    "slug": "pec-strain",
+    "body_region": "muscle",
+    "description": "Strain or tear of pectoralis major.",
+    "mechanism": "Heavy pressing at end range.",
+    "typical_recovery": "4-12 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 71,
+    "name": "Oblique Strain",
+    "slug": "oblique-strain",
+    "body_region": "muscle",
+    "description": "Strain of internal/external oblique.",
+    "mechanism": "Rotational athletes (baseball, golf).",
+    "typical_recovery": "4-8 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 75,
+    "name": "Shin Splints (MTSS)",
+    "slug": "shin-splints",
+    "body_region": "ankle",
+    "description": "Medial tibial stress syndrome.",
+    "mechanism": "Running load progression too rapid.",
+    "typical_recovery": "4-8 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 76,
+    "name": "Compartment Syndrome (Chronic)",
+    "slug": "compartment-syndrome",
+    "body_region": "ankle",
+    "description": "Exertional rise in compartment pressure.",
+    "mechanism": "Running; sometimes requires surgical release.",
+    "typical_recovery": "Variable",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 77,
+    "name": "Overtraining Syndrome",
+    "slug": "overtraining-syndrome",
+    "body_region": "full_body",
+    "description": "Systemic under-recovery with fatigue, mood changes, performance decline.",
+    "mechanism": "Chronic training load > recovery.",
+    "typical_recovery": "Weeks to months of reduced load",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 78,
+    "name": "Tibial Stress Fracture",
+    "slug": "tibial-stress-fracture",
+    "body_region": "ankle",
+    "description": "Bone stress injury of the tibia.",
+    "mechanism": "Running volume spike, low BMD.",
+    "typical_recovery": "8-12 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 79,
+    "name": "Femoral Stress Fracture",
+    "slug": "femoral-stress-fracture",
+    "body_region": "hip",
+    "description": "Bone stress injury of the femur.",
+    "mechanism": "Endurance overload.",
+    "typical_recovery": "8-16 weeks",
+    "created_at": "2026-05-13 05:47:23"
+  }
+]

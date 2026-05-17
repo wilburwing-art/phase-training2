@@ -42,3 +42,8 @@ fastlane/test_output
 
 # Claude Code local settings (per-machine permission overrides)
 .claude/settings.local.json
+
+# Generated build artifact from scripts/db/build_db.py — the canonical
+# bundled DB lives at PhaseTraining/Resources/coach.db. db/coach.db is
+# just a scratch file the build script writes before copying.
+db/coach.db

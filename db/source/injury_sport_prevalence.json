@@ -1,0 +1,1310 @@
+[
+  {
+    "injury_id": 1,
+    "sport_id": 50,
+    "prevalence": "common",
+    "notes": "Patellar tendinopathy in runners doing hill work / jumping."
+  },
+  {
+    "injury_id": 1,
+    "sport_id": 534,
+    "prevalence": "common",
+    "notes": "Jumper's knee."
+  },
+  {
+    "injury_id": 1,
+    "sport_id": 537,
+    "prevalence": "common",
+    "notes": "Patellar tendinopathy in blockers."
+  },
+  {
+    "injury_id": 1,
+    "sport_id": 730,
+    "prevalence": "common",
+    "notes": "Patellar tendinopathy in jump-heavy styles."
+  },
+  {
+    "injury_id": 2,
+    "sport_id": 57,
+    "prevalence": "occasional",
+    "notes": "ACL on technical descents."
+  },
+  {
+    "injury_id": 2,
+    "sport_id": 200,
+    "prevalence": "common",
+    "notes": "ACL is the signature ski injury."
+  },
+  {
+    "injury_id": 2,
+    "sport_id": 201,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 2,
+    "sport_id": 205,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 2,
+    "sport_id": 207,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 2,
+    "sport_id": 275,
+    "prevalence": "occasional",
+    "notes": "ACL in MMA takedowns."
+  },
+  {
+    "injury_id": 2,
+    "sport_id": 531,
+    "prevalence": "common",
+    "notes": "ACL common in soccer (planted-foot cutting)."
+  },
+  {
+    "injury_id": 2,
+    "sport_id": 534,
+    "prevalence": "common",
+    "notes": "Basketball ACL."
+  },
+  {
+    "injury_id": 2,
+    "sport_id": 543,
+    "prevalence": "common",
+    "notes": "Flag football ACL."
+  },
+  {
+    "injury_id": 2,
+    "sport_id": 545,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 3,
+    "sport_id": 50,
+    "prevalence": "occasional",
+    "notes": "MCL sprains rarer in runners but possible on trails."
+  },
+  {
+    "injury_id": 3,
+    "sport_id": 201,
+    "prevalence": "common",
+    "notes": "MCL from edge catch / snowplow."
+  },
+  {
+    "injury_id": 3,
+    "sport_id": 266,
+    "prevalence": "common",
+    "notes": "MCL from wrestling shots."
+  },
+  {
+    "injury_id": 3,
+    "sport_id": 531,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 4,
+    "sport_id": 201,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 4,
+    "sport_id": 266,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 5,
+    "sport_id": 1,
+    "prevalence": "common",
+    "notes": "IT band syndrome from repetitive knee flexion."
+  },
+  {
+    "injury_id": 5,
+    "sport_id": 12,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 5,
+    "sport_id": 21,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 5,
+    "sport_id": 50,
+    "prevalence": "common",
+    "notes": "IT band syndrome is a signature runner's injury."
+  },
+  {
+    "injury_id": 5,
+    "sport_id": 51,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 5,
+    "sport_id": 55,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 5,
+    "sport_id": 57,
+    "prevalence": "common",
+    "notes": "Common in trail runners on cambered terrain."
+  },
+  {
+    "injury_id": 5,
+    "sport_id": 150,
+    "prevalence": "common",
+    "notes": "IT band syndrome on long descents."
+  },
+  {
+    "injury_id": 5,
+    "sport_id": 341,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 5,
+    "sport_id": 346,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 5,
+    "sport_id": 480,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 5,
+    "sport_id": 481,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 5,
+    "sport_id": 501,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 6,
+    "sport_id": 1,
+    "prevalence": "common",
+    "notes": "Patellofemoral pain from poor saddle height / cleat position."
+  },
+  {
+    "injury_id": 6,
+    "sport_id": 2,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 6,
+    "sport_id": 12,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 6,
+    "sport_id": 50,
+    "prevalence": "common",
+    "notes": "Runner's knee (PFPS)."
+  },
+  {
+    "injury_id": 6,
+    "sport_id": 55,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 6,
+    "sport_id": 150,
+    "prevalence": "common",
+    "notes": "Anterior knee pain on descent."
+  },
+  {
+    "injury_id": 6,
+    "sport_id": 480,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 6,
+    "sport_id": 501,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 6,
+    "sport_id": 534,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 7,
+    "sport_id": 1,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 7,
+    "sport_id": 50,
+    "prevalence": "occasional",
+    "notes": "Chondromalacia in distance runners with PFPS history."
+  },
+  {
+    "injury_id": 8,
+    "sport_id": 1,
+    "prevalence": "rare",
+    "notes": "Baker's cyst secondary to other knee pathology; seen occasionally in endurance cyclists."
+  },
+  {
+    "injury_id": 10,
+    "sport_id": 100,
+    "prevalence": "common",
+    "notes": "Rotator cuff strain under dynamic moves, campusing."
+  },
+  {
+    "injury_id": 10,
+    "sport_id": 102,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 10,
+    "sport_id": 105,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 10,
+    "sport_id": 201,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 10,
+    "sport_id": 261,
+    "prevalence": "common",
+    "notes": "Rotator cuff strain from grip + arm-triangle positions."
+  },
+  {
+    "injury_id": 10,
+    "sport_id": 341,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 10,
+    "sport_id": 380,
+    "prevalence": "common",
+    "notes": "Rotator cuff from repetitive stroke."
+  },
+  {
+    "injury_id": 10,
+    "sport_id": 421,
+    "prevalence": "common",
+    "notes": "Shoulder strain from paddling."
+  },
+  {
+    "injury_id": 10,
+    "sport_id": 450,
+    "prevalence": "common",
+    "notes": "Swimmer's shoulder."
+  },
+  {
+    "injury_id": 10,
+    "sport_id": 635,
+    "prevalence": "occasional",
+    "notes": "Rotator cuff from OHP / jerks."
+  },
+  {
+    "injury_id": 10,
+    "sport_id": 711,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 100,
+    "prevalence": "common",
+    "notes": "Shoulder impingement from high-volume pulling without antagonist balance."
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 101,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 104,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 105,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 107,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 320,
+    "prevalence": "occasional",
+    "notes": "Lead shoulder impingement."
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 341,
+    "prevalence": "common",
+    "notes": "Shoulder impingement from serves."
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 380,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 381,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 395,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 421,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 450,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 451,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 501,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 537,
+    "prevalence": "common",
+    "notes": "Overhead shoulder."
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 601,
+    "prevalence": "occasional",
+    "notes": "Shoulder impingement in chaturanga."
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 635,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 11,
+    "sport_id": 711,
+    "prevalence": "common",
+    "notes": "Draw-arm shoulder impingement."
+  },
+  {
+    "injury_id": 12,
+    "sport_id": 100,
+    "prevalence": "occasional",
+    "notes": "SLAP tear from lock-off extremes and shoulder loading."
+  },
+  {
+    "injury_id": 12,
+    "sport_id": 113,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 12,
+    "sport_id": 261,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 12,
+    "sport_id": 341,
+    "prevalence": "occasional",
+    "notes": "SLAP tear in high-volume servers."
+  },
+  {
+    "injury_id": 12,
+    "sport_id": 450,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 12,
+    "sport_id": 601,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 13,
+    "sport_id": 221,
+    "prevalence": "occasional",
+    "notes": "AC sprain from snowboard falls on outstretched arm."
+  },
+  {
+    "injury_id": 13,
+    "sport_id": 581,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 14,
+    "sport_id": 261,
+    "prevalence": "occasional",
+    "notes": "Shoulder subluxation from kimura, omoplata."
+  },
+  {
+    "injury_id": 15,
+    "sport_id": 320,
+    "prevalence": "rare",
+    "notes": "Older golfers occasionally develop adhesive capsulitis in the lead shoulder."
+  },
+  {
+    "injury_id": 15,
+    "sport_id": 450,
+    "prevalence": "rare",
+    "notes": "Frozen shoulder can present in masters swimmers."
+  },
+  {
+    "injury_id": 16,
+    "sport_id": 450,
+    "prevalence": "occasional",
+    "notes": "Biceps tendinopathy."
+  },
+  {
+    "injury_id": 20,
+    "sport_id": 2,
+    "prevalence": "occasional",
+    "notes": "Lumbar disc aggravated by aggressive MTB positioning."
+  },
+  {
+    "injury_id": 20,
+    "sport_id": 320,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 20,
+    "sport_id": 421,
+    "prevalence": "occasional",
+    "notes": "Lumbar strain from prolonged prone paddling."
+  },
+  {
+    "injury_id": 20,
+    "sport_id": 482,
+    "prevalence": "occasional",
+    "notes": "Lumbar disc aggravation with heavy pack."
+  },
+  {
+    "injury_id": 20,
+    "sport_id": 632,
+    "prevalence": "common",
+    "notes": "Disc herniation from heavy deadlifts."
+  },
+  {
+    "injury_id": 20,
+    "sport_id": 635,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 20,
+    "sport_id": 690,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 20,
+    "sport_id": 724,
+    "prevalence": "common",
+    "notes": "Heavy pack load-outs aggravate lumbar spine."
+  },
+  {
+    "injury_id": 21,
+    "sport_id": 320,
+    "prevalence": "common",
+    "notes": "Lumbar strain is the top golf injury."
+  },
+  {
+    "injury_id": 21,
+    "sport_id": 341,
+    "prevalence": "occasional",
+    "notes": "Lumbar strain from kick serves."
+  },
+  {
+    "injury_id": 21,
+    "sport_id": 541,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 21,
+    "sport_id": 632,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 22,
+    "sport_id": 50,
+    "prevalence": "occasional",
+    "notes": "SI joint dysfunction in runners with asymmetric gait."
+  },
+  {
+    "injury_id": 22,
+    "sport_id": 261,
+    "prevalence": "occasional",
+    "notes": "SI joint dysfunction from repeated guard play."
+  },
+  {
+    "injury_id": 23,
+    "sport_id": 320,
+    "prevalence": "rare",
+    "notes": "Spondylolysis in high-volume amateurs."
+  },
+  {
+    "injury_id": 24,
+    "sport_id": 12,
+    "prevalence": "occasional",
+    "notes": "Thoracic outlet / forearm compression on long road rides."
+  },
+  {
+    "injury_id": 24,
+    "sport_id": 381,
+    "prevalence": "occasional",
+    "notes": "Thoracic outlet in kayakers."
+  },
+  {
+    "injury_id": 25,
+    "sport_id": 12,
+    "prevalence": "occasional",
+    "notes": "Neck strain from long aero positions."
+  },
+  {
+    "injury_id": 25,
+    "sport_id": 421,
+    "prevalence": "occasional",
+    "notes": "Cervical strain from looking up while prone."
+  },
+  {
+    "injury_id": 25,
+    "sport_id": 690,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 30,
+    "sport_id": 150,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 30,
+    "sport_id": 201,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 31,
+    "sport_id": 261,
+    "prevalence": "occasional",
+    "notes": "Hip labral tear from deep guard."
+  },
+  {
+    "injury_id": 32,
+    "sport_id": 261,
+    "prevalence": "occasional",
+    "notes": "FAI symptomatic in grapplers with deep guard play."
+  },
+  {
+    "injury_id": 32,
+    "sport_id": 531,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 32,
+    "sport_id": 545,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 33,
+    "sport_id": 12,
+    "prevalence": "occasional",
+    "notes": "Piriformis syndrome from prolonged saddle time."
+  },
+  {
+    "injury_id": 34,
+    "sport_id": 12,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 35,
+    "sport_id": 266,
+    "prevalence": "common",
+    "notes": "Adductor strain in wrestling."
+  },
+  {
+    "injury_id": 35,
+    "sport_id": 531,
+    "prevalence": "common",
+    "notes": "Adductor strain in soccer change-of-direction."
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 57,
+    "prevalence": "common",
+    "notes": "Ankle sprain on trail."
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 65,
+    "prevalence": "common",
+    "notes": "Mountain running ankle rolls."
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 100,
+    "prevalence": "occasional",
+    "notes": "Ankle sprain from falls on outdoor boulders."
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 102,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 103,
+    "prevalence": "common",
+    "notes": "Outdoor bouldering falls."
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 150,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 270,
+    "prevalence": "common",
+    "notes": "Ankle on kicks, teeps."
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 346,
+    "prevalence": "common",
+    "notes": "Ankle sprain on pickleball lateral moves."
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 480,
+    "prevalence": "common",
+    "notes": "Ankle sprain on uneven terrain."
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 482,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 531,
+    "prevalence": "common",
+    "notes": "Ankle sprain."
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 534,
+    "prevalence": "common",
+    "notes": "Basketball ankle."
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 537,
+    "prevalence": "common",
+    "notes": "Volleyball ankle (blocker descending on teammate foot)."
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 545,
+    "prevalence": "common",
+    "notes": "Rugby ankle."
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 581,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 635,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 40,
+    "sport_id": 730,
+    "prevalence": "common",
+    "notes": "Ankle sprain."
+  },
+  {
+    "injury_id": 41,
+    "sport_id": 50,
+    "prevalence": "common",
+    "notes": "Achilles tendinopathy."
+  },
+  {
+    "injury_id": 41,
+    "sport_id": 55,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 41,
+    "sport_id": 480,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 41,
+    "sport_id": 501,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 42,
+    "sport_id": 50,
+    "prevalence": "common",
+    "notes": "Plantar fasciitis."
+  },
+  {
+    "injury_id": 42,
+    "sport_id": 55,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 42,
+    "sport_id": 501,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 43,
+    "sport_id": 50,
+    "prevalence": "common",
+    "notes": "Metatarsal stress fracture in runners with volume spikes."
+  },
+  {
+    "injury_id": 43,
+    "sport_id": 537,
+    "prevalence": "occasional",
+    "notes": "Volleyball jumpers."
+  },
+  {
+    "injury_id": 44,
+    "sport_id": 50,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 45,
+    "sport_id": 50,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 46,
+    "sport_id": 531,
+    "prevalence": "common",
+    "notes": "Turf toe is the classic cleats-on-turf injury in soccer."
+  },
+  {
+    "injury_id": 46,
+    "sport_id": 543,
+    "prevalence": "common",
+    "notes": "Flag football turf surfaces."
+  },
+  {
+    "injury_id": 50,
+    "sport_id": 12,
+    "prevalence": "occasional",
+    "notes": "Lateral elbow from handlebar grip."
+  },
+  {
+    "injury_id": 50,
+    "sport_id": 100,
+    "prevalence": "common",
+    "notes": "Medial elbow pain (colloquially \"climber's elbow\") is more golfer's elbow, but lateral is also common."
+  },
+  {
+    "injury_id": 50,
+    "sport_id": 104,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 50,
+    "sport_id": 320,
+    "prevalence": "common",
+    "notes": "Tennis elbow (lead arm)."
+  },
+  {
+    "injury_id": 50,
+    "sport_id": 341,
+    "prevalence": "common",
+    "notes": "Tennis elbow — the named injury."
+  },
+  {
+    "injury_id": 50,
+    "sport_id": 346,
+    "prevalence": "common",
+    "notes": "Pickleball elbow — identical mechanism."
+  },
+  {
+    "injury_id": 50,
+    "sport_id": 381,
+    "prevalence": "occasional",
+    "notes": "Lateral elbow from paddling grip."
+  },
+  {
+    "injury_id": 50,
+    "sport_id": 711,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 50,
+    "sport_id": 721,
+    "prevalence": "occasional",
+    "notes": "Lateral elbow from casting."
+  },
+  {
+    "injury_id": 51,
+    "sport_id": 100,
+    "prevalence": "common",
+    "notes": "Medial epicondylitis from lock-offs and overhangs."
+  },
+  {
+    "injury_id": 51,
+    "sport_id": 101,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 51,
+    "sport_id": 102,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 51,
+    "sport_id": 320,
+    "prevalence": "common",
+    "notes": "Golfer's elbow."
+  },
+  {
+    "injury_id": 51,
+    "sport_id": 341,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 52,
+    "sport_id": 100,
+    "prevalence": "occasional",
+    "notes": "Wrist sprain from mantels and slab."
+  },
+  {
+    "injury_id": 52,
+    "sport_id": 221,
+    "prevalence": "common",
+    "notes": "Wrist sprain / FOOSH on snowboard falls."
+  },
+  {
+    "injury_id": 52,
+    "sport_id": 549,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 52,
+    "sport_id": 581,
+    "prevalence": "common",
+    "notes": "Wrist sprain on skate falls."
+  },
+  {
+    "injury_id": 52,
+    "sport_id": 614,
+    "prevalence": "occasional",
+    "notes": "Wrist issues in calisthenics."
+  },
+  {
+    "injury_id": 52,
+    "sport_id": 690,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 53,
+    "sport_id": 600,
+    "prevalence": "occasional",
+    "notes": "Carpal tunnel in yoga / calisthenics athletes with prolonged loading."
+  },
+  {
+    "injury_id": 53,
+    "sport_id": 640,
+    "prevalence": "rare",
+    "notes": null
+  },
+  {
+    "injury_id": 54,
+    "sport_id": 100,
+    "prevalence": "common",
+    "notes": "Finger pulley (A2/A3) rupture is the signature climbing injury."
+  },
+  {
+    "injury_id": 54,
+    "sport_id": 101,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 54,
+    "sport_id": 102,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 54,
+    "sport_id": 103,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 54,
+    "sport_id": 104,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 54,
+    "sport_id": 105,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 54,
+    "sport_id": 113,
+    "prevalence": "common",
+    "notes": "Competition bouldering crimps."
+  },
+  {
+    "injury_id": 54,
+    "sport_id": 115,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 55,
+    "sport_id": 100,
+    "prevalence": "occasional",
+    "notes": "Climbers who pinch heavily."
+  },
+  {
+    "injury_id": 55,
+    "sport_id": 600,
+    "prevalence": "occasional",
+    "notes": "De Quervain's in yoga practitioners from prolonged thumb loading."
+  },
+  {
+    "injury_id": 55,
+    "sport_id": 640,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 56,
+    "sport_id": 272,
+    "prevalence": "common",
+    "notes": "UCL sprain in boxers."
+  },
+  {
+    "injury_id": 56,
+    "sport_id": 341,
+    "prevalence": "occasional",
+    "notes": "UCL in one-handed backhands and serves."
+  },
+  {
+    "injury_id": 56,
+    "sport_id": 541,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 57,
+    "sport_id": 100,
+    "prevalence": "occasional",
+    "notes": "Trigger finger from high-volume crimping."
+  },
+  {
+    "injury_id": 60,
+    "sport_id": 200,
+    "prevalence": "occasional",
+    "notes": "Whiplash from snow sports falls."
+  },
+  {
+    "injury_id": 60,
+    "sport_id": 545,
+    "prevalence": "common",
+    "notes": "Rugby whiplash from tackles."
+  },
+  {
+    "injury_id": 61,
+    "sport_id": 261,
+    "prevalence": "occasional",
+    "notes": "Stinger from forced neck position."
+  },
+  {
+    "injury_id": 61,
+    "sport_id": 545,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 65,
+    "sport_id": 50,
+    "prevalence": "common",
+    "notes": "Hamstring strain in sprinters and marathoners alike."
+  },
+  {
+    "injury_id": 65,
+    "sport_id": 67,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 65,
+    "sport_id": 266,
+    "prevalence": "common",
+    "notes": "Hamstring strain in wrestling takedowns."
+  },
+  {
+    "injury_id": 65,
+    "sport_id": 341,
+    "prevalence": "common",
+    "notes": "Hamstring on change of direction."
+  },
+  {
+    "injury_id": 65,
+    "sport_id": 484,
+    "prevalence": "occasional",
+    "notes": "Hamstring on fastpacking uphill."
+  },
+  {
+    "injury_id": 65,
+    "sport_id": 531,
+    "prevalence": "common",
+    "notes": "Hamstring strain."
+  },
+  {
+    "injury_id": 65,
+    "sport_id": 534,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 65,
+    "sport_id": 543,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 65,
+    "sport_id": 601,
+    "prevalence": "occasional",
+    "notes": "Proximal hamstring tendinopathy in forward folds."
+  },
+  {
+    "injury_id": 65,
+    "sport_id": 730,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 66,
+    "sport_id": 50,
+    "prevalence": "occasional",
+    "notes": "Quad strain in runners doing hill repeats."
+  },
+  {
+    "injury_id": 66,
+    "sport_id": 531,
+    "prevalence": "common",
+    "notes": "Quad strain in soccer sprinters."
+  },
+  {
+    "injury_id": 67,
+    "sport_id": 212,
+    "prevalence": "occasional",
+    "notes": "Calf strain in cross-country skiers."
+  },
+  {
+    "injury_id": 67,
+    "sport_id": 272,
+    "prevalence": "occasional",
+    "notes": "Calf strain in movement drills."
+  },
+  {
+    "injury_id": 68,
+    "sport_id": 50,
+    "prevalence": "common",
+    "notes": "Soleus strain in endurance runners."
+  },
+  {
+    "injury_id": 69,
+    "sport_id": 531,
+    "prevalence": "common",
+    "notes": "Adductor strain."
+  },
+  {
+    "injury_id": 70,
+    "sport_id": 632,
+    "prevalence": "common",
+    "notes": "Pec strain on heavy bench."
+  },
+  {
+    "injury_id": 71,
+    "sport_id": 320,
+    "prevalence": "common",
+    "notes": "Oblique strain on backswing side."
+  },
+  {
+    "injury_id": 75,
+    "sport_id": 50,
+    "prevalence": "common",
+    "notes": "Shin splints on load progression."
+  },
+  {
+    "injury_id": 75,
+    "sport_id": 51,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 75,
+    "sport_id": 68,
+    "prevalence": "common",
+    "notes": "Stinger OCR: shin splints from repeated high-impact running + obstacles."
+  },
+  {
+    "injury_id": 76,
+    "sport_id": 50,
+    "prevalence": "occasional",
+    "notes": "Chronic compartment syndrome in high-mileage runners."
+  },
+  {
+    "injury_id": 77,
+    "sport_id": 12,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 77,
+    "sport_id": 50,
+    "prevalence": "occasional",
+    "notes": "Overtraining in high-mileage runners."
+  },
+  {
+    "injury_id": 77,
+    "sport_id": 55,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 77,
+    "sport_id": 100,
+    "prevalence": "occasional",
+    "notes": "Overtraining in multi-day projecting / comp prep."
+  },
+  {
+    "injury_id": 77,
+    "sport_id": 501,
+    "prevalence": "occasional",
+    "notes": null
+  },
+  {
+    "injury_id": 78,
+    "sport_id": 50,
+    "prevalence": "common",
+    "notes": "Tibial stress fracture in high-volume runners."
+  },
+  {
+    "injury_id": 78,
+    "sport_id": 55,
+    "prevalence": "common",
+    "notes": null
+  },
+  {
+    "injury_id": 79,
+    "sport_id": 50,
+    "prevalence": "rare",
+    "notes": "Femoral stress fracture in high-volume distance runners."
+  },
+  {
+    "injury_id": 79,
+    "sport_id": 55,
+    "prevalence": "rare",
+    "notes": null
+  }
+]
