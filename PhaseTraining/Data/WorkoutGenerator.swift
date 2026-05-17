@@ -39,19 +39,25 @@ enum WorkoutGenerator {
         totalLifts: Int,
         memory: TrainingMemory,
         profile: DemographicProfile,
-        hashSeed: String
+        hashSeed: String,
+        recentlyPicked: Set<Int> = []
     ) -> GeneratedWorkout {
         let focus = WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts)
-        return generate(focus: focus, memory: memory, profile: profile, hashSeed: hashSeed, liftIndex: liftIndex, totalLifts: totalLifts)
+        return generate(focus: focus, memory: memory, profile: profile,
+                        hashSeed: hashSeed, liftIndex: liftIndex,
+                        totalLifts: totalLifts, recentlyPicked: recentlyPicked)
     }
 
     /// Generate a mobility day's flow.
     static func generateMobility(
         memory: TrainingMemory,
         profile: DemographicProfile,
-        hashSeed: String
+        hashSeed: String,
+        recentlyPicked: Set<Int> = []
     ) -> GeneratedWorkout {
-        generate(focus: .mobility, memory: memory, profile: profile, hashSeed: hashSeed, liftIndex: 0, totalLifts: 0)
+        generate(focus: .mobility, memory: memory, profile: profile,
+                 hashSeed: hashSeed, liftIndex: 0, totalLifts: 0,
+                 recentlyPicked: recentlyPicked)
     }
 
     // MARK: - Core loop
@@ -62,7 +68,8 @@ enum WorkoutGenerator {
         profile: DemographicProfile,
         hashSeed: String,
         liftIndex: Int,
-        totalLifts: Int
+        totalLifts: Int,
+        recentlyPicked: Set<Int>
     ) -> GeneratedWorkout {
         let budgetSec = max(15 * 60, memory.sessionMinutes * 60 - warmupBufferSec)
         var elapsedSec = 0
@@ -81,6 +88,7 @@ enum WorkoutGenerator {
                 envs: envs,
                 excludeKws: excludeKws,
                 excludeIds: pickedIds,
+                recentlyPicked: recentlyPicked,
                 hashSeed: hashSeed
             ) else { continue }
 
@@ -137,8 +145,10 @@ enum WorkoutGenerator {
     // MARK: - Slot fulfillment
 
     /// Walk the alternative patterns in a slot, return the first picked
-    /// exercise. Mutates the slot's `satisfiedBy` field implicitly via the
-    /// return tuple (caller stores it on the GeneratedExercise).
+    /// exercise. Variety soft-filter: when the candidate pool has any
+    /// not-recently-picked entries, restrict the pick to those. When the
+    /// pool is entirely recent (small slot, well-worn user), fall back to
+    /// the full pool — we'd rather repeat than leave the slot empty.
     private static func pickForSlot(
         slot: PatternSlot,
         slotIdx: Int,
@@ -146,8 +156,15 @@ enum WorkoutGenerator {
         envs: Set<String>,
         excludeKws: [String],
         excludeIds: Set<Int>,
+        recentlyPicked: Set<Int>,
         hashSeed: String
     ) -> Exercise? {
+        let applyVariety: ([Exercise]) -> [Exercise] = { candidates in
+            guard !recentlyPicked.isEmpty else { return candidates }
+            let fresh = candidates.filter { !recentlyPicked.contains($0.id) }
+            return fresh.isEmpty ? candidates : fresh
+        }
+
         for pattern in slot.alternatives {
             // Try preferred difficulties first, then fall back across the
             // whole allowed set (so a beginner-only catalog still returns
@@ -161,7 +178,7 @@ enum WorkoutGenerator {
                     excludeIds: excludeIds,
                     modalities: slot.requiredModalities
                 )
-                if let pick = deterministicPick(from: candidates, slotIdx: slotIdx, hashSeed: hashSeed) {
+                if let pick = deterministicPick(from: applyVariety(candidates), slotIdx: slotIdx, hashSeed: hashSeed) {
                     slot.satisfiedBy = pattern
                     return pick
                 }
@@ -174,7 +191,7 @@ enum WorkoutGenerator {
                 excludeIds: excludeIds,
                 modalities: slot.requiredModalities
             )
-            if let pick = deterministicPick(from: relaxed, slotIdx: slotIdx, hashSeed: hashSeed) {
+            if let pick = deterministicPick(from: applyVariety(relaxed), slotIdx: slotIdx, hashSeed: hashSeed) {
                 slot.satisfiedBy = pattern
                 return pick
             }

@@ -26,6 +26,7 @@ enum Planner {
         overrides: WeekOverrides? = nil,
         routines: [Routine],
         previousFeedback: [FeedbackEntry] = [],
+        recentlyPicked: Set<Int> = [],
         today: Date = Date(),
         calendar: Calendar = .current
     ) -> WeekPlan {
@@ -34,6 +35,7 @@ enum Planner {
             memory: biased,
             overrides: overrides,
             routines: routines,
+            recentlyPicked: recentlyPicked,
             today: today,
             calendar: calendar
         )
@@ -67,6 +69,7 @@ enum Planner {
         memory: TrainingMemory,
         overrides: WeekOverrides?,
         routines: [Routine],
+        recentlyPicked: Set<Int>,
         today: Date,
         calendar: Calendar
     ) -> WeekPlan {
@@ -108,7 +111,7 @@ enum Planner {
         if let overrides {
             for (i, date) in dates.enumerated() where slots[i] == nil {
                 guard let ov = overrides.override(on: date, calendar: calendar) else { continue }
-                slots[i] = makeOverrideSlot(date: date, override: ov, memory: memory, routines: routines)
+                slots[i] = makeOverrideSlot(date: date, override: ov, memory: memory, routines: routines, recentlyPicked: recentlyPicked)
             }
         }
 
@@ -172,6 +175,7 @@ enum Planner {
                 memory: memory,
                 profile: profile,
                 routines: routines,
+                recentlyPicked: recentlyPicked,
                 shapeDescription: shape.description,
                 slotOffset: entry.idx,
                 liftIndex: entry.kind == .lift ? liftCursor : 0,
@@ -201,7 +205,8 @@ enum Planner {
         date: Date,
         override: DayKindOverride,
         memory: TrainingMemory,
-        routines: [Routine]
+        routines: [Routine],
+        recentlyPicked: Set<Int>
     ) -> DayPlan {
         switch override {
         case .rest:
@@ -223,7 +228,8 @@ enum Planner {
             let workout = WorkoutGenerator.generateMobility(
                 memory: memory,
                 profile: profile,
-                hashSeed: memory.planInputsHash + "-mob-override"
+                hashSeed: memory.planInputsHash + "-mob-override",
+                recentlyPicked: recentlyPicked
             )
             return DayPlan(date: date, kind: .mobility,
                            title: workout.title,
@@ -245,7 +251,8 @@ enum Planner {
                 totalLifts: 1,
                 memory: memory,
                 profile: profile,
-                hashSeed: memory.planInputsHash + "-lift-override"
+                hashSeed: memory.planInputsHash + "-lift-override",
+                recentlyPicked: recentlyPicked
             )
             return DayPlan(date: date, kind: .lift,
                            title: workout.title,
@@ -300,6 +307,7 @@ enum Planner {
         memory: TrainingMemory,
         profile: DemographicProfile,
         routines: [Routine],
+        recentlyPicked: Set<Int>,
         shapeDescription: String,
         slotOffset: Int,
         liftIndex: Int,
@@ -312,7 +320,8 @@ enum Planner {
                 totalLifts: totalLifts,
                 memory: memory,
                 profile: profile,
-                hashSeed: memory.planInputsHash
+                hashSeed: memory.planInputsHash,
+                recentlyPicked: recentlyPicked
             )
             return DayPlan(
                 date: date,
@@ -325,7 +334,8 @@ enum Planner {
             let workout = WorkoutGenerator.generateMobility(
                 memory: memory,
                 profile: profile,
-                hashSeed: memory.planInputsHash + "-mob-\(slotOffset)"
+                hashSeed: memory.planInputsHash + "-mob-\(slotOffset)",
+                recentlyPicked: recentlyPicked
             )
             return DayPlan(
                 date: date,

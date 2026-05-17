@@ -23,6 +23,11 @@ final class PlanStore: ObservableObject {
     @Published var plan: WeekPlan?
     @Published var overrides: WeekOverrides
 
+    /// Variety memory. Wired up post-init by the App so PlanStore can stay
+    /// instantiable with a single defaults param (tests, previews) while
+    /// the production app gets the soft-filter on exercise reuse.
+    var recentPicks: RecentPicksStore?
+
     private let defaults: UserDefaults
 
     init(defaults: UserDefaults = .standard, today: Date = Date()) {
@@ -56,11 +61,24 @@ final class PlanStore: ObservableObject {
             memory: memory,
             overrides: overrides,
             routines: routines,
+            recentlyPicked: recentPicks?.recentlyPickedIds() ?? [],
             today: today
         )
         self.plan = p
         savePlan()
+        recordPickedExercises(in: p)
         return p
+    }
+
+    /// Stamp every exercise the generator just picked into the variety
+    /// memory so the next regen avoids them.
+    private func recordPickedExercises(in plan: WeekPlan) {
+        guard let recentPicks else { return }
+        let ids = plan.days
+            .compactMap(\.generatedWorkout)
+            .flatMap(\.exercises)
+            .map(\.exerciseId)
+        recentPicks.record(exerciseIds: ids)
     }
 
     /// Replace the current plan wholesale (used when the user accepts a
@@ -240,6 +258,7 @@ final class PlanStore: ObservableObject {
         let profile = DemographicProfile.from(memory)
         let saltValue = salt ?? String(Int(Date().timeIntervalSince1970))
         let seed = "\(memory.planInputsHash)-regen-\(saltValue)"
+        let recentIds = recentPicks?.recentlyPickedIds() ?? []
 
         let workout: GeneratedWorkout
         switch day.kind {
@@ -253,13 +272,15 @@ final class PlanStore: ObservableObject {
                 totalLifts: liftDays.count,
                 memory: memory,
                 profile: profile,
-                hashSeed: seed
+                hashSeed: seed,
+                recentlyPicked: recentIds
             )
         case .mobility:
             workout = WorkoutGenerator.generateMobility(
                 memory: memory,
                 profile: profile,
-                hashSeed: seed
+                hashSeed: seed,
+                recentlyPicked: recentIds
             )
         default:
             return
@@ -270,12 +291,12 @@ final class PlanStore: ObservableObject {
         plan.days[idx].routineId = nil
         plan.days[idx].generatedReason = workout.provenance
 
-        // Touch inputsHash so drift detection clears if memory matches —
-        // partial regens don't claim the plan is fully in-sync, so only
-        // update when the underlying memory hash matches what we just used.
-        plan.inputsHash = memory.planInputsHash
+        // NOTE: do NOT touch inputsHash here — only one day was regenerated.
+        // If memory has drifted since the last full generate, the other six
+        // days are still stale and the drift banner must keep firing.
         self.plan = plan
         savePlan()
+        recentPicks?.record(exerciseIds: workout.exercises.map(\.exerciseId))
     }
 
     /// Regenerate the full week against current memory. Convenience alias for

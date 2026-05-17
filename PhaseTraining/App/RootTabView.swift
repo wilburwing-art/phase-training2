@@ -25,6 +25,7 @@ struct RootTabView: View {
     @EnvironmentObject private var tabSelection: TabSelectionStore
     @EnvironmentObject private var planStore: PlanStore
     @EnvironmentObject private var memoryStore: MemoryStore
+    @EnvironmentObject private var recentPicks: RecentPicksStore
 
     var body: some View {
         TabView(selection: $tabSelection.selected) {
@@ -47,6 +48,9 @@ struct RootTabView: View {
         .tint(Color.accent)
         .preferredColorScheme(.dark)
         .task {
+            // Wire variety memory into PlanStore (kept off the init so the
+            // store stays one-arg constructible for tests + previews).
+            planStore.recentPicks = recentPicks
             // One-shot migration for users whose saved plan was composed by
             // the pre-build-36 routine picker. Detects the stale schema and
             // regenerates so they stop seeing bundled sport-themed routines
@@ -65,5 +69,6 @@ struct RootTabView: View {
         .environmentObject(MemoryStore(defaults: defaults))
         .environmentObject(PlanStore(defaults: defaults))
         .environmentObject(CustomRoutineStore(defaults: defaults))
+        .environmentObject(RecentPicksStore(defaults: defaults))
         .environmentObject(TabSelectionStore())
 }
