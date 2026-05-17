@@ -21,6 +21,7 @@ import SwiftUI
 struct TodayScreen: View {
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject var planStore: PlanStore
+    @EnvironmentObject var memoryStore: MemoryStore
     @EnvironmentObject var tabSelection: TabSelectionStore
 
     let onStart: () -> Void
@@ -157,6 +158,11 @@ struct TodayScreen: View {
                 topBar
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
+                        if planStore.needsRegeneration(for: memoryStore.memory) {
+                            driftBanner
+                                .padding(.horizontal, 20)
+                                .padding(.top, 14)
+                        }
                         if planEndingSoon {
                             planNextWeekPill
                                 .padding(.horizontal, 20)
@@ -174,6 +180,11 @@ struct TodayScreen: View {
                             reasonRow(reason)
                                 .padding(.horizontal, 20)
                                 .padding(.top, 14)
+                        }
+                        if canRegenToday {
+                            regenerateTodayRow
+                                .padding(.horizontal, 20)
+                                .padding(.top, 12)
                         }
                         if effectiveKind.isWorkout {
                             PreWorkoutCheckIn()
@@ -217,6 +228,76 @@ struct TodayScreen: View {
             )
             .presentationBackground(Color.bg)
         }
+    }
+
+    // MARK: - Drift + regenerate affordances (Phase 15c)
+
+    /// True when today is a generated lift/mobility day with no active session
+    /// — i.e. the user can safely re-roll the workout without disrupting an
+    /// in-progress log.
+    private var canRegenToday: Bool {
+        guard store.active == nil else { return false }
+        guard let day = todayPlan else { return false }
+        guard !day.protected else { return false }
+        guard day.kind == .lift || day.kind == .mobility else { return false }
+        return day.generatedWorkout != nil
+    }
+
+    /// Profile drift → "Refresh this week from your new profile" CTA.
+    private var driftBanner: some View {
+        Button {
+            planStore.regenerateWeek(memory: memoryStore.memory)
+            let haptic = UIImpactFeedbackGenerator(style: .medium)
+            haptic.impactOccurred()
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "arrow.clockwise.circle.fill")
+                    .font(.system(size: 18, weight: .regular))
+                    .foregroundStyle(Color.accent)
+                Text("Profile changed — tap to refresh this week.")
+                    .font(.custom("Inter-Regular", size: 13))
+                    .foregroundStyle(Color.ink)
+                Spacer(minLength: 4)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Color.ink3)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color.accentWash)
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.accentBorder, lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("today-refresh-week")
+    }
+
+    /// Always-available "give me a different workout today" affordance. Uses
+    /// a fresh deterministic salt so each tap re-rolls.
+    private var regenerateTodayRow: some View {
+        Button {
+            planStore.regenerateToday(memory: memoryStore.memory)
+            let haptic = UIImpactFeedbackGenerator(style: .light)
+            haptic.impactOccurred()
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .font(.system(size: 12, weight: .semibold))
+                Text("Regenerate today's workout")
+                    .styled(.micro)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .semibold))
+            }
+            .foregroundStyle(Color.ink3)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color.surface)
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.line, lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("today-regenerate")
     }
 
     private var planNextWeekPill: some View {

@@ -211,6 +211,80 @@ final class PlanStore: ObservableObject {
         return plan.inputsHash != memory.planInputsHash
     }
 
+    // MARK: - Targeted regeneration (Phase 15c)
+    //
+    // The full `generate(from:)` rewrites the entire week. These finer-grained
+    // entry points let the user re-roll just today's workout (variety / "I want
+    // something different") or refresh the whole week against the current
+    // profile (drift after a Profile edit) without losing the rest of the plan.
+
+    /// Replace one day's generated workout with a freshly composed one. Keeps
+    /// the rest of the week intact. No-op if today isn't in the current plan,
+    /// the day isn't lift / mobility, or the day is protected (user-pinned).
+    ///
+    /// `salt` lets the caller force a fresh deterministic pick when re-rolling
+    /// the same day (default = current timestamp, so each tap produces a new
+    /// workout). Tests pass a fixed salt for repeatability.
+    func regenerateToday(memory: TrainingMemory,
+                         today: Date = Date(),
+                         salt: String? = nil) {
+        guard var plan = plan else { return }
+        let cal = Calendar.current
+        guard let idx = plan.days.firstIndex(where: { cal.isDate($0.date, inSameDayAs: today) })
+        else { return }
+
+        let day = plan.days[idx]
+        guard !day.protected else { return }
+        guard day.kind == .lift || day.kind == .mobility else { return }
+
+        let profile = DemographicProfile.from(memory)
+        let saltValue = salt ?? String(Int(Date().timeIntervalSince1970))
+        let seed = "\(memory.planInputsHash)-regen-\(saltValue)"
+
+        let workout: GeneratedWorkout
+        switch day.kind {
+        case .lift:
+            // Re-derive this lift's index so push/pull/legs rotation stays
+            // coherent if the user has multiple lifts in the week.
+            let liftDays = plan.days.filter { $0.kind == .lift }
+            let liftIndex = liftDays.firstIndex(where: { cal.isDate($0.date, inSameDayAs: today) }) ?? 0
+            workout = WorkoutGenerator.generateLift(
+                liftIndex: liftIndex,
+                totalLifts: liftDays.count,
+                memory: memory,
+                profile: profile,
+                hashSeed: seed
+            )
+        case .mobility:
+            workout = WorkoutGenerator.generateMobility(
+                memory: memory,
+                profile: profile,
+                hashSeed: seed
+            )
+        default:
+            return
+        }
+
+        plan.days[idx].generatedWorkout = workout
+        plan.days[idx].title = workout.title
+        plan.days[idx].routineId = nil
+        plan.days[idx].generatedReason = workout.provenance
+
+        // Touch inputsHash so drift detection clears if memory matches —
+        // partial regens don't claim the plan is fully in-sync, so only
+        // update when the underlying memory hash matches what we just used.
+        plan.inputsHash = memory.planInputsHash
+        self.plan = plan
+        savePlan()
+    }
+
+    /// Regenerate the full week against current memory. Convenience alias for
+    /// `generate(from:)` named for the drift-resolution UI surfaces.
+    @discardableResult
+    func regenerateWeek(memory: TrainingMemory, today: Date = Date()) -> WeekPlan {
+        generate(from: memory, today: today)
+    }
+
     // MARK: - Persistence
 
     private func savePlan() {

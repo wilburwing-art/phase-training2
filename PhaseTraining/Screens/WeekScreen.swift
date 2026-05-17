@@ -110,6 +110,12 @@ struct WeekScreen: View {
                     .padding(.top, 24)
                     .padding(.bottom, 18)
 
+                if planStore.needsRegeneration(for: memory.memory) {
+                    driftBanner
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 14)
+                }
+
                 VStack(spacing: 10) {
                     ForEach(plan.days) { day in
                         DraggableDayRow(
@@ -128,9 +134,27 @@ struct WeekScreen: View {
 
     private func header(plan: WeekPlan) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("THIS WEEK")
-                .styled(.micro)
-                .foregroundStyle(Color.accent)
+            HStack(alignment: .firstTextBaseline) {
+                Text("THIS WEEK")
+                    .styled(.micro)
+                    .foregroundStyle(Color.accent)
+                Spacer()
+                Button {
+                    planStore.regenerateWeek(memory: memory.memory)
+                    let haptic = UIImpactFeedbackGenerator(style: .medium)
+                    haptic.impactOccurred()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.system(size: 11, weight: .semibold))
+                        Text("REGENERATE")
+                            .styled(.micro)
+                    }
+                    .foregroundStyle(Color.ink3)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("week-regenerate")
+            }
             Text(plan.rangeLabel)
                 .font(.custom("SpaceGrotesk-SemiBold", size: 30))
                 .tracking(-0.025 * 30)
@@ -143,6 +167,36 @@ struct WeekScreen: View {
                 .foregroundStyle(Color.ink3)
                 .padding(.top, 2)
         }
+    }
+
+    /// Profile-drift banner. Same one-tap "Refresh from your new profile"
+    /// CTA the Today + Profile screens use.
+    private var driftBanner: some View {
+        Button {
+            planStore.regenerateWeek(memory: memory.memory)
+            let haptic = UIImpactFeedbackGenerator(style: .medium)
+            haptic.impactOccurred()
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "arrow.clockwise.circle.fill")
+                    .font(.system(size: 18, weight: .regular))
+                    .foregroundStyle(Color.accent)
+                Text("Profile changed — tap to refresh this week.")
+                    .font(.custom("Inter-Regular", size: 13))
+                    .foregroundStyle(Color.ink)
+                Spacer(minLength: 4)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Color.ink3)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color.accentWash)
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.accentBorder, lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("week-refresh-drift")
     }
 
     private func planSummary(_ plan: WeekPlan) -> String {
