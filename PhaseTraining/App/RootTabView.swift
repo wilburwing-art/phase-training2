@@ -23,6 +23,8 @@ final class TabSelectionStore: ObservableObject {
 
 struct RootTabView: View {
     @EnvironmentObject private var tabSelection: TabSelectionStore
+    @EnvironmentObject private var planStore: PlanStore
+    @EnvironmentObject private var memoryStore: MemoryStore
 
     var body: some View {
         TabView(selection: $tabSelection.selected) {
@@ -44,13 +46,24 @@ struct RootTabView: View {
         }
         .tint(Color.accent)
         .preferredColorScheme(.dark)
+        .task {
+            // One-shot migration for users whose saved plan was composed by
+            // the pre-build-36 routine picker. Detects the stale schema and
+            // regenerates so they stop seeing bundled sport-themed routines
+            // (Basketball, Wakeboard, etc.) that have nothing to do with
+            // their actual selections.
+            guard memoryStore.isOnboarded else { return }
+            planStore.migrateIfStale(memory: memoryStore.memory)
+        }
     }
 }
 
 #Preview("Cold launch") {
-    RootTabView()
-        .environmentObject(SessionStore(defaults: UserDefaults(suiteName: "RootTabView.preview")!))
-        .environmentObject(MemoryStore(defaults: UserDefaults(suiteName: "RootTabView.preview.mem")!))
-        .environmentObject(PlanStore(defaults: UserDefaults(suiteName: "RootTabView.preview.plan")!))
+    let defaults = UserDefaults(suiteName: "RootTabView.preview")!
+    return RootTabView()
+        .environmentObject(SessionStore(defaults: defaults))
+        .environmentObject(MemoryStore(defaults: defaults))
+        .environmentObject(PlanStore(defaults: defaults))
+        .environmentObject(CustomRoutineStore(defaults: defaults))
         .environmentObject(TabSelectionStore())
 }

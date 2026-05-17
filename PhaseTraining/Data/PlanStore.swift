@@ -285,6 +285,28 @@ final class PlanStore: ObservableObject {
         generate(from: memory, today: today)
     }
 
+    /// One-shot schema migration for users upgrading from build ≤35 whose
+    /// saved plan was composed by the old routine-picker (DayPlan has
+    /// `routineId` set but no `generatedWorkout`). The new planner generates
+    /// workouts exercise-by-exercise; without this migration, those users
+    /// would keep seeing the bundled routine that was picked under the old
+    /// schema (often a sport-themed routine like "Basketball Vertical Jump
+    /// Development" that has nothing to do with their actual sport
+    /// selection — the old picker matched by goal only).
+    ///
+    /// Triggers when ANY lift / mobility day in the current plan lacks a
+    /// generatedWorkout. No-op for fresh installs, post-migration plans,
+    /// and rest-only weeks. User-pinned routines via dayOverrides survive
+    /// because overrides live in WeekOverrides, not the WeekPlan.
+    func migrateIfStale(memory: TrainingMemory, today: Date = Date()) {
+        guard let plan = plan else { return }
+        let needsMigration = plan.days.contains { day in
+            (day.kind == .lift || day.kind == .mobility) && day.generatedWorkout == nil
+        }
+        guard needsMigration else { return }
+        generate(from: memory, today: today)
+    }
+
     // MARK: - Persistence
 
     private func savePlan() {

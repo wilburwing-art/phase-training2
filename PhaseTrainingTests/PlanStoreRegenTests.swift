@@ -130,6 +130,66 @@ final class PlanStoreRegenTests: XCTestCase {
                           "Different regen salts should produce different exercise picks")
     }
 
+    // MARK: - migrateIfStale (build ≤35 → 36+ schema migration)
+
+    func test_migrateIfStale_replacesRoutineIdDaysWithGeneratedWorkouts() {
+        let (store, today) = makeStore()
+        let memory = gymMemory()
+
+        // Hand-craft a build-35-style stale plan: lift days have routineId
+        // set but no generatedWorkout. This mirrors what UserDefaults would
+        // decode for a user upgrading from the old picker.
+        let cal = Calendar.current
+        let kinds: [DayKind] = [.lift, .rest, .lift, .rest, .lift, .mobility, .rest]
+        let staleDays = (0..<7).map { i -> DayPlan in
+            DayPlan(
+                date: cal.date(byAdding: .day, value: i, to: today) ?? today,
+                kind: kinds[i],
+                title: kinds[i] == .lift ? "Basketball Vertical Jump" : "Mobility Flow",
+                routineId: kinds[i].isWorkout ? 237 : nil,    // pretend old picker landed on a sport routine
+                generatedWorkout: nil,                          // <-- the schema marker
+                generatedReason: "stale build-35 plan"
+            )
+        }
+        store.setPlan(WeekPlan(days: staleDays, generatedAt: Date(), inputsHash: "stale"))
+
+        // Sanity: plan currently has routineId-driven lift days, no generated workouts.
+        XCTAssertTrue(store.plan?.days.allSatisfy {
+            $0.kind == .rest || $0.kind == .sport || $0.kind == .event || $0.generatedWorkout == nil
+        } ?? false)
+
+        store.migrateIfStale(memory: memory, today: today)
+
+        // After migration: every lift/mobility day has a generatedWorkout.
+        for day in store.plan?.days ?? [] {
+            if day.kind == .lift || day.kind == .mobility {
+                XCTAssertNotNil(day.generatedWorkout,
+                                "\(day.title) on \(day.date) should have a generated workout after migration")
+                XCTAssertNil(day.routineId,
+                             "Migrated days shouldn't carry the stale routineId reference")
+            }
+        }
+    }
+
+    func test_migrateIfStale_isNoopWhenPlanIsCurrent() {
+        let (store, today) = makeStore()
+        let memory = gymMemory()
+        _ = store.generate(from: memory, today: today)
+
+        let preTitles = store.plan?.days.map(\.title) ?? []
+        store.migrateIfStale(memory: memory, today: today)
+        let postTitles = store.plan?.days.map(\.title) ?? []
+        XCTAssertEqual(preTitles, postTitles,
+                       "A fresh plan should pass migrateIfStale untouched")
+    }
+
+    func test_migrateIfStale_isNoopWhenNoPlan() {
+        let (store, today) = makeStore()
+        XCTAssertNil(store.plan)
+        store.migrateIfStale(memory: gymMemory(), today: today)
+        XCTAssertNil(store.plan, "Migration should not synthesize a plan from nothing")
+    }
+
     func test_regenerateToday_isNoopOnRestDay() {
         let (store, today) = makeStore()
         var memory = gymMemory()
