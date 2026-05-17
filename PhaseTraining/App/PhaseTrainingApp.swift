@@ -8,6 +8,7 @@ struct PhaseTrainingApp: App {
     @StateObject private var custom  = CustomRoutineStore()
     @StateObject private var recentPicks = RecentPicksStore()
     @StateObject private var tabSelection = TabSelectionStore()
+    @StateObject private var conv = CoachConversationStore()
 
     /// UI tests pass `--ui-test-onboarded` to skip the first-launch onboarding cover
     /// without persisting state to UserDefaults.
@@ -38,6 +39,7 @@ struct PhaseTrainingApp: App {
                 .environmentObject(custom)
                 .environmentObject(recentPicks)
                 .environmentObject(tabSelection)
+                .environmentObject(conv)
                 .preferredColorScheme(.dark)
                 .fullScreenCover(isPresented: .constant(!memory.isOnboarded && !uiTestSkipsOnboarding)) {
                     OnboardingFlow()

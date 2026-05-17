@@ -50,6 +50,12 @@ actor CoachClient {
         self.session = session
     }
 
+    /// Conversation turn — assistant or user message used in the chat history.
+    struct Turn: Sendable {
+        let role: String      // "user" or "assistant"
+        let text: String
+    }
+
     /// Round-trip a single user message. Returns the model's full reply
     /// (no streaming) plus token + latency metadata for the debug ping.
     func send(
@@ -71,8 +77,9 @@ actor CoachClient {
         let body = MessagesRequest(
             model: model,
             maxTokens: CoachConfig.maxOutputTokens,
-            system: system,
-            messages: [.init(role: "user", content: userMessage)]
+            system: system.map { [SystemBlock(text: $0, cacheControl: nil)] },
+            messages: [.init(role: "user", content: userMessage)],
+            stream: false
         )
         req.httpBody = try JSONEncoder().encode(body)
 
@@ -112,26 +119,138 @@ actor CoachClient {
             model: decoded.model
         )
     }
+
+    /// Streaming chat. Yields text deltas as they arrive. Caller composes
+    /// system blocks (long cached header + per-turn context) and the full
+    /// `history` of previous turns.
+    nonisolated func stream(
+        cachedSystem: String,
+        perTurnContext: String,
+        history: [Turn],
+        userMessage: String,
+        model: String = CoachConfig.defaultModel
+    ) -> AsyncThrowingStream<String, Error> {
+        AsyncThrowingStream { continuation in
+            let task = Task {
+                guard !CoachSecrets.gatewayToken.isEmpty else {
+                    continuation.finish(throwing: CoachError.missingGatewayToken)
+                    return
+                }
+
+                var req = URLRequest(url: CoachConfig.baseURL.appendingPathComponent("v1/messages"))
+                req.httpMethod = "POST"
+                req.setValue("application/json", forHTTPHeaderField: "content-type")
+                req.setValue(CoachConfig.anthropicVersion, forHTTPHeaderField: "anthropic-version")
+                req.setValue("Bearer \(CoachSecrets.gatewayToken)", forHTTPHeaderField: "cf-aig-authorization")
+                req.setValue(CoachConfig.byokAlias, forHTTPHeaderField: "cf-aig-byok-alias")
+                req.setValue("text/event-stream", forHTTPHeaderField: "accept")
+
+                var messages = history.map { MessagesRequest.Message(role: $0.role, content: $0.text) }
+                messages.append(.init(role: "user", content: userMessage))
+
+                let body = MessagesRequest(
+                    model: model,
+                    maxTokens: CoachConfig.maxOutputTokens,
+                    system: [
+                        SystemBlock(text: cachedSystem, cacheControl: .init(type: "ephemeral")),
+                        SystemBlock(text: perTurnContext, cacheControl: nil),
+                    ],
+                    messages: messages,
+                    stream: true
+                )
+                do {
+                    req.httpBody = try JSONEncoder().encode(body)
+                } catch {
+                    continuation.finish(throwing: CoachError.decode(error))
+                    return
+                }
+
+                do {
+                    let (bytes, response) = try await self.session.bytes(for: req)
+                    guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+                        var snippet = ""
+                        for try await line in bytes.lines {
+                            snippet += line
+                            if snippet.count > 512 { break }
+                        }
+                        let status = (response as? HTTPURLResponse)?.statusCode ?? -1
+                        continuation.finish(throwing: CoachError.http(status: status, body: snippet))
+                        return
+                    }
+
+                    for try await line in bytes.lines {
+                        if Task.isCancelled {
+                            continuation.finish(throwing: CancellationError())
+                            return
+                        }
+                        // SSE: only data lines carry the JSON payload.
+                        guard line.hasPrefix("data: ") else { continue }
+                        let payload = String(line.dropFirst("data: ".count))
+                        if payload == "[DONE]" { break }
+                        guard let data = payload.data(using: .utf8),
+                              let event = try? JSONDecoder().decode(StreamEvent.self, from: data) else { continue }
+                        if event.type == "content_block_delta",
+                           let delta = event.delta,
+                           delta.type == "text_delta",
+                           let text = delta.text {
+                            continuation.yield(text)
+                        }
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: CoachError.transport(error))
+                }
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
 }
 
 // MARK: - Anthropic /v1/messages wire shapes (minimal subset)
 
+private struct SystemBlock: Encodable {
+    let type = "text"
+    let text: String
+    let cacheControl: CacheControl?
+
+    struct CacheControl: Encodable {
+        let type: String  // "ephemeral"
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case type, text
+        case cacheControl = "cache_control"
+    }
+}
+
 private struct MessagesRequest: Encodable {
     let model: String
     let maxTokens: Int
-    let system: String?
+    let system: [SystemBlock]?
     let messages: [Message]
+    let stream: Bool
 
     enum CodingKeys: String, CodingKey {
         case model
         case maxTokens = "max_tokens"
         case system
         case messages
+        case stream
     }
 
     struct Message: Encodable {
         let role: String
         let content: String
+    }
+}
+
+private struct StreamEvent: Decodable {
+    let type: String
+    let delta: Delta?
+
+    struct Delta: Decodable {
+        let type: String?
+        let text: String?
     }
 }
 

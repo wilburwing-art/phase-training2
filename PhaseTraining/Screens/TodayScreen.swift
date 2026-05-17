@@ -174,7 +174,7 @@ struct TodayScreen: View {
                                 .padding(.top, 14)
                         }
                         if let body = insightCopy {
-                            InsightCard(body: body)
+                            InsightCard(body: body, coachFollowUp: "Explain why: \(body)")
                                 .padding(.horizontal, 20)
                                 .padding(.top, planEndingSoon ? 10 : 14)
                         }
