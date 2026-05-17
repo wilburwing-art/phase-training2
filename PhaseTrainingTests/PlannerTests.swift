@@ -10,6 +10,17 @@ import XCTest
 
 final class PlannerTests: XCTestCase {
 
+    /// Base memory for planner tests. Defaults `equipment` to fullGym because
+    /// the test catalog below is entirely gym-tagged — without this, Phase 14's
+    /// equipment-aware env filter would (correctly!) refuse to recommend any
+    /// of these routines for a user whose default equipment is bodyweight.
+    /// Tests that specifically exercise the equipment filter override locally.
+    private func fixtureMemory() -> TrainingMemory {
+        var m = TrainingMemory()
+        m.equipment = [.fullGym]
+        return m
+    }
+
     // MARK: - Synthetic routine catalog
 
     private func catalog() -> [Routine] {
@@ -60,7 +71,7 @@ final class PlannerTests: XCTestCase {
     // MARK: - Structural invariants
 
     func testProducesExactlySevenContiguousDays() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -76,7 +87,7 @@ final class PlannerTests: XCTestCase {
     }
 
     func testInputsHashMatchesMemory() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.hypertrophy]
         memory.liftDaysPerWeek = 3
 
@@ -87,7 +98,7 @@ final class PlannerTests: XCTestCase {
     // MARK: - Per-week overrides
 
     func testUnavailableDaysFromOverridesForceRest() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
 
         var overrides = WeekOverrides(weekStart: mondayAnchor())
@@ -107,7 +118,7 @@ final class PlannerTests: XCTestCase {
     }
 
     func testNoOverridesAllowsAllSevenDays() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -117,7 +128,7 @@ final class PlannerTests: XCTestCase {
 
     func testSportSessionEventLandsAsProtectedSportDay() {
         let climbing = Sport.catalog.first { $0.slug == "climbing" }!
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.primarySport = climbing
         memory.seasonsBySport = [climbing: .maintenance]
 
@@ -137,7 +148,7 @@ final class PlannerTests: XCTestCase {
     }
 
     func testRaceEventWithHardIntensityTapersPreviousLift() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]   // shape gives lifts on Mon, Wed, Fri
         memory.liftDaysPerWeek = 3
 
@@ -157,7 +168,7 @@ final class PlannerTests: XCTestCase {
     }
 
     func testRaceEventWithLightIntensityDoesNotTaper() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 3
 
@@ -178,7 +189,7 @@ final class PlannerTests: XCTestCase {
 
     func testMultipleEventsAcrossWeekAllStick() {
         let climbing = Sport.catalog.first { $0.slug == "climbing" }!
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.primarySport = climbing
 
         let cal = Calendar.current
@@ -204,7 +215,7 @@ final class PlannerTests: XCTestCase {
 
     func testClimbingInSeasonHasTwoSportsAndOneLift() {
         let climbing = Sport.catalog.first { $0.slug == "climbing" }!
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.primarySport = climbing
         memory.seasonsBySport = [climbing: .inSeason]
         memory.liftDaysPerWeek = 1   // shape says 1, user agrees
@@ -220,7 +231,7 @@ final class PlannerTests: XCTestCase {
 
     func testRunningOffSeasonFavorsLifts() {
         let running = Sport.catalog.first { $0.slug == "running" }!
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.primarySport = running
         memory.seasonsBySport = [running: .offSeason]
         memory.liftDaysPerWeek = 3   // shape default = 3 lifts
@@ -233,7 +244,7 @@ final class PlannerTests: XCTestCase {
     }
 
     func testGeneralFitnessFallbackProducesUsableShape() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.primarySport = nil          // no sport
         memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 3
@@ -246,7 +257,7 @@ final class PlannerTests: XCTestCase {
     // MARK: - Routine selection
 
     func testLiftDaysCarryRoutineId() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.experience = .intermediate
         memory.sessionMinutes = 45
@@ -260,7 +271,7 @@ final class PlannerTests: XCTestCase {
     }
 
     func testBeginnerExperienceExcludesAdvancedRoutines() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.experience = .beginner
         memory.sessionMinutes = 45
@@ -272,8 +283,107 @@ final class PlannerTests: XCTestCase {
                        "Advanced Lower (id 3) should never appear for a beginner")
     }
 
+    // MARK: - Phase 14: demographic-driven selection
+
+    func testAdvancedExperiencePrefersAdvancedRoutinesFirst() {
+        // The catalog only has one advanced lift (id 3). An advanced user with
+        // 1 lift / week should land on it, not on a lower-difficulty match.
+        var memory = fixtureMemory()
+        memory.focuses = [.generalStrength]
+        memory.experience = .advanced
+        memory.sessionMinutes = 60
+        memory.liftDaysPerWeek = 1
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        let liftIds = plan.days.filter { $0.kind == .lift }.compactMap(\.routineId)
+        XCTAssertTrue(liftIds.contains(3),
+                      "Advanced user should be served the advanced routine when one exists")
+    }
+
+    func testIntermediateExperiencePrefersIntermediateOverBeginner() {
+        // Intermediate routine (id 2) should beat the beginner one (id 1) when
+        // both are difficulty-allowed. Catalog is small enough that the
+        // deterministic pick is forced when the candidate set is singular.
+        var memory = fixtureMemory()
+        memory.focuses = [.generalStrength]
+        memory.experience = .intermediate
+        memory.sessionMinutes = 50
+        memory.liftDaysPerWeek = 1
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        let liftIds = plan.days.filter { $0.kind == .lift }.compactMap(\.routineId)
+        XCTAssertEqual(liftIds.first, 2,
+                       "Intermediate user should land on the intermediate routine, not the beginner one")
+    }
+
+    func testBodyweightEquipmentExcludesGymRoutines() {
+        // Extend the catalog with one home-tagged strength routine so the
+        // test has a positive case to assert on (a bodyweight user should
+        // land on the home routine, NOT on any of the gym routines, even
+        // though gym ones match the other criteria).
+        var catalogPlus = catalog()
+        catalogPlus.append(Routine(
+            id: 200, name: "Bodyweight Push", slug: "str-bw",
+            description: nil, goal: "strength", difficulty: "intermediate",
+            phase: nil, durationMinutes: 45, environment: "home",
+            exerciseCount: 5, setCount: 15
+        ))
+
+        var memory = fixtureMemory()
+        memory.focuses = [.generalStrength]
+        memory.experience = .intermediate
+        memory.sessionMinutes = 45
+        memory.liftDaysPerWeek = 3
+        memory.equipment = [.bodyweight]
+
+        let plan = Planner.generate(memory: memory, routines: catalogPlus, today: mondayAnchor())
+        let liftRoutines = plan.days.filter { $0.kind == .lift }.compactMap(\.routineId)
+        XCTAssertFalse(liftRoutines.isEmpty,
+                       "Bodyweight user should still land on the home routine (200)")
+        for id in liftRoutines {
+            let r = catalogPlus.first { $0.id == id }!
+            XCTAssertNotEqual(r.environment, "gym",
+                              "Bodyweight user got a gym routine: \(r.name)")
+        }
+    }
+
+    func testConstraintKeywordExcludesMatchingRoutine() {
+        // Inject a routine that mentions "knee" so a "left knee" constraint
+        // can filter it out. The catalog otherwise lacks knee-named items so
+        // we can't test this with the stock fixture.
+        var catalogPlus = catalog()
+        catalogPlus.append(Routine(
+            id: 99, name: "Knee Rehab Lower", slug: "str-knee",
+            description: nil, goal: "strength", difficulty: "intermediate",
+            phase: nil, durationMinutes: 50, environment: "gym",
+            exerciseCount: 5, setCount: 15
+        ))
+
+        var memory = fixtureMemory()
+        memory.focuses = [.generalStrength]
+        memory.experience = .intermediate
+        memory.sessionMinutes = 50
+        memory.liftDaysPerWeek = 3
+        memory.constraints = ["left knee"]
+
+        let plan = Planner.generate(memory: memory, routines: catalogPlus, today: mondayAnchor())
+        let liftIds = plan.days.filter { $0.kind == .lift }.compactMap(\.routineId)
+        XCTAssertFalse(liftIds.contains(99),
+                       "Routine matching the 'knee' constraint should be filtered out")
+    }
+
+    func testRecommendationRangesAreSurfaced() {
+        // Smoke test against DemographicProfile.from(memory) shape — the
+        // Profile screen reads this and renders the 'why' bullets.
+        var memory = fixtureMemory()
+        memory.experience = .beginner
+        let p = DemographicProfile.from(memory)
+        XCTAssertEqual(p.recommendedLiftDays, 2...3)
+        XCTAssertFalse(p.rationale.isEmpty)
+    }
+
     func testDeterministicGivenSameInputs() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.experience = .intermediate
         memory.sessionMinutes = 45
@@ -309,7 +419,7 @@ final class PlannerTests: XCTestCase {
 
     func testLiftDaysOverrideAddsLiftsBeyondShape() {
         // General-strength shape gives 3 lifts; user wants 5.
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 5
 
@@ -320,7 +430,7 @@ final class PlannerTests: XCTestCase {
 
     func testLiftDaysOverrideRemovesLiftsBelowShape() {
         // Hypertrophy shape gives 5 lifts; user wants 2.
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.hypertrophy]
         memory.liftDaysPerWeek = 2
 
@@ -332,7 +442,7 @@ final class PlannerTests: XCTestCase {
     func testLiftDaysCappedByAvailableSlotsAfterUnavailable() {
         // User asks for 5 lifts but marks 4 days unavailable → only 3 slots
         // remain. Planner should cap the lift count at the empty slot count.
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.hypertrophy]
         memory.liftDaysPerWeek = 5
 
@@ -347,7 +457,7 @@ final class PlannerTests: XCTestCase {
     }
 
     func testZeroLiftDaysProducesNoLifts() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 0
 
@@ -362,7 +472,7 @@ final class PlannerTests: XCTestCase {
         // Two sports with different seasons: primary's season is what shapes the week.
         let climbing = Sport.catalog.first { $0.slug == "climbing" }!
         let skiing   = Sport.catalog.first { $0.slug == "alpine-skiing" }!
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.sports = [climbing, skiing]
         memory.primarySport = climbing
         memory.seasonsBySport = [climbing: .inSeason, skiing: .preSeason]
@@ -378,7 +488,7 @@ final class PlannerTests: XCTestCase {
     func testPerSportSeasonFallsThroughToDefault() {
         // Primary sport has no entry in seasonsBySport → defaultSeason used.
         let cycling = Sport.catalog.first { $0.slug == "cycling" }!
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.sports = [cycling]
         memory.primarySport = cycling
         memory.seasonsBySport = [:]                  // empty
@@ -394,7 +504,7 @@ final class PlannerTests: XCTestCase {
     // MARK: - Multi-focus
 
     func testMultiFocusUsesFirstAsPrimary() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.mobility, .hypertrophy]    // primary = mobility
         memory.liftDaysPerWeek = 1
 
@@ -441,7 +551,7 @@ final class PlannerTests: XCTestCase {
     // MARK: - DayKindOverride + Move/swap
 
     func testDayOverrideForcesKindThroughRegeneration() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 3
 
@@ -460,7 +570,7 @@ final class PlannerTests: XCTestCase {
     }
 
     func testSwapOverridesCarryRoutineIdsBothWays() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 3
 
@@ -483,7 +593,7 @@ final class PlannerTests: XCTestCase {
     // MARK: - Multi-day taper
 
     func testHardRaceTriggersTwoDayTaper() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 5
 
@@ -507,7 +617,7 @@ final class PlannerTests: XCTestCase {
     }
 
     func testModerateRaceOnlyTapersDayMinusOne() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 5
 
@@ -533,7 +643,7 @@ final class PlannerTests: XCTestCase {
     // MARK: - Post-event recovery
 
     func testHardRaceTriggersDayAfterRest() {
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 5
 
@@ -554,7 +664,7 @@ final class PlannerTests: XCTestCase {
 
     func testHardSportSessionTriggersDayAfterRest() {
         let climbing = Sport.catalog.first { $0.slug == "climbing" }!
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.primarySport = climbing
         memory.liftDaysPerWeek = 5
 
@@ -578,7 +688,7 @@ final class PlannerTests: XCTestCase {
 
     func testHardSportSessionDemotesPreviousLiftToMobility() {
         let climbing = Sport.catalog.first { $0.slug == "climbing" }!
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.primarySport = climbing
         memory.liftDaysPerWeek = 5
 
@@ -601,7 +711,7 @@ final class PlannerTests: XCTestCase {
 
     func testModerateSportSessionDoesNotDemotePreviousLift() {
         let climbing = Sport.catalog.first { $0.slug == "climbing" }!
-        var memory = TrainingMemory()
+        var memory = fixtureMemory()
         memory.primarySport = climbing
         memory.liftDaysPerWeek = 5
 

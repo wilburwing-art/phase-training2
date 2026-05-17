@@ -490,39 +490,106 @@ enum Planner {
 
     // MARK: - Routine selection
 
-    /// Pick a routine matching kind + experience + duration. Falls through
-    /// duration → difficulty → goal in order if no exact match exists.
+    /// Pick a routine matching kind + demographics + duration. Falls through
+    /// (duration → preferred-difficulty buckets → equipment → constraint
+    /// keywords) so a tightly-constrained profile still gets *something*
+    /// instead of an empty plan.
+    ///
+    /// Demographic-aware steps (Phase 14):
+    ///   - `preferredDifficulties` is ordered. We try the first bucket alone
+    ///     before falling back to the next, so an intermediate user actually
+    ///     gets intermediate routines instead of accidentally landing on
+    ///     beginner because both were "allowed".
+    ///   - `allowedEnvironments` filters by `routines.environment`. Skipped
+    ///     when empty (full-gym users see everything).
+    ///   - `excludedNameKeywords` drops routines whose name brushes against
+    ///     a user-declared injury / constraint.
     static func pickRoutine(
         routines: [Routine],
         kind: DayKind,
         memory: TrainingMemory,
         slotOffset: Int
     ) -> Routine? {
+        let profile = DemographicProfile.from(memory)
+        return pickRoutine(routines: routines, kind: kind,
+                           memory: memory, profile: profile,
+                           slotOffset: slotOffset)
+    }
+
+    /// Profile-injected variant — Planner.generate computes the profile once
+    /// per regeneration and threads it through; tests can also pass a custom
+    /// profile to exercise the matrix without rebuilding memory.
+    static func pickRoutine(
+        routines: [Routine],
+        kind: DayKind,
+        memory: TrainingMemory,
+        profile: DemographicProfile,
+        slotOffset: Int
+    ) -> Routine? {
         guard let goals = goalsFor(kind), !goals.isEmpty else { return nil }
-        let allowedDifficulties = difficultiesFor(memory.experience)
 
-        // Pass 1: exact match (goal + difficulty + duration).
-        let exact = routines.filter { r in
-            goalMatches(r, goals: goals)
-                && difficultyMatches(r, allowed: allowedDifficulties)
-                && durationOK(r.durationMinutes, target: memory.sessionMinutes)
+        // Equipment + constraints — applied to every pass below.
+        let envAndConstraintAllowed: (Routine) -> Bool = { r in
+            environmentAllowed(r, allowed: profile.allowedEnvironments)
+            && !constraintConflict(r, keywords: profile.excludedNameKeywords)
         }
-        if let pick = deterministicPick(from: exact, offset: slotOffset, hash: memory.planInputsHash) {
+
+        // Walk preferredDifficulties in order. For each bucket: try exact
+        // (goal + bucket + duration) first, then relax duration.
+        for bucket in profile.preferredDifficulties {
+            let bucketSet: Set<String> = [bucket]
+
+            let exact = routines.filter { r in
+                goalMatches(r, goals: goals)
+                    && difficultyMatches(r, allowed: bucketSet)
+                    && durationOK(r.durationMinutes, target: memory.sessionMinutes)
+                    && envAndConstraintAllowed(r)
+            }
+            if let pick = deterministicPick(from: exact, offset: slotOffset, hash: memory.planInputsHash) {
+                return pick
+            }
+
+            let durationRelaxed = routines.filter { r in
+                goalMatches(r, goals: goals)
+                    && difficultyMatches(r, allowed: bucketSet)
+                    && envAndConstraintAllowed(r)
+            }
+            if let pick = deterministicPick(from: durationRelaxed, offset: slotOffset, hash: memory.planInputsHash) {
+                return pick
+            }
+        }
+
+        // Difficulty completely relaxed but still respect equipment + constraints.
+        let envOnly = routines.filter { r in
+            goalMatches(r, goals: goals) && envAndConstraintAllowed(r)
+        }
+        if let pick = deterministicPick(from: envOnly, offset: slotOffset, hash: memory.planInputsHash) {
             return pick
         }
 
-        // Pass 2: relax duration.
-        let relaxed = routines.filter { r in
+        // Last resort within env filter — drop constraint exclusions (better
+        // a flagged routine than no routine; user can swap via long-press).
+        let envOnlyNoConstraints = routines.filter { r in
             goalMatches(r, goals: goals)
-                && difficultyMatches(r, allowed: allowedDifficulties)
+                && environmentAllowed(r, allowed: profile.allowedEnvironments)
         }
-        if let pick = deterministicPick(from: relaxed, offset: slotOffset, hash: memory.planInputsHash) {
+        if let pick = deterministicPick(from: envOnlyNoConstraints, offset: slotOffset, hash: memory.planInputsHash) {
             return pick
         }
 
-        // Pass 3: relax difficulty.
-        let veryRelaxed = routines.filter { r in goalMatches(r, goals: goals) }
-        return deterministicPick(from: veryRelaxed, offset: slotOffset, hash: memory.planInputsHash)
+        // If we got here with an active env filter, return nil. The user
+        // explicitly told us their equipment — recommending a routine they
+        // can't physically do (e.g. a gym routine for a bodyweight user) is
+        // worse than a placeholder they can override. makeSlot handles the
+        // nil case with a "no matching routine" reason string.
+        if !profile.allowedEnvironments.isEmpty {
+            return nil
+        }
+
+        // No env restriction (full gym) — fall back to goal-only so a catalog
+        // missing env tags doesn't starve the user.
+        let goalOnly = routines.filter { r in goalMatches(r, goals: goals) }
+        return deterministicPick(from: goalOnly, offset: slotOffset, hash: memory.planInputsHash)
     }
 
     // MARK: - Filter helpers
@@ -532,14 +599,6 @@ enum Planner {
         case .lift:     return ["strength", "direct_strength", "power", "accessory", "conditioning"]
         case .mobility: return ["mobility", "warm_up", "recovery", "prehab"]
         default:        return nil
-        }
-    }
-
-    private static func difficultiesFor(_ exp: ExperienceLevel) -> Set<String> {
-        switch exp {
-        case .beginner:     return ["beginner"]
-        case .intermediate: return ["beginner", "intermediate"]
-        case .advanced:     return ["beginner", "intermediate", "advanced", "elite"]
         }
     }
 
@@ -556,6 +615,18 @@ enum Planner {
     private static func durationOK(_ duration: Int?, target: Int) -> Bool {
         guard let d = duration else { return true }       // unknown ⇒ acceptable
         return abs(d - target) <= 20
+    }
+
+    private static func environmentAllowed(_ r: Routine, allowed: Set<String>) -> Bool {
+        guard !allowed.isEmpty else { return true }       // empty = no filter
+        guard let env = r.environment, !env.isEmpty else { return true }
+        return allowed.contains(env)
+    }
+
+    private static func constraintConflict(_ r: Routine, keywords: [String]) -> Bool {
+        guard !keywords.isEmpty else { return false }
+        let lowerName = r.name.lowercased()
+        return keywords.contains { lowerName.contains($0) }
     }
 
     /// Stable offset-pick from a candidate array. Uses djb2 fold of (hash+offset)

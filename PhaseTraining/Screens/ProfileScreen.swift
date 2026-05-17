@@ -21,6 +21,8 @@ struct ProfileScreen: View {
                 VStack(alignment: .leading, spacing: 28) {
                     header
 
+                    planTuningSection
+                    Divider().background(Color.lineSoft)
                     sportsSection
                     Divider().background(Color.lineSoft)
                     seasonsSection
@@ -71,6 +73,88 @@ struct ProfileScreen: View {
     }
 
     // MARK: - Sections
+
+    /// Demographic-derived recommendations. Pulls from DemographicProfile so
+    /// the user can see *why* their plan looks the way it does — and how
+    /// changing experience / age / equipment below will shift it.
+    private var planTuningSection: some View {
+        let profile = DemographicProfile.from(store.memory)
+        let lifts = profile.recommendedLiftDays
+        let mins  = profile.recommendedSessionMinutes
+        return VStack(alignment: .leading, spacing: 12) {
+            section("HOW WE'RE TUNING YOUR PLAN")
+            VStack(alignment: .leading, spacing: 8) {
+                tuningRow(
+                    label: "LIFT DAYS",
+                    value: "\(lifts.lowerBound)-\(lifts.upperBound) / WEEK",
+                    matches: lifts.contains(store.memory.liftDaysPerWeek),
+                    actualHint: lifts.contains(store.memory.liftDaysPerWeek) ? nil : "You set \(store.memory.liftDaysPerWeek)"
+                )
+                tuningRow(
+                    label: "SESSION",
+                    value: "\(mins.lowerBound)-\(mins.upperBound) MIN",
+                    matches: mins.contains(store.memory.sessionMinutes),
+                    actualHint: mins.contains(store.memory.sessionMinutes) ? nil : "You set \(store.memory.sessionMinutes)"
+                )
+                tuningRow(
+                    label: "DIFFICULTY",
+                    value: profile.preferredDifficulties.first?.uppercased() ?? "—",
+                    matches: true,
+                    actualHint: profile.preferredDifficulties.count > 1
+                        ? "Fallback: \(profile.preferredDifficulties.dropFirst().joined(separator: ", "))"
+                        : nil
+                )
+                if !profile.allowedEnvironments.isEmpty {
+                    tuningRow(
+                        label: "ROUTINES",
+                        value: profile.allowedEnvironments.sorted().joined(separator: " · ").uppercased(),
+                        matches: true,
+                        actualHint: nil
+                    )
+                }
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(profile.rationale, id: \.self) { line in
+                    HStack(alignment: .top, spacing: 6) {
+                        Text("·")
+                            .styled(.body)
+                            .foregroundStyle(Color.ink3)
+                        Text(line)
+                            .font(.custom("Inter-Regular", size: 12))
+                            .foregroundStyle(Color.ink2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+        }
+    }
+
+    private func tuningRow(label: String, value: String, matches: Bool, actualHint: String?) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            Text(label)
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+                .frame(width: 88, alignment: .leading)
+            Text(value)
+                .font(.custom("JetBrainsMono-SemiBold", size: 13))
+                .foregroundStyle(Color.ink)
+            Spacer()
+            if let actualHint {
+                Text(actualHint.uppercased())
+                    .styled(.micro)
+                    .foregroundStyle(Color.accent)
+            } else if matches {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Color.ok)
+            }
+        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .background(Color.surface)
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
 
     private var sportsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
