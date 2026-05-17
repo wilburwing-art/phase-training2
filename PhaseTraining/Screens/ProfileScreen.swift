@@ -6,6 +6,7 @@
 // scroll view with section dividers; everything is editable in place.
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ProfileScreen: View {
     @EnvironmentObject private var store: MemoryStore
@@ -14,6 +15,14 @@ struct ProfileScreen: View {
     @State private var constraintInput = ""
     @State private var remindersOn = WeeklyReminderScheduler.isEnabled
     @State private var remindersPending = false
+
+    // Backup / restore UI state
+    @State private var exportURL: URL? = nil
+    @State private var presentingImporter = false
+    @State private var presentingShare = false
+    @State private var backupError: String? = nil
+    @State private var restorePending = false
+    @State private var restoreCompleted = false
 
     var body: some View {
         ZStack {
@@ -49,12 +58,39 @@ struct ProfileScreen: View {
                     constraintsSection
                     Divider().background(Color.lineSoft)
                     remindersSection
+                    Divider().background(Color.lineSoft)
+                    dataSection
 
                     Spacer().frame(height: 40)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 24)
             }
+        }
+        .sheet(isPresented: $presentingShare) {
+            if let url = exportURL {
+                ShareSheet(items: [url])
+            }
+        }
+        .fileImporter(
+            isPresented: $presentingImporter,
+            allowedContentTypes: [.json],
+            allowsMultipleSelection: false
+        ) { result in
+            handleImport(result)
+        }
+        .alert("Backup error", isPresented: Binding(
+            get: { backupError != nil },
+            set: { if !$0 { backupError = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(backupError ?? "")
+        }
+        .alert("Restore complete", isPresented: $restoreCompleted) {
+            Button("Done") {}
+        } message: {
+            Text("Your data was restored. Restart the app to refresh every screen.")
         }
     }
 
@@ -515,6 +551,87 @@ struct ProfileScreen: View {
         }
     }
 
+    // MARK: - Data (backup / restore)
+
+    private var dataSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            section("DATA")
+            Button(action: exportBackup) {
+                dataRow(icon: "square.and.arrow.up",
+                        title: "Export backup",
+                        subtitle: "Save a JSON file with your profile, plan, sessions, and custom workouts.")
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("profile-export")
+
+            Button(action: { presentingImporter = true }) {
+                dataRow(icon: "square.and.arrow.down",
+                        title: "Restore from backup",
+                        subtitle: "Replace everything on this device with a backup file. Restart after to refresh.")
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("profile-import")
+        }
+    }
+
+    private func dataRow(icon: String, title: String, subtitle: String) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(Color.accent)
+                .frame(width: 24)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .styled(.body)
+                    .foregroundStyle(Color.ink)
+                Text(subtitle)
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+                    .multilineTextAlignment(.leading)
+            }
+            Spacer(minLength: 6)
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(Color.ink3)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.surface)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func exportBackup() {
+        do {
+            let envelope = BackupManager.snapshot()
+            let url = try BackupManager.writeTempFile(envelope)
+            exportURL = url
+            presentingShare = true
+        } catch {
+            backupError = (error as? BackupError)?.errorDescription ?? error.localizedDescription
+        }
+    }
+
+    private func handleImport(_ result: Result<[URL], Error>) {
+        switch result {
+        case .failure(let err):
+            backupError = err.localizedDescription
+        case .success(let urls):
+            guard let url = urls.first else { return }
+            // Security-scoped URL — required for files picked outside the app sandbox.
+            let didStart = url.startAccessingSecurityScopedResource()
+            defer { if didStart { url.stopAccessingSecurityScopedResource() } }
+            do {
+                let data = try Data(contentsOf: url)
+                let envelope = try BackupManager.decode(data)
+                try BackupManager.restore(envelope, into: .standard)
+                restoreCompleted = true
+            } catch {
+                backupError = (error as? BackupError)?.errorDescription ?? error.localizedDescription
+            }
+        }
+    }
+
     // MARK: - Helpers
 
     private func section(_ text: String) -> some View {
@@ -751,4 +868,20 @@ struct ProfileScreen: View {
     return ProfileScreen()
         .environmentObject(store)
         .environmentObject(PlanStore(defaults: defaults))
+}
+
+// MARK: - Share sheet bridge
+
+/// Thin UIActivityViewController wrapper so the Profile screen can present
+/// the system share sheet for the export file URL. iOS 17's standard
+/// pattern — SwiftUI has ShareLink but the file-URL ergonomics + iPad
+/// popover behavior are still cleaner via the UIKit bridge.
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
