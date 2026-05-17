@@ -35,7 +35,7 @@ settings:
     DEVELOPMENT_TEAM: A2Z2RXR65P
     SWIFT_VERSION: "5.9"
     MARKETING_VERSION: "1.1.0"
-    CURRENT_PROJECT_VERSION: "41"
+    CURRENT_PROJECT_VERSION: "42"
     ENABLE_USER_SCRIPT_SANDBOXING: NO
 
 targets:
@@ -43,6 +43,14 @@ targets:
     type: application
     platform: iOS
     deploymentTarget: "17.0"
+    preBuildScripts:
+      - script: "\"$SRCROOT/scripts/generate-coach-secrets.sh\""
+        name: Generate CoachSecrets.swift
+        inputFiles:
+          - "$SRCROOT/scripts/generate-coach-secrets.sh"
+        outputFiles:
+          - "$SRCROOT/PhaseTraining/Generated/CoachSecrets.swift"
+        basedOnDependencyAnalysis: false
     sources:
       - path: PhaseTraining
     info:
@@ -69,6 +77,14 @@ targets:
         UIStatusBarStyle: UIStatusBarStyleLightContent
         UIUserInterfaceStyle: Dark
         ITSAppUsesNonExemptEncryption: false
+        # AI Coach (Phase 13) — third-party AI prompts disclosed per Apple
+        # Guideline 5.1.2(i). Privacy nutrition labels should mirror this.
+        NSPrivacyCollectedDataTypes:
+          - NSPrivacyCollectedDataType: NSPrivacyCollectedDataTypeOtherUserContent
+            NSPrivacyCollectedDataTypeLinked: false
+            NSPrivacyCollectedDataTypeTracking: false
+            NSPrivacyCollectedDataTypePurposes:
+              - NSPrivacyCollectedDataTypePurposeAppFunctionality
         CFBundleURLTypes:
           - CFBundleURLName: com.phasetraining.app
             CFBundleURLSchemes:

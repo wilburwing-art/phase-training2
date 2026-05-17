@@ -19,6 +19,9 @@ xcuserdata/
 # xcodegen output (regenerated from Project.yml)
 *.xcodeproj
 
+# Pre-build-generated secrets (CoachSecrets.swift comes from scripts/generate-coach-secrets.sh)
+PhaseTraining/Generated/
+
 # Swift Package Manager
 Packages/
 Package.pins
