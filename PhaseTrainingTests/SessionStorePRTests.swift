@@ -144,4 +144,45 @@ final class SessionStorePRTests: XCTestCase {
         ])
         XCTAssertTrue(store.personalRecords(in: [ex]).isEmpty)
     }
+
+    // MARK: - Historical walk (allPersonalRecords)
+
+    func test_allPersonalRecords_emitsEventsNewestFirstWithProgressingPriorBest() {
+        let store = freshStore()
+        let now = Date()
+        // 3 sessions, oldest → newest: 135, 145, 155 all at 5 reps.
+        store.saveAll([
+            savedSession(exerciseName: "Bench Press", sets: [("155", "5")],
+                         endTime: now.addingTimeInterval(-1 * 86400)),
+            savedSession(exerciseName: "Bench Press", sets: [("145", "5")],
+                         endTime: now.addingTimeInterval(-3 * 86400)),
+            savedSession(exerciseName: "Bench Press", sets: [("135", "5")],
+                         endTime: now.addingTimeInterval(-5 * 86400)),
+        ])
+
+        let events = store.allPersonalRecords()
+        XCTAssertEqual(events.count, 3, "Each progressing session sets a new PR")
+        // Newest first
+        XCTAssertEqual(events[0].weight, 155)
+        XCTAssertEqual(events[0].previousBest, 145)
+        XCTAssertEqual(events[1].weight, 145)
+        XCTAssertEqual(events[1].previousBest, 135)
+        XCTAssertEqual(events[2].weight, 135)
+        XCTAssertNil(events[2].previousBest, "First-ever 5-rep bench has no prior best")
+    }
+
+    func test_allPersonalRecords_dedupsPerExercisePerRepsWithinSession() {
+        let store = freshStore()
+        // Two sets at same (exercise, reps, weight) in one session → one PR.
+        store.saveAll([
+            savedSession(exerciseName: "Squat",
+                         sets: [("225", "5"), ("225", "5")])
+        ])
+        XCTAssertEqual(store.allPersonalRecords().count, 1)
+    }
+
+    func test_allPersonalRecords_isEmptyWhenNoCompletedWeightedSets() {
+        let store = freshStore()
+        XCTAssertTrue(store.allPersonalRecords().isEmpty)
+    }
 }

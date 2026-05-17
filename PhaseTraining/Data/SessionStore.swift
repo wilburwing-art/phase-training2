@@ -264,6 +264,47 @@ final class SessionStore: ObservableObject {
         return out
     }
 
+    /// All PR events across saved history, newest first. Walks sessions
+    /// oldest→newest keeping a running best-weight-per-(exercise,reps) map
+    /// and emits a `PersonalRecord` (dated to the session's startTime)
+    /// every time a completed set beats the running best. One emission per
+    /// (exercise, reps) pair per session — same dedup rule as
+    /// `personalRecords(in:)`.
+    ///
+    /// Used by ProgressScreen's PR feed + per-exercise sparklines. O(N×M)
+    /// over all stored sets — fine for the local history sizes we expect.
+    func allPersonalRecords() -> [PersonalRecord] {
+        let ordered = savedSessions.sorted { $0.startTime < $1.startTime }
+        var best: [String: [Int: Double]] = [:]
+        var events: [PersonalRecord] = []
+        for session in ordered {
+            var emitted: Set<String> = []
+            for ex in session.exercises {
+                for set in ex.sets where set.done {
+                    let reps = Int(set.reps) ?? 0
+                    let weight = Double(set.weight) ?? 0
+                    guard reps > 0, weight > 0 else { continue }
+                    let prior = best[ex.name, default: [:]][reps] ?? 0
+                    if weight > prior {
+                        let key = "\(ex.name)|\(reps)"
+                        if !emitted.contains(key) {
+                            emitted.insert(key)
+                            events.append(PersonalRecord(
+                                exerciseName: ex.name,
+                                reps: reps,
+                                weight: weight,
+                                previousBest: prior > 0 ? prior : nil,
+                                date: session.startTime
+                            ))
+                        }
+                        best[ex.name, default: [:]][reps] = weight
+                    }
+                }
+            }
+        }
+        return events.reversed()
+    }
+
     // MARK: - Stats
 
     /// Mirrors `data.jsx:80-92` — total/done set counts + 1-decimal avg RPE.
