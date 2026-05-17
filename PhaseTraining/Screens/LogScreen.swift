@@ -36,6 +36,10 @@ struct LogScreen: View {
     @State private var restStartedAt: Date? = nil
     @State private var restDuration: Int? = nil
 
+    /// Long-press driven "swap exercise" sheet. nil = closed. Keys by index
+    /// into session.exercises so we can mutate it on pick.
+    @State private var swappingExIdx: Int? = nil
+
     var body: some View {
         ZStack {
             Color.bg.ignoresSafeArea()
@@ -55,6 +59,42 @@ struct LogScreen: View {
             Button("Keep going", role: .cancel) {}
         } message: {
             Text("Your in-progress sets won't be saved.")
+        }
+        .sheet(item: swappingBinding) { wrapped in
+            let original = session.exercises[wrapped.index]
+            // Resolve the underlying coach.db Exercise id from the LoggedExercise.id.
+            // The id is set at session-create time using format "rex-<routine_exercise_id>"
+            // (see Routine.toWorkoutTemplate) so we can't recover the exercise_id
+            // without a lookup. Instead, find by name — the substitutes table is
+            // exercise-keyed and the name matches what coach.db stores.
+            let originalExerciseId = CoachDatabase.shared
+                .listExercises(search: original.name)
+                .first { $0.name.caseInsensitiveCompare(original.name) == .orderedSame }?.id
+            SubstituteExerciseSheet(
+                originalName: original.name,
+                substitutes: originalExerciseId.map { CoachDatabase.shared.substitutes(forExerciseId: $0) } ?? [],
+                onPick: { picked in
+                    swapExercise(at: wrapped.index, with: picked)
+                }
+            )
+        }
+    }
+
+    private var swappingBinding: Binding<LogRowIndex?> {
+        Binding(
+            get: { swappingExIdx.map(LogRowIndex.init) },
+            set: { swappingExIdx = $0?.index }
+        )
+    }
+
+    /// In-session substitution. Replace the exercise's name + display type
+    /// in-place; keep already-logged sets intact (the user did the work,
+    /// just under a different label).
+    private func swapExercise(at idx: Int, with picked: Exercise) {
+        guard session.exercises.indices.contains(idx) else { return }
+        session.exercises[idx].name = picked.name
+        if let modality = picked.modality, !modality.isEmpty {
+            session.exercises[idx].type = picked.modalityLabel
         }
     }
 
@@ -213,8 +253,16 @@ struct LogScreen: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
             .padding(.top, 14)
             .padding(.bottom, 6)
+            .contextMenu {
+                Button {
+                    swappingExIdx = exIdx
+                } label: {
+                    Label("Swap with similar…", systemImage: "rectangle.on.rectangle")
+                }
+            }
 
             // Column headers
             columnHeaders(unit: ex.unit)
@@ -563,6 +611,12 @@ struct LogScreen: View {
         feel: nil,
         note: nil
     )
+}
+
+/// Identifiable wrapper so `.sheet(item:)` can bind to `swappingExIdx`.
+private struct LogRowIndex: Identifiable {
+    let index: Int
+    var id: Int { index }
 }
 
 #Preview {

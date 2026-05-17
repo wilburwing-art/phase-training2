@@ -19,6 +19,9 @@ struct RoutineDetailScreen: View {
 
     private var setCount: Int { exercises.compactMap(\.sets).reduce(0, +) }
 
+    /// Long-press-driven "find a similar exercise" sheet. nil = closed.
+    @State private var substitutingIndex: Int? = nil
+
     var body: some View {
         ZStack(alignment: .bottom) {
             Color.bg.ignoresSafeArea()
@@ -74,6 +77,41 @@ struct RoutineDetailScreen: View {
         }
         .foregroundStyle(Color.ink)
         .preferredColorScheme(.dark)
+        .sheet(item: substitutingBinding) { wrapped in
+            let originalRex = exercises[wrapped.index]
+            SubstituteExerciseSheet(
+                originalName: originalRex.name,
+                substitutes: CoachDatabase.shared.substitutes(forExerciseId: originalRex.exerciseId),
+                onPick: { picked in
+                    applySubstitute(picked, at: wrapped.index)
+                }
+            )
+        }
+    }
+
+    private var substitutingBinding: Binding<RowIndex?> {
+        Binding(
+            get: { substitutingIndex.map(RowIndex.init) },
+            set: { substitutingIndex = $0?.index }
+        )
+    }
+
+    /// Swap exercise at `idx` for `picked` while preserving the user's chosen
+    /// sets / reps / rest (those are decisions the user already made about
+    /// volume; the substitute is just a different movement).
+    private func applySubstitute(_ picked: Exercise, at idx: Int) {
+        guard exercises.indices.contains(idx) else { return }
+        let old = exercises[idx]
+        exercises[idx] = RoutineExercise(
+            id: old.id,
+            exerciseId: picked.id,
+            name: picked.name,
+            position: old.position,
+            sets: old.sets ?? picked.defaultSets,
+            reps: old.reps ?? picked.defaultReps,
+            rest: old.rest ?? picked.defaultRest,
+            notes: old.notes
+        )
     }
 
     // MARK: - Top bar
@@ -216,6 +254,23 @@ struct RoutineDetailScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("routine-row-\(idx)")
+        .contextMenu {
+            Button {
+                substitutingIndex = idx
+            } label: {
+                Label("Swap with similar…", systemImage: "rectangle.on.rectangle")
+            }
+            Button {
+                onReplaceExercise(idx)
+            } label: {
+                Label("Pick from library…", systemImage: "magnifyingglass")
+            }
+            Button(role: .destructive) {
+                exercises.remove(at: idx)
+            } label: {
+                Label("Remove", systemImage: "trash")
+            }
+        }
     }
 
     private func rowMeta(_ ex: RoutineExercise) -> String {
@@ -299,6 +354,12 @@ struct RoutineDetailScreen: View {
 
 private extension String {
     var nilIfEmpty: String? { isEmpty ? nil : self }
+}
+
+/// Identifiable wrapper so `.sheet(item:)` can bind to `substitutingIndex`.
+private struct RowIndex: Identifiable {
+    let index: Int
+    var id: Int { index }
 }
 
 // MARK: - Swipeable row

@@ -29,3 +29,25 @@ extension Exercise {
 
     var difficultyLabel: String { (difficulty ?? "—").capitalized }
 }
+
+/// A single alternative exercise sourced from `exercise_substitutions`.
+/// `contexts` aggregates every context tag the same substitute appeared
+/// under (e.g. ["home_friendly", "lower_intensity"]) so the picker can show
+/// the user *why* this swap is reasonable. `score` is the max similarity
+/// across those rows (0.0–1.0).
+struct ExerciseSubstitute: Identifiable, Hashable {
+    let exercise: Exercise
+    var contexts: [String]
+    var score: Double
+    var notes: String?
+
+    var id: Int { exercise.id }
+
+    var contextLabels: [String] {
+        contexts.map {
+            $0.replacingOccurrences(of: "_", with: " ").capitalized
+        }
+    }
+
+    var matchPercent: Int { Int((score * 100).rounded()) }
+}

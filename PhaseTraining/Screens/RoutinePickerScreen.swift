@@ -6,8 +6,13 @@
 import SwiftUI
 
 struct RoutinePickerScreen: View {
+    /// User-created workouts. Surfaced in a "YOUR WORKOUTS" section above the
+    /// bundled library when non-empty.
+    let customRoutines: [CustomRoutine]
     let onBack: () -> Void
-    let onPick: (Routine) -> Void
+    let onPickBundled: (Routine) -> Void
+    let onPickCustom: (CustomRoutine) -> Void
+    let onCreateCustom: () -> Void
 
     @State private var search: String = ""
     @State private var goalFilter: String? = nil
@@ -42,9 +47,25 @@ struct RoutinePickerScreen: View {
                         filterChips
                             .padding(.top, 14)
 
-                        sortHeader
+                        createCustomCard
                             .padding(.horizontal, 20)
                             .padding(.top, 16)
+
+                        if !filteredCustom.isEmpty {
+                            sectionLabel("YOUR WORKOUTS · \(filteredCustom.count)")
+                                .padding(.horizontal, 20)
+                                .padding(.top, 22)
+                                .padding(.bottom, 10)
+                            ForEach(filteredCustom) { custom in
+                                customRoutineCard(custom)
+                                    .padding(.horizontal, 20)
+                                    .padding(.bottom, 12)
+                            }
+                        }
+
+                        sortHeader
+                            .padding(.horizontal, 20)
+                            .padding(.top, filteredCustom.isEmpty ? 16 : 18)
                             .padding(.bottom, 10)
 
                         if allRoutines.isEmpty {
@@ -200,9 +221,110 @@ struct RoutinePickerScreen: View {
 
     // MARK: - Card
 
+    // MARK: - Custom routine surfaces
+
+    private var filteredCustom: [CustomRoutine] {
+        let s = search.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !s.isEmpty else { return customRoutines }
+        return customRoutines.filter { $0.name.lowercased().contains(s) }
+    }
+
+    private var createCustomCard: some View {
+        Button(action: onCreateCustom) {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(Color.accentWash)
+                        .frame(width: 36, height: 36)
+                    Image(systemName: "plus")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.accent)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Build a custom workout")
+                        .font(.custom("SpaceGrotesk-SemiBold", size: 16))
+                        .foregroundStyle(Color.ink)
+                    Text("Pick your own exercises from the library.")
+                        .font(.custom("Inter-Regular", size: 12))
+                        .foregroundStyle(Color.ink3)
+                }
+                Spacer(minLength: 6)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.ink3)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.surface)
+            .overlay(RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(Color.accentBorder, style: StrokeStyle(lineWidth: 0.8, dash: [4, 3])))
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("create-custom-workout")
+    }
+
+    private func customRoutineCard(_ c: CustomRoutine) -> some View {
+        Button { onPickCustom(c) } label: {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    HStack(spacing: 6) {
+                        Circle().fill(Color.accent).frame(width: 8, height: 8)
+                        Text("CUSTOM")
+                            .font(.custom("JetBrainsMono-Medium", size: 10))
+                            .tracking(0.12 * 10)
+                            .foregroundStyle(Color.accent)
+                    }
+                    Spacer()
+                    Text(formattedDate(c.createdAt))
+                        .font(.custom("JetBrainsMono-Regular", size: 10))
+                        .tracking(0.06 * 10)
+                        .foregroundStyle(Color.ink3)
+                }
+                .padding(.bottom, 12)
+
+                Text(c.name.isEmpty ? "Untitled workout" : c.name)
+                    .font(.custom("SpaceGrotesk-SemiBold", size: 22))
+                    .tracking(-0.02 * 22)
+                    .foregroundStyle(Color.ink)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(2)
+
+                HStack(alignment: .center, spacing: 18) {
+                    statBlock(value: "\(c.exercises.count)", label: "EX")
+                    statBlock(value: "\(c.exercises.compactMap(\.sets).reduce(0, +))", label: "SETS")
+                    Spacer(minLength: 0)
+                    pickPill(active: false)
+                }
+                .padding(.top, 14)
+                .overlay(alignment: .top) {
+                    Rectangle().fill(Color.line).frame(height: 0.5)
+                }
+            }
+            .padding(18)
+            .background(Color.surface)
+            .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color.line, lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 18))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("custom-card-\(c.id)")
+    }
+
+    private func sectionLabel(_ s: String) -> some View {
+        Text(s)
+            .styled(.micro)
+            .foregroundStyle(Color.ink3)
+    }
+
+    private func formattedDate(_ d: Date) -> String {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        return f.string(from: d).uppercased()
+    }
+
     private func routineCard(idx: Int, routine r: Routine) -> some View {
         Button {
-            onPick(r)
+            onPickBundled(r)
         } label: {
             VStack(alignment: .leading, spacing: 0) {
                 // Top row: split tag + duration
@@ -340,5 +462,11 @@ struct RoutinePickerScreen: View {
 }
 
 #Preview("Routine picker") {
-    RoutinePickerScreen(onBack: {}, onPick: { _ in })
+    RoutinePickerScreen(
+        customRoutines: [],
+        onBack: {},
+        onPickBundled: { _ in },
+        onPickCustom: { _ in },
+        onCreateCustom: {}
+    )
 }

@@ -5,6 +5,7 @@ struct PhaseTrainingApp: App {
     @StateObject private var session = SessionStore()
     @StateObject private var memory  = MemoryStore()
     @StateObject private var plan    = PlanStore()
+    @StateObject private var custom  = CustomRoutineStore()
     @StateObject private var tabSelection = TabSelectionStore()
 
     /// UI tests pass `--ui-test-onboarded` to skip the first-launch onboarding cover
@@ -18,7 +19,8 @@ struct PhaseTrainingApp: App {
             for key in ["pt_active_session", "pt_sessions",
                         "pt_training_memory",
                         "pt_week_plan", "pt_week_overrides",
-                        "pt_weekly_reminder_enabled"] {
+                        "pt_weekly_reminder_enabled",
+                        "pt_custom_routines"] {
                 UserDefaults.standard.removeObject(forKey: key)
             }
         }
@@ -31,6 +33,7 @@ struct PhaseTrainingApp: App {
                 .environmentObject(session)
                 .environmentObject(memory)
                 .environmentObject(plan)
+                .environmentObject(custom)
                 .environmentObject(tabSelection)
                 .preferredColorScheme(.dark)
                 .fullScreenCover(isPresented: .constant(!memory.isOnboarded && !uiTestSkipsOnboarding)) {

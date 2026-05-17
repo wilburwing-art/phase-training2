@@ -180,6 +180,81 @@ final class CoachDatabase {
         )
     }
 
+    /// Pre-curated substitutes for an exercise from the `exercise_substitutions`
+    /// table. Aggregated across all context tags (lower_intensity, home_friendly,
+    /// equipment_swap, etc.) so the caller gets a single ranked list. Score is
+    /// the MAX similarity across rows for the same substitute_id; contexts are
+    /// merged + deduped.
+    func substitutes(forExerciseId exerciseId: Int) -> [ExerciseSubstitute] {
+        guard let db else { return [] }
+        let sql = """
+        SELECT s.substitute_id, s.context, s.similarity_score, s.notes,
+               e.id, e.name, e.slug, e.description, e.instructions, e.cues, e.difficulty, e.modality,
+               e.environment, e.is_compound, e.is_unilateral,
+               e.default_sets, e.default_reps, e.default_rest, e.default_duration,
+               e.regression, e.progression
+        FROM exercise_substitutions s
+        JOIN exercises e ON e.id = s.substitute_id
+        WHERE s.exercise_id = ?
+        ORDER BY s.similarity_score DESC
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_int64(stmt, 1, Int64(exerciseId))
+
+        // Bucket per substitute id; one ExerciseSubstitute aggregates contexts.
+        var indexFor: [Int: Int] = [:]
+        var out: [ExerciseSubstitute] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            let subId = Int(sqlite3_column_int64(stmt, 0))
+            let context = text(stmt, 1) ?? ""
+            let score = sqlite3_column_double(stmt, 2)
+            let notes = text(stmt, 3)
+            // exercise columns shift by +4
+            let exStmt = stmt
+            let exercise = Exercise(
+                id: Int(sqlite3_column_int64(exStmt, 4)),
+                name: text(exStmt, 5) ?? "",
+                slug: text(exStmt, 6) ?? "",
+                description: text(exStmt, 7),
+                instructions: text(exStmt, 8),
+                cues: {
+                    let raw = text(exStmt, 9)
+                    return raw
+                        .flatMap { $0.data(using: .utf8) }
+                        .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String] }
+                        ?? []
+                }(),
+                difficulty: text(exStmt, 10),
+                modality: text(exStmt, 11),
+                environment: text(exStmt, 12),
+                isCompound: (intOrNil(exStmt, 13) ?? 0) == 1,
+                isUnilateral: (intOrNil(exStmt, 14) ?? 0) == 1,
+                defaultSets: intOrNil(exStmt, 15),
+                defaultReps: text(exStmt, 16),
+                defaultRest: text(exStmt, 17),
+                defaultDuration: text(exStmt, 18),
+                regression: text(exStmt, 19),
+                progression: text(exStmt, 20)
+            )
+            if let i = indexFor[subId] {
+                if !out[i].contexts.contains(context) { out[i].contexts.append(context) }
+                if score > out[i].score { out[i].score = score }
+                if out[i].notes == nil, let n = notes { out[i].notes = n }
+            } else {
+                indexFor[subId] = out.count
+                out.append(ExerciseSubstitute(
+                    exercise: exercise,
+                    contexts: [context],
+                    score: score,
+                    notes: notes
+                ))
+            }
+        }
+        return out.sorted { $0.score > $1.score }
+    }
+
     func exercises(forRoutineId routineId: Int) -> [RoutineExercise] {
         guard let db else { return [] }
         let sql = """
