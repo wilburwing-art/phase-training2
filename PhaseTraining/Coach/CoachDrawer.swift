@@ -145,10 +145,12 @@ struct CoachDrawer: View {
     }
 
     private func bubble(_ message: CoachMessage) -> some View {
-        VStack(alignment: message.isUser ? .trailing : .leading, spacing: 6) {
+        let hasAnyProposal = message.proposal != nil || message.workoutProposal != nil
+        let suppressPlaceholder = message.text.isEmpty && !message.isUser && hasAnyProposal
+        return VStack(alignment: message.isUser ? .trailing : .leading, spacing: 6) {
             HStack(alignment: .top) {
                 if message.isUser { Spacer(minLength: 32) }
-                if !(message.text.isEmpty && !message.isUser && message.proposal != nil) {
+                if !suppressPlaceholder {
                     Text(message.text.isEmpty && !message.isUser ? "…" : message.text)
                         .font(.custom("Inter-Regular", size: 14))
                         .foregroundStyle(message.isUser ? Color.accentInk : Color.ink)
@@ -166,6 +168,10 @@ struct CoachDrawer: View {
             }
             if let proposal = message.proposal, !message.isUser {
                 MiniPlanDiffCard(messageId: message.id, proposal: proposal)
+                    .padding(.trailing, 32)
+            }
+            if let workoutProposal = message.workoutProposal, !message.isUser {
+                MiniWorkoutDiffCard(messageId: message.id, proposal: workoutProposal)
                     .padding(.trailing, 32)
             }
         }
@@ -265,10 +271,19 @@ struct CoachDrawer: View {
                             conv.appendDelta(to: assistantMsg.id, chunk)
                         }
                     case .toolCall(_, let name, let inputData):
-                        guard name == "propose_plan_edits",
-                              let proposal = CoachToolDecoder.decodeProposal(from: inputData) else { continue }
-                        await MainActor.run {
-                            conv.setProposal(on: assistantMsg.id, proposal)
+                        switch name {
+                        case "propose_plan_edits":
+                            if let proposal = CoachToolDecoder.decodeProposal(from: inputData) {
+                                await MainActor.run { conv.setProposal(on: assistantMsg.id, proposal) }
+                            }
+                        case "propose_workout_changes":
+                            let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"
+                            let today = df.string(from: Date())
+                            if let proposal = CoachToolDecoder.decodeWorkoutProposal(from: inputData, dateString: today) {
+                                await MainActor.run { conv.setWorkoutProposal(on: assistantMsg.id, proposal) }
+                            }
+                        default:
+                            continue
                         }
                     }
                 }

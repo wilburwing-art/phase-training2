@@ -134,6 +134,22 @@ final class PlanStore: ObservableObject {
         savePlan()
     }
 
+    /// Phase 13d: swap in a new generated workout on the day matching
+    /// `date`. Returns false if no plan or the day isn't found. Caller must
+    /// pre-check SessionStore.active to avoid trampling logged sets.
+    @discardableResult
+    func applyWorkoutDiff(_ diff: WorkoutDiff, on date: Date) -> Bool {
+        guard var current = plan, !diff.isNoop else { return false }
+        let cal = Calendar.current
+        guard let idx = current.days.firstIndex(where: { cal.isDate($0.date, inSameDayAs: date) }) else {
+            return false
+        }
+        current.days[idx].generatedWorkout = diff.after
+        plan = current
+        savePlan()
+        return true
+    }
+
     /// Apply a single edit to a WeekPlan in place. Defined as a static helper
     /// so PlannerTests can drive it without an instance.
     static func applyEdit(_ edit: PlanEdit, to plan: inout WeekPlan) {

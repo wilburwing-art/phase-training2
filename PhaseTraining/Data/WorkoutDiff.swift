@@ -1,0 +1,113 @@
+// WorkoutDiff.swift — Phase 13d exercise/set-level edits to today's
+// generated workout.
+//
+// Analogous to PlanDiff (which edits the WeekPlan at the day level) but
+// scoped to a single DayPlan.generatedWorkout. Two ops:
+//   - swap:    replace one GeneratedExercise with another (by name).
+//   - adjust:  change sets / reps / rest of an existing GeneratedExercise.
+//
+// Address exercises by case-insensitive name match — the model doesn't know
+// the stable id strings, and names are the natural reference.
+//
+// Apply seam: PlanStore.applyWorkoutDiff(_:for:date:) replaces the matching
+// DayPlan's generatedWorkout. Refuses when an active session exists (logged
+// sets would be lost).
+
+import Foundation
+
+// MARK: - Wire shape (model-friendly)
+
+struct WorkoutChange: Codable, Hashable {
+    var op: String                 // "swap" | "adjust"
+    // swap
+    var fromName: String?          // existing exercise (case-insensitive)
+    var toName: String?            // new exercise (free text — no DB lookup in 13d)
+    // adjust
+    var exerciseName: String?      // existing exercise to adjust
+    var sets: Int?
+    var reps: String?
+    var restSeconds: Int?
+    // Optional reason per change — only used when reasoning needs per-row attribution.
+    var reason: String?
+}
+
+struct WorkoutProposalToolInput: Codable {
+    var changes: [WorkoutChange]
+    var reasoning: String?
+}
+
+// MARK: - Persisted proposal attached to a CoachMessage
+
+struct CoachWorkoutProposal: Codable, Hashable {
+    enum Status: String, Codable { case pending, applied, rejected }
+    var id: UUID = UUID()
+    /// yyyy-MM-dd of the day this proposal targets — almost always today.
+    var dateString: String
+    var changes: [WorkoutChange]
+    var reasoning: String?
+    var status: Status = .pending
+}
+
+// MARK: - In-memory diff
+
+struct WorkoutDiff: Hashable {
+    let before: GeneratedWorkout
+    let after: GeneratedWorkout
+    let changes: [WorkoutChange]
+    let reasoning: String?
+
+    var isNoop: Bool { before == after }
+}
+
+// MARK: - Build diff from proposal
+
+enum WorkoutDiffBuilder {
+    /// Apply changes to a snapshot of the workout, returning a WorkoutDiff.
+    /// Unknown exercise names are silently skipped — the card shows what
+    /// resolved; if the user wanted more, they re-ask.
+    static func diff(
+        for proposal: CoachWorkoutProposal,
+        workout: GeneratedWorkout
+    ) -> WorkoutDiff {
+        var after = workout
+        for change in proposal.changes {
+            apply(change, to: &after)
+        }
+        return WorkoutDiff(
+            before: workout,
+            after: after,
+            changes: proposal.changes,
+            reasoning: proposal.reasoning
+        )
+    }
+
+    private static func apply(_ change: WorkoutChange, to workout: inout GeneratedWorkout) {
+        switch change.op {
+        case "swap":
+            guard let from = change.fromName, let to = change.toName,
+                  let idx = workout.exercises.firstIndex(where: { $0.name.caseInsensitiveCompare(from) == .orderedSame }) else { return }
+            let existing = workout.exercises[idx]
+            workout.exercises[idx] = GeneratedExercise(
+                id: existing.id,                      // keep slot id so SessionStore session id mapping holds
+                exerciseId: 0,                        // 0 = "not from coach.db" sentinel
+                name: to,
+                pattern: existing.pattern,
+                isCompound: existing.isCompound,
+                sets: existing.sets,
+                reps: existing.reps,
+                restSeconds: existing.restSeconds,
+                notes: existing.notes
+            )
+
+        case "adjust":
+            guard let name = change.exerciseName,
+                  let idx = workout.exercises.firstIndex(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) else { return }
+            if let s = change.sets         { workout.exercises[idx].sets = max(1, min(20, s)) }
+            if let r = change.reps         { workout.exercises[idx].reps = r }
+            if let rest = change.restSeconds { workout.exercises[idx].restSeconds = max(15, min(600, rest)) }
+
+        default:
+            break
+        }
+    }
+}

@@ -51,7 +51,46 @@ enum CoachTools {
         )
     }()
 
-    static let all: [AnthropicTool] = [proposePlanEdits]
+    static let proposeWorkoutChanges: AnthropicTool = {
+        let opEnum = ["swap", "adjust"]
+
+        let changeItem = JSONSchema(type: "object")
+        changeItem.properties = [
+            "op":           JSONSchema(type: "string", description: "Change kind.", enumValues: opEnum),
+            "fromName":     JSONSchema(type: "string", description: "swap: exercise to replace (match by name, case-insensitive)."),
+            "toName":       JSONSchema(type: "string", description: "swap: new exercise. Free text — use a common name (e.g. 'Goblet Squat')."),
+            "exerciseName": JSONSchema(type: "string", description: "adjust: exercise to modify (match by name)."),
+            "sets":         JSONSchema(type: "integer", description: "adjust: new set count (1-20)."),
+            "reps":         JSONSchema(type: "string", description: "adjust: new reps target ('5', '8-12', 'AMRAP')."),
+            "restSeconds":  JSONSchema(type: "integer", description: "adjust: new rest between sets (15-600 s)."),
+            "reason":       JSONSchema(type: "string", description: "Optional one-phrase reason for THIS row (overrides top-level reasoning).")
+        ]
+        changeItem.required = ["op"]
+
+        let changesArray = JSONSchema(type: "array", description: "One or more workout changes for today's session.")
+        changesArray.items = changeItem
+
+        let reasoning = JSONSchema(type: "string", description: "One short sentence explaining why. Will appear above the diff card.")
+
+        let root = JSONSchema(type: "object")
+        root.properties = ["changes": changesArray, "reasoning": reasoning]
+        root.required = ["changes", "reasoning"]
+
+        return AnthropicTool(
+            name: "propose_workout_changes",
+            description: """
+            Propose exercise-level changes to today's lift / mobility workout (swap an exercise for another, or adjust sets/reps/rest). The user accepts or rejects via UI — this tool does NOT apply changes. Call ONLY when:
+              - The user explicitly asks for a workout-level change ("swap X for Y", "drop deadlifts today", "fewer sets on bench", "lighter reps").
+              - The CURRENT CONTEXT shows today's exercises (in the plan's `today` day). If today is sport / rest / event, refuse — there's no workout to edit.
+              - No active workout is in progress. If the user has already started logging, suggest they finish first.
+
+            Address exercises by their CURRENT NAME as shown in the context. The decoder matches case-insensitively.
+            """,
+            inputSchema: root
+        )
+    }()
+
+    static let all: [AnthropicTool] = [proposePlanEdits, proposeWorkoutChanges]
 }
 
 // MARK: - Anthropic tool wire shape
@@ -141,6 +180,17 @@ enum CoachToolDecoder {
     static func decodeProposal(from data: Data) -> CoachProposal? {
         guard let payload = try? JSONDecoder().decode(ProposalToolInput.self, from: data) else { return nil }
         return CoachProposal(ops: payload.edits, reasoning: payload.reasoning)
+    }
+
+    /// Decode a propose_workout_changes payload. Caller passes today's
+    /// yyyy-MM-dd so the proposal carries an unambiguous target day.
+    static func decodeWorkoutProposal(from data: Data, dateString: String) -> CoachWorkoutProposal? {
+        guard let payload = try? JSONDecoder().decode(WorkoutProposalToolInput.self, from: data) else { return nil }
+        return CoachWorkoutProposal(
+            dateString: dateString,
+            changes: payload.changes,
+            reasoning: payload.reasoning
+        )
     }
 
     /// Convert proposal ops into PlanEdit, resolving dates against the

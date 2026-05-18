@@ -16,9 +16,10 @@ struct CoachMessage: Codable, Identifiable, Equatable {
     var role: String       // "user" or "assistant"
     var text: String
     var date: Date = Date()
-    /// Set when the assistant turn invoked a tool (Phase 13c+). Drawer
-    /// renders MiniPlanDiffCard below the bubble while this is non-nil.
+    /// Plan-level proposal (Phase 13c). MiniPlanDiffCard renders this.
     var proposal: CoachProposal? = nil
+    /// Workout-level proposal (Phase 13d). MiniWorkoutDiffCard renders this.
+    var workoutProposal: CoachWorkoutProposal? = nil
 
     var isUser: Bool { role == "user" }
 }
@@ -73,6 +74,20 @@ final class CoachConversationStore: ObservableObject {
         guard let idx = messages.firstIndex(where: { $0.id == messageId }),
               messages[idx].proposal != nil else { return }
         messages[idx].proposal?.status = status
+        save()
+    }
+
+    /// Attach a workout-level proposal to an assistant message.
+    func setWorkoutProposal(on id: UUID, _ proposal: CoachWorkoutProposal) {
+        guard let idx = messages.firstIndex(where: { $0.id == id }) else { return }
+        messages[idx].workoutProposal = proposal
+        save()
+    }
+
+    func setWorkoutProposalStatus(messageId: UUID, _ status: CoachWorkoutProposal.Status) {
+        guard let idx = messages.firstIndex(where: { $0.id == messageId }),
+              messages[idx].workoutProposal != nil else { return }
+        messages[idx].workoutProposal?.status = status
         save()
     }
 
