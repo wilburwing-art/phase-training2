@@ -43,9 +43,9 @@ struct MiniWorkoutDiffCard: View {
                     .foregroundStyle(Color.danger)
             }
             if sessionStore.active != nil {
-                Text("You've started today's session — finish or discard it before applying coach changes.")
+                Text("You've started today's session — applying will update your live exercises and keep any logged sets.")
                     .font(.monoXS)
-                    .foregroundStyle(Color.danger)
+                    .foregroundStyle(Color.ink3)
                     .fixedSize(horizontal: false, vertical: true)
             }
             actionBar
@@ -163,8 +163,7 @@ struct MiniWorkoutDiffCard: View {
     private var canApply: Bool {
         guard proposal.status == .pending,
               let diff = diff,
-              !diff.isNoop,
-              sessionStore.active == nil else { return false }
+              !diff.isNoop else { return false }
         return true
     }
 
@@ -186,8 +185,13 @@ struct MiniWorkoutDiffCard: View {
     private func apply() {
         let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"
         guard let diff = diff, let target = df.date(from: proposal.dateString) else { return }
-        let ok = planStore.applyWorkoutDiff(diff, on: target)
-        if ok {
+        let planOk = planStore.applyWorkoutDiff(diff, on: target)
+        // If the user has already started the session, mirror the edit into
+        // the live ActiveSession so they don't have to restart.
+        if sessionStore.active != nil {
+            sessionStore.applyWorkoutDiffToActiveSession(diff)
+        }
+        if planOk || sessionStore.active != nil {
             conv.setWorkoutProposalStatus(messageId: messageId, .applied)
             let haptic = UIImpactFeedbackGenerator(style: .medium)
             haptic.impactOccurred()

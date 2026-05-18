@@ -145,7 +145,7 @@ struct CoachDrawer: View {
     }
 
     private func bubble(_ message: CoachMessage) -> some View {
-        let hasAnyProposal = message.proposal != nil || message.workoutProposal != nil
+        let hasAnyProposal = message.proposal != nil || message.workoutProposal != nil || message.memoryProposal != nil
         let suppressPlaceholder = message.text.isEmpty && !message.isUser && hasAnyProposal
         return VStack(alignment: message.isUser ? .trailing : .leading, spacing: 6) {
             HStack(alignment: .top) {
@@ -172,6 +172,10 @@ struct CoachDrawer: View {
             }
             if let workoutProposal = message.workoutProposal, !message.isUser {
                 MiniWorkoutDiffCard(messageId: message.id, proposal: workoutProposal)
+                    .padding(.trailing, 32)
+            }
+            if let memoryProposal = message.memoryProposal, !message.isUser {
+                MiniMemoryDiffCard(messageId: message.id, proposal: memoryProposal)
                     .padding(.trailing, 32)
             }
         }
@@ -217,6 +221,26 @@ struct CoachDrawer: View {
         !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+    /// Build a "[STATUS NOTE: ...]" prefix when the previous assistant turn
+    /// had a proposal the user has resolved. Returns "" otherwise. The model
+    /// is told (in v4 system prompt) that these prefixes are system metadata,
+    /// not the user's words.
+    private func statusPrefix(for prior: CoachMessage?) -> String {
+        guard let prior, !prior.isUser else { return "" }
+        var notes: [String] = []
+        if let p = prior.proposal, p.status != .pending {
+            notes.append("plan-edit proposal was \(p.status.rawValue.uppercased())")
+        }
+        if let p = prior.workoutProposal, p.status != .pending {
+            notes.append("workout-change proposal was \(p.status.rawValue.uppercased())")
+        }
+        if let p = prior.memoryProposal, p.status != .pending {
+            notes.append("memory-update proposal was \(p.status.rawValue.uppercased())")
+        }
+        guard !notes.isEmpty else { return "" }
+        return "[STATUS NOTE — system metadata, not user speech: your last \(notes.joined(separator: "; "))]\n\n"
+    }
+
     // MARK: - Logic
 
     private func handleAppear() {
@@ -237,7 +261,13 @@ struct CoachDrawer: View {
         let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
 
-        let userMsg = CoachMessage(role: "user", text: text)
+        // Phase 13f: if the most recent assistant turn carried a proposal the
+        // user has resolved, prepend a synthetic status note so the model
+        // knows what happened to its tool call. v4 system prompt advertises
+        // this convention so the prefix isn't treated as user voice.
+        let userText = statusPrefix(for: conv.messages.last) + text
+
+        let userMsg = CoachMessage(role: "user", text: userText)
         let assistantMsg = CoachMessage(role: "assistant", text: "")
         conv.append(userMsg)
         conv.append(assistantMsg)
@@ -281,6 +311,10 @@ struct CoachDrawer: View {
                             let today = df.string(from: Date())
                             if let proposal = CoachToolDecoder.decodeWorkoutProposal(from: inputData, dateString: today) {
                                 await MainActor.run { conv.setWorkoutProposal(on: assistantMsg.id, proposal) }
+                            }
+                        case "propose_memory_update":
+                            if let proposal = CoachToolDecoder.decodeMemoryProposal(from: inputData) {
+                                await MainActor.run { conv.setMemoryProposal(on: assistantMsg.id, proposal) }
                             }
                         default:
                             continue

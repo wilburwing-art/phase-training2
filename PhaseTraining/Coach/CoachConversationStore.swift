@@ -20,6 +20,8 @@ struct CoachMessage: Codable, Identifiable, Equatable {
     var proposal: CoachProposal? = nil
     /// Workout-level proposal (Phase 13d). MiniWorkoutDiffCard renders this.
     var workoutProposal: CoachWorkoutProposal? = nil
+    /// Memory-update proposal (Phase 13f). MiniMemoryDiffCard renders this.
+    var memoryProposal: CoachMemoryProposal? = nil
 
     var isUser: Bool { role == "user" }
 }
@@ -88,6 +90,19 @@ final class CoachConversationStore: ObservableObject {
         guard let idx = messages.firstIndex(where: { $0.id == messageId }),
               messages[idx].workoutProposal != nil else { return }
         messages[idx].workoutProposal?.status = status
+        save()
+    }
+
+    func setMemoryProposal(on id: UUID, _ proposal: CoachMemoryProposal) {
+        guard let idx = messages.firstIndex(where: { $0.id == id }) else { return }
+        messages[idx].memoryProposal = proposal
+        save()
+    }
+
+    func setMemoryProposalStatus(messageId: UUID, _ status: CoachMemoryProposal.Status) {
+        guard let idx = messages.firstIndex(where: { $0.id == messageId }),
+              messages[idx].memoryProposal != nil else { return }
+        messages[idx].memoryProposal?.status = status
         save()
     }
 

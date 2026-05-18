@@ -78,6 +78,89 @@ final class SessionStore: ObservableObject {
         defaults.removeObject(forKey: Self.activeKey)
     }
 
+    // MARK: - Phase 13f: coach workout-diff applies to a live session
+    //
+    // If the user has already started today's workout, the coach's swap/
+    // adjust operations must rebuild the ActiveSession too — otherwise the
+    // user keeps logging against the old exercises until they restart.
+    //
+    // Rules:
+    //   - Match exercises by case-insensitive name (same key the diff used).
+    //   - For matched exercises, preserve LoggedSets (especially done=true).
+    //     Update targetSets / targetReps / rest only.
+    //   - For new exercises (swap targets), build a fresh LoggedExercise.
+    //   - For removed exercises (swap sources without a match): drop them
+    //     UNLESS the user had logged sets there. If they had logged work,
+    //     keep the exercise in the session so they don't lose history.
+
+    /// Returns true if the diff applied to the active session, false if no
+    /// active session existed.
+    @discardableResult
+    func applyWorkoutDiffToActiveSession(_ diff: WorkoutDiff) -> Bool {
+        guard var current = active else { return false }
+
+        // Build a name→LoggedExercise index of what's currently in the session.
+        var existing: [String: LoggedExercise] = [:]
+        for ex in current.exercises {
+            existing[ex.name.lowercased()] = ex
+        }
+
+        // Walk the diff.after — same order as the new exercise list.
+        var rebuilt: [LoggedExercise] = []
+        var consumedNames = Set<String>()
+
+        for gex in diff.after.exercises {
+            let key = gex.name.lowercased()
+            consumedNames.insert(key)
+
+            if let prior = existing[key] {
+                // Same exercise survives — just refresh target metadata.
+                let reps = Int(gex.reps.prefix(while: { $0.isNumber })) ?? prior.targetReps
+                var updated = prior
+                updated.targetSets = max(1, gex.sets)
+                updated.targetReps = reps
+                updated.rest = gex.restSeconds
+                // Pad sets up if target grew — gives the user empty rows to log into.
+                while updated.sets.count < updated.targetSets {
+                    updated.sets.append(LoggedSet(num: updated.sets.count + 1, weight: "", reps: "", rpe: "", done: false))
+                }
+                rebuilt.append(updated)
+            } else {
+                // New exercise (swap target). Fresh LoggedExercise with empty sets.
+                let reps = Int(gex.reps.prefix(while: { $0.isNumber })) ?? 8
+                let target = max(1, gex.sets)
+                let sets = (0..<target).map { i in
+                    LoggedSet(num: i + 1, weight: "", reps: "", rpe: "", done: false)
+                }
+                rebuilt.append(LoggedExercise(
+                    id: "gex-\(gex.id)",
+                    name: gex.name,
+                    type: nil,
+                    unit: "lbs",
+                    targetSets: target,
+                    targetReps: reps,
+                    rest: gex.restSeconds,
+                    sets: sets,
+                    prevSets: []
+                ))
+            }
+        }
+
+        // Carry forward any exercises NOT in diff.after IF they had logged work.
+        // Lossless: never drop a user's logged sets without their explicit action.
+        for (key, ex) in existing where !consumedNames.contains(key) {
+            let hadWork = ex.sets.contains(where: { $0.done })
+            if hadWork { rebuilt.append(ex) }
+        }
+
+        current.exercises = rebuilt
+        // Rename the session to match the new workout title — so the next
+        // CompleteScreen recap reflects what the user actually trained.
+        current.name = diff.after.title
+        saveActive(current)
+        return true
+    }
+
     // MARK: - History rollover
 
     /// Newest saved session matching `templateId`, or nil. Mirrors `data.jsx:45-48`.

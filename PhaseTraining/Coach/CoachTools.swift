@@ -90,7 +90,40 @@ enum CoachTools {
         )
     }()
 
-    static let all: [AnthropicTool] = [proposePlanEdits, proposeWorkoutChanges]
+    static let proposeMemoryUpdate: AnthropicTool = {
+        let opEnum = ["add_dislike", "remove_dislike", "add_constraint", "remove_constraint"]
+
+        let opItem = JSONSchema(type: "object")
+        opItem.properties = [
+            "op":    JSONSchema(type: "string", description: "Memory op.", enumValues: opEnum),
+            "value": JSONSchema(type: "string", description: "The dislike or constraint text. Short — one line.")
+        ]
+        opItem.required = ["op", "value"]
+
+        let opsArray = JSONSchema(type: "array", description: "One or more memory operations.")
+        opsArray.items = opItem
+
+        let reasoning = JSONSchema(type: "string", description: "One short sentence explaining why. Shown above the diff card.")
+
+        let root = JSONSchema(type: "object")
+        root.properties = ["ops": opsArray, "reasoning": reasoning]
+        root.required = ["ops", "reasoning"]
+
+        return AnthropicTool(
+            name: "propose_memory_update",
+            description: """
+            Propose APPEND-ONLY changes to the user's training memory (dislikes + constraints lists). The user must accept or reject — this tool does NOT mutate memory directly. Call ONLY when the user clearly states a preference or limitation worth remembering forever:
+              - "I don't like burpees" → add_dislike
+              - "no overhead pressing — bad shoulder" → add_constraint
+              - "scratch that, I'm fine with burpees now" → remove_dislike
+
+            Do NOT propose updates to typed fields (sports, primary sport, age, equipment, experience). Those have dedicated UIs in Profile.
+            """,
+            inputSchema: root
+        )
+    }()
+
+    static let all: [AnthropicTool] = [proposePlanEdits, proposeWorkoutChanges, proposeMemoryUpdate]
 }
 
 // MARK: - Anthropic tool wire shape
@@ -172,6 +205,26 @@ struct CoachProposal: Codable, Hashable {
     var status: Status = .pending
 }
 
+// MARK: - Memory ops (Phase 13f)
+
+struct MemoryOp: Codable, Hashable {
+    var op: String      // add_dislike | remove_dislike | add_constraint | remove_constraint
+    var value: String
+}
+
+struct MemoryProposalToolInput: Codable {
+    var ops: [MemoryOp]
+    var reasoning: String?
+}
+
+struct CoachMemoryProposal: Codable, Hashable {
+    enum Status: String, Codable { case pending, applied, rejected }
+    var id: UUID = UUID()
+    var ops: [MemoryOp]
+    var reasoning: String?
+    var status: Status = .pending
+}
+
 // MARK: - Decode bytes → ProposalToolInput → [PlanEdit]
 
 enum CoachToolDecoder {
@@ -180,6 +233,12 @@ enum CoachToolDecoder {
     static func decodeProposal(from data: Data) -> CoachProposal? {
         guard let payload = try? JSONDecoder().decode(ProposalToolInput.self, from: data) else { return nil }
         return CoachProposal(ops: payload.edits, reasoning: payload.reasoning)
+    }
+
+    /// Decode a propose_memory_update payload.
+    static func decodeMemoryProposal(from data: Data) -> CoachMemoryProposal? {
+        guard let payload = try? JSONDecoder().decode(MemoryProposalToolInput.self, from: data) else { return nil }
+        return CoachMemoryProposal(ops: payload.ops, reasoning: payload.reasoning)
     }
 
     /// Decode a propose_workout_changes payload. Caller passes today's
