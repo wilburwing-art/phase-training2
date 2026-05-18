@@ -50,6 +50,12 @@ actor CoachClient {
         self.session = session
     }
 
+    /// Conversation turn — assistant or user message used in the chat history.
+    struct Turn: Sendable {
+        let role: String      // "user" or "assistant"
+        let text: String
+    }
+
     /// Round-trip a single user message. Returns the model's full reply
     /// (no streaming) plus token + latency metadata for the debug ping.
     func send(
@@ -71,8 +77,9 @@ actor CoachClient {
         let body = MessagesRequest(
             model: model,
             maxTokens: CoachConfig.maxOutputTokens,
-            system: system,
-            messages: [.init(role: "user", content: userMessage)]
+            system: system.map { [SystemBlock(text: $0, cacheControl: nil)] },
+            messages: [.init(role: "user", content: userMessage)],
+            stream: false
         )
         req.httpBody = try JSONEncoder().encode(body)
 
@@ -112,26 +119,204 @@ actor CoachClient {
             model: decoded.model
         )
     }
+
+    /// Stream events the drawer consumes. Text deltas during normal output;
+    /// toolCall once for each tool_use block as it completes.
+    enum StreamPart: Sendable {
+        case textDelta(String)
+        case toolCall(id: String, name: String, input: Data)
+    }
+
+    /// Streaming chat. Yields text deltas + tool calls as they arrive.
+    nonisolated func stream(
+        cachedSystem: String,
+        perTurnContext: String,
+        history: [Turn],
+        userMessage: String,
+        model: String = CoachConfig.defaultModel,
+        tools: [AnthropicTool]? = nil
+    ) -> AsyncThrowingStream<StreamPart, Error> {
+        AsyncThrowingStream { continuation in
+            let task = Task {
+                guard !CoachSecrets.gatewayToken.isEmpty else {
+                    continuation.finish(throwing: CoachError.missingGatewayToken)
+                    return
+                }
+
+                var req = URLRequest(url: CoachConfig.baseURL.appendingPathComponent("v1/messages"))
+                req.httpMethod = "POST"
+                req.setValue("application/json", forHTTPHeaderField: "content-type")
+                req.setValue(CoachConfig.anthropicVersion, forHTTPHeaderField: "anthropic-version")
+                req.setValue("Bearer \(CoachSecrets.gatewayToken)", forHTTPHeaderField: "cf-aig-authorization")
+                req.setValue(CoachConfig.byokAlias, forHTTPHeaderField: "cf-aig-byok-alias")
+                req.setValue("text/event-stream", forHTTPHeaderField: "accept")
+
+                var messages = history.map { MessagesRequest.Message(role: $0.role, content: $0.text) }
+                messages.append(.init(role: "user", content: userMessage))
+
+                let body = MessagesRequest(
+                    model: model,
+                    maxTokens: CoachConfig.maxOutputTokens,
+                    system: [
+                        SystemBlock(text: cachedSystem, cacheControl: .init(type: "ephemeral")),
+                        SystemBlock(text: perTurnContext, cacheControl: nil),
+                    ],
+                    messages: messages,
+                    stream: true,
+                    tools: tools
+                )
+                do {
+                    req.httpBody = try JSONEncoder().encode(body)
+                } catch {
+                    continuation.finish(throwing: CoachError.decode(error))
+                    return
+                }
+
+                do {
+                    let (bytes, response) = try await self.session.bytes(for: req)
+                    guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+                        var snippet = ""
+                        for try await line in bytes.lines {
+                            snippet += line
+                            if snippet.count > 512 { break }
+                        }
+                        let status = (response as? HTTPURLResponse)?.statusCode ?? -1
+                        continuation.finish(throwing: CoachError.http(status: status, body: snippet))
+                        return
+                    }
+
+                    // Per-block scratch state. Indexed by content_block.index.
+                    var toolUseScratch: [Int: (id: String, name: String, json: String)] = [:]
+
+                    for try await line in bytes.lines {
+                        if Task.isCancelled {
+                            continuation.finish(throwing: CancellationError())
+                            return
+                        }
+                        guard line.hasPrefix("data: ") else { continue }
+                        let payload = String(line.dropFirst("data: ".count))
+                        if payload == "[DONE]" { break }
+                        guard let data = payload.data(using: .utf8),
+                              let event = try? JSONDecoder().decode(StreamEvent.self, from: data) else { continue }
+
+                        switch event.type {
+                        case "content_block_start":
+                            if let cb = event.contentBlock, cb.type == "tool_use",
+                               let idx = event.index, let id = cb.id, let name = cb.name {
+                                toolUseScratch[idx] = (id, name, "")
+                            }
+
+                        case "content_block_delta":
+                            guard let delta = event.delta, let idx = event.index else { continue }
+                            if delta.type == "text_delta", let text = delta.text {
+                                continuation.yield(.textDelta(text))
+                            } else if delta.type == "input_json_delta", let partial = delta.partialJson {
+                                toolUseScratch[idx]?.json += partial
+                            }
+
+                        case "content_block_stop":
+                            guard let idx = event.index, let scratch = toolUseScratch[idx] else { continue }
+                            toolUseScratch.removeValue(forKey: idx)
+                            if let inputData = scratch.json.data(using: .utf8) {
+                                continuation.yield(.toolCall(id: scratch.id, name: scratch.name, input: inputData))
+                            }
+
+                        default:
+                            break
+                        }
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: CoachError.transport(error))
+                }
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
 }
 
 // MARK: - Anthropic /v1/messages wire shapes (minimal subset)
 
+private struct SystemBlock: Encodable {
+    let type = "text"
+    let text: String
+    let cacheControl: CacheControl?
+
+    struct CacheControl: Encodable {
+        let type: String  // "ephemeral"
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case type, text
+        case cacheControl = "cache_control"
+    }
+}
+
 private struct MessagesRequest: Encodable {
     let model: String
     let maxTokens: Int
-    let system: String?
+    let system: [SystemBlock]?
     let messages: [Message]
+    let stream: Bool
+    let tools: [AnthropicTool]?
 
     enum CodingKeys: String, CodingKey {
         case model
         case maxTokens = "max_tokens"
         case system
         case messages
+        case stream
+        case tools
     }
 
     struct Message: Encodable {
         let role: String
         let content: String
+    }
+
+    init(
+        model: String,
+        maxTokens: Int,
+        system: [SystemBlock]?,
+        messages: [Message],
+        stream: Bool,
+        tools: [AnthropicTool]? = nil
+    ) {
+        self.model = model
+        self.maxTokens = maxTokens
+        self.system = system
+        self.messages = messages
+        self.stream = stream
+        self.tools = tools
+    }
+}
+
+private struct StreamEvent: Decodable {
+    let type: String
+    let index: Int?
+    let delta: Delta?
+    let contentBlock: ContentBlock?
+
+    enum CodingKeys: String, CodingKey {
+        case type, index, delta
+        case contentBlock = "content_block"
+    }
+
+    struct Delta: Decodable {
+        let type: String?
+        let text: String?
+        let partialJson: String?
+
+        enum CodingKeys: String, CodingKey {
+            case type, text
+            case partialJson = "partial_json"
+        }
+    }
+
+    struct ContentBlock: Decodable {
+        let type: String
+        let id: String?
+        let name: String?
     }
 }
 

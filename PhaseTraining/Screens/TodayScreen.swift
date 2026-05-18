@@ -125,9 +125,15 @@ struct TodayScreen: View {
         return daysLeft <= 2
     }
 
-    /// Phase 11: static insight copy. Phase 13 coach pipes dynamic text in.
-    /// nil = no card rendered. Picks first matching rule.
+    /// Phase 13e: coach-written observation when present, otherwise the static
+    /// Phase-11 rules. Picks first matching source.
     private var insightCopy: String? {
+        let cal = Calendar.current
+        if let coach = memoryStore.memory.coachInsights.last(where: {
+            $0.surface == "today" && cal.isDate($0.date, inSameDayAs: Date())
+        }) {
+            return coach.body
+        }
         guard let plan = planStore.plan else { return nil }
         if let day = plan.today() {
             if day.protected {
@@ -174,7 +180,7 @@ struct TodayScreen: View {
                                 .padding(.top, 14)
                         }
                         if let body = insightCopy {
-                            InsightCard(body: body)
+                            InsightCard(body: body, coachFollowUp: "Explain why: \(body)")
                                 .padding(.horizontal, 20)
                                 .padding(.top, planEndingSoon ? 10 : 14)
                         }

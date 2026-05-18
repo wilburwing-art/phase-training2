@@ -26,6 +26,7 @@ struct RootTabView: View {
     @EnvironmentObject private var planStore: PlanStore
     @EnvironmentObject private var memoryStore: MemoryStore
     @EnvironmentObject private var recentPicks: RecentPicksStore
+    @EnvironmentObject private var conv: CoachConversationStore
 
     var body: some View {
         TabView(selection: $tabSelection.selected) {
@@ -47,6 +48,18 @@ struct RootTabView: View {
         }
         .tint(Color.accent)
         .preferredColorScheme(.dark)
+        .overlay(alignment: .bottomTrailing) {
+            CoachBubble()
+                .padding(.bottom, 56)  // clear the tab bar
+                .allowsHitTesting(true)
+                .animation(.easeInOut(duration: 0.2), value: tabSelection.selected)
+        }
+        .sheet(isPresented: $conv.presented) {
+            CoachDrawer()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.hidden)
+                .presentationBackground(Color.bg)
+        }
         .task {
             // Wire variety memory into PlanStore (kept off the init so the
             // store stays one-arg constructible for tests + previews).
@@ -71,4 +84,5 @@ struct RootTabView: View {
         .environmentObject(CustomRoutineStore(defaults: defaults))
         .environmentObject(RecentPicksStore(defaults: defaults))
         .environmentObject(TabSelectionStore())
+        .environmentObject(CoachConversationStore(defaults: defaults))
 }

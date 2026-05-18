@@ -61,6 +61,9 @@ struct TrainingMemory: Codable {
     var feedback: [FeedbackEntry] = []
     var soreness: [SorenessEntry] = []
     var weeklyCheckIns: [WeeklyCheckIn] = []
+    /// Phase 13e: proactive observations the coach writes on app foreground.
+    /// Rolling 30-day window; trimmed on append.
+    var coachInsights: [CoachInsight] = []
 
     // Lifecycle
     var onboardedAt: Date? = nil
@@ -79,6 +82,7 @@ struct TrainingMemory: Codable {
         case heightCm, weightKg, usesImperial
         case dislikes, constraints
         case feedback, soreness, weeklyCheckIns
+        case coachInsights
         case onboardedAt
     }
 
@@ -129,6 +133,7 @@ struct TrainingMemory: Codable {
         self.feedback        = (try? c.decode([FeedbackEntry].self, forKey: .feedback))       ?? []
         self.soreness        = (try? c.decode([SorenessEntry].self, forKey: .soreness))       ?? []
         self.weeklyCheckIns  = (try? c.decode([WeeklyCheckIn].self, forKey: .weeklyCheckIns)) ?? []
+        self.coachInsights   = (try? c.decode([CoachInsight].self, forKey: .coachInsights)) ?? []
         self.onboardedAt     =  try? c.decodeIfPresent(Date.self,  forKey: .onboardedAt)
     }
 
@@ -154,6 +159,7 @@ struct TrainingMemory: Codable {
         try c.encode(feedback,        forKey: .feedback)
         try c.encode(soreness,        forKey: .soreness)
         try c.encode(weeklyCheckIns,  forKey: .weeklyCheckIns)
+        try c.encode(coachInsights,   forKey: .coachInsights)
         try c.encodeIfPresent(onboardedAt, forKey: .onboardedAt)
     }
 }

@@ -2,12 +2,16 @@ import SwiftUI
 
 @main
 struct PhaseTrainingApp: App {
+    @Environment(\.scenePhase) private var scenePhase
+    @AppStorage(CoachConsent.storageKey) private var coachConsentGranted: Bool = false
+
     @StateObject private var session = SessionStore()
     @StateObject private var memory  = MemoryStore()
     @StateObject private var plan    = PlanStore()
     @StateObject private var custom  = CustomRoutineStore()
     @StateObject private var recentPicks = RecentPicksStore()
     @StateObject private var tabSelection = TabSelectionStore()
+    @StateObject private var conv = CoachConversationStore()
 
     /// UI tests pass `--ui-test-onboarded` to skip the first-launch onboarding cover
     /// without persisting state to UserDefaults.
@@ -38,6 +42,7 @@ struct PhaseTrainingApp: App {
                 .environmentObject(custom)
                 .environmentObject(recentPicks)
                 .environmentObject(tabSelection)
+                .environmentObject(conv)
                 .preferredColorScheme(.dark)
                 .fullScreenCover(isPresented: .constant(!memory.isOnboarded && !uiTestSkipsOnboarding)) {
                     OnboardingFlow()
@@ -50,6 +55,16 @@ struct PhaseTrainingApp: App {
                         .environmentObject(memory)
                         .environmentObject(plan)
                         .presentationBackground(Color.bg)
+                }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active {
+                        InsightGenerator.runIfDue(
+                            memoryStore: memory,
+                            planStore: plan,
+                            sessionStore: session,
+                            consentGranted: coachConsentGranted
+                        )
+                    }
                 }
                 .onOpenURL { url in
                     guard url.scheme == "phasetraining" else { return }
