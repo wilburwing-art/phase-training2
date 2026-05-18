@@ -38,16 +38,16 @@ struct OnboardingAboutScreen: View {
                 genderSection
                 bodyMetricsSection
             }
+            // Tap empty content to dismiss the number-pad keyboard. The
+            // .toolbar Done below works only when this screen is inside a
+            // NavigationStack — kept as belt-and-suspenders.
+            .contentShape(Rectangle())
+            .onTapGesture { hideKeyboard() }
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button("Done") {
-                        ageFocused = false
-                        // Body metrics fields publish their own Done via the
-                        // shared keyboard toolbar — single .toolbar on the
-                        // scaffold covers all of them.
-                    }
-                    .foregroundStyle(Color.accent)
+                    Button("Done") { hideKeyboard() }
+                        .foregroundStyle(Color.accent)
                 }
             }
         }
@@ -197,6 +197,12 @@ struct BodyMetricsEditor: View {
             heightRow
             weightRow
         }
+        // Tapping the editor's empty space (between rows, around the labels)
+        // dismisses the keyboard — covers cases where this view is hosted
+        // outside a NavigationStack (the .toolbar Done below silently no-ops
+        // there). Real fields and buttons still capture their own taps first.
+        .contentShape(Rectangle())
+        .onTapGesture { hideKeyboard() }
         .onAppear(perform: syncMirrors)
         .onChange(of: draft.heightCm) { _, _ in if !isAnyHeightFieldFocused { syncHeightMirrors() } }
         .onChange(of: draft.weightKg) { _, _ in if focus != .weight { syncWeightMirror() } }
@@ -216,7 +222,7 @@ struct BodyMetricsEditor: View {
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button("Done") { focus = nil }
+                Button("Done") { hideKeyboard() }
                     .foregroundStyle(Color.accent)
             }
         }

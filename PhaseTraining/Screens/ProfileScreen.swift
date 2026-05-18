@@ -77,6 +77,13 @@ struct ProfileScreen: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 24)
+                // Tap empty content area to dismiss the keyboard. The keyboard
+                // .toolbar { Done } below only fires inside a NavigationStack,
+                // which this tab content isn't — so this tap gesture is the
+                // primary dismissal path on Profile. contentShape makes the
+                // VStack's empty padding tappable too.
+                .contentShape(Rectangle())
+                .onTapGesture { hideKeyboard() }
             }
             .scrollDismissesKeyboard(.interactively)
         }
