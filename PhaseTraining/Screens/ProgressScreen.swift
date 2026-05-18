@@ -67,6 +67,8 @@ struct ProgressScreen: View {
                 statStrip
                 sessionsCard
                 volumeCard
+                strengthRatiosCard
+                muscleBalanceCard
                 perExerciseCard
                 prFeedCard
                 feedbackCard
@@ -216,6 +218,124 @@ struct ProgressScreen: View {
                         .foregroundStyle(series.last ?? 0 > 0 ? Color.accent : Color.ink3)
                 }
             }
+        }
+    }
+
+    // MARK: - Strength ratios card
+
+    private var strengthRatiosCard: some View {
+        let rows = StrengthStandards.rows(
+            from: store.savedSessions,
+            bodyweightKg: memoryStore.memory.weightKg,
+            gender: memoryStore.memory.gender
+        )
+        return Group {
+            if memoryStore.memory.weightKg == nil {
+                // Don't show the card at all without bodyweight — the entire
+                // value-prop is the ratio, which is undefined without it.
+                EmptyView()
+            } else if rows.isEmpty {
+                card(title: "STRENGTH RATIOS") {
+                    Text("Log Bench, Squat, Deadlift, OHP, or Pull-Up to see ratios.")
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                }
+            } else {
+                card(title: "STRENGTH RATIOS") {
+                    VStack(spacing: 0) {
+                        ForEach(Array(rows.enumerated()), id: \.element.id) { idx, row in
+                            strengthRow(row)
+                            if idx < rows.count - 1 {
+                                Rectangle()
+                                    .fill(Color.lineSoft)
+                                    .frame(height: 0.5)
+                            }
+                        }
+                    }
+                    if memoryStore.memory.gender == nil {
+                        Text("Add your gender on Profile to see tier labels.")
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
+                            .padding(.top, 6)
+                    }
+                }
+            }
+        }
+    }
+
+    private func strengthRow(_ row: StrengthStandards.LiftRow) -> some View {
+        let imperial = memoryStore.memory.usesImperial
+        let oneRmDisplay = imperial
+            ? "\(Int(row.oneRepMaxLb.rounded())) lb"
+            : "\(Int(BodyMetrics.lbToKg(row.oneRepMaxLb).rounded())) kg"
+        let bestDisplay = imperial
+            ? "\(Int(row.bestWeightLb.rounded())) × \(row.bestReps)"
+            : "\(Int(BodyMetrics.lbToKg(row.bestWeightLb).rounded())) × \(row.bestReps)"
+        return HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(row.lift.label)
+                    .font(.custom("Inter-Regular", size: 13))
+                    .foregroundStyle(Color.ink)
+                    .lineLimit(1)
+                Text("est 1RM \(oneRmDisplay) · from \(bestDisplay)")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 8)
+            VStack(alignment: .trailing, spacing: 3) {
+                Text(String(format: "%.2f× BW", row.ratio))
+                    .font(.custom("JetBrainsMono-SemiBold", size: 14))
+                    .foregroundStyle(Color.accent)
+                if let tier = row.tier {
+                    Text(tier.label)
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                }
+            }
+        }
+        .padding(.vertical, 10)
+    }
+
+    // MARK: - Muscle balance card
+
+    private var muscleBalanceCard: some View {
+        let rows = MuscleVolume.rows(from: store.savedSessions)
+        return Group {
+            if rows.isEmpty {
+                // Skip entirely — empty card would just be noise.
+                EmptyView()
+            } else {
+                card(title: "MUSCLE BALANCE · 4w") {
+                    let maxVol = rows.first?.volume ?? 1
+                    VStack(spacing: 8) {
+                        ForEach(rows) { row in
+                            muscleBar(row: row, maxVol: maxVol)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func muscleBar(row: MuscleVolume.Row, maxVol: Double) -> some View {
+        HStack(spacing: 10) {
+            Text(row.label)
+                .font(.monoXS)
+                .foregroundStyle(Color.ink2)
+                .frame(width: 92, alignment: .leading)
+                .lineLimit(1)
+            GeometryReader { geo in
+                let frac = max(0.02, CGFloat(row.volume / maxVol))
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.elevated)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.accent)
+                        .frame(width: geo.size.width * frac)
+                }
+            }
+            .frame(height: 10)
         }
     }
 

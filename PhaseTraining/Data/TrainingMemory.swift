@@ -14,7 +14,7 @@ import Foundation
 // MARK: - Top-level
 
 struct TrainingMemory: Codable {
-    var schemaVersion: Int = 3
+    var schemaVersion: Int = 4
 
     // Identity / intent
     var sports: [Sport] = []
@@ -43,6 +43,15 @@ struct TrainingMemory: Codable {
     // About you (optional)
     var age: Int? = nil
     var gender: Gender? = nil
+    /// Body height in whole centimetres. Stored metric; rendered in the
+    /// user's preferred unit system (see `usesImperial`). Nil = skipped.
+    var heightCm: Int? = nil
+    /// Body weight in kilograms with one-decimal precision. Stored metric;
+    /// rendered per `usesImperial`. Nil = skipped.
+    var weightKg: Double? = nil
+    /// Display preference for height + weight. Defaults true (US default);
+    /// users elsewhere can flip on the Profile screen.
+    var usesImperial: Bool = true
 
     // Free-text guardrails
     var dislikes: [String] = []
@@ -67,6 +76,7 @@ struct TrainingMemory: Codable {
         case sessionMinutes, liftDaysPerWeek
         case equipment, experience
         case age, gender
+        case heightCm, weightKg, usesImperial
         case dislikes, constraints
         case feedback, soreness, weeklyCheckIns
         case onboardedAt
@@ -111,6 +121,9 @@ struct TrainingMemory: Codable {
         self.experience      = (try? c.decode(ExperienceLevel.self, forKey: .experience))     ?? .beginner
         self.age             =  try? c.decodeIfPresent(Int.self,    forKey: .age)
         self.gender          =  try? c.decodeIfPresent(Gender.self, forKey: .gender)
+        self.heightCm        =  try? c.decodeIfPresent(Int.self,    forKey: .heightCm)
+        self.weightKg        =  try? c.decodeIfPresent(Double.self, forKey: .weightKg)
+        self.usesImperial    = (try? c.decode(Bool.self,            forKey: .usesImperial)) ?? true
         self.dislikes        = (try? c.decode([String].self,       forKey: .dislikes))        ?? []
         self.constraints     = (try? c.decode([String].self,       forKey: .constraints))     ?? []
         self.feedback        = (try? c.decode([FeedbackEntry].self, forKey: .feedback))       ?? []
@@ -133,6 +146,9 @@ struct TrainingMemory: Codable {
         try c.encode(experience,      forKey: .experience)
         try c.encodeIfPresent(age,    forKey: .age)
         try c.encodeIfPresent(gender, forKey: .gender)
+        try c.encodeIfPresent(heightCm, forKey: .heightCm)
+        try c.encodeIfPresent(weightKg, forKey: .weightKg)
+        try c.encode(usesImperial, forKey: .usesImperial)
         try c.encode(dislikes,        forKey: .dislikes)
         try c.encode(constraints,     forKey: .constraints)
         try c.encode(feedback,        forKey: .feedback)

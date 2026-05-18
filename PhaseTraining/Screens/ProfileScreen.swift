@@ -486,6 +486,28 @@ struct ProfileScreen: View {
                     )
                 }
             }
+
+            HStack(spacing: 10) {
+                Text("HEIGHT & WEIGHT")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                Spacer()
+                Button(store.memory.usesImperial ? "Use metric" : "Use imperial") {
+                    store.update { $0.usesImperial.toggle() }
+                }
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+            }
+            // BodyMetricsEditor mutates a Binding<TrainingMemory>; route it
+            // back through store.update so the change persists immediately
+            // (same pattern as every other section on this screen).
+            BodyMetricsEditor(draft: Binding(
+                get: { store.memory },
+                set: { newMemory in store.update { $0 = newMemory } }
+            ))
+            Text("Used for strength-to-bodyweight ratios on Progress.")
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
         }
     }
 

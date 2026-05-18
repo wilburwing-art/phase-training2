@@ -368,6 +368,53 @@ final class CoachDatabase {
         return out
     }
 
+    /// Look up the muscle groups an exercise targets. Used by the Progress
+    /// muscle-balance card to allocate logged volume to body areas.
+    /// Returns (slug, role) tuples — slug is `muscle_groups.slug`, role is
+    /// one of "primary" | "secondary" | "stabilizer" per the schema.
+    func musclesForExercise(_ exerciseId: Int) -> [(slug: String, role: String)] {
+        guard let db else { return [] }
+        let sql = """
+        SELECT mg.slug, em.role
+        FROM exercise_muscles em
+        JOIN muscle_groups mg ON mg.id = em.muscle_group_id
+        WHERE em.exercise_id = ?
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_int64(stmt, 1, Int64(exerciseId))
+
+        var rows: [(String, String)] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            let slug = text(stmt, 0) ?? ""
+            let role = text(stmt, 1) ?? ""
+            if !slug.isEmpty, !role.isEmpty { rows.append((slug, role)) }
+        }
+        return rows
+    }
+
+    /// Display-friendly muscle-group label by slug, for the muscle-balance
+    /// card. Cached on first call. Empty string when slug isn't found.
+    func muscleGroupLabel(slug: String) -> String {
+        if muscleLabelCache.isEmpty { loadMuscleLabelCache() }
+        return muscleLabelCache[slug] ?? slug.replacingOccurrences(of: "_", with: " ").capitalized
+    }
+
+    private var muscleLabelCache: [String: String] = [:]
+    private func loadMuscleLabelCache() {
+        guard let db else { return }
+        let sql = "SELECT slug, name FROM muscle_groups"
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return }
+        defer { sqlite3_finalize(stmt) }
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            let slug = text(stmt, 0) ?? ""
+            let name = text(stmt, 1) ?? ""
+            if !slug.isEmpty { muscleLabelCache[slug] = name }
+        }
+    }
+
     func exercises(forRoutineId routineId: Int) -> [RoutineExercise] {
         guard let db else { return [] }
         let sql = """

@@ -91,26 +91,6 @@ struct OnboardingAvailabilityScreen: View {
     }
 }
 
-private struct StepperButton: View {
-    let symbol: String
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(Color.ink)
-                .frame(width: 48, height: 48)
-                .background(Color.elevated)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.line, lineWidth: 0.5)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
-        .buttonStyle(.plain)
-    }
-}
 
 #Preview {
     @Previewable @State var draft = TrainingMemory()
