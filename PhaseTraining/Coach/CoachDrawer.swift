@@ -145,22 +145,31 @@ struct CoachDrawer: View {
     }
 
     private func bubble(_ message: CoachMessage) -> some View {
-        HStack(alignment: .top) {
-            if message.isUser { Spacer(minLength: 32) }
-            Text(message.text.isEmpty && !message.isUser ? "…" : message.text)
-                .font(.custom("Inter-Regular", size: 14))
-                .foregroundStyle(message.isUser ? Color.accentInk : Color.ink)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .background(message.isUser ? Color.accent : Color.surface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(message.isUser ? Color.clear : Color.line, lineWidth: 0.5)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .fixedSize(horizontal: false, vertical: true)
-            if !message.isUser { Spacer(minLength: 32) }
+        VStack(alignment: message.isUser ? .trailing : .leading, spacing: 6) {
+            HStack(alignment: .top) {
+                if message.isUser { Spacer(minLength: 32) }
+                if !(message.text.isEmpty && !message.isUser && message.proposal != nil) {
+                    Text(message.text.isEmpty && !message.isUser ? "…" : message.text)
+                        .font(.custom("Inter-Regular", size: 14))
+                        .foregroundStyle(message.isUser ? Color.accentInk : Color.ink)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(message.isUser ? Color.accent : Color.surface)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(message.isUser ? Color.clear : Color.line, lineWidth: 0.5)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if !message.isUser { Spacer(minLength: 32) }
+            }
+            if let proposal = message.proposal, !message.isUser {
+                MiniPlanDiffCard(messageId: message.id, proposal: proposal)
+                    .padding(.trailing, 32)
+            }
         }
+        .frame(maxWidth: .infinity, alignment: message.isUser ? .trailing : .leading)
     }
 
     private var inputBar: some View {
@@ -246,11 +255,21 @@ struct CoachDrawer: View {
                     cachedSystem: CoachSystemPrompt.cachedHeader,
                     perTurnContext: CoachSystemPrompt.contextBlock(snapshot: snapshot),
                     history: Array(history.dropLast()),
-                    userMessage: text
+                    userMessage: text,
+                    tools: CoachTools.all
                 )
-                for try await delta in stream {
-                    await MainActor.run {
-                        conv.appendDelta(to: assistantMsg.id, delta)
+                for try await part in stream {
+                    switch part {
+                    case .textDelta(let chunk):
+                        await MainActor.run {
+                            conv.appendDelta(to: assistantMsg.id, chunk)
+                        }
+                    case .toolCall(_, let name, let inputData):
+                        guard name == "propose_plan_edits",
+                              let proposal = CoachToolDecoder.decodeProposal(from: inputData) else { continue }
+                        await MainActor.run {
+                            conv.setProposal(on: assistantMsg.id, proposal)
+                        }
                     }
                 }
                 await MainActor.run { finishSuccess() }

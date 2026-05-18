@@ -16,6 +16,9 @@ struct CoachMessage: Codable, Identifiable, Equatable {
     var role: String       // "user" or "assistant"
     var text: String
     var date: Date = Date()
+    /// Set when the assistant turn invoked a tool (Phase 13c+). Drawer
+    /// renders MiniPlanDiffCard below the bubble while this is non-nil.
+    var proposal: CoachProposal? = nil
 
     var isUser: Bool { role == "user" }
 }
@@ -55,6 +58,21 @@ final class CoachConversationStore: ObservableObject {
     /// Persist whatever's currently in messages. Call once at end-of-stream
     /// rather than on every delta to avoid hammering UserDefaults.
     func flush() {
+        save()
+    }
+
+    /// Attach a fresh proposal to an assistant message.
+    func setProposal(on id: UUID, _ proposal: CoachProposal) {
+        guard let idx = messages.firstIndex(where: { $0.id == id }) else { return }
+        messages[idx].proposal = proposal
+        save()
+    }
+
+    /// Update an existing proposal's status (applied or rejected).
+    func setProposalStatus(messageId: UUID, _ status: CoachProposal.Status) {
+        guard let idx = messages.firstIndex(where: { $0.id == messageId }),
+              messages[idx].proposal != nil else { return }
+        messages[idx].proposal?.status = status
         save()
     }
 

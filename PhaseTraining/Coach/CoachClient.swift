@@ -120,16 +120,22 @@ actor CoachClient {
         )
     }
 
-    /// Streaming chat. Yields text deltas as they arrive. Caller composes
-    /// system blocks (long cached header + per-turn context) and the full
-    /// `history` of previous turns.
+    /// Stream events the drawer consumes. Text deltas during normal output;
+    /// toolCall once for each tool_use block as it completes.
+    enum StreamPart: Sendable {
+        case textDelta(String)
+        case toolCall(id: String, name: String, input: Data)
+    }
+
+    /// Streaming chat. Yields text deltas + tool calls as they arrive.
     nonisolated func stream(
         cachedSystem: String,
         perTurnContext: String,
         history: [Turn],
         userMessage: String,
-        model: String = CoachConfig.defaultModel
-    ) -> AsyncThrowingStream<String, Error> {
+        model: String = CoachConfig.defaultModel,
+        tools: [AnthropicTool]? = nil
+    ) -> AsyncThrowingStream<StreamPart, Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
                 guard !CoachSecrets.gatewayToken.isEmpty else {
@@ -156,7 +162,8 @@ actor CoachClient {
                         SystemBlock(text: perTurnContext, cacheControl: nil),
                     ],
                     messages: messages,
-                    stream: true
+                    stream: true,
+                    tools: tools
                 )
                 do {
                     req.httpBody = try JSONEncoder().encode(body)
@@ -178,22 +185,44 @@ actor CoachClient {
                         return
                     }
 
+                    // Per-block scratch state. Indexed by content_block.index.
+                    var toolUseScratch: [Int: (id: String, name: String, json: String)] = [:]
+
                     for try await line in bytes.lines {
                         if Task.isCancelled {
                             continuation.finish(throwing: CancellationError())
                             return
                         }
-                        // SSE: only data lines carry the JSON payload.
                         guard line.hasPrefix("data: ") else { continue }
                         let payload = String(line.dropFirst("data: ".count))
                         if payload == "[DONE]" { break }
                         guard let data = payload.data(using: .utf8),
                               let event = try? JSONDecoder().decode(StreamEvent.self, from: data) else { continue }
-                        if event.type == "content_block_delta",
-                           let delta = event.delta,
-                           delta.type == "text_delta",
-                           let text = delta.text {
-                            continuation.yield(text)
+
+                        switch event.type {
+                        case "content_block_start":
+                            if let cb = event.contentBlock, cb.type == "tool_use",
+                               let idx = event.index, let id = cb.id, let name = cb.name {
+                                toolUseScratch[idx] = (id, name, "")
+                            }
+
+                        case "content_block_delta":
+                            guard let delta = event.delta, let idx = event.index else { continue }
+                            if delta.type == "text_delta", let text = delta.text {
+                                continuation.yield(.textDelta(text))
+                            } else if delta.type == "input_json_delta", let partial = delta.partialJson {
+                                toolUseScratch[idx]?.json += partial
+                            }
+
+                        case "content_block_stop":
+                            guard let idx = event.index, let scratch = toolUseScratch[idx] else { continue }
+                            toolUseScratch.removeValue(forKey: idx)
+                            if let inputData = scratch.json.data(using: .utf8) {
+                                continuation.yield(.toolCall(id: scratch.id, name: scratch.name, input: inputData))
+                            }
+
+                        default:
+                            break
                         }
                     }
                     continuation.finish()
@@ -229,6 +258,7 @@ private struct MessagesRequest: Encodable {
     let system: [SystemBlock]?
     let messages: [Message]
     let stream: Bool
+    let tools: [AnthropicTool]?
 
     enum CodingKeys: String, CodingKey {
         case model
@@ -236,21 +266,57 @@ private struct MessagesRequest: Encodable {
         case system
         case messages
         case stream
+        case tools
     }
 
     struct Message: Encodable {
         let role: String
         let content: String
     }
+
+    init(
+        model: String,
+        maxTokens: Int,
+        system: [SystemBlock]?,
+        messages: [Message],
+        stream: Bool,
+        tools: [AnthropicTool]? = nil
+    ) {
+        self.model = model
+        self.maxTokens = maxTokens
+        self.system = system
+        self.messages = messages
+        self.stream = stream
+        self.tools = tools
+    }
 }
 
 private struct StreamEvent: Decodable {
     let type: String
+    let index: Int?
     let delta: Delta?
+    let contentBlock: ContentBlock?
+
+    enum CodingKeys: String, CodingKey {
+        case type, index, delta
+        case contentBlock = "content_block"
+    }
 
     struct Delta: Decodable {
         let type: String?
         let text: String?
+        let partialJson: String?
+
+        enum CodingKeys: String, CodingKey {
+            case type, text
+            case partialJson = "partial_json"
+        }
+    }
+
+    struct ContentBlock: Decodable {
+        let type: String
+        let id: String?
+        let name: String?
     }
 }
 
