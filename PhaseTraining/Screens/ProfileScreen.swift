@@ -26,6 +26,14 @@ struct ProfileScreen: View {
     // Injury picker state
     @State private var presentingInjuryPicker = false
 
+    // Typeable age field (build 49) — mirrors store.memory.age while the
+    // user is editing; commits + clamps on focus loss.
+    @State private var ageText: String = ""
+    @FocusState private var ageFocused: Bool
+
+    private let minAge = 13
+    private let maxAge = 99
+
     var body: some View {
         ZStack {
             Color.bg.ignoresSafeArea()
@@ -70,6 +78,21 @@ struct ProfileScreen: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 24)
             }
+            .scrollDismissesKeyboard(.interactively)
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") { ageFocused = false }
+                    .foregroundStyle(Color.accent)
+            }
+        }
+        .onAppear { ageText = store.memory.age.map(String.init) ?? "" }
+        .onChange(of: store.memory.age) { _, new in
+            if !ageFocused { ageText = new.map(String.init) ?? "" }
+        }
+        .onChange(of: ageFocused) { _, isFocused in
+            if !isFocused { commitAge() }
         }
         .sheet(isPresented: $presentingShare) {
             if let url = exportURL {
@@ -454,17 +477,15 @@ struct ProfileScreen: View {
                     .foregroundStyle(Color.ink3)
                 Spacer()
                 if store.memory.age != nil {
-                    Button("Clear") { store.update { $0.age = nil } }
-                        .font(.monoXS)
-                        .foregroundStyle(Color.ink3)
+                    Button("Clear") {
+                        store.update { $0.age = nil }
+                        ageText = ""
+                    }
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
                 }
             }
-            valueStepper(
-                value: store.memory.age.map(String.init) ?? "—",
-                unit: "YEARS",
-                onMinus: { adjustAge(-1) },
-                onPlus:  { adjustAge(1) }
-            )
+            ageTextField
 
             HStack {
                 Text("GENDER")
@@ -978,11 +999,40 @@ struct ProfileScreen: View {
         }
     }
 
-    private func adjustAge(_ delta: Int) {
-        store.update { mem in
-            let next = (mem.age ?? 30) + delta
-            mem.age = min(max(next, 13), 99)
+    // MARK: - Typeable age field (build 49)
+
+    private var ageTextField: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            TextField("—", text: $ageText)
+                .focused($ageFocused)
+                .keyboardType(.numberPad)
+                .submitLabel(.done)
+                .onSubmit { ageFocused = false }
+                .font(.custom("JetBrainsMono-SemiBold", size: 28))
+                .foregroundStyle(Color.ink)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+            Text("YEARS")
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
         }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
+        .background(Color.surface)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(ageFocused ? Color.accent : Color.line, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func commitAge() {
+        let trimmed = ageText.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty, let parsed = Int(trimmed) else {
+            store.update { $0.age = nil }
+            ageText = ""
+            return
+        }
+        let clamped = min(max(parsed, minAge), maxAge)
+        store.update { $0.age = clamped }
+        ageText = String(clamped)
     }
 
     private func formattedShort(_ d: Date) -> String {

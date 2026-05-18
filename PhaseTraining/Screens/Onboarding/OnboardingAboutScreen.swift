@@ -1,9 +1,12 @@
 // OnboardingAboutScreen.swift — age, gender, height, weight. All optional.
 //
 // Why optional: privacy + the planner doesn't gate on any of these yet.
-// Height + weight (added build 44) unlock strength-to-bodyweight ratios on
-// the Progress tab; gender refines the tier thresholds. Phase 13 LLM
-// coach will tailor language with these when present.
+// Height + weight (build 44) unlock strength-to-bodyweight ratios on the
+// Progress tab; gender refines the tier thresholds. Phase 13 LLM coach
+// will tailor language with these when present.
+//
+// Build 49: numeric fields are typeable (TextField + numberPad/decimalPad)
+// instead of +/- steppers — entry was painfully slow at 1 tap per year.
 
 import SwiftUI
 
@@ -14,6 +17,13 @@ struct OnboardingAboutScreen: View {
 
     private let minAge = 13
     private let maxAge = 99
+
+    /// Local mirror so the user can mid-edit type "1" before committing "18"
+    /// without us interpreting "1" as a 1-year-old below the minAge clamp.
+    /// Synced from `draft.age` on appear + when it changes externally
+    /// (Clear button); committed back to `draft.age` on focus loss.
+    @State private var ageText: String = ""
+    @FocusState private var ageFocused: Bool
 
     var body: some View {
         OnboardingScaffold(
@@ -28,6 +38,28 @@ struct OnboardingAboutScreen: View {
                 genderSection
                 bodyMetricsSection
             }
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        ageFocused = false
+                        // Body metrics fields publish their own Done via the
+                        // shared keyboard toolbar — single .toolbar on the
+                        // scaffold covers all of them.
+                    }
+                    .foregroundStyle(Color.accent)
+                }
+            }
+        }
+        .onAppear { ageText = draft.age.map(String.init) ?? "" }
+        .onChange(of: draft.age) { _, new in
+            // Keep the local mirror in sync when the field isn't focused —
+            // covers Clear button + any external mutation. While focused,
+            // the user's typing wins.
+            if !ageFocused { ageText = new.map(String.init) ?? "" }
+        }
+        .onChange(of: ageFocused) { _, isFocused in
+            if !isFocused { commitAge() }
         }
     }
 
@@ -39,33 +71,51 @@ struct OnboardingAboutScreen: View {
                 OnboardingSectionLabel(text: "Age")
                 Spacer()
                 if draft.age != nil {
-                    Button("Clear") { draft.age = nil }
-                        .font(.monoXS)
-                        .foregroundStyle(Color.ink3)
+                    Button("Clear") {
+                        draft.age = nil
+                        ageText = ""
+                    }
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
                 }
             }
-            HStack(spacing: 14) {
-                StepperButton(symbol: "minus") { adjustAge(-1) }
-                VStack(spacing: 0) {
-                    Text(draft.age.map(String.init) ?? "—")
-                        .font(.custom("JetBrainsMono-SemiBold", size: 34))
-                        .foregroundStyle(Color.ink)
-                    Text("YEARS")
-                        .styled(.micro)
-                        .foregroundStyle(Color.ink3)
-                }
-                .frame(maxWidth: .infinity)
-                StepperButton(symbol: "plus") { adjustAge(1) }
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                TextField("—", text: $ageText)
+                    .focused($ageFocused)
+                    .keyboardType(.numberPad)
+                    .submitLabel(.done)
+                    .onSubmit { ageFocused = false }
+                    .font(.custom("JetBrainsMono-SemiBold", size: 34))
+                    .foregroundStyle(Color.ink)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                Text("YEARS")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 14)
             .background(Color.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: 14)
-                    .stroke(Color.line, lineWidth: 0.5)
+                    .stroke(ageFocused ? Color.accent : Color.line, lineWidth: 0.5)
             )
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }
+    }
+
+    private func commitAge() {
+        let trimmed = ageText.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty, let parsed = Int(trimmed) else {
+            // Empty or non-numeric → treat as "skip". Mirror clears too so
+            // the placeholder shows.
+            draft.age = nil
+            ageText = ""
+            return
+        }
+        let clamped = min(max(parsed, minAge), maxAge)
+        draft.age = clamped
+        ageText = String(clamped)
     }
 
     // MARK: - Gender
@@ -112,63 +162,68 @@ struct OnboardingAboutScreen: View {
                 .foregroundStyle(Color.ink3)
         }
     }
-
-    // MARK: - Actions
-
-    private func adjustAge(_ delta: Int) {
-        let current = draft.age ?? 30
-        let next = current + delta
-        draft.age = min(max(next, minAge), maxAge)
-    }
-}
-
-// MARK: - StepperButton (shared with BodyMetricsEditor)
-
-struct StepperButton: View {
-    let symbol: String
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(Color.ink)
-                .frame(width: 48, height: 48)
-                .background(Color.elevated)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.line, lineWidth: 0.5)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
-        .buttonStyle(.plain)
-    }
 }
 
 // MARK: - BodyMetricsEditor — reused on ProfileScreen
 
-/// Stepper-driven editor for height + weight. Renders in the user's unit
-/// system (`draft.usesImperial`) but mutates the underlying metric storage.
-/// All fields optional — clear buttons appear when set.
+/// Typeable editor for height + weight. Renders in the user's unit system
+/// (`draft.usesImperial`) but mutates the underlying metric storage. All
+/// fields optional — clear buttons appear when set.
+///
+/// Each field uses a local @State string mirror committed to `draft` on
+/// focus loss. Parses + clamps to sane ranges; empty input = "skip".
 struct BodyMetricsEditor: View {
     @Binding var draft: TrainingMemory
-
-    // Reasonable seeds when the user opens an unset field — these are what
-    // appears the first time they tap +/–. Both metric so we don't have to
-    // branch on the unit system at seed time.
-    private let defaultHeightCm = 175
-    private let defaultWeightKg = 75.0
 
     private let minHeightCm = 120
     private let maxHeightCm = 230
     private let minWeightKg = 30.0
     private let maxWeightKg = 250.0
 
+    // Local mirrors. Single source per visible field. Imperial height uses
+    // two mirrors (feet + inches); metric uses one (cm). Weight always uses
+    // one mirror (the unit changes but the field count doesn't).
+    @State private var heightCmText: String = ""
+    @State private var heightFeetText: String = ""
+    @State private var heightInchesText: String = ""
+    @State private var weightText: String = ""
+
+    @FocusState private var focus: Field?
+
+    enum Field: Hashable { case heightCm, heightFeet, heightInches, weight }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             heightRow
             weightRow
         }
+        .onAppear(perform: syncMirrors)
+        .onChange(of: draft.heightCm) { _, _ in if !isAnyHeightFieldFocused { syncHeightMirrors() } }
+        .onChange(of: draft.weightKg) { _, _ in if focus != .weight { syncWeightMirror() } }
+        // When the user toggles imperial/metric mid-edit, refresh the
+        // mirrors so the new field set shows the right value.
+        .onChange(of: draft.usesImperial) { _, _ in syncMirrors() }
+        .onChange(of: focus) { old, new in
+            // Commit whichever field just lost focus.
+            switch old {
+            case .heightCm:     commitHeightCm()
+            case .heightFeet, .heightInches: commitHeightImperial()
+            case .weight:       commitWeight()
+            case nil:           break
+            }
+            _ = new // touch to satisfy old-warning, focus state is the live tracker
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") { focus = nil }
+                    .foregroundStyle(Color.accent)
+            }
+        }
+    }
+
+    private var isAnyHeightFieldFocused: Bool {
+        focus == .heightCm || focus == .heightFeet || focus == .heightInches
     }
 
     // MARK: - Height
@@ -181,45 +236,77 @@ struct BodyMetricsEditor: View {
                     .foregroundStyle(Color.ink3)
                 Spacer()
                 if draft.heightCm != nil {
-                    Button("Clear") { draft.heightCm = nil }
-                        .font(.monoXS)
-                        .foregroundStyle(Color.ink3)
+                    Button("Clear") {
+                        draft.heightCm = nil
+                        heightCmText = ""
+                        heightFeetText = ""
+                        heightInchesText = ""
+                    }
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
                 }
             }
-            HStack(spacing: 14) {
-                StepperButton(symbol: "minus") { adjustHeight(-1) }
-                VStack(spacing: 0) {
-                    Text(BodyMetrics.formatHeight(cm: draft.heightCm, imperial: draft.usesImperial))
-                        .font(.custom("JetBrainsMono-SemiBold", size: 26))
-                        .foregroundStyle(draft.heightCm == nil ? Color.ink3 : Color.ink)
-                    Text(draft.usesImperial ? "FT · IN" : "CM")
-                        .styled(.micro)
-                        .foregroundStyle(Color.ink3)
-                }
-                .frame(maxWidth: .infinity)
-                StepperButton(symbol: "plus") { adjustHeight(1) }
+            if draft.usesImperial {
+                imperialHeightFields
+            } else {
+                metricHeightField
             }
-            .padding(.vertical, 10)
-            .padding(.horizontal, 14)
-            .background(Color.surface)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
 
-    // Step size matches the unit so a tap feels natural — imperial steps
-    // by 1 inch (≈2.54 cm), metric steps by 1 cm. The stored value is
-    // always whole-cm; the imperial path quantises to the inch boundary.
-    private func adjustHeight(_ delta: Int) {
-        if draft.usesImperial {
-            let curCm = draft.heightCm ?? defaultHeightCm
-            let (f, i) = BodyMetrics.cmToFeetInches(curCm)
-            let totalInches = f * 12 + i + delta
-            let cm = BodyMetrics.feetInchesToCm(feet: 0, inches: totalInches)
-            draft.heightCm = min(max(cm, minHeightCm), maxHeightCm)
-        } else {
-            let cur = draft.heightCm ?? defaultHeightCm
-            draft.heightCm = min(max(cur + delta, minHeightCm), maxHeightCm)
+    private var imperialHeightFields: some View {
+        HStack(spacing: 10) {
+            inputCard(border: focus == .heightFeet) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    TextField("—", text: $heightFeetText)
+                        .focused($focus, equals: .heightFeet)
+                        .keyboardType(.numberPad)
+                        .submitLabel(.next)
+                        .onSubmit { focus = .heightInches }
+                        .font(.custom("JetBrainsMono-SemiBold", size: 26))
+                        .foregroundStyle(Color.ink)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                    Text("FT")
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                }
+            }
+            inputCard(border: focus == .heightInches) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    TextField("—", text: $heightInchesText)
+                        .focused($focus, equals: .heightInches)
+                        .keyboardType(.numberPad)
+                        .submitLabel(.done)
+                        .onSubmit { focus = nil }
+                        .font(.custom("JetBrainsMono-SemiBold", size: 26))
+                        .foregroundStyle(Color.ink)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                    Text("IN")
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                }
+            }
+        }
+    }
+
+    private var metricHeightField: some View {
+        inputCard(border: focus == .heightCm) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                TextField("—", text: $heightCmText)
+                    .focused($focus, equals: .heightCm)
+                    .keyboardType(.numberPad)
+                    .submitLabel(.done)
+                    .onSubmit { focus = nil }
+                    .font(.custom("JetBrainsMono-SemiBold", size: 26))
+                    .foregroundStyle(Color.ink)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                Text("CM")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+            }
         }
     }
 
@@ -233,50 +320,125 @@ struct BodyMetricsEditor: View {
                     .foregroundStyle(Color.ink3)
                 Spacer()
                 if draft.weightKg != nil {
-                    Button("Clear") { draft.weightKg = nil }
-                        .font(.monoXS)
-                        .foregroundStyle(Color.ink3)
+                    Button("Clear") {
+                        draft.weightKg = nil
+                        weightText = ""
+                    }
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
                 }
             }
-            HStack(spacing: 14) {
-                StepperButton(symbol: "minus") { adjustWeight(-1) }
-                VStack(spacing: 0) {
-                    Text(BodyMetrics.formatWeight(kg: draft.weightKg, imperial: draft.usesImperial))
+            inputCard(border: focus == .weight) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    TextField("—", text: $weightText)
+                        .focused($focus, equals: .weight)
+                        .keyboardType(.decimalPad)
                         .font(.custom("JetBrainsMono-SemiBold", size: 26))
-                        .foregroundStyle(draft.weightKg == nil ? Color.ink3 : Color.ink)
-                    Text(draft.usesImperial ? "POUNDS" : "KILOGRAMS")
+                        .foregroundStyle(Color.ink)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                    Text(draft.usesImperial ? "LB" : "KG")
                         .styled(.micro)
                         .foregroundStyle(Color.ink3)
                 }
-                .frame(maxWidth: .infinity)
-                StepperButton(symbol: "plus") { adjustWeight(1) }
             }
+        }
+    }
+
+    // MARK: - Shared chrome
+
+    private func inputCard<C: View>(border focused: Bool, @ViewBuilder content: () -> C) -> some View {
+        content()
             .padding(.vertical, 10)
             .padding(.horizontal, 14)
             .background(Color.surface)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(focused ? Color.accent : Color.line, lineWidth: 0.5))
             .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
     }
 
-    // Imperial steps by 1 lb, metric by 0.5 kg. Round-trip through kg keeps
-    // the stored value canonical even when the user toggles units.
-    private func adjustWeight(_ delta: Int) {
-        if draft.usesImperial {
-            let curLb = draft.weightKg.map(BodyMetrics.kgToLb) ?? BodyMetrics.kgToLb(defaultWeightKg)
-            let nextLb = (curLb + Double(delta)).rounded()
-            let nextKg = BodyMetrics.lbToKg(nextLb)
-            draft.weightKg = clamp(nextKg)
+    // MARK: - Commit + sync
+
+    private func syncMirrors() {
+        syncHeightMirrors()
+        syncWeightMirror()
+    }
+
+    private func syncHeightMirrors() {
+        if let cm = draft.heightCm {
+            heightCmText = String(cm)
+            let (f, i) = BodyMetrics.cmToFeetInches(cm)
+            heightFeetText = String(f)
+            heightInchesText = String(i)
         } else {
-            let cur = draft.weightKg ?? defaultWeightKg
-            draft.weightKg = clamp(cur + Double(delta) * 0.5)
+            heightCmText = ""
+            heightFeetText = ""
+            heightInchesText = ""
         }
     }
 
-    private func clamp(_ kg: Double) -> Double {
+    private func syncWeightMirror() {
+        if let kg = draft.weightKg {
+            if draft.usesImperial {
+                let lb = BodyMetrics.kgToLb(kg)
+                weightText = String(format: "%.1f", lb)
+            } else {
+                weightText = String(format: "%.1f", kg)
+            }
+        } else {
+            weightText = ""
+        }
+    }
+
+    private func commitHeightCm() {
+        let trimmed = heightCmText.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty, let parsed = Int(trimmed) else {
+            draft.heightCm = nil
+            heightCmText = ""
+            return
+        }
+        let clamped = min(max(parsed, minHeightCm), maxHeightCm)
+        draft.heightCm = clamped
+        heightCmText = String(clamped)
+    }
+
+    private func commitHeightImperial() {
+        // Empty BOTH fields = skip. Empty one of them = treat as 0 so the
+        // user can enter "6 ft" without explicitly typing "0 in".
+        let f = heightFeetText.trimmingCharacters(in: .whitespaces)
+        let i = heightInchesText.trimmingCharacters(in: .whitespaces)
+        if f.isEmpty, i.isEmpty {
+            draft.heightCm = nil
+            heightFeetText = ""
+            heightInchesText = ""
+            return
+        }
+        let feet = Int(f) ?? 0
+        let inches = Int(i) ?? 0
+        let cm = BodyMetrics.feetInchesToCm(feet: feet, inches: inches)
+        let clamped = min(max(cm, minHeightCm), maxHeightCm)
+        draft.heightCm = clamped
+        // Reflect the clamped value so the user sees what we stored.
+        let (rf, ri) = BodyMetrics.cmToFeetInches(clamped)
+        heightFeetText = String(rf)
+        heightInchesText = String(ri)
+    }
+
+    private func commitWeight() {
+        let trimmed = weightText
+            .trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: ",", with: ".") // accept European-decimal commas
+        guard !trimmed.isEmpty, let parsed = Double(trimmed) else {
+            draft.weightKg = nil
+            weightText = ""
+            return
+        }
+        let kg = draft.usesImperial ? BodyMetrics.lbToKg(parsed) : parsed
         // One-decimal precision keeps the JSON tidy.
         let rounded = (kg * 10).rounded() / 10
-        return min(max(rounded, minWeightKg), maxWeightKg)
+        let clamped = min(max(rounded, minWeightKg), maxWeightKg)
+        draft.weightKg = clamped
+        // Reflect the canonical value back into the field.
+        syncWeightMirror()
     }
 }
 
