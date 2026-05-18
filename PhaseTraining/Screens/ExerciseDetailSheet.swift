@@ -1,0 +1,265 @@
+// ExerciseDetailSheet.swift — read-only detail view for a single Exercise.
+//
+// Surfaces every field on `Exercise` that the rest of the app currently
+// discards: description, instructions, cues, default sets/reps/rest,
+// regression / progression text, and the compound / unilateral flags.
+//
+// Reachable from SubstituteExerciseSheet, CoachRequestScreen preview rows,
+// LibraryScreen, and CustomRoutineEditSheet. Pure UI + DB reads — no
+// mutations leave this view.
+//
+// The "Difficulty chain" section walks adjacent exercises by movement
+// pattern + difficulty tier (CoachDatabase.adjacentByDifficulty). The chain
+// is rendered as NavigationLinks so users can keep stepping easier/harder
+// and back without losing place.
+
+import SwiftUI
+
+struct ExerciseDetailSheet: View {
+    let exercise: Exercise
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.bg.ignoresSafeArea()
+                ExerciseDetailContent(exercise: exercise)
+            }
+            .navigationTitle("Exercise")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .foregroundStyle(Color.accent)
+                }
+            }
+        }
+        .presentationBackground(Color.bg)
+    }
+}
+
+/// Inner content view — extracted so chain-navigation NavigationLinks can
+/// push a new copy of the same UI without nesting NavigationStacks.
+private struct ExerciseDetailContent: View {
+    let exercise: Exercise
+
+    private var adjacency: (easier: Exercise?, harder: Exercise?) {
+        CoachDatabase.shared.adjacentByDifficulty(forExerciseId: exercise.id)
+    }
+
+    var body: some View {
+        let adj = adjacency
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                header
+                metaBadges
+                if let desc = exercise.description, !desc.isEmpty {
+                    section(title: "Overview") {
+                        Text(desc)
+                            .styled(.body)
+                            .foregroundStyle(Color.ink2)
+                    }
+                }
+                if let inst = exercise.instructions, !inst.isEmpty {
+                    section(title: "How to") {
+                        Text(inst)
+                            .styled(.body)
+                            .foregroundStyle(Color.ink2)
+                    }
+                }
+                if !exercise.cues.isEmpty {
+                    section(title: "Cues") {
+                        VStack(alignment: .leading, spacing: 6) {
+                            ForEach(exercise.cues, id: \.self) { cue in
+                                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                    Text("·")
+                                        .font(.monoS)
+                                        .foregroundStyle(Color.ink3)
+                                    Text(cue)
+                                        .styled(.body)
+                                        .foregroundStyle(Color.ink2)
+                                }
+                            }
+                        }
+                    }
+                }
+                if hasDefaults {
+                    section(title: "Defaults") {
+                        defaultsGrid
+                    }
+                }
+                if hasFreeTextChain {
+                    section(title: "Coach notes") {
+                        freeTextChainRows
+                    }
+                }
+                if adj.easier != nil || adj.harder != nil {
+                    section(title: "Difficulty chain") {
+                        VStack(spacing: 8) {
+                            if let e = adj.easier {
+                                chainLink(direction: .easier, peer: e)
+                            }
+                            if let h = adj.harder {
+                                chainLink(direction: .harder, peer: h)
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 18)
+            .padding(.bottom, 32)
+        }
+    }
+
+    // MARK: - Pieces
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(exercise.name)
+                .styled(.displayM)
+                .foregroundStyle(Color.ink)
+            Text(metaLine)
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+        }
+    }
+
+    private var metaLine: String {
+        var parts: [String] = []
+        if exercise.modalityLabel != "—" { parts.append(exercise.modalityLabel) }
+        if exercise.difficultyLabel != "—" { parts.append(exercise.difficultyLabel) }
+        if let env = exercise.environment, !env.isEmpty {
+            parts.append(env.replacingOccurrences(of: "_", with: " ").capitalized)
+        }
+        return parts.joined(separator: " · ")
+    }
+
+    private var metaBadges: some View {
+        WrappingFlow(spacing: 6) {
+            if exercise.isCompound { badge("Compound") }
+            if exercise.isUnilateral { badge("Unilateral") }
+        }
+    }
+
+    private func badge(_ label: String) -> some View {
+        Text(label)
+            .styled(.micro)
+            .foregroundStyle(Color.ink3)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(Color.elevated)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+    }
+
+    private func section<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            content()
+        }
+    }
+
+    private var hasDefaults: Bool {
+        exercise.defaultSets != nil
+            || (exercise.defaultReps?.isEmpty == false)
+            || (exercise.defaultRest?.isEmpty == false)
+            || (exercise.defaultDuration?.isEmpty == false)
+    }
+
+    private var defaultsGrid: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if let s = exercise.defaultSets { defaultRow("Sets", "\(s)") }
+            if let r = exercise.defaultReps, !r.isEmpty { defaultRow("Reps", r) }
+            if let rest = exercise.defaultRest, !rest.isEmpty { defaultRow("Rest", rest) }
+            if let d = exercise.defaultDuration, !d.isEmpty { defaultRow("Duration", d) }
+        }
+    }
+
+    private func defaultRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(label)
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            Spacer()
+            Text(value)
+                .font(.monoS)
+                .foregroundStyle(Color.ink)
+        }
+    }
+
+    private var hasFreeTextChain: Bool {
+        (exercise.regression?.isEmpty == false) || (exercise.progression?.isEmpty == false)
+    }
+
+    private var freeTextChainRows: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if let reg = exercise.regression, !reg.isEmpty {
+                freeTextRow(arrow: "arrow.down", label: "Easier", value: reg)
+            }
+            if let prog = exercise.progression, !prog.isEmpty {
+                freeTextRow(arrow: "arrow.up", label: "Harder", value: prog)
+            }
+        }
+    }
+
+    private func freeTextRow(arrow: String, label: String, value: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: arrow)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(Color.ink3)
+            Text(label.uppercased())
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            Spacer(minLength: 6)
+            Text(value)
+                .styled(.body)
+                .foregroundStyle(Color.ink)
+                .multilineTextAlignment(.trailing)
+        }
+    }
+
+    private enum ChainDirection {
+        case easier, harder
+        var symbol: String { self == .easier ? "arrow.down" : "arrow.up" }
+        var label: String { self == .easier ? "EASIER" : "HARDER" }
+    }
+
+    private func chainLink(direction: ChainDirection, peer: Exercise) -> some View {
+        NavigationLink {
+            ExerciseDetailContent(exercise: peer)
+                .navigationTitle("Exercise")
+                .navigationBarTitleDisplayMode(.inline)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: direction.symbol)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.ink3)
+                    .frame(width: 18)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(direction.label)
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                    Text(peer.name)
+                        .styled(.body)
+                        .foregroundStyle(Color.ink)
+                        .multilineTextAlignment(.leading)
+                    Text(peer.difficultyLabel)
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                }
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.ink3)
+            }
+            .padding(14)
+            .background(Color.surface)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}

@@ -10,7 +10,7 @@
 import SwiftUI
 
 enum AppTab: Hashable {
-    case today, week, progress, profile
+    case today, week, library, progress, profile
 }
 
 final class TabSelectionStore: ObservableObject {
@@ -37,6 +37,10 @@ struct RootTabView: View {
             WeekScreen()
                 .tabItem { Label("Week", systemImage: "calendar") }
                 .tag(AppTab.week)
+
+            LibraryScreen()
+                .tabItem { Label("Library", systemImage: "books.vertical") }
+                .tag(AppTab.library)
 
             ProgressScreen()
                 .tabItem { Label("Progress", systemImage: "chart.line.uptrend.xyaxis") }

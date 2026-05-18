@@ -138,6 +138,7 @@ extension AppTab {
         switch self {
         case .today:    return "Today"
         case .week:     return "Week"
+        case .library:  return "Library"
         case .progress: return "Progress"
         case .profile:  return "Profile"
         }

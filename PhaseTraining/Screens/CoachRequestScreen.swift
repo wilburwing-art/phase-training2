@@ -34,6 +34,12 @@ struct CoachRequestScreen: View {
     @State private var name: String = ""
     @State private var lastSeed: String = ""
 
+    /// Pre-workout substitution: the index into preview.exercises whose
+    /// alternatives the user is browsing. nil = sheet closed.
+    @State private var swappingPreviewIdx: Int? = nil
+    /// Read-only detail view for an exercise tapped from the preview row.
+    @State private var detailExercise: Exercise? = nil
+
     enum Phase: Equatable {
         case input
         case preview
@@ -73,6 +79,19 @@ struct CoachRequestScreen: View {
         }
         .presentationBackground(Color.bg)
         .preferredColorScheme(.dark)
+        .sheet(item: swappingBinding) { wrapped in
+            let original = preview?.exercises[wrapped.index]
+            SubstituteExerciseSheet(
+                originalName: original?.name ?? "",
+                substitutes: original.map { CoachDatabase.shared.substitutes(forExerciseId: $0.exerciseId) } ?? [],
+                onPick: { picked in
+                    swapPreviewExercise(at: wrapped.index, with: picked)
+                }
+            )
+        }
+        .sheet(item: $detailExercise) { ex in
+            ExerciseDetailSheet(exercise: ex)
+        }
         .onAppear {
             // Seed duration default from the user's current session length so
             // the chip selection feels personal on first open.
@@ -177,6 +196,27 @@ struct CoachRequestScreen: View {
                     .foregroundStyle(Color.ink3)
             }
             Spacer(minLength: 8)
+            Button {
+                detailExercise = CoachDatabase.shared.exercise(id: ex.exerciseId)
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 15, weight: .regular))
+                    .foregroundStyle(Color.ink3)
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Show details for \(ex.name)")
+
+            Button {
+                swappingPreviewIdx = (preview?.exercises.firstIndex(where: { $0.id == ex.id }))
+            } label: {
+                Image(systemName: "arrow.left.arrow.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Color.ink2)
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Swap \(ex.name)")
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
@@ -283,6 +323,42 @@ struct CoachRequestScreen: View {
         phase = .preview
     }
 
+    // MARK: - Pre-workout swap
+
+    private var swappingBinding: Binding<PreviewRowIndex?> {
+        Binding(
+            get: { swappingPreviewIdx.map(PreviewRowIndex.init) },
+            set: { swappingPreviewIdx = $0?.index }
+        )
+    }
+
+    /// Apply a substitution to the in-flight preview. Replaces the exercise
+    /// name + id and stamps the picked exercise's default sets/reps/rest when
+    /// available, falling back to the generated values so the swap doesn't
+    /// silently downgrade prescriptions.
+    private func swapPreviewExercise(at idx: Int, with picked: Exercise) {
+        guard var workout = preview, workout.exercises.indices.contains(idx) else { return }
+        var slot = workout.exercises[idx]
+        slot.exerciseId = picked.id
+        slot.name = picked.name
+        slot.isCompound = picked.isCompound
+        if let s = picked.defaultSets { slot.sets = s }
+        if let r = picked.defaultReps, !r.isEmpty { slot.reps = r }
+        if let rest = picked.defaultRest, let seconds = restSeconds(from: rest) {
+            slot.restSeconds = seconds
+        }
+        workout.exercises[idx] = slot
+        preview = workout
+    }
+
+    /// Parse "90s" / "2m" / "120" strings into integer seconds.
+    private func restSeconds(from text: String) -> Int? {
+        let t = text.lowercased().trimmingCharacters(in: .whitespaces)
+        if t.hasSuffix("s"), let n = Int(t.dropLast()) { return n }
+        if t.hasSuffix("m"), let n = Int(t.dropLast()) { return n * 60 }
+        return Int(t)
+    }
+
     private func save(startNow: Bool) {
         guard let workout = preview else { return }
         let trimmed = name.trimmingCharacters(in: .whitespaces)
@@ -313,6 +389,12 @@ struct CoachRequestScreen: View {
             .styled(.micro)
             .foregroundStyle(Color.ink3)
     }
+}
+
+/// Identifiable wrapper so `.sheet(item:)` can bind to `swappingPreviewIdx`.
+private struct PreviewRowIndex: Identifiable {
+    let index: Int
+    var id: Int { index }
 }
 
 // MARK: - RequestFocus

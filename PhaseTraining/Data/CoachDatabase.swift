@@ -415,6 +415,71 @@ final class CoachDatabase {
         }
     }
 
+    /// Adjacent peers along the difficulty axis within the same movement
+    /// pattern(s). Returns one easier and one harder pick if available — the
+    /// alphabetically-first peer at the nearest difficulty tier (beginner →
+    /// intermediate → advanced → elite). Drives the Exercise detail sheet's
+    /// progression-chain navigation.
+    func adjacentByDifficulty(forExerciseId exerciseId: Int) -> (easier: Exercise?, harder: Exercise?) {
+        guard let db, let current = exercise(id: exerciseId),
+              let currentRank = difficultyRank(current.difficulty) else {
+            return (nil, nil)
+        }
+
+        let sql = """
+        SELECT DISTINCT e.id, e.name, e.slug, e.description, e.instructions, e.cues,
+               e.difficulty, e.modality, e.environment, e.is_compound, e.is_unilateral,
+               e.default_sets, e.default_reps, e.default_rest, e.default_duration,
+               e.regression, e.progression
+        FROM exercises e
+        JOIN exercise_movement_patterns emp ON emp.exercise_id = e.id
+        WHERE e.id != ?
+          AND emp.movement_pattern_id IN (
+            SELECT movement_pattern_id FROM exercise_movement_patterns
+            WHERE exercise_id = ?
+          )
+        ORDER BY e.name ASC
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return (nil, nil) }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_int64(stmt, 1, Int64(exerciseId))
+        sqlite3_bind_int64(stmt, 2, Int64(exerciseId))
+
+        var peers: [Exercise] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            peers.append(decodeExercise(stmt))
+        }
+
+        let easierCandidates = peers.compactMap { ex -> (rank: Int, ex: Exercise)? in
+            guard let r = difficultyRank(ex.difficulty), r < currentRank else { return nil }
+            return (r, ex)
+        }
+        let easier = easierCandidates.sorted { a, b in
+            a.rank != b.rank ? a.rank > b.rank : a.ex.name < b.ex.name
+        }.first?.ex
+
+        let harderCandidates = peers.compactMap { ex -> (rank: Int, ex: Exercise)? in
+            guard let r = difficultyRank(ex.difficulty), r > currentRank else { return nil }
+            return (r, ex)
+        }
+        let harder = harderCandidates.sorted { a, b in
+            a.rank != b.rank ? a.rank < b.rank : a.ex.name < b.ex.name
+        }.first?.ex
+
+        return (easier, harder)
+    }
+
+    private func difficultyRank(_ d: String?) -> Int? {
+        switch d?.lowercased() {
+        case "beginner":     return 1
+        case "intermediate": return 2
+        case "advanced":     return 3
+        case "elite":        return 4
+        default:             return nil
+        }
+    }
+
     func exercises(forRoutineId routineId: Int) -> [RoutineExercise] {
         guard let db else { return [] }
         let sql = """

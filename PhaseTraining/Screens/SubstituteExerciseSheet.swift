@@ -16,6 +16,7 @@ struct SubstituteExerciseSheet: View {
     let substitutes: [ExerciseSubstitute]
     let onPick: (Exercise) -> Void
     @Environment(\.dismiss) private var dismiss
+    @State private var detailExercise: Exercise? = nil
 
     var body: some View {
         NavigationStack {
@@ -45,6 +46,9 @@ struct SubstituteExerciseSheet: View {
                         .foregroundStyle(Color.accent)
                 }
             }
+            .sheet(item: $detailExercise) { ex in
+                ExerciseDetailSheet(exercise: ex)
+            }
         }
         .presentationBackground(Color.bg)
     }
@@ -66,43 +70,73 @@ struct SubstituteExerciseSheet: View {
     }
 
     private func row(_ sub: ExerciseSubstitute) -> some View {
-        Button {
-            onPick(sub.exercise)
-            dismiss()
-        } label: {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(sub.exercise.name)
-                        .styled(.body)
-                        .foregroundStyle(Color.ink)
-                        .multilineTextAlignment(.leading)
-                    Spacer(minLength: 6)
-                    Text("\(sub.matchPercent)%")
-                        .font(.custom("JetBrainsMono-SemiBold", size: 12))
-                        .foregroundStyle(matchColor(sub.matchPercent))
+        HStack(alignment: .top, spacing: 8) {
+            Button {
+                onPick(sub.exercise)
+                dismiss()
+            } label: {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(sub.exercise.name)
+                            .styled(.body)
+                            .foregroundStyle(Color.ink)
+                            .multilineTextAlignment(.leading)
+                        Spacer(minLength: 6)
+                        Text("\(sub.matchPercent)%")
+                            .font(.custom("JetBrainsMono-SemiBold", size: 12))
+                            .foregroundStyle(matchColor(sub.matchPercent))
+                    }
+                    if !sub.exercise.modalityLabel.isEmpty || !sub.exercise.difficultyLabel.isEmpty {
+                        Text(metaLine(sub.exercise))
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
+                    }
+                    if !sub.contextLabels.isEmpty {
+                        contextBadges(sub.contextLabels)
+                    }
+                    if let notes = sub.notes, !notes.isEmpty {
+                        Text(notes)
+                            .font(.custom("Inter-Regular", size: 12))
+                            .foregroundStyle(Color.ink2)
+                            .multilineTextAlignment(.leading)
+                    }
                 }
-                if !sub.exercise.modalityLabel.isEmpty || !sub.exercise.difficultyLabel.isEmpty {
-                    Text(metaLine(sub.exercise))
-                        .font(.monoXS)
-                        .foregroundStyle(Color.ink3)
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.surface)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .contextMenu {
+                Button {
+                    detailExercise = sub.exercise
+                } label: {
+                    Label("Show details", systemImage: "info.circle")
                 }
-                if !sub.contextLabels.isEmpty {
-                    contextBadges(sub.contextLabels)
-                }
-                if let notes = sub.notes, !notes.isEmpty {
-                    Text(notes)
-                        .font(.custom("Inter-Regular", size: 12))
-                        .foregroundStyle(Color.ink2)
-                        .multilineTextAlignment(.leading)
+                Button {
+                    onPick(sub.exercise)
+                    dismiss()
+                } label: {
+                    Label("Swap to this", systemImage: "arrow.left.arrow.right")
                 }
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.surface)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            Button {
+                detailExercise = sub.exercise
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundStyle(Color.ink3)
+                    .frame(width: 36, height: 36)
+                    .background(Color.surface)
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Show details for \(sub.exercise.name)")
         }
-        .buttonStyle(.plain)
     }
 
     private func metaLine(_ ex: Exercise) -> String {

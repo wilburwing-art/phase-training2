@@ -25,6 +25,7 @@ struct OverrideTodaySheet: View {
     let onStartSession: () -> Void
 
     @State private var showingCoachRequest = false
+    @State private var editingRoutine: CustomRoutine? = nil
 
     var body: some View {
         NavigationStack {
@@ -98,46 +99,71 @@ struct OverrideTodaySheet: View {
                 }
             })
         }
+        .sheet(item: $editingRoutine) { routine in
+            CustomRoutineEditSheet(routine: routine)
+        }
     }
 
     // MARK: - Custom row
 
     private func customRow(_ custom: CustomRoutine) -> some View {
-        Button {
-            startSession(with: custom)
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "figure.strengthtraining.traditional")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Color.accent)
-                    .frame(width: 24, alignment: .center)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(custom.name.isEmpty ? "Untitled workout" : custom.name)
-                        .styled(.displayS)
-                        .foregroundStyle(Color.ink)
-                        .lineLimit(1)
-                    Text(subtitle(for: custom))
-                        .styled(.body)
-                        .foregroundStyle(Color.ink3)
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.ink3)
-            }
-            .padding(14)
-            .background(Color.surface)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
-        .buttonStyle(.plain)
-        .contextMenu {
-            Button(role: .destructive) {
-                customStore.delete(custom)
+        HStack(spacing: 8) {
+            Button {
+                startSession(with: custom)
             } label: {
-                Label("Delete", systemImage: "trash")
+                HStack(spacing: 12) {
+                    Image(systemName: "figure.strengthtraining.traditional")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(Color.accent)
+                        .frame(width: 24, alignment: .center)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(custom.name.isEmpty ? "Untitled workout" : custom.name)
+                            .styled(.displayS)
+                            .foregroundStyle(Color.ink)
+                            .lineLimit(1)
+                        Text(subtitle(for: custom))
+                            .styled(.body)
+                            .foregroundStyle(Color.ink3)
+                            .lineLimit(1)
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Color.ink3)
+                }
+                .padding(14)
+                .background(Color.surface)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
+            .contextMenu {
+                Button {
+                    editingRoutine = custom
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                }
+                Button(role: .destructive) {
+                    customStore.delete(custom)
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+            }
+
+            Button {
+                editingRoutine = custom
+            } label: {
+                Image(systemName: "pencil")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Color.ink3)
+                    .frame(width: 36, height: 36)
+                    .background(Color.surface)
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Edit \(custom.name.isEmpty ? "untitled workout" : custom.name)")
         }
     }
 
