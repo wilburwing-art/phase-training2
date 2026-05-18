@@ -2,6 +2,9 @@ import SwiftUI
 
 @main
 struct PhaseTrainingApp: App {
+    @Environment(\.scenePhase) private var scenePhase
+    @AppStorage(CoachConsent.storageKey) private var coachConsentGranted: Bool = false
+
     @StateObject private var session = SessionStore()
     @StateObject private var memory  = MemoryStore()
     @StateObject private var plan    = PlanStore()
@@ -52,6 +55,16 @@ struct PhaseTrainingApp: App {
                         .environmentObject(memory)
                         .environmentObject(plan)
                         .presentationBackground(Color.bg)
+                }
+                .onChange(of: scenePhase) { _, phase in
+                    if phase == .active {
+                        InsightGenerator.runIfDue(
+                            memoryStore: memory,
+                            planStore: plan,
+                            sessionStore: session,
+                            consentGranted: coachConsentGranted
+                        )
+                    }
                 }
                 .onOpenURL { url in
                     guard url.scheme == "phasetraining" else { return }
