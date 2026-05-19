@@ -149,9 +149,18 @@ final class CoachConversationStore: ObservableObject {
 
     // MARK: - Persistence
 
+    /// Snapshot messages on the main thread, then encode + write on a
+    /// background queue. The drawer fires save() on every status change
+    /// (apply/reject of a proposal); with a long chat + diff cards, the
+    /// synchronous encode added ms to a hot UI path. Build 60 hit the iOS
+    /// watchdog from a long apply cascade where this was a contributor.
     private func save() {
-        if let data = try? Self.encoder().encode(messages) {
-            defaults.set(data, forKey: Self.todayKey)
+        let snapshot = messages
+        let store = defaults
+        Task.detached(priority: .utility) {
+            if let data = try? Self.encoder().encode(snapshot) {
+                store.set(data, forKey: Self.todayKey)
+            }
         }
     }
 
