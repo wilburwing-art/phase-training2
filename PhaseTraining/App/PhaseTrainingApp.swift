@@ -30,6 +30,13 @@ struct PhaseTrainingApp: App {
                 UserDefaults.standard.removeObject(forKey: key)
             }
         }
+        // Upsize URLCache so coach.db image bytes survive across app launches.
+        // The catalog serves ~555 images from raw.githubusercontent.com; the
+        // default 4 MB memory + 20 MB disk evicts them almost immediately.
+        URLCache.shared = URLCache(
+            memoryCapacity: 32 * 1024 * 1024,
+            diskCapacity: 256 * 1024 * 1024
+        )
         WeeklyReminderScheduler.registerDelegate()
     }
 

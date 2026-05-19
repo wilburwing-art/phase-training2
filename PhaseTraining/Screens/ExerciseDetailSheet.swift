@@ -177,26 +177,37 @@ private struct ExerciseDetailContent: View {
     private var heroImage: some View {
         if let urlString = exercise.imageURL, let url = URL(string: urlString) {
             VStack(alignment: .leading, spacing: 6) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
+                CachedAsyncImage(
+                    url: url,
+                    loaded: { image in
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.white)
+                    },
+                    placeholder: {
                         ZStack {
                             Color.elevated
                             ProgressView()
                                 .progressViewStyle(.circular)
                                 .tint(Color.ink3)
                         }
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .background(Color.white)
-                    case .failure:
-                        EmptyView()
-                    @unknown default:
-                        EmptyView()
+                    },
+                    failure: {
+                        ZStack {
+                            Color.elevated
+                            VStack(spacing: 6) {
+                                Image(systemName: "photo")
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(Color.ink3)
+                                Text("Image unavailable")
+                                    .font(.monoXS)
+                                    .foregroundStyle(Color.ink3)
+                            }
+                        }
                     }
-                }
+                )
                 .frame(maxWidth: .infinity)
                 .frame(height: 220)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
