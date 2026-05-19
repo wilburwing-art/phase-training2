@@ -139,6 +139,12 @@ jobs:
           chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${ASC_API_KEY_ID}.p8
 
       - name: Archive
+        env:
+          # xcodebuild reruns scripts/generate-coach-secrets.sh as a pre-build
+          # phase; without this it overwrites the just-written CoachSecrets.swift
+          # with an empty token and the AI Coach surfaces "no gateway token
+          # configured" at runtime.
+          PHASETRAINING_CF_AIG_PROD_TOKEN: ${{ secrets.PHASETRAINING_CF_AIG_PROD_TOKEN }}
         run: |
           set -o pipefail
           xcodebuild \
