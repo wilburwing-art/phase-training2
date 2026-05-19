@@ -29,10 +29,13 @@ struct LibraryScreen: View {
     @State private var segment: Segment = .exercises
     @State private var query: String = ""
     @State private var modality: String? = nil
-    @State private var goal: String? = nil
     @State private var detailExercise: Exercise? = nil
-    @State private var detailRoutine: Routine? = nil
     @State private var showingCoachRequest = false
+    @State private var editingRoutine: CustomRoutine? = nil
+
+    /// Search field only appears once the user has accumulated enough custom
+    /// routines to make filtering useful.
+    private static let routineSearchThreshold = 5
 
     var body: some View {
         NavigationStack {
@@ -40,11 +43,15 @@ struct LibraryScreen: View {
                 Color.bg.ignoresSafeArea()
                 VStack(spacing: 0) {
                     segmentControl
-                    searchBar
+                    if showSearchBar {
+                        searchBar
+                    }
                     if segment == .routines {
                         createCustomCTA
                     }
-                    filterChips
+                    if segment == .exercises {
+                        filterChips
+                    }
                     list
                 }
             }
@@ -54,8 +61,8 @@ struct LibraryScreen: View {
             .sheet(item: $detailExercise) { ex in
                 ExerciseDetailSheet(exercise: ex)
             }
-            .sheet(item: $detailRoutine) { routine in
-                RoutineDetailSheet(routine: routine)
+            .sheet(item: $editingRoutine) { routine in
+                CustomRoutineEditSheet(routine: routine)
             }
             .sheet(isPresented: $showingCoachRequest) {
                 // Saving from the library is a "create only" path — we never
@@ -69,6 +76,15 @@ struct LibraryScreen: View {
             }
         }
         .preferredColorScheme(.dark)
+    }
+
+    /// Hide search until exercise browsing has hundreds of rows (always) or
+    /// the user has built up enough custom routines for filtering to matter.
+    private var showSearchBar: Bool {
+        switch segment {
+        case .exercises: return true
+        case .routines:  return customStore.routines.count >= Self.routineSearchThreshold
+        }
     }
 
     // MARK: - Create custom CTA (Routines segment only)
@@ -112,7 +128,6 @@ struct LibraryScreen: View {
                     segment = seg
                     query = ""
                     modality = nil
-                    goal = nil
                 } label: {
                     Text(seg.label)
                         .styled(.micro)
@@ -161,37 +176,20 @@ struct LibraryScreen: View {
         .padding(.top, 12)
     }
 
-    // MARK: - Filter chips
+    // MARK: - Filter chips (exercises segment only)
 
-    @ViewBuilder
     private var filterChips: some View {
-        switch segment {
-        case .exercises:
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    chip("All", selected: modality == nil) { modality = nil }
-                    ForEach(CoachDatabase.shared.modalityCounts(), id: \.modality) { mod, count in
-                        chip("\(formatTag(mod)) · \(count)", selected: modality == mod) {
-                            modality = mod
-                        }
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                chip("All", selected: modality == nil) { modality = nil }
+                ForEach(CoachDatabase.shared.modalityCounts(), id: \.modality) { mod, count in
+                    chip("\(formatTag(mod)) · \(count)", selected: modality == mod) {
+                        modality = mod
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 10)
             }
-        case .routines:
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    chip("All", selected: goal == nil) { goal = nil }
-                    ForEach(CoachDatabase.shared.goalCounts(), id: \.goal) { g, count in
-                        chip("\(formatTag(g)) · \(count)", selected: goal == g) {
-                            goal = g
-                        }
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 10)
-            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 10)
         }
     }
 
@@ -224,7 +222,7 @@ struct LibraryScreen: View {
                 modality: modality
             )
             if rows.isEmpty {
-                emptyState
+                searchEmptyState
             } else {
                 ScrollView {
                     LazyVStack(spacing: 8) {
@@ -239,17 +237,19 @@ struct LibraryScreen: View {
             }
 
         case .routines:
-            let rows = CoachDatabase.shared.listRoutines(
-                search: query.isEmpty ? nil : query,
-                goal: goal
-            )
-            if rows.isEmpty {
-                emptyState
+            let allCustoms = customStore.routines
+            let filtered = query.isEmpty
+                ? allCustoms
+                : allCustoms.filter { $0.name.localizedCaseInsensitiveContains(query) }
+            if allCustoms.isEmpty {
+                routinesEmptyState
+            } else if filtered.isEmpty {
+                searchEmptyState
             } else {
                 ScrollView {
                     LazyVStack(spacing: 8) {
-                        ForEach(rows) { r in
-                            routineRow(r)
+                        ForEach(filtered) { c in
+                            customRow(c)
                         }
                     }
                     .padding(.horizontal, 20)
@@ -260,7 +260,28 @@ struct LibraryScreen: View {
         }
     }
 
-    private var emptyState: some View {
+    /// First-time / no-customs state for the Routines segment. CTA above the
+    /// list already prompts to create one — this copy reinforces it.
+    private var routinesEmptyState: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "tray")
+                .font(.system(size: 22))
+                .foregroundStyle(Color.ink3)
+            Text("Saved routines show up here.")
+                .styled(.body)
+                .foregroundStyle(Color.ink2)
+                .multilineTextAlignment(.center)
+            Text("Tap Create custom routine to build one with the coach.")
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    /// Used by both segments when a search query returns no rows.
+    private var searchEmptyState: some View {
         VStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 22))
@@ -309,21 +330,28 @@ struct LibraryScreen: View {
         return parts.joined(separator: " · ")
     }
 
-    private func routineRow(_ r: Routine) -> some View {
+    /// One of the user's saved CustomRoutines. Tap → CustomRoutineEditSheet.
+    /// Mirrors the row style used in OverrideTodaySheet.
+    private func customRow(_ c: CustomRoutine) -> some View {
         Button {
-            detailRoutine = r
+            editingRoutine = c
         } label: {
             HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(r.name)
+                Image(systemName: "figure.strengthtraining.traditional")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(Color.accent)
+                    .frame(width: 24, alignment: .center)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(c.name.isEmpty ? "Untitled routine" : c.name)
                         .styled(.displayS)
                         .foregroundStyle(Color.ink)
-                        .multilineTextAlignment(.leading)
-                    Text(routineMeta(r))
-                        .font(.monoXS)
+                        .lineLimit(1)
+                    Text(customSubtitle(c))
+                        .styled(.body)
                         .foregroundStyle(Color.ink3)
+                        .lineLimit(1)
                 }
-                Spacer(minLength: 8)
+                Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Color.ink3)
@@ -337,138 +365,9 @@ struct LibraryScreen: View {
         .buttonStyle(.plain)
     }
 
-    private func routineMeta(_ r: Routine) -> String {
-        var parts: [String] = []
-        if let g = r.goal, !g.isEmpty { parts.append(formatTag(g)) }
-        parts.append("\(r.exerciseCount) movements")
-        if let d = r.durationMinutes { parts.append("~\(d) min") }
-        return parts.joined(separator: " · ")
-    }
-}
-
-// MARK: - RoutineDetailSheet
-
-struct RoutineDetailSheet: View {
-    let routine: Routine
-    @Environment(\.dismiss) private var dismiss
-    @State private var detailExercise: Exercise? = nil
-
-    private var exercises: [RoutineExercise] {
-        CoachDatabase.shared.exercises(forRoutineId: routine.id)
+    private func customSubtitle(_ c: CustomRoutine) -> String {
+        let count = c.exercises.count
+        return count == 1 ? "1 movement" : "\(count) movements"
     }
 
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.bg.ignoresSafeArea()
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 18) {
-                        header
-                        if let desc = routine.description, !desc.isEmpty {
-                            Text(desc)
-                                .styled(.body)
-                                .foregroundStyle(Color.ink2)
-                        }
-                        Text("EXERCISES (\(exercises.count))")
-                            .styled(.micro)
-                            .foregroundStyle(Color.ink3)
-                            .padding(.top, 4)
-                        VStack(spacing: 8) {
-                            ForEach(exercises) { rex in
-                                row(rex)
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 18)
-                    .padding(.bottom, 32)
-                }
-            }
-            .navigationTitle("Routine")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
-                        .foregroundStyle(Color.accent)
-                }
-            }
-            .sheet(item: $detailExercise) { ex in
-                ExerciseDetailSheet(exercise: ex)
-            }
-        }
-        .presentationBackground(Color.bg)
-    }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(routine.name)
-                .styled(.displayM)
-                .foregroundStyle(Color.ink)
-            Text(metaLine)
-                .font(.monoXS)
-                .foregroundStyle(Color.ink3)
-        }
-    }
-
-    private var metaLine: String {
-        var parts: [String] = []
-        if let g = routine.goal {
-            parts.append(g.replacingOccurrences(of: "_", with: " ").capitalized)
-        }
-        if let d = routine.difficulty {
-            parts.append(d.capitalized)
-        }
-        if let mins = routine.durationMinutes {
-            parts.append("~\(mins) min")
-        }
-        return parts.joined(separator: " · ")
-    }
-
-    private func row(_ rex: RoutineExercise) -> some View {
-        Button {
-            detailExercise = CoachDatabase.shared.exercise(id: rex.exerciseId)
-        } label: {
-            HStack(spacing: 12) {
-                Text("\(rex.position)")
-                    .font(.monoXS)
-                    .foregroundStyle(Color.ink3)
-                    .frame(width: 18, alignment: .leading)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(rex.name)
-                        .styled(.body)
-                        .foregroundStyle(Color.ink)
-                    if let line = setsLine(rex), !line.isEmpty {
-                        Text(line)
-                            .font(.monoXS)
-                            .foregroundStyle(Color.ink3)
-                    }
-                }
-                Spacer(minLength: 8)
-                Image(systemName: "info.circle")
-                    .font(.system(size: 13))
-                    .foregroundStyle(Color.ink3)
-            }
-            .padding(14)
-            .background(Color.surface)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func setsLine(_ rex: RoutineExercise) -> String? {
-        var parts: [String] = []
-        if let s = rex.sets, let r = rex.reps {
-            parts.append("\(s) × \(r)")
-        } else if let s = rex.sets {
-            parts.append("\(s) sets")
-        } else if let r = rex.reps {
-            parts.append(r)
-        }
-        if let rest = rex.rest, !rest.isEmpty {
-            parts.append("rest \(rest)")
-        }
-        return parts.isEmpty ? nil : parts.joined(separator: " · ")
-    }
 }
