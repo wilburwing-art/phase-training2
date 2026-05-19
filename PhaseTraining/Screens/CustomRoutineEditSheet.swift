@@ -178,7 +178,14 @@ struct CustomRoutineEditSheet: View {
     private func setsBinding(_ exercise: Binding<CustomRoutineExercise>) -> Binding<String> {
         Binding(
             get: { exercise.wrappedValue.sets.map(String.init) ?? "" },
-            set: { exercise.wrappedValue.sets = Int($0) }
+            set: { raw in
+                let trimmed = raw.trimmingCharacters(in: .whitespaces)
+                if trimmed.isEmpty {
+                    exercise.wrappedValue.sets = nil
+                } else if let n = Int(trimmed), n > 0 {
+                    exercise.wrappedValue.sets = min(n, 99)
+                }
+            }
         )
     }
 

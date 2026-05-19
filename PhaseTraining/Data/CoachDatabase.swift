@@ -455,19 +455,35 @@ final class CoachDatabase {
             guard let r = difficultyRank(ex.difficulty), r < currentRank else { return nil }
             return (r, ex)
         }
-        let easier = easierCandidates.sorted { a, b in
-            a.rank != b.rank ? a.rank > b.rank : a.ex.name < b.ex.name
-        }.first?.ex
+        let easier = nameMatch(in: easierCandidates.map(\.ex), against: current.regression)
+            ?? easierCandidates.sorted { a, b in
+                a.rank != b.rank ? a.rank > b.rank : a.ex.name < b.ex.name
+            }.first?.ex
 
         let harderCandidates = peers.compactMap { ex -> (rank: Int, ex: Exercise)? in
             guard let r = difficultyRank(ex.difficulty), r > currentRank else { return nil }
             return (r, ex)
         }
-        let harder = harderCandidates.sorted { a, b in
-            a.rank != b.rank ? a.rank < b.rank : a.ex.name < b.ex.name
-        }.first?.ex
+        let harder = nameMatch(in: harderCandidates.map(\.ex), against: current.progression)
+            ?? harderCandidates.sorted { a, b in
+                a.rank != b.rank ? a.rank < b.rank : a.ex.name < b.ex.name
+            }.first?.ex
 
         return (easier, harder)
+    }
+
+    /// Free-text fallback for adjacentByDifficulty: when the current
+    /// exercise's regression/progression text mentions a peer by name
+    /// (substring match, ≥5 chars to avoid noise), use that peer instead of
+    /// the alphabetical-first pick. Caller has already filtered to the
+    /// correct difficulty tier so we don't break the easier/harder invariant.
+    private func nameMatch(in peers: [Exercise], against text: String?) -> Exercise? {
+        guard let text = text?.lowercased(), !text.isEmpty else { return nil }
+        let matches = peers.filter { peer in
+            let name = peer.name.lowercased()
+            return name.count >= 5 && text.contains(name)
+        }
+        return matches.max { $0.name.count < $1.name.count }
     }
 
     private func difficultyRank(_ d: String?) -> Int? {

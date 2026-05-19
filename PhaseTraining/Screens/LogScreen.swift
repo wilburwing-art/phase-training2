@@ -39,6 +39,9 @@ struct LogScreen: View {
     /// Long-press driven "swap exercise" sheet. nil = closed. Keys by index
     /// into session.exercises so we can mutate it on pick.
     @State private var swappingExIdx: Int? = nil
+    /// Read-only Exercise detail (name → coach.db lookup). Open via row
+    /// long-press contextMenu mid-workout.
+    @State private var detailExercise: Exercise? = nil
 
     var body: some View {
         ZStack {
@@ -77,6 +80,9 @@ struct LogScreen: View {
                     swapExercise(at: wrapped.index, with: picked)
                 }
             )
+        }
+        .sheet(item: $detailExercise) { ex in
+            ExerciseDetailSheet(exercise: ex)
         }
     }
 
@@ -273,6 +279,13 @@ struct LogScreen: View {
                     swappingExIdx = exIdx
                 } label: {
                     Label("Swap with similar…", systemImage: "rectangle.on.rectangle")
+                }
+                Button {
+                    detailExercise = CoachDatabase.shared
+                        .listExercises(search: ex.name)
+                        .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }
+                } label: {
+                    Label("Show details", systemImage: "info.circle")
                 }
             }
 
