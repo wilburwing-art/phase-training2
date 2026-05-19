@@ -128,10 +128,20 @@ final class PlanStore: ObservableObject {
 
     /// Commit a previously proposed diff. The only public mutation point for
     /// user-driven plan edits.
+    ///
+    /// Persistence ordering matters: encode + write to disk BEFORE setting
+    /// `plan`. The `@Published` setter triggers the SwiftUI layout cascade
+    /// (TodayScreen, WeekScreen, CoachDrawer's MiniPlanDiffCard chain) on the
+    /// main thread, and if that cascade exceeds the iOS watchdog's 5-second
+    /// budget (build 60 hit this from the coach drawer), SIGKILL lands before
+    /// the encode completes. Write-first means the new plan survives a
+    /// watchdog kill — relaunch reads the user's intended change.
     func apply(_ diff: PlanDiff) {
         guard !diff.isNoop else { return }
+        if let data = try? Self.encoder().encode(diff.after) {
+            defaults.set(data, forKey: Self.planKey)
+        }
         plan = diff.after
-        savePlan()
     }
 
     /// Phase 13d: swap in a new generated workout on the day matching

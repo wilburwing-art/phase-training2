@@ -161,7 +161,13 @@ struct MiniPlanDiffCard: View {
         return !diff.isNoop
     }
 
+    /// Resolve once per view lifetime. `onAppear` fires every time the drawer
+    /// re-renders (e.g. after setProposalStatus flips applied/rejected), and
+    /// re-running this on every layout pass contributed to the build-60
+    /// watchdog timeout. Bail early if we've already computed the diff or
+    /// recorded a resolution failure.
     private func resolve() {
+        guard resolvedDiff == nil, resolutionNote == nil else { return }
         guard let plan = planStore.plan else {
             resolutionNote = "No active plan to edit."
             return
