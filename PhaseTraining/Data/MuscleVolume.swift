@@ -125,16 +125,16 @@ enum MuscleVolume {
         }
     }
 
-    /// Production resolver — looks up the exercise by name, fetches its
-    /// muscle roles, and labels each muscle group via the coach.db cache.
+    /// Production resolver — looks up the exercise by name and fetches its
+    /// muscle roles. `musclesForExercise` now returns labels in the same
+    /// SQL row, so no separate label lookup is needed.
     static let defaultResolve: NameResolver = { name in
         let db = CoachDatabase.shared
         let exact = db.listExercises(search: name)
             .first { $0.name.caseInsensitiveCompare(name) == .orderedSame }
         guard let exact else { return nil }
-        let raw = db.musclesForExercise(exact.id)
-        guard !raw.isEmpty else { return nil }
-        let muscles = raw.map { (slug: $0.slug, role: $0.role, label: db.muscleGroupLabel(slug: $0.slug)) }
+        let muscles = db.musclesForExercise(exact.id)
+        guard !muscles.isEmpty else { return nil }
         return ResolvedExercise(muscles: muscles)
     }
 }

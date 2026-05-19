@@ -229,4 +229,82 @@ final class WorkoutGeneratorTests: XCTestCase {
         XCTAssertNotEqual(push.exercises.map(\.exerciseId),
                           pull.exercises.map(\.exerciseId))
     }
+
+    // MARK: - Leak #3: primaryFocus shapes the prescription
+
+    func test_focusBias_generalStrength_keepsCoachDbDefaults() {
+        // No bias = nil → coach.db/formula path drives reps + rest.
+        XCTAssertNil(WorkoutGenerator.focusBias(.generalStrength, isPrimary: true))
+        XCTAssertNil(WorkoutGenerator.focusBias(.generalStrength, isPrimary: false))
+    }
+
+    func test_focusBias_hypertrophy_runsHighRepShortRest() {
+        let primary = WorkoutGenerator.focusBias(.hypertrophy, isPrimary: true)
+        XCTAssertEqual(primary?.reps, "6-10")
+        XCTAssertEqual(primary?.restSec, 90)
+
+        let accessory = WorkoutGenerator.focusBias(.hypertrophy, isPrimary: false)
+        XCTAssertEqual(accessory?.reps, "8-12")
+        XCTAssertEqual(accessory?.restSec, 60)
+    }
+
+    func test_focusBias_sportPerformance_runsLowRepLongRest() {
+        // Power scheme — heavy and rested.
+        let primary = WorkoutGenerator.focusBias(.sportPerformance, isPrimary: true)
+        XCTAssertEqual(primary?.reps, "3-5")
+        XCTAssertEqual(primary?.restSec, 180)
+    }
+
+    func test_focusBias_endurance_runsVeryHighRepShortRest() {
+        let primary = WorkoutGenerator.focusBias(.endurance, isPrimary: true)
+        XCTAssertEqual(primary?.reps, "10-15")
+        let accessory = WorkoutGenerator.focusBias(.endurance, isPrimary: false)
+        XCTAssertEqual(accessory?.reps, "12-20")
+        XCTAssertEqual(accessory?.restSec, 45)
+    }
+
+    /// Integration: the prescription actually applies the bias when running
+    /// against a real picked exercise. Hypertrophy memory should NOT inherit
+    /// coach.db's stored reps for a heavy compound — focus wins.
+    func test_prescription_hypertrophyOverridesCoachDbDefaults() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.focuses = [.hypertrophy]   // primaryFocus = hypertrophy
+        let p = DemographicProfile.from(m)
+
+        // Use the first exercise the planner can find for a primary slot.
+        // Any picked exercise will do — we only care that the bias is applied.
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: p, hashSeed: "test-hypertrophy"
+        )
+        guard let first = workout.exercises.first else {
+            return XCTFail("planner returned no exercises")
+        }
+        XCTAssertEqual(first.reps, "6-10",
+                       "Primary lift under hypertrophy should run 6-10, not coach.db default")
+        XCTAssertEqual(first.restSeconds, 90,
+                       "Primary rest under hypertrophy should be 90s")
+    }
+
+    /// Mobility WORKOUT (vs mobility FOCUS) still uses hold-style defaults.
+    /// Confirms the bias only kicks in for lift days.
+    func test_prescription_mobilityWorkout_ignoresFocusBias() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.focuses = [.hypertrophy]  // bias active
+        let p = DemographicProfile.from(m)
+
+        let mob = WorkoutGenerator.generateMobility(
+            memory: m, profile: p, hashSeed: "test-mob"
+        )
+        guard let first = mob.exercises.first else {
+            return XCTFail("mobility flow returned no exercises")
+        }
+        // Mobility reps should NOT be 6-10 (the hypertrophy primary bias) —
+        // mobility flows keep their hold-style defaults.
+        XCTAssertNotEqual(first.reps, "6-10")
+    }
 }

@@ -37,6 +37,116 @@ final class SessionStoreTests: XCTestCase {
         XCTAssertEqual(session.exercises.map { $0.id }, ["bench", "pullup", "ohp", "row", "skull", "facepull"])
     }
 
+    /// Leak #2 regression: prior weight should follow the exercise NAME
+    /// across templates. Before the cross-template fallback, a "Bench Press"
+    /// inside template "A" couldn't see a "Bench Press" logged inside
+    /// template "B" — the autofill column stayed empty even though the user
+    /// had progressive-overload data sitting right there in history.
+    func testCreateSessionAutofillsAcrossDifferentTemplateIds() {
+        let store = SessionStore(defaults: defaults)
+
+        // Prior session under template "A". Two completed bench sets at 225×5.
+        let prior = SavedSession(
+            templateId: "A",
+            name: "Push A",
+            category: "Push",
+            startTime: Date().addingTimeInterval(-7 * 86400),
+            exercises: [
+                LoggedExercise(
+                    id: "rex-bench-A",  // Note different id than the new template's exercise id.
+                    name: "Bench Press",
+                    type: "Barbell", unit: "lbs",
+                    targetSets: 3, targetReps: 5, rest: 120,
+                    sets: [
+                        LoggedSet(num: 1, weight: "225", reps: "5", rpe: "8", done: true),
+                        LoggedSet(num: 2, weight: "225", reps: "5", rpe: "8", done: true),
+                        LoggedSet(num: 3, weight: "230", reps: "3", rpe: "9", done: true),
+                    ],
+                    prevSets: []
+                )
+            ],
+            feel: nil, note: nil,
+            endTime: Date().addingTimeInterval(-7 * 86400 + 3600),
+            duration: 3600
+        )
+        store.saveAll([prior])
+
+        // New workout under template "B" containing Bench Press with a
+        // different exercise id. Without the cross-template fallback, prev
+        // would be empty here.
+        let newTemplate = WorkoutTemplate(
+            id: "B", name: "Push B", category: "Push",
+            exercises: [
+                ExerciseTemplate(id: "gex-bench-B", name: "Bench Press",
+                                 type: "Barbell", unit: "lbs",
+                                 targetSets: 3, targetReps: 5, rest: 120)
+            ]
+        )
+        let session = store.createSession(from: newTemplate)
+        let bench = session.exercises[0]
+
+        // Autofill should now reflect the cross-template prior.
+        XCTAssertEqual(bench.sets.first?.weight, "225",
+                       "cross-template prev should populate the weight column")
+        XCTAssertEqual(bench.sets.first?.reps, "5",
+                       "cross-template prev should populate the reps column")
+        XCTAssertFalse(bench.prevSets.isEmpty,
+                       "prevSets array should expose the cross-template history to LogScreen")
+    }
+
+    /// Sanity: when the user has done the SAME template before, that path
+    /// still wins (no regression from the fallback being introduced).
+    func testCreateSessionPrefersSameTemplatePriorOverCrossTemplate() {
+        let store = SessionStore(defaults: defaults)
+
+        // Older session under "B" — should be picked.
+        let sameTemplate = SavedSession(
+            templateId: "B", name: "Push B", category: "Push",
+            startTime: Date().addingTimeInterval(-3 * 86400),
+            exercises: [
+                LoggedExercise(
+                    id: "gex-bench-B", name: "Bench Press",
+                    type: "Barbell", unit: "lbs",
+                    targetSets: 3, targetReps: 5, rest: 120,
+                    sets: [LoggedSet(num: 1, weight: "240", reps: "5", rpe: "8", done: true)],
+                    prevSets: []
+                )
+            ],
+            feel: nil, note: nil,
+            endTime: Date().addingTimeInterval(-3 * 86400 + 3600),
+            duration: 3600
+        )
+        // Newer session under "A" — should NOT shadow B's template-match.
+        let crossTemplate = SavedSession(
+            templateId: "A", name: "Push A", category: "Push",
+            startTime: Date().addingTimeInterval(-1 * 86400),
+            exercises: [
+                LoggedExercise(
+                    id: "rex-bench-A", name: "Bench Press",
+                    type: "Barbell", unit: "lbs",
+                    targetSets: 3, targetReps: 5, rest: 120,
+                    sets: [LoggedSet(num: 1, weight: "225", reps: "5", rpe: "8", done: true)],
+                    prevSets: []
+                )
+            ],
+            feel: nil, note: nil,
+            endTime: Date().addingTimeInterval(-1 * 86400 + 3600),
+            duration: 3600
+        )
+        store.saveAll([sameTemplate, crossTemplate])
+
+        let session = store.createSession(from: WorkoutTemplate(
+            id: "B", name: "Push B", category: "Push",
+            exercises: [
+                ExerciseTemplate(id: "gex-bench-B", name: "Bench Press",
+                                 type: "Barbell", unit: "lbs",
+                                 targetSets: 3, targetReps: 5, rest: 120)
+            ]
+        ))
+        XCTAssertEqual(session.exercises[0].sets.first?.weight, "240",
+                       "template-match (240) should win over cross-template (225)")
+    }
+
     func testCreateSessionWithNoPriorHistoryHasEmptyWeightsAndTargetReps() {
         let store = SessionStore(defaults: defaults)
         let session = store.createSession(templateId: "upper-1")

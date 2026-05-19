@@ -216,6 +216,12 @@ enum WorkoutGenerator {
     /// Decide sets / reps / rest for the picked exercise. Honors coach.db's
     /// expert defaults when present, adjusted by experience + age. Position
     /// 0 (primary compound) gets the heaviest scheme.
+    ///
+    /// Closes leak #3 from the loop audit: when `memory.primaryFocus` has a
+    /// rep-scheme bias (hypertrophy, sport performance, endurance, etc.),
+    /// the focus overrides coach.db reps + rest defaults. Lifters who said
+    /// "I want hypertrophy" used to get the same 5×5 every workout because
+    /// the generator only consumed focus to pick a movement-pattern shape.
     static func prescription(
         for exercise: Exercise,
         slotIdx: Int,
@@ -240,15 +246,61 @@ enum WorkoutGenerator {
         // Mobility flows: cap at 2 sets so the day stays sustainable.
         if focus == .mobility { sets = min(sets, 2) }
 
-        // Reps — coach.db default wins when set; otherwise from formula.
-        let reps = exercise.defaultReps?.trimmingCharacters(in: .whitespaces).nilIfEmpty
-            ?? defaultRepsFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
-
-        // Rest — parse coach.db default if present; otherwise from formula.
-        let restSec = exercise.defaultRest.flatMap(parseRestSeconds)
-            ?? defaultRestFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
+        // Reps + rest.
+        //
+        // For mobility workouts: keep the hold-style defaults (existing path).
+        // For everything else: when the user's primaryFocus carries a bias,
+        // the bias wins over coach.db's per-exercise reps. We treat focus as
+        // a coarse goal-setting knob — if you said "hypertrophy" every lift
+        // should run in 8-12 reps, even if coach.db tagged Bench as "5".
+        let reps: String
+        let restSec: Int
+        if focus == .mobility {
+            reps = exercise.defaultReps?.trimmingCharacters(in: .whitespaces).nilIfEmpty
+                ?? defaultRepsFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
+            restSec = exercise.defaultRest.flatMap(parseRestSeconds)
+                ?? defaultRestFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
+        } else if let bias = focusBias(memory.primaryFocus, isPrimary: isPrimary) {
+            reps = bias.reps
+            restSec = bias.restSec
+        } else {
+            reps = exercise.defaultReps?.trimmingCharacters(in: .whitespaces).nilIfEmpty
+                ?? defaultRepsFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
+            restSec = exercise.defaultRest.flatMap(parseRestSeconds)
+                ?? defaultRestFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
+        }
 
         return (sets, reps, restSec)
+    }
+
+    /// Map the user's stated goal to a rep-scheme + rest interval. Returns
+    /// nil when the focus is "no opinion" (general strength) — falls back to
+    /// coach.db defaults + the movement-position formula. Primary compound
+    /// gets a heavier scheme than accessories within the same focus.
+    ///
+    /// Schemes target the consensus middle of evidence-based programming:
+    /// hypertrophy 6-12 + 60-90s rest, strength 1-6 + 2-3min, endurance
+    /// 12-20 + 30-60s. Not gospel — directional defaults the coach can
+    /// further tune via tool calls.
+    static func focusBias(_ focus: PrimaryFocus, isPrimary: Bool) -> (reps: String, restSec: Int)? {
+        switch focus {
+        case .generalStrength:
+            return nil
+        case .hypertrophy:
+            return (reps: isPrimary ? "6-10" : "8-12", restSec: isPrimary ? 90 : 60)
+        case .sportPerformance:
+            return (reps: isPrimary ? "3-5" : "5-8", restSec: isPrimary ? 180 : 120)
+        case .endurance:
+            return (reps: isPrimary ? "10-15" : "12-20", restSec: isPrimary ? 60 : 45)
+        case .mobility:
+            return nil
+        case .weightLoss:
+            return (reps: isPrimary ? "8-12" : "10-15", restSec: 60)
+        case .longevity:
+            return (reps: isPrimary ? "5-8" : "8-10", restSec: 90)
+        case .rehab:
+            return (reps: "10-12", restSec: 60)
+        }
     }
 
     private static func defaultSetsFromFormula(isPrimary: Bool, isCompound: Bool) -> Int {

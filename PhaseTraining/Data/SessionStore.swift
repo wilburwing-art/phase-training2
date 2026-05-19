@@ -188,50 +188,49 @@ final class SessionStore: ObservableObject {
             )
         }
 
-        let prev = getPreviousSession(templateId: templateId)
-
-        let exercises: [LoggedExercise] = tmpl.exercises.map { ex in
-            let prevEx = prev?.exercises.first(where: { $0.id == ex.id })
-            let sets: [LoggedSet] = (0..<ex.targetSets).map { i in
-                let prevSet: LoggedSet? = (prevEx?.sets.indices.contains(i) ?? false) ? prevEx?.sets[i] : nil
-                return LoggedSet(
-                    num: i + 1,
-                    weight: prevSet.map { $0.weight } ?? "",
-                    reps:   prevSet.map { $0.reps   } ?? String(ex.targetReps),
-                    rpe: "",
-                    done: false
-                )
-            }
-            return LoggedExercise(
-                id: ex.id,
-                name: ex.name,
-                type: ex.type,
-                unit: ex.unit,
-                targetSets: ex.targetSets,
-                targetReps: ex.targetReps,
-                rest: ex.rest,
-                sets: sets,
-                prevSets: prevEx?.sets ?? []
-            )
-        }
-
-        return ActiveSession(
-            templateId: templateId,
-            name: tmpl.name,
-            category: tmpl.category,
-            startTime: Date(),
-            exercises: exercises,
-            feel: nil,
-            note: nil
-        )
+        return buildSession(templateId: templateId,
+                            name: tmpl.name,
+                            category: tmpl.category,
+                            exercises: tmpl.exercises)
     }
 
     /// Build a fresh ActiveSession from an ad-hoc template (e.g. one assembled
     /// from coach.db). Same prev-pull semantics as the templateId path.
     func createSession(from tmpl: WorkoutTemplate) -> ActiveSession {
-        let prev = getPreviousSession(templateId: tmpl.id)
-        let exercises: [LoggedExercise] = tmpl.exercises.map { ex in
-            let prevEx = prev?.exercises.first(where: { $0.id == ex.id })
+        return buildSession(templateId: tmpl.id,
+                            name: tmpl.name,
+                            category: tmpl.category,
+                            exercises: tmpl.exercises)
+    }
+
+    /// Shared session-construction body. Pulls prev autofill in two passes:
+    ///
+    ///   1. templateId-match — the existing path. Finds the user's last
+    ///      session for THIS template and uses its sets per exercise. Best
+    ///      when the same workout composition repeats weekly.
+    ///   2. cross-template name match — fallback for any exercise that pass
+    ///      1 didn't fill (different templateId, exercise not in the prior
+    ///      template, etc.). Walks `savedSessions` newest-first and pulls
+    ///      the most recent completed sets for that exercise NAME.
+    ///
+    /// Closes leak #2 from the loop audit: the planner-generator pair
+    /// previously couldn't surface "you did 225×5 last week" when the user
+    /// hit Bench Press inside a different generated workout (different
+    /// composition → different stableTemplateId). The autofill column now
+    /// follows the exercise across templates, so progressive-overload
+    /// signal flows even when the workout shape changes week to week.
+    private func buildSession(templateId: String,
+                              name: String,
+                              category: String,
+                              exercises: [ExerciseTemplate]) -> ActiveSession {
+        let templatePrev = getPreviousSession(templateId: templateId)
+
+        let logged: [LoggedExercise] = exercises.map { ex in
+            // Pass 1: template-match.
+            let templateMatchedEx = templatePrev?.exercises.first(where: { $0.id == ex.id })
+            // Pass 2: cross-template name fallback when pass 1 didn't carry data.
+            let prevEx = templateMatchedEx ?? mostRecentExercise(named: ex.name)
+
             let sets: [LoggedSet] = (0..<ex.targetSets).map { i in
                 let prevSet: LoggedSet? = (prevEx?.sets.indices.contains(i) ?? false) ? prevEx?.sets[i] : nil
                 return LoggedSet(
@@ -254,15 +253,34 @@ final class SessionStore: ObservableObject {
                 prevSets: prevEx?.sets ?? []
             )
         }
+
         return ActiveSession(
-            templateId: tmpl.id,
-            name: tmpl.name,
-            category: tmpl.category,
+            templateId: templateId,
+            name: name,
+            category: category,
             startTime: Date(),
-            exercises: exercises,
+            exercises: logged,
             feel: nil,
             note: nil
         )
+    }
+
+    /// Find the most recent completed-set occurrence of an exercise by NAME,
+    /// across all templates. Case-insensitive. Returns nil when no past
+    /// session has any completed set for this exercise.
+    private func mostRecentExercise(named name: String) -> LoggedExercise? {
+        let lower = name.lowercased()
+        let history = loadSaved().sorted { $0.startTime > $1.startTime }
+        for session in history {
+            for ex in session.exercises where ex.name.lowercased() == lower {
+                // Only fall back to this row if it actually carried completed
+                // sets — otherwise we'd seed the autofill from a skipped slot.
+                if ex.sets.contains(where: { $0.done && !$0.weight.isEmpty }) {
+                    return ex
+                }
+            }
+        }
+        return nil
     }
 
     /// Persist a completed session: prepend to savedSessions, clear active.

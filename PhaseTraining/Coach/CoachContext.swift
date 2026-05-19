@@ -40,6 +40,16 @@ enum CoachContext {
         profile.append("session length: \(memory.sessionMinutes) min")
         blocks.append("USER PROFILE\n" + profile.map { "- \($0)" }.joined(separator: "\n"))
 
+        if let body = bodySection(memory: memory) {
+            blocks.append(body)
+        }
+        if let strength = strengthSection(memory: memory, sessions: recentSessions) {
+            blocks.append(strength)
+        }
+        if let balance = muscleBalanceSection(sessions: recentSessions, now: now) {
+            blocks.append(balance)
+        }
+
         if !memory.dislikes.isEmpty {
             blocks.append("DISLIKES\n" + memory.dislikes.map { "- \($0)" }.joined(separator: "\n"))
         }
@@ -79,6 +89,10 @@ enum CoachContext {
             blocks.append("RECENT SESSIONS\n" + lines.joined(separator: "\n"))
         }
 
+        if let familiarity = familiaritySection(sessions: recentSessions, now: now) {
+            blocks.append(familiarity)
+        }
+
         // Recent feedback (last 5)
         let feedback = recentFeedback.suffix(5).reversed()
         if !feedback.isEmpty {
@@ -110,6 +124,111 @@ enum CoachContext {
         }
 
         return blocks.joined(separator: "\n\n")
+    }
+
+    // MARK: - Section builders (build 62: richer profile signal for the coach)
+
+    /// Height / weight / gender block. Returns nil when none are set — keeps
+    /// the snapshot tight for users who skipped the optional fields.
+    static func bodySection(memory: TrainingMemory) -> String? {
+        var lines: [String] = []
+        if let cm = memory.heightCm {
+            lines.append("- height: \(BodyMetrics.formatHeight(cm: cm, imperial: memory.usesImperial))")
+        }
+        if let kg = memory.weightKg {
+            lines.append("- weight: \(BodyMetrics.formatWeight(kg: kg, imperial: memory.usesImperial))")
+        }
+        if let g = memory.gender {
+            lines.append("- gender: \(g.label.lowercased())")
+        }
+        if lines.isEmpty { return nil }
+        return "BODY\n" + lines.joined(separator: "\n")
+    }
+
+    /// Strength-ratio snapshot for canonical lifts (Bench/Squat/Deadlift/OHP/
+    /// Pull-Up). Emits one line per lift with the user's est. 1RM × bodyweight
+    /// ratio and a tier label when gender is set. Hidden when bodyweight is
+    /// missing — the ratio is undefined without it.
+    static func strengthSection(memory: TrainingMemory, sessions: [SavedSession]) -> String? {
+        guard memory.weightKg != nil else { return nil }
+        let rows = StrengthStandards.rows(
+            from: sessions,
+            bodyweightKg: memory.weightKg,
+            gender: memory.gender
+        )
+        guard !rows.isEmpty else { return nil }
+        let unitLabel = memory.usesImperial ? "lb" : "kg"
+        let lines = rows.map { row -> String in
+            let oneRm: Int
+            if memory.usesImperial {
+                oneRm = Int(row.oneRepMaxLb.rounded())
+            } else {
+                oneRm = Int(BodyMetrics.lbToKg(row.oneRepMaxLb).rounded())
+            }
+            let ratio = String(format: "%.2f", row.ratio)
+            let tier = row.tier.map { " · \($0.label.lowercased())" } ?? ""
+            return "- \(row.lift.label): est 1RM \(oneRm) \(unitLabel) · \(ratio)× BW\(tier)"
+        }
+        var section = "STRENGTH (est 1RM × bodyweight)\n" + lines.joined(separator: "\n")
+        if memory.gender == nil {
+            section += "\n(gender not set — no tier labels)"
+        }
+        return section
+    }
+
+    /// Muscle-balance snapshot over the last 4 weeks. Surfaces the top 5
+    /// muscle groups by allocated volume + flags any group whose volume is
+    /// < 1/3 the top group's (a coarse imbalance signal the coach can act on).
+    /// Returns nil when there's no resolvable session volume.
+    static func muscleBalanceSection(sessions: [SavedSession], now: Date) -> String? {
+        let rows = MuscleVolume.rows(from: sessions, weeks: 4, limit: 5, now: now)
+        guard !rows.isEmpty else { return nil }
+        let top = rows[0].volume
+        guard top > 0 else { return nil }
+        var lines: [String] = []
+        for row in rows {
+            let pct = Int((row.volume / top * 100).rounded())
+            var line = "- \(row.label): \(Int(row.volume.rounded())) (\(pct)% of top)"
+            if row.volume * 3 < top {
+                line += " · underdone"
+            }
+            lines.append(line)
+        }
+        return "MUSCLE BALANCE — last 4w (weight × reps, role-allocated)\n" + lines.joined(separator: "\n")
+    }
+
+    /// Top exercises the user has actually trained recently. Different signal
+    /// than strength — strength only covers the canonical 5 lifts. This
+    /// includes everything (accessories, isolations, mobility) so the coach
+    /// can speak to what's familiar. Returns nil if the user has < 3 unique
+    /// completed exercises in the window.
+    static func familiaritySection(sessions: [SavedSession], now: Date, days: Int = 90, limit: Int = 10) -> String? {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: now) ?? now
+
+        struct Stat { var setCount: Int = 0; var sessionDates: Set<DateComponents> = [] }
+        var stats: [String: Stat] = [:]
+        let cal = Calendar.current
+        for session in sessions where session.startTime >= cutoff {
+            let day = cal.dateComponents([.year, .month, .day], from: session.startTime)
+            for ex in session.exercises {
+                let done = ex.sets.filter(\.done).count
+                guard done > 0 else { continue }
+                var s = stats[ex.name] ?? Stat()
+                s.setCount += done
+                s.sessionDates.insert(day)
+                stats[ex.name] = s
+            }
+        }
+        guard stats.count >= 3 else { return nil }
+        let top = stats
+            .map { (name: $0.key, sets: $0.value.setCount, sessions: $0.value.sessionDates.count) }
+            .sorted { $0.sets > $1.sets }
+            .prefix(limit)
+        let lines = top.map { row -> String in
+            let plural = row.sessions == 1 ? "session" : "sessions"
+            return "- \(row.name): \(row.sets) sets across \(row.sessions) \(plural)"
+        }
+        return "EXERCISE FAMILIARITY — last \(days)d\n" + lines.joined(separator: "\n")
     }
 
     // MARK: - Date helpers

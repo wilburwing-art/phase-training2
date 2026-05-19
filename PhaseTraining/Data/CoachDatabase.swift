@@ -5,7 +5,25 @@ final class CoachDatabase {
     static let shared = CoachDatabase()
 
     private var db: OpaquePointer?
-    private let queue = DispatchQueue(label: "coach.db.read")
+
+    /// Serializes ALL public reads on this singleton. SQLite is opened with
+    /// FULLMUTEX so per-statement access is already safe at the C level —
+    /// this lock exists at the Swift level so any Swift-side mutable state
+    /// we add to this class in the future (caches, counters, etc.) is also
+    /// safe under xcodebuild's parallel test runner.
+    ///
+    /// Recursive so methods can call each other (e.g. `adjacentByDifficulty`
+    /// calls `exercise(id:)`) without deadlocking. Every public method must
+    /// `lock.lock()` on entry + `defer lock.unlock()`. The
+    /// `CoachDatabaseConcurrencyTests` guards regressions against this rule.
+    private let lock = NSRecursiveLock()
+
+    /// Lock-helper used by every public read method. Keeping it inline as a
+    /// generic means the call site is one line: `withLock { ... }`.
+    private func withLock<T>(_ body: () -> T) -> T {
+        lock.lock(); defer { lock.unlock() }
+        return body()
+    }
 
     private init() {
         guard let path = Bundle.main.path(forResource: "coach", ofType: "db") else { return }
@@ -17,7 +35,7 @@ final class CoachDatabase {
 
     var isOpen: Bool { db != nil }
 
-    func listRoutines(search: String? = nil, goal: String? = nil) -> [Routine] {
+    func listRoutines(search: String? = nil, goal: String? = nil) -> [Routine] { withLock {
         guard let db else { return [] }
         var sql = """
         SELECT r.id, r.name, r.slug, r.description, r.goal, r.difficulty, r.phase,
@@ -68,9 +86,9 @@ final class CoachDatabase {
             ))
         }
         return rows
-    }
+    } }
 
-    func goalCounts() -> [(goal: String, count: Int)] {
+    func goalCounts() -> [(goal: String, count: Int)] { withLock {
         guard let db else { return [] }
         let sql = "SELECT goal, COUNT(*) FROM routines WHERE goal IS NOT NULL GROUP BY goal ORDER BY 2 DESC"
         var stmt: OpaquePointer?
@@ -82,9 +100,9 @@ final class CoachDatabase {
             out.append((g, Int(sqlite3_column_int64(stmt, 1))))
         }
         return out
-    }
+    } }
 
-    func listExercises(search: String? = nil, modality: String? = nil) -> [Exercise] {
+    func listExercises(search: String? = nil, modality: String? = nil) -> [Exercise] { withLock {
         guard let db else { return [] }
         var sql = """
         SELECT id, name, slug, description, instructions, cues, difficulty, modality,
@@ -121,9 +139,9 @@ final class CoachDatabase {
             out.append(decodeExercise(stmt))
         }
         return out
-    }
+    } }
 
-    func exercise(id: Int) -> Exercise? {
+    func exercise(id: Int) -> Exercise? { withLock {
         guard let db else { return nil }
         let sql = """
         SELECT id, name, slug, description, instructions, cues, difficulty, modality,
@@ -139,9 +157,9 @@ final class CoachDatabase {
         sqlite3_bind_int64(stmt, 1, Int64(id))
         guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
         return decodeExercise(stmt)
-    }
+    } }
 
-    func modalityCounts() -> [(modality: String, count: Int)] {
+    func modalityCounts() -> [(modality: String, count: Int)] { withLock {
         guard let db else { return [] }
         let sql = "SELECT modality, COUNT(*) FROM exercises GROUP BY modality ORDER BY 2 DESC"
         var stmt: OpaquePointer?
@@ -153,7 +171,7 @@ final class CoachDatabase {
             out.append((m, Int(sqlite3_column_int64(stmt, 1))))
         }
         return out
-    }
+    } }
 
     private func decodeExercise(_ stmt: OpaquePointer?) -> Exercise {
         let cuesRaw = text(stmt, 5)
@@ -191,7 +209,7 @@ final class CoachDatabase {
     /// equipment_swap, etc.) so the caller gets a single ranked list. Score is
     /// the MAX similarity across rows for the same substitute_id; contexts are
     /// merged + deduped.
-    func substitutes(forExerciseId exerciseId: Int) -> [ExerciseSubstitute] {
+    func substitutes(forExerciseId exerciseId: Int) -> [ExerciseSubstitute] { withLock {
         guard let db else { return [] }
         let sql = """
         SELECT s.substitute_id, s.context, s.similarity_score, s.notes,
@@ -264,7 +282,7 @@ final class CoachDatabase {
             }
         }
         return out.sorted { $0.score > $1.score }
-    }
+    } }
 
     /// Exercises that hit a given movement pattern (movement_patterns.slug),
     /// post-filtered in Swift by difficulty / environment / name-keyword
@@ -276,7 +294,7 @@ final class CoachDatabase {
         excludeKeywords: [String] = [],
         excludeIds: Set<Int> = [],
         modalities: Set<String> = []
-    ) -> [Exercise] {
+    ) -> [Exercise] { withLock {
         guard let db else { return [] }
         let sql = """
         SELECT DISTINCT e.id, e.name, e.slug, e.description, e.instructions,
@@ -323,13 +341,13 @@ final class CoachDatabase {
             }
             return true
         }
-    }
+    } }
 
     // MARK: - Injuries
 
     /// 56 common injuries grouped by body region. Used by the Profile screen's
     /// injury picker and by DemographicProfile to look up contraindications.
-    func listInjuries() -> [CommonInjury] {
+    func listInjuries() -> [CommonInjury] { withLock {
         guard let db else { return [] }
         let sql = """
         SELECT id, name, slug, body_region, description
@@ -350,14 +368,14 @@ final class CoachDatabase {
             ))
         }
         return out
-    }
+    } }
 
     /// Exercise ids explicitly tagged 'contraindicated' for any of the given
     /// injury slugs. Prehab / rehab roles are NOT included — those are often
     /// the right exercises for the injury and the planner should be free to
     /// pick them. The generator unions this set with its in-workout dedup
     /// before querying candidates.
-    func contraindicatedExerciseIds(forInjurySlugs slugs: Set<String>) -> Set<Int> {
+    func contraindicatedExerciseIds(forInjurySlugs slugs: Set<String>) -> Set<Int> { withLock {
         guard !slugs.isEmpty, let db else { return [] }
         let placeholders = slugs.map { _ in "?" }.joined(separator: ",")
         let sql = """
@@ -378,16 +396,17 @@ final class CoachDatabase {
             out.insert(Int(sqlite3_column_int64(stmt, 0)))
         }
         return out
-    }
+    } }
 
     /// Look up the muscle groups an exercise targets. Used by the Progress
-    /// muscle-balance card to allocate logged volume to body areas.
-    /// Returns (slug, role) tuples — slug is `muscle_groups.slug`, role is
-    /// one of "primary" | "secondary" | "stabilizer" per the schema.
-    func musclesForExercise(_ exerciseId: Int) -> [(slug: String, role: String)] {
+    /// muscle-balance card and the coach context to allocate logged volume
+    /// to body areas. Returns (slug, role, label) tuples — slug is
+    /// `muscle_groups.slug`, role is one of "primary" | "secondary" |
+    /// "stabilizer" per the schema, label is the display name.
+    func musclesForExercise(_ exerciseId: Int) -> [(slug: String, role: String, label: String)] { withLock {
         guard let db else { return [] }
         let sql = """
-        SELECT mg.slug, em.role
+        SELECT mg.slug, em.role, mg.name
         FROM exercise_muscles em
         JOIN muscle_groups mg ON mg.id = em.muscle_group_id
         WHERE em.exercise_id = ?
@@ -397,42 +416,25 @@ final class CoachDatabase {
         defer { sqlite3_finalize(stmt) }
         sqlite3_bind_int64(stmt, 1, Int64(exerciseId))
 
-        var rows: [(String, String)] = []
+        var rows: [(String, String, String)] = []
         while sqlite3_step(stmt) == SQLITE_ROW {
             let slug = text(stmt, 0) ?? ""
             let role = text(stmt, 1) ?? ""
-            if !slug.isEmpty, !role.isEmpty { rows.append((slug, role)) }
+            let label = text(stmt, 2) ?? slug.replacingOccurrences(of: "_", with: " ").capitalized
+            if !slug.isEmpty, !role.isEmpty { rows.append((slug, role, label)) }
         }
         return rows
-    }
-
-    /// Display-friendly muscle-group label by slug, for the muscle-balance
-    /// card. Cached on first call. Empty string when slug isn't found.
-    func muscleGroupLabel(slug: String) -> String {
-        if muscleLabelCache.isEmpty { loadMuscleLabelCache() }
-        return muscleLabelCache[slug] ?? slug.replacingOccurrences(of: "_", with: " ").capitalized
-    }
-
-    private var muscleLabelCache: [String: String] = [:]
-    private func loadMuscleLabelCache() {
-        guard let db else { return }
-        let sql = "SELECT slug, name FROM muscle_groups"
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return }
-        defer { sqlite3_finalize(stmt) }
-        while sqlite3_step(stmt) == SQLITE_ROW {
-            let slug = text(stmt, 0) ?? ""
-            let name = text(stmt, 1) ?? ""
-            if !slug.isEmpty { muscleLabelCache[slug] = name }
-        }
-    }
+    } }
 
     /// Adjacent peers along the difficulty axis within the same movement
     /// pattern(s). Returns one easier and one harder pick if available — the
     /// alphabetically-first peer at the nearest difficulty tier (beginner →
     /// intermediate → advanced → elite). Drives the Exercise detail sheet's
     /// progression-chain navigation.
-    func adjacentByDifficulty(forExerciseId exerciseId: Int) -> (easier: Exercise?, harder: Exercise?) {
+    ///
+    /// Calls `exercise(id:)` internally — this is why `withLock` uses an
+    /// NSRecursiveLock and not a non-reentrant DispatchQueue.
+    func adjacentByDifficulty(forExerciseId exerciseId: Int) -> (easier: Exercise?, harder: Exercise?) { withLock {
         guard let db, let current = exercise(id: exerciseId),
               let currentRank = difficultyRank(current.difficulty) else {
             return (nil, nil)
@@ -483,7 +485,7 @@ final class CoachDatabase {
             }.first?.ex
 
         return (easier, harder)
-    }
+    } }
 
     /// Free-text fallback for adjacentByDifficulty: when the current
     /// exercise's regression/progression text mentions a peer by name
@@ -509,7 +511,7 @@ final class CoachDatabase {
         }
     }
 
-    func exercises(forRoutineId routineId: Int) -> [RoutineExercise] {
+    func exercises(forRoutineId routineId: Int) -> [RoutineExercise] { withLock {
         guard let db else { return [] }
         let sql = """
         SELECT re.id, re.exercise_id, e.name, re.position, re.sets, re.reps, re.rest, re.notes
@@ -537,7 +539,7 @@ final class CoachDatabase {
             ))
         }
         return rows
-    }
+    } }
 
     private func text(_ stmt: OpaquePointer?, _ idx: Int32) -> String? {
         guard let c = sqlite3_column_text(stmt, idx) else { return nil }
