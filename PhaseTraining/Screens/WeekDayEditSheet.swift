@@ -26,6 +26,7 @@ struct WeekDayEditSheet: View {
     @State private var overridingWorkout = false
     @State private var pickingMoveTarget = false
     @State private var editingIntensity = false
+    @State private var previewingWorkout = false
 
     var body: some View {
         NavigationStack {
@@ -87,6 +88,14 @@ struct WeekDayEditSheet: View {
                 }
             }
         }
+        .sheet(isPresented: $previewingWorkout) {
+            if let dayPlan {
+                DayWorkoutPreviewSheet(day: dayPlan, onStartSession: {
+                    previewingWorkout = false
+                    dismiss()
+                })
+            }
+        }
     }
 
     // MARK: - Header
@@ -124,6 +133,19 @@ struct WeekDayEditSheet: View {
 
     private var actionList: some View {
         VStack(spacing: 8) {
+            if dayPlan?.kind == .lift || dayPlan?.kind == .mobility {
+                ActionRow(
+                    title: Calendar.current.isDateInToday(date)
+                        ? "Preview & start workout"
+                        : "Preview workout",
+                    subtitle: Calendar.current.isDateInToday(date)
+                        ? "See exercises, swap before starting"
+                        : "See the planned exercises",
+                    icon: "list.bullet.rectangle",
+                    action: { previewingWorkout = true }
+                )
+            }
+
             ActionRow(
                 title: isMarkedUnavailable ? "Re-enable this day" : "Mark off this week",
                 subtitle: isMarkedUnavailable
