@@ -5200,16 +5200,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 728,
-    "muscle_group_id": 65,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 728,
-    "muscle_group_id": 83,
-    "role": "primary"
-  },
-  {
     "exercise_id": 729,
     "muscle_group_id": 40,
     "role": "primary"
