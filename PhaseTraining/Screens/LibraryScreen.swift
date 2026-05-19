@@ -24,12 +24,15 @@ struct LibraryScreen: View {
         }
     }
 
+    @EnvironmentObject private var customStore: CustomRoutineStore
+
     @State private var segment: Segment = .exercises
     @State private var query: String = ""
     @State private var modality: String? = nil
     @State private var goal: String? = nil
     @State private var detailExercise: Exercise? = nil
     @State private var detailRoutine: Routine? = nil
+    @State private var showingCoachRequest = false
 
     var body: some View {
         NavigationStack {
@@ -38,6 +41,9 @@ struct LibraryScreen: View {
                 VStack(spacing: 0) {
                     segmentControl
                     searchBar
+                    if segment == .routines {
+                        createCustomCTA
+                    }
                     filterChips
                     list
                 }
@@ -51,8 +57,50 @@ struct LibraryScreen: View {
             .sheet(item: $detailRoutine) { routine in
                 RoutineDetailSheet(routine: routine)
             }
+            .sheet(isPresented: $showingCoachRequest) {
+                // Saving from the library is a "create only" path — we never
+                // immediately start a session from here (Library is browse,
+                // not Today). The custom lands in CustomRoutineStore and the
+                // user can launch it later from Today's override sheet.
+                CoachRequestScreen(onSaved: { custom, _ in
+                    customStore.save(custom)
+                    showingCoachRequest = false
+                })
+            }
         }
         .preferredColorScheme(.dark)
+    }
+
+    // MARK: - Create custom CTA (Routines segment only)
+
+    private var createCustomCTA: some View {
+        Button { showingCoachRequest = true } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(Color.accentInk)
+                    .frame(width: 24, alignment: .center)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Create custom routine")
+                        .styled(.displayS)
+                        .foregroundStyle(Color.accentInk)
+                    Text("Coach builds one from your focus + duration")
+                        .styled(.body)
+                        .foregroundStyle(Color.accentInk.opacity(0.7))
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.accentInk.opacity(0.7))
+            }
+            .padding(14)
+            .background(Color.accent)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("library-create-custom")
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
     }
 
     // MARK: - Segment control
