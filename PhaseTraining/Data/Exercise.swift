@@ -20,6 +20,12 @@ struct Exercise: Identifiable, Hashable {
 
     let regression: String?
     let progression: String?
+
+    /// Full-resolution photo URL when available. Currently sourced from
+    /// `yuhonas/free-exercise-db` (~17% catalog coverage); nil otherwise.
+    let imageURL: String?
+    /// Thumbnail-grade photo URL — same source today, may diverge later.
+    let thumbnailURL: String?
 }
 
 extension Exercise {

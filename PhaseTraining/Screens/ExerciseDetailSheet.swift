@@ -53,6 +53,7 @@ private struct ExerciseDetailContent: View {
             VStack(alignment: .leading, spacing: 20) {
                 header
                 metaBadges
+                heroImage
                 if let desc = exercise.description, !desc.isEmpty {
                     section(title: "Overview") {
                         Text(desc)
@@ -139,6 +140,41 @@ private struct ExerciseDetailContent: View {
         WrappingFlow(spacing: 6) {
             if exercise.isCompound { badge("Compound") }
             if exercise.isUnilateral { badge("Unilateral") }
+        }
+    }
+
+    @ViewBuilder
+    private var heroImage: some View {
+        if let urlString = exercise.imageURL, let url = URL(string: urlString) {
+            VStack(alignment: .leading, spacing: 6) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .empty:
+                        ZStack {
+                            Color.elevated
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .tint(Color.ink3)
+                        }
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .background(Color.white)
+                    case .failure:
+                        EmptyView()
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 220)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+                Text("Image: free-exercise-db")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+            }
         }
     }
 
