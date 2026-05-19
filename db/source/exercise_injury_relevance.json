@@ -66,12 +66,6 @@
     "notes": "First-line scap-posture rehab."
   },
   {
-    "exercise_id": 22,
-    "injury_id": 11,
-    "role": "rehab_early",
-    "notes": "Y-raise is core to scap rehab."
-  },
-  {
     "exercise_id": 24,
     "injury_id": 10,
     "role": "rehab_late",
@@ -612,18 +606,6 @@
     "notes": "FAI-friendly deep hip mobility."
   },
   {
-    "exercise_id": 319,
-    "injury_id": 20,
-    "role": "contraindicated",
-    "notes": null
-  },
-  {
-    "exercise_id": 319,
-    "injury_id": 25,
-    "role": "contraindicated",
-    "notes": "Acute cervical strain contraindicates loaded bridge."
-  },
-  {
     "exercise_id": 320,
     "injury_id": 30,
     "role": "rehab_late",
@@ -670,12 +652,6 @@
     "injury_id": 40,
     "role": "prehab",
     "notes": "Lateral ankle stability."
-  },
-  {
-    "exercise_id": 330,
-    "injury_id": 1,
-    "role": "contraindicated",
-    "notes": null
   },
   {
     "exercise_id": 334,
@@ -798,24 +774,6 @@
     "notes": "Avoid in active rotator-cuff flare."
   },
   {
-    "exercise_id": 351,
-    "injury_id": 50,
-    "role": "contraindicated",
-    "notes": "High rotational load — wait until cleared."
-  },
-  {
-    "exercise_id": 352,
-    "injury_id": 50,
-    "role": "contraindicated",
-    "notes": "Ballistic; avoid in active tennis elbow."
-  },
-  {
-    "exercise_id": 354,
-    "injury_id": 2,
-    "role": "contraindicated",
-    "notes": "Single-leg impact; not for active ACL rehab."
-  },
-  {
     "exercise_id": 355,
     "injury_id": 1,
     "role": "rehab_late",
@@ -882,22 +840,10 @@
     "notes": null
   },
   {
-    "exercise_id": 369,
-    "injury_id": 40,
-    "role": "prehab",
-    "notes": "Lateral ankle mobility for sprain prevention."
-  },
-  {
     "exercise_id": 377,
     "injury_id": 20,
     "role": "contraindicated",
     "notes": "Avoid during acute disc herniation."
-  },
-  {
-    "exercise_id": 389,
-    "injury_id": 22,
-    "role": "contraindicated",
-    "notes": "Rotational jump landing risky with SI joint dysfunction."
   },
   {
     "exercise_id": 390,
@@ -1020,18 +966,6 @@
     "notes": "Good PFPS late-stage milestone."
   },
   {
-    "exercise_id": 424,
-    "injury_id": 1,
-    "role": "contraindicated",
-    "notes": null
-  },
-  {
-    "exercise_id": 424,
-    "injury_id": 2,
-    "role": "contraindicated",
-    "notes": "Approach jumps contraindicated in acute ACL rehab."
-  },
-  {
     "exercise_id": 425,
     "injury_id": 2,
     "role": "prehab",
@@ -1078,18 +1012,6 @@
     "injury_id": 12,
     "role": "rehab_early",
     "notes": "Safe early-stage SLAP rehab option."
-  },
-  {
-    "exercise_id": 432,
-    "injury_id": 2,
-    "role": "contraindicated",
-    "notes": "Bounds contraindicated in acute ACL rehab."
-  },
-  {
-    "exercise_id": 432,
-    "injury_id": 40,
-    "role": "contraindicated",
-    "notes": "Avoid in acute lateral ankle sprains."
   },
   {
     "exercise_id": 433,
@@ -1224,12 +1146,6 @@
     "notes": "Late-stage ankle sprain loading."
   },
   {
-    "exercise_id": 472,
-    "injury_id": 5,
-    "role": "prehab",
-    "notes": "Lateral hip conditioning reduces IT-band load."
-  },
-  {
     "exercise_id": 473,
     "injury_id": 40,
     "role": "contraindicated",
@@ -1320,12 +1236,6 @@
     "notes": "Wrist sprain must be cleared before wall walks."
   },
   {
-    "exercise_id": 508,
-    "injury_id": 52,
-    "role": "contraindicated",
-    "notes": "Avoid grip-intensive inverts with acute wrist sprain."
-  },
-  {
     "exercise_id": 510,
     "injury_id": 42,
     "role": "prehab",
@@ -1378,18 +1288,6 @@
     "injury_id": 20,
     "role": "contraindicated",
     "notes": null
-  },
-  {
-    "exercise_id": 534,
-    "injury_id": 1,
-    "role": "rehab_late",
-    "notes": "Backward drag loads VMO safely in late-stage patellar tendon rehab."
-  },
-  {
-    "exercise_id": 534,
-    "injury_id": 6,
-    "role": "rehab_late",
-    "notes": "PFPS-friendly; loads quad with minimal knee flexion."
   },
   {
     "exercise_id": 537,
@@ -1484,18 +1382,6 @@
   {
     "exercise_id": 563,
     "injury_id": 52,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 567,
-    "injury_id": 50,
-    "role": "prehab",
-    "notes": "Lateral epicondylitis common in repetitive casters."
-  },
-  {
-    "exercise_id": 572,
-    "injury_id": 50,
     "role": "prehab",
     "notes": null
   },
