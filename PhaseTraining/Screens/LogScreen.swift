@@ -93,6 +93,17 @@ struct LogScreen: View {
         )
     }
 
+    /// Coach.db image lookup by exercise name. Used for the row thumbnail —
+    /// LoggedExercise only carries name (not the original exerciseId), so we
+    /// resolve via case-insensitive name match. Returns nil for exercises
+    /// without media or whose name doesn't match a catalog row.
+    private func thumbnailURL(forName name: String) -> String? {
+        CoachDatabase.shared
+            .listExercises(search: name)
+            .first { $0.name.caseInsensitiveCompare(name) == .orderedSame }
+            .flatMap { $0.thumbnailURL ?? $0.imageURL }
+    }
+
     /// In-session substitution. Replace the exercise's name + display type
     /// in-place; keep already-logged sets intact (the user did the work,
     /// just under a different label).
@@ -237,7 +248,9 @@ struct LogScreen: View {
 
         VStack(spacing: 0) {
             // Header row
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
+                ExerciseThumbnail(urlString: thumbnailURL(forName: ex.name), size: 32, cornerRadius: 6)
+                    .opacity(allDone ? 0.6 : 1.0)
                 if allDone {
                     ZStack {
                         Circle()

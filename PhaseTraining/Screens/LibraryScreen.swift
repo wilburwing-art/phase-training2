@@ -229,6 +229,7 @@ struct LibraryScreen: View {
             detailExercise = ex
         } label: {
             HStack(spacing: 12) {
+                ExerciseThumbnail(urlString: ex.thumbnailURL ?? ex.imageURL, size: 48)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(ex.name)
                         .styled(.body)

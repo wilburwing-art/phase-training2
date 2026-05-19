@@ -75,33 +75,36 @@ struct SubstituteExerciseSheet: View {
                 onPick(sub.exercise)
                 dismiss()
             } label: {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text(sub.exercise.name)
-                            .styled(.body)
-                            .foregroundStyle(Color.ink)
-                            .multilineTextAlignment(.leading)
-                        Spacer(minLength: 6)
-                        Text("\(sub.matchPercent)%")
-                            .font(.custom("JetBrainsMono-SemiBold", size: 12))
-                            .foregroundStyle(matchColor(sub.matchPercent))
-                    }
-                    if !sub.exercise.modalityLabel.isEmpty || !sub.exercise.difficultyLabel.isEmpty {
-                        Text(metaLine(sub.exercise))
-                            .font(.monoXS)
-                            .foregroundStyle(Color.ink3)
-                    }
-                    if !sub.contextLabels.isEmpty {
-                        contextBadges(sub.contextLabels)
-                    }
-                    if let notes = sub.notes, !notes.isEmpty {
-                        Text(notes)
-                            .font(.custom("Inter-Regular", size: 12))
-                            .foregroundStyle(Color.ink2)
-                            .multilineTextAlignment(.leading)
+                HStack(alignment: .top, spacing: 12) {
+                    ExerciseThumbnail(urlString: sub.exercise.thumbnailURL ?? sub.exercise.imageURL, size: 56)
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Text(sub.exercise.name)
+                                .styled(.body)
+                                .foregroundStyle(Color.ink)
+                                .multilineTextAlignment(.leading)
+                            Spacer(minLength: 6)
+                            Text("\(sub.matchPercent)%")
+                                .font(.custom("JetBrainsMono-SemiBold", size: 12))
+                                .foregroundStyle(matchColor(sub.matchPercent))
+                        }
+                        if !sub.exercise.modalityLabel.isEmpty || !sub.exercise.difficultyLabel.isEmpty {
+                            Text(metaLine(sub.exercise))
+                                .font(.monoXS)
+                                .foregroundStyle(Color.ink3)
+                        }
+                        if !sub.contextLabels.isEmpty {
+                            contextBadges(sub.contextLabels)
+                        }
+                        if let notes = sub.notes, !notes.isEmpty {
+                            Text(notes)
+                                .font(.custom("Inter-Regular", size: 12))
+                                .foregroundStyle(Color.ink2)
+                                .multilineTextAlignment(.leading)
+                        }
                     }
                 }
-                .padding(14)
+                .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color.surface)
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
