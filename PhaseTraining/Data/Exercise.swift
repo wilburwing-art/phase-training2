@@ -26,6 +26,12 @@ struct Exercise: Identifiable, Hashable {
     let imageURL: String?
     /// Thumbnail-grade photo URL — same source today, may diverge later.
     let thumbnailURL: String?
+    /// External demo video link (YouTube / Vimeo). Opened in Safari /
+    /// platform app rather than embedded to sidestep embedding TOS.
+    let videoURL: String?
+    /// Human-readable attribution for `videoURL` (e.g. "Squat University
+    /// (YouTube)"). Surfaced next to the video link in the UI.
+    let sourceVideoAttribution: String?
 }
 
 extension Exercise {

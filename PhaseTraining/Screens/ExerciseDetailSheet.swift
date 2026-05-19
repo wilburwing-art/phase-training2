@@ -89,6 +89,7 @@ private struct ExerciseDetailContent: View {
                         defaultsGrid
                     }
                 }
+                watchDemoButton
                 if hasFreeTextChain {
                     section(title: "Coach notes") {
                         freeTextChainRows
@@ -140,6 +141,35 @@ private struct ExerciseDetailContent: View {
         WrappingFlow(spacing: 6) {
             if exercise.isCompound { badge("Compound") }
             if exercise.isUnilateral { badge("Unilateral") }
+        }
+    }
+
+    @ViewBuilder
+    private var watchDemoButton: some View {
+        if let urlString = exercise.videoURL, let url = URL(string: urlString) {
+            VStack(alignment: .leading, spacing: 6) {
+                Link(destination: url) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "play.rectangle.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                        Text("Watch demo")
+                            .font(.custom("SpaceGrotesk-SemiBold", size: 14))
+                        Spacer()
+                        Image(systemName: "arrow.up.right.square")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .foregroundStyle(Color.accentInk)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background(Color.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                if let attr = exercise.sourceVideoAttribution, !attr.isEmpty {
+                    Text(attr)
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                }
+            }
         }
     }
 

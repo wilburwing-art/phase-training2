@@ -90,7 +90,8 @@ final class CoachDatabase {
         SELECT id, name, slug, description, instructions, cues, difficulty, modality,
                environment, is_compound, is_unilateral,
                default_sets, default_reps, default_rest, default_duration,
-               regression, progression, image_url, thumbnail_url
+               regression, progression, image_url, thumbnail_url,
+               video_url, source_video_attribution
         FROM exercises
         """
         var clauses: [String] = []
@@ -128,7 +129,8 @@ final class CoachDatabase {
         SELECT id, name, slug, description, instructions, cues, difficulty, modality,
                environment, is_compound, is_unilateral,
                default_sets, default_reps, default_rest, default_duration,
-               regression, progression, image_url, thumbnail_url
+               regression, progression, image_url, thumbnail_url,
+               video_url, source_video_attribution
         FROM exercises WHERE id = ?
         """
         var stmt: OpaquePointer?
@@ -178,7 +180,9 @@ final class CoachDatabase {
             regression: text(stmt, 15),
             progression: text(stmt, 16),
             imageURL: text(stmt, 17),
-            thumbnailURL: text(stmt, 18)
+            thumbnailURL: text(stmt, 18),
+            videoURL: text(stmt, 19),
+            sourceVideoAttribution: text(stmt, 20)
         )
     }
 
@@ -194,7 +198,8 @@ final class CoachDatabase {
                e.id, e.name, e.slug, e.description, e.instructions, e.cues, e.difficulty, e.modality,
                e.environment, e.is_compound, e.is_unilateral,
                e.default_sets, e.default_reps, e.default_rest, e.default_duration,
-               e.regression, e.progression, e.image_url, e.thumbnail_url
+               e.regression, e.progression, e.image_url, e.thumbnail_url,
+               e.video_url, e.source_video_attribution
         FROM exercise_substitutions s
         JOIN exercises e ON e.id = s.substitute_id
         WHERE s.exercise_id = ?
@@ -240,7 +245,9 @@ final class CoachDatabase {
                 regression: text(exStmt, 19),
                 progression: text(exStmt, 20),
                 imageURL: text(exStmt, 21),
-                thumbnailURL: text(exStmt, 22)
+                thumbnailURL: text(exStmt, 22),
+                videoURL: text(exStmt, 23),
+                sourceVideoAttribution: text(exStmt, 24)
             )
             if let i = indexFor[subId] {
                 if !out[i].contexts.contains(context) { out[i].contexts.append(context) }
@@ -276,7 +283,8 @@ final class CoachDatabase {
                e.cues, e.difficulty, e.modality, e.environment,
                e.is_compound, e.is_unilateral,
                e.default_sets, e.default_reps, e.default_rest, e.default_duration,
-               e.regression, e.progression, e.image_url, e.thumbnail_url
+               e.regression, e.progression, e.image_url, e.thumbnail_url,
+               e.video_url, e.source_video_attribution
         FROM exercises e
         JOIN exercise_movement_patterns emp ON emp.exercise_id = e.id
         JOIN movement_patterns mp ON mp.id = emp.movement_pattern_id
@@ -434,7 +442,8 @@ final class CoachDatabase {
         SELECT DISTINCT e.id, e.name, e.slug, e.description, e.instructions, e.cues,
                e.difficulty, e.modality, e.environment, e.is_compound, e.is_unilateral,
                e.default_sets, e.default_reps, e.default_rest, e.default_duration,
-               e.regression, e.progression, e.image_url, e.thumbnail_url
+               e.regression, e.progression, e.image_url, e.thumbnail_url,
+               e.video_url, e.source_video_attribution
         FROM exercises e
         JOIN exercise_movement_patterns emp ON emp.exercise_id = e.id
         WHERE e.id != ?
