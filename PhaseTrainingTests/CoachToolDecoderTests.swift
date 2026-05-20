@@ -19,9 +19,13 @@ final class CoachToolDecoderTests: XCTestCase {
     /// 7-day plan starting Monday 2026-05-18. Day0 = lift, Day1 = sport,
     /// Day3 = lift (Thursday), Day4 = rest (Friday), Day5 = sport.
     private func fixturePlan() -> (WeekPlan, df: DateFormatter) {
+        // Match production's DateFormatter (CoachTools.planEdits) — neither
+        // sets a timeZone, so both fall back to the system default. With
+        // matching defaults the test passes on both a developer Mac
+        // (typically MT/PT) and CI (UTC). Hardcoding Denver here caused
+        // a 6-hour drift on UTC runners.
         let df = DateFormatter()
         df.dateFormat = "yyyy-MM-dd"
-        df.timeZone = TimeZone(identifier: "America/Denver")
         let start = df.date(from: "2026-05-18")!
         let cal = Calendar.current
         let kinds: [DayKind] = [.lift, .sport, .mobility, .lift, .rest, .sport, .rest]
