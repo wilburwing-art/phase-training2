@@ -126,6 +126,9 @@ struct WeekScreen: View {
 
             Spacer(minLength: 0)
         }
+        // Keep Sunday's row clear of the tab bar — content was running into
+        // the tab strip and clipping the last row's reason text.
+        .padding(.bottom, 16)
     }
 
     private func header(plan: WeekPlan) -> some View {
@@ -280,7 +283,13 @@ private struct DayRow: View {
                     if isToday {
                         Text("TODAY")
                             .styled(.micro)
-                            .foregroundStyle(Color.accent)
+                            .foregroundStyle(Color.bg)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color.accent)
+                            )
                     }
                     Spacer()
                 }
@@ -304,12 +313,12 @@ private struct DayRow: View {
             if isToday {
                 Rectangle()
                     .fill(Color.accent)
-                    .frame(width: 2)
+                    .frame(width: 4)
             }
         }
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(borderColor, lineWidth: isTargeted ? 1.5 : 0.5)
+                .stroke(borderColor, lineWidth: isToday ? 1.5 : (isTargeted ? 1.5 : 0.5))
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .animation(.easeOut(duration: 0.12), value: isTargeted)
@@ -317,7 +326,7 @@ private struct DayRow: View {
 
     private var borderColor: Color {
         if isTargeted { return Color.accent }
-        return isToday ? Color.accentBorder : Color.line
+        return isToday ? Color.accent : Color.line
     }
 
     private var weekdayShort: String {
