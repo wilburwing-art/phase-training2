@@ -23,7 +23,7 @@ After Phase 13e lands, the user can:
 ## Out of scope
 
 - Multi-user / shared-team coaching. Solo athlete only.
-- Voice input / TTS output. Keyboard chat only.
+- Voice input / TTS output. Keyboard chat only. (Tracked in `ROADMAP.md` → "Voice coach check-ins".)
 - Cross-device sync of conversations. Local-only history.
 - Long-term memory beyond TrainingMemory's existing fields. No separate "facts the coach learned" store this phase — if it learns something durable, it proposes a memory update the user accepts.
 - Image input (photos of food, form videos, etc.).
