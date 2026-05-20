@@ -37,7 +37,17 @@ enum CoachContext {
         profile.append("experience: \(memory.experience.label)")
         profile.append("equipment: \(memory.equipment.map(\.label).joined(separator: ", "))")
         profile.append("target lifts/wk: \(memory.liftDaysPerWeek)")
-        profile.append("session length: \(memory.sessionMinutes) min")
+        // Session length: declared vs actual. If the user's average completed
+        // session diverges meaningfully (≥15%) from declared, flag both so the
+        // coach can budget realistic workouts instead of trusting the
+        // declared number that gets blown through every time.
+        let avgActual = averageRecentDurationMinutes(sessions: recentSessions)
+        if let avg = avgActual,
+           abs(Double(avg) - Double(memory.sessionMinutes)) / Double(max(memory.sessionMinutes, 1)) >= 0.15 {
+            profile.append("session length: \(memory.sessionMinutes) min declared · avg actual \(avg) min")
+        } else {
+            profile.append("session length: \(memory.sessionMinutes) min")
+        }
         blocks.append("USER PROFILE\n" + profile.map { "- \($0)" }.joined(separator: "\n"))
 
         if let body = bodySection(memory: memory) {
@@ -48,6 +58,9 @@ enum CoachContext {
         }
         if let balance = muscleBalanceSection(sessions: recentSessions, now: now) {
             blocks.append(balance)
+        }
+        if let patterns = patternFrequencySection(sessions: recentSessions, now: now) {
+            blocks.append(patterns)
         }
 
         if !memory.dislikes.isEmpty {
@@ -77,16 +90,28 @@ enum CoachContext {
             blocks.append("CURRENT WEEK PLAN\n(no plan generated yet — user hasn't completed onboarding or hasn't generated one)")
         }
 
-        // Recent sessions (last 5)
+        // Recent sessions (last 5). Header shows days since the most recent
+        // completed session so the coach can reason about layoffs without
+        // having to do date math on the listed dates.
         let sessions = recentSessions.suffix(5).reversed()
         if !sessions.isEmpty {
+            let mostRecent = recentSessions.max(by: { $0.startTime < $1.startTime })
+            let daysSince = mostRecent.map {
+                max(0, Calendar.current.dateComponents([.day], from: $0.startTime, to: now).day ?? 0)
+            }
+            let header: String
+            if let days = daysSince {
+                header = "RECENT SESSIONS (days since last: \(days))"
+            } else {
+                header = "RECENT SESSIONS"
+            }
             var lines: [String] = []
             for s in sessions {
                 let done = s.exercises.flatMap(\.sets).filter(\.done).count
                 let feel = s.feel.map { " · felt: \($0.lowercased())" } ?? ""
                 lines.append("- \(short(s.startTime)) · \(s.name) · \(done) sets · \(s.duration / 60) min\(feel)")
             }
-            blocks.append("RECENT SESSIONS\n" + lines.joined(separator: "\n"))
+            blocks.append("\(header)\n" + lines.joined(separator: "\n"))
         }
 
         if let familiarity = familiaritySection(sessions: recentSessions, now: now) {
@@ -123,13 +148,20 @@ enum CoachContext {
             }
         }
 
+        if let trend = recoveryTrendSection(soreness: recentSoreness, now: now) {
+            blocks.append(trend)
+        }
+
         return blocks.joined(separator: "\n\n")
     }
 
     // MARK: - Section builders (build 62: richer profile signal for the coach)
 
-    /// Height / weight / gender block. Returns nil when none are set — keeps
-    /// the snapshot tight for users who skipped the optional fields.
+    /// Height / weight / gender / age block. Returns nil when none are set
+    /// — keeps the snapshot tight for users who skipped the optional fields.
+    /// Age was missing from the coach's view until build 65 even though the
+    /// generator already used it — without age the coach would program the
+    /// same workout for a 28- and 58-year-old.
     static func bodySection(memory: TrainingMemory) -> String? {
         var lines: [String] = []
         if let cm = memory.heightCm {
@@ -141,6 +173,9 @@ enum CoachContext {
         if let g = memory.gender {
             lines.append("- gender: \(g.label.lowercased())")
         }
+        if let age = memory.age {
+            lines.append("- age: \(age)")
+        }
         if lines.isEmpty { return nil }
         return "BODY\n" + lines.joined(separator: "\n")
     }
@@ -149,7 +184,13 @@ enum CoachContext {
     /// Pull-Up). Emits one line per lift with the user's est. 1RM × bodyweight
     /// ratio and a tier label when gender is set. Hidden when bodyweight is
     /// missing — the ratio is undefined without it.
-    static func strengthSection(memory: TrainingMemory, sessions: [SavedSession]) -> String? {
+    ///
+    /// Build 65 adds VELOCITY — each row compares the user's best est-1RM in
+    /// the LAST 4 weeks against the best from the 4 weeks before that. The
+    /// coach now sees "+12 lb / 4w" (progressing) vs "≈" (plateaued) vs
+    /// "-8 lb / 4w" (regressed). Drives the obvious "deload / change rep
+    /// scheme" decisions without the LLM having to date-math over sessions.
+    static func strengthSection(memory: TrainingMemory, sessions: [SavedSession], now: Date = Date()) -> String? {
         guard memory.weightKg != nil else { return nil }
         let rows = StrengthStandards.rows(
             from: sessions,
@@ -158,6 +199,22 @@ enum CoachContext {
         )
         guard !rows.isEmpty else { return nil }
         let unitLabel = memory.usesImperial ? "lb" : "kg"
+        // Split sessions into "current 4w" vs "prior 4w" for velocity.
+        let cal = Calendar.current
+        let recentCutoff = cal.date(byAdding: .weekOfYear, value: -4, to: now) ?? now
+        let priorCutoff = cal.date(byAdding: .weekOfYear, value: -8, to: now) ?? now
+        let recentWindow = sessions.filter { $0.startTime >= recentCutoff }
+        let priorWindow = sessions.filter { $0.startTime >= priorCutoff && $0.startTime < recentCutoff }
+
+        let recentBest = StrengthStandards.rows(from: recentWindow,
+                                                bodyweightKg: memory.weightKg,
+                                                gender: memory.gender)
+        let priorBest = StrengthStandards.rows(from: priorWindow,
+                                               bodyweightKg: memory.weightKg,
+                                               gender: memory.gender)
+        let recentBestById = Dictionary(uniqueKeysWithValues: recentBest.map { ($0.id, $0.oneRepMaxLb) })
+        let priorBestById = Dictionary(uniqueKeysWithValues: priorBest.map { ($0.id, $0.oneRepMaxLb) })
+
         let lines = rows.map { row -> String in
             let oneRm: Int
             if memory.usesImperial {
@@ -167,13 +224,155 @@ enum CoachContext {
             }
             let ratio = String(format: "%.2f", row.ratio)
             let tier = row.tier.map { " · \($0.label.lowercased())" } ?? ""
-            return "- \(row.lift.label): est 1RM \(oneRm) \(unitLabel) · \(ratio)× BW\(tier)"
+            // Velocity: only when we have BOTH windows of data for this lift.
+            var velocity = ""
+            if let recent = recentBestById[row.id], let prior = priorBestById[row.id] {
+                let deltaLb = recent - prior
+                let deltaDisplay = memory.usesImperial
+                    ? Int(deltaLb.rounded())
+                    : Int(BodyMetrics.lbToKg(deltaLb).rounded())
+                // ≈ when the change is below the smallest plate increment
+                // (5 lb). Below the noise floor it's noise, not signal.
+                if abs(deltaLb) < 5 {
+                    velocity = " · ≈ /4w"
+                } else if deltaLb > 0 {
+                    velocity = " · +\(deltaDisplay) /4w"
+                } else {
+                    velocity = " · \(deltaDisplay) /4w"  // negative number formats with the minus
+                }
+            }
+            return "- \(row.lift.label): est 1RM \(oneRm) \(unitLabel) · \(ratio)× BW\(tier)\(velocity)"
         }
         var section = "STRENGTH (est 1RM × bodyweight)\n" + lines.joined(separator: "\n")
         if memory.gender == nil {
             section += "\n(gender not set — no tier labels)"
         }
         return section
+    }
+
+    // MARK: - New build-65 sections
+
+    /// Movement-pattern frequency over the last 4 weeks. Counts how many
+    /// distinct training days hit each pattern (squat, hip-hinge, etc.) and
+    /// flags any CANONICAL lifting pattern with zero hits so the coach can
+    /// prioritise it on the next workout. Returns nil if no sessions in the
+    /// window have any resolvable patterns.
+    static func patternFrequencySection(sessions: [SavedSession],
+                                        weeks: Int = 4,
+                                        now: Date = Date()) -> String? {
+        let cal = Calendar.current
+        let cutoff = cal.date(byAdding: .weekOfYear, value: -weeks, to: now) ?? now
+        let recent = sessions.filter { $0.startTime >= cutoff }
+        guard !recent.isEmpty else { return nil }
+
+        // Memoise name → pattern slugs across the call.
+        var resolved: [String: [String]] = [:]
+        let db = CoachDatabase.shared
+
+        // For each session, gather the unique pattern slugs it contains,
+        // then increment per-pattern session counts. Sessions, not sets —
+        // hitting "squat" 4 times in one day is still one session for this
+        // signal.
+        var byPattern: [String: Int] = [:]
+        for session in recent {
+            var sessionPatterns: Set<String> = []
+            for ex in session.exercises {
+                if let cached = resolved[ex.name] {
+                    sessionPatterns.formUnion(cached)
+                    continue
+                }
+                let exact = db.listExercises(search: ex.name)
+                    .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }
+                let patterns = exact.map { db.patternsForExercise($0.id) } ?? []
+                resolved[ex.name] = patterns
+                sessionPatterns.formUnion(patterns)
+            }
+            for p in sessionPatterns { byPattern[p, default: 0] += 1 }
+        }
+
+        if byPattern.isEmpty { return nil }
+
+        // Top patterns by count, plus a "missing" list of canonical patterns
+        // not seen. The canonical set is the same one the WorkoutGenerator's
+        // recipes anchor on.
+        let canonical: [String] = [
+            "squat", "hip-hinge",
+            "horizontal-push", "vertical-push",
+            "horizontal-pull", "vertical-pull",
+        ]
+        let top = byPattern.sorted { $0.value > $1.value }.prefix(8)
+        let plural = recent.count == 1 ? "session" : "sessions"
+        var lines = top.map { (slug, count) in
+            "- \(formatPattern(slug)): \(count) \(count == 1 ? "session" : "sessions")"
+        }
+        let missing = canonical.filter { byPattern[$0] == nil }
+        if !missing.isEmpty {
+            lines.append("- missing (no training in last \(weeks)w): \(missing.map(formatPattern).joined(separator: ", "))")
+        }
+        return "PATTERN FREQUENCY — last \(weeks)w across \(recent.count) \(plural)\n" + lines.joined(separator: "\n")
+    }
+
+    /// Soreness / energy rollup over the last 7 days. Surfaces recurring
+    /// hurt areas (a knee mentioned 3 days running is a different signal
+    /// than one off mention) and aggregate energy/pain reports.
+    static func recoveryTrendSection(soreness: [SorenessEntry], now: Date = Date()) -> String? {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
+        let recent = soreness.filter { $0.date >= cutoff }
+        guard recent.count >= 2 else { return nil }   // single entry already shown as "today's check-in"
+
+        // energy + soreness are bucket strings ("low"/"normal"/"high",
+        // "none"/"mild"/"high"). Roll them up as bucket histograms.
+        var areaCounts: [String: Int] = [:]
+        var energyBuckets: [String: Int] = [:]
+        var sorenessBuckets: [String: Int] = [:]
+        var painDays = 0
+        for entry in recent {
+            if entry.pain { painDays += 1 }
+            for area in entry.areas { areaCounts[area, default: 0] += 1 }
+            if let e = entry.energy { energyBuckets[e, default: 0] += 1 }
+            if let s = entry.soreness { sorenessBuckets[s, default: 0] += 1 }
+        }
+        var lines: [String] = []
+        lines.append("- days reporting: \(recent.count) of 7")
+        if !energyBuckets.isEmpty {
+            lines.append("- energy: " + histogramSummary(energyBuckets))
+        }
+        if !sorenessBuckets.isEmpty {
+            lines.append("- soreness: " + histogramSummary(sorenessBuckets))
+        }
+        if painDays > 0 {
+            lines.append("- pain days: \(painDays)")
+        }
+        // Areas mentioned 2+ times look like recurrence — flag them.
+        let recurring = areaCounts.filter { $0.value >= 2 }.sorted { $0.value > $1.value }
+        if !recurring.isEmpty {
+            let rendered = recurring.map { "\($0.key) (\($0.value)x)" }.joined(separator: ", ")
+            lines.append("- recurring hurt areas: \(rendered)")
+        }
+        return "RECOVERY TREND — last 7d\n" + lines.joined(separator: "\n")
+    }
+
+    /// Average actual session length (minutes) over the user's last 8
+    /// completed sessions, or nil when fewer than 3 sessions exist (small
+    /// samples flapping aren't useful signal).
+    static func averageRecentDurationMinutes(sessions: [SavedSession]) -> Int? {
+        let recent = sessions.sorted { $0.startTime > $1.startTime }.prefix(8)
+        guard recent.count >= 3 else { return nil }
+        let totalSec = recent.reduce(0) { $0 + $1.duration }
+        return Int(Double(totalSec) / Double(recent.count) / 60.0)
+    }
+
+    /// "horizontal-push" → "Horizontal push". Cheap display formatting.
+    private static func formatPattern(_ slug: String) -> String {
+        slug.replacingOccurrences(of: "-", with: " ").capitalized
+    }
+
+    /// "{normal: 4, high: 2, low: 1}" → "normal (4), high (2), low (1)".
+    /// Most-common bucket first so the coach reads the modal answer up top.
+    private static func histogramSummary(_ counts: [String: Int]) -> String {
+        counts.sorted { $0.value > $1.value }
+            .map { "\($0.key) (\($0.value))" }
+            .joined(separator: ", ")
     }
 
     /// Muscle-balance snapshot over the last 4 weeks. Surfaces the top 5

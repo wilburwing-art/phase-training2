@@ -28,7 +28,26 @@ final class CoachDatabase {
     private init() {
         guard let path = Bundle.main.path(forResource: "coach", ofType: "db") else { return }
         let flags = SQLITE_OPEN_READONLY | SQLITE_OPEN_FULLMUTEX
-        sqlite3_open_v2(path, &db, flags, nil)
+        // Open with a small retry loop. The actual root cause of the
+        // intermittent "0 exercises returned" test failures under
+        // xcodebuild's parallel runner was sqlite3_open_v2 leaving `db` in
+        // SQLite's "indeterminate" state on transient failure (per the docs
+        // the handle is non-null but unusable, so `isOpen` reported true
+        // and every query came back empty). Three retries with a tiny
+        // back-off + nil-on-failure makes the bad state observable.
+        var lastResult: Int32 = SQLITE_OK
+        for attempt in 0..<3 {
+            if attempt > 0 {
+                // Discard the indeterminate handle before retrying.
+                if let d = db { sqlite3_close(d); db = nil }
+                Thread.sleep(forTimeInterval: 0.01 * Double(attempt))
+            }
+            lastResult = sqlite3_open_v2(path, &db, flags, nil)
+            if lastResult == SQLITE_OK { return }
+        }
+        // Final failure — make sure isOpen reports nil so callers fail loudly
+        // rather than silently returning empty arrays.
+        if let d = db { sqlite3_close(d); db = nil }
     }
 
     deinit { if let db { sqlite3_close(db) } }
@@ -424,6 +443,31 @@ final class CoachDatabase {
             if !slug.isEmpty, !role.isEmpty { rows.append((slug, role, label)) }
         }
         return rows
+    } }
+
+    /// Look up the movement-pattern slugs an exercise satisfies. Used by the
+    /// coach context's PATTERN FREQUENCY section to flag which canonical
+    /// lifting patterns the user has (and hasn't) trained in the last N
+    /// weeks. Same JOIN-in-SQL pattern as musclesForExercise so we don't
+    /// have to do a second lookup per row.
+    func patternsForExercise(_ exerciseId: Int) -> [String] { withLock {
+        guard let db else { return [] }
+        let sql = """
+        SELECT mp.slug
+        FROM exercise_movement_patterns emp
+        JOIN movement_patterns mp ON mp.id = emp.movement_pattern_id
+        WHERE emp.exercise_id = ?
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_int64(stmt, 1, Int64(exerciseId))
+
+        var out: [String] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            if let slug = text(stmt, 0), !slug.isEmpty { out.append(slug) }
+        }
+        return out
     } }
 
     /// Adjacent peers along the difficulty axis within the same movement
