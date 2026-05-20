@@ -332,6 +332,21 @@ enum WorkoutGenerator {
             }
         }
 
+        // Build 95: prefer recognized staples (bench / squat / deadlift /
+        // etc.) when the candidate pool contains any. coach.db's pool for
+        // a single pattern includes 15-20+ sport-flavored variants
+        // (climbing, sailing, ski prep), so a uniform pick made bench
+        // press as likely as "Single-arm landmine press." Narrowing to
+        // staples when present biases the planner toward what most
+        // lifters expect. Variants surface naturally once staples are in
+        // `recentlyPicked` — applyVariety drops them and the wider pool
+        // gets used. So week 1 = bench, week 2 (if bench was used) = DB
+        // bench or push-up, etc.
+        let applyStaplePreference: ([Exercise], String) -> [Exercise] = { candidates, pattern in
+            let staples = candidates.filter { ExerciseStaples.isStaple(name: $0.name, forPattern: pattern) }
+            return staples.isEmpty ? candidates : staples
+        }
+
         // Reorder slot.alternatives. Two layers:
         //   1. LLM strategy (emphasize / deprioritize) — definitive: an
         //      emphasized pattern jumps to the front; a deprioritized one
@@ -366,7 +381,7 @@ enum WorkoutGenerator {
                     excludeIds: excludeIds,
                     modalities: slot.requiredModalities
                 )
-                let candidates = applySoreFilter(raw)
+                let candidates = applyStaplePreference(applySoreFilter(raw), pattern)
                 if let pick = deterministicPick(from: applyVariety(candidates), slotIdx: slotIdx, hashSeed: hashSeed) {
                     slot.satisfiedBy = pattern
                     return pick
@@ -380,7 +395,7 @@ enum WorkoutGenerator {
                 excludeIds: excludeIds,
                 modalities: slot.requiredModalities
             )
-            let relaxed = applySoreFilter(relaxedRaw)
+            let relaxed = applyStaplePreference(applySoreFilter(relaxedRaw), pattern)
             if let pick = deterministicPick(from: applyVariety(relaxed), slotIdx: slotIdx, hashSeed: hashSeed) {
                 slot.satisfiedBy = pattern
                 return pick
