@@ -26,6 +26,11 @@ struct ProfileScreen: View {
     // Injury picker state
     @State private var presentingInjuryPicker = false
 
+    // Sports editor sheet (Option C POC, build 81). One section migrated;
+    // others follow the same pattern: SettingsRow on Profile → focused
+    // editor sheet.
+    @State private var presentingSportsEditor = false
+
     // Tap-to-edit for the two number steppers (build 67). Tapping the value
     // opens an alert with a number-pad TextField; +/- still works for
     // incremental tweaks.
@@ -156,6 +161,10 @@ struct ProfileScreen: View {
                 initialSelection: selectedInjurySlugs,
                 onCommit: { newSlugs in commitInjuries(newSlugs) }
             )
+        }
+        .sheet(isPresented: $presentingSportsEditor) {
+            SportsEditorSheet()
+                .environmentObject(store)
         }
         .alert(editingField?.title ?? "", isPresented: editingFieldBinding) {
             TextField(editingField?.unit ?? "", text: $editingText)
@@ -300,37 +309,27 @@ struct ProfileScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
+    /// First migration to the Option-C settings-row pattern. The full picker
+    /// + primary-sport list moved into SportsEditorSheet; the row shows a
+    /// summary of the current selection (primary first, then count of
+    /// additional sports) so the user can scan their setup without tapping.
     private var sportsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            section("SPORTS")
-            WrappingFlow(spacing: 8) {
-                ForEach(Sport.catalog) { sport in
-                    OnboardingChip(
-                        label: sport.name,
-                        selected: store.memory.sports.contains(sport),
-                        action: { toggleSport(sport) }
-                    )
-                }
-            }
-            if store.memory.sports.count > 1 {
-                Text("PRIMARY")
-                    .styled(.micro)
-                    .foregroundStyle(Color.ink3)
-                    .padding(.top, 8)
-                VStack(spacing: 8) {
-                    ForEach(store.memory.sports) { sport in
-                        OnboardingPickRow(
-                            title: sport.name,
-                            subtitle: nil,
-                            selected: store.memory.primarySport == sport,
-                            action: {
-                                store.update { $0.primarySport = sport }
-                            }
-                        )
-                    }
-                }
-            }
-        }
+        SettingsRow(
+            label: "Sports",
+            value: sportsSummary,
+            icon: "figure.run",
+            action: { presentingSportsEditor = true }
+        )
+    }
+
+    private var sportsSummary: String {
+        let sports = store.memory.sports
+        guard !sports.isEmpty else { return "None" }
+        let primary = store.memory.primarySport ?? sports.first
+        let primaryName = primary?.name ?? sports.first?.name ?? ""
+        let othersCount = max(0, sports.count - 1)
+        if othersCount == 0 { return primaryName }
+        return "\(primaryName) +\(othersCount)"
     }
 
     private var seasonsSection: some View {
@@ -364,6 +363,42 @@ struct ProfileScreen: View {
                     selected: store.memory.defaultSeason,
                     onPick: { s in store.update { $0.defaultSeason = s } }
                 )
+            }
+            if hasEventPrepSelected {
+                peakDateRow
+            }
+        }
+    }
+
+    /// True when any of the season pickers (default or per-sport) is .eventPrep
+    /// — the only signal that warrants showing a peak-date picker.
+    private var hasEventPrepSelected: Bool {
+        if store.memory.defaultSeason == .eventPrep { return true }
+        return store.memory.seasonsBySport.values.contains(.eventPrep)
+    }
+
+    private var peakDateRow: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("PEAK DATE")
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+                .padding(.top, 4)
+            HStack {
+                DatePicker(
+                    "Peak date",
+                    selection: Binding(
+                        get: { store.memory.peakDate ?? Date() },
+                        set: { newDate in store.update { $0.peakDate = newDate } }
+                    ),
+                    in: Date()...,
+                    displayedComponents: .date
+                )
+                .labelsHidden()
+                if store.memory.peakDate != nil {
+                    Button("Clear") { store.update { $0.peakDate = nil } }
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                }
             }
         }
     }
