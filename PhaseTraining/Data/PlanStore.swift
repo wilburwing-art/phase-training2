@@ -410,10 +410,21 @@ final class PlanStore: ObservableObject {
     /// because overrides live in WeekOverrides, not the WeekPlan.
     func migrateIfStale(memory: TrainingMemory, today: Date = Date()) {
         guard let plan = plan else { return }
-        let needsMigration = plan.days.contains { day in
+        let needsLegacyRegen = plan.days.contains { day in
             (day.kind == .lift || day.kind == .mobility) && day.generatedWorkout == nil
         }
-        guard needsMigration else { return }
+        // Plans built before build 78 used a rolling 7-days-starting-today
+        // window. Detect those by checking whether day[0] is the Monday of
+        // its own week, and regen to a Mon→Sun calendar week.
+        let firstDate = plan.days.first?.date
+        let needsCalendarWeekRegen: Bool = {
+            guard let firstDate else { return false }
+            var cal = Calendar.current
+            cal.firstWeekday = 2
+            let monday = firstDate.startOfTrainingWeek(calendar: cal)
+            return !cal.isDate(firstDate, inSameDayAs: monday)
+        }()
+        guard needsLegacyRegen || needsCalendarWeekRegen else { return }
         generate(from: memory, today: today)
     }
 

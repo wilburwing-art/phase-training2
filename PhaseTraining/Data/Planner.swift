@@ -79,7 +79,14 @@ enum Planner {
         context: GeneratorContext = .empty,
         strategy: GeneratorStrategy = .auto
     ) -> WeekPlan {
-        let start = calendar.startOfDay(for: today)
+        // Always Monday-of-this-week → Sunday. The Week tab shows the
+        // prescription for the current calendar week, not a rolling 7-day
+        // window starting today. Past days (e.g. Mon/Tue when today is Wed)
+        // remain visible so the user can see what was prescribed; history of
+        // what they actually did lives in HistoryScreen.
+        var mondayCal = calendar
+        mondayCal.firstWeekday = 2
+        let start = today.startOfTrainingWeek(calendar: mondayCal)
         let dates: [Date] = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: start) }
         let shape = WeeklyShape.resolve(
             primarySport: memory.primarySport,
@@ -192,12 +199,27 @@ enum Planner {
             if entry.kind == .lift { liftCursor += 1 }
         }
 
+        // Step 6.5 — secondary-sport in-season promotion. For each non-primary
+        // sport flagged .inSeason / .eventPrep in seasonsBySport, demote one
+        // rest slot to a sport slot for that sport — UNLESS the user already
+        // booked a WeekEvent for it. Without this, picking "skiing pre-season"
+        // alongside primary climbing was dead data: only the primary's season
+        // ever moved the shape. Capped to keep multi-sport users from getting
+        // all-sport weeks.
+        applySecondarySportPromotion(&slots, memory: memory, overrides: overrides, calendar: calendar)
+
         // Step 7 — best-practice rules. Each pass mutates only NON-protected slots.
         if let overrides {
             applyPreEventTaper(&slots, dates: dates, overrides: overrides, calendar: calendar)
             applyPostEventRecovery(&slots, dates: dates, overrides: overrides, calendar: calendar)
             applyPreSportBuffer(&slots, dates: dates, overrides: overrides, calendar: calendar)
         }
+
+        // Step 7.5 — peak-date taper. If the user is in .eventPrep and their
+        // peakDate lands in this week, apply the same taper as a hard race
+        // event. Without this, .eventPrep was just a label that fell through to
+        // .maintenance with no actual peak/taper behavior.
+        applyPeakDateTaper(&slots, dates: dates, memory: memory, calendar: calendar)
 
         let days = slots.compactMap { $0 }
         return WeekPlan(
@@ -481,6 +503,89 @@ enum Planner {
                 &slots, at: priorIdx,
                 to: .mobility, title: "Mobility",
                 reason: "Going light before \(eventTitle(event))"
+            )
+        }
+    }
+
+    /// Peak-date taper for .eventPrep seasons. Build 78: .eventPrep used to
+    /// fall through to .maintenance with no tangible behavior. When the user's
+    /// peakDate lands inside this week AND their primary season is .eventPrep:
+    ///   day-1 → rest, day-2 → mobility, peak day itself → light event slot.
+    /// Matches the hard-race taper from applyPreEventTaper. Skipped if the user
+    /// already placed a race event for that date (no double-taper).
+    static func applyPeakDateTaper(
+        _ slots: inout [DayPlan?],
+        dates: [Date],
+        memory: TrainingMemory,
+        calendar: Calendar
+    ) {
+        guard memory.seasonForPlanner == .eventPrep,
+              let peak = memory.peakDate else { return }
+        guard let peakIdx = dates.firstIndex(where: { calendar.isDate($0, inSameDayAs: peak) }) else {
+            return
+        }
+        // If the user already protected this date with an event, the
+        // applyPreEventTaper pass owned the taper — don't double-write.
+        if let current = slots[peakIdx], current.protected { return }
+
+        // Convert the peak slot itself into a protected .event placeholder so
+        // the user lands on a clear "this is your peak" entry.
+        slots[peakIdx] = DayPlan(
+            date: dates[peakIdx],
+            kind: .event,
+            title: "Peak day",
+            protected: true,
+            generatedReason: "Your event-prep peak date"
+        )
+        demote(&slots, at: peakIdx - 1, to: .rest, title: "Rest",
+               reason: "Tapering before peak day")
+        demote(&slots, at: peakIdx - 2, to: .mobility, title: "Mobility",
+               reason: "Easing into peak day")
+    }
+
+    /// Secondary-sport promotion. Build 78: per-sport seasons used to be a
+    /// no-op for non-primary sports — the picker stored data the planner
+    /// ignored. This pass takes one rest slot per secondary sport flagged
+    /// .inSeason or .eventPrep and converts it into a .sport day for that
+    /// sport. Skipped when the user already placed a WeekEvent for that sport
+    /// this week (no double-booking). Capped at 2 promotions per week so
+    /// six-sport profiles don't blow up into all-sport weeks.
+    static func applySecondarySportPromotion(
+        _ slots: inout [DayPlan?],
+        memory: TrainingMemory,
+        overrides: WeekOverrides?,
+        calendar: Calendar
+    ) {
+        let primarySlug = memory.primarySport?.slug
+        // Deterministic order: sport slug. seasonsBySport is a dict.
+        let candidates = memory.seasonsBySport
+            .filter { $0.key.slug != primarySlug }
+            .filter { $0.value == .inSeason || $0.value == .eventPrep }
+            .sorted { $0.key.slug < $1.key.slug }
+            .prefix(2)
+
+        // Sports the user already booked an explicit event for this week —
+        // don't double-book. Compares on slug because Sport equality is slug.
+        let alreadyBooked: Set<String> = Set(
+            (overrides?.events ?? [])
+                .compactMap { $0.sport?.slug }
+        )
+
+        for (sport, _) in candidates {
+            if alreadyBooked.contains(sport.slug) { continue }
+            // Find the first unprotected rest slot we can demote.
+            guard let idx = slots.indices.first(where: { i in
+                if let s = slots[i] {
+                    return !s.protected && s.kind == .rest
+                }
+                return false
+            }), let current = slots[idx] else { continue }
+            slots[idx] = DayPlan(
+                date: current.date,
+                kind: .sport,
+                title: "\(sport.name) session",
+                sport: sport,
+                generatedReason: "\(sport.name) is in-season — added a placeholder day"
             )
         }
     }

@@ -126,9 +126,13 @@ struct WeekScreen: View {
 
             Spacer(minLength: 0)
         }
-        // Keep Sunday's row clear of the tab bar — content was running into
-        // the tab strip and clipping the last row's reason text.
-        .padding(.bottom, 16)
+        // Keep Sunday's row clear of the tab bar — 16pt wasn't enough when
+        // the tab strip + safe-area inset land on the last DayRow. Default
+        // SwiftUI tab bar inset is ~50pt + safe area; 60pt of inner padding
+        // keeps the last row's reason text fully readable.
+        .safeAreaInset(edge: .bottom) {
+            Spacer().frame(height: 16)
+        }
     }
 
     private func header(plan: WeekPlan) -> some View {
