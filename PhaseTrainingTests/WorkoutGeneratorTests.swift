@@ -232,33 +232,47 @@ final class WorkoutGeneratorTests: XCTestCase {
 
     // MARK: - Leak #3: primaryFocus shapes the prescription
 
-    func test_focusBias_generalStrength_keepsCoachDbDefaults() {
-        // No bias = nil → coach.db/formula path drives reps + rest.
-        XCTAssertNil(WorkoutGenerator.focusBias(.generalStrength, isPrimary: true))
-        XCTAssertNil(WorkoutGenerator.focusBias(.generalStrength, isPrimary: false))
+    func test_focusBias_generalStrength_runsLowRepLongRest() {
+        // Build 97: generalStrength got a concrete bias (was nil).
+        // Standard 5×5 strength scheme on primary, 3×6-8 accessories.
+        let primary = WorkoutGenerator.focusBias(.generalStrength, isPrimary: true)
+        XCTAssertEqual(primary?.sets, 5)
+        XCTAssertEqual(primary?.reps, "5")
+        XCTAssertEqual(primary?.restSec, 180)
+
+        let accessory = WorkoutGenerator.focusBias(.generalStrength, isPrimary: false)
+        XCTAssertEqual(accessory?.sets, 3)
+        XCTAssertEqual(accessory?.reps, "6-8")
+        XCTAssertEqual(accessory?.restSec, 120)
     }
 
     func test_focusBias_hypertrophy_runsHighRepShortRest() {
         let primary = WorkoutGenerator.focusBias(.hypertrophy, isPrimary: true)
-        XCTAssertEqual(primary?.reps, "6-10")
+        XCTAssertEqual(primary?.sets, 4)
+        XCTAssertEqual(primary?.reps, "6-12")
         XCTAssertEqual(primary?.restSec, 90)
 
         let accessory = WorkoutGenerator.focusBias(.hypertrophy, isPrimary: false)
-        XCTAssertEqual(accessory?.reps, "8-12")
+        XCTAssertEqual(accessory?.sets, 3)
+        XCTAssertEqual(accessory?.reps, "8-15")
         XCTAssertEqual(accessory?.restSec, 60)
     }
 
     func test_focusBias_sportPerformance_runsLowRepLongRest() {
-        // Power scheme — heavy and rested.
+        // Power scheme — heavy and rested, 5 sets on the primary so the
+        // total drive volume hits the adaptation threshold.
         let primary = WorkoutGenerator.focusBias(.sportPerformance, isPrimary: true)
+        XCTAssertEqual(primary?.sets, 5)
         XCTAssertEqual(primary?.reps, "3-5")
         XCTAssertEqual(primary?.restSec, 180)
     }
 
     func test_focusBias_endurance_runsVeryHighRepShortRest() {
         let primary = WorkoutGenerator.focusBias(.endurance, isPrimary: true)
+        XCTAssertEqual(primary?.sets, 3)
         XCTAssertEqual(primary?.reps, "10-15")
         let accessory = WorkoutGenerator.focusBias(.endurance, isPrimary: false)
+        XCTAssertEqual(accessory?.sets, 3)
         XCTAssertEqual(accessory?.reps, "12-20")
         XCTAssertEqual(accessory?.restSec, 45)
     }
@@ -273,8 +287,6 @@ final class WorkoutGeneratorTests: XCTestCase {
         m.focuses = [.hypertrophy]   // primaryFocus = hypertrophy
         let p = DemographicProfile.from(m)
 
-        // Use the first exercise the planner can find for a primary slot.
-        // Any picked exercise will do — we only care that the bias is applied.
         let workout = WorkoutGenerator.generateLift(
             liftIndex: 0, totalLifts: 3,
             memory: m, profile: p, hashSeed: "test-hypertrophy"
@@ -282,10 +294,35 @@ final class WorkoutGeneratorTests: XCTestCase {
         guard let first = workout.exercises.first else {
             return XCTFail("planner returned no exercises")
         }
-        XCTAssertEqual(first.reps, "6-10",
-                       "Primary lift under hypertrophy should run 6-10, not coach.db default")
+        XCTAssertEqual(first.reps, "6-12",
+                       "Primary lift under hypertrophy should run 6-12, not coach.db default")
         XCTAssertEqual(first.restSeconds, 90,
                        "Primary rest under hypertrophy should be 90s")
+        // Intermediate clamp caps sets at 4 — matches the hypertrophy
+        // primary set count exactly.
+        XCTAssertEqual(first.sets, 4,
+                       "Primary lift under hypertrophy should run 4 sets")
+    }
+
+    /// generalStrength + advanced lifter should see the full 5×5 — no
+    /// experience clamp kicks in because advanced is unrestricted.
+    func test_prescription_generalStrengthAdvanced_runs5x5() {
+        var m = TrainingMemory()
+        m.experience = .advanced
+        m.equipment = [.fullGym]
+        m.focuses = [.generalStrength]
+        let p = DemographicProfile.from(m)
+
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: p, hashSeed: "test-strength"
+        )
+        guard let first = workout.exercises.first else {
+            return XCTFail("planner returned no exercises")
+        }
+        XCTAssertEqual(first.sets, 5, "5×5 primary on a strength day")
+        XCTAssertEqual(first.reps, "5")
+        XCTAssertEqual(first.restSeconds, 180)
     }
 
     /// Mobility WORKOUT (vs mobility FOCUS) still uses hold-style defaults.

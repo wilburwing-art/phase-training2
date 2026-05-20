@@ -186,12 +186,17 @@ enum WorkoutGenerator {
             // strategy can't produce 0 sets or runaway volume.
             let sets = max(1, min(8, Int((Double(baseSets) * strategy.intensityBias.setsMultiplier).rounded())))
 
-            let durSec = sets * (45 + restSec) + 30   // ~45s work + rest + 30s transition
+            // Budget check uses the PRE-multiplier duration so a deload day
+            // doesn't "free up" time for additional accessories — deload
+            // means fewer sets across the same exercises, not a longer
+            // workout list. Build 97 fix.
+            let baseDurSec = baseSets * (45 + restSec) + 30
+            let durSec = sets * (45 + restSec) + 30
 
             // Optional slots that bust the budget get dropped; required slots
             // override (we'd rather give a slightly-over workout than skip a
             // primary compound).
-            if elapsedSec + durSec > budgetSec, slot.optional, !picks.isEmpty {
+            if elapsedSec + baseDurSec > budgetSec, slot.optional, !picks.isEmpty {
                 continue
             }
 
@@ -224,7 +229,11 @@ enum WorkoutGenerator {
                 tempo: tempo
             ))
             pickedIds.insert(picked.id)
-            elapsedSec += durSec
+            // Accumulate using baseDurSec so the running total reflects a
+            // normal-intensity day's pace — deload doesn't free up time for
+            // additional accessories (build 97 fix). Estimated minutes
+            // below uses the same total since it's also "as if normal."
+            elapsedSec += baseDurSec
         }
 
         let estMin = max(1, Int((Double(elapsedSec) / 60.0).rounded()))
@@ -602,9 +611,18 @@ enum WorkoutGenerator {
         let isPrimary = slotIdx == 0
         let isCompound = exercise.isCompound
 
-        // Sets — start from coach.db default, then clamp by experience + age.
-        let defaultSets = exercise.defaultSets ?? defaultSetsFromFormula(isPrimary: isPrimary, isCompound: isCompound)
-        var sets = defaultSets
+        // Compute the focus-driven bias once. nil for mobility (we use
+        // hold-style defaults there); a real value for every other focus
+        // as of build 97 (generalStrength stopped returning nil).
+        let bias = (focus == .mobility) ? nil : focusBias(memory.primaryFocus, isPrimary: isPrimary)
+
+        // Sets — prefer the focus bias when present, otherwise fall back to
+        // coach.db default, then the formula. Then apply experience + age
+        // clamps so an advanced lifter gets the bias's full count but a
+        // beginner stays capped at 3.
+        var sets = bias?.sets
+            ?? exercise.defaultSets
+            ?? defaultSetsFromFormula(isPrimary: isPrimary, isCompound: isCompound)
         switch memory.experience {
         case .beginner:     sets = min(sets, 3)
         case .intermediate: sets = min(sets, 4)
@@ -618,11 +636,10 @@ enum WorkoutGenerator {
 
         // Reps + rest.
         //
-        // For mobility workouts: keep the hold-style defaults (existing path).
-        // For everything else: when the user's primaryFocus carries a bias,
-        // the bias wins over coach.db's per-exercise reps. We treat focus as
-        // a coarse goal-setting knob — if you said "hypertrophy" every lift
-        // should run in 8-12 reps, even if coach.db tagged Bench as "5".
+        // Mobility workouts: hold-style defaults from coach.db / formula.
+        // Everything else: the focus bias wins over per-exercise coach.db
+        // values — a hypertrophy lifter should see 8-12 on every lift,
+        // even if coach.db tagged bench as "5".
         let reps: String
         let restSec: Int
         if focus == .mobility {
@@ -630,10 +647,12 @@ enum WorkoutGenerator {
                 ?? defaultRepsFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
             restSec = exercise.defaultRest.flatMap(parseRestSeconds)
                 ?? defaultRestFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
-        } else if let bias = focusBias(memory.primaryFocus, isPrimary: isPrimary) {
+        } else if let bias = bias {
             reps = bias.reps
             restSec = bias.restSec
         } else {
+            // Unreachable in practice — bias is nil only when focus is
+            // mobility, which is handled above. Kept as a safe fallback.
             reps = exercise.defaultReps?.trimmingCharacters(in: .whitespaces).nilIfEmpty
                 ?? defaultRepsFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
             restSec = exercise.defaultRest.flatMap(parseRestSeconds)
@@ -643,33 +662,66 @@ enum WorkoutGenerator {
         return (sets, reps, restSec)
     }
 
-    /// Map the user's stated goal to a rep-scheme + rest interval. Returns
-    /// nil when the focus is "no opinion" (general strength) — falls back to
-    /// coach.db defaults + the movement-position formula. Primary compound
-    /// gets a heavier scheme than accessories within the same focus.
+    /// Map the user's stated goal to a coherent sets × reps × rest scheme.
+    /// Primary compound gets a heavier scheme than accessories within the
+    /// same focus. Returns nil only when the focus genuinely has no opinion
+    /// on volume — currently just `mobility` (mobility lifts run on hold-
+    /// style defaults in the mobility branch above).
     ///
     /// Schemes target the consensus middle of evidence-based programming:
-    /// hypertrophy 6-12 + 60-90s rest, strength 1-6 + 2-3min, endurance
-    /// 12-20 + 30-60s. Not gospel — directional defaults the coach can
-    /// further tune via tool calls.
-    static func focusBias(_ focus: PrimaryFocus, isPrimary: Bool) -> (reps: String, restSec: Int)? {
+    /// hypertrophy 6-15 + 60-90s rest, strength 3-6 + 2-3min, endurance
+    /// 10-20 + 30-60s. Build 97 added sets to the contract — the old
+    /// version only adjusted reps + rest, so a hypertrophy day still
+    /// got coach.db's per-exercise set count which varied wildly (bench
+    /// 5 sets, fly 3 sets) and made workouts feel inconsistent.
+    /// `generalStrength` went from nil → a real 4-5 set strength scheme;
+    /// previously it inherited coach.db defaults which mixed strength
+    /// and hypertrophy schemes in the same workout.
+    static func focusBias(_ focus: PrimaryFocus, isPrimary: Bool) -> (sets: Int, reps: String, restSec: Int)? {
         switch focus {
         case .generalStrength:
-            return nil
+            // True strength: low-rep heavy work, long rest. 5×5 on the
+            // primary lift, 3×6-8 on accessories.
+            return (sets: isPrimary ? 5 : 3,
+                    reps: isPrimary ? "5" : "6-8",
+                    restSec: isPrimary ? 180 : 120)
         case .hypertrophy:
-            return (reps: isPrimary ? "6-10" : "8-12", restSec: isPrimary ? 90 : 60)
+            // Slightly wider rep range than build 96 — modern guidance is
+            // 5-30 reps drives growth, so 6-12 primary / 8-15 accessory
+            // captures the "effort matters more than load" middle.
+            return (sets: isPrimary ? 4 : 3,
+                    reps: isPrimary ? "6-12" : "8-15",
+                    restSec: isPrimary ? 90 : 60)
         case .sportPerformance:
-            return (reps: isPrimary ? "3-5" : "5-8", restSec: isPrimary ? 180 : 120)
+            // Power scheme — heavy doubles/triples need volume across sets
+            // to drive adaptation. Same rep range, more sets than the
+            // previous default (which gave only 3-4 sets via coach.db).
+            return (sets: isPrimary ? 5 : 3,
+                    reps: isPrimary ? "3-5" : "5-8",
+                    restSec: isPrimary ? 180 : 120)
         case .endurance:
-            return (reps: isPrimary ? "10-15" : "12-20", restSec: isPrimary ? 60 : 45)
+            return (sets: isPrimary ? 3 : 3,
+                    reps: isPrimary ? "10-15" : "12-20",
+                    restSec: isPrimary ? 60 : 45)
         case .mobility:
             return nil
         case .weightLoss:
-            return (reps: isPrimary ? "8-12" : "10-15", restSec: 60)
+            // Circuit-friendly volume — keep sets moderate so total time
+            // stays short and density stays high.
+            return (sets: 3,
+                    reps: isPrimary ? "8-12" : "10-15",
+                    restSec: 60)
         case .longevity:
-            return (reps: isPrimary ? "5-8" : "8-10", restSec: 90)
+            // Lower volume, controlled tempo. Hits the stimulus floor
+            // without overreaching.
+            return (sets: 3,
+                    reps: isPrimary ? "5-8" : "8-10",
+                    restSec: 90)
         case .rehab:
-            return (reps: "10-12", restSec: 60)
+            // Conservative — sub-failure, controlled.
+            return (sets: 2,
+                    reps: "10-12",
+                    restSec: 60)
         }
     }
 
