@@ -28,6 +28,7 @@ struct DayWorkoutPreviewSheet: View {
 
     @State private var template: WorkoutTemplate? = nil
     @State private var swappingExIdx: Int? = nil
+    @State private var addingExercise: Bool = false
     @State private var detailExercise: Exercise? = nil
     @State private var didSave: Bool = false
 
@@ -58,17 +59,26 @@ struct DayWorkoutPreviewSheet: View {
             }
             .sheet(item: swappingBinding) { wrapped in
                 let originalName = template?.exercises[wrapped.index].name ?? "exercise"
-                // Pre-filter the picker to the source exercise's primary
-                // muscle bucket so the user doesn't have to re-find "ok this
-                // was a chest move, show me chest." Falls back to no filter
-                // if the muscle data is missing.
-                let initialBucket = primaryBucketForExercise(at: wrapped.index)
+                // Pre-filter the picker to "similar exercises" — same muscle
+                // bucket AND same movement category as the source. Falls
+                // back to no filter if the source exercise can't be
+                // resolved (custom routines without coach.db ids).
+                let initial = similarFiltersForExercise(at: wrapped.index)
                 ExercisePickerSheet(
                     title: "Replace \(originalName)",
-                    initialBucket: initialBucket,
+                    initialFilters: initial,
                     onPick: { picked in
                         swapExercise(at: wrapped.index, with: picked)
                     }
+                )
+            }
+            .sheet(isPresented: $addingExercise) {
+                // No pre-filter — adding is open-ended, user might want a
+                // finisher / accessory that isn't related to anything in
+                // the current workout.
+                ExercisePickerSheet(
+                    title: "Add exercise",
+                    onPick: { picked in appendExercise(picked) }
                 )
             }
             .sheet(item: $detailExercise) { ex in
@@ -101,12 +111,11 @@ struct DayWorkoutPreviewSheet: View {
                 VStack(spacing: 0) {
                     ForEach(Array(template.exercises.enumerated()), id: \.element.id) { idx, ex in
                         exerciseRow(ex, position: idx + 1)
-                        if idx < template.exercises.count - 1 {
-                            Rectangle()
-                                .fill(Color.lineSoft)
-                                .frame(height: 0.5)
-                        }
+                        Rectangle()
+                            .fill(Color.lineSoft)
+                            .frame(height: 0.5)
                     }
+                    addExerciseRow
                 }
                 .background(Color.surface)
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
@@ -193,6 +202,30 @@ struct DayWorkoutPreviewSheet: View {
         .padding(.vertical, 12)
     }
 
+    /// Trailing row inside the exercise card — opens the picker with no
+    /// pre-filter and appends the picked exercise to the template.
+    private var addExerciseRow: some View {
+        Button {
+            addingExercise = true
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "plus.circle")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(Color.accent)
+                    .frame(width: 18, alignment: .leading)
+                Text("Add exercise")
+                    .font(.custom("Inter-Regular", size: 14))
+                    .foregroundStyle(Color.accent)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("preview-add-exercise")
+    }
+
     private var emptyState: some View {
         VStack(spacing: 12) {
             Image(systemName: "calendar.badge.exclamationmark")
@@ -258,28 +291,70 @@ struct DayWorkoutPreviewSheet: View {
         )
     }
 
-    /// Find the source exercise's primary muscle bucket so the picker can
-    /// pre-filter to the same body area. Returns nil if the exercise can't
-    /// be resolved in coach.db (custom routines, mostly) or if its muscle
-    /// data doesn't map to any of the 11 chip buckets.
-    private func primaryBucketForExercise(at idx: Int) -> MuscleBucket? {
-        guard let tmpl = template, tmpl.exercises.indices.contains(idx) else { return nil }
+    /// Resolve "similar exercises" filters for the picker when swapping.
+    /// Returns ExerciseFilters with bucket + category set from the source
+    /// exercise so the picker opens narrowed to true alternatives (same
+    /// body area AND same movement pattern style), not just any exercise
+    /// in the same bucket. Falls back to whatever it can resolve — if the
+    /// exercise isn't in coach.db, returns empty filters.
+    private func similarFiltersForExercise(at idx: Int) -> ExerciseFilters {
+        var filters = ExerciseFilters()
+        guard let tmpl = template, tmpl.exercises.indices.contains(idx) else { return filters }
         let name = tmpl.exercises[idx].name
         guard let dbEx = CoachDatabase.shared
                 .listExercises(search: name)
                 .first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame })
-        else { return nil }
+        else { return filters }
+
+        // Muscle bucket — prefer primary, then secondary. First slug that
+        // maps to a known bucket wins.
         let muscles = CoachDatabase.shared.musclesForExercise(dbEx.id)
-        // Prefer primary role, then secondary. First slug that maps to a
-        // known bucket wins.
-        let ordered = muscles.sorted { lhs, rhs in
+        let orderedMuscles = muscles.sorted { lhs, rhs in
             let rank: (String) -> Int = { r in r == "primary" ? 0 : (r == "secondary" ? 1 : 2) }
             return rank(lhs.role) < rank(rhs.role)
         }
-        for entry in ordered {
-            if let bucket = MuscleBucket.bucket(forSlug: entry.slug) { return bucket }
+        for entry in orderedMuscles {
+            if let bucket = MuscleBucket.bucket(forSlug: entry.slug) {
+                filters.bucket = bucket
+                break
+            }
         }
-        return nil
+
+        // Movement category — first pattern slug that maps to a known
+        // category wins. Patterns aren't ranked (no role concept) so any
+        // category match is acceptable.
+        let patterns = CoachDatabase.shared.patternsForExercise(dbEx.id)
+        for slug in patterns {
+            if let cat = MovementCategory.category(forSlug: slug) {
+                filters.category = cat
+                break
+            }
+        }
+        return filters
+    }
+
+    /// Append a new exercise to the end of the in-flight template. Uses
+    /// the picked exercise's defaults (sets/reps/rest) when available, with
+    /// reasonable fallbacks (3×8, 90s rest) when coach.db doesn't have a
+    /// prescription stored. Same shape as swapExercise so the saved-to-
+    /// library path keeps working.
+    private func appendExercise(_ picked: Exercise) {
+        guard let tmpl = template else { return }
+        let newEx = ExerciseTemplate(
+            id: "added-\(UUID().uuidString)",
+            name: picked.name,
+            type: picked.modality,
+            unit: "lbs",
+            targetSets: picked.defaultSets ?? 3,
+            targetReps: Self.parseRepsLeading(picked.defaultReps) ?? 8,
+            rest: Self.parseRestSeconds(picked.defaultRest) ?? 90
+        )
+        template = WorkoutTemplate(
+            id: tmpl.id,
+            name: tmpl.name,
+            category: tmpl.category,
+            exercises: tmpl.exercises + [newEx]
+        )
     }
 
     private func swapExercise(at idx: Int, with picked: Exercise) {

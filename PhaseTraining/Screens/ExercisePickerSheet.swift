@@ -16,11 +16,13 @@ import SwiftUI
 
 struct ExercisePickerSheet: View {
     let title: String
-    /// Pre-select a muscle bucket when the sheet opens. Used by the
-    /// swap-from-preview flow to narrow the picker to the same body area as
-    /// the source exercise — saves the user from re-finding "ok I'm swapping
-    /// a chest move, so show me chest."
-    var initialBucket: MuscleBucket? = nil
+    /// Pre-apply a filter set when the sheet opens. Used by the
+    /// swap-from-preview flow to narrow the picker to "similar exercises"
+    /// (same muscle bucket + same movement category as the source), saving
+    /// the user from re-finding "ok I'm swapping a horizontal-press chest
+    /// move, show me alternatives." Defaults to empty (no pre-filter), which
+    /// is what the Add-exercise + custom-routine-edit flows want.
+    var initialFilters: ExerciseFilters = .init()
     let onPick: (Exercise) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -82,7 +84,7 @@ struct ExercisePickerSheet: View {
             }
         }
         .presentationBackground(Color.bg)
-        .onAppear { filters.bucket = initialBucket }
+        .onAppear { filters = initialFilters }
     }
 
     // MARK: - Pieces

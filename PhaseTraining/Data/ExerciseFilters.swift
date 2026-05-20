@@ -108,6 +108,15 @@ enum MovementCategory: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
+    /// Reverse map: given a movement_patterns.slug, which category does it
+    /// roll into? Returns nil for slugs we don't surface as a category.
+    static func category(forSlug slug: String) -> MovementCategory? {
+        for cat in MovementCategory.allCases where cat.memberPatternSlugs.contains(slug) {
+            return cat
+        }
+        return nil
+    }
+
     /// movement_patterns.slug values that roll up into this category.
     var memberPatternSlugs: [String] {
         switch self {
