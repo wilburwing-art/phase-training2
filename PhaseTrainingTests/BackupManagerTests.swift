@@ -27,6 +27,12 @@ final class BackupManagerTests: XCTestCase {
 
     func test_fullDataRoundTrip_preservesEverything() throws {
         let original = freshDefaults("original")
+        // Customs + saved sessions live in user.db. Each world (original vs.
+        // restored) gets its own isolated in-memory UserDatabase that's
+        // threaded through both the stores AND BackupManager so snapshot /
+        // restore see the same data the stores wrote.
+        let originalDB = UserDatabase(path: ":memory:")
+        let restoredDB = UserDatabase(path: ":memory:")
 
         // Populate every store
         let memoryStore = MemoryStore(defaults: original)
@@ -38,7 +44,7 @@ final class BackupManagerTests: XCTestCase {
         }
         memoryStore.completeOnboarding()
 
-        let sessionStore = SessionStore(defaults: original)
+        let sessionStore = SessionStore(defaults: original, userDB: originalDB)
         let active = ActiveSession(
             templateId: "t1", name: "Push", category: "cat",
             startTime: Date(),
@@ -47,7 +53,7 @@ final class BackupManagerTests: XCTestCase {
         )
         sessionStore.saveActive(active)
 
-        let customStore = CustomRoutineStore(defaults: original)
+        let customStore = CustomRoutineStore(defaults: original, userDB: originalDB)
         customStore.save(CustomRoutine(
             id: "abc", name: "My push", exercises: [], createdAt: Date()
         ))
@@ -56,16 +62,16 @@ final class BackupManagerTests: XCTestCase {
         _ = planStore.generate(from: memoryStore.memory)
 
         // Snapshot + encode + decode + restore into a FRESH defaults bucket
-        let envelope = BackupManager.snapshot(defaults: original)
+        let envelope = BackupManager.snapshot(defaults: original, userDB: originalDB)
         let data = try BackupManager.encode(envelope)
         let decoded = try BackupManager.decode(data)
 
         let restored = freshDefaults("restored")
-        try BackupManager.restore(decoded, into: restored)
+        try BackupManager.restore(decoded, into: restored, userDB: restoredDB)
 
         let restoredMemory = MemoryStore(defaults: restored)
-        let restoredSession = SessionStore(defaults: restored)
-        let restoredCustom = CustomRoutineStore(defaults: restored)
+        let restoredSession = SessionStore(defaults: restored, userDB: restoredDB)
+        let restoredCustom = CustomRoutineStore(defaults: restored, userDB: restoredDB)
         let restoredPlan = PlanStore(defaults: restored)
 
         XCTAssertEqual(restoredMemory.memory.experience, .advanced)

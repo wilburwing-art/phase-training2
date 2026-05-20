@@ -18,11 +18,12 @@ final class CustomRoutineStore: ObservableObject {
     private let defaults: UserDefaults
     private let userDB: UserDatabase
 
-    init(defaults: UserDefaults = .standard, userDB: UserDatabase = .shared) {
+    init(defaults: UserDefaults = .standard, userDB: UserDatabase? = nil) {
         self.defaults = defaults
-        self.userDB = userDB
-        Self.migrateLegacyIfNeeded(defaults: defaults, userDB: userDB)
-        self.routines = userDB.listRoutines()
+        let resolvedDB = userDB ?? UserDatabase.defaultStore()
+        self.userDB = resolvedDB
+        Self.migrateLegacyIfNeeded(defaults: defaults, userDB: resolvedDB)
+        self.routines = resolvedDB.listRoutines()
     }
 
     // MARK: - Mutation
