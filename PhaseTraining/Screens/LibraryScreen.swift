@@ -6,7 +6,8 @@
 //   - Exercises: muscle-bucket chip strip (primary) + "All filters" sheet
 //     for movement category / modality / difficulty / environment /
 //     compound-vs-iso. Mirrors ExercisePickerSheet.
-//   - Routines:  custom routines list + Coach-build CTA.
+//   - Routines:  custom routines list + manual-build CTA (coach-driven
+//                generation lives behind the bubble, not here).
 //
 // Reads CoachDatabase.listExercises / listRoutines / goalCounts. Pure read
 // view — picking a row opens a detail sheet; no mutations.
@@ -32,7 +33,6 @@ struct LibraryScreen: View {
     @State private var filters = ExerciseFilters()
     @State private var showingFilterSheet = false
     @State private var detailExercise: Exercise? = nil
-    @State private var showingCoachRequest = false
     @State private var editingRoutine: CustomRoutine? = nil
 
     /// Search field only appears once the user has accumulated enough custom
@@ -69,16 +69,6 @@ struct LibraryScreen: View {
             .sheet(isPresented: $showingFilterSheet) {
                 ExerciseFilterSheet(filters: $filters)
             }
-            .sheet(isPresented: $showingCoachRequest) {
-                // Saving from the library is a "create only" path — we never
-                // immediately start a session from here (Library is browse,
-                // not Today). The custom lands in CustomRoutineStore and the
-                // user can launch it later from Today's override sheet.
-                CoachRequestScreen(onSaved: { custom, _ in
-                    customStore.save(custom)
-                    showingCoachRequest = false
-                })
-            }
         }
         .preferredColorScheme(.dark)
     }
@@ -94,10 +84,17 @@ struct LibraryScreen: View {
 
     // MARK: - Create custom CTA (Routines segment only)
 
+    /// Manual-build entry point. Coach-driven generation lives behind the
+    /// floating chat bubble (RootTabView overlay), so the Library CTA owns
+    /// the "I'll pick exercises myself" flow exclusively. Tap → fresh empty
+    /// CustomRoutine + open the edit sheet, where the user can name it and
+    /// add exercises from the picker.
     private var createCustomCTA: some View {
-        Button { showingCoachRequest = true } label: {
+        Button {
+            editingRoutine = CustomRoutine.makeBlank()
+        } label: {
             HStack(spacing: 12) {
-                Image(systemName: "sparkles")
+                Image(systemName: "plus.circle.fill")
                     .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(Color.accentInk)
                     .frame(width: 24, alignment: .center)
@@ -105,7 +102,7 @@ struct LibraryScreen: View {
                     Text("Build a workout")
                         .styled(.displayS)
                         .foregroundStyle(Color.accentInk)
-                    Text("Coach builds one from your focus + duration")
+                    Text("Pick exercises yourself")
                         .styled(.body)
                         .foregroundStyle(Color.accentInk.opacity(0.7))
                 }
@@ -304,7 +301,7 @@ struct LibraryScreen: View {
                 .styled(.body)
                 .foregroundStyle(Color.ink2)
                 .multilineTextAlignment(.center)
-            Text("Tap Build a workout to create one with the coach.")
+            Text("Tap Build a workout to assemble one.")
                 .font(.monoXS)
                 .foregroundStyle(Color.ink3)
                 .multilineTextAlignment(.center)
