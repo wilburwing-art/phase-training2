@@ -12,7 +12,7 @@
 // system prompt for the new behavior.
 
 enum CoachSystemPrompt {
-    static let version = "v4-2026-05-17"
+    static let version = "v5-2026-05-20"
 
     /// Long, stable text. Anthropic caches it after the first hit per ~5 min TTL.
     static let cachedHeader: String = """
@@ -25,6 +25,7 @@ enum CoachSystemPrompt {
     Your job:
     - Answer plain-English questions about today's plan, this week, recent sessions, and feedback patterns. Cite specifics from the context (e.g., "you logged 'knee hurt' on May 12 and May 15").
     - Explain why the planner did what it did. The context includes a `generatedReason` field on each day — use it.
+    - When the user has structured injuries, refer to them by their human-readable name (e.g. "Patellar Tendinopathy", never `patellar-tendinopathy`). Use the STRUCTURED INJURIES block for severity / side / onset, the INJURY FILTERS block to explain which exercises got dropped and why, and the PREHAB CANDIDATES block when suggesting substitutes or what to slot into a mobility day.
     - When the user explicitly asks for a change, call `propose_plan_edits`. The user accepts or rejects via UI; the change is NOT applied automatically.
 
     Tone:

@@ -310,33 +310,41 @@ final class CoachDatabase {
     } }
 
     private func decodeExercise(_ stmt: OpaquePointer?) -> Exercise {
-        let cuesRaw = text(stmt, 5)
+        decodeExerciseStartingAt(stmt, offset: 0)
+    }
+
+    /// Same as `decodeExercise` but tolerant of leading columns from joined
+    /// queries — caller passes the offset where the 21-column `exercises.*`
+    /// projection starts. Used by injury-relevance queries that prefix the
+    /// projection with `common_injuries.slug`.
+    fileprivate func decodeExerciseStartingAt(_ stmt: OpaquePointer?, offset: Int32) -> Exercise {
+        let cuesRaw = text(stmt, offset + 5)
         let cues: [String] = cuesRaw
             .flatMap { $0.data(using: .utf8) }
             .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String] }
             ?? []
         return Exercise(
-            id: Int(sqlite3_column_int64(stmt, 0)),
-            name: text(stmt, 1) ?? "",
-            slug: text(stmt, 2) ?? "",
-            description: text(stmt, 3),
-            instructions: text(stmt, 4),
+            id: Int(sqlite3_column_int64(stmt, offset + 0)),
+            name: text(stmt, offset + 1) ?? "",
+            slug: text(stmt, offset + 2) ?? "",
+            description: text(stmt, offset + 3),
+            instructions: text(stmt, offset + 4),
             cues: cues,
-            difficulty: text(stmt, 6),
-            modality: text(stmt, 7),
-            environment: text(stmt, 8),
-            isCompound: (intOrNil(stmt, 9) ?? 0) == 1,
-            isUnilateral: (intOrNil(stmt, 10) ?? 0) == 1,
-            defaultSets: intOrNil(stmt, 11),
-            defaultReps: text(stmt, 12),
-            defaultRest: text(stmt, 13),
-            defaultDuration: text(stmt, 14),
-            regression: text(stmt, 15),
-            progression: text(stmt, 16),
-            imageURL: text(stmt, 17),
-            thumbnailURL: text(stmt, 18),
-            videoURL: text(stmt, 19),
-            sourceVideoAttribution: text(stmt, 20)
+            difficulty: text(stmt, offset + 6),
+            modality: text(stmt, offset + 7),
+            environment: text(stmt, offset + 8),
+            isCompound: (intOrNil(stmt, offset + 9) ?? 0) == 1,
+            isUnilateral: (intOrNil(stmt, offset + 10) ?? 0) == 1,
+            defaultSets: intOrNil(stmt, offset + 11),
+            defaultReps: text(stmt, offset + 12),
+            defaultRest: text(stmt, offset + 13),
+            defaultDuration: text(stmt, offset + 14),
+            regression: text(stmt, offset + 15),
+            progression: text(stmt, offset + 16),
+            imageURL: text(stmt, offset + 17),
+            thumbnailURL: text(stmt, offset + 18),
+            videoURL: text(stmt, offset + 19),
+            sourceVideoAttribution: text(stmt, offset + 20)
         )
     }
 
@@ -530,6 +538,88 @@ final class CoachDatabase {
         var out: Set<Int> = []
         while sqlite3_step(stmt) == SQLITE_ROW {
             out.insert(Int(sqlite3_column_int64(stmt, 0)))
+        }
+        return out
+    } }
+
+    /// Same data as `contraindicatedExerciseIds` but bucketed per slug — the
+    /// CoachContext snapshot uses this to write "INJURY FILTERS — ACL: Back
+    /// Squat, Front Squat, ..." per-injury lines instead of a flat union. Slugs
+    /// with zero rows in the join are omitted; callers can detect "no
+    /// contraindications" by checking presence.
+    func contraindicatedExerciseIds(bySlug slugs: Set<String>) -> [String: Set<Int>] { withLock {
+        guard !slugs.isEmpty, let db else { return [:] }
+        let placeholders = slugs.map { _ in "?" }.joined(separator: ",")
+        let sql = """
+        SELECT ci.slug, eir.exercise_id
+        FROM exercise_injury_relevance eir
+        JOIN common_injuries ci ON ci.id = eir.injury_id
+        WHERE eir.role = 'contraindicated'
+          AND ci.slug IN (\(placeholders))
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [:] }
+        defer { sqlite3_finalize(stmt) }
+        for (i, slug) in slugs.enumerated() {
+            sqlite3_bind_text(stmt, Int32(i + 1), slug, -1, SQLITE_TRANSIENT)
+        }
+        var out: [String: Set<Int>] = [:]
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            let slug = text(stmt, 0) ?? ""
+            let exId = Int(sqlite3_column_int64(stmt, 1))
+            guard !slug.isEmpty else { continue }
+            out[slug, default: []].insert(exId)
+        }
+        return out
+    } }
+
+    /// Exercises tagged with the given role(s) for any of the given injury
+    /// slugs, bucketed per slug. Used to build the prehab pool — for each
+    /// injury the user has, the generator picks one of these on mobility
+    /// days, and the CoachContext lists them as suggested alternatives. Roles
+    /// of interest: "prehab" (stay-healthy) and "rehab_late" (you've healed
+    /// enough to load it). "rehab_early" is too sensitive to recommend
+    /// generically and stays out.
+    func exercises(forInjurySlugs slugs: Set<String>,
+                   roles: Set<String>) -> [String: [Exercise]] { withLock {
+        guard !slugs.isEmpty, !roles.isEmpty, let db else { return [:] }
+        let slugPlaceholders = slugs.map { _ in "?" }.joined(separator: ",")
+        let rolePlaceholders = roles.map { _ in "?" }.joined(separator: ",")
+        let sql = """
+        SELECT ci.slug,
+               e.id, e.name, e.slug, e.description, e.instructions,
+               e.cues, e.difficulty, e.modality, e.environment,
+               e.is_compound, e.is_unilateral,
+               e.default_sets, e.default_reps, e.default_rest, e.default_duration,
+               e.regression, e.progression, e.image_url, e.thumbnail_url,
+               e.video_url, e.source_video_attribution
+        FROM exercise_injury_relevance eir
+        JOIN common_injuries ci ON ci.id = eir.injury_id
+        JOIN exercises e ON e.id = eir.exercise_id
+        WHERE ci.slug IN (\(slugPlaceholders))
+          AND eir.role IN (\(rolePlaceholders))
+        ORDER BY ci.slug ASC, e.name ASC
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [:] }
+        defer { sqlite3_finalize(stmt) }
+        var bindIdx: Int32 = 1
+        for slug in slugs {
+            sqlite3_bind_text(stmt, bindIdx, slug, -1, SQLITE_TRANSIENT)
+            bindIdx += 1
+        }
+        for role in roles {
+            sqlite3_bind_text(stmt, bindIdx, role, -1, SQLITE_TRANSIENT)
+            bindIdx += 1
+        }
+        var out: [String: [Exercise]] = [:]
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            let slug = text(stmt, 0) ?? ""
+            guard !slug.isEmpty else { continue }
+            // Decode shares the same column layout as decodeExercise(stmt) but
+            // we offset by 1 because column 0 is the slug.
+            let ex = decodeExerciseStartingAt(stmt, offset: 1)
+            out[slug, default: []].append(ex)
         }
         return out
     } }

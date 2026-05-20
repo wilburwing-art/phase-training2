@@ -173,6 +173,15 @@ final class ProfileFieldCoverageTests: XCTestCase {
               mutateForSnapshot: { $0.constraints = ["bad knee"] },
               snapshotMarker: "bad knee",
               skipReason: nil),
+        // Build 87 — structured per-injury record. Slug drives the planner's
+        // exclusion set; severity / side / onset flow into the coach's
+        // STRUCTURED INJURIES block but don't change which exercises get
+        // dropped (yet). Probe verifies the human name lands in the snapshot.
+        Probe(name: "userInjuries",
+              mutateForHash: { $0.userInjuries = [UserInjury(slug: "acl-injury", severity: .mild)] },
+              mutateForSnapshot: { $0.userInjuries = [UserInjury(slug: "acl-injury")] },
+              snapshotMarker: "ACL Sprain/Tear",
+              skipReason: nil),
     ]
 
     // MARK: - Tests

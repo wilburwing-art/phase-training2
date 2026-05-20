@@ -87,8 +87,25 @@ enum CoachContext {
         if !memory.dislikes.isEmpty {
             blocks.append("DISLIKES\n" + memory.dislikes.map { "- \($0)" }.joined(separator: "\n"))
         }
-        if !memory.constraints.isEmpty {
-            blocks.append("CONSTRAINTS\n" + memory.constraints.map { "- \($0)" }.joined(separator: "\n"))
+        let profile = DemographicProfile.from(memory)
+        if let block = structuredInjuriesSection(memory: memory, now: now) {
+            blocks.append(block)
+        }
+        if let block = injuryFiltersSection(profile: profile, memory: memory) {
+            blocks.append(block)
+        }
+        if let block = prehabCandidatesSection(profile: profile, memory: memory) {
+            blocks.append(block)
+        }
+        // Legacy free-text constraints (anything in memory.constraints that
+        // doesn't match a coach.db injury slug). Kept as a separate block so
+        // the model still sees user-typed notes like "bad ankle" without us
+        // dumping the structured slugs back in alongside the rich rendering
+        // above.
+        let knownSlugs = Set(CoachDatabase.shared.listInjuries().map(\.slug))
+        let legacyConstraints = memory.constraints.filter { !knownSlugs.contains($0) }
+        if !legacyConstraints.isEmpty {
+            blocks.append("CONSTRAINTS (free-text)\n" + legacyConstraints.map { "- \($0)" }.joined(separator: "\n"))
         }
 
         // Current plan
@@ -101,6 +118,23 @@ enum CoachContext {
                 if t.protected { hero += " [protected]" }
                 if let mins = t.durationMinutes { hero += " · \(mins) min" }
                 planLines.append(hero)
+                // List today's generated workout exercises so the model can
+                // reference them by name (this is what propose_workout_changes
+                // operates on). Annotate prehab picks with the injury they
+                // serve — closes the "coach can't say what got swapped"
+                // gap when the user asks "what's in today's workout?"
+                if let workout = t.generatedWorkout {
+                    let injuryNamesBySlug = injuryNameLookup()
+                    for ex in workout.exercises {
+                        var line = "  • \(ex.name) — \(ex.sets) × \(ex.reps)"
+                        if let rpe = ex.rpe { line += " @RPE \(rpe)" }
+                        if case .prehab(let slug) = ex.source {
+                            let label = injuryNamesBySlug[slug] ?? slug
+                            line += " (prehab for \(label))"
+                        }
+                        planLines.append(line)
+                    }
+                }
             }
             for day in plan.days where !Calendar.current.isDate(day.date, inSameDayAs: now) {
                 let prefix = day.protected ? "[protected] " : ""
@@ -199,6 +233,123 @@ enum CoachContext {
         // Mixed — show each sport's phase explicitly + default fallback.
         let pieces = phases.map { "\($0.0.name.lowercased()) \($0.1.label.lowercased())" }
         return pieces.joined(separator: ", ") + " (otherwise: \(memory.defaultSeason.label.lowercased()))"
+    }
+
+    // MARK: - Injury sections (build 87)
+    //
+    // Three blocks replace the slug-only CONSTRAINTS dump:
+    //   STRUCTURED INJURIES   — human-readable name + region + severity + side
+    //                           + onset + coach.db description / mechanism.
+    //   INJURY FILTERS        — names of the exercises the planner is
+    //                           subtracting per injury (top 5 + remainder).
+    //   PREHAB CANDIDATES     — names of the prehab / rehab_late exercises
+    //                           the planner would prefer for each injury.
+    //
+    // Without these, the coach saw `- patellar-tendinopathy` and had to know
+    // by training what that slug meant; it also couldn't say "I dropped Back
+    // Squat because of your ACL" because the exclusion happened silently at
+    // the SQL boundary.
+
+    /// Cache slug → display name once per snapshot. CoachDatabase joins SQL
+    /// per call, so calling listInjuries() in a tight loop is wasteful.
+    static func injuryNameLookup() -> [String: String] {
+        var out: [String: String] = [:]
+        for inj in CoachDatabase.shared.listInjuries() {
+            out[inj.slug] = inj.name
+        }
+        return out
+    }
+
+    /// Cache slug → full CommonInjury (for region + description + recovery).
+    private static func injuryByLookup() -> [String: CommonInjury] {
+        var out: [String: CommonInjury] = [:]
+        for inj in CoachDatabase.shared.listInjuries() {
+            out[inj.slug] = inj
+        }
+        return out
+    }
+
+    static func structuredInjuriesSection(memory: TrainingMemory, now: Date = Date()) -> String? {
+        guard !memory.userInjuries.isEmpty else { return nil }
+        let byLookup = injuryByLookup()
+        let cal = Calendar.current
+        var lines: [String] = []
+        for inj in memory.userInjuries.sorted(by: { $0.slug < $1.slug }) {
+            guard let common = byLookup[inj.slug] else { continue }
+            var qualifiers: [String] = []
+            if let region = common.bodyRegion, !region.isEmpty {
+                qualifiers.append(region)
+            }
+            if let sev = inj.severity { qualifiers.append(sev.rawValue) }
+            if let side = inj.side    { qualifiers.append(side.label.lowercased()) }
+            if let onset = inj.onsetDate {
+                let weeks = cal.dateComponents([.weekOfYear],
+                                               from: cal.startOfDay(for: onset),
+                                               to: cal.startOfDay(for: now)).weekOfYear ?? 0
+                if weeks <= 0 {
+                    qualifiers.append("onset this week")
+                } else if weeks == 1 {
+                    qualifiers.append("onset 1 week ago")
+                } else {
+                    qualifiers.append("onset \(weeks) weeks ago")
+                }
+            }
+            let qualifierBlob = qualifiers.isEmpty ? "" : " (" + qualifiers.joined(separator: " · ") + ")"
+            var line = "- \(common.name)\(qualifierBlob)"
+            // Description + recovery time give the model a clinical anchor.
+            // Both trimmed of trailing punctuation so we can compose cleanly.
+            var detail: [String] = []
+            if let desc = common.description, !desc.isEmpty {
+                detail.append(desc.trimmingCharacters(in: CharacterSet(charactersIn: " .")))
+            }
+            // The listInjuries() projection doesn't include mechanism /
+            // typical_recovery — they're columns on the table but not read by
+            // CoachDatabase. Skipped here; can be promoted later if useful.
+            if let notes = inj.notes, !notes.isEmpty {
+                detail.append("user note: \(notes)")
+            }
+            if !detail.isEmpty {
+                line += ". " + detail.joined(separator: ". ") + "."
+            }
+            lines.append(line)
+        }
+        guard !lines.isEmpty else { return nil }
+        return "STRUCTURED INJURIES\n" + lines.joined(separator: "\n")
+    }
+
+    static func injuryFiltersSection(profile: DemographicProfile, memory: TrainingMemory) -> String? {
+        guard !profile.excludedByInjury.isEmpty else { return nil }
+        let names = injuryNameLookup()
+        let db = CoachDatabase.shared
+        var lines: [String] = []
+        for entry in profile.excludedByInjury {
+            let display = names[entry.slug] ?? entry.slug
+            // Top 5 names, alphabetised; remainder rolled into "+N more".
+            let sortedIds = Array(entry.exerciseIds)
+            let resolved = sortedIds.compactMap { db.exercise(id: $0)?.name }
+                .sorted()
+            guard !resolved.isEmpty else { continue }
+            let head = resolved.prefix(5).joined(separator: ", ")
+            let rest = resolved.count - 5
+            let trail = rest > 0 ? " (+ \(rest) more)" : ""
+            lines.append("- \(display): \(head)\(trail)")
+        }
+        guard !lines.isEmpty else { return nil }
+        return "INJURY FILTERS — exercises currently excluded\n" + lines.joined(separator: "\n")
+    }
+
+    static func prehabCandidatesSection(profile: DemographicProfile, memory: TrainingMemory) -> String? {
+        guard !profile.prehabSuggestions.isEmpty else { return nil }
+        let names = injuryNameLookup()
+        var lines: [String] = []
+        for entry in profile.prehabSuggestions {
+            guard !entry.exercises.isEmpty else { continue }
+            let display = names[entry.slug] ?? entry.slug
+            let exNames = entry.exercises.map(\.name).joined(separator: ", ")
+            lines.append("- \(display): \(exNames)")
+        }
+        guard !lines.isEmpty else { return nil }
+        return "PREHAB CANDIDATES — coach.db-tagged for the user's injuries\n" + lines.joined(separator: "\n")
     }
 
     // MARK: - Section builders (build 62: richer profile signal for the coach)

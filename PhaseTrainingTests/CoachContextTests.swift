@@ -320,6 +320,89 @@ final class CoachContextTests: XCTestCase {
                       "USER PROFILE must include season line — was missing pre-build-78. Got:\n\(snap)")
     }
 
+    // MARK: - Injury sections (build 87)
+
+    func test_structuredInjuries_emitsHumanReadableName() {
+        var m = TrainingMemory()
+        m.userInjuries = [UserInjury(slug: "patellar-tendinopathy")]
+        let block = CoachContext.structuredInjuriesSection(memory: m) ?? ""
+        XCTAssertTrue(block.contains("STRUCTURED INJURIES"))
+        XCTAssertTrue(block.contains("Patellar Tendinopathy"),
+                      "Should emit the human name, not the slug. Got: \(block)")
+        XCTAssertFalse(block.contains("patellar-tendinopathy"),
+                       "Raw slug should never appear in the structured block")
+    }
+
+    func test_structuredInjuries_includesSeverityAndSideWhenSet() {
+        var m = TrainingMemory()
+        m.userInjuries = [
+            UserInjury(slug: "acl-injury", severity: .moderate, side: .left, onsetDate: nil)
+        ]
+        let block = CoachContext.structuredInjuriesSection(memory: m) ?? ""
+        XCTAssertTrue(block.contains("moderate"), "Severity rendered: \(block)")
+        XCTAssertTrue(block.contains("left"), "Side rendered: \(block)")
+    }
+
+    func test_structuredInjuries_nilWhenEmpty() {
+        XCTAssertNil(CoachContext.structuredInjuriesSection(memory: TrainingMemory()))
+    }
+
+    func test_injuryFilters_resolvesExerciseNames() {
+        var m = TrainingMemory()
+        m.userInjuries = [UserInjury(slug: "acl-injury")]
+        let p = DemographicProfile.from(m)
+        let block = CoachContext.injuryFiltersSection(profile: p, memory: m) ?? ""
+        XCTAssertTrue(block.contains("INJURY FILTERS"))
+        XCTAssertTrue(block.contains("ACL Sprain/Tear"),
+                      "Header should use the human name. Got: \(block)")
+        // The block should list at least one actual exercise name (not an id).
+        // We don't pin the exact name because coach.db can shuffle, but the
+        // block must NOT be just the header + slug.
+        let lines = block.split(separator: "\n").map(String.init)
+        XCTAssertTrue(lines.count >= 2, "Expected header + at least one injury line")
+    }
+
+    func test_prehabCandidates_listsCoachDbTaggedExercises() {
+        var m = TrainingMemory()
+        m.userInjuries = [UserInjury(slug: "patellar-tendinopathy")]
+        let p = DemographicProfile.from(m)
+        let block = CoachContext.prehabCandidatesSection(profile: p, memory: m) ?? ""
+        XCTAssertTrue(block.contains("PREHAB CANDIDATES"))
+        XCTAssertTrue(block.contains("Patellar Tendinopathy"))
+    }
+
+    func test_snapshot_neverRendersRawSlugInConstraintsBlock() {
+        var m = TrainingMemory()
+        m.userInjuries = [UserInjury(slug: "acl-injury")]
+        let snap = CoachContext.snapshot(
+            activeTab: .today,
+            memory: m,
+            plan: nil,
+            recentSessions: [],
+            recentFeedback: [],
+            recentSoreness: []
+        )
+        XCTAssertFalse(snap.contains("- acl-injury"),
+                       "Slug should be promoted to STRUCTURED INJURIES, not dumped raw. Got:\n\(snap)")
+        XCTAssertTrue(snap.contains("ACL Sprain/Tear"),
+                      "Snapshot should contain the human name for the injury")
+    }
+
+    func test_snapshot_legacyFreeText_stillSurfacesInConstraintsBlock() {
+        var m = TrainingMemory()
+        m.constraints = ["bad ankle"]
+        let snap = CoachContext.snapshot(
+            activeTab: .today,
+            memory: m,
+            plan: nil,
+            recentSessions: [],
+            recentFeedback: [],
+            recentSoreness: []
+        )
+        XCTAssertTrue(snap.contains("CONSTRAINTS (free-text)"))
+        XCTAssertTrue(snap.contains("bad ankle"))
+    }
+
     // MARK: - Helpers
 
     private func savedSession(

@@ -55,6 +55,19 @@
 
 import Foundation
 
+/// Per-injury rationale row. Sorted by slug for stable rendering.
+struct InjuryContraindication: Hashable {
+    let slug: String
+    let exerciseIds: Set<Int>
+}
+
+/// Per-injury prehab pool entry. Up to 3 exercises per injury, sourced from
+/// coach.db `exercise_injury_relevance` (roles: prehab, rehab_late).
+struct InjuryPrehabSuggestion: Hashable {
+    let slug: String
+    let exercises: [Exercise]
+}
+
 struct DemographicProfile: Equatable {
     /// Sane lift-days range for this demographic. The user's
     /// `liftDaysPerWeek` is still authoritative — this is a recommendation
@@ -87,6 +100,19 @@ struct DemographicProfile: Equatable {
     /// injuries (from coach.db `exercise_injury_relevance`). Precise — won't
     /// over-match the way name-keyword filtering does.
     let excludedExerciseIds: Set<Int>
+
+    /// Same data as `excludedExerciseIds` but bucketed per injury slug.
+    /// Sorted by slug for stable rendering. Build 87 — lets CoachContext
+    /// write "INJURY FILTERS — ACL: Back Squat, ..." per-injury lines so
+    /// the coach can name which exercise got dropped for which reason.
+    let excludedByInjury: [InjuryContraindication]
+
+    /// Per-injury prehab / rehab_late exercise list pulled from
+    /// `exercise_injury_relevance`. Build 87 — the WorkoutGenerator pulls
+    /// from this on mobility days when the user has any injury; CoachContext
+    /// also surfaces it as a PREHAB CANDIDATES block. Empty when no
+    /// structured injuries.
+    let prehabSuggestions: [InjuryPrehabSuggestion]
 
     /// Human-readable bullets explaining *why* the planner is structured
     /// the way it is. Surfaced in Profile.
@@ -152,14 +178,17 @@ extension DemographicProfile {
             return []
         }()
 
-        // --- Constraints: split into known injury slugs vs legacy free-text ---
+        // --- Injuries: structured first, with legacy slugs-in-constraints fallback ---
         //
-        // The structured picker writes coach.db injury slugs into
-        // memory.constraints (e.g. "patellar-tendinopathy"). Anything not
-        // matching a known slug is treated as legacy free-text and falls
-        // back to the old keyword-substring filter.
+        // Build 87 introduced `m.userInjuries` as the typed home for selected
+        // injuries. Pre-87 saves that wrote slugs into `m.constraints` are
+        // migrated on decode, but we still tolerate finding stragglers here
+        // (in case some path bypassed the migration). Anything in constraints
+        // that doesn't match a known slug stays as legacy free-text.
         let knownInjurySlugs = Set(CoachDatabase.shared.listInjuries().map(\.slug))
-        let injurySlugs = Set(m.constraints.filter { knownInjurySlugs.contains($0) })
+        let structuredSlugs = Set(m.userInjuries.map(\.slug))
+        let stragglerSlugs = Set(m.constraints.filter { knownInjurySlugs.contains($0) })
+        let injurySlugs = structuredSlugs.union(stragglerSlugs)
         let freeText = m.constraints.filter { !knownInjurySlugs.contains($0) }
 
         let stopWords: Set<String> = ["left", "right", "both", "the", "my",
@@ -170,7 +199,26 @@ extension DemographicProfile {
                 .filter { !$0.isEmpty && $0.count >= 3 && !stopWords.contains($0) }
         }
 
-        let contraindicated = CoachDatabase.shared.contraindicatedExerciseIds(forInjurySlugs: injurySlugs)
+        // Per-slug contraindication map + union. Generator + filter SQL still
+        // consume the union for backwards compat; CoachContext reads the map.
+        let perSlug = CoachDatabase.shared.contraindicatedExerciseIds(bySlug: injurySlugs)
+        let contraindicated = perSlug.values.reduce(into: Set<Int>()) { $0.formUnion($1) }
+        let excludedByInjury: [InjuryContraindication] = perSlug
+            .filter { !$0.value.isEmpty }
+            .sorted { $0.key < $1.key }
+            .map { InjuryContraindication(slug: $0.key, exerciseIds: $0.value) }
+
+        // Prehab pool. Both "prehab" and "rehab_late" are safe to recommend
+        // generically; "rehab_early" is too sensitive (acute load tolerance
+        // varies wildly) and stays out. Top 3 per injury, alphabetised by the
+        // SQL ORDER BY in the DB call.
+        let prehabRaw = CoachDatabase.shared.exercises(
+            forInjurySlugs: injurySlugs,
+            roles: ["prehab", "rehab_late"]
+        )
+        let prehab: [InjuryPrehabSuggestion] = prehabRaw
+            .sorted { $0.key < $1.key }
+            .map { InjuryPrehabSuggestion(slug: $0.key, exercises: Array($0.value.prefix(3))) }
 
         // --- Rationale ---
         var why: [String] = []
@@ -183,6 +231,10 @@ extension DemographicProfile {
         }
         if !injurySlugs.isEmpty {
             why.append("Avoiding exercises contraindicated for: \(injurySlugs.count) injur\(injurySlugs.count == 1 ? "y" : "ies").")
+        }
+        if !prehab.isEmpty {
+            let total = prehab.reduce(0) { $0 + $1.exercises.count }
+            why.append("Surfacing \(total) prehab move\(total == 1 ? "" : "s") for your injuries on mobility days.")
         }
         if !excludes.isEmpty {
             why.append("Free-text constraint keywords filtered: \(excludes.sorted().joined(separator: ", ")).")
@@ -202,6 +254,8 @@ extension DemographicProfile {
             allowedEnvironments: envs,
             excludedNameKeywords: excludes,
             excludedExerciseIds: contraindicated,
+            excludedByInjury: excludedByInjury,
+            prehabSuggestions: prehab,
             rationale: why
         )
     }

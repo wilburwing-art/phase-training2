@@ -90,6 +90,16 @@ struct GeneratedWorkout: Codable, Hashable {
     var provenance: String
 }
 
+/// Why this exercise ended up in the workout. Default is `.recipe` — the
+/// pattern-slot recipe placed it. `.prehab` means the generator pulled it
+/// from `exercise_injury_relevance` for the named injury. Coach context
+/// annotates `.prehab` picks with the injury's human-readable name so the
+/// LLM can explain the choice without joining tables itself.
+enum ExercisePickSource: Codable, Hashable {
+    case recipe
+    case prehab(injurySlug: String)
+}
+
 struct GeneratedExercise: Codable, Hashable, Identifiable {
     // Build 70 — coaching prescription depth.
     //
@@ -122,6 +132,41 @@ struct GeneratedExercise: Codable, Hashable, Identifiable {
     var rpe: String?
     /// 4-digit tempo string — "3-1-1-0" or "X-0-X-0". Nil = no tempo cue.
     var tempo: String?
+    /// Why this exercise got picked. Defaults to .recipe so existing decoders
+    /// don't need to write the field.
+    var source: ExercisePickSource = .recipe
+
+    enum CodingKeys: String, CodingKey {
+        case id, exerciseId, name, pattern, isCompound, sets, reps
+        case restSeconds, notes, rpe, tempo, source
+    }
+
+    init(id: String, exerciseId: Int, name: String, pattern: String? = nil,
+         isCompound: Bool, sets: Int, reps: String, restSeconds: Int,
+         notes: String? = nil, rpe: String? = nil, tempo: String? = nil,
+         source: ExercisePickSource = .recipe) {
+        self.id = id; self.exerciseId = exerciseId; self.name = name
+        self.pattern = pattern; self.isCompound = isCompound
+        self.sets = sets; self.reps = reps; self.restSeconds = restSeconds
+        self.notes = notes; self.rpe = rpe; self.tempo = tempo
+        self.source = source
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try c.decode(String.self, forKey: .id)
+        self.exerciseId = try c.decode(Int.self, forKey: .exerciseId)
+        self.name = try c.decode(String.self, forKey: .name)
+        self.pattern = (try? c.decodeIfPresent(String.self, forKey: .pattern)) ?? nil
+        self.isCompound = (try? c.decode(Bool.self, forKey: .isCompound)) ?? false
+        self.sets = (try? c.decode(Int.self, forKey: .sets)) ?? 3
+        self.reps = (try? c.decode(String.self, forKey: .reps)) ?? ""
+        self.restSeconds = (try? c.decode(Int.self, forKey: .restSeconds)) ?? 60
+        self.notes = (try? c.decodeIfPresent(String.self, forKey: .notes)) ?? nil
+        self.rpe = (try? c.decodeIfPresent(String.self, forKey: .rpe)) ?? nil
+        self.tempo = (try? c.decodeIfPresent(String.self, forKey: .tempo)) ?? nil
+        self.source = (try? c.decode(ExercisePickSource.self, forKey: .source)) ?? .recipe
+    }
 }
 
 extension GeneratedWorkout {
@@ -211,6 +256,10 @@ extension TrainingMemory {
     /// auto-regen subscription on PlanStore deduped legitimate profile
     /// changes — editing "dislikes burpees" silently did nothing.
     ///
+    /// Build 87: userInjuries (slug + severity + side) too — editing a
+    /// severity should refresh the prehab-aware mobility day even if the
+    /// contraindication filter result is unchanged.
+    ///
     /// Skipped intentionally: height / weight / gender — they don't shape
     /// deterministic plan generation, only display + coach context. We don't
     /// want a weight log to retrigger a week-wide regen.
@@ -218,6 +267,10 @@ extension TrainingMemory {
         let seasons = seasonsBySport
             .sorted { $0.key.slug < $1.key.slug }
             .map { "\($0.key.slug):\($0.value.rawValue)" }
+            .joined(separator: ",")
+        let injuries = userInjuries
+            .sorted { $0.slug < $1.slug }
+            .map { "\($0.slug):\($0.severity?.rawValue ?? "_"):\($0.side?.rawValue ?? "_")" }
             .joined(separator: ",")
         let canonical = [
             "v\(schemaVersion)",
@@ -234,6 +287,7 @@ extension TrainingMemory {
             "ag:\(age.map(String.init) ?? "_")",
             "dl:\(dislikes.map { $0.lowercased() }.sorted().joined(separator: ","))",
             "cn:\(constraints.sorted().joined(separator: ","))",
+            "ui:\(injuries)",
             "st:\(startingState.rawValue)",
         ].joined(separator: "|")
         var hash: UInt64 = 5381

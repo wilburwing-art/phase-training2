@@ -403,14 +403,16 @@ struct ProfileScreen: View {
     }
 
     private var injuriesSummary: String {
+        // Build 87: prefer the typed userInjuries store; free-text constraints
+        // that aren't recognised injury slugs still surface (legacy notes).
         let known = Set(CoachDatabase.shared.listInjuries().map(\.slug))
-        let selected = store.memory.constraints.filter { known.contains($0) }
+        let structuredCount = store.memory.userInjuries.count
         let legacy = store.memory.constraints.filter { !known.contains($0) }
-        let total = selected.count + legacy.count
+        let total = structuredCount + legacy.count
         if total == 0 { return "None" }
         if total == 1 {
-            if let slug = selected.first,
-               let name = CoachDatabase.shared.listInjuries().first(where: { $0.slug == slug })?.name {
+            if let only = store.memory.userInjuries.first,
+               let name = CoachDatabase.shared.listInjuries().first(where: { $0.slug == only.slug })?.name {
                 return name
             }
             return legacy.first ?? "1 item"

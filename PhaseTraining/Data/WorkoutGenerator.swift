@@ -110,6 +110,45 @@ enum WorkoutGenerator {
         let envs = profile.allowedEnvironments
         let excludeKws = profile.excludedNameKeywords + memory.dislikes.map { $0.lowercased() }
 
+        // Mobility-day prehab: prepend one injury-specific prehab pick before
+        // the recipe slots when the user has any structured injury. Rotates
+        // across injuries by hashSeed so a 2-injury user sees both over
+        // successive weeks. Lift days skip this — the contraindication filter
+        // already does the safety job there, and prehab would crowd out
+        // primary lifting work.
+        if focus == .mobility, let prehabPick = pickPrehab(
+            profile: profile,
+            envs: envs,
+            excludeKws: excludeKws,
+            excludeIds: pickedIds,
+            hashSeed: hashSeed
+        ) {
+            let (sets, reps, restSec) = prescription(
+                for: prehabPick.exercise,
+                slotIdx: 0,
+                focus: focus,
+                memory: memory,
+                profile: profile
+            )
+            let durSec = sets * (45 + restSec) + 30
+            picks.append(GeneratedExercise(
+                id: "\(hashSeed)-prehab-\(prehabPick.exercise.id)",
+                exerciseId: prehabPick.exercise.id,
+                name: prehabPick.exercise.name,
+                pattern: nil,
+                isCompound: prehabPick.exercise.isCompound,
+                sets: sets,
+                reps: reps,
+                restSeconds: restSec,
+                notes: nil,
+                rpe: nil,
+                tempo: nil,
+                source: .prehab(injurySlug: prehabPick.slug)
+            ))
+            pickedIds.insert(prehabPick.exercise.id)
+            elapsedSec += durSec
+        }
+
         for (slotIdx, slot) in focus.slots.enumerated() {
             guard let initial = pickForSlot(
                 slot: slot,
@@ -204,6 +243,48 @@ enum WorkoutGenerator {
             estimatedMinutes: estMin,
             provenance: prov
         )
+    }
+
+    // MARK: - Prehab pick
+
+    /// Pick one prehab exercise for the user from their suggestion pool,
+    /// honoring the same env / keyword / id constraints the rest of the
+    /// generator respects. Returns (exercise, injurySlug) so the caller can
+    /// tag the picked GeneratedExercise with `source: .prehab(slug)`.
+    ///
+    /// Rotation: hash the seed across the injury list so multi-injury users
+    /// don't always see the same one first. Within a chosen injury, the first
+    /// available exercise wins (DB returns them alphabetised).
+    private static func pickPrehab(
+        profile: DemographicProfile,
+        envs: Set<String>,
+        excludeKws: [String],
+        excludeIds: Set<Int>,
+        hashSeed: String
+    ) -> (exercise: Exercise, slug: String)? {
+        guard !profile.prehabSuggestions.isEmpty else { return nil }
+
+        // Stable rotation: fold the hash seed and modulo by suggestion count
+        // so different weeks pick different injuries when the user has more
+        // than one.
+        var folded: UInt64 = 5381
+        for byte in hashSeed.utf8 { folded = (folded &* 33) &+ UInt64(byte) }
+        let startIdx = Int(folded % UInt64(profile.prehabSuggestions.count))
+
+        for offset in 0..<profile.prehabSuggestions.count {
+            let bucket = profile.prehabSuggestions[(startIdx + offset) % profile.prehabSuggestions.count]
+            for candidate in bucket.exercises {
+                if excludeIds.contains(candidate.id) { continue }
+                // Env filter: empty envs = full-gym user, no restriction.
+                if !envs.isEmpty, let env = candidate.environment, !env.isEmpty, !envs.contains(env) {
+                    continue
+                }
+                let lowerName = candidate.name.lowercased()
+                if excludeKws.contains(where: { lowerName.contains($0) }) { continue }
+                return (candidate, bucket.slug)
+            }
+        }
+        return nil
     }
 
     // MARK: - Slot fulfillment

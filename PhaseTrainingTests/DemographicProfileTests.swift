@@ -201,4 +201,45 @@ final class DemographicProfileTests: XCTestCase {
         let p = DemographicProfile.from(TrainingMemory())
         XCTAssertFalse(p.rationale.isEmpty)
     }
+
+    // MARK: - Structured userInjuries (build 87)
+
+    func test_userInjuries_populateExcludedByInjury_perSlug() {
+        var m = TrainingMemory()
+        m.userInjuries = [UserInjury(slug: "acl-injury")]
+        let p = DemographicProfile.from(m)
+        XCTAssertEqual(p.excludedByInjury.count, 1)
+        XCTAssertEqual(p.excludedByInjury.first?.slug, "acl-injury")
+        XCTAssertFalse(p.excludedByInjury.first?.exerciseIds.isEmpty ?? true,
+                       "ACL injury should have coach.db-tagged contraindicated exercises")
+        XCTAssertEqual(p.excludedByInjury.first?.exerciseIds, p.excludedExerciseIds,
+                       "Single-injury union should match the per-slug set")
+    }
+
+    func test_userInjuries_populatePrehabSuggestions() {
+        var m = TrainingMemory()
+        m.userInjuries = [UserInjury(slug: "patellar-tendinopathy")]
+        let p = DemographicProfile.from(m)
+        XCTAssertEqual(p.prehabSuggestions.count, 1,
+                       "Exactly one prehab bucket for one structured injury")
+        XCTAssertEqual(p.prehabSuggestions.first?.slug, "patellar-tendinopathy")
+        XCTAssertLessThanOrEqual(p.prehabSuggestions.first?.exercises.count ?? 0, 3,
+                                 "Capped at 3 prehab exercises per injury")
+    }
+
+    func test_legacySlugInConstraints_stillBackfillsExcludedByInjury() {
+        // Pre-87 saves wrote slugs into constraints[]. DemographicProfile must
+        // pick them up via the straggler path even if migration didn't run.
+        var m = TrainingMemory()
+        m.constraints = ["acl-injury"]
+        let p = DemographicProfile.from(m)
+        XCTAssertEqual(p.excludedByInjury.first?.slug, "acl-injury",
+                       "Straggler slug in constraints[] should still populate the per-slug map")
+    }
+
+    func test_noInjuries_emitsEmptyBuckets() {
+        let p = DemographicProfile.from(TrainingMemory())
+        XCTAssertTrue(p.excludedByInjury.isEmpty)
+        XCTAssertTrue(p.prehabSuggestions.isEmpty)
+    }
 }

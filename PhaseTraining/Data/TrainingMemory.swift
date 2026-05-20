@@ -14,7 +14,7 @@ import Foundation
 // MARK: - Top-level
 
 struct TrainingMemory: Codable {
-    var schemaVersion: Int = 5
+    var schemaVersion: Int = 6
 
     // Identity / intent
     var sports: [Sport] = []
@@ -65,7 +65,17 @@ struct TrainingMemory: Codable {
 
     // Free-text guardrails
     var dislikes: [String] = []
+    /// Legacy + free-text injury notes ("bad ankle", or pre-build-87 saves that
+    /// wrote injury slugs into this list). New structured injuries live in
+    /// `userInjuries`; this stays as a fall-through for the keyword-filter path.
     var constraints: [String] = []
+    /// Structured per-injury record. Build 87 — replaces the slug-only
+    /// `constraints[]` storage for known coach.db injuries. Optional severity /
+    /// side / onsetDate flow into the CoachContext snapshot and let the model
+    /// reason about laterality and acute-vs-chronic. Plain slug entries (no
+    /// extra metadata) migrate over on first decode; legacy slugs left in
+    /// constraints[] still feed the contraindication filter via fallback.
+    var userInjuries: [UserInjury] = []
 
     // Append-only history (Phases 11–12 fill these)
     var feedback: [FeedbackEntry] = []
@@ -92,6 +102,7 @@ struct TrainingMemory: Codable {
         case age, gender
         case heightCm, weightKg, usesImperial
         case dislikes, constraints
+        case userInjuries
         case feedback, soreness, weeklyCheckIns
         case coachInsights
         case onboardedAt
@@ -143,6 +154,24 @@ struct TrainingMemory: Codable {
         self.usesImperial    = (try? c.decode(Bool.self,            forKey: .usesImperial)) ?? true
         self.dislikes        = (try? c.decode([String].self,       forKey: .dislikes))        ?? []
         self.constraints     = (try? c.decode([String].self,       forKey: .constraints))     ?? []
+        // userInjuries decode + one-shot migration. New saves write the typed
+        // list directly. Older saves wrote injury slugs into constraints[]; on
+        // first decode any constraints entry whose slug matches a coach.db
+        // common_injuries.slug is promoted into a metadata-less UserInjury and
+        // pulled out of constraints. Free-text legacy entries stay in
+        // constraints[] for the keyword-filter fallback path.
+        if let decoded = try? c.decode([UserInjury].self, forKey: .userInjuries) {
+            self.userInjuries = decoded
+        } else {
+            let knownSlugs = Set(CoachDatabase.shared.listInjuries().map(\.slug))
+            let migrated = self.constraints.filter { knownSlugs.contains($0) }
+            if migrated.isEmpty {
+                self.userInjuries = []
+            } else {
+                self.userInjuries = migrated.map { UserInjury(slug: $0) }
+                self.constraints = self.constraints.filter { !knownSlugs.contains($0) }
+            }
+        }
         self.feedback        = (try? c.decode([FeedbackEntry].self, forKey: .feedback))       ?? []
         self.soreness        = (try? c.decode([SorenessEntry].self, forKey: .soreness))       ?? []
         self.weeklyCheckIns  = (try? c.decode([WeeklyCheckIn].self, forKey: .weeklyCheckIns)) ?? []
@@ -171,6 +200,7 @@ struct TrainingMemory: Codable {
         try c.encode(usesImperial, forKey: .usesImperial)
         try c.encode(dislikes,        forKey: .dislikes)
         try c.encode(constraints,     forKey: .constraints)
+        try c.encode(userInjuries,    forKey: .userInjuries)
         try c.encode(feedback,        forKey: .feedback)
         try c.encode(soreness,        forKey: .soreness)
         try c.encode(weeklyCheckIns,  forKey: .weeklyCheckIns)
@@ -478,6 +508,56 @@ enum Gender: String, Codable, CaseIterable, Identifiable {
         case .male:           return "Male"
         case .nonbinary:      return "Non-binary"
         case .preferNotToSay: return "Prefer not to say"
+        }
+    }
+}
+
+// MARK: - Structured injuries
+
+/// One per active injury the user has selected from coach.db's curated list.
+/// Slug is the FK to `common_injuries.slug`; the remaining fields are optional
+/// metadata that the coach reads but the planner doesn't bind to (today's
+/// filter still keys off slug only). Adding severity/side/onset later doesn't
+/// change which exercises get excluded — it just lets the model speak in terms
+/// of "your mild left ACL from 8 weeks ago" instead of `acl-injury`.
+struct UserInjury: Codable, Hashable, Identifiable {
+    var slug: String
+    var severity: InjurySeverity? = nil
+    var side: InjurySide? = nil
+    var onsetDate: Date? = nil
+    var notes: String? = nil
+    /// Stable across edits: same slug + side = same identity, so editing
+    /// severity in-place doesn't break List diffing.
+    var id: String { slug + "|" + (side?.rawValue ?? "_") }
+}
+
+enum InjurySeverity: String, Codable, CaseIterable, Identifiable {
+    case mild, moderate, severe
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .mild:     return "Mild"
+        case .moderate: return "Moderate"
+        case .severe:   return "Severe"
+        }
+    }
+}
+
+enum InjurySide: String, Codable, CaseIterable, Identifiable {
+    case left, right, both
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .left:  return "Left"
+        case .right: return "Right"
+        case .both:  return "Both"
+        }
+    }
+    var short: String {
+        switch self {
+        case .left:  return "L"
+        case .right: return "R"
+        case .both:  return "Both"
         }
     }
 }

@@ -158,7 +158,7 @@ final class WorkoutGeneratorTests: XCTestCase {
         m.experience = .intermediate
         m.equipment = [.fullGym]
         m.sessionMinutes = 60
-        m.constraints = ["acl-injury"]   // structured slug from coach.db
+        m.userInjuries = [UserInjury(slug: "acl-injury")]
         let p = DemographicProfile.from(m)
         XCTAssertFalse(p.excludedExerciseIds.isEmpty,
                        "Precondition: coach.db should have contraindicated exercises tagged for ACL injury")
@@ -306,5 +306,69 @@ final class WorkoutGeneratorTests: XCTestCase {
         // Mobility reps should NOT be 6-10 (the hypertrophy primary bias) —
         // mobility flows keep their hold-style defaults.
         XCTAssertNotEqual(first.reps, "6-10")
+    }
+
+    // MARK: - Prehab injection on mobility days (build 87)
+
+    func test_mobilityDay_withInjury_includesPrehabExercise() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.userInjuries = [UserInjury(slug: "patellar-tendinopathy")]
+        let p = DemographicProfile.from(m)
+        XCTAssertFalse(p.prehabSuggestions.isEmpty,
+                       "Precondition: coach.db should have prehab moves tagged for patellar tendinopathy")
+
+        let mob = WorkoutGenerator.generateMobility(
+            memory: m, profile: p, hashSeed: m.planInputsHash
+        )
+        let prehabPicks = mob.exercises.filter {
+            if case .prehab = $0.source { return true } else { return false }
+        }
+        XCTAssertEqual(prehabPicks.count, 1,
+                       "Mobility day with one injury should include exactly one prehab pick")
+        if case .prehab(let slug) = prehabPicks.first?.source {
+            XCTAssertEqual(slug, "patellar-tendinopathy")
+        } else {
+            XCTFail("First prehab pick should tag the user's injury")
+        }
+    }
+
+    func test_mobilityDay_noInjury_skipsPrehab() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        let p = DemographicProfile.from(m)
+        XCTAssertTrue(p.prehabSuggestions.isEmpty)
+
+        let mob = WorkoutGenerator.generateMobility(
+            memory: m, profile: p, hashSeed: m.planInputsHash
+        )
+        for ex in mob.exercises {
+            if case .prehab = ex.source {
+                XCTFail("Expected no prehab picks for a user with no injuries; got \(ex.name)")
+            }
+        }
+    }
+
+    func test_liftDay_withInjury_doesNotInjectPrehab() {
+        // Lift days stay subtractive — contraindication filter only. Prehab
+        // belongs on mobility days where it can crowd out hold work, not on
+        // a primary lift where it'd steal from main compound time.
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.userInjuries = [UserInjury(slug: "acl-injury")]
+        let p = DemographicProfile.from(m)
+
+        let lift = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 1,
+            memory: m, profile: p, hashSeed: m.planInputsHash
+        )
+        for ex in lift.exercises {
+            if case .prehab = ex.source {
+                XCTFail("Lift day should not inject prehab picks; got \(ex.name)")
+            }
+        }
     }
 }
