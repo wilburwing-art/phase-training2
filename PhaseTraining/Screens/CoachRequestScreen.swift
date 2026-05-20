@@ -21,6 +21,12 @@ import SwiftUI
 struct CoachRequestScreen: View {
     @EnvironmentObject private var memoryStore: MemoryStore
     @EnvironmentObject private var sessionStore: SessionStore
+    @EnvironmentObject private var planStore: PlanStore
+    @EnvironmentObject private var tabSelection: TabSelectionStore
+    /// Drives whether we route the Generate request through the LLM coach.
+    /// When false, the existing deterministic chip-driven path runs and the
+    /// LLM never sees the user's data. Consent flow lives in Profile.
+    @AppStorage(CoachConsent.storageKey) private var consentGranted: Bool = false
     @Environment(\.dismiss) private var dismiss
 
     /// Called when the user taps a save action. `startNow` reflects which
@@ -34,6 +40,12 @@ struct CoachRequestScreen: View {
     @State private var preview: GeneratedWorkout?
     @State private var name: String = ""
     @State private var lastSeed: String = ""
+    /// LLM-supplied "why this workout" — surfaced above the preview list.
+    @State private var coachReasoning: String? = nil
+    /// True while the LLM is thinking. Disables Generate + shows a label.
+    @State private var generating: Bool = false
+    /// In-flight task so cancel / regenerate can interrupt the LLM mid-stream.
+    @State private var llmTask: Task<Void, Never>? = nil
 
     /// Pre-workout substitution: the index into preview.exercises whose
     /// alternatives the user is browsing. nil = sheet closed.
@@ -45,6 +57,11 @@ struct CoachRequestScreen: View {
         case input
         case preview
     }
+
+    /// Shared CoachClient instance — created once per screen lifetime.
+    /// CoachClient is cheap to construct; this avoids env-object wiring for
+    /// a one-shot LLM call.
+    private let client = CoachClient()
 
     var body: some View {
         NavigationStack {
@@ -140,6 +157,26 @@ struct CoachRequestScreen: View {
     private var previewContent: some View {
         VStack(alignment: .leading, spacing: 16) {
             if let preview {
+                if let reasoning = coachReasoning, !reasoning.isEmpty {
+                    // The LLM's one-line "why this workout" — shown above
+                    // the listing so the user understands the strategy.
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(Color.accent)
+                            .padding(.top, 2)
+                        Text(reasoning)
+                            .font(.custom("Inter-Regular", size: 13))
+                            .foregroundStyle(Color.ink2)
+                            .multilineTextAlignment(.leading)
+                    }
+                    .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.accentWash)
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.accentBorder, lineWidth: 0.5))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+
                 VStack(alignment: .leading, spacing: 6) {
                     Text(preview.title.uppercased())
                         .styled(.micro)
@@ -231,15 +268,25 @@ struct CoachRequestScreen: View {
         case .input:
             VStack(spacing: 0) {
                 Button(action: generate) {
-                    Text("Generate")
+                    HStack(spacing: 8) {
+                        if generating {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .tint(Color.accentInk)
+                        }
+                        Text(generating
+                             ? (consentGranted ? "Coach is thinking…" : "Generating…")
+                             : (consentGranted ? "Ask coach to build" : "Generate"))
                         .font(.custom("SpaceGrotesk-SemiBold", size: 15))
                         .foregroundStyle(Color.accentInk)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.accent)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(generating ? Color.accent.opacity(0.6) : Color.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
                 .buttonStyle(.plain)
+                .disabled(generating)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
@@ -295,41 +342,149 @@ struct CoachRequestScreen: View {
 
     // MARK: - Generation
 
+    /// Option-D entry point: the LLM coach decides the parameters
+    /// (focus, duration, pattern emphasis, intensity, target overrides),
+    /// then the deterministic generator executes deterministically.
+    ///
+    /// Flow:
+    ///   1. If consent off OR LLM unavailable → fall back to chip-driven
+    ///      .auto strategy. The deterministic path still ships a workout.
+    ///   2. If consent on → stream the LLM with the build_workout tool,
+    ///      accumulate the tool_use JSON, decode into a GeneratorStrategy,
+    ///      then run the generator with strategy + context.
+    ///
+    /// Either path produces a workout. The LLM path adds the coach's
+    /// reasoning line shown above the preview.
     private func generate() {
-        // Build a fresh per-tap seed so each Generate / Regenerate gives variety
-        // without polluting the user's permanent planInputsHash.
+        llmTask?.cancel()
+        coachReasoning = nil
+
+        // Chip selections become a "starter" strategy the LLM can override.
+        // When the LLM falls back to .auto we still get focus + duration
+        // from the chips — the deterministic path stays useful offline.
+        let starterFocus = focus.workoutFocus
+        let starter = GeneratorStrategy(
+            focus: starterFocus,
+            durationMinutes: durationMinutes,
+            emphasizePatterns: [],
+            deprioritizePatterns: [],
+            targetWeightOverrides: [:],
+            intensityBias: .normal
+        )
+
+        // Skip the LLM entirely when consent isn't granted — pure deterministic
+        // path, no token spend, no waiting.
+        guard consentGranted else {
+            runGenerator(with: starter, reasoning: nil)
+            return
+        }
+
+        generating = true
+        llmTask = Task {
+            let (strategy, reasoning) = await requestStrategyFromLLM(starter: starter)
+            await MainActor.run {
+                guard !Task.isCancelled else { return }
+                generating = false
+                runGenerator(with: strategy, reasoning: reasoning)
+            }
+        }
+    }
+
+    /// Stream the LLM with the build_workout tool. Accumulate the first
+    /// tool_use block's input JSON, decode it into a GeneratorStrategy, and
+    /// return. On any error / no tool call / cancellation → return the
+    /// starter strategy unchanged. Graceful degradation: app never breaks.
+    private func requestStrategyFromLLM(starter: GeneratorStrategy) async -> (GeneratorStrategy, String?) {
+        let snapshot = CoachContext.snapshot(
+            activeTab: tabSelection.selected,
+            memory: memoryStore.memory,
+            plan: planStore.plan,
+            recentSessions: sessionStore.savedSessions,
+            recentFeedback: memoryStore.memory.feedback,
+            recentSoreness: memoryStore.memory.soreness
+        )
+        let userPrompt = """
+        Build me a workout. The user picked focus = \(focus.label), duration = \(durationMinutes) min as a starting point — adjust based on the context if you see better signal. Call build_workout once and only once.
+        """
+        let stream = client.stream(
+            cachedSystem: CoachSystemPrompt.cachedHeader,
+            perTurnContext: CoachSystemPrompt.contextBlock(snapshot: snapshot),
+            history: [],
+            userMessage: userPrompt,
+            tools: [CoachTools.buildWorkout]
+        )
+        var toolCallData: Data? = nil
+        do {
+            for try await part in stream {
+                if Task.isCancelled { return (starter, nil) }
+                switch part {
+                case .toolCall(_, let name, let input):
+                    if name == "build_workout", toolCallData == nil {
+                        toolCallData = input
+                    }
+                case .textDelta:
+                    continue   // pre-tool reasoning text — not surfaced
+                }
+            }
+        } catch {
+            return (starter, nil)
+        }
+        guard let data = toolCallData,
+              let proposal = CoachToolDecoder.decodeBuildWorkout(from: data) else {
+            return (starter, nil)
+        }
+        // Merge the LLM's strategy over the starter (LLM wins for fields it sets).
+        var merged = proposal.strategy
+        if merged.focus == nil { merged.focus = starter.focus }
+        if merged.durationMinutes == nil { merged.durationMinutes = starter.durationMinutes }
+        return (merged, proposal.reasoning)
+    }
+
+    /// Pure deterministic generation given a strategy. Same code regardless
+    /// of whether the LLM populated the strategy or it came from chips.
+    private func runGenerator(with strategy: GeneratorStrategy, reasoning: String?) {
         let seed = "coach-req-\(focus.rawValue)-\(durationMinutes)-\(Date().timeIntervalSince1970)"
         lastSeed = seed
-
-        // Use a memory snapshot with the user's chosen duration so the
-        // generator's budget math respects it. We don't write back to memory.
         var mem = memoryStore.memory
-        mem.sessionMinutes = durationMinutes
-
+        mem.sessionMinutes = strategy.durationMinutes ?? durationMinutes
         let profile = DemographicProfile.from(mem)
-        // Build a runtime-history context so the coach-requested workout
-        // benefits from the same signals the planner gets — progressive
-        // overload targets, sore-area avoidance, stagnation swaps, etc.
         let context = GeneratorContext.from(
             sessions: sessionStore.savedSessions,
             soreness: mem.soreness,
             feedback: mem.feedback
         )
         let workout: GeneratedWorkout
-        switch focus {
-        case .mobility:
+        let effectiveFocus = strategy.focus ?? focus.workoutFocus
+        if effectiveFocus == .mobility {
             workout = WorkoutGenerator.generateMobility(
-                memory: mem, profile: profile, hashSeed: seed, context: context
+                memory: mem, profile: profile, hashSeed: seed,
+                context: context, strategy: strategy
             )
-        default:
-            let (liftIdx, total) = focus.liftIndexTotalPair()
+        } else {
+            // Map the focus back to a liftIndex/totalLifts pair that resolves
+            // to it via WorkoutFocus.lift — generator preserves the override.
+            let (liftIdx, total) = liftIndexTotalPair(for: effectiveFocus)
             workout = WorkoutGenerator.generateLift(
                 liftIndex: liftIdx, totalLifts: total,
-                memory: mem, profile: profile, hashSeed: seed, context: context
+                memory: mem, profile: profile, hashSeed: seed,
+                context: context, strategy: strategy
             )
         }
+        coachReasoning = reasoning
         preview = workout
         phase = .preview
+    }
+
+    private func liftIndexTotalPair(for focus: WorkoutFocus) -> (Int, Int) {
+        switch focus {
+        case .fullBodyA, .fullBodyB: return (0, 1)
+        case .push:     return (0, 3)
+        case .pull:     return (1, 3)
+        case .legs:     return (2, 3)
+        case .upper:    return (0, 4)
+        case .lower:    return (1, 4)
+        case .mobility: return (0, 0)
+        }
     }
 
     // MARK: - Pre-workout swap
@@ -439,6 +594,21 @@ enum RequestFocus: String, CaseIterable, Hashable {
         case .mobility: return (0, 0)   // unused, caller branches first
         }
     }
+
+    /// Direct mapping to WorkoutFocus. Used by the LLM strategy path which
+    /// expresses focus as a WorkoutFocus value rather than the chip-derived
+    /// (liftIndex, totalLifts) pair.
+    var workoutFocus: WorkoutFocus {
+        switch self {
+        case .fullBody: return .fullBodyA
+        case .push:     return .push
+        case .pull:     return .pull
+        case .legs:     return .legs
+        case .upper:    return .upper
+        case .lower:    return .lower
+        case .mobility: return .mobility
+        }
+    }
 }
 
 // MARK: - Preview
@@ -456,4 +626,7 @@ enum RequestFocus: String, CaseIterable, Hashable {
     }
     return CoachRequestScreen(onSaved: { _, _ in })
         .environmentObject(memory)
+        .environmentObject(SessionStore(defaults: defaults))
+        .environmentObject(PlanStore(defaults: defaults))
+        .environmentObject(TabSelectionStore())
 }

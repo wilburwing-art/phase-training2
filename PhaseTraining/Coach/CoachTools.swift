@@ -123,7 +123,73 @@ enum CoachTools {
         )
     }()
 
-    static let all: [AnthropicTool] = [proposePlanEdits, proposeWorkoutChanges, proposeMemoryUpdate]
+    static let buildWorkout: AnthropicTool = {
+        let focusEnum = [
+            "push", "pull", "legs",
+            "upper", "lower",
+            "fullBodyA", "fullBodyB",
+            "mobility"
+        ]
+        let intensityEnum = ["deload", "normal", "push"]
+        // Movement-pattern slugs the planner's slot recipes anchor on. The
+        // LLM picks from this fixed list so it can't hallucinate a pattern
+        // that doesn't exist in coach.db.
+        let patternEnum = [
+            "squat", "hip-hinge", "lunge",
+            "horizontal-push", "vertical-push",
+            "horizontal-pull", "vertical-pull",
+            "anti-extension", "anti-rotation", "anti-lateral-flexion",
+            "loaded-carry", "calf-raise", "single-leg-squat",
+            "scapular-protraction", "scapular-retraction",
+            "elbow-extension", "elbow-flexion",
+            "mobility-thoracic", "mobility-hip", "mobility-ankle",
+            "rotation", "jump", "throw"
+        ]
+
+        let targetWeightItem = JSONSchema(type: "object")
+        targetWeightItem.properties = [
+            "exerciseName": JSONSchema(type: "string", description: "Exercise name to target (matched case-insensitively against the user's logged history)."),
+            "weightLb":     JSONSchema(type: "number", description: "Prescribed top-set weight in pounds. 1-1000.")
+        ]
+        targetWeightItem.required = ["exerciseName", "weightLb"]
+
+        let emphasizeArr = JSONSchema(type: "array", description: "Movement patterns to prioritize. Empty = auto.")
+        emphasizeArr.items = JSONSchema(type: "string", enumValues: patternEnum)
+        let deprioritizeArr = JSONSchema(type: "array", description: "Movement patterns to skip in this workout (e.g. squat when knee is sore). Empty = none.")
+        deprioritizeArr.items = JSONSchema(type: "string", enumValues: patternEnum)
+        let targetArr = JSONSchema(type: "array", description: "Per-exercise top-set weight prescriptions. Used for explicit deload / push cues (\"bench at 90%\"). Empty = use the user's last-week weights via progressive overload.")
+        targetArr.items = targetWeightItem
+
+        let root = JSONSchema(type: "object")
+        root.properties = [
+            "focus":               JSONSchema(type: "string", description: "Day shape for the workout.", enumValues: focusEnum),
+            "durationMinutes":     JSONSchema(type: "integer", description: "Session budget. 15-180. Defaults to the user's declared session length when omitted."),
+            "emphasizePatterns":   emphasizeArr,
+            "deprioritizePatterns": deprioritizeArr,
+            "intensityBias":       JSONSchema(type: "string", description: "Volume bias relative to the user's normal set count.", enumValues: intensityEnum),
+            "targetWeightOverrides": targetArr,
+            "reasoning":           JSONSchema(type: "string", description: "One short sentence in the coach's voice — why this workout, this focus, this intensity. Shown above the workout when rendered.")
+        ]
+        root.required = ["focus", "reasoning"]
+
+        return AnthropicTool(
+            name: "build_workout",
+            description: """
+            Build a workout tailored to the user's current context. The deterministic generator picks specific exercises from coach.db; YOU pick the parameters that shape its choices. Call this when the user asks for a workout ("build me a workout", "what should I do today", "give me a push day", "i'm tired, something light").
+
+            Reason from the CURRENT CONTEXT: body / strength / muscle balance / pattern frequency / recovery trend. Examples of good strategy choices:
+              - Last 4w shows 12 push sessions and 0 pull → focus 'pull', emphasize 'horizontal-pull' + 'vertical-pull'.
+              - Knee reported sore 3 days running → focus 'push' or 'pull', deprioritize 'squat' + 'lunge'.
+              - Bench velocity flat 4w → focus 'push', emphasize 'horizontal-push' (the user gets a variation via the generator's stagnation swap).
+              - User said "i'm fried" / "yesterday was brutal" → intensityBias 'deload'.
+
+            Don't pick exercises directly — the tool's parameters only — the generator does that part. Don't ask follow-up questions if context is sufficient; just call build_workout.
+            """,
+            inputSchema: root
+        )
+    }()
+
+    static let all: [AnthropicTool] = [proposePlanEdits, proposeWorkoutChanges, proposeMemoryUpdate, buildWorkout]
 }
 
 // MARK: - Anthropic tool wire shape
@@ -217,6 +283,34 @@ struct MemoryProposalToolInput: Codable {
     var reasoning: String?
 }
 
+// MARK: - build_workout tool (Phase 13g / build 68)
+
+struct TargetWeightItem: Codable, Hashable {
+    var exerciseName: String
+    var weightLb: Double
+}
+
+struct BuildWorkoutInput: Codable {
+    var focus: String?
+    var durationMinutes: Int?
+    var emphasizePatterns: [String]?
+    var deprioritizePatterns: [String]?
+    var intensityBias: String?
+    var targetWeightOverrides: [TargetWeightItem]?
+    var reasoning: String?
+}
+
+/// What the drawer carries on a build_workout turn. The strategy is what
+/// the generator consumes; reasoning is what the user reads.
+struct CoachBuildWorkoutProposal: Codable, Hashable {
+    enum Status: String, Codable { case pending, applied, rejected }
+    var id: UUID = UUID()
+    /// The decoded strategy ready to hand to WorkoutGenerator.
+    var strategy: GeneratorStrategy
+    var reasoning: String?
+    var status: Status = .pending
+}
+
 struct CoachMemoryProposal: Codable, Hashable {
     enum Status: String, Codable { case pending, applied, rejected }
     var id: UUID = UUID()
@@ -239,6 +333,34 @@ enum CoachToolDecoder {
     static func decodeMemoryProposal(from data: Data) -> CoachMemoryProposal? {
         guard let payload = try? JSONDecoder().decode(MemoryProposalToolInput.self, from: data) else { return nil }
         return CoachMemoryProposal(ops: payload.ops, reasoning: payload.reasoning)
+    }
+
+    /// Decode a build_workout payload into a GeneratorStrategy the
+    /// WorkoutGenerator can consume. Validates the focus + intensityBias
+    /// enums; unknown values fall through to defaults so a hallucinated
+    /// "leg_day" focus doesn't crash — it just falls back to .auto.
+    static func decodeBuildWorkout(from data: Data) -> CoachBuildWorkoutProposal? {
+        guard let payload = try? JSONDecoder().decode(BuildWorkoutInput.self, from: data) else { return nil }
+        let focus: WorkoutFocus? = payload.focus.flatMap { WorkoutFocus(rawValue: $0) }
+        let intensity: GeneratorStrategy.IntensityBias =
+            payload.intensityBias.flatMap { GeneratorStrategy.IntensityBias(rawValue: $0) } ?? .normal
+        // Clamp + sanitize. Bad values from the LLM should degrade
+        // gracefully, not corrupt downstream prescriptions.
+        let duration = payload.durationMinutes.map { min(180, max(15, $0)) }
+        let overrides: [String: Double] = Dictionary(
+            uniqueKeysWithValues: (payload.targetWeightOverrides ?? [])
+                .filter { $0.weightLb > 0 && $0.weightLb <= 1000 }
+                .map { ($0.exerciseName.lowercased(), $0.weightLb) }
+        )
+        let strategy = GeneratorStrategy(
+            focus: focus,
+            durationMinutes: duration,
+            emphasizePatterns: payload.emphasizePatterns ?? [],
+            deprioritizePatterns: payload.deprioritizePatterns ?? [],
+            targetWeightOverrides: overrides,
+            intensityBias: intensity
+        )
+        return CoachBuildWorkoutProposal(strategy: strategy, reasoning: payload.reasoning)
     }
 
     /// Decode a propose_workout_changes payload. Caller passes today's

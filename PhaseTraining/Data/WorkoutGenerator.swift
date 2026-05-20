@@ -40,6 +40,11 @@ enum WorkoutGenerator {
     /// the generator emits progressive-overload weight targets, biases
     /// against recently-sore body areas, prefers under-trained patterns,
     /// and swaps stagnant canonical lifts for substitutes.
+    ///
+    /// `strategy` is the LLM-supplied override layer (build 68+). Defaults
+    /// to `.auto` (identity — generator behaves exactly as before). When
+    /// the LLM coach calls `build_workout`, it produces a strategy that
+    /// flows in here and shifts the focus / pattern emphasis / intensity.
     static func generateLift(
         liftIndex: Int,
         totalLifts: Int,
@@ -47,13 +52,17 @@ enum WorkoutGenerator {
         profile: DemographicProfile,
         hashSeed: String,
         recentlyPicked: Set<Int> = [],
-        context: GeneratorContext = .empty
+        context: GeneratorContext = .empty,
+        strategy: GeneratorStrategy = .auto
     ) -> GeneratedWorkout {
-        let focus = WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts)
+        // Strategy's focus wins over the (liftIndex, totalLifts) derivation
+        // when set — the LLM can explicitly ask for "push day" even on what
+        // would normally be a leg slot.
+        let focus = strategy.focus ?? WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts)
         return generate(focus: focus, memory: memory, profile: profile,
                         hashSeed: hashSeed, liftIndex: liftIndex,
                         totalLifts: totalLifts, recentlyPicked: recentlyPicked,
-                        context: context)
+                        context: context, strategy: strategy)
     }
 
     /// Generate a mobility day's flow.
@@ -62,11 +71,13 @@ enum WorkoutGenerator {
         profile: DemographicProfile,
         hashSeed: String,
         recentlyPicked: Set<Int> = [],
-        context: GeneratorContext = .empty
+        context: GeneratorContext = .empty,
+        strategy: GeneratorStrategy = .auto
     ) -> GeneratedWorkout {
         generate(focus: .mobility, memory: memory, profile: profile,
                  hashSeed: hashSeed, liftIndex: 0, totalLifts: 0,
-                 recentlyPicked: recentlyPicked, context: context)
+                 recentlyPicked: recentlyPicked, context: context,
+                 strategy: strategy)
     }
 
     // MARK: - Core loop
@@ -79,9 +90,16 @@ enum WorkoutGenerator {
         liftIndex: Int,
         totalLifts: Int,
         recentlyPicked: Set<Int>,
-        context: GeneratorContext = .empty
+        context: GeneratorContext = .empty,
+        strategy: GeneratorStrategy = .auto
     ) -> GeneratedWorkout {
-        let budgetSec = max(15 * 60, memory.sessionMinutes * 60 - warmupBufferSec)
+        // Strategy's duration override beats memory's default. Clamped to
+        // [15, 180] so a hallucinated 9999 doesn't produce a 10-hour workout.
+        let effectiveMinutes: Int = {
+            if let m = strategy.durationMinutes { return min(180, max(15, m)) }
+            return memory.sessionMinutes
+        }()
+        let budgetSec = max(15 * 60, effectiveMinutes * 60 - warmupBufferSec)
         var elapsedSec = 0
         // Union of: exercises already picked in THIS workout (dedup within
         // session) + exercises the user's injuries contraindicate.
@@ -102,7 +120,8 @@ enum WorkoutGenerator {
                 excludeIds: pickedIds,
                 recentlyPicked: recentlyPicked,
                 hashSeed: hashSeed,
-                context: context
+                context: context,
+                strategy: strategy
             ) else { continue }
 
             // Stagnation swap: if the user's pick is on the stagnant list
@@ -117,13 +136,16 @@ enum WorkoutGenerator {
                 slot: slot
             )
 
-            let (sets, reps, restSec) = prescription(
+            let (baseSets, reps, restSec) = prescription(
                 for: picked,
                 slotIdx: slotIdx,
                 focus: focus,
                 memory: memory,
                 profile: profile
             )
+            // Apply LLM-supplied intensity multiplier — guarded so a hostile
+            // strategy can't produce 0 sets or runaway volume.
+            let sets = max(1, min(8, Int((Double(baseSets) * strategy.intensityBias.setsMultiplier).rounded())))
 
             let durSec = sets * (45 + restSec) + 30   // ~45s work + rest + 30s transition
 
@@ -136,8 +158,9 @@ enum WorkoutGenerator {
 
             // Progressive-overload target: when the user has a prior best
             // for this exercise, emit it in notes so the LogScreen can
-            // surface a coaching prompt above the autofill column.
-            let notes = progressiveOverloadHint(for: picked, context: context, memory: memory)
+            // surface a coaching prompt above the autofill column. LLM
+            // strategy can override the target ("bench at 90% today").
+            let notes = progressiveOverloadHint(for: picked, context: context, memory: memory, strategy: strategy)
 
             picks.append(GeneratedExercise(
                 id: "\(hashSeed)-\(slotIdx)-\(picked.id)",
@@ -188,7 +211,8 @@ enum WorkoutGenerator {
         excludeIds: Set<Int>,
         recentlyPicked: Set<Int>,
         hashSeed: String,
-        context: GeneratorContext = .empty
+        context: GeneratorContext = .empty,
+        strategy: GeneratorStrategy = .auto
     ) -> Exercise? {
         let applyVariety: ([Exercise]) -> [Exercise] = { candidates in
             guard !recentlyPicked.isEmpty else { return candidates }
@@ -216,9 +240,26 @@ enum WorkoutGenerator {
             }
         }
 
-        // Reorder slot.alternatives so under-trained patterns come first
-        // when context is populated. Same alternatives, just biased order.
-        let alternatives = reorderByPatternFrequency(slot.alternatives, context: context)
+        // Reorder slot.alternatives. Two layers:
+        //   1. LLM strategy (emphasize / deprioritize) — definitive: an
+        //      emphasized pattern jumps to the front; a deprioritized one
+        //      is dropped from consideration (the slot can fall through if
+        //      ALL its alternatives are deprioritized — fine, the LLM can
+        //      do that on purpose).
+        //   2. Context-derived frequency boost — under-trained patterns
+        //      lift higher within whatever survives layer 1.
+        var alternatives = slot.alternatives
+        if !strategy.deprioritizePatterns.isEmpty {
+            alternatives.removeAll(where: { strategy.deprioritizePatterns.contains($0) })
+        }
+        if !strategy.emphasizePatterns.isEmpty {
+            // Stable partition: emphasized ones first (preserving relative
+            // order), the rest after.
+            let emphasized = alternatives.filter { strategy.emphasizePatterns.contains($0) }
+            let rest = alternatives.filter { !strategy.emphasizePatterns.contains($0) }
+            alternatives = emphasized + rest
+        }
+        alternatives = reorderByPatternFrequency(alternatives, context: context)
 
         for pattern in alternatives {
             // Try preferred difficulties first, then fall back across the
@@ -315,29 +356,41 @@ enum WorkoutGenerator {
         return original
     }
 
-    /// "target: 230 lb × 5" style hint when the user has a prior best for
-    /// this exercise name. Renders in the user's unit system via the prior
-    /// weight (which is stored as the raw logged number, treated as lb to
-    /// match the rest of the prescription path).
+    /// "target: 230 lb × 5" style hint. Priority order:
+    ///   1. LLM strategy targetWeightOverrides — explicit prescriptions ("bench at 90%").
+    ///   2. Context priorBest + 2.5% step-up — progressive overload from history.
+    ///   3. Nothing — no signal, no note.
     private static func progressiveOverloadHint(
         for exercise: Exercise,
         context: GeneratorContext,
-        memory: TrainingMemory
+        memory: TrainingMemory,
+        strategy: GeneratorStrategy = .auto
     ) -> String? {
-        guard let prior = context.priorBest[exercise.name.lowercased()] else {
-            return nil
+        let key = exercise.name.lowercased()
+        // Layer 1: explicit LLM override.
+        if let override = strategy.targetWeightOverrides[key] {
+            // Reps for the override default to the prior best's reps when
+            // available — the LLM is suggesting a load, not a rep scheme.
+            let reps = context.priorBest[key]?.reps ?? 5
+            return formatTargetHint(weightLb: override, reps: reps, memory: memory)
         }
+        // Layer 2: priorBest + step-up.
+        guard let prior = context.priorBest[key] else { return nil }
         // Small step-up — 2.5% rounded to nearest 5 lb, or the same weight
         // back if the user is below the floor. Conservative: we'd rather
         // prescribe last week's weight than push too hard blindly.
         let stepped = (prior.weight * 1.025 / 5.0).rounded() * 5.0
         let target = max(prior.weight, stepped)
+        return formatTargetHint(weightLb: target, reps: prior.reps, memory: memory)
+    }
+
+    private static func formatTargetHint(weightLb: Double, reps: Int, memory: TrainingMemory) -> String {
         let display: String
         if memory.usesImperial {
-            display = "\(Int(target)) lb × \(prior.reps)"
+            display = "\(Int(weightLb)) lb × \(reps)"
         } else {
-            let kg = BodyMetrics.lbToKg(target)
-            display = "\(Int(kg.rounded())) kg × \(prior.reps)"
+            let kg = BodyMetrics.lbToKg(weightLb)
+            display = "\(Int(kg.rounded())) kg × \(reps)"
         }
         return "target: \(display)"
     }
