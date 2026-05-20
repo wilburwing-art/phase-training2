@@ -204,6 +204,16 @@ extension WeekPlan {
 // then base-36-encodes for compactness.
 
 extension TrainingMemory {
+    /// Fingerprint of the inputs the planner reads. Build 75: now includes
+    /// age (used by the planner's recovery + set-count clamps), dislikes
+    /// (SQL keyword exclude), constraints (injury contraindications), and
+    /// startingState (LLM coach signal). Without these in the hash, the
+    /// auto-regen subscription on PlanStore deduped legitimate profile
+    /// changes — editing "dislikes burpees" silently did nothing.
+    ///
+    /// Skipped intentionally: height / weight / gender — they don't shape
+    /// deterministic plan generation, only display + coach context. We don't
+    /// want a weight log to retrigger a week-wide regen.
     var planInputsHash: String {
         let seasons = seasonsBySport
             .sorted { $0.key.slug < $1.key.slug }
@@ -219,7 +229,11 @@ extension TrainingMemory {
             "mn:\(sessionMinutes)",
             "ld:\(liftDaysPerWeek)",
             "eq:\(equipment.map(\.rawValue).sorted().joined(separator: ","))",
-            "ex:\(experience.rawValue)"
+            "ex:\(experience.rawValue)",
+            "ag:\(age.map(String.init) ?? "_")",
+            "dl:\(dislikes.map { $0.lowercased() }.sorted().joined(separator: ","))",
+            "cn:\(constraints.sorted().joined(separator: ","))",
+            "st:\(startingState.rawValue)",
         ].joined(separator: "|")
         var hash: UInt64 = 5381
         for byte in canonical.utf8 {
