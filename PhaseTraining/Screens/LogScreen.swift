@@ -339,6 +339,24 @@ struct LogScreen: View {
                     .padding(.vertical, 8)
             }
             .buttonStyle(.plain)
+
+            // Log all sets — for users who do the work at the rack first
+            // and come back to the phone to log everything at once. Marks
+            // every set done in one tap; for sets with empty weight/reps,
+            // propagates the most recent filled value from this exercise
+            // (set 1 typically already has prev-session weight + target reps
+            // pre-filled at session-create time).
+            if !allDone {
+                Button(action: { logAllSets(exIdx: exIdx) }) {
+                    Text("Log all sets")
+                        .styled(.body)
+                        .foregroundStyle(Color.accent)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("log-all-\(exIdx)")
+            }
         }
         .padding(.horizontal, 20)
     }
@@ -610,6 +628,31 @@ struct LogScreen: View {
                 clearRest()
             }
         }
+    }
+
+    /// Mark every set in this exercise done in one tap. Propagates the most
+    /// recent filled weight + reps into any empty set (set 1 is usually
+    /// pre-filled, so sets 2-N inherit even when the user only edited set 1).
+    /// Doesn't start a rest timer — the bulk-log path means the user already
+    /// rested at the rack.
+    private func logAllSets(exIdx: Int) {
+        var sourceWeight: String? = nil
+        var sourceReps: String? = nil
+        for set in session.exercises[exIdx].sets {
+            if !set.weight.isEmpty { sourceWeight = set.weight }
+            if !set.reps.isEmpty { sourceReps = set.reps }
+        }
+        for setIdx in session.exercises[exIdx].sets.indices {
+            if session.exercises[exIdx].sets[setIdx].weight.isEmpty, let w = sourceWeight {
+                session.exercises[exIdx].sets[setIdx].weight = w
+            }
+            if session.exercises[exIdx].sets[setIdx].reps.isEmpty, let r = sourceReps {
+                session.exercises[exIdx].sets[setIdx].reps = r
+            }
+            session.exercises[exIdx].sets[setIdx].done = true
+        }
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        if restExIdx == exIdx { clearRest() }
     }
 
     private func addSet(exIdx: Int) {

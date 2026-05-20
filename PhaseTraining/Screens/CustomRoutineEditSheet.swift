@@ -192,14 +192,35 @@ struct CustomRoutineEditSheet: View {
     private func repsBinding(_ exercise: Binding<CustomRoutineExercise>) -> Binding<String> {
         Binding(
             get: { exercise.wrappedValue.reps ?? "" },
-            set: { exercise.wrappedValue.reps = $0.isEmpty ? nil : $0 }
+            set: { raw in
+                let trimmed = raw.trimmingCharacters(in: .whitespaces)
+                if trimmed.isEmpty {
+                    exercise.wrappedValue.reps = nil
+                } else if let n = Int(trimmed) {
+                    // Pure-integer input — clamp. Free-form strings
+                    // ("8-10", "AMRAP", "30s hold") fall through to the else
+                    // branch and pass through unchanged.
+                    exercise.wrappedValue.reps = String(max(1, min(n, 50)))
+                } else {
+                    exercise.wrappedValue.reps = trimmed
+                }
+            }
         )
     }
 
     private func restBinding(_ exercise: Binding<CustomRoutineExercise>) -> Binding<String> {
         Binding(
             get: { exercise.wrappedValue.rest ?? "" },
-            set: { exercise.wrappedValue.rest = $0.isEmpty ? nil : $0 }
+            set: { raw in
+                let trimmed = raw.trimmingCharacters(in: .whitespaces)
+                if trimmed.isEmpty {
+                    exercise.wrappedValue.rest = nil
+                } else if let n = Int(trimmed) {
+                    exercise.wrappedValue.rest = String(max(0, min(n, 600)))
+                } else {
+                    exercise.wrappedValue.rest = trimmed
+                }
+            }
         )
     }
 
