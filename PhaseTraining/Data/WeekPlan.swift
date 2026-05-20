@@ -91,6 +91,16 @@ struct GeneratedWorkout: Codable, Hashable {
 }
 
 struct GeneratedExercise: Codable, Hashable, Identifiable {
+    // Build 70 — coaching prescription depth.
+    //
+    // `rpe` is a target effort range like "7-8" or a single number "9".
+    // Maps directly to "leave N reps in reserve" semantics — the coach's
+    // strongest intensity cue beyond just sets × reps × rest. Nil = no hint
+    // (mobility flows, or focuses where RPE doesn't apply).
+    //
+    // `tempo` is the eccentric/pause/concentric/pause pattern as a 4-digit
+    // string like "3-1-1-0" (3s lowering, 1s bottom hold, 1s up, no top
+    // hold) or "X-0-X-0" for explosive. Nil = no tempo cue.
     /// Stable id derived from (planInputsHash, slotIndex, exerciseId) — must
     /// NOT use UUID() so the same memory + slot yields the same id across
     /// regenerations (the inputs-hash drift check relies on stable plans).
@@ -108,6 +118,10 @@ struct GeneratedExercise: Codable, Hashable, Identifiable {
     var reps: String
     var restSeconds: Int
     var notes: String?
+    /// Target effort range — "7-8", "9", "7-9". Nil = no RPE cue.
+    var rpe: String?
+    /// 4-digit tempo string — "3-1-1-0" or "X-0-X-0". Nil = no tempo cue.
+    var tempo: String?
 }
 
 extension GeneratedWorkout {
@@ -138,7 +152,9 @@ extension GeneratedWorkout {
                     unit: "lbs",
                     targetSets: gex.sets,
                     targetReps: Self.parseRepsLeading(gex.reps) ?? 8,
-                    rest: gex.restSeconds
+                    rest: gex.restSeconds,
+                    rpe: gex.rpe,
+                    tempo: gex.tempo
                 )
             }
         )

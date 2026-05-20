@@ -11,6 +11,27 @@ struct ExerciseTemplate: Identifiable, Codable, Equatable {
     let targetSets: Int
     let targetReps: Int
     let rest: Int
+    /// Coaching hints (build 70). Both nil for upper-1 + other hardcoded
+    /// templates; populated when the workout comes from the generator's
+    /// prescription path. Surface to the user above the set rows.
+    var rpe: String?
+    var tempo: String?
+
+    /// Convenience init so the upper-1 template + everywhere else that
+    /// constructs an ExerciseTemplate without coaching hints stays unchanged.
+    init(id: String, name: String, type: String?, unit: String,
+         targetSets: Int, targetReps: Int, rest: Int,
+         rpe: String? = nil, tempo: String? = nil) {
+        self.id = id
+        self.name = name
+        self.type = type
+        self.unit = unit
+        self.targetSets = targetSets
+        self.targetReps = targetReps
+        self.rest = rest
+        self.rpe = rpe
+        self.tempo = tempo
+    }
 }
 
 struct WorkoutTemplate: Identifiable, Codable, Equatable {

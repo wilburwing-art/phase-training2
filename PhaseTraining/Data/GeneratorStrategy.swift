@@ -45,6 +45,15 @@ struct GeneratorStrategy: Codable, Equatable, Hashable {
     /// deload / push prescriptions ("bench at 90% today").
     var targetWeightOverrides: [String: Double]
 
+    /// Per-exercise RPE overrides keyed by lower-cased name. Replaces the
+    /// focus-derived default. Use for explicit intensity cues ("squat at
+    /// RPE 9", "bench at RPE 7"). Build 70+.
+    var rpeOverrides: [String: String]
+
+    /// Per-exercise tempo overrides keyed by lower-cased name. Same shape
+    /// as rpeOverrides — 4-digit eccentric/pause/concentric/pause string.
+    var tempoOverrides: [String: String]
+
     /// Sets multiplier — `.deload` (×0.7), `.normal` (×1.0), `.push` (×1.15).
     /// Applied to the prescription's sets count after the existing experience
     /// and age clamps. Caps at the formula default to avoid runaway volume.
@@ -68,12 +77,15 @@ struct GeneratorStrategy: Codable, Equatable, Hashable {
         emphasizePatterns: [],
         deprioritizePatterns: [],
         targetWeightOverrides: [:],
+        rpeOverrides: [:],
+        tempoOverrides: [:],
         intensityBias: .normal
     )
 
     var isAuto: Bool {
         focus == nil && durationMinutes == nil &&
         emphasizePatterns.isEmpty && deprioritizePatterns.isEmpty &&
-        targetWeightOverrides.isEmpty && intensityBias == .normal
+        targetWeightOverrides.isEmpty && rpeOverrides.isEmpty &&
+        tempoOverrides.isEmpty && intensityBias == .normal
     }
 }

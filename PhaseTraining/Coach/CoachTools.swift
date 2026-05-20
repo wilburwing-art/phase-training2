@@ -153,12 +153,22 @@ enum CoachTools {
         ]
         targetWeightItem.required = ["exerciseName", "weightLb"]
 
+        let prescriptionItem = JSONSchema(type: "object")
+        prescriptionItem.properties = [
+            "exerciseName": JSONSchema(type: "string", description: "Exercise name to target (matched case-insensitively)."),
+            "rpe":          JSONSchema(type: "string", description: "Target effort. Single number ('9') or range ('7-8'). Scale 1-10 where 10 = true failure."),
+            "tempo":        JSONSchema(type: "string", description: "Eccentric-pause-concentric-pause as 4-digit string ('3-1-1-0') or with 'X' for explosive ('2-0-X-0').")
+        ]
+        prescriptionItem.required = ["exerciseName"]
+
         let emphasizeArr = JSONSchema(type: "array", description: "Movement patterns to prioritize. Empty = auto.")
         emphasizeArr.items = JSONSchema(type: "string", enumValues: patternEnum)
         let deprioritizeArr = JSONSchema(type: "array", description: "Movement patterns to skip in this workout (e.g. squat when knee is sore). Empty = none.")
         deprioritizeArr.items = JSONSchema(type: "string", enumValues: patternEnum)
         let targetArr = JSONSchema(type: "array", description: "Per-exercise top-set weight prescriptions. Used for explicit deload / push cues (\"bench at 90%\"). Empty = use the user's last-week weights via progressive overload.")
         targetArr.items = targetWeightItem
+        let prescriptionArr = JSONSchema(type: "array", description: "Per-exercise RPE + tempo prescriptions. Use to coach intensity + control beyond sets x reps. Either field optional. Empty = focus-based defaults apply.")
+        prescriptionArr.items = prescriptionItem
 
         let root = JSONSchema(type: "object")
         root.properties = [
@@ -168,6 +178,7 @@ enum CoachTools {
             "deprioritizePatterns": deprioritizeArr,
             "intensityBias":       JSONSchema(type: "string", description: "Volume bias relative to the user's normal set count.", enumValues: intensityEnum),
             "targetWeightOverrides": targetArr,
+            "exercisePrescriptions": prescriptionArr,
             "reasoning":           JSONSchema(type: "string", description: "One short sentence in the coach's voice — why this workout, this focus, this intensity. Shown above the workout when rendered.")
         ]
         root.required = ["focus", "reasoning"]
@@ -290,6 +301,15 @@ struct TargetWeightItem: Codable, Hashable {
     var weightLb: Double
 }
 
+/// One entry in build_workout's exercisePrescriptions array — per-exercise
+/// RPE + tempo coach overrides. Either field optional; the LLM can set
+/// just RPE for one lift and just tempo for another.
+struct ExercisePrescriptionItem: Codable, Hashable {
+    var exerciseName: String
+    var rpe: String?
+    var tempo: String?
+}
+
 struct BuildWorkoutInput: Codable {
     var focus: String?
     var durationMinutes: Int?
@@ -297,6 +317,7 @@ struct BuildWorkoutInput: Codable {
     var deprioritizePatterns: [String]?
     var intensityBias: String?
     var targetWeightOverrides: [TargetWeightItem]?
+    var exercisePrescriptions: [ExercisePrescriptionItem]?
     var reasoning: String?
 }
 
@@ -352,12 +373,25 @@ enum CoachToolDecoder {
                 .filter { $0.weightLb > 0 && $0.weightLb <= 1000 }
                 .map { ($0.exerciseName.lowercased(), $0.weightLb) }
         )
+        // Pull RPE + tempo prescriptions into the two override maps. Bad
+        // values pass through — the user sees the LLM's exact string. We
+        // don't try to validate "3-1-1-0" vs "3-X-1-0"; the model knows
+        // better than a regex.
+        var rpeOverrides: [String: String] = [:]
+        var tempoOverrides: [String: String] = [:]
+        for item in payload.exercisePrescriptions ?? [] {
+            let key = item.exerciseName.lowercased()
+            if let r = item.rpe, !r.isEmpty { rpeOverrides[key] = r }
+            if let t = item.tempo, !t.isEmpty { tempoOverrides[key] = t }
+        }
         let strategy = GeneratorStrategy(
             focus: focus,
             durationMinutes: duration,
             emphasizePatterns: payload.emphasizePatterns ?? [],
             deprioritizePatterns: payload.deprioritizePatterns ?? [],
             targetWeightOverrides: overrides,
+            rpeOverrides: rpeOverrides,
+            tempoOverrides: tempoOverrides,
             intensityBias: intensity
         )
         return CoachBuildWorkoutProposal(strategy: strategy, reasoning: payload.reasoning)

@@ -302,6 +302,14 @@ struct LogScreen: View {
                 }
             }
 
+            // Coaching hints (build 70): RPE + tempo prescription from the
+            // generator (or the LLM strategist). Hidden when both are nil so
+            // pre-build-70 sessions + non-generated workouts keep the
+            // existing compact layout.
+            if ex.rpe != nil || ex.tempo != nil {
+                coachingHintsRow(rpe: ex.rpe, tempo: ex.tempo)
+            }
+
             // Column headers
             columnHeaders(unit: ex.unit)
 
@@ -333,6 +341,28 @@ struct LogScreen: View {
             .buttonStyle(.plain)
         }
         .padding(.horizontal, 20)
+    }
+
+    /// Build-70 coaching hint row — small mono line above the column
+    /// headers that surfaces the generator's (or LLM's) RPE + tempo
+    /// prescription. Renders only the fields that are set; e.g. an exercise
+    /// with just RPE skips the dot separator.
+    private func coachingHintsRow(rpe: String?, tempo: String?) -> some View {
+        var parts: [String] = []
+        if let rpe, !rpe.isEmpty { parts.append("RPE \(rpe)") }
+        if let tempo, !tempo.isEmpty { parts.append("tempo \(tempo)") }
+        return HStack(spacing: 0) {
+            Text(parts.joined(separator: " · "))
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.elevated.opacity(0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+            Spacer()
+        }
+        .padding(.top, 4)
+        .padding(.bottom, 6)
     }
 
     private func columnHeaders(unit: String) -> some View {

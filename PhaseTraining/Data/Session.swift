@@ -24,6 +24,10 @@ struct LoggedExercise: Codable, Identifiable, Equatable {
     var rest: Int
     var sets: [LoggedSet]
     var prevSets: [LoggedSet]
+    /// Coaching hints — propagated from ExerciseTemplate. Both optional so
+    /// pre-build-70 saved sessions decode cleanly without a migration.
+    var rpe: String?
+    var tempo: String?
 }
 
 struct ActiveSession: Codable, Equatable {

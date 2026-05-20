@@ -264,7 +264,9 @@ final class SessionStore: ObservableObject {
                 targetReps: ex.targetReps,
                 rest: ex.rest,
                 sets: sets,
-                prevSets: prevEx?.sets ?? []
+                prevSets: prevEx?.sets ?? [],
+                rpe: ex.rpe,
+                tempo: ex.tempo
             )
         }
 

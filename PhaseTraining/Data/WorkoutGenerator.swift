@@ -161,6 +161,15 @@ enum WorkoutGenerator {
             // surface a coaching prompt above the autofill column. LLM
             // strategy can override the target ("bench at 90% today").
             let notes = progressiveOverloadHint(for: picked, context: context, memory: memory, strategy: strategy)
+            // RPE + tempo prescription (build 70). Defaults from focus +
+            // slot position; LLM strategy overrides win per-exercise.
+            let (rpe, tempo) = rpeTempoHints(
+                for: picked,
+                slotIdx: slotIdx,
+                focus: focus,
+                memory: memory,
+                strategy: strategy
+            )
 
             picks.append(GeneratedExercise(
                 id: "\(hashSeed)-\(slotIdx)-\(picked.id)",
@@ -171,7 +180,9 @@ enum WorkoutGenerator {
                 sets: sets,
                 reps: reps,
                 restSeconds: restSec,
-                notes: notes
+                notes: notes,
+                rpe: rpe,
+                tempo: tempo
             ))
             pickedIds.insert(picked.id)
             elapsedSec += durSec
@@ -393,6 +404,75 @@ enum WorkoutGenerator {
             display = "\(Int(kg.rounded())) kg × \(reps)"
         }
         return "target: \(display)"
+    }
+
+    /// RPE + tempo hints for a picked exercise. Defaults driven by the
+    /// user's primaryFocus + the slot position (primary compound vs
+    /// accessory). LLM strategy overrides win per-exercise.
+    ///
+    /// RPE scale: 1-10 where 10 is true failure. Hypertrophy lives in the
+    /// 7-9 range; strength in 8-9; endurance in 5-7. Mobility skips RPE
+    /// entirely (the cue doesn't translate to slow controlled work).
+    ///
+    /// Tempo is the 4-digit eccentric/pause/concentric/pause string. "X"
+    /// in any slot means explosive — used for power work.
+    static func rpeTempoHints(
+        for exercise: Exercise,
+        slotIdx: Int,
+        focus: WorkoutFocus,
+        memory: TrainingMemory,
+        strategy: GeneratorStrategy = .auto
+    ) -> (rpe: String?, tempo: String?) {
+        let key = exercise.name.lowercased()
+        // LLM overrides win whenever set.
+        let overrideRpe = strategy.rpeOverrides[key]
+        let overrideTempo = strategy.tempoOverrides[key]
+        if overrideRpe != nil || overrideTempo != nil {
+            return (overrideRpe, overrideTempo)
+        }
+
+        // Mobility flows: no RPE; slow controlled tempo on every move.
+        if focus == .mobility {
+            return (nil, "3-1-3-0")
+        }
+
+        let isPrimary = slotIdx == 0
+        let isCompound = exercise.isCompound
+
+        // Default scheme keyed on primaryFocus. Primary compounds get a
+        // slightly heavier RPE than accessories in every category.
+        let rpe: String
+        let tempo: String
+        switch memory.primaryFocus {
+        case .generalStrength:
+            rpe = isPrimary ? "8" : "7-8"
+            tempo = isCompound ? "2-0-1-0" : "2-1-1-0"
+        case .hypertrophy:
+            rpe = isPrimary ? "8-9" : "7-9"
+            tempo = isCompound ? "3-0-1-0" : "3-1-1-0"
+        case .sportPerformance:
+            rpe = isPrimary ? "7-8" : "7"
+            // Power emphasis: explosive concentric on compound primary work.
+            tempo = isCompound && isPrimary ? "2-0-X-0" : "2-0-1-0"
+        case .endurance:
+            rpe = isPrimary ? "6-7" : "5-7"
+            tempo = "1-0-1-0"
+        case .mobility:
+            // Mobility focus on a non-mobility day — still emphasize control.
+            rpe = "6-7"
+            tempo = "3-1-2-1"
+        case .weightLoss:
+            rpe = isPrimary ? "7-8" : "7"
+            tempo = "2-0-1-0"
+        case .longevity:
+            rpe = isPrimary ? "7" : "6-7"
+            tempo = "3-1-1-1"
+        case .rehab:
+            // Conservative — controlled tempo, sub-failure intensity.
+            rpe = "5-6"
+            tempo = "3-1-2-0"
+        }
+        return (rpe, tempo)
     }
 
     /// djb2 fold of (hashSeed + slotIdx) → modulo array size. Same machinery

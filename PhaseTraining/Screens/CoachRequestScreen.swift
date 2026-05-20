@@ -369,6 +369,8 @@ struct CoachRequestScreen: View {
             emphasizePatterns: [],
             deprioritizePatterns: [],
             targetWeightOverrides: [:],
+            rpeOverrides: [:],
+            tempoOverrides: [:],
             intensityBias: .normal
         )
 
