@@ -70,7 +70,7 @@ final class CoachDatabase {
 
     var isOpen: Bool { db != nil }
 
-    func listRoutines(search: String? = nil, goal: String? = nil) -> [Routine] { withLock {
+    func listRoutines(search: String? = nil, goal: String? = nil) -> [BundledRoutineRow] { withLock {
         guard let db else { return [] }
         var sql = """
         SELECT r.id, r.name, r.slug, r.description, r.goal, r.difficulty, r.phase,
@@ -104,9 +104,9 @@ final class CoachDatabase {
             bindIdx += 1
         }
 
-        var rows: [Routine] = []
+        var rows: [BundledRoutineRow] = []
         while sqlite3_step(stmt) == SQLITE_ROW {
-            rows.append(Routine(
+            rows.append(BundledRoutineRow(
                 id: Int(sqlite3_column_int64(stmt, 0)),
                 name: text(stmt, 1) ?? "",
                 slug: text(stmt, 2) ?? "",

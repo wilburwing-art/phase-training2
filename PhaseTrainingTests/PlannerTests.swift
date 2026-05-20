@@ -23,38 +23,38 @@ final class PlannerTests: XCTestCase {
 
     // MARK: - Synthetic routine catalog
 
-    private func catalog() -> [Routine] {
+    private func catalog() -> [BundledRoutineRow] {
         // Cover every goal the planner asks for, across difficulties + durations.
         return [
             // Strength
-            Routine(id: 1, name: "Beginner Strength A", slug: "str-1",
+            BundledRoutineRow(id: 1, name: "Beginner Strength A", slug: "str-1",
                     description: nil, goal: "strength", difficulty: "beginner",
                     phase: nil, durationMinutes: 45, environment: "gym",
                     exerciseCount: 5, setCount: 15),
-            Routine(id: 2, name: "Intermediate Push", slug: "str-2",
+            BundledRoutineRow(id: 2, name: "Intermediate Push", slug: "str-2",
                     description: nil, goal: "strength", difficulty: "intermediate",
                     phase: nil, durationMinutes: 50, environment: "gym",
                     exerciseCount: 6, setCount: 18),
-            Routine(id: 3, name: "Advanced Lower", slug: "str-3",
+            BundledRoutineRow(id: 3, name: "Advanced Lower", slug: "str-3",
                     description: nil, goal: "strength", difficulty: "advanced",
                     phase: nil, durationMinutes: 60, environment: "gym",
                     exerciseCount: 7, setCount: 21),
             // Power
-            Routine(id: 4, name: "Power Circuit", slug: "pwr-1",
+            BundledRoutineRow(id: 4, name: "Power Circuit", slug: "pwr-1",
                     description: nil, goal: "power", difficulty: "intermediate",
                     phase: nil, durationMinutes: 30, environment: "gym",
                     exerciseCount: 4, setCount: 12),
             // Mobility
-            Routine(id: 5, name: "Hip Mobility Flow", slug: "mob-1",
+            BundledRoutineRow(id: 5, name: "Hip Mobility Flow", slug: "mob-1",
                     description: nil, goal: "mobility", difficulty: "beginner",
                     phase: nil, durationMinutes: 20, environment: "home",
                     exerciseCount: 6, setCount: 0),
-            Routine(id: 6, name: "T-spine Reset", slug: "mob-2",
+            BundledRoutineRow(id: 6, name: "T-spine Reset", slug: "mob-2",
                     description: nil, goal: "mobility", difficulty: "beginner",
                     phase: nil, durationMinutes: 15, environment: "home",
                     exerciseCount: 4, setCount: 0),
             // Recovery / prehab
-            Routine(id: 7, name: "Climber Antagonist", slug: "preh-1",
+            BundledRoutineRow(id: 7, name: "Climber Antagonist", slug: "preh-1",
                     description: nil, goal: "prehab", difficulty: "beginner",
                     phase: nil, durationMinutes: 20, environment: "home",
                     exerciseCount: 5, setCount: 10),
@@ -254,7 +254,7 @@ final class PlannerTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(liftCount, 3)
     }
 
-    // MARK: - Routine selection
+    // MARK: - BundledRoutineRow selection
 
     func testLiftDaysCarryGeneratedWorkout() {
         // Phase 15: the planner now generates workouts exercise-by-exercise

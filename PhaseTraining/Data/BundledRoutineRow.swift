@@ -1,6 +1,6 @@
 import Foundation
 
-struct Routine: Identifiable, Hashable {
+struct BundledRoutineRow: Identifiable, Hashable {
     let id: Int
     let name: String
     let slug: String
@@ -26,7 +26,7 @@ struct RoutineExercise: Identifiable, Hashable {
     let notes: String?
 }
 
-extension Routine {
+extension BundledRoutineRow {
     var splitTag: String {
         switch goal {
         case "strength", "direct_strength": return "UPPER"
@@ -43,7 +43,7 @@ extension Routine {
     }
 }
 
-extension Routine {
+extension BundledRoutineRow {
     func toWorkoutTemplate(with exercises: [RoutineExercise]) -> WorkoutTemplate {
         WorkoutTemplate(
             id: slug,

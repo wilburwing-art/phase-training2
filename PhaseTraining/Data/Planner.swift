@@ -24,7 +24,7 @@ enum Planner {
     static func generate(
         memory: TrainingMemory,
         overrides: WeekOverrides? = nil,
-        routines: [Routine],
+        routines: [BundledRoutineRow],
         previousFeedback: [FeedbackEntry] = [],
         recentlyPicked: Set<Int> = [],
         today: Date = Date(),
@@ -70,7 +70,7 @@ enum Planner {
     private static func generateUnbiased(
         memory: TrainingMemory,
         overrides: WeekOverrides?,
-        routines: [Routine],
+        routines: [BundledRoutineRow],
         recentlyPicked: Set<Int>,
         today: Date,
         calendar: Calendar,
@@ -209,7 +209,7 @@ enum Planner {
         date: Date,
         override: DayKindOverride,
         memory: TrainingMemory,
-        routines: [Routine],
+        routines: [BundledRoutineRow],
         recentlyPicked: Set<Int>,
         context: GeneratorContext = .empty
     ) -> DayPlan {
@@ -313,7 +313,7 @@ enum Planner {
         kind: DayKind,
         memory: TrainingMemory,
         profile: DemographicProfile,
-        routines: [Routine],
+        routines: [BundledRoutineRow],
         recentlyPicked: Set<Int>,
         shapeDescription: String,
         slotOffset: Int,
@@ -576,7 +576,7 @@ enum Planner {
         return positions.map { abs($0 - idx) }.min() ?? Int.max
     }
 
-    // MARK: - Routine selection
+    // MARK: - BundledRoutineRow selection
 
     /// Pick a routine matching kind + demographics + duration. Falls through
     /// (duration → preferred-difficulty buckets → equipment → constraint
@@ -593,11 +593,11 @@ enum Planner {
     ///   - `excludedNameKeywords` drops routines whose name brushes against
     ///     a user-declared injury / constraint.
     static func pickRoutine(
-        routines: [Routine],
+        routines: [BundledRoutineRow],
         kind: DayKind,
         memory: TrainingMemory,
         slotOffset: Int
-    ) -> Routine? {
+    ) -> BundledRoutineRow? {
         let profile = DemographicProfile.from(memory)
         return pickRoutine(routines: routines, kind: kind,
                            memory: memory, profile: profile,
@@ -608,16 +608,16 @@ enum Planner {
     /// per regeneration and threads it through; tests can also pass a custom
     /// profile to exercise the matrix without rebuilding memory.
     static func pickRoutine(
-        routines: [Routine],
+        routines: [BundledRoutineRow],
         kind: DayKind,
         memory: TrainingMemory,
         profile: DemographicProfile,
         slotOffset: Int
-    ) -> Routine? {
+    ) -> BundledRoutineRow? {
         guard let goals = goalsFor(kind), !goals.isEmpty else { return nil }
 
         // Equipment + constraints — applied to every pass below.
-        let envAndConstraintAllowed: (Routine) -> Bool = { r in
+        let envAndConstraintAllowed: (BundledRoutineRow) -> Bool = { r in
             environmentAllowed(r, allowed: profile.allowedEnvironments)
             && !constraintConflict(r, keywords: profile.excludedNameKeywords)
         }
@@ -690,12 +690,12 @@ enum Planner {
         }
     }
 
-    private static func goalMatches(_ r: Routine, goals: Set<String>) -> Bool {
+    private static func goalMatches(_ r: BundledRoutineRow, goals: Set<String>) -> Bool {
         guard let g = r.goal else { return false }
         return goals.contains(g)
     }
 
-    private static func difficultyMatches(_ r: Routine, allowed: Set<String>) -> Bool {
+    private static func difficultyMatches(_ r: BundledRoutineRow, allowed: Set<String>) -> Bool {
         guard let d = r.difficulty else { return true }   // tolerate unset
         return allowed.contains(d)
     }
@@ -705,13 +705,13 @@ enum Planner {
         return abs(d - target) <= 20
     }
 
-    private static func environmentAllowed(_ r: Routine, allowed: Set<String>) -> Bool {
+    private static func environmentAllowed(_ r: BundledRoutineRow, allowed: Set<String>) -> Bool {
         guard !allowed.isEmpty else { return true }       // empty = no filter
         guard let env = r.environment, !env.isEmpty else { return true }
         return allowed.contains(env)
     }
 
-    private static func constraintConflict(_ r: Routine, keywords: [String]) -> Bool {
+    private static func constraintConflict(_ r: BundledRoutineRow, keywords: [String]) -> Bool {
         guard !keywords.isEmpty else { return false }
         let lowerName = r.name.lowercased()
         return keywords.contains { lowerName.contains($0) }
