@@ -20,6 +20,7 @@ import SwiftUI
 
 struct CoachRequestScreen: View {
     @EnvironmentObject private var memoryStore: MemoryStore
+    @EnvironmentObject private var sessionStore: SessionStore
     @Environment(\.dismiss) private var dismiss
 
     /// Called when the user taps a save action. `startNow` reflects which
@@ -306,17 +307,25 @@ struct CoachRequestScreen: View {
         mem.sessionMinutes = durationMinutes
 
         let profile = DemographicProfile.from(mem)
+        // Build a runtime-history context so the coach-requested workout
+        // benefits from the same signals the planner gets — progressive
+        // overload targets, sore-area avoidance, stagnation swaps, etc.
+        let context = GeneratorContext.from(
+            sessions: sessionStore.savedSessions,
+            soreness: mem.soreness,
+            feedback: mem.feedback
+        )
         let workout: GeneratedWorkout
         switch focus {
         case .mobility:
             workout = WorkoutGenerator.generateMobility(
-                memory: mem, profile: profile, hashSeed: seed
+                memory: mem, profile: profile, hashSeed: seed, context: context
             )
         default:
             let (liftIdx, total) = focus.liftIndexTotalPair()
             workout = WorkoutGenerator.generateLift(
                 liftIndex: liftIdx, totalLifts: total,
-                memory: mem, profile: profile, hashSeed: seed
+                memory: mem, profile: profile, hashSeed: seed, context: context
             )
         }
         preview = workout

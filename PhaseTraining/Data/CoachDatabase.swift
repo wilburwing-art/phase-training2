@@ -28,25 +28,41 @@ final class CoachDatabase {
     private init() {
         guard let path = Bundle.main.path(forResource: "coach", ofType: "db") else { return }
         let flags = SQLITE_OPEN_READONLY | SQLITE_OPEN_FULLMUTEX
-        // Open with a small retry loop. The actual root cause of the
-        // intermittent "0 exercises returned" test failures under
-        // xcodebuild's parallel runner was sqlite3_open_v2 leaving `db` in
-        // SQLite's "indeterminate" state on transient failure (per the docs
-        // the handle is non-null but unusable, so `isOpen` reported true
-        // and every query came back empty). Three retries with a tiny
-        // back-off + nil-on-failure makes the bad state observable.
-        var lastResult: Int32 = SQLITE_OK
-        for attempt in 0..<3 {
-            if attempt > 0 {
-                // Discard the indeterminate handle before retrying.
-                if let d = db { sqlite3_close(d); db = nil }
-                Thread.sleep(forTimeInterval: 0.01 * Double(attempt))
-            }
-            lastResult = sqlite3_open_v2(path, &db, flags, nil)
-            if lastResult == SQLITE_OK { return }
+        // Open + VERIFY in a retry loop. Earlier versions trusted
+        // sqlite3_open_v2's SQLITE_OK return, but per the docs the handle
+        // can still be in an "indeterminate" state — opens cleanly, queries
+        // come back empty. Under xcodebuild's parallel runner that produced
+        // intermittent "0 exercises returned" test failures. Verifying with
+        // a small SELECT before declaring init successful catches this.
+        // Exponential backoff over ~3 seconds total. The simulator's
+        // resource bundle is sometimes not fully readable for the first
+        // few hundred ms after a fresh test-bundle install — the early
+        // retries usually nail it; later ones are insurance.
+        let backoffsMs: [Double] = [0, 50, 150, 400, 800, 1600]
+        for delay in backoffsMs {
+            if let d = db { sqlite3_close(d); db = nil }
+            if delay > 0 { Thread.sleep(forTimeInterval: delay / 1000) }
+
+            let openResult = sqlite3_open_v2(path, &db, flags, nil)
+            guard openResult == SQLITE_OK, let opened = db else { continue }
+
+            // Sanity check: a healthy bundled coach.db has hundreds of
+            // exercises. Anything less than ~100 means the handle is
+            // broken / the file is empty / SQLite is in a weird state.
+            // Scoped block so the statement is finalized before the loop
+            // potentially decides to discard the handle.
+            let count: Int64 = {
+                var stmt: OpaquePointer?
+                let prepared = sqlite3_prepare_v2(opened, "SELECT COUNT(*) FROM exercises", -1, &stmt, nil)
+                defer { sqlite3_finalize(stmt) }
+                guard prepared == SQLITE_OK else { return 0 }
+                guard sqlite3_step(stmt) == SQLITE_ROW else { return 0 }
+                return sqlite3_column_int64(stmt, 0)
+            }()
+            if count >= 100 { return }   // DB is healthy + readable
         }
-        // Final failure — make sure isOpen reports nil so callers fail loudly
-        // rather than silently returning empty arrays.
+        // All retries failed — make sure isOpen reports nil so callers fail
+        // loudly rather than silently returning empty arrays.
         if let d = db { sqlite3_close(d); db = nil }
     }
 

@@ -25,6 +25,7 @@ struct RootTabView: View {
     @EnvironmentObject private var tabSelection: TabSelectionStore
     @EnvironmentObject private var planStore: PlanStore
     @EnvironmentObject private var memoryStore: MemoryStore
+    @EnvironmentObject private var sessionStore: SessionStore
     @EnvironmentObject private var recentPicks: RecentPicksStore
     @EnvironmentObject private var conv: CoachConversationStore
 
@@ -65,9 +66,12 @@ struct RootTabView: View {
                 .presentationBackground(Color.bg)
         }
         .task {
-            // Wire variety memory into PlanStore (kept off the init so the
-            // store stays one-arg constructible for tests + previews).
+            // Wire variety memory + session history into PlanStore (kept off
+            // the init so the store stays one-arg constructible for tests +
+            // previews). sessionStore drives the GeneratorContext that gives
+            // the planner runtime-history awareness.
             planStore.recentPicks = recentPicks
+            planStore.sessionStore = sessionStore
             // One-shot migration for users whose saved plan was composed by
             // the pre-build-36 routine picker. Detects the stale schema and
             // regenerates so they stop seeing bundled sport-themed routines

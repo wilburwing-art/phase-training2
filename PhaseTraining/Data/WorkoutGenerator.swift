@@ -34,18 +34,26 @@ enum WorkoutGenerator {
     // MARK: - Public API
 
     /// Generate a lift day's workout.
+    ///
+    /// `context` carries runtime-history signals — defaults to `.empty` so
+    /// every existing caller works unchanged. When populated (build 66+)
+    /// the generator emits progressive-overload weight targets, biases
+    /// against recently-sore body areas, prefers under-trained patterns,
+    /// and swaps stagnant canonical lifts for substitutes.
     static func generateLift(
         liftIndex: Int,
         totalLifts: Int,
         memory: TrainingMemory,
         profile: DemographicProfile,
         hashSeed: String,
-        recentlyPicked: Set<Int> = []
+        recentlyPicked: Set<Int> = [],
+        context: GeneratorContext = .empty
     ) -> GeneratedWorkout {
         let focus = WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts)
         return generate(focus: focus, memory: memory, profile: profile,
                         hashSeed: hashSeed, liftIndex: liftIndex,
-                        totalLifts: totalLifts, recentlyPicked: recentlyPicked)
+                        totalLifts: totalLifts, recentlyPicked: recentlyPicked,
+                        context: context)
     }
 
     /// Generate a mobility day's flow.
@@ -53,11 +61,12 @@ enum WorkoutGenerator {
         memory: TrainingMemory,
         profile: DemographicProfile,
         hashSeed: String,
-        recentlyPicked: Set<Int> = []
+        recentlyPicked: Set<Int> = [],
+        context: GeneratorContext = .empty
     ) -> GeneratedWorkout {
         generate(focus: .mobility, memory: memory, profile: profile,
                  hashSeed: hashSeed, liftIndex: 0, totalLifts: 0,
-                 recentlyPicked: recentlyPicked)
+                 recentlyPicked: recentlyPicked, context: context)
     }
 
     // MARK: - Core loop
@@ -69,7 +78,8 @@ enum WorkoutGenerator {
         hashSeed: String,
         liftIndex: Int,
         totalLifts: Int,
-        recentlyPicked: Set<Int>
+        recentlyPicked: Set<Int>,
+        context: GeneratorContext = .empty
     ) -> GeneratedWorkout {
         let budgetSec = max(15 * 60, memory.sessionMinutes * 60 - warmupBufferSec)
         var elapsedSec = 0
@@ -83,7 +93,7 @@ enum WorkoutGenerator {
         let excludeKws = profile.excludedNameKeywords + memory.dislikes.map { $0.lowercased() }
 
         for (slotIdx, slot) in focus.slots.enumerated() {
-            guard let picked = pickForSlot(
+            guard let initial = pickForSlot(
                 slot: slot,
                 slotIdx: slotIdx,
                 profile: profile,
@@ -91,8 +101,21 @@ enum WorkoutGenerator {
                 excludeKws: excludeKws,
                 excludeIds: pickedIds,
                 recentlyPicked: recentlyPicked,
-                hashSeed: hashSeed
+                hashSeed: hashSeed,
+                context: context
             ) else { continue }
+
+            // Stagnation swap: if the user's pick is on the stagnant list
+            // (canonical lift with no PR in 4 weeks) and a substitute is
+            // available + still within their constraints, prefer the swap.
+            let picked = applyStagnationSwap(
+                original: initial,
+                context: context,
+                envs: envs,
+                excludeKws: excludeKws,
+                excludeIds: pickedIds,
+                slot: slot
+            )
 
             let (sets, reps, restSec) = prescription(
                 for: picked,
@@ -111,6 +134,11 @@ enum WorkoutGenerator {
                 continue
             }
 
+            // Progressive-overload target: when the user has a prior best
+            // for this exercise, emit it in notes so the LogScreen can
+            // surface a coaching prompt above the autofill column.
+            let notes = progressiveOverloadHint(for: picked, context: context, memory: memory)
+
             picks.append(GeneratedExercise(
                 id: "\(hashSeed)-\(slotIdx)-\(picked.id)",
                 exerciseId: picked.id,
@@ -120,7 +148,7 @@ enum WorkoutGenerator {
                 sets: sets,
                 reps: reps,
                 restSeconds: restSec,
-                notes: nil
+                notes: notes
             ))
             pickedIds.insert(picked.id)
             elapsedSec += durSec
@@ -159,7 +187,8 @@ enum WorkoutGenerator {
         excludeKws: [String],
         excludeIds: Set<Int>,
         recentlyPicked: Set<Int>,
-        hashSeed: String
+        hashSeed: String,
+        context: GeneratorContext = .empty
     ) -> Exercise? {
         let applyVariety: ([Exercise]) -> [Exercise] = { candidates in
             guard !recentlyPicked.isEmpty else { return candidates }
@@ -167,12 +196,36 @@ enum WorkoutGenerator {
             return fresh.isEmpty ? candidates : fresh
         }
 
-        for pattern in slot.alternatives {
+        // Apply sore-area exclude: drop exercises whose primary muscle group
+        // matches anything in context.recentSoreAreas (case-insensitive
+        // substring match against the muscle-group label, since user-typed
+        // areas can be "knee" while coach.db labels are "Quadriceps").
+        // Empty context = no filtering, preserves old behavior.
+        let applySoreFilter: ([Exercise]) -> [Exercise] = { candidates in
+            guard !context.recentSoreAreas.isEmpty else { return candidates }
+            return candidates.filter { ex in
+                let muscles = CoachDatabase.shared.musclesForExercise(ex.id)
+                    .filter { $0.role == "primary" }
+                    .map { $0.label.lowercased() }
+                for area in context.recentSoreAreas {
+                    if muscles.contains(where: { $0.contains(area) || area.contains($0) }) {
+                        return false
+                    }
+                }
+                return true
+            }
+        }
+
+        // Reorder slot.alternatives so under-trained patterns come first
+        // when context is populated. Same alternatives, just biased order.
+        let alternatives = reorderByPatternFrequency(slot.alternatives, context: context)
+
+        for pattern in alternatives {
             // Try preferred difficulties first, then fall back across the
             // whole allowed set (so a beginner-only catalog still returns
             // something for an advanced user).
             for bucket in profile.preferredDifficulties {
-                let candidates = CoachDatabase.shared.exercises(
+                let raw = CoachDatabase.shared.exercises(
                     matchingPattern: pattern,
                     difficulties: [bucket],
                     environments: envs,
@@ -180,25 +233,113 @@ enum WorkoutGenerator {
                     excludeIds: excludeIds,
                     modalities: slot.requiredModalities
                 )
+                let candidates = applySoreFilter(raw)
                 if let pick = deterministicPick(from: applyVariety(candidates), slotIdx: slotIdx, hashSeed: hashSeed) {
                     slot.satisfiedBy = pattern
                     return pick
                 }
             }
             // Difficulty-relaxed pass — env + constraints still hold.
-            let relaxed = CoachDatabase.shared.exercises(
+            let relaxedRaw = CoachDatabase.shared.exercises(
                 matchingPattern: pattern,
                 environments: envs,
                 excludeKeywords: excludeKws,
                 excludeIds: excludeIds,
                 modalities: slot.requiredModalities
             )
+            let relaxed = applySoreFilter(relaxedRaw)
             if let pick = deterministicPick(from: applyVariety(relaxed), slotIdx: slotIdx, hashSeed: hashSeed) {
                 slot.satisfiedBy = pattern
                 return pick
             }
         }
         return nil
+    }
+
+    /// Boost under-trained patterns by sorting `slot.alternatives` so the
+    /// pattern with the lowest count in `context.patternFrequency` (or absent
+    /// from it entirely) comes first. Stable for an empty context (returns
+    /// original order). Does NOT add new patterns — only reorders what the
+    /// slot already declares.
+    private static func reorderByPatternFrequency(
+        _ alternatives: [String],
+        context: GeneratorContext
+    ) -> [String] {
+        guard !context.patternFrequency.isEmpty, alternatives.count > 1 else {
+            return alternatives
+        }
+        return alternatives.enumerated()
+            .sorted { lhs, rhs in
+                let leftCount = context.patternFrequency[lhs.element] ?? 0
+                let rightCount = context.patternFrequency[rhs.element] ?? 0
+                if leftCount != rightCount { return leftCount < rightCount }
+                return lhs.offset < rhs.offset   // stable tiebreaker
+            }
+            .map(\.element)
+    }
+
+    /// If the initial pick is flagged stagnant (no PR in 4w), try to swap
+    /// it for the highest-scoring substitute that still passes the same
+    /// constraints. Returns the original pick when no acceptable swap
+    /// exists. Conservative — won't bust env / dislike / injury filters.
+    private static func applyStagnationSwap(
+        original: Exercise,
+        context: GeneratorContext,
+        envs: Set<String>,
+        excludeKws: [String],
+        excludeIds: Set<Int>,
+        slot: PatternSlot
+    ) -> Exercise {
+        guard context.stagnantExercises.contains(original.name.lowercased()) else {
+            return original
+        }
+        let substitutes = CoachDatabase.shared.substitutes(forExerciseId: original.id)
+        for sub in substitutes {
+            let candidate = sub.exercise
+            if excludeIds.contains(candidate.id) { continue }
+            // Env filter: empty envs = no restriction (e.g. fullGym user).
+            if !envs.isEmpty, let env = candidate.environment, !envs.contains(env) {
+                continue
+            }
+            // Dislike-keyword filter.
+            let lowerName = candidate.name.lowercased()
+            if excludeKws.contains(where: { lowerName.contains($0) }) { continue }
+            // Modality filter from the slot.
+            if !slot.requiredModalities.isEmpty,
+               let mod = candidate.modality,
+               !slot.requiredModalities.contains(mod) {
+                continue
+            }
+            return candidate
+        }
+        return original
+    }
+
+    /// "target: 230 lb × 5" style hint when the user has a prior best for
+    /// this exercise name. Renders in the user's unit system via the prior
+    /// weight (which is stored as the raw logged number, treated as lb to
+    /// match the rest of the prescription path).
+    private static func progressiveOverloadHint(
+        for exercise: Exercise,
+        context: GeneratorContext,
+        memory: TrainingMemory
+    ) -> String? {
+        guard let prior = context.priorBest[exercise.name.lowercased()] else {
+            return nil
+        }
+        // Small step-up — 2.5% rounded to nearest 5 lb, or the same weight
+        // back if the user is below the floor. Conservative: we'd rather
+        // prescribe last week's weight than push too hard blindly.
+        let stepped = (prior.weight * 1.025 / 5.0).rounded() * 5.0
+        let target = max(prior.weight, stepped)
+        let display: String
+        if memory.usesImperial {
+            display = "\(Int(target)) lb × \(prior.reps)"
+        } else {
+            let kg = BodyMetrics.lbToKg(target)
+            display = "\(Int(kg.rounded())) kg × \(prior.reps)"
+        }
+        return "target: \(display)"
     }
 
     /// djb2 fold of (hashSeed + slotIdx) → modulo array size. Same machinery

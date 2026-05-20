@@ -1,0 +1,224 @@
+import XCTest
+@testable import PhaseTraining
+
+/// PR 1 of the option-D arc: the deterministic WorkoutGenerator finally
+/// sees runtime history (logged sessions, soreness check-ins, feedback).
+/// These tests pin the builder's derived signals + the generator's
+/// integration of them.
+final class GeneratorContextTests: XCTestCase {
+
+    // MARK: - Builder: priorBest
+
+    func test_priorBest_picksMostRecentSessionPerExercise() {
+        let now = Date()
+        let cal = Calendar.current
+        let older = savedSession(
+            name: "Bench Press",
+            sets: [("200", "5")],
+            startTime: cal.date(byAdding: .day, value: -14, to: now)!
+        )
+        let newer = savedSession(
+            name: "Bench Press",
+            sets: [("225", "5"), ("230", "3")],
+            startTime: cal.date(byAdding: .day, value: -3, to: now)!
+        )
+        let ctx = GeneratorContext.from(
+            sessions: [older, newer],
+            soreness: [], feedback: [], now: now
+        )
+        let pb = ctx.priorBest["bench press"]
+        XCTAssertEqual(pb?.weight, 230)
+        XCTAssertEqual(pb?.reps, 3)
+    }
+
+    func test_priorBest_skipsZeroWeightOrUndoneSets() {
+        let session = savedSession(
+            name: "Squat",
+            sets: [("0", "5", true), ("315", "5", false)]  // weight=0 ignored, undone ignored
+        )
+        let ctx = GeneratorContext.from(sessions: [session],
+                                        soreness: [], feedback: [])
+        XCTAssertNil(ctx.priorBest["squat"], "no completed weighted set → no priorBest entry")
+    }
+
+    // MARK: - Builder: recentSoreAreas
+
+    func test_recentSoreAreas_unionsSorenessAndFeedback() {
+        let now = Date()
+        var sore = SorenessEntry(date: now.addingTimeInterval(-2 * 86400))
+        sore.areas = ["Knee", "Lower back"]
+        let fb = FeedbackEntry(
+            date: now.addingTimeInterval(-1 * 86400),
+            sessionId: "x",
+            difficulty: "right",
+            hurtAreas: ["Shoulder"],
+            ranLong: false, notes: nil
+        )
+        let ctx = GeneratorContext.from(
+            sessions: [], soreness: [sore], feedback: [fb], now: now
+        )
+        XCTAssertTrue(ctx.recentSoreAreas.contains("knee"))
+        XCTAssertTrue(ctx.recentSoreAreas.contains("lower back"))
+        XCTAssertTrue(ctx.recentSoreAreas.contains("shoulder"))
+    }
+
+    func test_recentSoreAreas_excludesOlderThanSevenDays() {
+        let now = Date()
+        var oldSore = SorenessEntry(date: now.addingTimeInterval(-10 * 86400))
+        oldSore.areas = ["knee"]
+        let ctx = GeneratorContext.from(sessions: [], soreness: [oldSore],
+                                        feedback: [], now: now)
+        XCTAssertFalse(ctx.recentSoreAreas.contains("knee"))
+    }
+
+    // MARK: - Builder: stagnantExercises
+
+    func test_stagnantExercises_flagsNoProgressionOver4w() {
+        let now = Date()
+        let cal = Calendar.current
+        // Same exact 1RM input over 5 sessions in the last 4 weeks → flagged
+        let sessions: [SavedSession] = (1...5).map { idx in
+            savedSession(
+                name: "Bench Press",
+                sets: [("225", "5")],
+                startTime: cal.date(byAdding: .day, value: -idx * 5, to: now)!
+            )
+        }
+        let ctx = GeneratorContext.from(sessions: sessions, soreness: [],
+                                        feedback: [], now: now)
+        XCTAssertTrue(ctx.stagnantExercises.contains("bench press"))
+    }
+
+    func test_stagnantExercises_skipsSparseHistory() {
+        // 2 sessions = below the 3-session noise threshold → not flagged
+        let now = Date()
+        let cal = Calendar.current
+        let sessions: [SavedSession] = [1, 5].map { idx in
+            savedSession(
+                name: "Bench Press",
+                sets: [("225", "5")],
+                startTime: cal.date(byAdding: .day, value: -idx, to: now)!
+            )
+        }
+        let ctx = GeneratorContext.from(sessions: sessions, soreness: [],
+                                        feedback: [], now: now)
+        XCTAssertFalse(ctx.stagnantExercises.contains("bench press"),
+                       "2-session history is too thin to call stagnant")
+    }
+
+    func test_stagnantExercises_skipsProgressingLifters() {
+        let now = Date()
+        let cal = Calendar.current
+        // Three sessions with rising weight → progressing, not flagged.
+        let weights = ["205", "215", "225"]
+        let sessions: [SavedSession] = weights.enumerated().map { i, w in
+            savedSession(
+                name: "Bench Press",
+                sets: [(w, "5")],
+                startTime: cal.date(byAdding: .day, value: -(15 - i * 5), to: now)!
+            )
+        }
+        let ctx = GeneratorContext.from(sessions: sessions, soreness: [],
+                                        feedback: [], now: now)
+        XCTAssertFalse(ctx.stagnantExercises.contains("bench press"))
+    }
+
+    // MARK: - Empty case
+
+    func test_empty_isIdentityForNoInputs() {
+        let ctx = GeneratorContext.from(sessions: [], soreness: [], feedback: [])
+        XCTAssertTrue(ctx.isEmpty)
+        XCTAssertTrue(ctx.priorBest.isEmpty)
+        XCTAssertTrue(ctx.recentSoreAreas.isEmpty)
+        XCTAssertTrue(ctx.stagnantExercises.isEmpty)
+    }
+
+    // MARK: - Generator integration
+
+    /// When the generator runs with priorBest data for an exercise it picks,
+    /// the resulting GeneratedExercise should carry a target-weight note.
+    /// Doesn't pin the exact exercise picked — only that *some* exercise in
+    /// the workout matches a priorBest key and emits a hint.
+    func test_generator_emitsTargetWeightWhenPriorBestExists() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.sessionMinutes = 45
+        m.usesImperial = true
+        let p = DemographicProfile.from(m)
+
+        // First pass: discover what the generator picks, no context.
+        let probe = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: p, hashSeed: "probe"
+        )
+        guard let picked = probe.exercises.first else {
+            return XCTFail("planner returned no exercises")
+        }
+
+        // Second pass: feed priorBest for THAT exercise and confirm a note appears.
+        var ctx = GeneratorContext.empty
+        ctx.priorBest[picked.name.lowercased()] = PriorBest(
+            weight: 200, reps: 5, date: Date().addingTimeInterval(-7 * 86400)
+        )
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: p, hashSeed: "probe", context: ctx
+        )
+        let match = workout.exercises.first { $0.name == picked.name }
+        XCTAssertNotNil(match?.notes,
+                        "expected a target-weight note on the picked exercise — got \(String(describing: match?.notes))")
+        XCTAssertTrue(match?.notes?.contains("target:") ?? false,
+                      "note should be a target-weight hint: \(String(describing: match?.notes))")
+    }
+
+    /// Empty context = no notes (existing behavior unchanged).
+    func test_generator_emitsNoNotesWithEmptyContext() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        let p = DemographicProfile.from(m)
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: p, hashSeed: "noctx"
+        )
+        for ex in workout.exercises {
+            XCTAssertNil(ex.notes, "no context should mean no notes — got \(String(describing: ex.notes)) on \(ex.name)")
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func savedSession(
+        name: String,
+        sets: [(weight: String, reps: String)],
+        startTime: Date = Date().addingTimeInterval(-3600)
+    ) -> SavedSession {
+        savedSession(
+            name: name,
+            sets: sets.map { ($0.weight, $0.reps, true) },
+            startTime: startTime
+        )
+    }
+
+    private func savedSession(
+        name: String,
+        sets: [(weight: String, reps: String, done: Bool)],
+        startTime: Date = Date().addingTimeInterval(-3600)
+    ) -> SavedSession {
+        let logged = LoggedExercise(
+            id: name, name: name, type: nil, unit: "lbs",
+            targetSets: sets.count, targetReps: 5, rest: 90,
+            sets: sets.enumerated().map { i, s in
+                LoggedSet(num: i + 1, weight: s.weight, reps: s.reps, rpe: "", done: s.done)
+            },
+            prevSets: []
+        )
+        return SavedSession(
+            templateId: "t", name: name, category: "",
+            startTime: startTime,
+            exercises: [logged], feel: nil, note: nil,
+            endTime: startTime.addingTimeInterval(3600), duration: 3600
+        )
+    }
+}

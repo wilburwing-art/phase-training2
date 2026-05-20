@@ -28,6 +28,15 @@ final class PlanStore: ObservableObject {
     /// the production app gets the soft-filter on exercise reuse.
     var recentPicks: RecentPicksStore?
 
+    /// Session history feed. Same post-init wiring pattern as `recentPicks`.
+    /// When present, PlanStore builds a GeneratorContext from
+    /// sessionStore.savedSessions + memory.soreness + memory.feedback and
+    /// hands it to the planner, so generated workouts inherit history-aware
+    /// signals (progressive overload targets, sore-area avoidance, etc.).
+    /// When absent (tests, previews) the planner falls back to .empty
+    /// context — same behavior as pre-build-66.
+    var sessionStore: SessionStore?
+
     private let defaults: UserDefaults
 
     init(defaults: UserDefaults = .standard, today: Date = Date()) {
@@ -57,17 +66,32 @@ final class PlanStore: ObservableObject {
     @discardableResult
     func generate(from memory: TrainingMemory, today: Date = Date()) -> WeekPlan {
         let routines = CoachDatabase.shared.listRoutines()
+        let context = buildGeneratorContext(memory: memory, today: today)
         let p = Planner.generate(
             memory: memory,
             overrides: overrides,
             routines: routines,
             recentlyPicked: recentPicks?.recentlyPickedIds() ?? [],
-            today: today
+            today: today,
+            context: context
         )
         self.plan = p
         savePlan()
         recordPickedExercises(in: p)
         return p
+    }
+
+    /// Derive the runtime-history context for the planner. Returns `.empty`
+    /// when sessionStore isn't wired (tests / previews) — same shape as
+    /// pre-build-66 so the planner output stays unchanged in those paths.
+    private func buildGeneratorContext(memory: TrainingMemory, today: Date) -> GeneratorContext {
+        guard let sessionStore else { return .empty }
+        return GeneratorContext.from(
+            sessions: sessionStore.savedSessions,
+            soreness: memory.soreness,
+            feedback: memory.feedback,
+            now: today
+        )
     }
 
     /// Stamp every exercise the generator just picked into the variety
@@ -285,6 +309,7 @@ final class PlanStore: ObservableObject {
         let saltValue = salt ?? String(Int(Date().timeIntervalSince1970))
         let seed = "\(memory.planInputsHash)-regen-\(saltValue)"
         let recentIds = recentPicks?.recentlyPickedIds() ?? []
+        let context = buildGeneratorContext(memory: memory, today: today)
 
         let workout: GeneratedWorkout
         switch day.kind {
@@ -299,14 +324,16 @@ final class PlanStore: ObservableObject {
                 memory: memory,
                 profile: profile,
                 hashSeed: seed,
-                recentlyPicked: recentIds
+                recentlyPicked: recentIds,
+                context: context
             )
         case .mobility:
             workout = WorkoutGenerator.generateMobility(
                 memory: memory,
                 profile: profile,
                 hashSeed: seed,
-                recentlyPicked: recentIds
+                recentlyPicked: recentIds,
+                context: context
             )
         default:
             return
