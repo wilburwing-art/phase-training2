@@ -202,65 +202,19 @@ struct DayWorkoutPreviewSheet: View {
     }
 
     private func exerciseRow(_ ex: ExerciseTemplate, position: Int) -> some View {
-        HStack(spacing: 12) {
-            // Tap the position+name+meta block to edit sets/reps/rest.
-            // The info + swap icons remain dedicated buttons on the right,
-            // so the tap zone here is unambiguous.
-            Button {
-                editingExIdx = position - 1
-            } label: {
-                HStack(spacing: 12) {
-                    Text("\(position)")
-                        .font(.monoXS)
-                        .foregroundStyle(Color.ink3)
-                        .frame(width: 18, alignment: .leading)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(ex.name)
-                            .font(.custom("Inter-Regular", size: 14))
-                            .foregroundStyle(Color.ink)
-                            .lineLimit(2)
-                            .multilineTextAlignment(.leading)
-                        Text("\(ex.targetSets) × \(ex.targetReps) · rest \(ex.rest)s")
-                            .font(.monoXS)
-                            .foregroundStyle(Color.ink3)
-                    }
-                    Spacer(minLength: 0)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("preview-edit-\(position)")
-            .accessibilityLabel("Edit \(ex.name) sets, reps, and rest")
-            Button {
+        WorkoutExerciseRow(
+            name: ex.name,
+            position: position,
+            metaText: "\(ex.targetSets) × \(ex.targetReps) · rest \(ex.rest)s",
+            onTap: { editingExIdx = position - 1 },
+            onInfo: {
                 detailExercise = CoachDatabase.shared
                     .listExercises(search: ex.name)
                     .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }
-            } label: {
-                Image(systemName: "info.circle")
-                    .font(.system(size: 15))
-                    .foregroundStyle(Color.ink3)
-                    .frame(width: 32, height: 32)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Show details for \(ex.name)")
-
-            // Build 76: swap is available on every preview, not just today's.
-            // Future-day edits persist via the Save to library button at the
-            // bottom; same-day edits flow into the active session on Start.
-            Button {
-                swappingExIdx = position - 1
-            } label: {
-                Image(systemName: "arrow.left.arrow.right")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.ink2)
-                    .frame(width: 32, height: 32)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Swap \(ex.name)")
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+            },
+            onSwap: { swappingExIdx = position - 1 }
+        )
+        .accessibilityIdentifier("preview-edit-\(position)")
     }
 
     /// Trailing row inside the exercise card — opens the picker with no

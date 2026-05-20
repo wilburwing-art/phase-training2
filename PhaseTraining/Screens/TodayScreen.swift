@@ -399,11 +399,21 @@ struct TodayScreen: View {
 
     /// Today's exercise list as a directly-editable card: tap a row to
     /// adjust sets/reps/rest, tap swap to replace, tap info to inspect,
-    /// long-press the ☰ handle to drag-reorder. The Add Exercise row
-    /// appends to the end. All mutations flow through `editableTemplate`
-    /// so Start consumes the edited shape.
+    /// drag the trailing handle to reorder. The Add Exercise row appends
+    /// to the end. All mutations flow through `editableTemplate` so Start
+    /// consumes the edited shape.
+    ///
+    /// Reorder uses `List` + `.onMove` + `editMode: .active` (same pattern
+    /// as `DayWorkoutPreviewSheet`). The List is height-bounded so it
+    /// doesn't scroll independently inside the page's outer ScrollView.
+    /// Per-row `.draggable`/`.dropDestination` was tried first and broke
+    /// after the first reorder — see `swiftui-drag-reorder-custom-styled`.
     private func inlineExerciseCard(_ tmpl: WorkoutTemplate) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
+        // Height: ~64pt per row + ~56pt add-row + ~8pt list padding.
+        // Slight overshoot is fine; rows just sit at their intrinsic size.
+        let listHeight = CGFloat(tmpl.exercises.count) * 64 + 56 + 8
+
+        return VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text("TODAY'S EXERCISES")
                     .styled(.micro)
@@ -417,15 +427,26 @@ struct TodayScreen: View {
             .padding(.top, 12)
             .padding(.bottom, 8)
 
-            VStack(spacing: 0) {
-                ForEach(Array(tmpl.exercises.enumerated()), id: \.element.id) { idx, ex in
-                    inlineExerciseRow(ex, position: idx + 1)
-                    Rectangle()
-                        .fill(Color.lineSoft)
-                        .frame(height: 0.5)
+            List {
+                Section {
+                    ForEach(Array(tmpl.exercises.enumerated()), id: \.element.id) { idx, ex in
+                        inlineExerciseRow(ex, position: idx + 1)
+                            .listRowBackground(Color.surface)
+                            .listRowSeparatorTint(Color.lineSoft)
+                            .listRowInsets(EdgeInsets())
+                    }
+                    .onMove(perform: moveInlineExercise)
+                    inlineAddExerciseRow
+                        .listRowBackground(Color.surface)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets())
                 }
-                inlineAddExerciseRow
             }
+            .scrollContentBackground(.hidden)
+            .listStyle(.plain)
+            .environment(\.editMode, .constant(.active))
+            .scrollDisabled(true)
+            .frame(height: listHeight)
         }
         .background(Color.surface)
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
@@ -437,83 +458,35 @@ struct TodayScreen: View {
         let prevW = prevEx?.sets.first?.weight ?? ""
         let middle = prevW.isEmpty ? "no prev" : "\(prevW) \(ex.unit)"
 
-        return HStack(spacing: 10) {
-            // Drag handle — long-press + drag to reorder. Purely visual;
-            // the .draggable modifier on the whole row owns the gesture.
-            Image(systemName: "line.3.horizontal")
-                .font(.system(size: 12))
-                .foregroundStyle(Color.ink3.opacity(0.7))
-                .frame(width: 14)
-
-            // Tappable text section → edit sets/reps/rest.
-            Button {
-                editingExIdx = position - 1
-            } label: {
-                HStack(spacing: 10) {
-                    Text(String(format: "%02d", position))
-                        .font(.monoXS)
-                        .foregroundStyle(Color.ink3)
-                        .frame(width: 18, alignment: .leading)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(ex.name)
-                            .font(.custom("Inter-Regular", size: 14))
-                            .foregroundStyle(Color.ink)
-                            .lineLimit(2)
-                            .multilineTextAlignment(.leading)
-                        Text("\(ex.targetSets) × \(ex.targetReps) · \(middle) · rest \(ex.rest)s")
-                            .font(.monoXS)
-                            .foregroundStyle(Color.ink3)
-                    }
-                    Spacer(minLength: 0)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("today-edit-\(position)")
-
-            Button {
+        return WorkoutExerciseRow(
+            name: ex.name,
+            position: position,
+            metaText: "\(ex.targetSets) × \(ex.targetReps) · \(middle) · rest \(ex.rest)s",
+            onTap: { editingExIdx = position - 1 },
+            onInfo: {
                 inlineDetailExercise = CoachDatabase.shared
                     .listExercises(search: ex.name)
                     .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }
-            } label: {
-                Image(systemName: "info.circle")
-                    .font(.system(size: 15))
-                    .foregroundStyle(Color.ink3)
-                    .frame(width: 30, height: 32)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Show details for \(ex.name)")
+            },
+            onSwap: { swappingExIdx = position - 1 }
+        )
+        .accessibilityIdentifier("today-edit-\(position)")
+    }
 
-            Button {
-                swappingExIdx = position - 1
-            } label: {
-                Image(systemName: "arrow.left.arrow.right")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.ink2)
-                    .frame(width: 30, height: 32)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Swap \(ex.name)")
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        // Drag-to-reorder. .draggable provides the payload (exercise id);
-        // each row is also a .dropDestination accepting that id. iOS shows
-        // a hover preview during the drag automatically.
-        .draggable(ex.id) {
-            Text(ex.name)
-                .font(.custom("Inter-Regular", size: 14))
-                .foregroundStyle(Color.ink)
-                .padding(10)
-                .background(Color.surface)
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.accent, lineWidth: 1))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-        }
-        .dropDestination(for: String.self) { droppedIds, _ in
-            guard let dropped = droppedIds.first else { return false }
-            return reorderByDrop(draggedExerciseId: dropped, ontoIndex: position - 1)
-        }
+    /// SwiftUI .onMove handler — reorder editableTemplate's exercises in
+    /// place. The closure's `dest` is already in original-array coordinates.
+    private func moveInlineExercise(from source: IndexSet, to dest: Int) {
+        guard let tmpl = editableTemplate else { return }
+        var reordered = tmpl.exercises
+        reordered.move(fromOffsets: source, toOffset: dest)
+        editableTemplate = WorkoutTemplate(
+            id: tmpl.id,
+            name: tmpl.name,
+            category: tmpl.category,
+            exercises: reordered
+        )
+        didModify = true
+        didSaveToLibrary = false
     }
 
     private var inlineAddExerciseRow: some View {
@@ -622,22 +595,6 @@ struct TodayScreen: View {
         editableTemplate = WorkoutTemplate(id: tmpl.id, name: tmpl.name, category: tmpl.category, exercises: tmpl.exercises + [newEx])
         didModify = true
         didSaveToLibrary = false
-    }
-
-    /// Drag-and-drop reorder: when a row is dropped onto position `toIdx`,
-    /// the dragged row lands at that slot. Returns true if anything moved.
-    private func reorderByDrop(draggedExerciseId: String, ontoIndex toIdx: Int) -> Bool {
-        guard let tmpl = editableTemplate,
-              let fromIdx = tmpl.exercises.firstIndex(where: { $0.id == draggedExerciseId }),
-              fromIdx != toIdx else { return false }
-        var newExercises = tmpl.exercises
-        let item = newExercises.remove(at: fromIdx)
-        let insertAt = toIdx > fromIdx ? toIdx - 1 : toIdx
-        newExercises.insert(item, at: insertAt)
-        editableTemplate = WorkoutTemplate(id: tmpl.id, name: tmpl.name, category: tmpl.category, exercises: newExercises)
-        didModify = true
-        didSaveToLibrary = false
-        return true
     }
 
     /// Compute "similar exercises" filters for the swap picker — same
