@@ -1,10 +1,14 @@
 // PreWorkoutCheckIn.swift — chip row above the Today exercise list.
 //
-// Collapsed by default; tap a header chevron to expand. Captures everything
-// the planner + future coach need before today's session: energy, soreness
-// level + body areas, pain yes/no, time budget vs planned, equipment
-// changed. On submit, appends a SorenessEntry to MemoryStore (one per call —
-// the user can update by re-submitting; later calls supersede via date).
+// Build 88: simplified to two fields — energy + sore areas. Removed pain
+// (redundant with areas), soreness level (also redundant — areas count is
+// the proxy), time budget (covered by editing the workout directly), and
+// equipment-changed (covered by the picker's environment filter). The
+// SorenessEntry model still has those fields so old data renders correctly
+// in the coach context; new entries just don't set them.
+//
+// Collapsed by default; tap to expand. Re-pulls today's entry on appear so
+// closing the app doesn't reset the "LOGGED" status.
 
 import SwiftUI
 
@@ -12,10 +16,6 @@ struct PreWorkoutCheckIn: View {
     @EnvironmentObject private var memoryStore: MemoryStore
     @State private var expanded = false
     @State private var energy: Energy? = nil
-    @State private var soreness: Soreness? = nil
-    @State private var pain: Bool? = nil
-    @State private var time: TimeBudget? = nil
-    @State private var equipmentChanged: Bool? = nil
     @State private var areas: Set<BodyArea> = []
     @State private var submittedAt: Date? = nil
 
@@ -23,22 +23,6 @@ struct PreWorkoutCheckIn: View {
         case low, normal, high
         var id: String { rawValue }
         var label: String { rawValue.capitalized }
-    }
-    enum Soreness: String, CaseIterable, Identifiable {
-        case none, mild, high
-        var id: String { rawValue }
-        var label: String { rawValue.capitalized }
-    }
-    enum TimeBudget: String, CaseIterable, Identifiable {
-        case less, planned, more
-        var id: String { rawValue }
-        var label: String {
-            switch self {
-            case .less:    return "Less time"
-            case .planned: return "On plan"
-            case .more:    return "More time"
-            }
-        }
     }
     enum BodyArea: String, CaseIterable, Identifiable {
         case knees, lowBack = "low back", shoulders, hips, neck, wrists, elbows, ankles
@@ -51,14 +35,8 @@ struct PreWorkoutCheckIn: View {
             header
             if expanded {
                 VStack(alignment: .leading, spacing: 14) {
-                    row("ENERGY",   chips: Energy.allCases,   selected: energy)   { energy = $0 }
-                    row("SORENESS", chips: Soreness.allCases, selected: soreness) { soreness = $0 }
-                    painRow
-                    if soreness == .mild || soreness == .high {
-                        areasRow
-                    }
-                    row("TIME",      chips: TimeBudget.allCases, selected: time) { time = $0 }
-                    equipmentRow
+                    energyRow
+                    areasRow
                     submitButton
                 }
                 .padding(.horizontal, 14)
@@ -72,26 +50,6 @@ struct PreWorkoutCheckIn: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .onAppear(perform: rehydrateFromMemory)
-    }
-
-    /// Re-pick up today's entry from memory so closing/reopening the app
-    /// doesn't reset the "LOGGED" status. Match by Calendar.startOfDay so a
-    /// check-in submitted earlier in the day still counts.
-    private func rehydrateFromMemory() {
-        let cal = Calendar.current
-        guard let entry = memoryStore.memory.soreness.last(where: {
-            cal.isDate($0.date, inSameDayAs: Date())
-        }) else { return }
-        submittedAt = entry.date
-        energy = entry.energy.flatMap(Energy.init(rawValue:))
-        soreness = entry.soreness.flatMap(Soreness.init(rawValue:))
-        pain = entry.pain
-        equipmentChanged = entry.equipmentChanged
-        areas = Set(entry.areas.compactMap(BodyArea.init(rawValue:)))
-        if let mins = entry.timeBudget {
-            let planned = memoryStore.memory.sessionMinutes
-            time = (mins < planned) ? .less : (mins > planned ? .more : .planned)
-        }
     }
 
     // MARK: - Header
@@ -126,63 +84,34 @@ struct PreWorkoutCheckIn: View {
 
     // MARK: - Rows
 
-    private func row<T: Identifiable & Equatable>(
-        _ title: String,
-        chips: [T],
-        selected: T?,
-        label labelFor: ((T) -> String)? = nil,
-        onTap: @escaping (T) -> Void
-    ) -> some View where T.ID == String {
+    private var energyRow: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(title)
+            Text("ENERGY")
                 .styled(.micro)
                 .foregroundStyle(Color.ink3)
             HStack(spacing: 6) {
-                ForEach(chips) { c in
-                    chip(
-                        text: labelFor?(c) ?? (c as? CustomStringConvertible).map { String(describing: $0) } ?? c.id.capitalized,
-                        active: selected == c,
-                        onTap: { onTap(c) }
-                    )
+                ForEach(Energy.allCases) { e in
+                    chip(text: e.label, active: energy == e) { energy = e }
                 }
-            }
-        }
-    }
-
-    private var painRow: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("PAIN")
-                .styled(.micro)
-                .foregroundStyle(Color.ink3)
-            HStack(spacing: 6) {
-                chip(text: "No",  active: pain == false) { pain = false }
-                chip(text: "Yes", active: pain == true)  { pain = true  }
             }
         }
     }
 
     private var areasRow: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("WHERE")
-                .styled(.micro)
-                .foregroundStyle(Color.ink3)
+            HStack(alignment: .firstTextBaseline) {
+                Text("SORE AREAS")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                Text("(optional)")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3.opacity(0.6))
+            }
             FlowChips(items: BodyArea.allCases.map { $0.label }) { idx in
                 let area = BodyArea.allCases[idx]
                 if areas.contains(area) { areas.remove(area) } else { areas.insert(area) }
             } isActive: { idx in
                 areas.contains(BodyArea.allCases[idx])
-            }
-        }
-    }
-
-    private var equipmentRow: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("EQUIPMENT")
-                .styled(.micro)
-                .foregroundStyle(Color.ink3)
-            HStack(spacing: 6) {
-                chip(text: "Same",      active: equipmentChanged == false) { equipmentChanged = false }
-                chip(text: "Different", active: equipmentChanged == true)  { equipmentChanged = true  }
             }
         }
     }
@@ -201,19 +130,16 @@ struct PreWorkoutCheckIn: View {
         .disabled(!canSubmit)
     }
 
-    private var canSubmit: Bool {
-        energy != nil && soreness != nil && pain != nil && time != nil && equipmentChanged != nil
-    }
+    /// Only energy is required — sore areas are optional (empty = nothing sore).
+    private var canSubmit: Bool { energy != nil }
 
     private func submit() {
         let entry = SorenessEntry(
             date: Date(),
             energy: energy?.rawValue,
-            soreness: soreness?.rawValue,
-            pain: pain ?? false,
-            areas: Array(areas).map(\.rawValue).sorted(),
-            timeBudget: time.map(timeMinutes),
-            equipmentChanged: equipmentChanged ?? false
+            // soreness level / pain / timeBudget / equipmentChanged left at
+            // their defaults — see file header for why we cut them.
+            areas: Array(areas).map(\.rawValue).sorted()
         )
         memoryStore.update { mem in
             mem.soreness.append(entry)
@@ -222,13 +148,19 @@ struct PreWorkoutCheckIn: View {
         withAnimation(.easeInOut(duration: 0.18)) { expanded = false }
     }
 
-    private func timeMinutes(_ t: TimeBudget) -> Int {
-        let planned = memoryStore.memory.sessionMinutes
-        switch t {
-        case .less:    return max(15, planned - 15)
-        case .planned: return planned
-        case .more:    return planned + 15
-        }
+    /// Re-pick up today's entry from memory so closing/reopening the app
+    /// doesn't reset the "LOGGED" status. Match by Calendar.startOfDay so a
+    /// check-in submitted earlier in the day still counts. Only restores
+    /// the 2 fields we still collect — older multi-field entries are
+    /// honored too, but unsurfaced fields stay in the model untouched.
+    private func rehydrateFromMemory() {
+        let cal = Calendar.current
+        guard let entry = memoryStore.memory.soreness.last(where: {
+            cal.isDate($0.date, inSameDayAs: Date())
+        }) else { return }
+        submittedAt = entry.date
+        energy = entry.energy.flatMap(Energy.init(rawValue:))
+        areas = Set(entry.areas.compactMap(BodyArea.init(rawValue:)))
     }
 
     // MARK: - Chip primitive
@@ -245,18 +177,6 @@ struct PreWorkoutCheckIn: View {
         }
         .buttonStyle(.plain)
     }
-}
-
-// MARK: - Identifiable conformance helpers
-
-extension PreWorkoutCheckIn.Energy: CustomStringConvertible {
-    var description: String { label }
-}
-extension PreWorkoutCheckIn.Soreness: CustomStringConvertible {
-    var description: String { label }
-}
-extension PreWorkoutCheckIn.TimeBudget: CustomStringConvertible {
-    var description: String { label }
 }
 
 // MARK: - FlowChips
