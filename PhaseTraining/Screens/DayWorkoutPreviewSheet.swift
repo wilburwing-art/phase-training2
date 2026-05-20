@@ -1,18 +1,18 @@
-// DayWorkoutPreviewSheet.swift — read-only view of a planned day's workout
-// with pre-workout swap + Start CTA when the day is today.
+// DayWorkoutPreviewSheet.swift — preview a planned day's workout with
+// per-exercise editing + Start CTA when the day is today.
 //
-// Resolves two gaps:
-//   - "Drill into a weekly workout and see exercises" — any lift / mobility
-//     day can be previewed without starting a session.
-//   - "Swap exercises before starting" — today's planned workout exposes
-//     per-row swap, and swaps are baked into the WorkoutTemplate that
-//     SessionStore.createSession consumes on Start.
+// Build 76: swap is enabled on EVERY day's preview (not just today), and
+// the swap sheet is the full ExercisePickerSheet over coach.db's 789
+// exercises with search + modality filter — not the narrower
+// SubstituteExerciseSheet's curated 5-10 alternatives. Users can edit a
+// future-day preview, save the result as a CustomRoutine for reuse, or
+// start the workout immediately if it's today.
 //
-// Swaps are local @State. For future days they aren't persisted (no
-// per-exercise override mechanism on WeekOverrides yet) so the sheet stays
-// read-only on non-today days. Custom-routine days that picked from a
-// bundled routine still work — we render via DayPlan.workoutTemplate which
-// covers both generatedWorkout and routineId paths.
+// Swaps mutate local @State `template`. Save-to-library persists as a
+// CustomRoutine; Start (today only) consumes the in-flight template via
+// SessionStore.createSession. Dismissing the sheet without either action
+// discards the local swap — same shape as before, just unlocked for all
+// days.
 
 import SwiftUI
 
@@ -57,15 +57,12 @@ struct DayWorkoutPreviewSheet: View {
                 }
             }
             .sheet(item: swappingBinding) { wrapped in
-                let original = template?.exercises[wrapped.index]
-                let originalId = original.flatMap { ex in
-                    CoachDatabase.shared
-                        .listExercises(search: ex.name)
-                        .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }?.id
-                }
-                SubstituteExerciseSheet(
-                    originalName: original?.name ?? "",
-                    substitutes: originalId.map { CoachDatabase.shared.substitutes(forExerciseId: $0) } ?? [],
+                let originalName = template?.exercises[wrapped.index].name ?? "exercise"
+                // Full library picker (search + modality filter) instead of
+                // the curated ~5-10 SubstituteExerciseSheet pairs. Users
+                // explicitly asked to swap from the whole catalog.
+                ExercisePickerSheet(
+                    title: "Replace \(originalName)",
                     onPick: { picked in
                         swapExercise(at: wrapped.index, with: picked)
                     }
@@ -113,7 +110,7 @@ struct DayWorkoutPreviewSheet: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12))
 
                 if !isToday {
-                    Text("Open this day on its date to start the workout. Swaps are only available the day-of.")
+                    Text("Edits stay local — tap Save to library to keep them.")
                         .font(.monoXS)
                         .foregroundStyle(Color.ink3)
                 }
@@ -175,18 +172,19 @@ struct DayWorkoutPreviewSheet: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Show details for \(ex.name)")
 
-            if isToday {
-                Button {
-                    swappingExIdx = position - 1
-                } label: {
-                    Image(systemName: "arrow.left.arrow.right")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.ink2)
-                        .frame(width: 32, height: 32)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Swap \(ex.name)")
+            // Build 76: swap is available on every preview, not just today's.
+            // Future-day edits persist via the Save to library button at the
+            // bottom; same-day edits flow into the active session on Start.
+            Button {
+                swappingExIdx = position - 1
+            } label: {
+                Image(systemName: "arrow.left.arrow.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Color.ink2)
+                    .frame(width: 32, height: 32)
             }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Swap \(ex.name)")
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
