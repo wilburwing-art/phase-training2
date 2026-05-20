@@ -29,7 +29,8 @@ enum Planner {
         recentlyPicked: Set<Int> = [],
         today: Date = Date(),
         calendar: Calendar = .current,
-        context: GeneratorContext = .empty
+        context: GeneratorContext = .empty,
+        strategy: GeneratorStrategy = .auto
     ) -> WeekPlan {
         let biased = applyFeedbackBias(memory: memory, feedback: previousFeedback, calendar: calendar)
         return generateUnbiased(
@@ -39,7 +40,8 @@ enum Planner {
             recentlyPicked: recentlyPicked,
             today: today,
             calendar: calendar,
-            context: context
+            context: context,
+            strategy: strategy
         )
     }
 
@@ -74,7 +76,8 @@ enum Planner {
         recentlyPicked: Set<Int>,
         today: Date,
         calendar: Calendar,
-        context: GeneratorContext = .empty
+        context: GeneratorContext = .empty,
+        strategy: GeneratorStrategy = .auto
     ) -> WeekPlan {
         let start = calendar.startOfDay(for: today)
         let dates: [Date] = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: start) }
@@ -114,7 +117,7 @@ enum Planner {
         if let overrides {
             for (i, date) in dates.enumerated() where slots[i] == nil {
                 guard let ov = overrides.override(on: date, calendar: calendar) else { continue }
-                slots[i] = makeOverrideSlot(date: date, override: ov, memory: memory, routines: routines, recentlyPicked: recentlyPicked, context: context)
+                slots[i] = makeOverrideSlot(date: date, override: ov, memory: memory, routines: routines, recentlyPicked: recentlyPicked, context: context, strategy: strategy)
             }
         }
 
@@ -183,7 +186,8 @@ enum Planner {
                 slotOffset: entry.idx,
                 liftIndex: entry.kind == .lift ? liftCursor : 0,
                 totalLifts: totalLifts,
-                context: context
+                context: context,
+                strategy: strategy
             )
             if entry.kind == .lift { liftCursor += 1 }
         }
@@ -211,7 +215,8 @@ enum Planner {
         memory: TrainingMemory,
         routines: [BundledRoutineRow],
         recentlyPicked: Set<Int>,
-        context: GeneratorContext = .empty
+        context: GeneratorContext = .empty,
+        strategy: GeneratorStrategy = .auto
     ) -> DayPlan {
         switch override {
         case .rest:
@@ -235,7 +240,8 @@ enum Planner {
                 profile: profile,
                 hashSeed: memory.planInputsHash + "-mob-override",
                 recentlyPicked: recentlyPicked,
-                context: context
+                context: context,
+                strategy: strategy
             )
             return DayPlan(date: date, kind: .mobility,
                            title: workout.title,
@@ -259,7 +265,8 @@ enum Planner {
                 profile: profile,
                 hashSeed: memory.planInputsHash + "-lift-override",
                 recentlyPicked: recentlyPicked,
-                context: context
+                context: context,
+                strategy: strategy
             )
             return DayPlan(date: date, kind: .lift,
                            title: workout.title,
@@ -319,7 +326,8 @@ enum Planner {
         slotOffset: Int,
         liftIndex: Int,
         totalLifts: Int,
-        context: GeneratorContext = .empty
+        context: GeneratorContext = .empty,
+        strategy: GeneratorStrategy = .auto
     ) -> DayPlan {
         switch kind {
         case .lift:
@@ -330,7 +338,8 @@ enum Planner {
                 profile: profile,
                 hashSeed: memory.planInputsHash,
                 recentlyPicked: recentlyPicked,
-                context: context
+                context: context,
+                strategy: strategy
             )
             return DayPlan(
                 date: date,
@@ -345,7 +354,8 @@ enum Planner {
                 profile: profile,
                 hashSeed: memory.planInputsHash + "-mob-\(slotOffset)",
                 recentlyPicked: recentlyPicked,
-                context: context
+                context: context,
+                strategy: strategy
             )
             return DayPlan(
                 date: date,

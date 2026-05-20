@@ -14,7 +14,7 @@ import Foundation
 // MARK: - Top-level
 
 struct TrainingMemory: Codable {
-    var schemaVersion: Int = 4
+    var schemaVersion: Int = 5
 
     // Identity / intent
     var sports: [Sport] = []
@@ -39,6 +39,11 @@ struct TrainingMemory: Codable {
     // Resources / level
     var equipment: [Equipment] = [.bodyweight]
     var experience: ExperienceLevel = .beginner
+    /// Current condition vs experience ceiling. Defaults to .freshStart for
+    /// new installs — the LLM coach uses this as a permanent profile fact
+    /// to dial early-session conservatism. Build 72+: no deterministic
+    /// preset / time window; the coach just reads the signal and reasons.
+    var startingState: StartingState = .freshStart
 
     // About you (optional)
     var age: Int? = nil
@@ -78,6 +83,7 @@ struct TrainingMemory: Codable {
         case availableDays, fixedSportDays        // legacy (build 20-24) — read but dropped on encode
         case sessionMinutes, liftDaysPerWeek
         case equipment, experience
+        case startingState
         case age, gender
         case heightCm, weightKg, usesImperial
         case dislikes, constraints
@@ -123,6 +129,7 @@ struct TrainingMemory: Codable {
         self.liftDaysPerWeek = (try? c.decode(Int.self,            forKey: .liftDaysPerWeek)) ?? 3
         self.equipment       = (try? c.decode([Equipment].self,    forKey: .equipment))       ?? [.bodyweight]
         self.experience      = (try? c.decode(ExperienceLevel.self, forKey: .experience))     ?? .beginner
+        self.startingState   = (try? c.decode(StartingState.self,  forKey: .startingState))   ?? .freshStart
         self.age             =  try? c.decodeIfPresent(Int.self,    forKey: .age)
         self.gender          =  try? c.decodeIfPresent(Gender.self, forKey: .gender)
         self.heightCm        =  try? c.decodeIfPresent(Int.self,    forKey: .heightCm)
@@ -149,6 +156,7 @@ struct TrainingMemory: Codable {
         try c.encode(liftDaysPerWeek, forKey: .liftDaysPerWeek)
         try c.encode(equipment,       forKey: .equipment)
         try c.encode(experience,      forKey: .experience)
+        try c.encode(startingState,   forKey: .startingState)
         try c.encodeIfPresent(age,    forKey: .age)
         try c.encodeIfPresent(gender, forKey: .gender)
         try c.encodeIfPresent(heightCm, forKey: .heightCm)
@@ -421,6 +429,35 @@ enum ExperienceLevel: String, Codable, CaseIterable, Identifiable {
         case .beginner:     return "New to structured training, or returning after a long break"
         case .intermediate: return "1+ year consistent, comfortable with main lifts"
         case .advanced:     return "Multiple years, push close to true limits"
+        }
+    }
+}
+
+/// Build 72 — current condition, independent of experience ceiling.
+/// Drives the calibration-week mechanic: same 7-day baseline window for
+/// everyone, but per-state dialed intensity + soreness messaging. An
+/// advanced lifter returning from injury is `experience=.advanced +
+/// startingState=.returning` — both signals shape programming.
+enum StartingState: String, Codable, CaseIterable, Identifiable {
+    case freshStart        = "fresh_start"
+    case returning         = "returning"
+    case currentlyTraining = "currently_training"
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .freshStart:        return "Just starting out"
+        case .returning:         return "Coming back"
+        case .currentlyTraining: return "Actively training"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .freshStart:        return "Never trained, or > 12 months off"
+        case .returning:         return "Lifted before but ≥ 3 months off"
+        case .currentlyTraining: return "Trained in the last 3 months"
         }
     }
 }
