@@ -102,27 +102,29 @@ struct WeekScreen: View {
 
     // MARK: - Content
 
+    /// Static Mon→Sun layout — no ScrollView, no LazyVStack. Seven rows are
+    /// always visible at fixed positions so muscle memory is "row 3 = Wed".
+    /// DayRow vertical padding + reason lineLimit are tuned so the full week
+    /// fits on iPhone 14+ in portrait without clipping.
     private func content(plan: WeekPlan) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                header(plan: plan)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 24)
-                    .padding(.bottom, 18)
-
-                VStack(spacing: 10) {
-                    ForEach(plan.days) { day in
-                        DraggableDayRow(
-                            day: day,
-                            isToday: isToday(day.date),
-                            onTap: { editingDate = day.date }
-                        )
-                    }
-                }
+        VStack(alignment: .leading, spacing: 0) {
+            header(plan: plan)
                 .padding(.horizontal, 20)
+                .padding(.top, 20)
+                .padding(.bottom, 14)
 
-                Spacer().frame(height: 32)
+            VStack(spacing: 8) {
+                ForEach(plan.days) { day in
+                    DraggableDayRow(
+                        day: day,
+                        isToday: isToday(day.date),
+                        onTap: { editingDate = day.date }
+                    )
+                }
             }
+            .padding(.horizontal, 20)
+
+            Spacer(minLength: 0)
         }
     }
 
@@ -289,14 +291,14 @@ private struct DayRow: View {
                     Text(reason)
                         .font(.monoXS)
                         .foregroundStyle(Color.ink3)
-                        .lineLimit(2)
+                        .lineLimit(1)
                 }
             }
 
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 14)
+        .padding(.vertical, 10)
         .background(isTargeted ? Color.accentWash : (isToday ? Color.accentWash : Color.surface))
         .overlay(alignment: .leading) {
             if isToday {
