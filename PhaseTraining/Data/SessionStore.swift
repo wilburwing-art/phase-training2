@@ -1,74 +1,87 @@
-// SessionStore.swift — UserDefaults-backed persistence + state helpers.
-// Ports `handoff/proto/data.jsx` localStorage layer + createSession / sessionStats helpers.
+// SessionStore.swift — saved-history persistence + active-session helpers.
+//
+// Saved sessions live in `user.db` via UserDatabase (sessions →
+// session_exercises → session_sets, indexed on template_id and exercise
+// name). The hot autosave path for the in-flight session stays on
+// `pt_active_session` in UserDefaults — atomic JSON replace is fine there
+// and we don't want SQLite write amplification on every keystroke.
+//
+// On first launch after this build, any pre-existing `pt_sessions`
+// UserDefaults JSON blob is imported into user.db and the key is cleared.
 
 import Foundation
 import Combine
 
 final class SessionStore: ObservableObject {
     private static let activeKey = "pt_active_session"
-    private static let savedKey  = "pt_sessions"
+    private static let legacySavedKey = "pt_sessions"
+    private static let savedMigrationFlag = "pt_sessions_migrated_v1"
 
     @Published var savedSessions: [SavedSession]
     @Published var active: ActiveSession?
 
     private let defaults: UserDefaults
+    private let userDB: UserDatabase
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = .standard, userDB: UserDatabase? = nil) {
         self.defaults = defaults
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .secondsSince1970
+        let resolvedDB = userDB ?? UserDatabase.defaultStore()
+        self.userDB = resolvedDB
 
-        if let data = defaults.data(forKey: Self.savedKey),
-           let sessions = try? decoder.decode([SavedSession].self, from: data) {
-            self.savedSessions = sessions
-        } else {
-            self.savedSessions = []
-        }
+        Self.migrateLegacySessionsIfNeeded(defaults: defaults, userDB: resolvedDB)
+        self.savedSessions = resolvedDB.listSavedSessions()
 
         if let data = defaults.data(forKey: Self.activeKey),
-           let session = try? decoder.decode(ActiveSession.self, from: data) {
+           let session = try? Self.decoder().decode(ActiveSession.self, from: data) {
             self.active = session
         } else {
             self.active = nil
         }
     }
 
-    // MARK: - Encoder/decoder
+    // MARK: - One-shot legacy migration
 
-    private func encoder() -> JSONEncoder {
+    /// Imports the old UserDefaults JSON blob into UserDatabase on first
+    /// launch of the SQLite-backed sessions build. Guarded by a flag so
+    /// reruns are no-ops. The legacy UserDefaults key is removed after a
+    /// successful import.
+    private static func migrateLegacySessionsIfNeeded(defaults: UserDefaults, userDB: UserDatabase) {
+        if defaults.bool(forKey: savedMigrationFlag) { return }
+        defer { defaults.set(true, forKey: savedMigrationFlag) }
+
+        guard let data = defaults.data(forKey: legacySavedKey) else { return }
+        guard let legacy = try? decoder().decode([SavedSession].self, from: data) else { return }
+
+        for session in legacy {
+            userDB.saveSession(session)
+        }
+        defaults.removeObject(forKey: legacySavedKey)
+    }
+
+    // MARK: - Codec
+
+    private static func encoder() -> JSONEncoder {
         let e = JSONEncoder()
         e.dateEncodingStrategy = .secondsSince1970
         return e
     }
 
-    private func decoder() -> JSONDecoder {
+    private static func decoder() -> JSONDecoder {
         let d = JSONDecoder()
         d.dateDecodingStrategy = .secondsSince1970
         return d
     }
 
-    // MARK: - Raw load/save (mirror data.jsx helpers)
-
-    func loadSaved() -> [SavedSession] {
-        guard let data = defaults.data(forKey: Self.savedKey) else { return [] }
-        return (try? decoder().decode([SavedSession].self, from: data)) ?? []
-    }
-
-    func saveAll(_ sessions: [SavedSession]) {
-        savedSessions = sessions
-        if let data = try? encoder().encode(sessions) {
-            defaults.set(data, forKey: Self.savedKey)
-        }
-    }
+    // MARK: - Active session (UserDefaults; hot autosave path)
 
     func loadActive() -> ActiveSession? {
         guard let data = defaults.data(forKey: Self.activeKey) else { return nil }
-        return try? decoder().decode(ActiveSession.self, from: data)
+        return try? Self.decoder().decode(ActiveSession.self, from: data)
     }
 
     func saveActive(_ session: ActiveSession) {
         active = session
-        if let data = try? encoder().encode(session) {
+        if let data = try? Self.encoder().encode(session) {
             defaults.set(data, forKey: Self.activeKey)
         }
     }
@@ -76,6 +89,27 @@ final class SessionStore: ObservableObject {
     func clearActive() {
         active = nil
         defaults.removeObject(forKey: Self.activeKey)
+    }
+
+    // MARK: - Saved sessions (SQLite via UserDatabase)
+
+    /// Replaces the entire saved-history list. Used by Backup restore.
+    func saveAll(_ sessions: [SavedSession]) {
+        userDB.clearAllSessions()
+        for session in sessions {
+            userDB.saveSession(session)
+        }
+        savedSessions = userDB.listSavedSessions()
+    }
+
+    func deleteSession(id: TimeInterval) {
+        userDB.deleteSession(startTime: Date(timeIntervalSince1970: id))
+        savedSessions = userDB.listSavedSessions()
+    }
+
+    func clearSavedSessions() {
+        userDB.clearAllSessions()
+        savedSessions = []
     }
 
     // MARK: - Phase 13f: coach workout-diff applies to a live session
@@ -99,13 +133,11 @@ final class SessionStore: ObservableObject {
     func applyWorkoutDiffToActiveSession(_ diff: WorkoutDiff) -> Bool {
         guard var current = active else { return false }
 
-        // Build a name→LoggedExercise index of what's currently in the session.
         var existing: [String: LoggedExercise] = [:]
         for ex in current.exercises {
             existing[ex.name.lowercased()] = ex
         }
 
-        // Walk the diff.after — same order as the new exercise list.
         var rebuilt: [LoggedExercise] = []
         var consumedNames = Set<String>()
 
@@ -114,19 +146,16 @@ final class SessionStore: ObservableObject {
             consumedNames.insert(key)
 
             if let prior = existing[key] {
-                // Same exercise survives — just refresh target metadata.
                 let reps = Int(gex.reps.prefix(while: { $0.isNumber })) ?? prior.targetReps
                 var updated = prior
                 updated.targetSets = max(1, gex.sets)
                 updated.targetReps = reps
                 updated.rest = gex.restSeconds
-                // Pad sets up if target grew — gives the user empty rows to log into.
                 while updated.sets.count < updated.targetSets {
                     updated.sets.append(LoggedSet(num: updated.sets.count + 1, weight: "", reps: "", rpe: "", done: false))
                 }
                 rebuilt.append(updated)
             } else {
-                // New exercise (swap target). Fresh LoggedExercise with empty sets.
                 let reps = Int(gex.reps.prefix(while: { $0.isNumber })) ?? 8
                 let target = max(1, gex.sets)
                 let sets = (0..<target).map { i in
@@ -146,16 +175,12 @@ final class SessionStore: ObservableObject {
             }
         }
 
-        // Carry forward any exercises NOT in diff.after IF they had logged work.
-        // Lossless: never drop a user's logged sets without their explicit action.
         for (key, ex) in existing where !consumedNames.contains(key) {
             let hadWork = ex.sets.contains(where: { $0.done })
             if hadWork { rebuilt.append(ex) }
         }
 
         current.exercises = rebuilt
-        // Rename the session to match the new workout title — so the next
-        // CompleteScreen recap reflects what the user actually trained.
         current.name = diff.after.title
         saveActive(current)
         return true
@@ -163,20 +188,16 @@ final class SessionStore: ObservableObject {
 
     // MARK: - History rollover
 
-    /// Newest saved session matching `templateId`, or nil. Mirrors `data.jsx:45-48`.
+    /// Newest saved session matching `templateId`, or nil. Indexed query in
+    /// UserDatabase (template_id, start_time DESC) — replaces an O(N) scan.
     func getPreviousSession(templateId: String) -> SavedSession? {
-        return loadSaved()
-            .filter { $0.templateId == templateId }
-            .sorted { $0.startTime > $1.startTime }
-            .first
+        return userDB.previousSession(templateId: templateId)
     }
 
     /// Build a fresh ActiveSession from the named template, pulling prior set
     /// weight + reps forward when available. Mirrors `data.jsx:51-77`.
     func createSession(templateId: String) -> ActiveSession {
         guard let tmpl = WorkoutTemplate.byId(templateId) else {
-            // Match prototype semantics: caller assumes template exists.
-            // Returning an empty session keeps the type total; upstream is hardcoded to upper-1.
             return ActiveSession(
                 templateId: templateId,
                 name: "",
@@ -205,20 +226,15 @@ final class SessionStore: ObservableObject {
 
     /// Shared session-construction body. Pulls prev autofill in two passes:
     ///
-    ///   1. templateId-match — the existing path. Finds the user's last
-    ///      session for THIS template and uses its sets per exercise. Best
-    ///      when the same workout composition repeats weekly.
-    ///   2. cross-template name match — fallback for any exercise that pass
-    ///      1 didn't fill (different templateId, exercise not in the prior
-    ///      template, etc.). Walks `savedSessions` newest-first and pulls
-    ///      the most recent completed sets for that exercise NAME.
+    ///   1. templateId-match — UserDatabase.previousSession on (template_id).
+    ///   2. cross-template name match — UserDatabase.mostRecentExerciseByName
+    ///      for any exercise that pass 1 didn't fill. Walks the indexed
+    ///      (name, session_start DESC) ordering and returns the most recent
+    ///      occurrence that has at least one completed set with weight.
     ///
-    /// Closes leak #2 from the loop audit: the planner-generator pair
-    /// previously couldn't surface "you did 225×5 last week" when the user
-    /// hit Bench Press inside a different generated workout (different
-    /// composition → different stableTemplateId). The autofill column now
-    /// follows the exercise across templates, so progressive-overload
-    /// signal flows even when the workout shape changes week to week.
+    /// Closes leak #2 from the loop audit: progressive-overload signal flows
+    /// even when the workout shape changes week to week. Two indexed lookups
+    /// replace an O(N) + O(N×M) pair of cross-session scans.
     private func buildSession(templateId: String,
                               name: String,
                               category: String,
@@ -226,10 +242,8 @@ final class SessionStore: ObservableObject {
         let templatePrev = getPreviousSession(templateId: templateId)
 
         let logged: [LoggedExercise] = exercises.map { ex in
-            // Pass 1: template-match.
             let templateMatchedEx = templatePrev?.exercises.first(where: { $0.id == ex.id })
-            // Pass 2: cross-template name fallback when pass 1 didn't carry data.
-            let prevEx = templateMatchedEx ?? mostRecentExercise(named: ex.name)
+            let prevEx = templateMatchedEx ?? userDB.mostRecentExerciseByName(ex.name)
 
             let sets: [LoggedSet] = (0..<ex.targetSets).map { i in
                 let prevSet: LoggedSet? = (prevEx?.sets.indices.contains(i) ?? false) ? prevEx?.sets[i] : nil
@@ -265,25 +279,8 @@ final class SessionStore: ObservableObject {
         )
     }
 
-    /// Find the most recent completed-set occurrence of an exercise by NAME,
-    /// across all templates. Case-insensitive. Returns nil when no past
-    /// session has any completed set for this exercise.
-    private func mostRecentExercise(named name: String) -> LoggedExercise? {
-        let lower = name.lowercased()
-        let history = loadSaved().sorted { $0.startTime > $1.startTime }
-        for session in history {
-            for ex in session.exercises where ex.name.lowercased() == lower {
-                // Only fall back to this row if it actually carried completed
-                // sets — otherwise we'd seed the autofill from a skipped slot.
-                if ex.sets.contains(where: { $0.done && !$0.weight.isEmpty }) {
-                    return ex
-                }
-            }
-        }
-        return nil
-    }
-
-    /// Persist a completed session: prepend to savedSessions, clear active.
+    /// Persist a completed session: insert into SQLite, prepend to the
+    /// @Published cache, clear active.
     @discardableResult
     func saveCompleted(_ active: ActiveSession, feel: String?, note: String?) -> SavedSession {
         let endTime = Date()
@@ -299,9 +296,8 @@ final class SessionStore: ObservableObject {
             endTime: endTime,
             duration: duration
         )
-        var next = loadSaved()
-        next.insert(saved, at: 0)
-        saveAll(next)
+        userDB.saveSession(saved)
+        savedSessions.insert(saved, at: 0)
         clearActive()
         return saved
     }
@@ -314,18 +310,16 @@ final class SessionStore: ObservableObject {
     /// CompleteScreen to celebrate before save commits, and by post-save
     /// surfaces.
     ///
-    /// Cross-template (so swapping a routine doesn't reset your PRs) +
-    /// per-rep (a new 5×135 PR is distinct from a 10×95 PR; both stand
-    /// independently). De-duped on the (exercise, reps) pair so a single
-    /// PR doesn't show up multiple times within one session.
+    /// Walks the in-memory `savedSessions` cache. With the SQLite move that
+    /// cache is materialized once at init, but the aggregation itself stays
+    /// in Swift — moving it to SQL is a follow-up if it becomes hot.
     ///
     /// `excludingSessionId` lets a post-save call self-exclude when the
-    /// current session is already in `loadSaved()`.
+    /// current session is already in `savedSessions`.
     func personalRecords(in exercises: [LoggedExercise],
                          excludingSessionId: TimeInterval? = nil) -> [PersonalRecord] {
-        let priors = loadSaved().filter { excludingSessionId == nil || $0.id != excludingSessionId }
+        let priors = savedSessions.filter { excludingSessionId == nil || $0.id != excludingSessionId }
 
-        // best[exerciseName][reps] = max weight observed before this session
         var best: [String: [Int: Double]] = [:]
         for prior in priors {
             for ex in prior.exercises {
@@ -342,7 +336,7 @@ final class SessionStore: ObservableObject {
         }
 
         var out: [PersonalRecord] = []
-        var emitted: Set<String> = []   // dedup key: "name|reps"
+        var emitted: Set<String> = []
         for ex in exercises {
             for set in ex.sets where set.done {
                 let reps = Int(set.reps) ?? 0
@@ -365,15 +359,13 @@ final class SessionStore: ObservableObject {
         return out
     }
 
-    /// All PR events across saved history, newest first. Walks sessions
-    /// oldest→newest keeping a running best-weight-per-(exercise,reps) map
-    /// and emits a `PersonalRecord` (dated to the session's startTime)
-    /// every time a completed set beats the running best. One emission per
-    /// (exercise, reps) pair per session — same dedup rule as
-    /// `personalRecords(in:)`.
+    /// All PR events across saved history, newest first. Walks the in-memory
+    /// `savedSessions` cache oldest→newest keeping a running best-weight-per-
+    /// (exercise,reps) map and emits a `PersonalRecord` every time a
+    /// completed set beats the running best. One emission per (exercise,
+    /// reps) pair per session.
     ///
-    /// Used by ProgressScreen's PR feed + per-exercise sparklines. O(N×M)
-    /// over all stored sets — fine for the local history sizes we expect.
+    /// Used by ProgressScreen's PR feed + per-exercise sparklines.
     func allPersonalRecords() -> [PersonalRecord] {
         let ordered = savedSessions.sorted { $0.startTime < $1.startTime }
         var best: [String: [Int: Double]] = [:]

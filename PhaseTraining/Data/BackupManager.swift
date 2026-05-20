@@ -49,14 +49,17 @@ enum BackupManager {
 
     // MARK: - Encode
 
-    /// Build an envelope by reading every UserDefaults-backed store.
-    static func snapshot(defaults: UserDefaults = .standard) -> BackupEnvelope {
+    /// Build an envelope. Memory / active session / plan / overrides /
+    /// reminder live in UserDefaults; saved sessions + custom routines live
+    /// in `user.db` (UserDatabase) since the SQLite migration.
+    static func snapshot(defaults: UserDefaults = .standard,
+                         userDB: UserDatabase = .shared) -> BackupEnvelope {
         BackupEnvelope(
             exportedAt: Date(),
             memory: decodeIfPresent(defaults: defaults, key: "pt_training_memory"),
-            savedSessions: decodeIfPresent(defaults: defaults, key: "pt_sessions") ?? [],
+            savedSessions: userDB.listSavedSessions(),
             activeSession: decodeIfPresent(defaults: defaults, key: "pt_active_session"),
-            customRoutines: decodeIfPresent(defaults: defaults, key: "pt_custom_routines") ?? [],
+            customRoutines: userDB.listRoutines(),
             plan: decodeIfPresent(defaults: defaults, key: "pt_week_plan"),
             overrides: decodeIfPresent(defaults: defaults, key: "pt_week_overrides"),
             reminderEnabled: defaults.bool(forKey: "pt_weekly_reminder_enabled")
@@ -110,14 +113,24 @@ enum BackupManager {
     /// reload by hand). For the app, the simplest path is to terminate +
     /// re-launch; for unit tests we re-instantiate stores from the same
     /// defaults to verify the round-trip.
-    static func restore(_ envelope: BackupEnvelope, into defaults: UserDefaults) throws {
+    static func restore(_ envelope: BackupEnvelope,
+                        into defaults: UserDefaults,
+                        userDB: UserDatabase = .shared) throws {
         try encodeAndWrite(envelope.memory, defaults: defaults, key: "pt_training_memory")
-        try encodeAndWrite(envelope.savedSessions, defaults: defaults, key: "pt_sessions")
         try encodeAndWrite(envelope.activeSession, defaults: defaults, key: "pt_active_session")
-        try encodeAndWrite(envelope.customRoutines, defaults: defaults, key: "pt_custom_routines")
         try encodeAndWrite(envelope.plan, defaults: defaults, key: "pt_week_plan")
         try encodeAndWrite(envelope.overrides, defaults: defaults, key: "pt_week_overrides")
         defaults.set(envelope.reminderEnabled, forKey: "pt_weekly_reminder_enabled")
+
+        // Customs + saved sessions live in user.db. Restore is destructive.
+        userDB.clearAll()
+        for routine in envelope.customRoutines { userDB.save(routine) }
+        userDB.clearAllSessions()
+        for session in envelope.savedSessions { userDB.saveSession(session) }
+        // Wipe legacy UserDefaults keys so a stale post-migration import path
+        // can never resurrect them. Idempotent.
+        defaults.removeObject(forKey: "pt_sessions")
+        defaults.removeObject(forKey: "pt_custom_routines")
     }
 
     // MARK: - Helpers
