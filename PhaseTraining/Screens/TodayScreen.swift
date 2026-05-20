@@ -169,11 +169,6 @@ struct TodayScreen: View {
                 topBar
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        if planStore.needsRegeneration(for: memoryStore.memory) {
-                            driftBanner
-                                .padding(.horizontal, 20)
-                                .padding(.top, 14)
-                        }
                         if planEndingSoon {
                             planNextWeekPill
                                 .padding(.horizontal, 20)
@@ -248,35 +243,6 @@ struct TodayScreen: View {
         guard !day.protected else { return false }
         guard day.kind == .lift || day.kind == .mobility else { return false }
         return day.generatedWorkout != nil
-    }
-
-    /// Profile drift → "Refresh this week from your new profile" CTA.
-    private var driftBanner: some View {
-        Button {
-            planStore.regenerateWeek(memory: memoryStore.memory)
-            let haptic = UIImpactFeedbackGenerator(style: .medium)
-            haptic.impactOccurred()
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "arrow.clockwise.circle.fill")
-                    .font(.system(size: 18, weight: .regular))
-                    .foregroundStyle(Color.accent)
-                Text("Profile changed — tap to refresh this week.")
-                    .font(.custom("Inter-Regular", size: 13))
-                    .foregroundStyle(Color.ink)
-                Spacer(minLength: 4)
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(Color.ink3)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(Color.accentWash)
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.accentBorder, lineWidth: 0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("today-refresh-week")
     }
 
     /// Always-available "give me a different workout today" affordance. Uses

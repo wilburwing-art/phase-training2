@@ -41,10 +41,6 @@ struct ProfileScreen: View {
                 VStack(alignment: .leading, spacing: 28) {
                     header
 
-                    if planStore.needsRegeneration(for: store.memory) {
-                        driftBanner
-                    }
-
                     planTuningSection
                     Divider().background(Color.lineSoft)
                     sportsSection
@@ -151,44 +147,6 @@ struct ProfileScreen: View {
                     .foregroundStyle(Color.ink3)
             }
         }
-    }
-
-    // MARK: - Drift banner
-
-    /// Shown when the current memory hash doesn't match the saved plan's
-    /// inputs hash — i.e. the user changed something here but the plan still
-    /// reflects the old profile. One-tap refresh regenerates the whole week.
-    private var driftBanner: some View {
-        Button {
-            planStore.regenerateWeek(memory: store.memory)
-            let haptic = UIImpactFeedbackGenerator(style: .medium)
-            haptic.impactOccurred()
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "arrow.clockwise.circle.fill")
-                    .font(.system(size: 22, weight: .regular))
-                    .foregroundStyle(Color.accent)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Plan is out of date")
-                        .font(.custom("SpaceGrotesk-SemiBold", size: 15))
-                        .foregroundStyle(Color.ink)
-                    Text("Tap to regenerate this week from your new profile.")
-                        .font(.custom("Inter-Regular", size: 12))
-                        .foregroundStyle(Color.ink2)
-                }
-                Spacer(minLength: 6)
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color.ink3)
-            }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.accentWash)
-            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.accentBorder, lineWidth: 0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("profile-refresh-plan")
     }
 
     // MARK: - Sections

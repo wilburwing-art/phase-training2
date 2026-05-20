@@ -37,7 +37,18 @@ final class PlanStore: ObservableObject {
     /// context — same behavior as pre-build-66.
     var sessionStore: SessionStore?
 
+    /// Memory feed for the auto-regen subscription (build 69+). When set,
+    /// PlanStore observes the published memory and silently regenerates the
+    /// week whenever the user's profile changes enough to drift
+    /// `planInputsHash`. The drift banner UI on Today / Week / Profile got
+    /// removed in the same change — what used to be "tap to refresh" is
+    /// now invisible.
+    weak var memoryStore: MemoryStore? {
+        didSet { resubscribeToMemory() }
+    }
+
     private let defaults: UserDefaults
+    private var memorySubscription: AnyCancellable?
 
     init(defaults: UserDefaults = .standard, today: Date = Date()) {
         self.defaults = defaults
@@ -79,6 +90,31 @@ final class PlanStore: ObservableObject {
         savePlan()
         recordPickedExercises(in: p)
         return p
+    }
+
+    /// Subscribe to memoryStore.$memory and silently regenerate the plan
+    /// whenever the user's profile changes enough to drift `planInputsHash`.
+    ///
+    /// Replaces the build-26-era drift banners (Today / Week / Profile) that
+    /// required a user tap to apply profile changes to the plan. The hash
+    /// check is cheap; debouncing prevents cascade regens while the user
+    /// edits multiple fields in a row (e.g. age + lift-days + duration).
+    /// We skip when a session is active so a mid-workout profile poke
+    /// doesn't reroll the active template under the user.
+    private func resubscribeToMemory() {
+        memorySubscription?.cancel()
+        memorySubscription = nil
+        guard let memoryStore else { return }
+        memorySubscription = memoryStore.$memory
+            .removeDuplicates { $0.planInputsHash == $1.planInputsHash }
+            .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
+            .sink { [weak self] memory in
+                guard let self else { return }
+                guard memory.onboardedAt != nil else { return }
+                guard self.sessionStore?.active == nil else { return }
+                guard self.needsRegeneration(for: memory) else { return }
+                self.generate(from: memory)
+            }
     }
 
     /// Derive the runtime-history context for the planner. Returns `.empty`

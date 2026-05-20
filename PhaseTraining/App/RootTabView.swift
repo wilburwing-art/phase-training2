@@ -66,12 +66,16 @@ struct RootTabView: View {
                 .presentationBackground(Color.bg)
         }
         .task {
-            // Wire variety memory + session history into PlanStore (kept off
-            // the init so the store stays one-arg constructible for tests +
-            // previews). sessionStore drives the GeneratorContext that gives
-            // the planner runtime-history awareness.
+            // Wire variety memory + session history + memory feed into
+            // PlanStore (kept off the init so the store stays one-arg
+            // constructible for tests + previews).
+            //
+            // sessionStore drives the GeneratorContext (runtime-history).
+            // memoryStore drives the auto-regen subscription — any profile
+            // change that drifts planInputsHash silently rebuilds the week.
             planStore.recentPicks = recentPicks
             planStore.sessionStore = sessionStore
+            planStore.memoryStore = memoryStore
             // One-shot migration for users whose saved plan was composed by
             // the pre-build-36 routine picker. Detects the stale schema and
             // regenerates so they stop seeing bundled sport-themed routines
