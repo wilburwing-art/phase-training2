@@ -536,7 +536,9 @@ struct DayWorkoutPreviewSheet: View {
 }
 
 /// Identifiable wrapper so `.sheet(item:)` can bind to swappingExIdx.
-private struct PreviewSwapIndex: Identifiable {
+// Reused by TodayScreen for its inline swap/edit sheet bindings. Was
+// private when only this sheet needed it.
+struct PreviewSwapIndex: Identifiable {
     let index: Int
     var id: Int { index }
 }

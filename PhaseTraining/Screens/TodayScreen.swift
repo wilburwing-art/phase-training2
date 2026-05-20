@@ -23,16 +23,23 @@ struct TodayScreen: View {
     @EnvironmentObject var planStore: PlanStore
     @EnvironmentObject var memoryStore: MemoryStore
     @EnvironmentObject var tabSelection: TabSelectionStore
+    @EnvironmentObject var customStore: CustomRoutineStore
 
     let onStart: () -> Void
 
-    /// Drives the edit-preview sheet that opens when the user taps the
-    /// exercise list. Build 80 collapsed regenerate + override + edit into
-    /// this single edit path — the preview sheet lets the user swap any
-    /// exercise from the full library or save the result as a custom
-    /// routine. Override is no longer needed (Save to library covers it);
-    /// regenerate is no longer needed (per-exercise editing covers it).
-    @State private var editingPreview = false
+    // Build 93 — inline editor on Today. The preview-sheet round trip
+    // (tap card → open sheet → edit → close) felt indirect, so swap /
+    // tap-to-edit / add / reorder all happen directly on Today's exercise
+    // list now. `editableTemplate` is the in-flight, mutation-applied copy
+    // of `template`; `didModify` flips true on any edit so the
+    // "Save to library" pill knows when to surface.
+    @State private var editableTemplate: WorkoutTemplate?
+    @State private var didModify: Bool = false
+    @State private var swappingExIdx: Int?
+    @State private var editingExIdx: Int?
+    @State private var addingExercise: Bool = false
+    @State private var inlineDetailExercise: Exercise?
+    @State private var didSaveToLibrary: Bool = false
 
     // MARK: - Derived state
 
@@ -180,21 +187,23 @@ struct TodayScreen: View {
                             .padding(.horizontal, 20)
                             .padding(.top, planEndingSoon ? 14 : 24)
                         if let caption = heroCaption {
-                            InsightCard(
-                                body: caption,
-                                coachFollowUp: "Tell me more: \(caption)"
-                            )
-                            .padding(.horizontal, 20)
-                            .padding(.top, 12)
+                            heroCaptionView(caption)
+                                .padding(.horizontal, 20)
+                                .padding(.top, 8)
                         }
                         if effectiveKind.isWorkout {
                             lastSessionCard
                                 .padding(.horizontal, 20)
                                 .padding(.top, 20)
-                            if let template {
-                                editableExerciseList(template)
+                            if let tmpl = editableTemplate {
+                                inlineExerciseCard(tmpl)
                                     .padding(.horizontal, 20)
                                     .padding(.top, 14)
+                                if didModify {
+                                    saveToLibraryPill
+                                        .padding(.horizontal, 20)
+                                        .padding(.top, 10)
+                                }
                             }
                             PreWorkoutCheckIn()
                                 .padding(.horizontal, 20)
@@ -217,24 +226,41 @@ struct TodayScreen: View {
         }
         .foregroundStyle(Color.ink)
         .preferredColorScheme(.dark)
-        .sheet(isPresented: $editingPreview) {
-            if let day = todayPlan {
-                DayWorkoutPreviewSheet(day: day, onStartSession: {
-                    editingPreview = false
-                    onStart()
-                })
-            }
+        .sheet(item: editingBinding) { wrapped in
+            let ex = editableTemplate?.exercises[wrapped.index]
+            ExerciseEditorSheet(
+                name: ex?.name ?? "Exercise",
+                sets: ex?.targetSets ?? 3,
+                reps: ex?.targetReps ?? 8,
+                rest: ex?.rest ?? 90,
+                rpe: ex?.rpe,
+                tempo: ex?.tempo,
+                onSave: { sets, reps, rest in
+                    updateExercise(at: wrapped.index, sets: sets, reps: reps, rest: rest)
+                }
+            )
         }
-    }
-
-    /// True when tapping the exercise list should open the editable preview.
-    /// We gate on (a) there's a real plan day to pass to the sheet and (b)
-    /// there's no active session — mid-workout editing happens inside the
-    /// log screen, not the preview.
-    private var canEditPreview: Bool {
-        guard todayPlan != nil else { return false }
-        guard store.active == nil else { return false }
-        return effectiveKind == .lift || effectiveKind == .mobility
+        .sheet(item: swappingBinding) { wrapped in
+            let originalName = editableTemplate?.exercises[wrapped.index].name ?? "exercise"
+            let initial = similarFiltersForExercise(at: wrapped.index)
+            ExercisePickerSheet(
+                title: "Replace \(originalName)",
+                initialFilters: initial,
+                onPick: { picked in swapExercise(at: wrapped.index, with: picked) }
+            )
+        }
+        .sheet(isPresented: $addingExercise) {
+            ExercisePickerSheet(
+                title: "Add exercise",
+                onPick: { picked in appendExercise(picked) }
+            )
+        }
+        .sheet(item: $inlineDetailExercise) { ex in
+            ExerciseDetailSheet(exercise: ex)
+        }
+        .onAppear {
+            if editableTemplate == nil { editableTemplate = template }
+        }
     }
 
     private var planNextWeekPill: some View {
@@ -369,89 +395,311 @@ struct TodayScreen: View {
         return "\(formatDuration(prev.duration)) · \(stats.doneSets) sets · avg rpe \(stats.avgRpe)"
     }
 
-    // MARK: - Exercise list
+    // MARK: - Inline editable exercise card (build 93)
 
-    /// Editable wrapper around `exerciseList`. Tapping anywhere on the card
-    /// opens the editable preview sheet (where the user can swap, save to
-    /// library, etc). Falls back to read-only on edge cases the preview
-    /// sheet can't handle (no plan day, active session in progress).
-    @ViewBuilder
-    private func editableExerciseList(_ template: WorkoutTemplate) -> some View {
-        if canEditPreview {
-            Button { editingPreview = true } label: {
-                VStack(alignment: .leading, spacing: 0) {
-                    HStack {
-                        Text("TODAY'S EXERCISES")
-                            .styled(.micro)
-                            .foregroundStyle(Color.ink3)
-                        Spacer()
-                        Image(systemName: "pencil")
-                            .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(Color.ink3)
-                        Text("EDIT")
-                            .styled(.micro)
-                            .foregroundStyle(Color.ink3)
-                    }
-                    .padding(.bottom, 8)
-
-                    exerciseRows(template)
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("today-edit-workout")
-        } else {
-            VStack(alignment: .leading, spacing: 0) {
+    /// Today's exercise list as a directly-editable card: tap a row to
+    /// adjust sets/reps/rest, tap swap to replace, tap info to inspect,
+    /// long-press the ☰ handle to drag-reorder. The Add Exercise row
+    /// appends to the end. All mutations flow through `editableTemplate`
+    /// so Start consumes the edited shape.
+    private func inlineExerciseCard(_ tmpl: WorkoutTemplate) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
                 Text("TODAY'S EXERCISES")
                     .styled(.micro)
                     .foregroundStyle(Color.ink3)
-                    .padding(.bottom, 8)
-                exerciseRows(template)
+                Spacer()
+                Text("\(tmpl.exercises.count)")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
             }
-        }
-    }
+            .padding(.horizontal, 14)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
 
-    private func exerciseRows(_ template: WorkoutTemplate) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ForEach(Array(template.exercises.enumerated()), id: \.element.id) { idx, ex in
-                exerciseRow(index: idx, ex: ex)
-                if idx < template.exercises.count - 1 {
+            VStack(spacing: 0) {
+                ForEach(Array(tmpl.exercises.enumerated()), id: \.element.id) { idx, ex in
+                    inlineExerciseRow(ex, position: idx + 1)
                     Rectangle()
                         .fill(Color.lineSoft)
                         .frame(height: 0.5)
                 }
+                inlineAddExerciseRow
             }
         }
+        .background(Color.surface)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    private func exerciseRow(index: Int, ex: ExerciseTemplate) -> some View {
+    private func inlineExerciseRow(_ ex: ExerciseTemplate, position: Int) -> some View {
         let prevEx = previous?.exercises.first(where: { $0.id == ex.id })
         let prevW = prevEx?.sets.first?.weight ?? ""
         let middle = prevW.isEmpty ? "no prev" : "\(prevW) \(ex.unit)"
-        return HStack(alignment: .center, spacing: 12) {
-            Text(String(format: "%02d", index + 1))
-                .font(.monoXS)
-                .foregroundStyle(Color.ink3)
-                .frame(width: 20, alignment: .trailing)
 
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text(ex.name)
-                        .styled(.displayS)
-                        .foregroundStyle(Color.ink)
-                    if let t = ex.type {
-                        Text("(\(t))")
+        return HStack(spacing: 10) {
+            // Drag handle — long-press + drag to reorder. Purely visual;
+            // the .draggable modifier on the whole row owns the gesture.
+            Image(systemName: "line.3.horizontal")
+                .font(.system(size: 12))
+                .foregroundStyle(Color.ink3.opacity(0.7))
+                .frame(width: 14)
+
+            // Tappable text section → edit sets/reps/rest.
+            Button {
+                editingExIdx = position - 1
+            } label: {
+                HStack(spacing: 10) {
+                    Text(String(format: "%02d", position))
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                        .frame(width: 18, alignment: .leading)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(ex.name)
+                            .font(.custom("Inter-Regular", size: 14))
+                            .foregroundStyle(Color.ink)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                        Text("\(ex.targetSets) × \(ex.targetReps) · \(middle) · rest \(ex.rest)s")
                             .font(.monoXS)
                             .foregroundStyle(Color.ink3)
                     }
+                    Spacer(minLength: 0)
                 }
-                Text("\(ex.targetSets) sets · \(middle) · \(ex.targetReps) reps")
-                    .font(.monoXS)
-                    .foregroundStyle(Color.ink3)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
-            Spacer(minLength: 0)
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("today-edit-\(position)")
+
+            Button {
+                inlineDetailExercise = CoachDatabase.shared
+                    .listExercises(search: ex.name)
+                    .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }
+            } label: {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 15))
+                    .foregroundStyle(Color.ink3)
+                    .frame(width: 30, height: 32)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Show details for \(ex.name)")
+
+            Button {
+                swappingExIdx = position - 1
+            } label: {
+                Image(systemName: "arrow.left.arrow.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Color.ink2)
+                    .frame(width: 30, height: 32)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Swap \(ex.name)")
         }
-        .padding(.vertical, 13)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        // Drag-to-reorder. .draggable provides the payload (exercise id);
+        // each row is also a .dropDestination accepting that id. iOS shows
+        // a hover preview during the drag automatically.
+        .draggable(ex.id) {
+            Text(ex.name)
+                .font(.custom("Inter-Regular", size: 14))
+                .foregroundStyle(Color.ink)
+                .padding(10)
+                .background(Color.surface)
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.accent, lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+        .dropDestination(for: String.self) { droppedIds, _ in
+            guard let dropped = droppedIds.first else { return false }
+            return reorderByDrop(draggedExerciseId: dropped, ontoIndex: position - 1)
+        }
+    }
+
+    private var inlineAddExerciseRow: some View {
+        Button {
+            addingExercise = true
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "plus.circle")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(Color.accent)
+                    .frame(width: 14)
+                Text("Add exercise")
+                    .font(.custom("Inter-Regular", size: 14))
+                    .foregroundStyle(Color.accent)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("today-add-exercise")
+    }
+
+    private var saveToLibraryPill: some View {
+        Button(action: saveCurrentTemplateToLibrary) {
+            HStack(spacing: 6) {
+                Image(systemName: didSaveToLibrary ? "checkmark" : "tray.and.arrow.down")
+                    .font(.system(size: 12, weight: .semibold))
+                Text(didSaveToLibrary ? "Saved to library" : "Save changes to library")
+                    .styled(.micro)
+                Spacer(minLength: 0)
+                if !didSaveToLibrary {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10, weight: .semibold))
+                }
+            }
+            .foregroundStyle(didSaveToLibrary ? Color.ok : Color.accent)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(Color.surface)
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(.plain)
+        .disabled(didSaveToLibrary)
+        .accessibilityIdentifier("today-save-library")
+    }
+
+    // MARK: - Mutators + helpers
+
+    private var swappingBinding: Binding<PreviewSwapIndex?> {
+        Binding(
+            get: { swappingExIdx.map(PreviewSwapIndex.init) },
+            set: { swappingExIdx = $0?.index }
+        )
+    }
+
+    private var editingBinding: Binding<PreviewSwapIndex?> {
+        Binding(
+            get: { editingExIdx.map(PreviewSwapIndex.init) },
+            set: { editingExIdx = $0?.index }
+        )
+    }
+
+    private func updateExercise(at idx: Int, sets: Int, reps: Int, rest: Int) {
+        guard let tmpl = editableTemplate, tmpl.exercises.indices.contains(idx) else { return }
+        let old = tmpl.exercises[idx]
+        var newExercises = tmpl.exercises
+        newExercises[idx] = ExerciseTemplate(
+            id: old.id, name: old.name, type: old.type, unit: old.unit,
+            targetSets: sets, targetReps: reps, rest: rest,
+            rpe: old.rpe, tempo: old.tempo
+        )
+        editableTemplate = WorkoutTemplate(id: tmpl.id, name: tmpl.name, category: tmpl.category, exercises: newExercises)
+        didModify = true
+        didSaveToLibrary = false
+    }
+
+    private func swapExercise(at idx: Int, with picked: Exercise) {
+        guard let tmpl = editableTemplate, tmpl.exercises.indices.contains(idx) else { return }
+        let old = tmpl.exercises[idx]
+        var newExercises = tmpl.exercises
+        newExercises[idx] = ExerciseTemplate(
+            id: old.id, name: picked.name, type: picked.modality, unit: old.unit,
+            targetSets: picked.defaultSets ?? old.targetSets,
+            targetReps: parseRepsLeading(picked.defaultReps) ?? old.targetReps,
+            rest: parseRestSeconds(picked.defaultRest) ?? old.rest
+        )
+        editableTemplate = WorkoutTemplate(id: tmpl.id, name: tmpl.name, category: tmpl.category, exercises: newExercises)
+        didModify = true
+        didSaveToLibrary = false
+    }
+
+    private func appendExercise(_ picked: Exercise) {
+        guard let tmpl = editableTemplate else { return }
+        let newEx = ExerciseTemplate(
+            id: "added-\(UUID().uuidString)",
+            name: picked.name,
+            type: picked.modality,
+            unit: "lbs",
+            targetSets: picked.defaultSets ?? 3,
+            targetReps: parseRepsLeading(picked.defaultReps) ?? 8,
+            rest: parseRestSeconds(picked.defaultRest) ?? 90
+        )
+        editableTemplate = WorkoutTemplate(id: tmpl.id, name: tmpl.name, category: tmpl.category, exercises: tmpl.exercises + [newEx])
+        didModify = true
+        didSaveToLibrary = false
+    }
+
+    /// Drag-and-drop reorder: when a row is dropped onto position `toIdx`,
+    /// the dragged row lands at that slot. Returns true if anything moved.
+    private func reorderByDrop(draggedExerciseId: String, ontoIndex toIdx: Int) -> Bool {
+        guard let tmpl = editableTemplate,
+              let fromIdx = tmpl.exercises.firstIndex(where: { $0.id == draggedExerciseId }),
+              fromIdx != toIdx else { return false }
+        var newExercises = tmpl.exercises
+        let item = newExercises.remove(at: fromIdx)
+        let insertAt = toIdx > fromIdx ? toIdx - 1 : toIdx
+        newExercises.insert(item, at: insertAt)
+        editableTemplate = WorkoutTemplate(id: tmpl.id, name: tmpl.name, category: tmpl.category, exercises: newExercises)
+        didModify = true
+        didSaveToLibrary = false
+        return true
+    }
+
+    /// Compute "similar exercises" filters for the swap picker — same
+    /// muscle bucket AND same movement category as the source. Mirrors the
+    /// helper on DayWorkoutPreviewSheet so both surfaces filter the same way.
+    private func similarFiltersForExercise(at idx: Int) -> ExerciseFilters {
+        var filters = ExerciseFilters()
+        guard let tmpl = editableTemplate, tmpl.exercises.indices.contains(idx) else { return filters }
+        let name = tmpl.exercises[idx].name
+        guard let dbEx = CoachDatabase.shared.listExercises(search: name)
+                .first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame }) else { return filters }
+        let muscles = CoachDatabase.shared.musclesForExercise(dbEx.id).sorted { lhs, rhs in
+            let rank: (String) -> Int = { r in r == "primary" ? 0 : (r == "secondary" ? 1 : 2) }
+            return rank(lhs.role) < rank(rhs.role)
+        }
+        for entry in muscles {
+            if let bucket = MuscleBucket.bucket(forSlug: entry.slug) { filters.bucket = bucket; break }
+        }
+        for slug in CoachDatabase.shared.patternsForExercise(dbEx.id) {
+            if let cat = MovementCategory.category(forSlug: slug) { filters.category = cat; break }
+        }
+        return filters
+    }
+
+    private func saveCurrentTemplateToLibrary() {
+        guard let tmpl = editableTemplate, !tmpl.exercises.isEmpty else { return }
+        let routine = CustomRoutine(
+            id: UUID().uuidString,
+            name: tmpl.name,
+            exercises: tmpl.exercises.enumerated().map { idx, ex in
+                CustomRoutineExercise(
+                    id: UUID().uuidString,
+                    exerciseId: CoachDatabase.shared
+                        .listExercises(search: ex.name)
+                        .first(where: { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame })?.id ?? 0,
+                    name: ex.name,
+                    position: idx + 1,
+                    sets: ex.targetSets,
+                    reps: String(ex.targetReps),
+                    rest: "\(ex.rest)s",
+                    notes: nil
+                )
+            },
+            createdAt: Date()
+        )
+        customStore.save(routine)
+        didSaveToLibrary = true
+    }
+
+    private func parseRepsLeading(_ s: String?) -> Int? {
+        guard let s else { return nil }
+        let digits = s.prefix(while: { $0.isNumber })
+        return Int(digits)
+    }
+
+    private func parseRestSeconds(_ s: String?) -> Int? {
+        guard let s else { return nil }
+        let lower = s.lowercased()
+        let digits = lower.prefix(while: { $0.isNumber })
+        guard let n = Int(digits) else { return nil }
+        if lower.contains("min") { return n * 60 }
+        return n
     }
 
     // MARK: - Buttons
@@ -486,8 +734,15 @@ struct TodayScreen: View {
     }
 
     private func startWorkout() {
-        if store.active == nil, let template {
-            store.saveActive(store.createSession(from: template))
+        // Use the inline-edited template if the user touched it; otherwise
+        // fall back to the original computed template. Either way the
+        // active session is created from what the user actually sees.
+        if store.active == nil {
+            if let tmpl = editableTemplate {
+                store.saveActive(store.createSession(from: tmpl))
+            } else if let tmpl = template {
+                store.saveActive(store.createSession(from: tmpl))
+            }
         }
         onStart()
     }
@@ -534,6 +789,7 @@ struct TodayScreen: View {
         .environmentObject(plan)
         .environmentObject(MemoryStore(defaults: defaults))
         .environmentObject(TabSelectionStore())
+        .environmentObject(CustomRoutineStore(defaults: defaults))
 }
 
 #Preview("No plan (fallback)") {
@@ -545,4 +801,5 @@ struct TodayScreen: View {
         .environmentObject(PlanStore(defaults: defaults))
         .environmentObject(MemoryStore(defaults: defaults))
         .environmentObject(TabSelectionStore())
+        .environmentObject(CustomRoutineStore(defaults: defaults))
 }
