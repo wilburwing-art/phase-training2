@@ -58,11 +58,14 @@ struct DayWorkoutPreviewSheet: View {
             }
             .sheet(item: swappingBinding) { wrapped in
                 let originalName = template?.exercises[wrapped.index].name ?? "exercise"
-                // Full library picker (search + modality filter) instead of
-                // the curated ~5-10 SubstituteExerciseSheet pairs. Users
-                // explicitly asked to swap from the whole catalog.
+                // Pre-filter the picker to the source exercise's primary
+                // muscle bucket so the user doesn't have to re-find "ok this
+                // was a chest move, show me chest." Falls back to no filter
+                // if the muscle data is missing.
+                let initialBucket = primaryBucketForExercise(at: wrapped.index)
                 ExercisePickerSheet(
                     title: "Replace \(originalName)",
+                    initialBucket: initialBucket,
                     onPick: { picked in
                         swapExercise(at: wrapped.index, with: picked)
                     }
@@ -253,6 +256,30 @@ struct DayWorkoutPreviewSheet: View {
             get: { swappingExIdx.map(PreviewSwapIndex.init) },
             set: { swappingExIdx = $0?.index }
         )
+    }
+
+    /// Find the source exercise's primary muscle bucket so the picker can
+    /// pre-filter to the same body area. Returns nil if the exercise can't
+    /// be resolved in coach.db (custom routines, mostly) or if its muscle
+    /// data doesn't map to any of the 11 chip buckets.
+    private func primaryBucketForExercise(at idx: Int) -> MuscleBucket? {
+        guard let tmpl = template, tmpl.exercises.indices.contains(idx) else { return nil }
+        let name = tmpl.exercises[idx].name
+        guard let dbEx = CoachDatabase.shared
+                .listExercises(search: name)
+                .first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame })
+        else { return nil }
+        let muscles = CoachDatabase.shared.musclesForExercise(dbEx.id)
+        // Prefer primary role, then secondary. First slug that maps to a
+        // known bucket wins.
+        let ordered = muscles.sorted { lhs, rhs in
+            let rank: (String) -> Int = { r in r == "primary" ? 0 : (r == "secondary" ? 1 : 2) }
+            return rank(lhs.role) < rank(rhs.role)
+        }
+        for entry in ordered {
+            if let bucket = MuscleBucket.bucket(forSlug: entry.slug) { return bucket }
+        }
+        return nil
     }
 
     private func swapExercise(at idx: Int, with picked: Exercise) {

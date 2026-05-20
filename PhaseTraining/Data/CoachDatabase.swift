@@ -176,6 +176,107 @@ final class CoachDatabase {
         return out
     } }
 
+    /// Unified search used by the new filter UI. All filter params are
+    /// optional and AND-ed together. muscleSlugs / patternSlugs are slug
+    /// arrays from MuscleBucket.memberSlugs / MovementCategory.memberPatternSlugs
+    /// — they expand to EXISTS subqueries that match if ANY member slug hits
+    /// (within a bucket, the slugs are OR-ed; the bucket itself is AND-ed
+    /// with other filters).
+    func listExercises(
+        search: String? = nil,
+        muscleSlugs: [String] = [],
+        patternSlugs: [String] = [],
+        modality: String? = nil,
+        difficulty: String? = nil,
+        environment: String? = nil,
+        compoundOnly: Bool? = nil
+    ) -> [Exercise] { withLock {
+        guard let db else { return [] }
+        var sql = """
+        SELECT e.id, e.name, e.slug, e.description, e.instructions, e.cues, e.difficulty, e.modality,
+               e.environment, e.is_compound, e.is_unilateral,
+               e.default_sets, e.default_reps, e.default_rest, e.default_duration,
+               e.regression, e.progression, e.image_url, e.thumbnail_url,
+               e.video_url, e.source_video_attribution
+        FROM exercises e
+        """
+        // Build the WHERE clauses + a parallel ordered list of bound values
+        // (strings or ints) so we can apply them after sqlite3_prepare_v2 in
+        // a single loop. Each entry corresponds to one `?` placeholder.
+        enum Bind { case str(String), int(Int32) }
+        var clauses: [String] = []
+        var binds: [Bind] = []
+
+        if let s = search?.trimmingCharacters(in: .whitespaces), !s.isEmpty {
+            clauses.append("e.name LIKE ?")
+            binds.append(.str("%\(s)%"))
+        }
+        if let m = modality {
+            clauses.append("e.modality = ?")
+            binds.append(.str(m))
+        }
+        if let d = difficulty {
+            clauses.append("e.difficulty = ?")
+            binds.append(.str(d))
+        }
+        if let env = environment {
+            clauses.append("e.environment = ?")
+            binds.append(.str(env))
+        }
+        if let compound = compoundOnly {
+            clauses.append("e.is_compound = ?")
+            binds.append(.int(compound ? 1 : 0))
+        }
+        if !muscleSlugs.isEmpty {
+            // Primary OR secondary role both count — a "Chest" filter should
+            // return bench press (chest=primary) and overhead press (chest=
+            // secondary). Stabilizer is excluded — too tenuous for a
+            // user-facing "this exercise targets X" claim.
+            let placeholders = muscleSlugs.map { _ in "?" }.joined(separator: ",")
+            clauses.append("""
+            EXISTS (
+                SELECT 1 FROM exercise_muscles em
+                JOIN muscle_groups mg ON mg.id = em.muscle_group_id
+                WHERE em.exercise_id = e.id
+                  AND em.role IN ('primary','secondary')
+                  AND mg.slug IN (\(placeholders))
+            )
+            """)
+            for slug in muscleSlugs { binds.append(.str(slug)) }
+        }
+        if !patternSlugs.isEmpty {
+            let placeholders = patternSlugs.map { _ in "?" }.joined(separator: ",")
+            clauses.append("""
+            EXISTS (
+                SELECT 1 FROM exercise_movement_patterns emp
+                JOIN movement_patterns mp ON mp.id = emp.movement_pattern_id
+                WHERE emp.exercise_id = e.id
+                  AND mp.slug IN (\(placeholders))
+            )
+            """)
+            for slug in patternSlugs { binds.append(.str(slug)) }
+        }
+        if !clauses.isEmpty { sql += " WHERE " + clauses.joined(separator: " AND ") }
+        sql += " ORDER BY e.name ASC"
+
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        for (i, b) in binds.enumerated() {
+            let idx = Int32(i + 1)
+            switch b {
+            case .str(let s): sqlite3_bind_text(stmt, idx, s, -1, SQLITE_TRANSIENT)
+            case .int(let n): sqlite3_bind_int(stmt, idx, n)
+            }
+        }
+
+        var out: [Exercise] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            out.append(decodeExercise(stmt))
+        }
+        return out
+    } }
+
     func exercise(id: Int) -> Exercise? { withLock {
         guard let db else { return nil }
         let sql = """

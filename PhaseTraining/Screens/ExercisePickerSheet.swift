@@ -1,31 +1,44 @@
 // ExercisePickerSheet.swift — searchable picker over coach.db exercises.
 //
-// Reusable pick UI backed by CoachDatabase.listExercises. Search by name
-// (server-side LIKE), optional modality filter, info button per row that
-// opens ExerciseDetailSheet so the user can vet before picking. The same
-// component is used by the custom-routine edit sheet (add exercise) and
-// will back the browse entry point in the upcoming library tab.
+// Build 76 reorganization: primary filter is a horizontal-scrolling chip
+// strip of muscle buckets (Chest / Back / Shoulders / ...) which matches
+// how lifters mentally locate exercises. Modality, difficulty, environment,
+// compound/iso, and movement category (Push/Pull/Legs/Core/Conditioning)
+// are demoted to an "All filters" button that opens ExerciseFilterSheet.
+//
+// Used by:
+//  - DayWorkoutPreviewSheet (swap an exercise → opens with the source
+//    exercise's primary muscle bucket pre-selected via initialBucket)
+//  - CustomRoutineEditSheet (add an exercise to a custom routine)
+//  - LibraryScreen Exercises segment (when wired)
 
 import SwiftUI
 
 struct ExercisePickerSheet: View {
     let title: String
+    /// Pre-select a muscle bucket when the sheet opens. Used by the
+    /// swap-from-preview flow to narrow the picker to the same body area as
+    /// the source exercise — saves the user from re-finding "ok I'm swapping
+    /// a chest move, so show me chest."
+    var initialBucket: MuscleBucket? = nil
     let onPick: (Exercise) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var query: String = ""
-    @State private var modality: String? = nil
+    @State private var filters = ExerciseFilters()
     @State private var detailExercise: Exercise? = nil
+    @State private var showingFilterSheet = false
 
     private var results: [Exercise] {
         CoachDatabase.shared.listExercises(
             search: query.isEmpty ? nil : query,
-            modality: modality
+            muscleSlugs: filters.bucket?.memberSlugs ?? [],
+            patternSlugs: filters.category?.memberPatternSlugs ?? [],
+            modality: filters.modality,
+            difficulty: filters.difficulty,
+            environment: filters.environment,
+            compoundOnly: filters.compoundOnly
         )
-    }
-
-    private var modalities: [(modality: String, count: Int)] {
-        CoachDatabase.shared.modalityCounts()
     }
 
     var body: some View {
@@ -34,11 +47,17 @@ struct ExercisePickerSheet: View {
                 Color.bg.ignoresSafeArea()
                 VStack(spacing: 0) {
                     searchBar
-                    modalityChips
+                    muscleBucketChips
+                    filterBar
                     ScrollView {
                         LazyVStack(spacing: 8) {
-                            ForEach(results) { ex in
-                                row(ex)
+                            if results.isEmpty {
+                                Text("No exercises match these filters.")
+                                    .font(.monoXS)
+                                    .foregroundStyle(Color.ink3)
+                                    .padding(.top, 40)
+                            } else {
+                                ForEach(results) { ex in row(ex) }
                             }
                         }
                         .padding(.horizontal, 20)
@@ -58,8 +77,12 @@ struct ExercisePickerSheet: View {
             .sheet(item: $detailExercise) { ex in
                 ExerciseDetailSheet(exercise: ex)
             }
+            .sheet(isPresented: $showingFilterSheet) {
+                ExerciseFilterSheet(filters: $filters)
+            }
         }
         .presentationBackground(Color.bg)
+        .onAppear { filters.bucket = initialBucket }
     }
 
     // MARK: - Pieces
@@ -93,19 +116,49 @@ struct ExercisePickerSheet: View {
         .padding(.top, 12)
     }
 
-    private var modalityChips: some View {
+    private var muscleBucketChips: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                chip("All", selected: modality == nil) { modality = nil }
-                ForEach(modalities, id: \.modality) { mod, _ in
-                    chip(label(for: mod), selected: modality == mod) {
-                        modality = mod
+                chip("All", selected: filters.bucket == nil) { filters.bucket = nil }
+                ForEach(MuscleBucket.allCases) { bucket in
+                    chip(bucket.label, selected: filters.bucket == bucket) {
+                        filters.bucket = (filters.bucket == bucket) ? nil : bucket
                     }
                 }
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 10)
         }
+    }
+
+    private var filterBar: some View {
+        HStack(spacing: 12) {
+            Button {
+                showingFilterSheet = true
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "line.3.horizontal.decrease")
+                        .font(.system(size: 12, weight: .medium))
+                    Text(filters.secondaryCount > 0 ? "All filters (\(filters.secondaryCount))" : "All filters")
+                        .styled(.micro)
+                }
+                .foregroundStyle(filters.secondaryCount > 0 ? Color.accentInk : Color.ink2)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(filters.secondaryCount > 0 ? Color.accent : Color.surface)
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(filters.secondaryCount > 0 ? Color.clear : Color.line, lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+
+            Text("\(results.count) \(results.count == 1 ? "exercise" : "exercises")")
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 4)
     }
 
     private func chip(_ label: String, selected: Bool, action: @escaping () -> Void) -> some View {
@@ -120,10 +173,6 @@ struct ExercisePickerSheet: View {
                 .clipShape(RoundedRectangle(cornerRadius: 6))
         }
         .buttonStyle(.plain)
-    }
-
-    private func label(for modality: String) -> String {
-        modality.replacingOccurrences(of: "_", with: " ").capitalized
     }
 
     private func row(_ ex: Exercise) -> some View {

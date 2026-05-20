@@ -3,12 +3,13 @@
 // Restores the browse surface retired in Phase 11: a tab that lets the user
 // explore the exercise + routine library directly instead of only seeing
 // them through generated workouts. Two segments:
-//   - Exercises: name-LIKE search + modality chip filter, opens detail
-//   - Routines:  goal chip filter + name search, opens a routine detail
+//   - Exercises: muscle-bucket chip strip (primary) + "All filters" sheet
+//     for movement category / modality / difficulty / environment /
+//     compound-vs-iso. Mirrors ExercisePickerSheet.
+//   - Routines:  custom routines list + Coach-build CTA.
 //
-// Reads CoachDatabase.listExercises / listRoutines / modalityCounts /
-// goalCounts. Pure read view — picking a row opens a detail sheet; no
-// mutations.
+// Reads CoachDatabase.listExercises / listRoutines / goalCounts. Pure read
+// view — picking a row opens a detail sheet; no mutations.
 
 import SwiftUI
 
@@ -28,7 +29,8 @@ struct LibraryScreen: View {
 
     @State private var segment: Segment = .exercises
     @State private var query: String = ""
-    @State private var modality: String? = nil
+    @State private var filters = ExerciseFilters()
+    @State private var showingFilterSheet = false
     @State private var detailExercise: Exercise? = nil
     @State private var showingCoachRequest = false
     @State private var editingRoutine: CustomRoutine? = nil
@@ -63,6 +65,9 @@ struct LibraryScreen: View {
             }
             .sheet(item: $editingRoutine) { routine in
                 CustomRoutineEditSheet(routine: routine)
+            }
+            .sheet(isPresented: $showingFilterSheet) {
+                ExerciseFilterSheet(filters: $filters)
             }
             .sheet(isPresented: $showingCoachRequest) {
                 // Saving from the library is a "create only" path — we never
@@ -127,7 +132,7 @@ struct LibraryScreen: View {
                 Button {
                     segment = seg
                     query = ""
-                    modality = nil
+                    filters = ExerciseFilters()
                 } label: {
                     Text(seg.label)
                         .styled(.micro)
@@ -178,19 +183,46 @@ struct LibraryScreen: View {
 
     // MARK: - Filter chips (exercises segment only)
 
+    @ViewBuilder
     private var filterChips: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                chip("All", selected: modality == nil) { modality = nil }
-                ForEach(CoachDatabase.shared.modalityCounts(), id: \.modality) { mod, count in
-                    chip("\(formatTag(mod)) · \(count)", selected: modality == mod) {
-                        modality = mod
+        VStack(spacing: 0) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    chip("All", selected: filters.bucket == nil) { filters.bucket = nil }
+                    ForEach(MuscleBucket.allCases) { bucket in
+                        chip(bucket.label, selected: filters.bucket == bucket) {
+                            filters.bucket = (filters.bucket == bucket) ? nil : bucket
+                        }
                     }
                 }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 10)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 10)
+            allFiltersBar
         }
+    }
+
+    private var allFiltersBar: some View {
+        HStack(spacing: 12) {
+            Button { showingFilterSheet = true } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "line.3.horizontal.decrease")
+                        .font(.system(size: 12, weight: .medium))
+                    Text(filters.secondaryCount > 0 ? "All filters (\(filters.secondaryCount))" : "All filters")
+                        .styled(.micro)
+                }
+                .foregroundStyle(filters.secondaryCount > 0 ? Color.accentInk : Color.ink2)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(filters.secondaryCount > 0 ? Color.accent : Color.surface)
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(filters.secondaryCount > 0 ? Color.clear : Color.line, lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+            .buttonStyle(.plain)
+            Spacer()
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 4)
     }
 
     private func chip(_ label: String, selected: Bool, action: @escaping () -> Void) -> some View {
@@ -207,10 +239,6 @@ struct LibraryScreen: View {
         .buttonStyle(.plain)
     }
 
-    private func formatTag(_ s: String) -> String {
-        s.replacingOccurrences(of: "_", with: " ").capitalized
-    }
-
     // MARK: - List
 
     @ViewBuilder
@@ -219,7 +247,12 @@ struct LibraryScreen: View {
         case .exercises:
             let rows = CoachDatabase.shared.listExercises(
                 search: query.isEmpty ? nil : query,
-                modality: modality
+                muscleSlugs: filters.bucket?.memberSlugs ?? [],
+                patternSlugs: filters.category?.memberPatternSlugs ?? [],
+                modality: filters.modality,
+                difficulty: filters.difficulty,
+                environment: filters.environment,
+                compoundOnly: filters.compoundOnly
             )
             if rows.isEmpty {
                 searchEmptyState
