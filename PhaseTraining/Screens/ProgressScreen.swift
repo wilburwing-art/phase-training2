@@ -22,8 +22,13 @@ struct ProgressScreen: View {
     @EnvironmentObject private var store: SessionStore
     @EnvironmentObject private var memoryStore: MemoryStore
 
+    /// Build 92: history surfaced from here via "See all sessions" on the
+    /// Recent Sessions card. Previously lived as a tab off the Today screen.
+    @State private var showingHistory = false
+
     private static let weeks = 8
     private static let topExerciseCount = 6
+    private static let recentSessionsPreview = 5
 
     var body: some View {
         ZStack {
@@ -72,10 +77,15 @@ struct ProgressScreen: View {
                 perExerciseCard
                 prFeedCard
                 feedbackCard
+                recentSessionsCard
                 Spacer().frame(height: 60)
             }
             .padding(.horizontal, 20)
             .padding(.top, 24)
+        }
+        .sheet(isPresented: $showingHistory) {
+            HistoryScreen()
+                .environmentObject(store)
         }
     }
 
@@ -519,6 +529,80 @@ struct ProgressScreen: View {
     }
 
     // MARK: - Card chrome
+
+    // MARK: - Recent sessions card
+
+    /// Replaces the old History tab that hung off TodayScreen. Shows the
+    /// last N sessions inline with a "See all" link that opens the full
+    /// HistoryScreen as a sheet. Keeps Progress as the home for past
+    /// activity instead of orphaning it on a Today affordance.
+    private var recentSessionsCard: some View {
+        let recent = Array(
+            store.savedSessions
+                .sorted { $0.endTime > $1.endTime }
+                .prefix(Self.recentSessionsPreview)
+        )
+        return card(title: "RECENT SESSIONS") {
+            if recent.isEmpty {
+                Text("Complete a workout and it'll show up here.")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(recent.enumerated()), id: \.element.id) { idx, session in
+                        sessionRow(session)
+                        if idx < recent.count - 1 {
+                            Rectangle()
+                                .fill(Color.lineSoft)
+                                .frame(height: 0.5)
+                        }
+                    }
+                }
+
+                Button {
+                    showingHistory = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("See all sessions")
+                            .styled(.micro)
+                            .foregroundStyle(Color.accent)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(Color.accent)
+                    }
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 6)
+                .accessibilityIdentifier("progress-see-all-sessions")
+            }
+        }
+    }
+
+    private func sessionRow(_ session: SavedSession) -> some View {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        return HStack(spacing: 10) {
+            Text(f.string(from: session.endTime).uppercased())
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+                .frame(width: 56, alignment: .leading)
+            Text(session.name)
+                .font(.custom("Inter-Regular", size: 13))
+                .foregroundStyle(Color.ink)
+                .lineLimit(1)
+            Spacer(minLength: 6)
+            Text(formatSessionDuration(session.duration))
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+        }
+        .padding(.vertical, 10)
+    }
+
+    private func formatSessionDuration(_ seconds: Int) -> String {
+        let h = seconds / 3600
+        let m = (seconds % 3600) / 60
+        return h > 0 ? "\(h)h \(m)m" : "\(m) min"
+    }
 
     private func card<C: View>(title: String, @ViewBuilder content: () -> C) -> some View {
         VStack(alignment: .leading, spacing: 12) {

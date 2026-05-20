@@ -5,7 +5,10 @@ import SwiftUI
 
 struct HistoryScreen: View {
     @EnvironmentObject var store: SessionStore
-    let onBack: () -> Void
+    /// Build 92: now presented as a sheet from the Progress tab's "See
+    /// all" link, not pushed from TodayTab. Uses Environment dismiss so
+    /// it works in any presentation context.
+    @Environment(\.dismiss) private var dismiss
 
     @State private var expanded: Set<TimeInterval> = []
     @State private var editingSession: SavedSession?
@@ -41,7 +44,7 @@ struct HistoryScreen: View {
                 .foregroundColor(.ink)
 
             HStack {
-                Button(action: onBack) {
+                Button { dismiss() } label: {
                     Text("‹ Back")
                         .styled(.body)
                         .foregroundColor(.ink2)
@@ -427,7 +430,7 @@ struct HistoryScreen: View {
 
     store.saveAll([recent, older])
 
-    return HistoryScreen(onBack: {})
+    return HistoryScreen()
         .environmentObject(store)
         .preferredColorScheme(.dark)
 }
