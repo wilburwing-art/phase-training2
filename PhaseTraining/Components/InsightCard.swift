@@ -45,16 +45,28 @@ struct InsightCard: View {
 
     private func cardContent(text: String, hint: String?) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .top, spacing: 8) {
+            // Header row: "✨ COACH" label — same accent treatment as a
+            // section header. Sets the card up to read as the coach's
+            // voice rather than a generic tooltip.
+            HStack(spacing: 6) {
                 Image(systemName: "sparkles")
                     .font(.system(size: 11))
                     .foregroundStyle(Color.accent)
-                    .padding(.top, 2)
-                Text(text)
-                    .font(.monoXS)
-                    .foregroundStyle(Color.ink2)
-                    .fixedSize(horizontal: false, vertical: true)
+                Text("COACH")
+                    .styled(.micro)
+                    .foregroundStyle(Color.accent)
+                    .tracking(1)
+                Spacer(minLength: 0)
             }
+
+            // Body — Inter for readability. monoXS was correct for a small
+            // caption; for a card-sized surface it felt undersized.
+            Text(text)
+                .font(.custom("Inter-Regular", size: 14))
+                .foregroundStyle(Color.ink)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
+
             if let cta = cta {
                 Button(action: cta.action) {
                     HStack(spacing: 4) {
@@ -78,15 +90,15 @@ struct InsightCard: View {
                 }
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.accentWash)
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.accentBorder, lineWidth: 0.5)
         )
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     private func openCoach() {

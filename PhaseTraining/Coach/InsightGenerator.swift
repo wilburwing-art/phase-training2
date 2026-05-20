@@ -93,10 +93,10 @@ enum InsightGenerator {
 
     private static func insightSystemPrompt(snapshot: String) -> String {
         """
-        You write ONE short coaching observation for an iOS workout app. Output rules:
-        - ONE sentence, ≤120 characters, plain text (no markdown, no quotes, no emoji).
-        - OBSERVATION, not advice. Reflect what's in the data; don't tell the user what to do.
-        - Cite something specific from the context (a date, an exercise, a feedback flag) when possible.
+        You write a SHORT coaching observation for an iOS workout app's Today screen. Output rules:
+        - 1 to 2 sentences, ≤240 characters TOTAL, plain text (no markdown, no quotes, no emoji).
+        - OBSERVATION first, then ONE concrete takeaway is okay — but don't be preachy.
+        - Cite something specific from the context (a date, an exercise, soreness flag, sport) when possible.
         - If you have nothing meaningful to say, output the empty string.
 
         CONTEXT:
@@ -119,7 +119,7 @@ enum InsightGenerator {
         if s.count > 140, let lastSentence = s.split(whereSeparator: { ".!?".contains($0) }).map({ String($0).trimmingCharacters(in: .whitespacesAndNewlines) }).last(where: { !$0.isEmpty }) {
             s = lastSentence
         }
-        if s.count > 160 { s = String(s.prefix(160)) }
+        if s.count > 280 { s = String(s.prefix(280)) }
         return s
     }
 }

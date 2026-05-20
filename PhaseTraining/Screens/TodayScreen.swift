@@ -25,7 +25,6 @@ struct TodayScreen: View {
     @EnvironmentObject var tabSelection: TabSelectionStore
 
     let onStart: () -> Void
-    let onHistory: () -> Void
 
     /// Drives the edit-preview sheet that opens when the user taps the
     /// exercise list. Build 80 collapsed regenerate + override + edit into
@@ -181,9 +180,12 @@ struct TodayScreen: View {
                             .padding(.horizontal, 20)
                             .padding(.top, planEndingSoon ? 14 : 24)
                         if let caption = heroCaption {
-                            heroCaptionView(caption)
-                                .padding(.horizontal, 20)
-                                .padding(.top, 8)
+                            InsightCard(
+                                body: caption,
+                                coachFollowUp: "Tell me more: \(caption)"
+                            )
+                            .padding(.horizontal, 20)
+                            .padding(.top, 12)
                         }
                         if effectiveKind.isWorkout {
                             lastSessionCard
@@ -204,10 +206,11 @@ struct TodayScreen: View {
                 }
             }
 
-            // Bottom CTA stack
+            // Bottom CTA — single primary action only. Build 91 dropped
+            // the secondary History button; history is accessed elsewhere
+            // (TBD — orphaned in code for now).
             VStack(spacing: 10) {
                 primaryButton
-                historyButton
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 24)
@@ -482,27 +485,6 @@ struct TodayScreen: View {
         .disabled(template == nil)
     }
 
-    private var historyButton: some View {
-        Button(action: onHistory) {
-            HStack(spacing: 6) {
-                Image(systemName: "clock.arrow.circlepath")
-                    .font(.system(size: 12, weight: .medium))
-                Text("HISTORY")
-                    .styled(.micro)
-            }
-            .foregroundStyle(Color.ink2)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(Color.surface)
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(Color.line, lineWidth: 0.5)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 14))
-        }
-        .buttonStyle(.plain)
-    }
-
     private func startWorkout() {
         if store.active == nil, let template {
             store.saveActive(store.createSession(from: template))
@@ -547,7 +529,7 @@ struct TodayScreen: View {
     defaults.removePersistentDomain(forName: suite)
     let plan = PlanStore(defaults: defaults)
     plan.setPlan(.sample())
-    return TodayScreen(onStart: {}, onHistory: {})
+    return TodayScreen(onStart: {})
         .environmentObject(SessionStore(defaults: defaults))
         .environmentObject(plan)
         .environmentObject(MemoryStore(defaults: defaults))
@@ -558,7 +540,7 @@ struct TodayScreen: View {
     let suite = "TodayScreen.preview.fallback"
     let defaults = UserDefaults(suiteName: suite)!
     defaults.removePersistentDomain(forName: suite)
-    return TodayScreen(onStart: {}, onHistory: {})
+    return TodayScreen(onStart: {})
         .environmentObject(SessionStore(defaults: defaults))
         .environmentObject(PlanStore(defaults: defaults))
         .environmentObject(MemoryStore(defaults: defaults))

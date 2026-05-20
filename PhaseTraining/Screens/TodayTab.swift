@@ -12,7 +12,6 @@ struct TodayTab: View {
         case start
         case log
         case complete(ActiveSession)
-        case history
     }
 
     var body: some View {
@@ -34,8 +33,7 @@ struct TodayTab: View {
             // TodayScreen owns its own session-create logic so it can build
             // from today's coach.db routine instead of always upper-1.
             TodayScreen(
-                onStart: { transition(.log) },
-                onHistory: { transition(.history) }
+                onStart: { transition(.log) }
             )
 
         case .log:
@@ -62,9 +60,6 @@ struct TodayTab: View {
                     transition(.start)
                 }
             )
-
-        case .history:
-            HistoryScreen(onBack: { transition(.start) })
         }
     }
 
