@@ -1004,10 +1004,6 @@
     "movement_pattern_id": 15
   },
   {
-    "exercise_id": 405,
-    "movement_pattern_id": 23
-  },
-  {
     "exercise_id": 406,
     "movement_pattern_id": 23
   },
@@ -1104,11 +1100,7 @@
     "movement_pattern_id": 43
   },
   {
-    "exercise_id": 436,
-    "movement_pattern_id": 47
-  },
-  {
-    "exercise_id": 436,
+    "exercise_id": 359,
     "movement_pattern_id": 50
   },
   {
@@ -1228,11 +1220,7 @@
     "movement_pattern_id": 4
   },
   {
-    "exercise_id": 473,
-    "movement_pattern_id": 34
-  },
-  {
-    "exercise_id": 473,
+    "exercise_id": 329,
     "movement_pattern_id": 44
   },
   {
@@ -1844,12 +1832,8 @@
     "movement_pattern_id": 32
   },
   {
-    "exercise_id": 693,
+    "exercise_id": 123,
     "movement_pattern_id": 24
-  },
-  {
-    "exercise_id": 693,
-    "movement_pattern_id": 32
   },
   {
     "exercise_id": 694,

@@ -1435,11 +1435,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 405,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 406,
     "equipment_id": 1,
     "is_required": 1
@@ -1608,11 +1603,6 @@
     "exercise_id": 435,
     "equipment_id": 13,
     "is_required": 0
-  },
-  {
-    "exercise_id": 436,
-    "equipment_id": 52,
-    "is_required": 1
   },
   {
     "exercise_id": 441,
@@ -1792,11 +1782,6 @@
   {
     "exercise_id": 471,
     "equipment_id": 23,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 473,
-    "equipment_id": 1,
     "is_required": 1
   },
   {
@@ -2686,11 +2671,6 @@
   },
   {
     "exercise_id": 692,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 693,
     "equipment_id": 1,
     "is_required": 1
   },

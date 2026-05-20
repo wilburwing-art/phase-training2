@@ -18,14 +18,14 @@
     "substitute_id": 32,
     "context": "low_energy",
     "similarity_score": 0.35,
-    "notes": "Trade heavy pulling for an open-hand dead hang — still trains pulling tension with minimal recovery cost."
+    "notes": "Trade heavy pulling for an open-hand dead hang \u2014 still trains pulling tension with minimal recovery cost."
   },
   {
     "exercise_id": 1,
     "substitute_id": 68,
     "context": "pre_event_safe",
     "similarity_score": 0.3,
-    "notes": "Active hang the day before climbing — decompression without fatigue."
+    "notes": "Active hang the day before climbing \u2014 decompression without fatigue."
   },
   {
     "exercise_id": 2,
@@ -39,7 +39,7 @@
     "substitute_id": 32,
     "context": "low_energy",
     "similarity_score": 0.4,
-    "notes": "Open-hand dead hang — all the shoulder decompression, a fraction of the finger load."
+    "notes": "Open-hand dead hang \u2014 all the shoulder decompression, a fraction of the finger load."
   },
   {
     "exercise_id": 2,
@@ -67,7 +67,7 @@
     "substitute_id": 56,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Endurance variant — same protocol, lower per-hang intensity."
+    "notes": "Endurance variant \u2014 same protocol, lower per-hang intensity."
   },
   {
     "exercise_id": 3,
@@ -158,7 +158,7 @@
     "substitute_id": 9,
     "context": "pre_event_safe",
     "similarity_score": 0.8,
-    "notes": "Seated cable row — same pattern, no spinal loading."
+    "notes": "Seated cable row \u2014 same pattern, no spinal loading."
   },
   {
     "exercise_id": 8,
@@ -200,7 +200,7 @@
     "substitute_id": 21,
     "context": "low_energy",
     "similarity_score": 0.35,
-    "notes": "Band pull-apart — same scap pattern, lighter."
+    "notes": "Band pull-apart \u2014 same scap pattern, lighter."
   },
   {
     "exercise_id": 11,
@@ -277,7 +277,7 @@
     "substitute_id": 21,
     "context": "low_energy",
     "similarity_score": 0.4,
-    "notes": "Band pull-apart — similar antagonist stimulus at a fraction of the demand."
+    "notes": "Band pull-apart \u2014 similar antagonist stimulus at a fraction of the demand."
   },
   {
     "exercise_id": 13,
@@ -438,7 +438,7 @@
     "substitute_id": 1,
     "context": "pre_event_safe",
     "similarity_score": 0.3,
-    "notes": "Weighted pull-up at moderate load is a pre-event option — safer than campus."
+    "notes": "Weighted pull-up at moderate load is a pre-event option \u2014 safer than campus."
   },
   {
     "exercise_id": 47,
@@ -473,7 +473,7 @@
     "substitute_id": 1,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Weighted pull-up — lower velocity, similar strength stimulus."
+    "notes": "Weighted pull-up \u2014 lower velocity, similar strength stimulus."
   },
   {
     "exercise_id": 48,
@@ -557,7 +557,7 @@
     "substitute_id": 4,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Static lock-off — same position, no release."
+    "notes": "Static lock-off \u2014 same position, no release."
   },
   {
     "exercise_id": 51,
@@ -571,7 +571,7 @@
     "substitute_id": 49,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Box jump — similar power, less horizontal deceleration."
+    "notes": "Box jump \u2014 similar power, less horizontal deceleration."
   },
   {
     "exercise_id": 52,
@@ -613,7 +613,7 @@
     "substitute_id": 60,
     "context": "low_energy",
     "similarity_score": 0.75,
-    "notes": "Goblet squat — same pattern, ~40-50% the absolute load."
+    "notes": "Goblet squat \u2014 same pattern, ~40-50% the absolute load."
   },
   {
     "exercise_id": 57,
@@ -662,7 +662,7 @@
     "substitute_id": 58,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Romanian deadlift — same pattern, half the CNS cost."
+    "notes": "Romanian deadlift \u2014 same pattern, half the CNS cost."
   },
   {
     "exercise_id": 59,
@@ -704,7 +704,7 @@
     "substitute_id": 58,
     "context": "lower_intensity",
     "similarity_score": 0.7,
-    "notes": "Romanian deadlift — same pattern, less ballistic CNS demand."
+    "notes": "Romanian deadlift \u2014 same pattern, less ballistic CNS demand."
   },
   {
     "exercise_id": 61,
@@ -732,7 +732,7 @@
     "substitute_id": 60,
     "context": "lower_intensity",
     "similarity_score": 0.65,
-    "notes": "Goblet squat bilateral — slightly less unilateral challenge."
+    "notes": "Goblet squat bilateral \u2014 slightly less unilateral challenge."
   },
   {
     "exercise_id": 64,
@@ -942,7 +942,7 @@
     "substitute_id": 115,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Cable wood chop — same pattern, no throw."
+    "notes": "Cable wood chop \u2014 same pattern, no throw."
   },
   {
     "exercise_id": 115,
@@ -1068,7 +1068,7 @@
     "substitute_id": 62,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Bulgarian split squat — same unilateral quad work."
+    "notes": "Bulgarian split squat \u2014 same unilateral quad work."
   },
   {
     "exercise_id": 129,
@@ -1110,7 +1110,7 @@
     "substitute_id": 62,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Bulgarian split squat — same pattern, no plyo."
+    "notes": "Bulgarian split squat \u2014 same pattern, no plyo."
   },
   {
     "exercise_id": 130,
@@ -1334,7 +1334,7 @@
     "substitute_id": 61,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Kettlebell swing — similar explosive triple extension."
+    "notes": "Kettlebell swing \u2014 similar explosive triple extension."
   },
   {
     "exercise_id": 217,
@@ -1390,7 +1390,7 @@
     "substitute_id": 114,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Medball rotational throw — less explosive."
+    "notes": "Medball rotational throw \u2014 less explosive."
   },
   {
     "exercise_id": 225,
@@ -1467,7 +1467,7 @@
     "substitute_id": 229,
     "context": "lower_intensity",
     "similarity_score": 0.7,
-    "notes": "Cross-over step — similar footwork without the continuous cardio demand."
+    "notes": "Cross-over step \u2014 similar footwork without the continuous cardio demand."
   },
   {
     "exercise_id": 229,
@@ -1488,7 +1488,7 @@
     "substitute_id": 228,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Lateral shuffle — less rotational demand."
+    "notes": "Lateral shuffle \u2014 less rotational demand."
   },
   {
     "exercise_id": 230,
@@ -1509,7 +1509,7 @@
     "substitute_id": 49,
     "context": "lower_intensity",
     "similarity_score": 0.9,
-    "notes": "Box jump — similar vertical demand with landing target."
+    "notes": "Box jump \u2014 similar vertical demand with landing target."
   },
   {
     "exercise_id": 230,
@@ -1530,7 +1530,7 @@
     "substitute_id": 49,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Box jump — removes reactive component."
+    "notes": "Box jump \u2014 removes reactive component."
   },
   {
     "exercise_id": 232,
@@ -1621,7 +1621,7 @@
     "substitute_id": 106,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Copenhagen plank — isometric version."
+    "notes": "Copenhagen plank \u2014 isometric version."
   },
   {
     "exercise_id": 237,
@@ -1747,7 +1747,7 @@
     "substitute_id": 33,
     "context": "low_energy",
     "similarity_score": 0.5,
-    "notes": "Rice bucket — lighter grip tonic."
+    "notes": "Rice bucket \u2014 lighter grip tonic."
   },
   {
     "exercise_id": 302,
@@ -1761,7 +1761,7 @@
     "substitute_id": 304,
     "context": "pre_event_safe",
     "similarity_score": 0.5,
-    "notes": "Wrist isometrics — safer pre-event choice."
+    "notes": "Wrist isometrics \u2014 safer pre-event choice."
   },
   {
     "exercise_id": 303,
@@ -1817,7 +1817,7 @@
     "substitute_id": 103,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Single-leg glute bridge — same pattern, bodyweight."
+    "notes": "Single-leg glute bridge \u2014 same pattern, bodyweight."
   },
   {
     "exercise_id": 305,
@@ -1845,7 +1845,7 @@
     "substitute_id": 61,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Kettlebell swing — same hinge, less technical CNS cost."
+    "notes": "Kettlebell swing \u2014 same hinge, less technical CNS cost."
   },
   {
     "exercise_id": 306,
@@ -1873,7 +1873,7 @@
     "substitute_id": 63,
     "context": "pre_event_safe",
     "similarity_score": 0.5,
-    "notes": "Pallof press — anti-rotation stays pre-event-safe."
+    "notes": "Pallof press \u2014 anti-rotation stays pre-event-safe."
   },
   {
     "exercise_id": 310,
@@ -1943,7 +1943,7 @@
     "substitute_id": 200,
     "context": "low_energy",
     "similarity_score": 0.55,
-    "notes": "Straight-arm pulldown — lighter antagonist stim."
+    "notes": "Straight-arm pulldown \u2014 lighter antagonist stim."
   },
   {
     "exercise_id": 312,
@@ -2041,7 +2041,7 @@
     "substitute_id": 300,
     "context": "low_energy",
     "similarity_score": 0.6,
-    "notes": "Supine neck flexor iso — no band needed."
+    "notes": "Supine neck flexor iso \u2014 no band needed."
   },
   {
     "exercise_id": 317,
@@ -2076,7 +2076,7 @@
     "substitute_id": 58,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Romanian deadlift — same pattern, less front-load core demand."
+    "notes": "Romanian deadlift \u2014 same pattern, less front-load core demand."
   },
   {
     "exercise_id": 327,
@@ -2146,21 +2146,21 @@
     "substitute_id": 17,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Standard reverse wrist curl — same muscle, no eccentric emphasis."
+    "notes": "Standard reverse wrist curl \u2014 same muscle, no eccentric emphasis."
   },
   {
     "exercise_id": 335,
     "substitute_id": 25,
     "context": "low_energy",
     "similarity_score": 0.55,
-    "notes": "Finger extensor band — lighter load same direction."
+    "notes": "Finger extensor band \u2014 lighter load same direction."
   },
   {
     "exercise_id": 335,
     "substitute_id": 337,
     "context": "pre_event_safe",
     "similarity_score": 0.7,
-    "notes": "Isometric wrist extension hold — pre-event-safe alternative."
+    "notes": "Isometric wrist extension hold \u2014 pre-event-safe alternative."
   },
   {
     "exercise_id": 336,
@@ -2216,14 +2216,14 @@
     "substitute_id": 25,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Finger extensor band — classic version."
+    "notes": "Finger extensor band \u2014 classic version."
   },
   {
     "exercise_id": 338,
     "substitute_id": 66,
     "context": "low_energy",
     "similarity_score": 0.45,
-    "notes": "Finger glides — lowest-load finger mobility."
+    "notes": "Finger glides \u2014 lowest-load finger mobility."
   },
   {
     "exercise_id": 339,
@@ -2307,7 +2307,7 @@
     "substitute_id": 64,
     "context": "lower_intensity",
     "similarity_score": 0.65,
-    "notes": "Farmer carry — similar grip endurance, less forearm-specific."
+    "notes": "Farmer carry \u2014 similar grip endurance, less forearm-specific."
   },
   {
     "exercise_id": 342,
@@ -2328,7 +2328,7 @@
     "substitute_id": 346,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Wall scap angel — similar pattern, less serratus-focused."
+    "notes": "Wall scap angel \u2014 similar pattern, less serratus-focused."
   },
   {
     "exercise_id": 343,
@@ -2349,7 +2349,7 @@
     "substitute_id": 35,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Prone W raise — lower shoulder angle variation."
+    "notes": "Prone W raise \u2014 lower shoulder angle variation."
   },
   {
     "exercise_id": 343,
@@ -2398,14 +2398,14 @@
     "substitute_id": 21,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Standard band pull-apart — chest-level version."
+    "notes": "Standard band pull-apart \u2014 chest-level version."
   },
   {
     "exercise_id": 346,
     "substitute_id": 31,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Prone snow angel — same pattern floor version."
+    "notes": "Prone snow angel \u2014 same pattern floor version."
   },
   {
     "exercise_id": 346,
@@ -2426,7 +2426,7 @@
     "substitute_id": 37,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Thread-the-needle — similar T-spine pattern."
+    "notes": "Thread-the-needle \u2014 similar T-spine pattern."
   },
   {
     "exercise_id": 347,
@@ -2440,7 +2440,7 @@
     "substitute_id": 126,
     "context": "low_energy",
     "similarity_score": 0.7,
-    "notes": "Seated thoracic rotation — less shoulder demand."
+    "notes": "Seated thoracic rotation \u2014 less shoulder demand."
   },
   {
     "exercise_id": 348,
@@ -2489,7 +2489,7 @@
     "substitute_id": 115,
     "context": "lower_intensity",
     "similarity_score": 0.9,
-    "notes": "Cable wood chop — equivalent, less explosive."
+    "notes": "Cable wood chop \u2014 equivalent, less explosive."
   },
   {
     "exercise_id": 349,
@@ -2531,14 +2531,14 @@
     "substitute_id": 349,
     "context": "equipment_swap",
     "similarity_score": 0.85,
-    "notes": "Cable high-to-low chop — mirror pattern."
+    "notes": "Cable high-to-low chop \u2014 mirror pattern."
   },
   {
     "exercise_id": 355,
     "substitute_id": 49,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Box jump — adds power but uses similar landing mechanics."
+    "notes": "Box jump \u2014 adds power but uses similar landing mechanics."
   },
   {
     "exercise_id": 355,
@@ -2552,7 +2552,7 @@
     "substitute_id": 60,
     "context": "low_energy",
     "similarity_score": 0.5,
-    "notes": "Goblet squat — eccentric quad loading without drop."
+    "notes": "Goblet squat \u2014 eccentric quad loading without drop."
   },
   {
     "exercise_id": 355,
@@ -2608,14 +2608,14 @@
     "substitute_id": 228,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Lateral shuffle — simpler footwork drill."
+    "notes": "Lateral shuffle \u2014 simpler footwork drill."
   },
   {
     "exercise_id": 359,
     "substitute_id": 69,
     "context": "low_energy",
     "similarity_score": 0.3,
-    "notes": "Walking — spares the CNS entirely."
+    "notes": "Walking \u2014 spares the CNS entirely."
   },
   {
     "exercise_id": 359,
@@ -2629,14 +2629,14 @@
     "substitute_id": 228,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Lateral shuffle — same lateral mechanics with less COD."
+    "notes": "Lateral shuffle \u2014 same lateral mechanics with less COD."
   },
   {
     "exercise_id": 359,
     "substitute_id": 228,
     "context": "pre_event_safe",
-    "similarity_score": 0.5,
-    "notes": null
+    "similarity_score": 0.6,
+    "notes": "Lateral shuffle at warmup pace."
   },
   {
     "exercise_id": 361,
@@ -2664,14 +2664,14 @@
     "substitute_id": 239,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Eccentric step-down (sagittal) — same eccentric principle."
+    "notes": "Eccentric step-down (sagittal) \u2014 same eccentric principle."
   },
   {
     "exercise_id": 362,
     "substitute_id": 62,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Bulgarian split squat — dynamic version."
+    "notes": "Bulgarian split squat \u2014 dynamic version."
   },
   {
     "exercise_id": 362,
@@ -2685,7 +2685,7 @@
     "substitute_id": 125,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Wall sit — bilateral isometric alternative."
+    "notes": "Wall sit \u2014 bilateral isometric alternative."
   },
   {
     "exercise_id": 363,
@@ -2706,7 +2706,7 @@
     "substitute_id": 63,
     "context": "lower_intensity",
     "similarity_score": 0.9,
-    "notes": "Pallof press — kneeling version."
+    "notes": "Pallof press \u2014 kneeling version."
   },
   {
     "exercise_id": 364,
@@ -2727,7 +2727,7 @@
     "substitute_id": 224,
     "context": "lower_intensity",
     "similarity_score": 0.95,
-    "notes": "90/90 shoulder stretch — same posterior capsule target."
+    "notes": "90/90 shoulder stretch \u2014 same posterior capsule target."
   },
   {
     "exercise_id": 365,
@@ -2762,7 +2762,7 @@
     "substitute_id": 42,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Open book — no-roller alternative."
+    "notes": "Open book \u2014 no-roller alternative."
   },
   {
     "exercise_id": 366,
@@ -2790,7 +2790,7 @@
     "substitute_id": 65,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Forearm self-massage — hands-only release."
+    "notes": "Forearm self-massage \u2014 hands-only release."
   },
   {
     "exercise_id": 368,
@@ -2818,7 +2818,7 @@
     "substitute_id": 10,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Dumbbell row — same pattern, less stroke-specific."
+    "notes": "Dumbbell row \u2014 same pattern, less stroke-specific."
   },
   {
     "exercise_id": 371,
@@ -2867,7 +2867,7 @@
     "substitute_id": 135,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Inverted row — bodyweight alternative."
+    "notes": "Inverted row \u2014 bodyweight alternative."
   },
   {
     "exercise_id": 373,
@@ -2888,7 +2888,7 @@
     "substitute_id": 63,
     "context": "pre_event_safe",
     "similarity_score": 0.5,
-    "notes": "Pallof press — anti-rotation with minimal fatigue."
+    "notes": "Pallof press \u2014 anti-rotation with minimal fatigue."
   },
   {
     "exercise_id": 373,
@@ -2916,7 +2916,7 @@
     "substitute_id": 114,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Medball rotational throw — similar pattern, less load."
+    "notes": "Medball rotational throw \u2014 similar pattern, less load."
   },
   {
     "exercise_id": 374,
@@ -2965,7 +2965,7 @@
     "substitute_id": 109,
     "context": "lower_intensity",
     "similarity_score": 0.65,
-    "notes": "Dead bug — same anti-extension demand, no hang."
+    "notes": "Dead bug \u2014 same anti-extension demand, no hang."
   },
   {
     "exercise_id": 376,
@@ -3028,7 +3028,7 @@
     "substitute_id": 27,
     "context": "low_energy",
     "similarity_score": 0.5,
-    "notes": "Scap pull-up — same bar, less effort."
+    "notes": "Scap pull-up \u2014 same bar, less effort."
   },
   {
     "exercise_id": 380,
@@ -3063,7 +3063,7 @@
     "substitute_id": 115,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Cable wood chop — similar rotational demand."
+    "notes": "Cable wood chop \u2014 similar rotational demand."
   },
   {
     "exercise_id": 387,
@@ -3077,7 +3077,7 @@
     "substitute_id": 124,
     "context": "low_energy",
     "similarity_score": 0.8,
-    "notes": "Single-leg balance reach — same pattern on stable floor."
+    "notes": "Single-leg balance reach \u2014 same pattern on stable floor."
   },
   {
     "exercise_id": 387,
@@ -3154,7 +3154,7 @@
     "substitute_id": 220,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Superman hold — similar pattern with arms overhead."
+    "notes": "Superman hold \u2014 similar pattern with arms overhead."
   },
   {
     "exercise_id": 392,
@@ -3210,7 +3210,7 @@
     "substitute_id": 62,
     "context": "lower_intensity",
     "similarity_score": 0.9,
-    "notes": "Bulgarian split squat — same pattern, neutral stance."
+    "notes": "Bulgarian split squat \u2014 same pattern, neutral stance."
   },
   {
     "exercise_id": 397,
@@ -3224,7 +3224,7 @@
     "substitute_id": 35,
     "context": "low_energy",
     "similarity_score": 0.85,
-    "notes": "Prone W raise — similar position."
+    "notes": "Prone W raise \u2014 similar position."
   },
   {
     "exercise_id": 398,
@@ -3308,7 +3308,7 @@
     "substitute_id": 32,
     "context": "lower_intensity",
     "similarity_score": 0.9,
-    "notes": "Open-hand dead hang — same move."
+    "notes": "Open-hand dead hang \u2014 same move."
   },
   {
     "exercise_id": 401,
@@ -3581,7 +3581,7 @@
     "substitute_id": 125,
     "context": "lower_intensity",
     "similarity_score": 0.6,
-    "notes": "Wall sit — quad isometric load without the eccentric stretch."
+    "notes": "Wall sit \u2014 quad isometric load without the eccentric stretch."
   },
   {
     "exercise_id": 420,
@@ -3602,7 +3602,7 @@
     "substitute_id": 106,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Copenhagen plank — isometric adductor loading."
+    "notes": "Copenhagen plank \u2014 isometric adductor loading."
   },
   {
     "exercise_id": 421,
@@ -3623,7 +3623,7 @@
     "substitute_id": 228,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Lateral shuffle — change-of-direction without the full deceleration stop."
+    "notes": "Lateral shuffle \u2014 change-of-direction without the full deceleration stop."
   },
   {
     "exercise_id": 422,
@@ -3651,7 +3651,7 @@
     "substitute_id": 128,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Single-leg squat to box — same unilateral quad control, no drop."
+    "notes": "Single-leg squat to box \u2014 same unilateral quad control, no drop."
   },
   {
     "exercise_id": 423,
@@ -3679,7 +3679,7 @@
     "substitute_id": 125,
     "context": "lower_intensity",
     "similarity_score": 0.7,
-    "notes": "Wall sit — quad isometric."
+    "notes": "Wall sit \u2014 quad isometric."
   },
   {
     "exercise_id": 426,
@@ -3693,7 +3693,7 @@
     "substitute_id": 41,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Wall ankle mobility — same tissue, passive."
+    "notes": "Wall ankle mobility \u2014 same tissue, passive."
   },
   {
     "exercise_id": 427,
@@ -3756,7 +3756,7 @@
     "substitute_id": 115,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Cable wood chop — same pattern, standing."
+    "notes": "Cable wood chop \u2014 same pattern, standing."
   },
   {
     "exercise_id": 429,
@@ -3812,14 +3812,14 @@
     "substitute_id": 124,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Single-leg balance reach — similar SL control, no rotation."
+    "notes": "Single-leg balance reach \u2014 similar SL control, no rotation."
   },
   {
     "exercise_id": 434,
     "substitute_id": 102,
     "context": "lower_intensity",
     "similarity_score": 0.9,
-    "notes": "Full Nordic curl — progression target."
+    "notes": "Full Nordic curl \u2014 progression target."
   },
   {
     "exercise_id": 434,
@@ -3847,35 +3847,14 @@
     "substitute_id": 428,
     "context": "lower_intensity",
     "similarity_score": 0.5,
-    "notes": "Isometric shoulder ER — arm-care without throws."
+    "notes": "Isometric shoulder ER \u2014 arm-care without throws."
   },
   {
-    "exercise_id": 436,
-    "substitute_id": 228,
-    "context": "home_friendly",
-    "similarity_score": 0.8,
-    "notes": null
-  },
-  {
-    "exercise_id": 436,
+    "exercise_id": 359,
     "substitute_id": 228,
     "context": "low_energy",
     "similarity_score": 0.5,
     "notes": null
-  },
-  {
-    "exercise_id": 436,
-    "substitute_id": 228,
-    "context": "lower_intensity",
-    "similarity_score": 0.75,
-    "notes": "Lateral shuffle at submax speed."
-  },
-  {
-    "exercise_id": 436,
-    "substitute_id": 228,
-    "context": "pre_event_safe",
-    "similarity_score": 0.6,
-    "notes": "Lateral shuffle at warmup pace."
   },
   {
     "exercise_id": 441,
@@ -3896,7 +3875,7 @@
     "substitute_id": 73,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "World's greatest stretch — same movement, static."
+    "notes": "World's greatest stretch \u2014 same movement, static."
   },
   {
     "exercise_id": 442,
@@ -3917,7 +3896,7 @@
     "substitute_id": 70,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Foam roll full body — broader coverage."
+    "notes": "Foam roll full body \u2014 broader coverage."
   },
   {
     "exercise_id": 443,
@@ -3952,7 +3931,7 @@
     "substitute_id": 42,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Open book — similar t-spine target."
+    "notes": "Open book \u2014 similar t-spine target."
   },
   {
     "exercise_id": 446,
@@ -3966,7 +3945,7 @@
     "substitute_id": 41,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Wall ankle mobility — passive variant."
+    "notes": "Wall ankle mobility \u2014 passive variant."
   },
   {
     "exercise_id": 446,
@@ -4015,7 +3994,7 @@
     "substitute_id": 38,
     "context": "lower_intensity",
     "similarity_score": 0.9,
-    "notes": "Couch stretch (static) — same position, passive."
+    "notes": "Couch stretch (static) \u2014 same position, passive."
   },
   {
     "exercise_id": 450,
@@ -4050,7 +4029,7 @@
     "substitute_id": 58,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Romanian deadlift — same pattern at half CNS cost."
+    "notes": "Romanian deadlift \u2014 same pattern at half CNS cost."
   },
   {
     "exercise_id": 451,
@@ -4092,7 +4071,7 @@
     "substitute_id": 21,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Band pull-apart — similar pattern without DBs."
+    "notes": "Band pull-apart \u2014 similar pattern without DBs."
   },
   {
     "exercise_id": 452,
@@ -4148,7 +4127,7 @@
     "substitute_id": 121,
     "context": "lower_intensity",
     "similarity_score": 0.7,
-    "notes": "Neck bridge — more advanced, loaded option."
+    "notes": "Neck bridge \u2014 more advanced, loaded option."
   },
   {
     "exercise_id": 455,
@@ -4169,7 +4148,7 @@
     "substitute_id": 454,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Isometric 4-way neck — same tissue, no band."
+    "notes": "Isometric 4-way neck \u2014 same tissue, no band."
   },
   {
     "exercise_id": 455,
@@ -4204,7 +4183,7 @@
     "substitute_id": 34,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Side-lying external rotation — safer angle for sore cuffs."
+    "notes": "Side-lying external rotation \u2014 safer angle for sore cuffs."
   },
   {
     "exercise_id": 457,
@@ -4225,7 +4204,7 @@
     "substitute_id": 109,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Dead bug — unloaded hip flexor control."
+    "notes": "Dead bug \u2014 unloaded hip flexor control."
   },
   {
     "exercise_id": 457,
@@ -4253,7 +4232,7 @@
     "substitute_id": 10,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Dumbbell row — same unilateral pull."
+    "notes": "Dumbbell row \u2014 same unilateral pull."
   },
   {
     "exercise_id": 458,
@@ -4337,7 +4316,7 @@
     "substitute_id": 105,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Lateral band walk — similar target."
+    "notes": "Lateral band walk \u2014 similar target."
   },
   {
     "exercise_id": 461,
@@ -4442,7 +4421,7 @@
     "substitute_id": 74,
     "context": "lower_intensity",
     "similarity_score": 0.7,
-    "notes": "Jumping jacks — similar aerobic warm-up."
+    "notes": "Jumping jacks \u2014 similar aerobic warm-up."
   },
   {
     "exercise_id": 467,
@@ -4470,7 +4449,7 @@
     "substitute_id": 230,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Squat jump CMJ — vertical without the drop phase."
+    "notes": "Squat jump CMJ \u2014 vertical without the drop phase."
   },
   {
     "exercise_id": 469,
@@ -4501,14 +4480,14 @@
     "notes": "Ankle CARs keep the joint primed without loaded work."
   },
   {
-    "exercise_id": 473,
+    "exercise_id": 329,
     "substitute_id": 227,
     "context": "low_energy",
     "similarity_score": 0.45,
     "notes": "Lateral lunge preserves pattern without plyo."
   },
   {
-    "exercise_id": 473,
+    "exercise_id": 329,
     "substitute_id": 227,
     "context": "pre_event_safe",
     "similarity_score": 0.4,
@@ -4526,7 +4505,7 @@
     "substitute_id": 124,
     "context": "lower_intensity",
     "similarity_score": 0.6,
-    "notes": "Single-leg balance reach — same proprioceptive goal indoors."
+    "notes": "Single-leg balance reach \u2014 same proprioceptive goal indoors."
   },
   {
     "exercise_id": 476,
@@ -4631,7 +4610,7 @@
     "substitute_id": 43,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "90/90 hip — the static version of the drill."
+    "notes": "90/90 hip \u2014 the static version of the drill."
   },
   {
     "exercise_id": 481,
@@ -4729,14 +4708,14 @@
     "substitute_id": 131,
     "context": "low_energy",
     "similarity_score": 0.95,
-    "notes": "Hollow hold — same exercise, can be tucked."
+    "notes": "Hollow hold \u2014 same exercise, can be tucked."
   },
   {
     "exercise_id": 487,
     "substitute_id": 110,
     "context": "pre_event_safe",
     "similarity_score": 0.6,
-    "notes": "Bird dog — less intense posterior work."
+    "notes": "Bird dog \u2014 less intense posterior work."
   },
   {
     "exercise_id": 487,
@@ -4813,7 +4792,7 @@
     "substitute_id": 504,
     "context": "low_energy",
     "similarity_score": 0.55,
-    "notes": "Wall walk — easier step-up version."
+    "notes": "Wall walk \u2014 easier step-up version."
   },
   {
     "exercise_id": 491,
@@ -4869,7 +4848,7 @@
     "substitute_id": 48,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Explosive pull-up — the vertical pull of the muscle-up."
+    "notes": "Explosive pull-up \u2014 the vertical pull of the muscle-up."
   },
   {
     "exercise_id": 494,
@@ -4960,7 +4939,7 @@
     "substitute_id": 135,
     "context": "lower_intensity",
     "similarity_score": 0.9,
-    "notes": "Inverted row — same pattern, different setup."
+    "notes": "Inverted row \u2014 same pattern, different setup."
   },
   {
     "exercise_id": 499,
@@ -5009,7 +4988,7 @@
     "substitute_id": 37,
     "context": "lower_intensity",
     "similarity_score": 0.95,
-    "notes": "Thread-the-needle from climbing set — same pose."
+    "notes": "Thread-the-needle from climbing set \u2014 same pose."
   },
   {
     "exercise_id": 501,
@@ -5086,7 +5065,7 @@
     "substitute_id": 45,
     "context": "lower_intensity",
     "similarity_score": 0.95,
-    "notes": "Same exercise — faster version."
+    "notes": "Same exercise \u2014 faster version."
   },
   {
     "exercise_id": 509,
@@ -5107,7 +5086,7 @@
     "substitute_id": 222,
     "context": "lower_intensity",
     "similarity_score": 0.95,
-    "notes": "Banded shoulder dislocation — same movement."
+    "notes": "Banded shoulder dislocation \u2014 same movement."
   },
   {
     "exercise_id": 510,
@@ -5170,7 +5149,7 @@
     "substitute_id": 124,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Single-leg balance reach — lower demand."
+    "notes": "Single-leg balance reach \u2014 lower demand."
   },
   {
     "exercise_id": 514,
@@ -5212,7 +5191,7 @@
     "substitute_id": 519,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Hip isolation — foundation without travel."
+    "notes": "Hip isolation \u2014 foundation without travel."
   },
   {
     "exercise_id": 519,
@@ -5268,7 +5247,7 @@
     "substitute_id": 512,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Pirouette prep — half-turn practice."
+    "notes": "Pirouette prep \u2014 half-turn practice."
   },
   {
     "exercise_id": 525,
@@ -5289,7 +5268,7 @@
     "substitute_id": 104,
     "context": "lower_intensity",
     "similarity_score": 0.95,
-    "notes": "Plain clamshell — slightly less rotational specificity."
+    "notes": "Plain clamshell \u2014 slightly less rotational specificity."
   },
   {
     "exercise_id": 526,
@@ -5352,7 +5331,7 @@
     "substitute_id": 57,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Barbell back squat hold / walkout — similar spinal load, lower demand."
+    "notes": "Barbell back squat hold / walkout \u2014 similar spinal load, lower demand."
   },
   {
     "exercise_id": 531,
@@ -5373,7 +5352,7 @@
     "substitute_id": 216,
     "context": "low_energy",
     "similarity_score": 0.35,
-    "notes": "Burpee — full-body conditioning without load."
+    "notes": "Burpee \u2014 full-body conditioning without load."
   },
   {
     "exercise_id": 532,
@@ -5429,7 +5408,7 @@
     "substitute_id": 64,
     "context": "lower_intensity",
     "similarity_score": 0.65,
-    "notes": "Farmer carry — same carry, no overhead demand."
+    "notes": "Farmer carry \u2014 same carry, no overhead demand."
   },
   {
     "exercise_id": 535,
@@ -5450,7 +5429,7 @@
     "substitute_id": 61,
     "context": "lower_intensity",
     "similarity_score": 0.7,
-    "notes": "Kettlebell swing — same hip drive, no overhead."
+    "notes": "Kettlebell swing \u2014 same hip drive, no overhead."
   },
   {
     "exercise_id": 536,
@@ -5478,7 +5457,7 @@
     "substitute_id": 60,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Goblet squat — same pattern, lower load."
+    "notes": "Goblet squat \u2014 same pattern, lower load."
   },
   {
     "exercise_id": 537,
@@ -5569,7 +5548,7 @@
     "substitute_id": 217,
     "context": "lower_intensity",
     "similarity_score": 0.95,
-    "notes": "Full power clean — the canonical version."
+    "notes": "Full power clean \u2014 the canonical version."
   },
   {
     "exercise_id": 541,
@@ -5583,7 +5562,7 @@
     "substitute_id": 40,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Wrist CARs — similar mobility focus."
+    "notes": "Wrist CARs \u2014 similar mobility focus."
   },
   {
     "exercise_id": 542,
@@ -5597,7 +5576,7 @@
     "substitute_id": 42,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Open book — same T-spine target, no roller needed."
+    "notes": "Open book \u2014 same T-spine target, no roller needed."
   },
   {
     "exercise_id": 543,
@@ -5611,7 +5590,7 @@
     "substitute_id": 10,
     "context": "low_energy",
     "similarity_score": 0.5,
-    "notes": "Dumbbell row — bigger pattern including biceps."
+    "notes": "Dumbbell row \u2014 bigger pattern including biceps."
   },
   {
     "exercise_id": 543,
@@ -5674,7 +5653,7 @@
     "substitute_id": 13,
     "context": "lower_intensity",
     "similarity_score": 0.55,
-    "notes": "Push-up — bilateral press pattern."
+    "notes": "Push-up \u2014 bilateral press pattern."
   },
   {
     "exercise_id": 545,
@@ -5744,7 +5723,7 @@
     "substitute_id": 328,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Sandbag bear-hug carry — same hug-and-lift pattern without the shoulder flip."
+    "notes": "Sandbag bear-hug carry \u2014 same hug-and-lift pattern without the shoulder flip."
   },
   {
     "exercise_id": 549,
@@ -5765,7 +5744,7 @@
     "substitute_id": 106,
     "context": "lower_intensity",
     "similarity_score": 0.7,
-    "notes": "Copenhagen plank — passive load instead of active squeeze."
+    "notes": "Copenhagen plank \u2014 passive load instead of active squeeze."
   },
   {
     "exercise_id": 551,
@@ -5807,7 +5786,7 @@
     "substitute_id": 38,
     "context": "lower_intensity",
     "similarity_score": 0.9,
-    "notes": "Couch stretch — deeper hip flexor variant."
+    "notes": "Couch stretch \u2014 deeper hip flexor variant."
   },
   {
     "exercise_id": 558,
@@ -5821,7 +5800,7 @@
     "substitute_id": 121,
     "context": "lower_intensity",
     "similarity_score": 0.7,
-    "notes": "Neck bridge — passive neck loading."
+    "notes": "Neck bridge \u2014 passive neck loading."
   },
   {
     "exercise_id": 559,
@@ -5842,7 +5821,7 @@
     "substitute_id": 60,
     "context": "lower_intensity",
     "similarity_score": 0.6,
-    "notes": "Goblet squat — same pattern, no drop."
+    "notes": "Goblet squat \u2014 same pattern, no drop."
   },
   {
     "exercise_id": 559,
@@ -5870,7 +5849,7 @@
     "substitute_id": 562,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Scapular retraction hold — similar position, less weight."
+    "notes": "Scapular retraction hold \u2014 similar position, less weight."
   },
   {
     "exercise_id": 562,
@@ -5891,7 +5870,7 @@
     "substitute_id": 21,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Band pull-apart — dynamic version."
+    "notes": "Band pull-apart \u2014 dynamic version."
   },
   {
     "exercise_id": 563,
@@ -5905,7 +5884,7 @@
     "substitute_id": 17,
     "context": "lower_intensity",
     "similarity_score": 0.55,
-    "notes": "Reverse wrist curl — sagittal-plane wrist work."
+    "notes": "Reverse wrist curl \u2014 sagittal-plane wrist work."
   },
   {
     "exercise_id": 564,
@@ -5926,7 +5905,7 @@
     "substitute_id": 124,
     "context": "lower_intensity",
     "similarity_score": 0.55,
-    "notes": "Single-leg balance reach — balance without the gun mount."
+    "notes": "Single-leg balance reach \u2014 balance without the gun mount."
   },
   {
     "exercise_id": 564,
@@ -5968,7 +5947,7 @@
     "substitute_id": 574,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Foam-pad single-leg balance — indoor low-risk alternative."
+    "notes": "Foam-pad single-leg balance \u2014 indoor low-risk alternative."
   },
   {
     "exercise_id": 574,
@@ -5996,7 +5975,7 @@
     "substitute_id": 133,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Toe yoga — simpler toe-isolation drill."
+    "notes": "Toe yoga \u2014 simpler toe-isolation drill."
   },
   {
     "exercise_id": 576,
@@ -6024,14 +6003,14 @@
     "substitute_id": 230,
     "context": "low_energy",
     "similarity_score": 0.55,
-    "notes": "Squat jump — power without sprint distance."
+    "notes": "Squat jump \u2014 power without sprint distance."
   },
   {
     "exercise_id": 577,
     "substitute_id": 234,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "A-skip to sprint — similar pattern, less reactive demand."
+    "notes": "A-skip to sprint \u2014 similar pattern, less reactive demand."
   },
   {
     "exercise_id": 577,
@@ -6059,7 +6038,7 @@
     "substitute_id": 228,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Lateral shuffle — lower intensity change-of-direction."
+    "notes": "Lateral shuffle \u2014 lower intensity change-of-direction."
   },
   {
     "exercise_id": 578,
@@ -6301,28 +6280,28 @@
   },
   {
     "exercise_id": 705,
-    "substitute_id": 693,
+    "substitute_id": 123,
     "context": "home_friendly",
     "similarity_score": 0.75,
     "notes": null
   },
   {
     "exercise_id": 705,
-    "substitute_id": 693,
+    "substitute_id": 123,
     "context": "low_energy",
     "similarity_score": 0.55,
     "notes": null
   },
   {
     "exercise_id": 705,
-    "substitute_id": 693,
+    "substitute_id": 123,
     "context": "lower_intensity",
     "similarity_score": 0.7,
     "notes": "A-skip drill at lower intensity."
   },
   {
     "exercise_id": 705,
-    "substitute_id": 693,
+    "substitute_id": 123,
     "context": "pre_event_safe",
     "similarity_score": 0.7,
     "notes": null
@@ -6346,7 +6325,7 @@
     "substitute_id": 715,
     "context": "lower_intensity",
     "similarity_score": 0.55,
-    "notes": "Roll and breakfall drill — movement skills at lower output."
+    "notes": "Roll and breakfall drill \u2014 movement skills at lower output."
   },
   {
     "exercise_id": 721,
@@ -6647,7 +6626,7 @@
     "substitute_id": 829,
     "context": "low_energy",
     "similarity_score": 0.75,
-    "notes": "Aikido tenkan pivot — lower intensity flow."
+    "notes": "Aikido tenkan pivot \u2014 lower intensity flow."
   },
   {
     "exercise_id": 826,

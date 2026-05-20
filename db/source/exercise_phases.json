@@ -4404,24 +4404,6 @@
     "volume_guidance": null
   },
   {
-    "exercise_id": 405,
-    "phase": "maintenance",
-    "priority": "primary",
-    "volume_guidance": null
-  },
-  {
-    "exercise_id": 405,
-    "phase": "off_season",
-    "priority": "primary",
-    "volume_guidance": null
-  },
-  {
-    "exercise_id": 405,
-    "phase": "recovery",
-    "priority": "primary",
-    "volume_guidance": null
-  },
-  {
     "exercise_id": 406,
     "phase": "maintenance",
     "priority": "primary",
@@ -4842,24 +4824,6 @@
     "volume_guidance": null
   },
   {
-    "exercise_id": 436,
-    "phase": "base",
-    "priority": "primary",
-    "volume_guidance": null
-  },
-  {
-    "exercise_id": 436,
-    "phase": "build",
-    "priority": "primary",
-    "volume_guidance": null
-  },
-  {
-    "exercise_id": 436,
-    "phase": "off_season",
-    "priority": "primary",
-    "volume_guidance": null
-  },
-  {
     "exercise_id": 441,
     "phase": "base",
     "priority": "primary",
@@ -5395,24 +5359,6 @@
   },
   {
     "exercise_id": 471,
-    "phase": "off_season",
-    "priority": "primary",
-    "volume_guidance": null
-  },
-  {
-    "exercise_id": 473,
-    "phase": "base",
-    "priority": "primary",
-    "volume_guidance": null
-  },
-  {
-    "exercise_id": 473,
-    "phase": "build",
-    "priority": "primary",
-    "volume_guidance": null
-  },
-  {
-    "exercise_id": 473,
     "phase": "off_season",
     "priority": "primary",
     "volume_guidance": null
