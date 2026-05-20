@@ -70,6 +70,20 @@ struct CoachDrawer: View {
                 }
                 .buttonStyle(.plain)
             }
+            Button {
+                inputFocused = false
+                conv.presented = false
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Color.ink2)
+                    .frame(width: 28, height: 28)
+                    .background(Color.surface)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(Color.line, lineWidth: 0.5))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Close coach")
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 10)
@@ -134,6 +148,7 @@ struct CoachDrawer: View {
                 .padding(.top, 12)
                 .padding(.bottom, 12)
             }
+            .scrollDismissesKeyboard(.interactively)
             .onChange(of: conv.messages.last?.id) { _, _ in
                 scrollToBottom(proxy)
             }
@@ -186,8 +201,12 @@ struct CoachDrawer: View {
         VStack(spacing: 0) {
             Divider().background(Color.lineSoft)
             HStack(spacing: 10) {
-                TextField("Ask the coach…", text: $input, axis: .vertical)
-                    .lineLimit(1...4)
+                // Single-line. The growing-vertical TextField (axis: .vertical
+                // + lineLimit(1...4)) caused layout thrash inside the sheet's
+                // detent transitions — opening/closing the keyboard and
+                // dragging between medium/large detents could pin the main
+                // thread long enough to crash the app.
+                TextField("Ask the coach…", text: $input)
                     .font(.custom("Inter-Regular", size: 14))
                     .foregroundStyle(Color.ink)
                     .padding(.horizontal, 12)
@@ -264,10 +283,12 @@ struct CoachDrawer: View {
         // Phase 13f: if the most recent assistant turn carried a proposal the
         // user has resolved, prepend a synthetic status note so the model
         // knows what happened to its tool call. v4 system prompt advertises
-        // this convention so the prefix isn't treated as user voice.
-        let userText = statusPrefix(for: conv.messages.last) + text
+        // this convention so the prefix isn't treated as user voice. The
+        // prefix goes ONLY to the wire — the displayed bubble shows what
+        // the user actually typed.
+        let wireText = statusPrefix(for: conv.messages.last) + text
 
-        let userMsg = CoachMessage(role: "user", text: userText)
+        let userMsg = CoachMessage(role: "user", text: text)
         let assistantMsg = CoachMessage(role: "assistant", text: "")
         conv.append(userMsg)
         conv.append(assistantMsg)
@@ -291,7 +312,7 @@ struct CoachDrawer: View {
                     cachedSystem: CoachSystemPrompt.cachedHeader,
                     perTurnContext: CoachSystemPrompt.contextBlock(snapshot: snapshot),
                     history: Array(history.dropLast()),
-                    userMessage: text,
+                    userMessage: wireText,
                     tools: CoachTools.all
                 )
                 for try await part in stream {

@@ -198,10 +198,79 @@ final class PlanStore: ObservableObject {
     /// watchdog kill — relaunch reads the user's intended change.
     func apply(_ diff: PlanDiff) {
         guard !diff.isNoop else { return }
-        if let data = try? Self.encoder().encode(diff.after) {
+
+        // Sync `generatedWorkout` for any day whose kind changed. PlanEdit
+        // handlers update kind/title/routineId only — manual Week-tab edits
+        // round-trip through Planner.generate() which rebuilds workouts, but
+        // the coach path skips that. Without this sync, Today shows the old
+        // workout's exercises under a new kind (lift→mobility leaves lift
+        // exercises) or an empty hero with no Start CTA (rest→lift never gets
+        // a workout populated).
+        var after = diff.after
+        if let memory = memoryStore?.memory {
+            let beforeById = Dictionary(uniqueKeysWithValues: diff.before.days.map { ($0.id, $0) })
+            var pickedIds: [Int] = []
+            for idx in after.days.indices {
+                let day = after.days[idx]
+                guard let prior = beforeById[day.id], prior.kind != day.kind else { continue }
+                switch day.kind {
+                case .lift, .mobility:
+                    if let workout = composeWorkout(for: day, in: after, memory: memory) {
+                        after.days[idx].generatedWorkout = workout
+                        after.days[idx].title = workout.title
+                        after.days[idx].routineId = nil
+                        after.days[idx].generatedReason = workout.provenance
+                        pickedIds.append(contentsOf: workout.exercises.map(\.exerciseId))
+                    }
+                case .rest, .sport, .event:
+                    after.days[idx].generatedWorkout = nil
+                }
+            }
+            if !pickedIds.isEmpty { recentPicks?.record(exerciseIds: pickedIds) }
+        }
+
+        if let data = try? Self.encoder().encode(after) {
             defaults.set(data, forKey: Self.planKey)
         }
-        plan = diff.after
+        plan = after
+    }
+
+    /// Build a `GeneratedWorkout` for a single day from its kind, anchored in
+    /// the surrounding `plan` (lift index needs the other lift days to pick
+    /// push/pull/legs rotation). Returns nil for non-workout kinds.
+    private func composeWorkout(for day: DayPlan,
+                                in plan: WeekPlan,
+                                memory: TrainingMemory) -> GeneratedWorkout? {
+        let profile = DemographicProfile.from(memory)
+        let salt = String(Int(Date().timeIntervalSince1970))
+        let seed = "\(memory.planInputsHash)-regen-\(salt)"
+        let recentIds = recentPicks?.recentlyPickedIds() ?? []
+        let context = buildGeneratorContext(memory: memory, today: day.date)
+        let cal = Calendar.current
+        switch day.kind {
+        case .lift:
+            let liftDays = plan.days.filter { $0.kind == .lift }
+            let liftIndex = liftDays.firstIndex(where: { cal.isDate($0.date, inSameDayAs: day.date) }) ?? 0
+            return WorkoutGenerator.generateLift(
+                liftIndex: liftIndex,
+                totalLifts: liftDays.count,
+                memory: memory,
+                profile: profile,
+                hashSeed: seed,
+                recentlyPicked: recentIds,
+                context: context
+            )
+        case .mobility:
+            return WorkoutGenerator.generateMobility(
+                memory: memory,
+                profile: profile,
+                hashSeed: seed,
+                recentlyPicked: recentIds,
+                context: context
+            )
+        case .rest, .sport, .event:
+            return nil
+        }
     }
 
     /// Phase 13d: swap in a new generated workout on the day matching
