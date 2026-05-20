@@ -37,6 +37,15 @@ final class SessionStore: ObservableObject {
         } else {
             self.active = nil
         }
+
+        // Inactivity-reminder lifecycle on launch: if an active session was
+        // restored, start the 30-min clock fresh. Otherwise drop any stale
+        // scheduled notification left over from a previous run.
+        if active != nil {
+            InactivityReminderScheduler.scheduleForActiveSession()
+        } else {
+            InactivityReminderScheduler.cancel()
+        }
     }
 
     // MARK: - One-shot legacy migration
@@ -84,11 +93,15 @@ final class SessionStore: ObservableObject {
         if let data = try? Self.encoder().encode(session) {
             defaults.set(data, forKey: Self.activeKey)
         }
+        // Reset the "forgot to finish" reminder clock on every mutation.
+        // The 30-min trigger fires only if no further activity follows.
+        InactivityReminderScheduler.scheduleForActiveSession()
     }
 
     func clearActive() {
         active = nil
         defaults.removeObject(forKey: Self.activeKey)
+        InactivityReminderScheduler.cancel()
     }
 
     // MARK: - Saved sessions (SQLite via UserDatabase)
