@@ -1,70 +1,67 @@
 // CustomRoutineStore.swift — @Published list of user-created workouts.
 //
-// UserDefaults key: `pt_custom_routines`. JSON-encoded with the same
-// secondsSince1970 date strategy the other data stores use so dumps stay
-// uniform. API mirrors MemoryStore: explicit save() + an update closure for
-// in-place edits that auto-persist.
+// Backed by SQLite (`user.db` in Documents) via UserDatabase. On first launch
+// after the SQLite migration shipped, any pre-existing `pt_custom_routines`
+// UserDefaults JSON blob is imported into user.db and the key is cleared.
+// Subsequent saves write straight through to user.db; the @Published list is
+// the read-through cache that SwiftUI binds to.
 
 import Foundation
 import Combine
 
 final class CustomRoutineStore: ObservableObject {
-    private static let key = "pt_custom_routines"
+    private static let legacyKey = "pt_custom_routines"
+    private static let migrationFlag = "pt_custom_routines_migrated_v1"
 
     @Published var routines: [CustomRoutine]
 
     private let defaults: UserDefaults
+    private let userDB: UserDatabase
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = .standard, userDB: UserDatabase = .shared) {
         self.defaults = defaults
-        if let data = defaults.data(forKey: Self.key),
-           let list = try? Self.decoder().decode([CustomRoutine].self, from: data) {
-            self.routines = list
-        } else {
-            self.routines = []
-        }
+        self.userDB = userDB
+        Self.migrateLegacyIfNeeded(defaults: defaults, userDB: userDB)
+        self.routines = userDB.listRoutines()
     }
 
     // MARK: - Mutation
 
-    /// Insert or update (matched by id). New routines land at the top so the
-    /// most-recently-created workout is easiest to find.
+    /// Insert or update (matched by id). New routines float to the top by
+    /// virtue of `created_at DESC` in UserDatabase.listRoutines.
     func save(_ routine: CustomRoutine) {
-        if let idx = routines.firstIndex(where: { $0.id == routine.id }) {
-            routines[idx] = routine
-        } else {
-            routines.insert(routine, at: 0)
-        }
-        persist()
+        userDB.save(routine)
+        routines = userDB.listRoutines()
     }
 
     func delete(_ routine: CustomRoutine) {
-        routines.removeAll { $0.id == routine.id }
-        persist()
+        userDB.delete(routineId: routine.id)
+        routines = userDB.listRoutines()
     }
 
     func clear() {
+        userDB.clearAll()
         routines = []
-        defaults.removeObject(forKey: Self.key)
     }
 
-    // MARK: - Persistence
+    // MARK: - One-shot migration
 
-    private func persist() {
-        if let data = try? Self.encoder().encode(routines) {
-            defaults.set(data, forKey: Self.key)
+    /// Imports the old UserDefaults JSON blob into UserDatabase on first
+    /// launch of the SQLite-backed build. Guarded by a flag so reruns are
+    /// no-ops. The legacy UserDefaults key is removed after a successful
+    /// import so it doesn't keep getting iCloud-backed up forever.
+    private static func migrateLegacyIfNeeded(defaults: UserDefaults, userDB: UserDatabase) {
+        if defaults.bool(forKey: migrationFlag) { return }
+        defer { defaults.set(true, forKey: migrationFlag) }
+
+        guard let data = defaults.data(forKey: legacyKey) else { return }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
+        guard let legacy = try? decoder.decode([CustomRoutine].self, from: data) else { return }
+
+        for routine in legacy {
+            userDB.save(routine)
         }
-    }
-
-    private static func encoder() -> JSONEncoder {
-        let e = JSONEncoder()
-        e.dateEncodingStrategy = .secondsSince1970
-        return e
-    }
-
-    private static func decoder() -> JSONDecoder {
-        let d = JSONDecoder()
-        d.dateDecodingStrategy = .secondsSince1970
-        return d
+        defaults.removeObject(forKey: legacyKey)
     }
 }
