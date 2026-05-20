@@ -119,33 +119,64 @@ struct DayWorkoutPreviewSheet: View {
         return f.string(from: day.date)
     }
 
+    /// Build 90: switched from VStack→ScrollView to List so the exercise
+    /// rows get drag-to-reorder via .onMove + .editMode(.active) — same
+    /// pattern as CustomRoutineEditSheet. listStyle(.insetGrouped) gives
+    /// the section-card look that mirrors the previous surface treatment.
     private func content(template: WorkoutTemplate) -> some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+        List {
+            Section {
                 header(template: template)
-                VStack(spacing: 0) {
-                    ForEach(Array(template.exercises.enumerated()), id: \.element.id) { idx, ex in
-                        exerciseRow(ex, position: idx + 1)
-                        Rectangle()
-                            .fill(Color.lineSoft)
-                            .frame(height: 0.5)
-                    }
-                    addExerciseRow
-                }
-                .background(Color.surface)
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 12, trailing: 0))
+            }
 
-                if !isToday {
+            Section {
+                ForEach(Array(template.exercises.enumerated()), id: \.element.id) { idx, ex in
+                    exerciseRow(ex, position: idx + 1)
+                        .listRowBackground(Color.surface)
+                        .listRowSeparatorTint(Color.lineSoft)
+                }
+                .onMove(perform: moveExercises)
+                addExerciseRow
+                    .listRowBackground(Color.surface)
+                    .listRowSeparator(.hidden)
+            }
+
+            if !isToday {
+                Section {
                     Text("Edits stay local — tap Save to library to keep them.")
                         .font(.monoXS)
                         .foregroundStyle(Color.ink3)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 18)
-            .padding(.bottom, 120)  // leaves space for the sticky bottom bar (Save + optional Start).
+
+            // Spacer section so the last row clears the sticky bottom bar.
+            Section {
+                Color.clear.frame(height: 90)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            }
         }
+        .scrollContentBackground(.hidden)
+        .listStyle(.insetGrouped)
+        .environment(\.editMode, .constant(.active))
+    }
+
+    /// SwiftUI .onMove handler — reorder the in-flight template's exercises.
+    private func moveExercises(from source: IndexSet, to dest: Int) {
+        guard let tmpl = template else { return }
+        var reordered = tmpl.exercises
+        reordered.move(fromOffsets: source, toOffset: dest)
+        template = WorkoutTemplate(
+            id: tmpl.id,
+            name: tmpl.name,
+            category: tmpl.category,
+            exercises: reordered
+        )
     }
 
     private func header(template: WorkoutTemplate) -> some View {
