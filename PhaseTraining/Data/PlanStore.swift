@@ -47,8 +47,15 @@ final class PlanStore: ObservableObject {
         didSet { resubscribeToMemory() }
     }
 
-    private let defaults: UserDefaults
+    let defaults: UserDefaults
     private var memorySubscription: AnyCancellable?
+
+    /// Build 98: holds the in-flight LLM refinement Task so a fresh
+    /// regen can cancel the previous one before kicking off a new pass.
+    /// Lives here (not in the extension) because extensions can't add
+    /// stored properties. Internal-by-default so the +LLMRefinement
+    /// extension reads/writes it.
+    var currentRefinementTask: Task<Void, Never>?
 
     init(defaults: UserDefaults = .standard, today: Date = Date()) {
         self.defaults = defaults
@@ -89,6 +96,11 @@ final class PlanStore: ObservableObject {
         self.plan = p
         savePlan()
         recordPickedExercises(in: p)
+        // Build 98: kick off background LLM refinement for consent-on
+        // users. Deterministic plan above renders immediately; the
+        // refinement task progressively replaces each lift/mobility day
+        // with an LLM-personalized version. No-op without consent.
+        kickOffLLMRefinementIfConsented(memory: memory)
         return p
     }
 
@@ -499,7 +511,7 @@ final class PlanStore: ObservableObject {
 
     // MARK: - Persistence
 
-    private func savePlan() {
+    func savePlan() {
         guard let plan else {
             defaults.removeObject(forKey: Self.planKey)
             return

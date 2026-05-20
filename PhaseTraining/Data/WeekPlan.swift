@@ -88,6 +88,11 @@ struct GeneratedWorkout: Codable, Hashable {
     /// this workout looks the way it does ("Intermediate · push/pull/legs
     /// rotation, day 1 of 3").
     var provenance: String
+    /// Build 98 — set when the LLM has refined this workout. nil = the
+    /// deterministic baseline; non-nil = LLM polished on that date.
+    /// Used to skip re-refining + surface "your coach personalized this"
+    /// hints in future UI passes.
+    var refinedByLLMAt: Date? = nil
 }
 
 /// Why this exercise ended up in the workout. Default is `.recipe` — the
