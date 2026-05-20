@@ -107,6 +107,15 @@ final class SessionStore: ObservableObject {
         savedSessions = userDB.listSavedSessions()
     }
 
+    /// Upsert one already-saved session with edits (weight / reps / rpe /
+    /// done) intact. UserDatabase.saveSession is upsert-by-start_time so
+    /// the row is replaced in place; the @Published list is refreshed so
+    /// SwiftUI rebinds. Used by HistoryScreen's set-level edit flow.
+    func updateSession(_ session: SavedSession) {
+        userDB.saveSession(session)
+        savedSessions = userDB.listSavedSessions()
+    }
+
     func clearSavedSessions() {
         userDB.clearAllSessions()
         savedSessions = []

@@ -8,6 +8,7 @@ struct HistoryScreen: View {
     let onBack: () -> Void
 
     @State private var expanded: Set<TimeInterval> = []
+    @State private var editingSession: SavedSession?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -25,6 +26,10 @@ struct HistoryScreen: View {
             }
         }
         .background(Color.bg.ignoresSafeArea())
+        .sheet(item: $editingSession) { session in
+            EditSessionSheet(session: session)
+                .environmentObject(store)
+        }
     }
 
     // MARK: - Top bar
@@ -205,6 +210,20 @@ struct HistoryScreen: View {
             if isExpanded {
                 expandedDetail(session)
                     .padding(.top, 10)
+                Button(action: { editingSession = session }) {
+                    Text("Edit session")
+                        .styled(.monoS)
+                        .foregroundColor(.ink2)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.line, lineWidth: 0.5)
+                        )
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 8)
             }
         }
         .padding(.vertical, 14)
