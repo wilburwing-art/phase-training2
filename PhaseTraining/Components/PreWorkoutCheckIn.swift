@@ -71,6 +71,27 @@ struct PreWorkoutCheckIn: View {
                 .stroke(Color.line, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .onAppear(perform: rehydrateFromMemory)
+    }
+
+    /// Re-pick up today's entry from memory so closing/reopening the app
+    /// doesn't reset the "LOGGED" status. Match by Calendar.startOfDay so a
+    /// check-in submitted earlier in the day still counts.
+    private func rehydrateFromMemory() {
+        let cal = Calendar.current
+        guard let entry = memoryStore.memory.soreness.last(where: {
+            cal.isDate($0.date, inSameDayAs: Date())
+        }) else { return }
+        submittedAt = entry.date
+        energy = entry.energy.flatMap(Energy.init(rawValue:))
+        soreness = entry.soreness.flatMap(Soreness.init(rawValue:))
+        pain = entry.pain
+        equipmentChanged = entry.equipmentChanged
+        areas = Set(entry.areas.compactMap(BodyArea.init(rawValue:)))
+        if let mins = entry.timeBudget {
+            let planned = memoryStore.memory.sessionMinutes
+            time = (mins < planned) ? .less : (mins > planned ? .more : .planned)
+        }
     }
 
     // MARK: - Header

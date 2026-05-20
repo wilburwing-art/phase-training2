@@ -27,10 +27,13 @@ struct TodayScreen: View {
     let onStart: () -> Void
     let onHistory: () -> Void
 
-    /// Drives the "Override today" sheet on lift/mobility days. Replaces
-    /// the pre-build-42 routine library sheet — users can no longer browse
-    /// the bundled library, only pick a saved custom or build a new one.
-    @State private var overridingToday = false
+    /// Drives the edit-preview sheet that opens when the user taps the
+    /// exercise list. Build 80 collapsed regenerate + override + edit into
+    /// this single edit path — the preview sheet lets the user swap any
+    /// exercise from the full library or save the result as a custom
+    /// routine. Override is no longer needed (Save to library covers it);
+    /// regenerate is no longer needed (per-exercise editing covers it).
+    @State private var editingPreview = false
 
     // MARK: - Derived state
 
@@ -174,39 +177,26 @@ struct TodayScreen: View {
                                 .padding(.horizontal, 20)
                                 .padding(.top, 14)
                         }
-                        if let body = insightCopy {
-                            InsightCard(body: body, coachFollowUp: "Explain why: \(body)")
-                                .padding(.horizontal, 20)
-                                .padding(.top, planEndingSoon ? 10 : 14)
-                        }
                         hero
                             .padding(.horizontal, 20)
-                            .padding(.top, (insightCopy == nil && !planEndingSoon) ? 24 : 14)
-                        if let reason = todayPlan?.generatedReason {
-                            reasonRow(reason)
+                            .padding(.top, planEndingSoon ? 14 : 24)
+                        if let caption = heroCaption {
+                            heroCaptionView(caption)
                                 .padding(.horizontal, 20)
-                                .padding(.top, 14)
-                        }
-                        if canRegenToday {
-                            regenerateTodayRow
-                                .padding(.horizontal, 20)
-                                .padding(.top, 12)
+                                .padding(.top, 8)
                         }
                         if effectiveKind.isWorkout {
-                            PreWorkoutCheckIn()
-                                .padding(.horizontal, 20)
-                                .padding(.top, 18)
                             lastSessionCard
                                 .padding(.horizontal, 20)
-                                .padding(.top, 14)
+                                .padding(.top, 20)
                             if let template {
-                                exerciseList(template)
+                                editableExerciseList(template)
                                     .padding(.horizontal, 20)
-                                    .padding(.top, 20)
+                                    .padding(.top, 14)
                             }
-                            pickRoutineLink
+                            PreWorkoutCheckIn()
                                 .padding(.horizontal, 20)
-                                .padding(.top, 18)
+                                .padding(.top, 14)
                         }
                         Spacer().frame(height: 160)
                     }
@@ -224,53 +214,24 @@ struct TodayScreen: View {
         }
         .foregroundStyle(Color.ink)
         .preferredColorScheme(.dark)
-        .sheet(isPresented: $overridingToday) {
-            OverrideTodaySheet(onStartSession: {
-                overridingToday = false
-                onStart()
-            })
-        }
-    }
-
-    // MARK: - Drift + regenerate affordances (Phase 15c)
-
-    /// True when today is a generated lift/mobility day with no active session
-    /// — i.e. the user can safely re-roll the workout without disrupting an
-    /// in-progress log.
-    private var canRegenToday: Bool {
-        guard store.active == nil else { return false }
-        guard let day = todayPlan else { return false }
-        guard !day.protected else { return false }
-        guard day.kind == .lift || day.kind == .mobility else { return false }
-        return day.generatedWorkout != nil
-    }
-
-    /// Always-available "give me a different workout today" affordance. Uses
-    /// a fresh deterministic salt so each tap re-rolls.
-    private var regenerateTodayRow: some View {
-        Button {
-            planStore.regenerateToday(memory: memoryStore.memory)
-            let haptic = UIImpactFeedbackGenerator(style: .light)
-            haptic.impactOccurred()
-        } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "arrow.triangle.2.circlepath")
-                    .font(.system(size: 12, weight: .semibold))
-                Text("Regenerate today's workout")
-                    .styled(.micro)
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 10, weight: .semibold))
+        .sheet(isPresented: $editingPreview) {
+            if let day = todayPlan {
+                DayWorkoutPreviewSheet(day: day, onStartSession: {
+                    editingPreview = false
+                    onStart()
+                })
             }
-            .foregroundStyle(Color.ink3)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(Color.surface)
-            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.line, lineWidth: 0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("today-regenerate")
+    }
+
+    /// True when tapping the exercise list should open the editable preview.
+    /// We gate on (a) there's a real plan day to pass to the sheet and (b)
+    /// there's no active session — mid-workout editing happens inside the
+    /// log screen, not the preview.
+    private var canEditPreview: Bool {
+        guard todayPlan != nil else { return false }
+        guard store.active == nil else { return false }
+        return effectiveKind == .lift || effectiveKind == .mobility
     }
 
     private var planNextWeekPill: some View {
@@ -296,28 +257,6 @@ struct TodayScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("today-plan-next-week")
-    }
-
-    private var pickRoutineLink: some View {
-        Button { overridingToday = true } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "arrow.triangle.swap")
-                    .font(.system(size: 11, weight: .medium))
-                Text("OVERRIDE TODAY")
-                    .styled(.micro)
-            }
-            .foregroundStyle(Color.ink2)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(Color.surface)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.line, lineWidth: 0.5)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("today-override")
     }
 
     // MARK: - Top bar
@@ -365,13 +304,21 @@ struct TodayScreen: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func reasonRow(_ reason: String) -> some View {
+    /// Single source of truth for the small caption rendered under the hero
+    /// subtitle. Coach insight wins if present; otherwise we fall back to
+    /// the planner's static generatedReason. Replaces the pre-build-80
+    /// stacked InsightCard + reasonRow.
+    private var heroCaption: String? {
+        insightCopy ?? todayPlan?.generatedReason
+    }
+
+    private func heroCaptionView(_ caption: String) -> some View {
         HStack(alignment: .top, spacing: 6) {
             Image(systemName: "sparkle")
                 .font(.system(size: 10))
                 .foregroundStyle(Color.accent)
                 .padding(.top, 2)
-            Text(reason)
+            Text(caption)
                 .font(.monoXS)
                 .foregroundStyle(Color.ink3)
                 .fixedSize(horizontal: false, vertical: true)
@@ -421,13 +368,48 @@ struct TodayScreen: View {
 
     // MARK: - Exercise list
 
-    private func exerciseList(_ template: WorkoutTemplate) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("TODAY'S EXERCISES")
-                .styled(.micro)
-                .foregroundStyle(Color.ink3)
-                .padding(.bottom, 8)
+    /// Editable wrapper around `exerciseList`. Tapping anywhere on the card
+    /// opens the editable preview sheet (where the user can swap, save to
+    /// library, etc). Falls back to read-only on edge cases the preview
+    /// sheet can't handle (no plan day, active session in progress).
+    @ViewBuilder
+    private func editableExerciseList(_ template: WorkoutTemplate) -> some View {
+        if canEditPreview {
+            Button { editingPreview = true } label: {
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack {
+                        Text("TODAY'S EXERCISES")
+                            .styled(.micro)
+                            .foregroundStyle(Color.ink3)
+                        Spacer()
+                        Image(systemName: "pencil")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(Color.ink3)
+                        Text("EDIT")
+                            .styled(.micro)
+                            .foregroundStyle(Color.ink3)
+                    }
+                    .padding(.bottom, 8)
 
+                    exerciseRows(template)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("today-edit-workout")
+        } else {
+            VStack(alignment: .leading, spacing: 0) {
+                Text("TODAY'S EXERCISES")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                    .padding(.bottom, 8)
+                exerciseRows(template)
+            }
+        }
+    }
+
+    private func exerciseRows(_ template: WorkoutTemplate) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
             ForEach(Array(template.exercises.enumerated()), id: \.element.id) { idx, ex in
                 exerciseRow(index: idx, ex: ex)
                 if idx < template.exercises.count - 1 {
