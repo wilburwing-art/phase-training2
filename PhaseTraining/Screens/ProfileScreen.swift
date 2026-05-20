@@ -26,6 +26,35 @@ struct ProfileScreen: View {
     // Injury picker state
     @State private var presentingInjuryPicker = false
 
+    // Tap-to-edit for the two number steppers (build 67). Tapping the value
+    // opens an alert with a number-pad TextField; +/- still works for
+    // incremental tweaks.
+    @State private var editingField: EditingField? = nil
+    @State private var editingText: String = ""
+
+    enum EditingField: String, Identifiable {
+        case sessionMinutes, liftDays
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .sessionMinutes: return "Session length"
+            case .liftDays:       return "Lift days per week"
+            }
+        }
+        var unit: String {
+            switch self {
+            case .sessionMinutes: return "minutes"
+            case .liftDays:       return "days"
+            }
+        }
+        var clamp: ClosedRange<Int> {
+            switch self {
+            case .sessionMinutes: return 15...120
+            case .liftDays:       return 0...7
+            }
+        }
+    }
+
     // Typeable age field (build 49) — mirrors store.memory.age while the
     // user is editing; commits + clamps on focus loss.
     @State private var ageText: String = ""
@@ -127,6 +156,44 @@ struct ProfileScreen: View {
                 initialSelection: selectedInjurySlugs,
                 onCommit: { newSlugs in commitInjuries(newSlugs) }
             )
+        }
+        .alert(editingField?.title ?? "", isPresented: editingFieldBinding) {
+            TextField(editingField?.unit ?? "", text: $editingText)
+                .keyboardType(.numberPad)
+            Button("Cancel", role: .cancel) { editingField = nil }
+            Button("Save") { commitEditingValue() }
+        } message: {
+            if let field = editingField {
+                Text("Enter \(field.clamp.lowerBound)–\(field.clamp.upperBound) \(field.unit).")
+            }
+        }
+    }
+
+    private var editingFieldBinding: Binding<Bool> {
+        Binding(
+            get: { editingField != nil },
+            set: { if !$0 { editingField = nil } }
+        )
+    }
+
+    private func beginEditing(_ field: EditingField) {
+        editingField = field
+        switch field {
+        case .sessionMinutes: editingText = String(store.memory.sessionMinutes)
+        case .liftDays:       editingText = String(store.memory.liftDaysPerWeek)
+        }
+    }
+
+    private func commitEditingValue() {
+        guard let field = editingField else { return }
+        defer { editingField = nil }
+        guard let raw = Int(editingText.trimmingCharacters(in: .whitespaces)) else { return }
+        let clamped = max(field.clamp.lowerBound, min(field.clamp.upperBound, raw))
+        store.update { mem in
+            switch field {
+            case .sessionMinutes: mem.sessionMinutes = clamped
+            case .liftDays:       mem.liftDaysPerWeek = clamped
+            }
         }
     }
 
@@ -351,6 +418,7 @@ struct ProfileScreen: View {
             valueStepper(
                 value: "\(store.memory.sessionMinutes)",
                 unit: "MIN",
+                onTapValue: { beginEditing(.sessionMinutes) },
                 onMinus: { adjustMinutes(-15) },
                 onPlus:  { adjustMinutes(15) }
             )
@@ -363,6 +431,7 @@ struct ProfileScreen: View {
             valueStepper(
                 value: "\(store.memory.liftDaysPerWeek)",
                 unit: store.memory.liftDaysPerWeek == 1 ? "DAY" : "DAYS",
+                onTapValue: { beginEditing(.liftDays) },
                 onMinus: { adjustLifts(-1) },
                 onPlus:  { adjustLifts(1) }
             )
@@ -781,19 +850,25 @@ struct ProfileScreen: View {
     }
 
     private func valueStepper(value: String, unit: String,
+                              onTapValue: (() -> Void)? = nil,
                               onMinus: @escaping () -> Void,
                               onPlus:  @escaping () -> Void) -> some View {
         HStack(spacing: 14) {
             stepperBtn("minus", action: onMinus)
-            VStack(spacing: 0) {
-                Text(value)
-                    .font(.custom("JetBrainsMono-SemiBold", size: 28))
-                    .foregroundStyle(Color.ink)
-                Text(unit)
-                    .styled(.micro)
-                    .foregroundStyle(Color.ink3)
+            Button(action: { onTapValue?() }) {
+                VStack(spacing: 0) {
+                    Text(value)
+                        .font(.custom("JetBrainsMono-SemiBold", size: 28))
+                        .foregroundStyle(Color.ink)
+                    Text(unit)
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                }
+                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
             }
-            .frame(maxWidth: .infinity)
+            .buttonStyle(.plain)
+            .disabled(onTapValue == nil)
             stepperBtn("plus", action: onPlus)
         }
         .padding(.vertical, 10)
