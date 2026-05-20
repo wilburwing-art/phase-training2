@@ -28,6 +28,7 @@ struct DayWorkoutPreviewSheet: View {
 
     @State private var template: WorkoutTemplate? = nil
     @State private var swappingExIdx: Int? = nil
+    @State private var editingExIdx: Int? = nil
     @State private var addingExercise: Bool = false
     @State private var detailExercise: Exercise? = nil
     @State private var didSave: Bool = false
@@ -69,6 +70,20 @@ struct DayWorkoutPreviewSheet: View {
                     initialFilters: initial,
                     onPick: { picked in
                         swapExercise(at: wrapped.index, with: picked)
+                    }
+                )
+            }
+            .sheet(item: editingBinding) { wrapped in
+                let ex = template?.exercises[wrapped.index]
+                ExerciseEditorSheet(
+                    name: ex?.name ?? "Exercise",
+                    sets: ex?.targetSets ?? 3,
+                    reps: ex?.targetReps ?? 8,
+                    rest: ex?.rest ?? 90,
+                    rpe: ex?.rpe,
+                    tempo: ex?.tempo,
+                    onSave: { sets, reps, rest in
+                        updateExercise(at: wrapped.index, sets: sets, reps: reps, rest: rest)
                     }
                 )
             }
@@ -157,20 +172,35 @@ struct DayWorkoutPreviewSheet: View {
 
     private func exerciseRow(_ ex: ExerciseTemplate, position: Int) -> some View {
         HStack(spacing: 12) {
-            Text("\(position)")
-                .font(.monoXS)
-                .foregroundStyle(Color.ink3)
-                .frame(width: 18, alignment: .leading)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(ex.name)
-                    .font(.custom("Inter-Regular", size: 14))
-                    .foregroundStyle(Color.ink)
-                    .lineLimit(2)
-                Text("\(ex.targetSets) × \(ex.targetReps) · rest \(ex.rest)s")
-                    .font(.monoXS)
-                    .foregroundStyle(Color.ink3)
+            // Tap the position+name+meta block to edit sets/reps/rest.
+            // The info + swap icons remain dedicated buttons on the right,
+            // so the tap zone here is unambiguous.
+            Button {
+                editingExIdx = position - 1
+            } label: {
+                HStack(spacing: 12) {
+                    Text("\(position)")
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                        .frame(width: 18, alignment: .leading)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(ex.name)
+                            .font(.custom("Inter-Regular", size: 14))
+                            .foregroundStyle(Color.ink)
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                        Text("\(ex.targetSets) × \(ex.targetReps) · rest \(ex.rest)s")
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
-            Spacer(minLength: 8)
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("preview-edit-\(position)")
+            .accessibilityLabel("Edit \(ex.name) sets, reps, and rest")
             Button {
                 detailExercise = CoachDatabase.shared
                     .listExercises(search: ex.name)
@@ -291,6 +321,15 @@ struct DayWorkoutPreviewSheet: View {
         )
     }
 
+    /// Parallel binding for the editor sheet. Wraps Int? in an Identifiable
+    /// so `.sheet(item:)` can detect changes — same shape as swappingBinding.
+    private var editingBinding: Binding<PreviewSwapIndex?> {
+        Binding(
+            get: { editingExIdx.map(PreviewSwapIndex.init) },
+            set: { editingExIdx = $0?.index }
+        )
+    }
+
     /// Resolve "similar exercises" filters for the picker when swapping.
     /// Returns ExerciseFilters with bucket + category set from the source
     /// exercise so the picker opens narrowed to true alternatives (same
@@ -354,6 +393,32 @@ struct DayWorkoutPreviewSheet: View {
             name: tmpl.name,
             category: tmpl.category,
             exercises: tmpl.exercises + [newEx]
+        )
+    }
+
+    /// Update sets/reps/rest on an in-place exercise (no swap). Preserves
+    /// id + name + type + rpe + tempo so the saved-to-library + prev-session
+    /// lookup paths keep working.
+    private func updateExercise(at idx: Int, sets: Int, reps: Int, rest: Int) {
+        guard let tmpl = template, tmpl.exercises.indices.contains(idx) else { return }
+        let old = tmpl.exercises[idx]
+        var newExercises = tmpl.exercises
+        newExercises[idx] = ExerciseTemplate(
+            id: old.id,
+            name: old.name,
+            type: old.type,
+            unit: old.unit,
+            targetSets: sets,
+            targetReps: reps,
+            rest: rest,
+            rpe: old.rpe,
+            tempo: old.tempo
+        )
+        template = WorkoutTemplate(
+            id: tmpl.id,
+            name: tmpl.name,
+            category: tmpl.category,
+            exercises: newExercises
         )
     }
 
