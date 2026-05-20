@@ -594,6 +594,95 @@ final class UserDatabase {
         sqlite3_exec(db, "DELETE FROM sessions", nil, nil, nil)
     } }
 
+    // MARK: - PR aggregation (replaces in-memory walks in SessionStore)
+
+    /// Flat row from a qualifying completed set, suitable for replaying the
+    /// running-best walk that powers `allPersonalRecords()`.
+    struct PRSetRow {
+        let name: String
+        let reps: Int
+        let weight: Double
+        let sessionStart: Int64
+    }
+
+    /// All completed sets with parseable positive (weight, reps), ordered by
+    /// session_start ASC then by position. GLOB filters mirror Swift's
+    /// `Int(set.reps)` strictness (rejects "8-12", "AMRAP"); `CAST AS REAL > 0`
+    /// matches `Double(set.weight) ?? 0` + `> 0` guard.
+    func qualifyingSetsForPRs() -> [PRSetRow] { withLock {
+        guard let db else { return [] }
+        let sql = """
+        SELECT se.name,
+               CAST(ss.reps AS INTEGER) AS reps_int,
+               CAST(ss.weight AS REAL)  AS weight_real,
+               ss.session_start
+        FROM session_sets ss
+        JOIN session_exercises se
+          ON se.session_start = ss.session_start
+         AND se.position = ss.exercise_position
+        WHERE ss.done = 1
+          AND ss.weight <> ''
+          AND ss.reps GLOB '[0-9]*'
+          AND ss.reps NOT GLOB '*[^0-9]*'
+          AND CAST(ss.weight AS REAL) > 0
+        ORDER BY ss.session_start ASC, ss.exercise_position ASC, ss.num ASC
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        var out: [PRSetRow] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            out.append(PRSetRow(
+                name: text(stmt, 0) ?? "",
+                reps: Int(sqlite3_column_int64(stmt, 1)),
+                weight: sqlite3_column_double(stmt, 2),
+                sessionStart: sqlite3_column_int64(stmt, 3)
+            ))
+        }
+        return out
+    } }
+
+    /// Map of `[exerciseName -> [reps -> max_weight]]` across all qualifying
+    /// completed sets. Optionally excludes one session by start_time (used
+    /// by `personalRecords(in:excludingSessionId:)` when comparing a
+    /// just-saved session against pre-existing history).
+    func bestWeightsByExerciseAndReps(excludingSessionStart: Int64? = nil) -> [String: [Int: Double]] { withLock {
+        guard let db else { return [:] }
+        var sql = """
+        SELECT se.name,
+               CAST(ss.reps AS INTEGER) AS reps_int,
+               MAX(CAST(ss.weight AS REAL)) AS max_weight
+        FROM session_sets ss
+        JOIN session_exercises se
+          ON se.session_start = ss.session_start
+         AND se.position = ss.exercise_position
+        WHERE ss.done = 1
+          AND ss.weight <> ''
+          AND ss.reps GLOB '[0-9]*'
+          AND ss.reps NOT GLOB '*[^0-9]*'
+          AND CAST(ss.weight AS REAL) > 0
+        """
+        if excludingSessionStart != nil {
+            sql += " AND ss.session_start <> ?"
+        }
+        sql += " GROUP BY se.name, CAST(ss.reps AS INTEGER)"
+
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [:] }
+        defer { sqlite3_finalize(stmt) }
+        if let exclude = excludingSessionStart {
+            sqlite3_bind_int64(stmt, 1, exclude)
+        }
+        var out: [String: [Int: Double]] = [:]
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            let name = text(stmt, 0) ?? ""
+            let reps = Int(sqlite3_column_int64(stmt, 1))
+            let weight = sqlite3_column_double(stmt, 2)
+            out[name, default: [:]][reps] = weight
+        }
+        return out
+    } }
+
     // MARK: - Helpers
 
     private func text(_ stmt: OpaquePointer?, _ idx: Int32) -> String? {

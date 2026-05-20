@@ -302,7 +302,13 @@ final class SessionStore: ObservableObject {
         return saved
     }
 
-    // MARK: - PRs
+    // MARK: - PRs (SQL-aggregated)
+    //
+    // Prior best-weight-per-(exercise,reps) lookup goes through one indexed
+    // SQL query (`bestWeightsByExerciseAndReps`), replacing the O(N×M×K)
+    // nested walk over savedSessions. The PR-emission loop still runs in
+    // Swift — its inputs are either a live ActiveSession's exercises (not
+    // in DB yet) or a single SQL fetch of qualifying-set rows.
 
     /// Personal records achieved by `exercises` — completed sets whose weight
     /// at given rep count beats every prior set of the same exercise (matched
@@ -310,30 +316,13 @@ final class SessionStore: ObservableObject {
     /// CompleteScreen to celebrate before save commits, and by post-save
     /// surfaces.
     ///
-    /// Walks the in-memory `savedSessions` cache. With the SQLite move that
-    /// cache is materialized once at init, but the aggregation itself stays
-    /// in Swift — moving it to SQL is a follow-up if it becomes hot.
-    ///
     /// `excludingSessionId` lets a post-save call self-exclude when the
-    /// current session is already in `savedSessions`.
+    /// current session is already in user.db.
     func personalRecords(in exercises: [LoggedExercise],
                          excludingSessionId: TimeInterval? = nil) -> [PersonalRecord] {
-        let priors = savedSessions.filter { excludingSessionId == nil || $0.id != excludingSessionId }
-
-        var best: [String: [Int: Double]] = [:]
-        for prior in priors {
-            for ex in prior.exercises {
-                for set in ex.sets where set.done {
-                    let reps = Int(set.reps) ?? 0
-                    let weight = Double(set.weight) ?? 0
-                    guard reps > 0, weight > 0 else { continue }
-                    let current = best[ex.name, default: [:]][reps] ?? 0
-                    if weight > current {
-                        best[ex.name, default: [:]][reps] = weight
-                    }
-                }
-            }
-        }
+        let best = userDB.bestWeightsByExerciseAndReps(
+            excludingSessionStart: excludingSessionId.map { Int64($0) }
+        )
 
         var out: [PersonalRecord] = []
         var emitted: Set<String> = []
@@ -359,41 +348,38 @@ final class SessionStore: ObservableObject {
         return out
     }
 
-    /// All PR events across saved history, newest first. Walks the in-memory
-    /// `savedSessions` cache oldest→newest keeping a running best-weight-per-
-    /// (exercise,reps) map and emits a `PersonalRecord` every time a
-    /// completed set beats the running best. One emission per (exercise,
-    /// reps) pair per session.
+    /// All PR events across saved history, newest first. Replays the
+    /// running-best walk over a single indexed SQL fetch of qualifying
+    /// completed sets (ordered by session_start ASC). One emission per
+    /// (exercise, reps) pair per session.
     ///
     /// Used by ProgressScreen's PR feed + per-exercise sparklines.
     func allPersonalRecords() -> [PersonalRecord] {
-        let ordered = savedSessions.sorted { $0.startTime < $1.startTime }
+        let rows = userDB.qualifyingSetsForPRs()
         var best: [String: [Int: Double]] = [:]
         var events: [PersonalRecord] = []
-        for session in ordered {
-            var emitted: Set<String> = []
-            for ex in session.exercises {
-                for set in ex.sets where set.done {
-                    let reps = Int(set.reps) ?? 0
-                    let weight = Double(set.weight) ?? 0
-                    guard reps > 0, weight > 0 else { continue }
-                    let prior = best[ex.name, default: [:]][reps] ?? 0
-                    if weight > prior {
-                        let key = "\(ex.name)|\(reps)"
-                        if !emitted.contains(key) {
-                            emitted.insert(key)
-                            events.append(PersonalRecord(
-                                exerciseName: ex.name,
-                                reps: reps,
-                                weight: weight,
-                                previousBest: prior > 0 ? prior : nil,
-                                date: session.startTime
-                            ))
-                        }
-                        best[ex.name, default: [:]][reps] = weight
-                    }
-                }
+        var currentSession: Int64 = .min
+        var emitted: Set<String> = []
+
+        for r in rows {
+            if r.sessionStart != currentSession {
+                currentSession = r.sessionStart
+                emitted = []
             }
+            let prior = best[r.name, default: [:]][r.reps] ?? 0
+            guard r.weight > prior else { continue }
+            let key = "\(r.name)|\(r.reps)"
+            if !emitted.contains(key) {
+                emitted.insert(key)
+                events.append(PersonalRecord(
+                    exerciseName: r.name,
+                    reps: r.reps,
+                    weight: r.weight,
+                    previousBest: prior > 0 ? prior : nil,
+                    date: Date(timeIntervalSince1970: TimeInterval(r.sessionStart))
+                ))
+            }
+            best[r.name, default: [:]][r.reps] = r.weight
         }
         return events.reversed()
     }
