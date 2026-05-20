@@ -87,14 +87,14 @@ enum CoachContext {
         if !memory.dislikes.isEmpty {
             blocks.append("DISLIKES\n" + memory.dislikes.map { "- \($0)" }.joined(separator: "\n"))
         }
-        let profile = DemographicProfile.from(memory)
+        let demoProfile = DemographicProfile.from(memory)
         if let block = structuredInjuriesSection(memory: memory, now: now) {
             blocks.append(block)
         }
-        if let block = injuryFiltersSection(profile: profile, memory: memory) {
+        if let block = injuryFiltersSection(profile: demoProfile, memory: memory) {
             blocks.append(block)
         }
-        if let block = prehabCandidatesSection(profile: profile, memory: memory) {
+        if let block = prehabCandidatesSection(profile: demoProfile, memory: memory) {
             blocks.append(block)
         }
         // Legacy free-text constraints (anything in memory.constraints that
