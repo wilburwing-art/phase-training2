@@ -23,11 +23,13 @@ struct DayWorkoutPreviewSheet: View {
     var onStartSession: (() -> Void)? = nil
 
     @EnvironmentObject private var sessionStore: SessionStore
+    @EnvironmentObject private var customStore: CustomRoutineStore
     @Environment(\.dismiss) private var dismiss
 
     @State private var template: WorkoutTemplate? = nil
     @State private var swappingExIdx: Int? = nil
     @State private var detailExercise: Exercise? = nil
+    @State private var didSave: Bool = false
 
     private var isToday: Bool {
         Calendar.current.isDateInToday(day.date)
@@ -42,8 +44,8 @@ struct DayWorkoutPreviewSheet: View {
                 } else {
                     emptyState
                 }
-                if isToday, template != nil {
-                    VStack { Spacer(); startBar }
+                if template != nil {
+                    VStack { Spacer(); bottomBar }
                 }
             }
             .navigationTitle(headerLabel)
@@ -118,7 +120,7 @@ struct DayWorkoutPreviewSheet: View {
             }
             .padding(.horizontal, 20)
             .padding(.top, 18)
-            .padding(.bottom, isToday ? 120 : 32)
+            .padding(.bottom, 120)  // leaves space for the sticky bottom bar (Save + optional Start).
         }
     }
 
@@ -206,17 +208,42 @@ struct DayWorkoutPreviewSheet: View {
         }
     }
 
-    private var startBar: some View {
-        Button(action: start) {
-            Text("Start workout")
-                .font(.custom("SpaceGrotesk-SemiBold", size: 15))
-                .foregroundStyle(Color.accentInk)
+    /// Sticky bottom bar. Save is always present once a template is loaded;
+    /// Start workout is added only when the day is today (other days don't
+    /// have a session to begin yet — the planner regenerates on the day-of).
+    private var bottomBar: some View {
+        HStack(spacing: 10) {
+            Button(action: saveToLibrary) {
+                HStack(spacing: 6) {
+                    Image(systemName: didSave ? "checkmark" : "tray.and.arrow.down")
+                        .font(.system(size: 13, weight: .semibold))
+                    Text(didSave ? "Saved" : "Save to library")
+                        .font(.custom("SpaceGrotesk-SemiBold", size: 14))
+                }
+                .foregroundStyle(didSave ? Color.ok : Color.ink)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(Color.accent)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .padding(.vertical, 14)
+                .background(Color.surface)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+            .disabled(didSave)
+            .accessibilityIdentifier("preview-save-to-library")
+
+            if isToday {
+                Button(action: start) {
+                    Text("Start workout")
+                        .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+                        .foregroundStyle(Color.accentInk)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Color.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+            }
         }
-        .buttonStyle(.plain)
         .padding(.horizontal, 20)
         .padding(.bottom, 24)
     }
@@ -256,6 +283,45 @@ struct DayWorkoutPreviewSheet: View {
         sessionStore.saveActive(sessionStore.createSession(from: template))
         dismiss()
         onStartSession?()
+    }
+
+    /// Snapshot the current (possibly swap-mutated) template as a CustomRoutine
+    /// in the user's library. Doesn't dismiss — flips the button into a
+    /// "Saved" affordance so the user can still hit Start without re-opening
+    /// the sheet.
+    private func saveToLibrary() {
+        guard let template, !template.exercises.isEmpty else { return }
+        let routine = CustomRoutine(
+            id: UUID().uuidString,
+            name: template.name,
+            exercises: template.exercises.enumerated().map { idx, ex in
+                CustomRoutineExercise(
+                    id: UUID().uuidString,
+                    exerciseId: lookupExerciseId(forName: ex.name) ?? 0,
+                    name: ex.name,
+                    position: idx + 1,
+                    sets: ex.targetSets,
+                    reps: String(ex.targetReps),
+                    rest: "\(ex.rest)s",
+                    notes: nil
+                )
+            },
+            createdAt: Date()
+        )
+        customStore.save(routine)
+        didSave = true
+        let haptic = UINotificationFeedbackGenerator()
+        haptic.notificationOccurred(.success)
+    }
+
+    /// Resolve a coach.db exerciseId by name so the saved CustomRoutine can
+    /// later look up substitutes / image / detail. Returns nil when no exact
+    /// name match exists (the saved row stays usable as a session template
+    /// either way; substitution lookup just degrades).
+    private func lookupExerciseId(forName name: String) -> Int? {
+        CoachDatabase.shared
+            .listExercises(search: name)
+            .first { $0.name.caseInsensitiveCompare(name) == .orderedSame }?.id
     }
 
     private static func parseRepsLeading(_ s: String?) -> Int? {

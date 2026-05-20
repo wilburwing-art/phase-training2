@@ -14,12 +14,12 @@ import SwiftUI
 
 struct LibraryScreen: View {
     enum Segment: String, CaseIterable, Hashable {
-        case exercises, routines
+        case exercises, routines  // raw value kept as "routines" to avoid a UserDefaults / state migration; UI label is "Workouts".
 
         var label: String {
             switch self {
             case .exercises: return "Exercises"
-            case .routines:  return "Routines"
+            case .routines:  return "Workouts"
             }
         }
     }
@@ -97,7 +97,7 @@ struct LibraryScreen: View {
                     .foregroundStyle(Color.accentInk)
                     .frame(width: 24, alignment: .center)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Create custom routine")
+                    Text("Build a workout")
                         .styled(.displayS)
                         .foregroundStyle(Color.accentInk)
                     Text("Coach builds one from your focus + duration")
@@ -267,11 +267,11 @@ struct LibraryScreen: View {
             Image(systemName: "tray")
                 .font(.system(size: 22))
                 .foregroundStyle(Color.ink3)
-            Text("Saved routines show up here.")
+            Text("Saved workouts show up here.")
                 .styled(.body)
                 .foregroundStyle(Color.ink2)
                 .multilineTextAlignment(.center)
-            Text("Tap Create custom routine to build one with the coach.")
+            Text("Tap Build a workout to create one with the coach.")
                 .font(.monoXS)
                 .foregroundStyle(Color.ink3)
                 .multilineTextAlignment(.center)
@@ -342,7 +342,7 @@ struct LibraryScreen: View {
                     .foregroundStyle(Color.accent)
                     .frame(width: 24, alignment: .center)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(c.name.isEmpty ? "Untitled routine" : c.name)
+                    Text(c.name.isEmpty ? "Untitled workout" : c.name)
                         .styled(.displayS)
                         .foregroundStyle(Color.ink)
                         .lineLimit(1)
