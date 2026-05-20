@@ -104,53 +104,47 @@ struct WeekScreen: View {
 
     /// Static Mon→Sun layout — no ScrollView, no LazyVStack. Seven rows are
     /// always visible at fixed positions so muscle memory is "row 3 = Wed".
-    /// DayRow vertical padding + reason lineLimit are tuned so the full week
-    /// fits on iPhone 14+ in portrait without clipping.
+    /// Rows are sized by GeometryReader so all seven always fit the available
+    /// viewport between header and the system tab bar — iPhone SE through
+    /// 16 Pro Max.
     private func content(plan: WeekPlan) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             header(plan: plan)
                 .padding(.horizontal, 20)
-                .padding(.top, 20)
-                .padding(.bottom, 14)
+                .padding(.top, 12)
+                .padding(.bottom, 8)
 
-            VStack(spacing: 8) {
-                ForEach(plan.days) { day in
-                    DraggableDayRow(
-                        day: day,
-                        isToday: isToday(day.date),
-                        onTap: { editingDate = day.date }
-                    )
+            GeometryReader { geo in
+                let spacing: CGFloat = 6
+                let rowH = max(48, (geo.size.height - spacing * 6) / 7)
+                VStack(spacing: spacing) {
+                    ForEach(plan.days) { day in
+                        DraggableDayRow(
+                            day: day,
+                            isToday: isToday(day.date),
+                            onTap: { editingDate = day.date }
+                        )
+                        .frame(height: rowH)
+                    }
                 }
             }
-            .padding(.horizontal, 20)
-
-            Spacer(minLength: 0)
-        }
-        // Keep Sunday's row clear of the tab bar. The default SwiftUI tab
-        // strip is ~49pt + bottom safe-area; 16pt inset still let the last
-        // DayRow's reason text disappear behind it. 60pt is the value the
-        // earlier comment intended — bump to that.
-        .safeAreaInset(edge: .bottom) {
-            Spacer().frame(height: 60)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
         }
     }
 
     private func header(plan: WeekPlan) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 4) {
             Text("THIS WEEK")
                 .styled(.micro)
                 .foregroundStyle(Color.accent)
             Text(plan.rangeLabel)
-                .font(.custom("SpaceGrotesk-SemiBold", size: 30))
-                .tracking(-0.025 * 30)
+                .font(.custom("SpaceGrotesk-SemiBold", size: 26))
+                .tracking(-0.025 * 26)
                 .foregroundStyle(Color.ink)
             Text(planSummary(plan))
                 .font(.monoXS)
                 .foregroundStyle(Color.ink3)
-            Text("Tap any day to customize · long-press to drag and swap.")
-                .font(.monoXS)
-                .foregroundStyle(Color.ink3)
-                .padding(.top, 2)
         }
     }
 
@@ -263,55 +257,36 @@ private struct DayRow: View {
     var isTargeted: Bool = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
+        HStack(spacing: 12) {
             // Date strip
-            VStack(spacing: 2) {
+            VStack(spacing: 0) {
                 Text(weekdayShort)
                     .styled(.micro)
                     .foregroundStyle(isToday ? Color.accent : Color.ink3)
                 Text(dayNumber)
-                    .font(.custom("JetBrainsMono-SemiBold", size: 22))
+                    .font(.custom("JetBrainsMono-SemiBold", size: 18))
                     .foregroundStyle(isToday ? Color.ink : Color.ink2)
             }
-            .frame(width: 44)
+            .frame(width: 36)
 
-            // Body
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 6) {
-                    KindBadge(kind: day.kind)
-                    if day.protected {
-                        Image(systemName: "lock.fill")
-                            .font(.system(size: 9))
-                            .foregroundStyle(Color.ink3)
-                    }
-                    if isToday {
-                        Text("TODAY")
-                            .styled(.micro)
-                            .foregroundStyle(Color.bg)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color.accent)
-                            )
-                    }
-                    Spacer()
-                }
-                Text(day.title)
-                    .styled(.displayS)
-                    .foregroundStyle(Color.ink)
-                if let reason = day.generatedReason {
-                    Text(reason)
-                        .font(.monoXS)
-                        .foregroundStyle(Color.ink3)
-                        .lineLimit(1)
-                }
+            KindBadge(kind: day.kind)
+
+            Text(day.title)
+                .styled(.displayS)
+                .foregroundStyle(Color.ink)
+                .lineLimit(1)
+                .truncationMode(.tail)
+
+            Spacer(minLength: 4)
+
+            if day.protected {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 10))
+                    .foregroundStyle(Color.ink3)
             }
-
-            Spacer(minLength: 0)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 12)
+        .frame(maxHeight: .infinity)
         .background(isTargeted ? Color.accentWash : (isToday ? Color.accentWash : Color.surface))
         .overlay(alignment: .leading) {
             if isToday {
