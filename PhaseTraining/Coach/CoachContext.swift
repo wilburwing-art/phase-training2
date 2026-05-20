@@ -34,6 +34,23 @@ enum CoachContext {
             if !others.isEmpty { profile.append("other sports: \(others.joined(separator: ", "))") }
         }
         profile.append("focus: \(memory.primaryFocus.label)")
+        // Season is what tells the planner whether to bias toward strength
+        // (off-season) or sport time (in-season). Without it the coach was
+        // guessing from sport + recent volume.
+        profile.append("season: \(seasonSummary(memory: memory))")
+        if let peak = memory.peakDate {
+            let cal = Calendar.current
+            let days = cal.dateComponents([.day],
+                                          from: cal.startOfDay(for: now),
+                                          to: cal.startOfDay(for: peak)).day ?? 0
+            if days > 0 {
+                profile.append("peak date: \(short(peak)) (in \(days) day\(days == 1 ? "" : "s"))")
+            } else if days == 0 {
+                profile.append("peak date: \(short(peak)) (today)")
+            } else {
+                profile.append("peak date: \(short(peak)) (passed \(-days) day\(days == -1 ? "" : "s") ago)")
+            }
+        }
         profile.append("experience: \(memory.experience.label)")
         // Starting state is a permanent profile fact, not a time-bounded
         // window. Lets the coach reason about expected soreness + load
@@ -157,6 +174,31 @@ enum CoachContext {
         }
 
         return blocks.joined(separator: "\n\n")
+    }
+
+    // MARK: - Season summary
+    //
+    // Render the per-sport season map + the default, collapsing to a single
+    // value when everyone is on the same phase. The coach needs both the
+    // primary season (planner uses this) AND the off-primary sport seasons
+    // (planner ignores them today, but the LLM can still reason about
+    // "in-season skiing on Sundays means lighter Saturday lifts").
+    static func seasonSummary(memory: TrainingMemory) -> String {
+        // No sports — single default season is the whole signal.
+        if memory.sports.isEmpty {
+            return memory.defaultSeason.label.lowercased()
+        }
+        let phases = memory.sports.map { sport -> (Sport, SeasonPhase) in
+            (sport, memory.seasonsBySport[sport] ?? memory.defaultSeason)
+        }
+        // All sports in the same phase → render once.
+        let distinct = Set(phases.map(\.1))
+        if distinct.count == 1, let only = distinct.first {
+            return only.label.lowercased()
+        }
+        // Mixed — show each sport's phase explicitly + default fallback.
+        let pieces = phases.map { "\($0.0.name.lowercased()) \($0.1.label.lowercased())" }
+        return pieces.joined(separator: ", ") + " (otherwise: \(memory.defaultSeason.label.lowercased()))"
     }
 
     // MARK: - Section builders (build 62: richer profile signal for the coach)

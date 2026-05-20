@@ -226,6 +226,7 @@ extension TrainingMemory {
             "fc:\(focuses.map(\.rawValue).joined(separator: ","))",
             "ds:\(defaultSeason.rawValue)",
             "ss:\(seasons)",
+            "pd:\(peakDate.map { String(Int($0.timeIntervalSince1970)) } ?? "_")",
             "mn:\(sessionMinutes)",
             "ld:\(liftDaysPerWeek)",
             "eq:\(equipment.map(\.rawValue).sorted().joined(separator: ","))",

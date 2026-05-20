@@ -237,6 +237,89 @@ final class CoachContextTests: XCTestCase {
         XCTAssertEqual(CoachContext.averageRecentDurationMinutes(sessions: sessions), 30)
     }
 
+    // MARK: - Season summary (build 78 — season was missing from coach context)
+
+    func test_seasonSummary_noSportsFallsBackToDefault() {
+        var m = TrainingMemory()
+        m.sports = []
+        m.defaultSeason = .preSeason
+        XCTAssertEqual(CoachContext.seasonSummary(memory: m), "pre-season")
+    }
+
+    func test_seasonSummary_allSportsSamePhaseCollapses() {
+        var m = TrainingMemory()
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        let running = Sport.catalog.first { $0.slug == "running" }!
+        m.sports = [climbing, running]
+        m.seasonsBySport = [climbing: .offSeason, running: .offSeason]
+        m.defaultSeason = .maintenance
+        XCTAssertEqual(CoachContext.seasonSummary(memory: m), "off-season")
+    }
+
+    func test_seasonSummary_mixedPhasesRenderEachSport() {
+        var m = TrainingMemory()
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        let skiing = Sport.catalog.first { $0.slug == "snow-sports" }!
+        m.sports = [climbing, skiing]
+        m.seasonsBySport = [climbing: .inSeason, skiing: .preSeason]
+        m.defaultSeason = .maintenance
+        let s = CoachContext.seasonSummary(memory: m)
+        XCTAssertTrue(s.contains("climbing in-season"), "got: \(s)")
+        XCTAssertTrue(s.contains("skiing / snowboarding pre-season"), "got: \(s)")
+        XCTAssertTrue(s.contains("otherwise: year-round / maintenance"), "got: \(s)")
+    }
+
+    func test_snapshot_includesPeakDateWhenSet() {
+        var m = TrainingMemory()
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        m.sports = [climbing]
+        m.primarySport = climbing
+        m.seasonsBySport = [climbing: .eventPrep]
+        m.peakDate = Calendar.current.date(byAdding: .day, value: 10, to: Date())
+        let snap = CoachContext.snapshot(
+            activeTab: .today,
+            memory: m,
+            plan: nil,
+            recentSessions: [],
+            recentFeedback: [],
+            recentSoreness: []
+        )
+        XCTAssertTrue(snap.contains("peak date:"), "Peak date should appear when set. Got:\n\(snap)")
+        XCTAssertTrue(snap.contains("in 10 days"), "Peak date should show days remaining. Got:\n\(snap)")
+    }
+
+    func test_snapshot_omitsPeakDateWhenNil() {
+        var m = TrainingMemory()
+        m.peakDate = nil
+        let snap = CoachContext.snapshot(
+            activeTab: .today,
+            memory: m,
+            plan: nil,
+            recentSessions: [],
+            recentFeedback: [],
+            recentSoreness: []
+        )
+        XCTAssertFalse(snap.contains("peak date:"), "Peak date line should be hidden when nil")
+    }
+
+    func test_snapshot_includesSeasonLine() {
+        var m = TrainingMemory()
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        m.sports = [climbing]
+        m.primarySport = climbing
+        m.seasonsBySport = [climbing: .offSeason]
+        let snap = CoachContext.snapshot(
+            activeTab: .today,
+            memory: m,
+            plan: nil,
+            recentSessions: [],
+            recentFeedback: [],
+            recentSoreness: []
+        )
+        XCTAssertTrue(snap.contains("season: off-season"),
+                      "USER PROFILE must include season line — was missing pre-build-78. Got:\n\(snap)")
+    }
+
     // MARK: - Helpers
 
     private func savedSession(

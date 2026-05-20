@@ -470,6 +470,163 @@ final class PlannerTests: XCTestCase {
         XCTAssertEqual(kinds.filter { $0 == .sport }.count, 3)
     }
 
+    // MARK: - Peak-date taper (build 78)
+
+    func testPeakDateInWeekAppliesHardRaceTaper() {
+        // .eventPrep + peakDate on Friday → Thu rest, Wed mobility, Fri event.
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        var memory = fixtureMemory()
+        memory.primarySport = climbing
+        memory.seasonsBySport = [climbing: .eventPrep]
+        memory.liftDaysPerWeek = 3
+
+        let cal = Calendar.current
+        let monday = mondayAnchor()
+        let wednesday = cal.date(byAdding: .day, value: 2, to: monday)!
+        let thursday = cal.date(byAdding: .day, value: 3, to: monday)!
+        let friday = cal.date(byAdding: .day, value: 4, to: monday)!
+        memory.peakDate = friday
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: monday)
+        let friPlan = plan.days.first { cal.isDate($0.date, inSameDayAs: friday) }
+        let thuPlan = plan.days.first { cal.isDate($0.date, inSameDayAs: thursday) }
+        let wedPlan = plan.days.first { cal.isDate($0.date, inSameDayAs: wednesday) }
+        XCTAssertEqual(friPlan?.kind, .event, "Peak day should be an event slot")
+        XCTAssertEqual(friPlan?.title, "Peak day")
+        XCTAssertEqual(thuPlan?.kind, .rest, "Day-1 should be rest. Got: \(plan.days.map(\.kind))")
+        XCTAssertEqual(wedPlan?.kind, .mobility, "Day-2 should be mobility. Got: \(plan.days.map(\.kind))")
+    }
+
+    func testPeakDateOutsideWeekIsNoOp() {
+        // peakDate 6 weeks away — no current-week effect.
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        var memory = fixtureMemory()
+        memory.primarySport = climbing
+        memory.seasonsBySport = [climbing: .eventPrep]
+        memory.peakDate = Calendar.current.date(byAdding: .weekOfYear, value: 6, to: mondayAnchor())
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        XCTAssertFalse(plan.days.contains { $0.kind == .event && $0.title == "Peak day" },
+                       "Peak day far in the future shouldn't create a peak slot this week")
+    }
+
+    func testPeakDateIgnoredWhenNotEventPrep() {
+        // peakDate is set but season is .preSeason → no peak taper applied.
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        var memory = fixtureMemory()
+        memory.primarySport = climbing
+        memory.seasonsBySport = [climbing: .preSeason]
+        memory.peakDate = Calendar.current.date(byAdding: .day, value: 4, to: mondayAnchor())
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        XCTAssertFalse(plan.days.contains { $0.kind == .event && $0.title == "Peak day" },
+                       "Peak date only applies under .eventPrep")
+    }
+
+    func testPeakDateChangesInputsHash() {
+        // Changing peakDate must invalidate the plan so PlanStore regenerates.
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        var memA = TrainingMemory()
+        memA.primarySport = climbing
+        memA.seasonsBySport = [climbing: .eventPrep]
+        memA.peakDate = Date(timeIntervalSince1970: 1_700_000_000)
+        var memB = memA
+        memB.peakDate = Date(timeIntervalSince1970: 1_800_000_000)
+        XCTAssertNotEqual(memA.planInputsHash, memB.planInputsHash,
+                          "peakDate must be part of planInputsHash")
+    }
+
+    // MARK: - Secondary-sport in-season promotion (build 78)
+
+    func testSecondarySportInSeasonAddsSportDay() {
+        // Climbing primary, off-season → shape has 1 sport / 3 lifts / 1 mob / 2 rest.
+        // Skiing secondary in-season → planner should promote one rest to a
+        // skiing sport day, leaving 2 sport days total.
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        let skiing   = Sport.catalog.first { $0.slug == "alpine-skiing" }!
+        var memory = fixtureMemory()
+        memory.sports = [climbing, skiing]
+        memory.primarySport = climbing
+        memory.seasonsBySport = [climbing: .offSeason, skiing: .inSeason]
+        memory.liftDaysPerWeek = 3
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        let sportDays = plan.days.filter { $0.kind == .sport }
+        XCTAssertEqual(sportDays.count, 2,
+                       "Secondary in-season should add 1 sport day. Got kinds: \(plan.days.map(\.kind))")
+        XCTAssertTrue(sportDays.contains { $0.sport?.slug == "alpine-skiing" },
+                      "Promoted slot should carry the secondary sport identity")
+    }
+
+    func testSecondarySportSkippedIfAlreadyBooked() {
+        // If the user already added a WeekEvent for the secondary sport,
+        // don't double-book — let the user's explicit event count.
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        let skiing   = Sport.catalog.first { $0.slug == "alpine-skiing" }!
+        var memory = fixtureMemory()
+        memory.sports = [climbing, skiing]
+        memory.primarySport = climbing
+        memory.seasonsBySport = [climbing: .offSeason, skiing: .inSeason]
+        memory.liftDaysPerWeek = 3
+
+        let cal = Calendar.current
+        let saturday = cal.date(byAdding: .day, value: 5, to: mondayAnchor())!
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.events = [WeekEvent(date: saturday, title: "Ski day",
+                                       kind: .sportSession, sport: skiing)]
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        let skiDays = plan.days.filter { $0.sport?.slug == "alpine-skiing" }
+        XCTAssertEqual(skiDays.count, 1,
+                       "Booked event should suppress promotion — exactly 1 ski day total")
+    }
+
+    func testSecondarySportMaintenanceDoesNotPromote() {
+        // .maintenance is the no-event-no-season-pressure default. Don't
+        // promote a sport day for sports that don't need one.
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        let yoga     = Sport.catalog.first { $0.slug == "yoga" }!
+        var memory = fixtureMemory()
+        memory.sports = [climbing, yoga]
+        memory.primarySport = climbing
+        memory.seasonsBySport = [climbing: .offSeason, yoga: .maintenance]
+        memory.liftDaysPerWeek = 3
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        let yogaDays = plan.days.filter { $0.sport?.slug == "yoga" }
+        XCTAssertEqual(yogaDays.count, 0,
+                       "Maintenance-phase secondary sports shouldn't auto-promote")
+    }
+
+    func testSecondarySportPromotionCappedAtTwo() {
+        // Six secondary sports all in-season would otherwise eat the entire
+        // week. Cap promotions at 2 / week so the planner stays sane.
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        let skiing   = Sport.catalog.first { $0.slug == "alpine-skiing" }!
+        let cycling  = Sport.catalog.first { $0.slug == "cycling" }!
+        let tennis   = Sport.catalog.first { $0.slug == "tennis" }!
+        let bjj      = Sport.catalog.first { $0.slug == "bjj" }!
+        var memory = fixtureMemory()
+        memory.sports = [climbing, skiing, cycling, tennis, bjj]
+        memory.primarySport = climbing
+        memory.seasonsBySport = [
+            climbing: .offSeason,
+            skiing:   .inSeason,
+            cycling:  .inSeason,
+            tennis:   .inSeason,
+            bjj:      .inSeason,
+        ]
+        memory.liftDaysPerWeek = 3
+
+        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
+        let secondarySportDays = plan.days.filter {
+            $0.kind == .sport && $0.sport?.slug != "climbing"
+        }
+        XCTAssertEqual(secondarySportDays.count, 2,
+                       "Promotion must cap at 2/week. Got \(secondarySportDays.count) secondary sport days")
+    }
+
     // MARK: - Multi-focus
 
     func testMultiFocusUsesFirstAsPrimary() {

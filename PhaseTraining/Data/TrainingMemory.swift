@@ -25,6 +25,11 @@ struct TrainingMemory: Codable {
     var seasonsBySport: [Sport: SeasonPhase] = [:]
     /// Used when no sport is set OR for any sport without a per-sport entry.
     var defaultSeason: SeasonPhase = .maintenance
+    /// Target peak date for .eventPrep seasons. Build 78 — before this, .eventPrep
+    /// was just a label that fell through to .maintenance in WeeklyShape resolution,
+    /// with no actual peak/taper behavior. When set, the planner applies a hard-race
+    /// style taper to the week containing this date.
+    var peakDate: Date? = nil
 
     // Schedule / capacity
     //
@@ -78,7 +83,7 @@ struct TrainingMemory: Codable {
 
     enum CodingKeys: String, CodingKey {
         case schemaVersion, sports, primarySport
-        case focuses, seasonsBySport, defaultSeason
+        case focuses, seasonsBySport, defaultSeason, peakDate
         case primaryFocus, season                 // legacy (build 20-23) — read for migration
         case availableDays, fixedSportDays        // legacy (build 20-24) — read but dropped on encode
         case sessionMinutes, liftDaysPerWeek
@@ -120,6 +125,7 @@ struct TrainingMemory: Codable {
         } else {
             self.defaultSeason = .maintenance
         }
+        self.peakDate = try? c.decodeIfPresent(Date.self, forKey: .peakDate)
 
         // availableDays + fixedSportDays are intentionally not stored anymore;
         // we don't read them on decode because the runtime no longer has slots
@@ -152,6 +158,7 @@ struct TrainingMemory: Codable {
         try c.encode(focuses,         forKey: .focuses)
         try c.encode(seasonsBySport,  forKey: .seasonsBySport)
         try c.encode(defaultSeason,   forKey: .defaultSeason)
+        try c.encodeIfPresent(peakDate, forKey: .peakDate)
         try c.encode(sessionMinutes,  forKey: .sessionMinutes)
         try c.encode(liftDaysPerWeek, forKey: .liftDaysPerWeek)
         try c.encode(equipment,       forKey: .equipment)
