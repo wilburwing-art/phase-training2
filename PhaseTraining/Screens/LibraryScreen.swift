@@ -27,6 +27,7 @@ struct LibraryScreen: View {
     }
 
     @EnvironmentObject private var customStore: CustomRoutineStore
+    @EnvironmentObject private var memoryStore: MemoryStore
 
     @State private var segment: Segment = .exercises
     @State private var query: String = ""
@@ -249,7 +250,10 @@ struct LibraryScreen: View {
                 modality: filters.modality,
                 difficulty: filters.difficulty,
                 environment: filters.environment,
-                compoundOnly: filters.compoundOnly
+                compoundOnly: filters.compoundOnly,
+                userSportSlugs: filters.hideOtherSports
+                    ? memoryStore.memory.sports.map(\.slug)
+                    : []
             )
             if rows.isEmpty {
                 searchEmptyState

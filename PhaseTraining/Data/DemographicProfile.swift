@@ -117,6 +117,13 @@ struct DemographicProfile: Equatable {
     /// Human-readable bullets explaining *why* the planner is structured
     /// the way it is. Surfaced in Profile.
     let rationale: [String]
+
+    /// Slugs of the user's selected sports (primary + secondaries). The
+    /// generator threads these to CoachDatabase.exercises(matchingPattern:)
+    /// so niche sport-specific drills (HEMA, iaido, capoeira, etc.) only
+    /// surface for users who train those sports. Foundation lifts and
+    /// general-specificity rows are always visible.
+    let userSportSlugs: [String]
 }
 
 extension DemographicProfile {
@@ -256,7 +263,8 @@ extension DemographicProfile {
             excludedExerciseIds: contraindicated,
             excludedByInjury: excludedByInjury,
             prehabSuggestions: prehab,
-            rationale: why
+            rationale: why,
+            userSportSlugs: m.sports.map(\.slug)
         )
     }
 }

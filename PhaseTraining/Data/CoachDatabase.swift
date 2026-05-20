@@ -4,6 +4,16 @@ import SQLite3
 final class CoachDatabase {
     static let shared = CoachDatabase()
 
+    /// When an exercise carries this many or more rows in
+    /// exercise_sport_relevance, treat it as universal foundation and keep
+    /// it visible for every user regardless of their sport profile. Picked
+    /// at 10 because the DB distribution puts the genuinely-cross-sport
+    /// rows (Back Squat, Conventional Deadlift, Couch Stretch, Band
+    /// Pull-Apart, Single-Leg Balance, etc.) at >= 10 tags, while
+    /// discipline-cluster drills (capoeira/dance/ginga, HEMA cuts, iaido
+    /// forms, OCR-specific carries) sit at 1-7 tags.
+    static let foundationTagThreshold = 10
+
     private var db: OpaquePointer?
 
     /// Serializes ALL public reads on this singleton. SQLite is opened with
@@ -189,15 +199,37 @@ final class CoachDatabase {
         modality: String? = nil,
         difficulty: String? = nil,
         environment: String? = nil,
-        compoundOnly: Bool? = nil
+        compoundOnly: Bool? = nil,
+        userSportSlugs: [String] = []
     ) -> [Exercise] { withLock {
         guard let db else { return [] }
+        // When userSportSlugs is non-empty, we order by the row's best matching
+        // sport relevance_score so the most-specific exercises bubble up. We
+        // still UNION exercises with zero sport_relevance rows (the ~76
+        // universal lifts) and rows tagged specificity='general' so the user
+        // never loses bench/squat/deadlift behind a niche-filter wall. The
+        // `bestRel` subquery returns the highest matching relevance (or 0
+        // for the foundation rows so they sort after specific matches but
+        // remain visible).
+        let useSportRank = !userSportSlugs.isEmpty
+        let sportSelect = useSportRank
+            ? """
+              ,
+              COALESCE((
+                SELECT MAX(esr.relevance_score)
+                FROM exercise_sport_relevance esr
+                JOIN sport_categories sc ON sc.id = esr.sport_id
+                WHERE esr.exercise_id = e.id
+                  AND sc.slug IN (\(userSportSlugs.map { _ in "?" }.joined(separator: ",")))
+              ), 0.0) AS best_rel
+              """
+            : ""
         var sql = """
         SELECT e.id, e.name, e.slug, e.description, e.instructions, e.cues, e.difficulty, e.modality,
                e.environment, e.is_compound, e.is_unilateral,
                e.default_sets, e.default_reps, e.default_rest, e.default_duration,
                e.regression, e.progression, e.image_url, e.thumbnail_url,
-               e.video_url, e.source_video_attribution
+               e.video_url, e.source_video_attribution\(sportSelect)
         FROM exercises e
         """
         // Build the WHERE clauses + a parallel ordered list of bound values
@@ -206,6 +238,12 @@ final class CoachDatabase {
         enum Bind { case str(String), int(Int32) }
         var clauses: [String] = []
         var binds: [Bind] = []
+
+        // SELECT-list placeholders come first (before WHERE) — the bestRel
+        // subquery has one `?` per user sport slug.
+        if useSportRank {
+            for slug in userSportSlugs { binds.append(.str(slug)) }
+        }
 
         if let s = search?.trimmingCharacters(in: .whitespaces), !s.isEmpty {
             clauses.append("e.name LIKE ?")
@@ -256,8 +294,48 @@ final class CoachDatabase {
             """)
             for slug in patternSlugs { binds.append(.str(slug)) }
         }
+        if useSportRank {
+            // Visibility rules (foundation always visible, niche hidden):
+            //   (a) rows with at least one exercise_sport_relevance row
+            //       targeting one of the user's sports — visible, ranked
+            //       by best_rel.
+            //   (b) rows with NO exercise_sport_relevance rows at all — the
+            //       ~76 explicitly-untagged foundation lifts.
+            //   (c) rows tagged for >= FOUNDATION_TAG_THRESHOLD distinct
+            //       sports — treated as foundation even though they have
+            //       tags, because the data was tagged unevenly (e.g. Back
+            //       Squat has 18 sport tags but tennis isn't one of them,
+            //       and we want it visible for tennis users anyway).
+            // Cross-sport 'general' rows with a small tag count (e.g. a
+            // capoeira drill tagged general for kung-fu/dance only) stay
+            // hidden — they're discipline-foundation, not universal.
+            let placeholders = userSportSlugs.map { _ in "?" }.joined(separator: ",")
+            clauses.append("""
+            (
+              EXISTS (
+                SELECT 1 FROM exercise_sport_relevance esr
+                JOIN sport_categories sc ON sc.id = esr.sport_id
+                WHERE esr.exercise_id = e.id
+                  AND sc.slug IN (\(placeholders))
+              )
+              OR NOT EXISTS (
+                SELECT 1 FROM exercise_sport_relevance esr2
+                WHERE esr2.exercise_id = e.id
+              )
+              OR (
+                SELECT COUNT(*) FROM exercise_sport_relevance esr3
+                WHERE esr3.exercise_id = e.id
+              ) >= \(Self.foundationTagThreshold)
+            )
+            """)
+            for slug in userSportSlugs { binds.append(.str(slug)) }
+        }
         if !clauses.isEmpty { sql += " WHERE " + clauses.joined(separator: " AND ") }
-        sql += " ORDER BY e.name ASC"
+        if useSportRank {
+            sql += " ORDER BY best_rel DESC, e.name ASC"
+        } else {
+            sql += " ORDER BY e.name ASC"
+        }
 
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
@@ -437,9 +515,37 @@ final class CoachDatabase {
         environments: Set<String> = [],
         excludeKeywords: [String] = [],
         excludeIds: Set<Int> = [],
-        modalities: Set<String> = []
+        modalities: Set<String> = [],
+        userSportSlugs: [String] = []
     ) -> [Exercise] { withLock {
         guard let db else { return [] }
+        // Sport filter mirrors listExercises: keep matching-sport rows AND
+        // specificity='general' AND no-sport-relevance rows (foundation lifts).
+        // Generator path doesn't need a relevance_score rank — variety logic
+        // handles picking — so this is a pure inclusion filter.
+        let sportClause: String
+        if userSportSlugs.isEmpty {
+            sportClause = ""
+        } else {
+            // Same two-bucket policy as listExercises: keep matching-sport
+            // rows + zero-relevance foundation lifts. Cross-sport 'general'
+            // rows stay hidden — they're discipline-foundation, not universal.
+            let placeholders = userSportSlugs.map { _ in "?" }.joined(separator: ",")
+            sportClause = """
+              AND (
+                EXISTS (
+                  SELECT 1 FROM exercise_sport_relevance esr
+                  JOIN sport_categories sc ON sc.id = esr.sport_id
+                  WHERE esr.exercise_id = e.id
+                    AND sc.slug IN (\(placeholders))
+                )
+                OR NOT EXISTS (
+                  SELECT 1 FROM exercise_sport_relevance esr2
+                  WHERE esr2.exercise_id = e.id
+                )
+              )
+            """
+        }
         let sql = """
         SELECT DISTINCT e.id, e.name, e.slug, e.description, e.instructions,
                e.cues, e.difficulty, e.modality, e.environment,
@@ -450,13 +556,16 @@ final class CoachDatabase {
         FROM exercises e
         JOIN exercise_movement_patterns emp ON emp.exercise_id = e.id
         JOIN movement_patterns mp ON mp.id = emp.movement_pattern_id
-        WHERE mp.slug = ?
+        WHERE mp.slug = ?\(sportClause)
         ORDER BY e.name ASC
         """
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
         defer { sqlite3_finalize(stmt) }
         sqlite3_bind_text(stmt, 1, pattern, -1, SQLITE_TRANSIENT)
+        for (i, slug) in userSportSlugs.enumerated() {
+            sqlite3_bind_text(stmt, Int32(2 + i), slug, -1, SQLITE_TRANSIENT)
+        }
 
         var raw: [Exercise] = []
         while sqlite3_step(stmt) == SQLITE_ROW {

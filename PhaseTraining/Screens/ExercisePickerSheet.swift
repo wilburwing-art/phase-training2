@@ -26,6 +26,7 @@ struct ExercisePickerSheet: View {
     let onPick: (Exercise) -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var memoryStore: MemoryStore
     @State private var query: String = ""
     @State private var filters = ExerciseFilters()
     @State private var detailExercise: Exercise? = nil
@@ -39,7 +40,10 @@ struct ExercisePickerSheet: View {
             modality: filters.modality,
             difficulty: filters.difficulty,
             environment: filters.environment,
-            compoundOnly: filters.compoundOnly
+            compoundOnly: filters.compoundOnly,
+            userSportSlugs: filters.hideOtherSports
+                ? memoryStore.memory.sports.map(\.slug)
+                : []
         )
     }
 
