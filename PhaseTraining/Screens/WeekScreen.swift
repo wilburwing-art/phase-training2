@@ -126,12 +126,12 @@ struct WeekScreen: View {
 
             Spacer(minLength: 0)
         }
-        // Keep Sunday's row clear of the tab bar — 16pt wasn't enough when
-        // the tab strip + safe-area inset land on the last DayRow. Default
-        // SwiftUI tab bar inset is ~50pt + safe area; 60pt of inner padding
-        // keeps the last row's reason text fully readable.
+        // Keep Sunday's row clear of the tab bar. The default SwiftUI tab
+        // strip is ~49pt + bottom safe-area; 16pt inset still let the last
+        // DayRow's reason text disappear behind it. 60pt is the value the
+        // earlier comment intended — bump to that.
         .safeAreaInset(edge: .bottom) {
-            Spacer().frame(height: 16)
+            Spacer().frame(height: 60)
         }
     }
 
