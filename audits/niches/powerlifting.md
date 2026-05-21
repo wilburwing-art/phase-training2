@@ -93,6 +93,15 @@ This niche is **the** niche where credibility = lift numbers. Wilbur needs eithe
 
 If Wilbur doesn't compete or train at a credible level, a creator-cofounder profile would be: a regional-level USAPL/USPA lifter, ~25-35 years old, already posts breakdowns on Reddit/YouTube, willing to be the face. Equity + revenue share.
 
+## Path B alternative — programming planner, no Coach
+
+- **Pricing fit**: Powerlifters pay for PDFs (Calgary Barbell $40-60, Sheiko PDFs $50-100). $20 one-time fits but **undersells** the perceived value of a meet-prep app. $40/yr is the sweet spot — recurring relationship through multiple meet cycles (2-4 meets/year keeps re-engagement natural). **Best Path B price: $40/yr with optional $99 lifetime.**
+- **Feature set (Coach stripped)**: RPE@X notation; percentage↔RPE auto-conversion based on logged top sets; Wilks/IPF GL calculator; meet-day countdown + static taper template per block; Calgary Barbell / nSuns / 5/3/1 / Sheiko templates rendered with fidelity; attempt-tracker (red/white light) for actual meet days; OpenPowerlifting-compatible CSV export. The Coach's "explain the recommendation" feature becomes a static "block phase: peaking, week 3 of 4" header per session.
+- **Distribution under Path B**: Same primary channel (one YouTube creator integration, ideally Brian Alsruhe or Calgary Barbell-tier) — but the ask becomes easier. Subscription apps make creators nervous about endorsement (ongoing revenue creates ongoing scrutiny); a one-time $40/yr feels like recommending a book. r/powerlifting also responds better to "I built a tool, here it is" than "subscribe to my AI."
+- **Funnel math at $40/yr**: 3,000 active subs for $120k ARR. At 10-15% trial→paid conversion (powerlifters convert well), required reach = 20-30K trial users. Realistic addressable from r/powerlifting + adjacent: 14-19K. **Tight from r/powerlifting alone**; one Calgary Barbell-tier YouTube integration would bridge the gap. At $20 one-time: 6,000 sales/yr = need 60K reach/yr at 10% conversion — likely requires sustained YouTube + multiple subreddit anchors.
+- **Ramp speed vs Path A**: **Path B reaches first $1k MRR substantially faster.** At $40/yr, 25 annual subs = $1k MRR equivalent immediately on launch; one Bromley video pulls that in week 1. Path A requires 70 retained $20/mo subs through cancellation churn, ~30-60 days minimum.
+- **Verdict for THIS niche**: **Path A still narrowly wins on ceiling, but Path B wins on ramp + risk.** Powerlifters are the audience where the Coach has genuine product-market fit (peaking decisions, autoregulation calls) — but the unit-economics risk + Coach build complexity are real. With "someday" timeline, **Path B is the safer first-launch posture; Coach can be added later as a $10/mo Pro upsell once base is established.**
+
 ## Risks & landmines
 
 - **Strict broscience policing.** Sources must be cited (Helms, Nuckols, Israetel, Tuchscherer). Coach claims must be defensible.

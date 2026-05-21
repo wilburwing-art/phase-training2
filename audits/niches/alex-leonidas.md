@@ -87,6 +87,15 @@ At $19.99/mo (Option C) - 30% = $14 net - $0.27 = **$13.73 / $14 = 98% margin**.
 
 Wilbur as a solo dev fits this niche **better than the academic/science niches** because Alex's audience values practical over credentialed. The story "I built this because I run NSuns and no app renders it right" is exactly the voice this niche resonates with. No coach-cofounder strictly necessary, though a partnership with Alex (or a peer) would significantly accelerate.
 
+## Path B alternative — programming planner, no Coach
+
+- **Pricing fit**: Alex's audience is the **most one-time-fee-tolerant** of any niche evaluated — anti-subscription bias is part of the culture. Alex himself sells one-time program PDFs. $20 one-time is *exactly* the price this audience expects. $40/yr would feel like a tax. **Best Path B price: $20 one-time + optional $40/yr "stay updated" tier** — the "stay updated" tier preserves some MRR.
+- **Feature set (Coach stripped)**: NSuns 5/3/1 LP rendered correctly (THE differentiator); 5/3/1 BBB / Building the Monolith / FSL / PR sets variants; multi-program-cycle tracking (bulk → cut → maintenance with training-max adjustments); honest 1RM tracking (actual tested vs training max vs estimated); AMRAP set tracking with PR-set logic; CSV export. The Coach's "should I skip back-offs after a hot top set?" becomes a static rule the user toggles per program ("skip back-offs if top set RPE ≥ 9").
+- **Distribution under Path B**: Alex himself is more likely to integrate at no/low cost under Path B — endorsing a "tool I use to track my NSuns" reads differently from endorsing "a competing AI coach subscription." The pitch becomes peer-to-peer, not transactional. r/Fitness and r/naturalbodybuilding subreddit posts work better under Path B.
+- **Funnel math at $20 one-time**: 6,000 sales/year = $120k ARR equivalent. At 5-8% conversion, required reach = 75-120K trials. Alex's audience: ~30-60K addressable. **Not viable from Alex alone**; requires creator stack (Alex + Nalewanyj + r/Fitness/r/nbb posts). At $40/yr: 3,000 subs at 5% = 60K reach = also tight.
+- **Ramp speed vs Path A**: **Path B wins by a wide margin.** Anti-subscription audience converts to $20 one-time *much* faster than to any monthly. Path B's first $1k MRR equivalent = 50 one-time sales = realistic week-one after an Alex integration. Path A's first $1k requires monthly retention through this niche's specifically high anti-subscription resistance.
+- **Verdict for THIS niche**: **Path B wins, unambiguously.** This is the *cleanest* Path B fit of any niche. The audience self-identifies as the "anti-subscription, anti-Patreon, anti-Future-app" crowd. $20 one-time is the only pricing that respects the culture. Ceiling is real but with "someday" timeline, the volume from this niche alone is unlikely to hit $10k MRR regardless of path — better as a feeder to broader natty / generalist channels.
+
 ## Risks & landmines
 
 - **No Alex-specific large community**: this niche is creator-defined and overlaps heavily with r/nbb and r/weightroom. Distribution is inseparable from the creator integration.

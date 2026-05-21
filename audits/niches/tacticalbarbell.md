@@ -95,6 +95,15 @@ Wilbur as a solo iOS dev *can* credibly own this niche — the TB community resp
 
 Best-case cofounder: a current/former SOF / SWAT / SF / FF active in r/tacticalbarbell as a moderator or regular contributor. Equity-significant.
 
+## Path B alternative — programming planner, no Coach
+
+- **Pricing fit**: TB practitioners pay $30/mo for MTI without flinching — they understand high-stakes tactical training has a high price floor. $40/yr is *easy* for this audience; $20 one-time also works for the spreadsheet-tolerant culture. But MTI's existing $30/mo subscription proves this niche *will* pay subscriptions. **Best Path B price: $40/yr, with $99 lifetime for the "I'll own this forever" buyer.**
+- **Feature set (Coach stripped)**: Tactical Barbell template fidelity (Operator / Fighter / Zulu / Velocity / Mass / Black Pro); conditioning calendar (E/HICs/LSS); PFT/CFT/PRT/PAST/CPAT score calculator per branch; ruck logging (load + distance + time + pace); shift-work fatigue tracking; bundled selection-prep templates. The Coach's "are you on track for your PAST?" becomes a static dashboard showing required pace vs current performance.
+- **Distribution under Path B**: r/tacticalbarbell + newsletter are still THE best channels. Both work better under Path B — newsletter readers convert to one-time/yearly purchases at higher rates than to subscriptions, and r/tacticalbarbell self-promo tolerance is higher for one-time tools than for subscription services.
+- **Funnel math at $40/yr**: 3,000 subs = $120k ARR. At 12-18% conversion (high product-fit + TB-niche pays), required reach = 17-25K trials. Realistic addressable from r/tacticalbarbell (~3K) + adjacency (r/Military, r/policefitness, r/firefighters — combined ~4-8K addressable) = 7-11K. **Below the required reach from TB-niche alone.** Combined with hybrid-athlete adjacency (next niche), bridges the gap. At $20 one-time: 6,000 sales/yr = 35-40K reach needed = significantly above addressable.
+- **Ramp speed vs Path A**: **Path B reaches first $1k MRR clearly faster** — one well-received r/tacticalbarbell post pulling 50 Annual sales is $2k *gross* in week one (Apple takes 30% but still $1.4k). Path A's first $1k requires 70 retained subs — much slower in a small sub.
+- **Verdict for THIS niche**: **Path B wins on ramp + audience-fit alignment.** The TB community values "owning the tool" over "renting the AI." Ship Path B; layer Coach as an optional $10/mo add-on for selection-prep weeks if user demand emerges.
+
 ## Risks & landmines
 
 - **K. Black (TB author) IP.** Don't reproduce his books verbatim; cite the methodology and link to the books. Permission-asking is a friendly gesture and the TB community will look kindly on it.

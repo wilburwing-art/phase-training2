@@ -98,6 +98,15 @@ This niche is **highly creator-deferential**. Wilbur as a solo dev posting on r/
 
 But to scale, a credentialed coach cofounder helps enormously: someone with kinesiology / nutrition background, ideally already publishing science-based content. Could be small (5-50K subs/followers). Equity-significant.
 
+## Path B alternative — programming planner, no Coach
+
+- **Pricing fit**: Jeff's audience is *fully accustomed* to paying — $40-99 for one-time programs, $25/mo for RP, $35/mo for MASS. $40/yr is a no-brainer pricepoint that undercuts everything. $20 one-time matches the program-PDF mental model perfectly. **Best Path B price: $40/yr with $99 lifetime option** — captures both subscription-tolerant and own-it-forever buyers.
+- **Feature set (Coach stripped)**: MEV/MAV/MRV per muscle group; mechanism-aware exercise picker (database-driven, not LLM-driven); RIR per set; bundled Jeff-style PPL / Upper-Lower / Full-Body templates; Apple Health body comp; periodized deload logic; "did you know?" static mechanism-explanation cards (curated by the founder, not generated). The Coach's "explain the mechanism" becomes a static evidence-card library you build over time.
+- **Distribution under Path B**: YouTube creator integration is THE channel either way — but Path B unlocks more creators because endorsing a one-time/yearly app is a smaller endorsement-credibility bet than endorsing an ongoing subscription. Mid-tier science-based creators (Eugene Teo, Schofield, Helms) more likely to integrate at lower ask under Path B.
+- **Funnel math at $40/yr**: 3,000 subs = $120k ARR. At 8-10% conversion, required reach = 30-40K trials. Realistic addressable across r/nbb + adjacent creator audiences: 40-110K. **Comfortably within range.** At $20 one-time: 6,000 sales = 60-75K reach = also viable with creator stacking.
+- **Ramp speed vs Path A**: **Path B wins** — Jeff's audience is shopping for tools, not coach replacements. The "this app implements the principles I watch Jeff explain, $40/yr forever" pitch closes faster than "subscription Coach that emulates Jeff" (the latter triggers "if I want Jeff's voice I'll watch Jeff" objection).
+- **Verdict for THIS niche**: **Path B wins.** Jeff's audience values *applied tooling*, not LLM advice — they get the advice for free from Jeff himself. The wedge is "the app that implements what Jeff teaches," and that's a Path B product. Coach becomes a future Pro upsell.
+
 ## Risks & landmines
 
 - **You will be compared to Jeff Nippard's standards.** If the Coach gives a sloppy science answer, screenshots will go viral negatively on r/naturalbodybuilding within hours.

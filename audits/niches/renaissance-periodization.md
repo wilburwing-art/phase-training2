@@ -101,6 +101,15 @@ Wilbur as a solo dev *can* credibly own this niche by leaning into the engineer-
 
 The hardest part: don't accidentally piss off Mike Israetel publicly. He's the audience gatekeeper. Position as complementary ("for people who love RP methodology but want flexibility") rather than competitor.
 
+## Path B alternative — programming planner, no Coach
+
+- **Pricing fit**: This is the niche with the **strongest existing WTP signal** of any in the audit — the RP Hypertrophy app charges $24.99/mo and converts well. $40/yr ($3.30/mo) is a screaming-deal undercut. $20 one-time also works as "RP-app refugee one-time purchase." **Best Path B price: $40/yr** — captures the subscription-tolerant majority while signaling "we're cheaper AND we explain ourselves."
+- **Feature set (Coach stripped)**: MEV/MAV/MRV per muscle group with rolling estimates AND visualization (the polish RP app gets right); **exercise swap that preserves volume math** (THE RP-app failure mode — fix this and you have a wedge); RIR per set; mesocycle phase tracker; Apple Health for body comp; bundled hypertrophy templates labeled by volume landmarks. The Coach's "explain why we're holding volume" becomes static rule-explanation tooltips with citation-style links to Schoenfeld / Helms research summaries (curated, not generated).
+- **Distribution under Path B**: Subreddit infiltration on r/naturalbodybuilding becomes safer — "I built a $40/yr alternative to the RP app" reads less hostile than "$20/mo subscription competitor." YouTube creator integration becomes easier (lower ongoing-revenue-scrutiny). Still avoid attacking Mike directly under either path.
+- **Funnel math at $40/yr**: 3,000 subs = $120k ARR. At 12-15% conversion (highest of any niche — RP audience is *primed* to convert), required reach = 20-25K trials. RP-aware addressable: 30-50K. **Cleanly within range.** At $20 one-time: 6,000 sales/yr = 40-50K reach at 12% = also viable.
+- **Ramp speed vs Path A**: **Path B wins decisively** — RP-app refugees are *actively shopping* and the lower price + one-time-feeling annual purchase is a clean conversion lift over yet-another-subscription. Path A's first $1k MRR requires retained subs (months); Path B's $1k MRR equivalent can land in week one of a single thoughtful r/nbb post.
+- **Verdict for THIS niche**: **Path B wins on every dimension except long-term ceiling.** Given the "someday" timeline, ceiling matters less than ramp + risk. Ship Path B. The Coach is the *upsell* once a paying user base exists: "you bought the planner — add the Coach for $10/mo for personalized explanations of your block decisions."
+
 ## Risks & landmines
 
 - **Mike Israetel's reach.** If he frames Phase Training as a competitor on his channel, the niche is closed. He's vocal and quick to defend his app. Mitigation: thoughtful positioning, never directly attack RP.

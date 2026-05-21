@@ -97,6 +97,15 @@ Wilbur as a solo male iOS dev founding a women's-fitness app is a **structural d
 
 Profile: certified women's-strength coach (Strong Curves L1, ACE/NASM with women's-specialty), ~5-10 years training history, active on IG or TikTok with ~10K-100K followers, ~25-40 yo. Equity-significant deal. Without this, the niche is largely off the table.
 
+## Path B alternative — programming planner, no Coach
+
+- **Pricing fit**: Sweat ($19.99/mo) has trained this audience on subscription pricing for women's fitness, but the burnout / "I'm paying $20/mo and still doing the same routines" complaint is loud. $40/yr would convert better than $20/mo because it feels less guilt-laden, and $20 one-time would convert in volume — many women own multiple Bret Contreras / Strong Curves PDFs at this price. **Best Path B price: $40/yr.**
+- **Feature set (Coach stripped)**: Strength-first templates (Strong Curves, NROLFW, Glute Lab); cycle-aware periodization based on Apple Health cycle import (static deload during luteal IF user opts in); postpartum/pregnancy mode with template substitutions; body comp + measurements with strong privacy controls; bundled glute-focused programs; CSV export. The Coach's "knowing your cycle and explaining the deload" becomes a calendar-aware static deload suggestion + a clear "we're suggesting lighter volume this week because you logged X" tooltip.
+- **Distribution under Path B**: TikTok still wins as the channel. Path B reads BETTER on TikTok than Path A — "$40/yr lifetime access" pitches more crisply in a 30-second clip than "subscription Coach." YouTube creator integration becomes more workable too (no monthly-revenue scrutiny). Subreddit infiltration unchanged. **Path B materially improves distribution options in this niche.**
+- **Funnel math at $40/yr**: 3,000 active subs = $120k ARR. At 6-8% conversion (women's fitness is broader but less coach-relationship-replacement-motivated), required reach = 40-50K trials. Realistic addressable from r/xxfitness alone: 38-54K. Within range *if* TikTok compounds. At $20 one-time: 6,000 sales/yr = 75K reach at 8% = above r/xxfitness addressable alone, requires creator + TikTok stacking.
+- **Ramp speed vs Path A**: **Path B wins on ramp considerably.** Sweat-fatigued women are *primed* to buy a one-time strength app; "I bought it forever for $40" converts faster than "another subscription." Path A's first $1k MRR requires ~70 retained $20/mo subs (months); Path B's $1k MRR equivalent is 25 yearly sales (likely week one of a TikTok integration).
+- **Verdict for THIS niche**: **Path B wins decisively.** Lower price ceiling matters less than reduced subscription-fatigue friction. Combined with the broader observation that this niche **requires a woman cofounder** which Wilbur doesn't have, Path B is even more attractive as a lower-bar shippable v1 that can be marketed by a creator partner without ongoing-revenue scrutiny. **However, the cofounder gap likely disqualifies this niche entirely for now** — see synthesis.
+
 ## Risks & landmines
 
 - **Gender / safety culture.** Strict moderation. Coach output that defaults to male physiology = backlash.

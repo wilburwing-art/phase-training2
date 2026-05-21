@@ -97,6 +97,15 @@ Wilbur as a solo iOS dev with no calisthenics presence has the same problem here
 
 Solution: partner with a mid-tier calisthenics creator (50-300K subs) as the on-camera face. Or position the app as engineering-focused: "I built this because I wanted to actually track my tuck planche progression and no app did that." This works if the dev story is honest.
 
+## Path B alternative — programming planner, no Coach
+
+- **Pricing fit**: Calisthenics audience is the most price-sensitive of any niche evaluated. $20 one-time is the right price (matching the GMB / FitnessFAQs program PDF range). $40/yr will get pushback. **Best Path B price: $20 one-time or $5/mo + $40/yr as Option B.**
+- **Feature set (Coach stripped)**: Skill progression trees (tuck planche → advanced tuck → straddle planche → full planche, with hold times per level); isometric hold timer; assisted/unassisted/weighted variations on pull-ups/dips/muscle-ups; bodyweight-aware loading math; mobility / flexibility progressions; bundled templates (Recommended Routine, FitnessFAQs Foundations, GMB Elements). The Coach's "should I move up a progression?" decision becomes a static rule ("hit 3x10s clean? → advance to next progression").
+- **Distribution under Path B**: TikTok and r/bodyweightfitness both prefer Path B's one-time pricing. The biggest unlock here: a $20 one-time price competes directly with the free-YouTube-RR alternative *because the buyer is paying for tooling, not coaching*. Subscription-versus-free-YouTube is a losing comparison; one-time-versus-free-YouTube is "support the dev who built the tool I'd otherwise spreadsheet."
+- **Funnel math at $20 one-time**: 6,000 sales/year for $120k ARR equivalent. At 3-5% conversion (price-sensitive niche; lower conversion), required reach = 150-200K trial users. **Effectively impossible from r/bwf engagement alone**; requires multi-channel: TikTok virality + one mid-tier YouTube creator + r/bwf wiki integration. At $40/yr: 3,000 subs at 5% conversion = 60K reach — tight but plausible with strong content.
+- **Ramp speed vs Path A**: **Path B reaches first $1k MRR meaningfully faster** because the buying decision is lower-friction (one-time at "less than a planche course" price). Path A's monthly subscription pricing is brutal in this audience.
+- **Verdict for THIS niche**: **Path B wins decisively, but with caveat — this niche's price ceiling caps total revenue regardless of path.** The $10k MRR target is structurally unreachable from this niche alone in either path. Best treated as a *side wedge* (Path B, $20 one-time, low maintenance) rather than the primary niche.
+
 ## Risks & landmines
 
 - **Chris Heria is litigious / aggressive** in the calisthenics space [LOW CONFIDENCE — based on community complaints about Thenx aggressive marketing]. Avoid direct positioning against Thenx.

@@ -77,6 +77,15 @@ Wilbur has no public fitness audience, but this niche **respects engineers who l
 
 If a creator-cofounder were needed: someone like Brian Alsruhe (~177K subs, Conjugate / strongman) or a mid-tier coach with WR regular flair. Not a top name — they're too expensive — but a respected mid-name.
 
+## Path B alternative — programming planner, no Coach
+
+- **Pricing fit**: $20 one-time would convert well — r/weightroom is the spreadsheet-buying segment, used to paying $40-60 for Calgary Barbell PDFs. $40/yr also viable but one-time matches the program-PDF mental model better. **Yes, this audience pays for one-time programming tools.**
+- **Feature set (Coach stripped)**: 167 routines with rendering fidelity for 5/3/1 / GZCL / Calgary Barbell / Sheiko-light + RPE per set + e1RM tracking + auto block/mesocycle phase awareness based on logged data + CSV export + program-completion reviews. The "show your math" engine that the Coach was supposed to surface becomes a static "why this weight today" tooltip per workout instead.
+- **Distribution under Path B**: Subreddit infiltration remains the best channel — but the pitch shifts. Under Path A: "AI coach explains your programming." Under Path B: "the spreadsheet that's not a spreadsheet — own it forever for $20." Path B pitches MUCH better on Reddit specifically because no subscription = no scam-suspicion friction. YouTube creator integration is *worse* under Path B (subscription is easier to script around).
+- **Funnel math at $20 one-time**: $120k ARR equivalent = 6,000 sales/year = 500 sales/month. At 8% trial→purchase conversion, requires 6,250 trial users/month — roughly 75K trial users/year. Versus addressable active fraction ~20-30K from r/weightroom alone, this is **unachievable from r/weightroom alone**. $40/yr: 3,000 active subs = ~30% of addressable, much more credible.
+- **Ramp speed vs Path A**: **Path B reaches first $1k MRR faster** — one strong r/weightroom post + word-of-mouth could do $1k in the first 30 days at $20 one-time (50 sales). Path A's first $1k requires 50-70 subscribers retained for a month — slower because trial→retained-paid friction is higher.
+- **Verdict for THIS niche**: **Path B wins** for r/weightroom specifically. The audience matches one-time-purchase culture, the build is smaller (no Coach API), and the subreddit pitch is cleaner. Path A's higher ceiling matters less when timeline is "someday." **Recommendation: $40/yr (recurring) + $99 lifetime upgrade option, no Coach in v1.**
+
 ## Risks & landmines
 
 - **Mod rules are strict.** Self-promo without earned reputation = ban. Plan for 60 days of pure-give before any mention.
