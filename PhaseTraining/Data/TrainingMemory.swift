@@ -65,6 +65,13 @@ struct TrainingMemory: Codable {
 
     // Free-text guardrails
     var dislikes: [String] = []
+    /// Per-exercise affinity score, keyed by exercise name. Positive = the user
+    /// asked to see this exercise more often; negative = less often. The
+    /// post-workout action sheet's "Recommend more / less" rows bump this via
+    /// `MemoryStore.bumpAffinity`. The planner is free to ignore the value
+    /// until a future ranking pass consumes it — the capture side just needs
+    /// somewhere durable to land.
+    var exerciseAffinities: [String: Int] = [:]
     /// Legacy + free-text injury notes ("bad ankle", or pre-build-87 saves that
     /// wrote injury slugs into this list). New structured injuries live in
     /// `userInjuries`; this stays as a fall-through for the keyword-filter path.
@@ -102,6 +109,7 @@ struct TrainingMemory: Codable {
         case age, gender
         case heightCm, weightKg, usesImperial
         case dislikes, constraints
+        case exerciseAffinities
         case userInjuries
         case feedback, soreness, weeklyCheckIns
         case coachInsights
@@ -154,6 +162,7 @@ struct TrainingMemory: Codable {
         self.usesImperial    = (try? c.decode(Bool.self,            forKey: .usesImperial)) ?? true
         self.dislikes        = (try? c.decode([String].self,       forKey: .dislikes))        ?? []
         self.constraints     = (try? c.decode([String].self,       forKey: .constraints))     ?? []
+        self.exerciseAffinities = (try? c.decode([String: Int].self, forKey: .exerciseAffinities)) ?? [:]
         // userInjuries decode + one-shot migration. New saves write the typed
         // list directly. Older saves wrote injury slugs into constraints[]; on
         // first decode any constraints entry whose slug matches a coach.db
@@ -200,6 +209,7 @@ struct TrainingMemory: Codable {
         try c.encode(usesImperial, forKey: .usesImperial)
         try c.encode(dislikes,        forKey: .dislikes)
         try c.encode(constraints,     forKey: .constraints)
+        try c.encode(exerciseAffinities, forKey: .exerciseAffinities)
         try c.encode(userInjuries,    forKey: .userInjuries)
         try c.encode(feedback,        forKey: .feedback)
         try c.encode(soreness,        forKey: .soreness)

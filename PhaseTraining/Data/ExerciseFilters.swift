@@ -10,7 +10,7 @@
 // Core, Conditioning — collapsing 40 fine-grained pattern slugs into the
 // lifters'-mental-model groupings.
 
-import Foundation
+import SwiftUI
 
 // MARK: - MuscleBucket
 
@@ -84,6 +84,37 @@ enum MuscleBucket: String, CaseIterable, Identifiable, Hashable {
             return bucket
         }
         return nil
+    }
+
+    /// Canonical muscle_groups.slug to feed BodyAnatomyView when this bucket
+    /// is the primary muscle. Picks the most visually-recognizable region per
+    /// bucket so the chip-scale badge reads correctly.
+    var primarySlug: String {
+        switch self {
+        case .chest:      return "chest"
+        case .back:       return "lats"
+        case .shoulders:  return "shoulders"
+        case .biceps:     return "biceps"
+        case .triceps:    return "triceps"
+        case .forearms:   return "forearm-flexors"
+        case .quads:      return "quadriceps"
+        case .hamstrings: return "hamstrings"
+        case .glutes:     return "glutes"
+        case .calves:     return "calves"
+        case .core:       return "rectus-abdominis"
+        }
+    }
+
+    /// Whether this bucket naturally reads on the front or back of the body.
+    /// Drives the default `side` of the chip badge — callers can override per
+    /// exercise (e.g. a deadlift reads as back even though it works the legs).
+    var naturalSide: BodyAnatomyView.AnatomySide {
+        switch self {
+        case .back, .triceps, .hamstrings, .glutes, .calves:
+            return .back
+        case .chest, .shoulders, .biceps, .forearms, .quads, .core:
+            return .front
+        }
     }
 }
 

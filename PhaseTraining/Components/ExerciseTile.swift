@@ -23,6 +23,7 @@ struct ExerciseTileVM {
         case thumb(urlString: String?)
         case index(Int)
         case icon(systemName: String)
+        case composite(photoURL: String?, group: MuscleBucket, side: BodyAnatomyView.AnatomySide = .front)
         case handle
         case none
     }
@@ -34,6 +35,7 @@ struct ExerciseTileVM {
         case controls(onInfo: () -> Void, onSwap: () -> Void)
         case summary(text: String, rpe: String?, isPR: Bool)
         case duration(String)
+        case overflow(onTap: () -> Void)
         case none
     }
 
@@ -49,7 +51,7 @@ struct ExerciseTileVM {
 
 // MARK: - Density
 
-enum TileDensity { case catalog, compact, flat }
+enum TileDensity { case catalog, compact, presentation, flat }
 
 // MARK: - Tile
 
@@ -58,18 +60,23 @@ struct ExerciseTile: View {
     var density: TileDensity = .catalog
 
     var body: some View {
-        let row = HStack(spacing: 12) {
+        let row = HStack(spacing: rowGap) {
             leadingView
             VStack(alignment: .leading, spacing: 3) {
                 Text(vm.title)
-                    .font(.custom("Inter-Regular", size: 14))
+                    .font(density == .presentation
+                          ? .custom("SpaceGrotesk-SemiBold", size: 17)
+                          : .custom("Inter-Regular", size: 14))
+                    .tracking(density == .presentation ? -0.02 * 17 : 0)
                     .foregroundStyle(Color.ink)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
                 if let meta = vm.meta {
                     Text(meta)
-                        .font(.monoXS)
-                        .foregroundStyle(Color.ink3)
+                        .font(density == .presentation
+                              ? .custom("JetBrainsMono-Regular", size: 12)
+                              : .monoXS)
+                        .foregroundStyle(density == .presentation ? Color.ink2 : Color.ink3)
                         .lineLimit(1)
                 }
             }
@@ -97,21 +104,30 @@ struct ExerciseTile: View {
     }
 
     // MARK: layout tokens
-    private var horizontalPadding: CGFloat { density == .flat ? 0 : 14 }
+    private var horizontalPadding: CGFloat {
+        switch density {
+        case .catalog, .compact: return 14
+        case .presentation:      return 16
+        case .flat:              return 0
+        }
+    }
     private var verticalPadding: CGFloat {
         switch density {
-        case .catalog: return 12
-        case .compact: return 10
-        case .flat:    return 0
+        case .catalog:      return 12
+        case .compact:      return 10
+        case .presentation: return 14
+        case .flat:         return 0
         }
     }
     private var minHeight: CGFloat {
         switch density {
-        case .catalog: return 76
-        case .compact: return 56
-        case .flat:    return 0
+        case .catalog:      return 76
+        case .compact:      return 56
+        case .presentation: return 88
+        case .flat:         return 0
         }
     }
+    private var rowGap: CGFloat { density == .presentation ? 14 : 12 }
     private var surfaceFill: Color {
         vm.emphasis == .accent ? Color.accentWash : Color.surface
     }
@@ -141,6 +157,9 @@ struct ExerciseTile: View {
                     .foregroundStyle(Color.accent)
             }
             .frame(width: 48, height: 48)
+
+        case .composite(let photoURL, let group, let side):
+            CompositeLeading(photoURL: photoURL, group: group, side: side)
 
         case .handle:
             Image(systemName: "line.3.horizontal")
@@ -223,6 +242,16 @@ struct ExerciseTile: View {
                 .font(.monoXS)
                 .foregroundStyle(Color.ink3)
                 .monospacedDigit()
+
+        case .overflow(let onTap):
+            Button(action: onTap) {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(Color.ink3)
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("More options")
 
         case .none:
             EmptyView()
@@ -469,6 +498,47 @@ private struct TileListRows: _VariadicView_MultiViewRoot {
                     trailing: .chevron,
                     emphasis: .accent
                 ))
+            }
+
+            // Presentation composite — Today variant
+            VStack(alignment: .leading, spacing: 10) {
+                Text("02.5 · PRESENTATION COMPOSITE")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                Text("Photo + chip badge")
+                    .styled(.displayM)
+                    .foregroundStyle(Color.ink)
+
+                ExerciseTile(
+                    vm: .init(
+                        leading: .composite(photoURL: nil, group: .chest, side: .front),
+                        title: "Barbell bench press",
+                        meta: "4 sets · 6 reps · 185 lb",
+                        trailing: .overflow(onTap: {}),
+                        onTap: {}
+                    ),
+                    density: .presentation
+                )
+                ExerciseTile(
+                    vm: .init(
+                        leading: .composite(photoURL: nil, group: .back, side: .back),
+                        title: "Bent-over barbell row",
+                        meta: "4 sets · 8 reps · 145 lb",
+                        trailing: .overflow(onTap: {}),
+                        onTap: {}
+                    ),
+                    density: .presentation
+                )
+                ExerciseTile(
+                    vm: .init(
+                        leading: .composite(photoURL: nil, group: .quads, side: .front),
+                        title: "Back squat",
+                        meta: "5 sets · 5 reps · 225 lb",
+                        trailing: .overflow(onTap: {}),
+                        onTap: {}
+                    ),
+                    density: .presentation
+                )
             }
 
             // TileList grouped container

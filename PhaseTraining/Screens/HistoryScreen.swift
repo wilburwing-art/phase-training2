@@ -10,8 +10,31 @@ struct HistoryScreen: View {
     /// it works in any presentation context.
     @Environment(\.dismiss) private var dismiss
 
+    /// Build 102 — optional filter. When set, the sessions list narrows to
+    /// only those containing an exercise whose name matches (case-insensitive),
+    /// and the header swaps to "<EXERCISE> · HISTORY". Used by the composite
+    /// tile's action sheet ("Exercise history" row) to drill from Today/
+    /// preview surfaces straight into the matching past sessions. nil = no
+    /// filter, full history as before.
+    let initialExerciseFilter: String?
+
     @State private var expanded: Set<TimeInterval> = []
     @State private var editingSession: SavedSession?
+
+    init(initialExerciseFilter: String? = nil) {
+        self.initialExerciseFilter = initialExerciseFilter
+    }
+
+    /// Sessions actually rendered — `store.savedSessions` when no filter is
+    /// set, otherwise narrowed to sessions containing the named exercise.
+    private var displayedSessions: [SavedSession] {
+        guard let name = initialExerciseFilter else { return store.savedSessions }
+        return store.savedSessions.filter { sess in
+            sess.exercises.contains {
+                $0.name.caseInsensitiveCompare(name) == .orderedSame
+            }
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -22,7 +45,7 @@ struct HistoryScreen: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
 
-            if store.savedSessions.isEmpty {
+            if displayedSessions.isEmpty {
                 emptyState
             } else {
                 content
@@ -39,7 +62,7 @@ struct HistoryScreen: View {
 
     private var topBar: some View {
         ZStack {
-            Text("History")
+            Text(initialExerciseFilter.map { _ in "Exercise history" } ?? "History")
                 .styled(.displayM)
                 .foregroundColor(.ink)
 
@@ -63,7 +86,7 @@ struct HistoryScreen: View {
     }
 
     private var sessionCountLabel: String {
-        let n = store.savedSessions.count
+        let n = displayedSessions.count
         return "\(n) SESSION\(n == 1 ? "" : "S")"
     }
 
@@ -86,9 +109,10 @@ struct HistoryScreen: View {
     // MARK: - Content
 
     private var content: some View {
-        ScrollView {
+        let sessions = displayedSessions
+        return ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                Text("Past sessions")
+                Text(initialExerciseFilter ?? "Past sessions")
                     .styled(.displayM)
                     .foregroundColor(.ink)
                     .padding(.horizontal, 20)
@@ -105,10 +129,10 @@ struct HistoryScreen: View {
                     .padding(.top, 16)
 
                 VStack(spacing: 0) {
-                    ForEach(Array(store.savedSessions.enumerated()), id: \.element.id) { idx, session in
+                    ForEach(Array(sessions.enumerated()), id: \.element.id) { idx, session in
                         sessionRow(
                             session: session,
-                            isLast: idx == store.savedSessions.count - 1
+                            isLast: idx == sessions.count - 1
                         )
                     }
                 }
@@ -123,7 +147,7 @@ struct HistoryScreen: View {
 
     private var summaryStrip: some View {
         HStack(spacing: 8) {
-            statCard(value: "\(store.savedSessions.count)", label: "SESSIONS")
+            statCard(value: "\(displayedSessions.count)", label: "SESSIONS")
             statCard(value: "\(totalDoneSetsAllSessions)", label: "TOTAL SETS")
             statCard(value: avgRpeAllSessions, label: "AVG RPE")
         }
@@ -151,14 +175,14 @@ struct HistoryScreen: View {
     }
 
     private var totalDoneSetsAllSessions: Int {
-        store.savedSessions.reduce(0) { acc, sess in
+        displayedSessions.reduce(0) { acc, sess in
             acc + sess.exercises.reduce(0) { $0 + $1.sets.filter { $0.done }.count }
         }
     }
 
     private var avgRpeAllSessions: String {
         // Per-session avg of done-set RPEs, then average across sessions.
-        let perSessionAvgs: [Double] = store.savedSessions.compactMap { sess in
+        let perSessionAvgs: [Double] = displayedSessions.compactMap { sess in
             let rpes: [Double] = sess.exercises.flatMap { ex in
                 ex.sets.compactMap { s in
                     guard s.done, !s.rpe.isEmpty, let v = Double(s.rpe) else { return nil }

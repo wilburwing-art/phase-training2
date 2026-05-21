@@ -32,6 +32,13 @@ struct DayWorkoutPreviewSheet: View {
     @State private var addingExercise: Bool = false
     @State private var detailExercise: Exercise? = nil
     @State private var didSave: Bool = false
+    /// Build 102 — composite-tile migration. Tap on a preview row now opens
+    /// an action sheet (matching Today). The sheet still routes editor / swap
+    /// / details via the existing state above; this just owns the open state.
+    @State private var actionSheetExIdx: Int? = nil
+    /// Build 102 — drives the filtered HistoryScreen presentation from the
+    /// action sheet's "Exercise history" row.
+    @State private var historyFilterExerciseName: String? = nil
 
     private var isToday: Bool {
         Calendar.current.isDateInToday(day.date)
@@ -87,9 +94,7 @@ struct DayWorkoutPreviewSheet: View {
                     },
                     onInfo: {
                         if let ex {
-                            detailExercise = CoachDatabase.shared
-                                .listExercises(search: ex.name)
-                                .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }
+                            detailExercise = ExerciseLookupCache.shared.exercise(forName: ex.name)
                         }
                     },
                     onSwap: { swappingExIdx = wrapped.index }
@@ -106,6 +111,23 @@ struct DayWorkoutPreviewSheet: View {
             }
             .sheet(item: $detailExercise) { ex in
                 ExerciseDetailSheet(exercise: ex)
+            }
+            .sheet(item: actionSheetBinding) { wrapped in
+                let exerciseName = template?.exercises[wrapped.index].name ?? "Exercise"
+                ExerciseActionSheet(
+                    exerciseName: exerciseName,
+                    onEdit: { editingExIdx = wrapped.index },
+                    onShowDetails: {
+                        detailExercise = ExerciseLookupCache.shared.exercise(forName: exerciseName)
+                    },
+                    onShowHistory: { historyFilterExerciseName = exerciseName },
+                    onShowReplace: { swappingExIdx = wrapped.index },
+                    onDelete: { deleteExercise(at: wrapped.index) }
+                )
+            }
+            .sheet(item: filteredHistoryBinding) { wrapped in
+                HistoryScreen(initialExerciseFilter: wrapped.name)
+                    .environmentObject(sessionStore)
             }
         }
         .presentationBackground(Color.bg)
@@ -222,15 +244,16 @@ struct DayWorkoutPreviewSheet: View {
         return movements
     }
 
-    /// HANDOFF §4: identical shape to TodayScreen's tile. Info/swap collapse
-    /// into the row-tap ExerciseEditorSheet (option a), so the trailing slot
-    /// is `.setsReps` even though this surface still maintains the swap state.
+    /// HANDOFF §4a: identical shape to TodayScreen — `.composite` leading
+    /// (56pt photo + 28pt muscle chip) + `.overflow` trailing + `.presentation`
+    /// density. Whole row + ••• button open ExerciseActionSheet, which is
+    /// where edit / details / history / swap / delete now live.
     ///
     /// `grouping` carries the superset label + first/last hints so the row
     /// can prefix "A1"/"A2"/… to the title and draw the accent left band.
-    /// Tap-to-edit dispatches via `grouping.originalIndex` (NOT the rendered
-    /// position) so the editor sheet still hits the right `template.exercises`
-    /// slot even when supersets re-order the visual list.
+    /// Sheet dispatch uses `grouping.originalIndex` (NOT the rendered
+    /// position) so mutations still hit the right `template.exercises` slot
+    /// even when supersets re-order the visual list.
     private func previewExerciseTile(
         _ ex: ExerciseTemplate,
         position: Int,
@@ -241,14 +264,19 @@ struct DayWorkoutPreviewSheet: View {
             return ex.name
         }()
         let inSuperset = grouping.groupSize >= 2
-        return ExerciseTile(vm: .init(
-            leading: .index(position),
-            title: displayName,
-            meta: "rest \(ex.rest)s",
-            trailing: .setsReps(sets: ex.targetSets, reps: ex.targetReps,
-                                unit: ex.unit, lastWeight: nil),
-            onTap: { editingExIdx = grouping.originalIndex }
-        ))
+        let bucket = ExerciseLookupCache.shared.bucket(forName: ex.name) ?? .chest
+        let photoURL = ExerciseLookupCache.shared.thumbnailURL(forName: ex.name)
+        let originalIdx = grouping.originalIndex
+        return ExerciseTile(
+            vm: .init(
+                leading: .composite(photoURL: photoURL, group: bucket, side: bucket.naturalSide),
+                title: displayName,
+                meta: "\(ex.targetSets) sets · \(ex.targetReps) reps · rest \(ex.rest)s",
+                trailing: .overflow(onTap: { actionSheetExIdx = originalIdx }),
+                onTap: { actionSheetExIdx = originalIdx }
+            ),
+            density: .presentation
+        )
         .overlay(alignment: .leading) {
             if inSuperset {
                 let topRadius: CGFloat = grouping.isFirstInGroup ? 1.5 : 0
@@ -268,6 +296,39 @@ struct DayWorkoutPreviewSheet: View {
             }
         }
         .accessibilityIdentifier("preview-edit-\(position)")
+    }
+
+    /// Remove the exercise at `idx` from the in-flight template. Wired to
+    /// the action sheet's destructive "Delete from workout" row.
+    private func deleteExercise(at idx: Int) {
+        guard let tmpl = template, tmpl.exercises.indices.contains(idx) else { return }
+        var remaining = tmpl.exercises
+        remaining.remove(at: idx)
+        template = WorkoutTemplate(
+            id: tmpl.id,
+            name: tmpl.name,
+            category: tmpl.category,
+            exercises: remaining
+        )
+    }
+
+    /// Action sheet item binding — wraps the optional `actionSheetExIdx` Int
+    /// in `PreviewSwapIndex` so `.sheet(item:)` can drive it.
+    private var actionSheetBinding: Binding<PreviewSwapIndex?> {
+        Binding(
+            get: { actionSheetExIdx.map(PreviewSwapIndex.init) },
+            set: { actionSheetExIdx = $0?.index }
+        )
+    }
+
+    /// Filtered-history sheet binding — keyed on the exercise name (rather
+    /// than an Int index) because the user may have already dismissed the
+    /// action sheet by the time history opens.
+    private var filteredHistoryBinding: Binding<NamedExerciseRef?> {
+        Binding(
+            get: { historyFilterExerciseName.map(NamedExerciseRef.init) },
+            set: { historyFilterExerciseName = $0?.name }
+        )
     }
 
     /// Trailing row inside the exercise card — opens the picker with no
@@ -567,4 +628,11 @@ extension DayPlan {
         }
         return nil
     }
+}
+
+/// Identifiable wrapper so `.sheet(item:)` can bind to an optional exercise
+/// name string — drives the filtered HistoryScreen presentation.
+private struct NamedExerciseRef: Identifiable {
+    let name: String
+    var id: String { name }
 }

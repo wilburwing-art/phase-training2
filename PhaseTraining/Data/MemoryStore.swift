@@ -49,6 +49,16 @@ final class MemoryStore: ObservableObject {
         update { $0.onboardedAt = date }
     }
 
+    /// Bump the per-exercise affinity score by `delta`. Positive = "recommend
+    /// more often"; negative = "recommend less often". Keyed by exercise name
+    /// (same vocabulary the rest of the app uses for joins back to coach.db).
+    func bumpAffinity(_ exerciseName: String, by delta: Int) {
+        update {
+            let current = $0.exerciseAffinities[exerciseName] ?? 0
+            $0.exerciseAffinities[exerciseName] = current + delta
+        }
+    }
+
     /// Reset everything — only used in dev / preview / "Reset onboarding" debug action.
     func reset() {
         memory = TrainingMemory()

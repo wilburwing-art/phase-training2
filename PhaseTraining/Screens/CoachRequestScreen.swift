@@ -52,6 +52,13 @@ struct CoachRequestScreen: View {
     @State private var swappingPreviewIdx: Int? = nil
     /// Read-only detail view for an exercise tapped from the preview row.
     @State private var detailExercise: Exercise? = nil
+    /// Build 102 — composite-tile migration. Tap on a preview row opens the
+    /// shared action sheet. CoachRequest is a draft surface — most actions
+    /// apply, except onDelete (mutating a draft mid-build feels wrong) and
+    /// onEdit (sets/reps/rest aren't directly editable here).
+    @State private var actionSheetExIdx: Int? = nil
+    /// Filtered HistoryScreen, driven by the action sheet's history row.
+    @State private var historyFilterExerciseName: String? = nil
 
     enum Phase: Equatable {
         case input
@@ -109,6 +116,23 @@ struct CoachRequestScreen: View {
         }
         .sheet(item: $detailExercise) { ex in
             ExerciseDetailSheet(exercise: ex)
+        }
+        .sheet(item: actionSheetBinding) { wrapped in
+            let exerciseName = preview?.exercises[wrapped.index].name ?? "Exercise"
+            ExerciseActionSheet(
+                exerciseName: exerciseName,
+                onShowDetails: {
+                    if let ex = preview?.exercises[wrapped.index] {
+                        detailExercise = CoachDatabase.shared.exercise(id: ex.exerciseId)
+                    }
+                },
+                onShowHistory: { historyFilterExerciseName = exerciseName },
+                onShowReplace: { swappingPreviewIdx = wrapped.index }
+            )
+        }
+        .sheet(item: filteredHistoryBinding) { wrapped in
+            HistoryScreen(initialExerciseFilter: wrapped.name)
+                .environmentObject(sessionStore)
         }
         .onAppear {
             // Seed duration default from the user's current session length so
@@ -186,7 +210,7 @@ struct CoachRequestScreen: View {
                         .foregroundStyle(Color.ink2)
                 }
 
-                TileList(label: nil, count: nil) {
+                VStack(spacing: 8) {
                     ForEach(Array(preview.exercises.enumerated()), id: \.element.id) { idx, ex in
                         generatedExerciseTile(ex, position: idx + 1)
                     }
@@ -210,20 +234,44 @@ struct CoachRequestScreen: View {
         }
     }
 
-    /// HANDOFF §4: preview rows are editable in-place (info + swap actions),
-    /// so the trailing slot is `.controls`. Wrapped in TileList below.
+    /// HANDOFF §4a: composite-tile migration. Same shape as TodayScreen —
+    /// `.composite` leading + `.overflow` trailing + `.presentation` density.
+    /// Tap anywhere on the row → ExerciseActionSheet. CoachRequest is a draft
+    /// surface so onEdit/onDelete are omitted; details / history / replace
+    /// still apply.
     private func generatedExerciseTile(_ ex: GeneratedExercise, position: Int) -> some View {
-        ExerciseTile(
+        let bucket = ExerciseLookupCache.shared.bucket(forName: ex.name) ?? .chest
+        let photoURL = ExerciseLookupCache.shared.thumbnailURL(forName: ex.name)
+        let exId = ex.id
+        return ExerciseTile(
             vm: .init(
-                leading: .index(position),
+                leading: .composite(photoURL: photoURL, group: bucket, side: bucket.naturalSide),
                 title: ex.name,
                 meta: "\(ex.sets) × \(ex.reps) · rest \(ex.restSeconds)s",
-                trailing: .controls(
-                    onInfo: { detailExercise = CoachDatabase.shared.exercise(id: ex.exerciseId) },
-                    onSwap: { swappingPreviewIdx = preview?.exercises.firstIndex(where: { $0.id == ex.id }) }
-                )
+                trailing: .overflow(onTap: {
+                    actionSheetExIdx = preview?.exercises.firstIndex(where: { $0.id == exId })
+                }),
+                onTap: {
+                    actionSheetExIdx = preview?.exercises.firstIndex(where: { $0.id == exId })
+                }
             ),
-            density: .flat
+            density: .presentation
+        )
+    }
+
+    /// Action sheet binding — wraps optional `actionSheetExIdx` for `.sheet(item:)`.
+    private var actionSheetBinding: Binding<PreviewRowIndex?> {
+        Binding(
+            get: { actionSheetExIdx.map(PreviewRowIndex.init) },
+            set: { actionSheetExIdx = $0?.index }
+        )
+    }
+
+    /// Filtered-history sheet binding.
+    private var filteredHistoryBinding: Binding<CoachReqNamedExercise?> {
+        Binding(
+            get: { historyFilterExerciseName.map(CoachReqNamedExercise.init) },
+            set: { historyFilterExerciseName = $0?.name }
         )
     }
 
@@ -598,4 +646,11 @@ enum RequestFocus: String, CaseIterable, Hashable {
         .environmentObject(SessionStore(defaults: defaults))
         .environmentObject(PlanStore(defaults: defaults))
         .environmentObject(TabSelectionStore())
+}
+
+/// Identifiable wrapper so `.sheet(item:)` can bind to an optional exercise
+/// name — drives the filtered HistoryScreen from the action sheet.
+private struct CoachReqNamedExercise: Identifiable {
+    let name: String
+    var id: String { name }
 }

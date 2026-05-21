@@ -39,6 +39,13 @@ struct TodayScreen: View {
     @State private var editingExIdx: Int?
     @State private var addingExercise: Bool = false
     @State private var inlineDetailExercise: Exercise?
+    /// Build 102 — composite-tile migration. Tap on a Today exercise row now
+    /// opens an action sheet instead of going straight to the editor; this
+    /// drives that sheet. See ExerciseActionSheet + HANDOFF-tile-system.md §4a.
+    @State private var actionSheetExIdx: Int?
+    /// Build 102 — action sheet's "Exercise history" row presents
+    /// HistoryScreen filtered to a single exercise name.
+    @State private var historyFilterExerciseName: String?
     @State private var didSaveToLibrary: Bool = false
     /// Build 99 — pre-workout soreness check-in moved from an inline
     /// expand/collapse card to a header-adjacent pill that opens a modal sheet.
@@ -244,9 +251,7 @@ struct TodayScreen: View {
                 },
                 onInfo: {
                     if let ex {
-                        inlineDetailExercise = CoachDatabase.shared
-                            .listExercises(search: ex.name)
-                            .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }
+                        inlineDetailExercise = ExerciseLookupCache.shared.exercise(forName: ex.name)
                     }
                 },
                 onSwap: { swappingExIdx = wrapped.index }
@@ -269,6 +274,23 @@ struct TodayScreen: View {
         }
         .sheet(item: $inlineDetailExercise) { ex in
             ExerciseDetailSheet(exercise: ex)
+        }
+        .sheet(item: actionSheetBinding) { wrapped in
+            let exerciseName = editableTemplate?.exercises[wrapped.index].name ?? "Exercise"
+            ExerciseActionSheet(
+                exerciseName: exerciseName,
+                onEdit: { editingExIdx = wrapped.index },
+                onShowDetails: {
+                    inlineDetailExercise = ExerciseLookupCache.shared.exercise(forName: exerciseName)
+                },
+                onShowHistory: { historyFilterExerciseName = exerciseName },
+                onShowReplace: { swappingExIdx = wrapped.index },
+                onDelete: { deleteExercise(at: wrapped.index) }
+            )
+        }
+        .sheet(item: filteredHistoryBinding) { wrapped in
+            HistoryScreen(initialExerciseFilter: wrapped.name)
+                .environmentObject(store)
         }
         .sheet(isPresented: $showSorenessSheet) {
             SorenessCheckInSheet(onDone: {})
@@ -410,10 +432,10 @@ struct TodayScreen: View {
     /// Per-row `.draggable`/`.dropDestination` was tried first and broke
     /// after the first reorder — see `swiftui-drag-reorder-custom-styled`.
     private func inlineExerciseCard(_ tmpl: WorkoutTemplate) -> some View {
-        // Height: ~76pt per ExerciseTile (catalog density min height) + ~56pt
+        // Height: ~88pt per ExerciseTile (.presentation density min) + ~56pt
         // add-row + ~8pt list padding. Slight overshoot is fine; rows just
         // sit at their intrinsic size.
-        let listHeight = CGFloat(tmpl.exercises.count) * 76 + 56 + 8
+        let listHeight = CGFloat(tmpl.exercises.count) * 88 + 56 + 8
 
         return VStack(alignment: .leading, spacing: 0) {
             HStack {
@@ -455,24 +477,70 @@ struct TodayScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    /// HANDOFF §4 option (a): info/swap controls collapsed off this row and
-    /// into ExerciseEditorSheet's toolbar (the same sheet this row taps open).
-    /// Trailing slot is `.setsReps` — last weight pulled from the prior session.
+    /// HANDOFF §4a: presentation-density composite tile. Leading slot is a
+    /// 56pt photo + 28pt muscle chip; trailing collapses to a single ••• that
+    /// (along with whole-row tap) opens ExerciseActionSheet. The inline
+    /// info/swap buttons are gone — those actions live inside the sheet.
     private func todayExerciseTile(_ ex: ExerciseTemplate, position: Int) -> some View {
         let prevEx = previous?.exercises.first(where: { $0.id == ex.id })
-        let prevWeightDouble = prevEx?.sets.first.flatMap { Double($0.weight) }
         let prevWeightText = prevEx?.sets.first?.weight ?? ""
-        let middle = prevWeightText.isEmpty ? "no prev" : "\(prevWeightText) \(ex.unit)"
+        let weightSegment = prevWeightText.isEmpty ? "—" : "\(prevWeightText) \(ex.unit)"
+        let bucket = bucketForExercise(named: ex.name) ?? .chest
+        let photoURL = thumbnailURLForExercise(named: ex.name)
 
-        return ExerciseTile(vm: .init(
-            leading: .index(position),
-            title: ex.name,
-            meta: "rest \(ex.rest)s · \(middle)",
-            trailing: .setsReps(sets: ex.targetSets, reps: ex.targetReps,
-                                unit: ex.unit, lastWeight: prevWeightDouble),
-            onTap: { editingExIdx = position - 1 }
-        ))
+        return ExerciseTile(
+            vm: .init(
+                leading: .composite(photoURL: photoURL, group: bucket, side: bucket.naturalSide),
+                title: ex.name,
+                meta: "\(ex.targetSets) sets · \(ex.targetReps) reps · \(weightSegment)",
+                trailing: .overflow(onTap: { actionSheetExIdx = position - 1 }),
+                onTap: { actionSheetExIdx = position - 1 }
+            ),
+            density: .presentation
+        )
         .accessibilityIdentifier("today-edit-\(position)")
+    }
+
+    /// Resolve the primary muscle bucket for an exercise by name. Routes
+    /// through `ExerciseLookupCache` so repeated renders of the same row
+    /// (or a Today list that re-renders on every state change) hit coach.db
+    /// once per unique name per session.
+    private func bucketForExercise(named name: String) -> MuscleBucket? {
+        ExerciseLookupCache.shared.bucket(forName: name)
+    }
+
+    /// Resolve a thumbnail URL for the composite leading slot. Same cache as
+    /// the bucket lookup so both come from a single coach.db roundtrip.
+    private func thumbnailURLForExercise(named name: String) -> String? {
+        ExerciseLookupCache.shared.thumbnailURL(forName: name)
+    }
+
+    /// Remove the exercise at `idx` from the editable template. Wired to the
+    /// action sheet's destructive "Delete from workout" row.
+    private func deleteExercise(at idx: Int) {
+        guard let tmpl = editableTemplate, tmpl.exercises.indices.contains(idx) else { return }
+        var remaining = tmpl.exercises
+        remaining.remove(at: idx)
+        editableTemplate = WorkoutTemplate(id: tmpl.id, name: tmpl.name, category: tmpl.category, exercises: remaining)
+        didModify = true
+        didSaveToLibrary = false
+    }
+
+    private var actionSheetBinding: Binding<PreviewSwapIndex?> {
+        Binding(
+            get: { actionSheetExIdx.map(PreviewSwapIndex.init) },
+            set: { actionSheetExIdx = $0?.index }
+        )
+    }
+
+    /// Binding for the filtered-history sheet. Wraps the optional exercise
+    /// name in an Identifiable wrapper so `.sheet(item:)` can drive the
+    /// HistoryScreen filtered to that exercise.
+    private var filteredHistoryBinding: Binding<NamedExercise?> {
+        Binding(
+            get: { historyFilterExerciseName.map(NamedExercise.init) },
+            set: { historyFilterExerciseName = $0?.name }
+        )
     }
 
     /// SwiftUI .onMove handler — reorder editableTemplate's exercises in
@@ -761,4 +829,11 @@ struct TodayScreen: View {
         .environmentObject(MemoryStore(defaults: defaults))
         .environmentObject(TabSelectionStore())
         .environmentObject(CustomRoutineStore(defaults: defaults))
+}
+
+/// Identifiable wrapper so `.sheet(item:)` can bind to an optional exercise
+/// name string — drives the filtered HistoryScreen presentation.
+private struct NamedExercise: Identifiable {
+    let name: String
+    var id: String { name }
 }

@@ -69,6 +69,11 @@ struct BodyAnatomyView: View {
     /// `pelvic-floor`, container slugs like `upper-body`).
     let highlights: [String: HighlightIntensity]
     let side: AnatomySide
+    /// Optional override color. When set, every highlighted muscle renders in
+    /// this color regardless of its `HighlightIntensity` — the badge-on-tile
+    /// case wants accent-on-elevated, not the red/orange/yellow recovery
+    /// palette. Unset = use each intensity's natural color.
+    var tint: Color? = nil
 
     // MARK: - Body
 
@@ -106,7 +111,9 @@ struct BodyAnatomyView: View {
                 }
             }
         }
-        return result.compactMapValues { $0.color }
+        return result.compactMapValues { intensity in
+            tint ?? intensity.color
+        }
     }
 
     private var accessibilityLabel: String {
@@ -284,4 +291,28 @@ private extension BodyAnatomyView.HighlightIntensity {
         .frame(width: 200, height: 400)
         .padding()
         .background(Color(red: 0x0A / 255, green: 0x0B / 255, blue: 0x0D / 255))
+}
+
+#Preview("Tinted vs untinted") {
+    HStack(spacing: 16) {
+        VStack(spacing: 8) {
+            Text("untinted").font(.caption).foregroundStyle(.secondary)
+            BodyAnatomyView(
+                highlights: ["chest": .primary, "triceps": .secondary, "shoulders": .tertiary],
+                side: .front
+            )
+            .frame(width: 160, height: 360)
+        }
+        VStack(spacing: 8) {
+            Text("tint: .accent").font(.caption).foregroundStyle(.secondary)
+            BodyAnatomyView(
+                highlights: ["chest": .primary, "triceps": .secondary, "shoulders": .tertiary],
+                side: .front,
+                tint: Color.accent
+            )
+            .frame(width: 160, height: 360)
+        }
+    }
+    .padding()
+    .background(Color(red: 0x0A / 255, green: 0x0B / 255, blue: 0x0D / 255))
 }
