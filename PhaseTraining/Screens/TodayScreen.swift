@@ -531,10 +531,11 @@ struct TodayScreen: View {
         let weightSegment = prevWeightText.isEmpty ? "—" : "\(prevWeightText) \(ex.unit)"
         let bucket = bucketForExercise(named: ex.name) ?? .chest
         let photoURL = thumbnailURLForExercise(named: ex.name)
+        let exerciseID = ExerciseLookupCache.shared.exerciseID(forName: ex.name)
 
         return ExerciseTile(
             vm: .init(
-                leading: .composite(photoURL: photoURL, group: bucket, side: bucket.naturalSide),
+                leading: .composite(exerciseID: exerciseID, photoURL: photoURL, group: bucket, side: bucket.naturalSide),
                 title: ex.name,
                 meta: "\(ex.targetSets) sets · \(ex.targetReps) reps · \(weightSegment)",
                 trailing: .overflow(onTap: { actionSheetExIdx = position - 1 }),

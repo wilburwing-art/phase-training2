@@ -74,6 +74,12 @@ final class ExerciseLookupCache {
         lookup(name: name).exercise
     }
 
+    /// Convenience: just the resolved exercise id. Used by composite-tile
+    /// callers to drive the bundle-first WebP lookup in `ExerciseThumbnail`.
+    func exerciseID(forName name: String) -> Int? {
+        lookup(name: name).exercise?.id
+    }
+
     /// Test-only / preview hook to clear all cached resolutions.
     func reset() {
         lock.lock()

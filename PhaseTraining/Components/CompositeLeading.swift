@@ -12,13 +12,24 @@
 import SwiftUI
 
 struct CompositeLeading: View {
+    let exerciseID: Int?
     let photoURL: String?
     let group: MuscleBucket
     let side: BodyAnatomyView.AnatomySide
 
+    init(exerciseID: Int? = nil,
+         photoURL: String?,
+         group: MuscleBucket,
+         side: BodyAnatomyView.AnatomySide) {
+        self.exerciseID = exerciseID
+        self.photoURL = photoURL
+        self.group = group
+        self.side = side
+    }
+
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            ExerciseThumbnail(urlString: photoURL, size: 56, cornerRadius: 10)
+            ExerciseThumbnail(exerciseID: exerciseID, urlString: photoURL, size: 56, cornerRadius: 10)
             MuscleChipBadge(group: group, side: side)
                 .offset(x: 6, y: 6)
         }

@@ -242,10 +242,11 @@ struct CoachRequestScreen: View {
     private func generatedExerciseTile(_ ex: GeneratedExercise, position: Int) -> some View {
         let bucket = ExerciseLookupCache.shared.bucket(forName: ex.name) ?? .chest
         let photoURL = ExerciseLookupCache.shared.thumbnailURL(forName: ex.name)
+        let exerciseID = ExerciseLookupCache.shared.exerciseID(forName: ex.name)
         let exId = ex.id
         return ExerciseTile(
             vm: .init(
-                leading: .composite(photoURL: photoURL, group: bucket, side: bucket.naturalSide),
+                leading: .composite(exerciseID: exerciseID, photoURL: photoURL, group: bucket, side: bucket.naturalSide),
                 title: ex.name,
                 meta: "\(ex.sets) × \(ex.reps) · rest \(ex.restSeconds)s",
                 trailing: .overflow(onTap: {

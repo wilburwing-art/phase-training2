@@ -284,7 +284,7 @@ struct LibraryScreen: View {
                     LazyVStack(spacing: 8) {
                         ForEach(rows) { ex in
                             ExerciseTile(vm: .init(
-                                leading: .thumb(urlString: ex.thumbnailURL ?? ex.imageURL),
+                                leading: .thumb(exerciseID: ex.id, urlString: ex.thumbnailURL ?? ex.imageURL),
                                 title: ex.name,
                                 meta: metaLine(ex),
                                 trailing: .chevron,

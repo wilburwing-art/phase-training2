@@ -266,10 +266,11 @@ struct DayWorkoutPreviewSheet: View {
         let inSuperset = grouping.groupSize >= 2
         let bucket = ExerciseLookupCache.shared.bucket(forName: ex.name) ?? .chest
         let photoURL = ExerciseLookupCache.shared.thumbnailURL(forName: ex.name)
+        let exerciseID = ExerciseLookupCache.shared.exerciseID(forName: ex.name)
         let originalIdx = grouping.originalIndex
         return ExerciseTile(
             vm: .init(
-                leading: .composite(photoURL: photoURL, group: bucket, side: bucket.naturalSide),
+                leading: .composite(exerciseID: exerciseID, photoURL: photoURL, group: bucket, side: bucket.naturalSide),
                 title: displayName,
                 meta: "\(ex.targetSets) sets · \(ex.targetReps) reps · rest \(ex.rest)s",
                 trailing: .overflow(onTap: { actionSheetExIdx = originalIdx }),

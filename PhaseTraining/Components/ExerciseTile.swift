@@ -20,10 +20,16 @@ import SwiftUI
 
 struct ExerciseTileVM {
     enum Leading {
-        case thumb(urlString: String?)
+        /// Plain photo thumbnail (no muscle chip overlay). Pass `exerciseID`
+        /// when it's known so the bundle-first WebP shows instead of a
+        /// network fetch / placeholder.
+        case thumb(exerciseID: Int? = nil, urlString: String?)
         case index(Int)
         case icon(systemName: String)
-        case composite(photoURL: String?, group: MuscleBucket, side: BodyAnatomyView.AnatomySide = .front)
+        /// Composite leading: 56pt photo + 28pt muscle chip. `exerciseID` is
+        /// used to look up a bundled WebP (offline-first); falls back to
+        /// `photoURL` then SF Symbol when no bundled image matches.
+        case composite(exerciseID: Int? = nil, photoURL: String?, group: MuscleBucket, side: BodyAnatomyView.AnatomySide = .front)
         case handle
         case none
     }
@@ -138,8 +144,8 @@ struct ExerciseTile: View {
     // MARK: leading slot
     @ViewBuilder private var leadingView: some View {
         switch vm.leading {
-        case .thumb(let url):
-            ExerciseThumbnail(urlString: url, size: 48, cornerRadius: 8)
+        case .thumb(let exerciseID, let url):
+            ExerciseThumbnail(exerciseID: exerciseID, urlString: url, size: 48, cornerRadius: 8)
 
         case .index(let n):
             Text(String(format: "%02d", n))
@@ -158,8 +164,8 @@ struct ExerciseTile: View {
             }
             .frame(width: 48, height: 48)
 
-        case .composite(let photoURL, let group, let side):
-            CompositeLeading(photoURL: photoURL, group: group, side: side)
+        case .composite(let exerciseID, let photoURL, let group, let side):
+            CompositeLeading(exerciseID: exerciseID, photoURL: photoURL, group: group, side: side)
 
         case .handle:
             Image(systemName: "line.3.horizontal")
