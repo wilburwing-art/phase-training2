@@ -50,3 +50,9 @@ fastlane/test_output
 # bundled DB lives at PhaseTraining/Resources/coach.db. db/coach.db is
 # just a scratch file the build script writes before copying.
 db/coach.db
+
+# Quality-pipeline scratch: downloaded candidate thumbnails. The
+# JSONL provenance files in db/quality/ ARE committed; the WebPs are
+# temp working files. See PLAN-image-quality.md.
+db/quality/candidate_thumbs/
+
