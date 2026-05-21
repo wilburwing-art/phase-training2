@@ -29,6 +29,7 @@ struct RootTabView: View {
     @EnvironmentObject private var recentPicks: RecentPicksStore
     @EnvironmentObject private var conv: CoachConversationStore
     @EnvironmentObject private var sportLogStore: SportLogStore
+    @EnvironmentObject private var customStore: CustomRoutineStore
 
     var body: some View {
         TabView(selection: $tabSelection.selected) {
@@ -78,6 +79,7 @@ struct RootTabView: View {
             planStore.sessionStore = sessionStore
             planStore.memoryStore = memoryStore
             planStore.sportLogStore = sportLogStore
+            planStore.customStore = customStore
             // One-shot migration for users whose saved plan was composed by
             // the pre-build-36 routine picker. Detects the stale schema and
             // regenerates so they stop seeing bundled sport-themed routines

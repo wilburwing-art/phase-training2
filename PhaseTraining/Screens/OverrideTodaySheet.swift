@@ -19,10 +19,20 @@ import SwiftUI
 struct OverrideTodaySheet: View {
     @EnvironmentObject private var sessionStore: SessionStore
     @EnvironmentObject private var customStore: CustomRoutineStore
+    @EnvironmentObject private var planStore: PlanStore
+    @EnvironmentObject private var memoryStore: MemoryStore
     @Environment(\.dismiss) private var dismiss
 
     /// Called after a session is created from a picked or generated workout.
+    /// Only fires in start-now mode (targetDate == nil).
     let onStartSession: () -> Void
+
+    /// Build 105: when set, picking a custom routine writes a per-date
+    /// override into PlanStore + dismisses (no session is started). The
+    /// next plan regen post-processes the override so the day's
+    /// generatedWorkout reflects the saved routine. When nil (Today tab
+    /// entry point), retains the original "start session now" behavior.
+    var targetDate: Date? = nil
 
     @State private var showingCoachRequest = false
     @State private var editingRoutine: CustomRoutine? = nil
@@ -109,7 +119,11 @@ struct OverrideTodaySheet: View {
     private func customRow(_ custom: CustomRoutine) -> some View {
         HStack(spacing: 8) {
             Button {
-                startSession(with: custom)
+                if let targetDate {
+                    scheduleOverride(custom: custom, for: targetDate)
+                } else {
+                    startSession(with: custom)
+                }
             } label: {
                 HStack(spacing: 12) {
                     Image(systemName: "figure.strengthtraining.traditional")
@@ -189,6 +203,20 @@ struct OverrideTodaySheet: View {
         sessionStore.saveActive(sessionStore.createSession(from: template))
         dismiss()
         onStartSession()
+    }
+
+    /// Build 105: schedule the custom routine for `date` instead of starting
+    /// a session. Writes to PlanStore.overrides.customRoutineByDate; the
+    /// updateOverrides call regenerates the plan, which then post-processes
+    /// the override into the day's generatedWorkout. The Week tab + Today
+    /// (on the day-of) both pick up the new workout via standard plan re-
+    /// render — no special wiring needed at the host surface.
+    private func scheduleOverride(custom: CustomRoutine, for date: Date) {
+        let key = Calendar.current.startOfDay(for: date)
+        planStore.updateOverrides(memory: memoryStore.memory) { o in
+            o.customRoutineByDate[key] = custom.id
+        }
+        dismiss()
     }
 }
 

@@ -43,6 +43,15 @@ final class PlanStore: ObservableObject {
     /// so the test/preview surfaces stay no-op.
     var sportLogStore: SportLogStore?
 
+    /// Custom-routine catalog. Build 105 — when the user picks a saved
+    /// custom routine to override a future day (from WeekDayEditSheet),
+    /// the override is keyed by routine id in WeekOverrides. PlanStore
+    /// resolves the id against this store after each Planner.generate()
+    /// and stamps the resulting workout onto the day. Optional + post-
+    /// init like the other store refs; without it, override picks have
+    /// no effect (graceful regression to pre-build-105 behavior).
+    var customStore: CustomRoutineStore?
+
     /// Memory feed for the auto-regen subscription (build 69+). When set,
     /// PlanStore observes the published memory and silently regenerates the
     /// week whenever the user's profile changes enough to drift
@@ -108,15 +117,97 @@ final class PlanStore: ObservableObject {
             today: today,
             context: context
         )
-        self.plan = p
+        // Build 105: apply CustomRoutine overrides AFTER Planner.generate()
+        // so the user's "use my saved leg workout for Thursday" pick
+        // survives plan regens. Done as post-processing because the
+        // Planner is stateless and doesn't know about CustomRoutineStore.
+        let pWithCustoms = applyCustomRoutineOverrides(to: p)
+        self.plan = pWithCustoms
         savePlan()
-        recordPickedExercises(in: p)
+        recordPickedExercises(in: pWithCustoms)
         // Build 98: kick off background LLM refinement for consent-on
         // users. Deterministic plan above renders immediately; the
         // refinement task progressively replaces each lift/mobility day
         // with an LLM-personalized version. No-op without consent.
         kickOffLLMRefinementIfConsented(memory: memory)
-        return p
+        return pWithCustoms
+    }
+
+    // MARK: - Custom-routine override post-processing (build 105)
+
+    /// Walk the plan and replace any day's generatedWorkout with one
+    /// composed from a CustomRoutine when `overrides.customRoutineByDate`
+    /// has an entry for that date. No-op if customStore isn't wired or
+    /// the referenced routine has been deleted.
+    private func applyCustomRoutineOverrides(to plan: WeekPlan) -> WeekPlan {
+        guard let customStore else { return plan }
+        guard !overrides.customRoutineByDate.isEmpty else { return plan }
+        var updated = plan
+        for idx in updated.days.indices {
+            let day = updated.days[idx]
+            guard let customId = overrides.customRoutineId(for: day.date) else { continue }
+            guard let custom = customStore.routines.first(where: { $0.id == customId }) else { continue }
+            // Build a workout shape from the custom routine. Mark it as
+            // lift kind if it isn't already (rest days could also carry an
+            // override if the user manually scheduled a custom workout on
+            // a planned rest day from the Week tab).
+            updated.days[idx].generatedWorkout = composeWorkout(fromCustom: custom)
+            updated.days[idx].title = custom.name.isEmpty ? "Custom workout" : custom.name
+            updated.days[idx].routineId = nil
+            if day.kind == .rest || day.kind == .sport || day.kind == .event {
+                updated.days[idx].kind = .lift
+            }
+            updated.days[idx].generatedReason = "Your saved workout"
+        }
+        return updated
+    }
+
+    /// Convert a CustomRoutine's exercise list into a GeneratedWorkout so
+    /// the Today / Week surfaces can render it the same way they render
+    /// planner output. Uses sensible fallback prescriptions when the
+    /// routine doesn't carry them (older saves predate the per-exercise
+    /// sets/reps/rest fields).
+    private func composeWorkout(fromCustom custom: CustomRoutine) -> GeneratedWorkout {
+        let exercises = custom.exercises.enumerated().map { idx, ex in
+            GeneratedExercise(
+                id: "custom-\(custom.id)-\(idx)",
+                exerciseId: ex.exerciseId,
+                name: ex.name,
+                pattern: nil,
+                isCompound: false,
+                sets: ex.sets ?? 3,
+                reps: ex.reps ?? "8-12",
+                restSeconds: parseRest(ex.rest) ?? 90,
+                notes: ex.notes,
+                rpe: nil,
+                tempo: nil,
+                source: .recipe
+            )
+        }
+        let movements = exercises.count == 1 ? "1 movement" : "\(exercises.count) movements"
+        let estMin = max(15, exercises.reduce(0) { $0 + $1.sets * 90 } / 60)
+        return GeneratedWorkout(
+            title: custom.name.isEmpty ? "Custom workout" : custom.name,
+            summary: "\(movements) · ~\(estMin) min",
+            exercises: exercises,
+            estimatedMinutes: estMin,
+            provenance: "From your saved workouts",
+            refinedByLLMAt: nil
+        )
+    }
+
+    /// Parse a free-form rest string ("90s", "1 min", "2:00") to seconds.
+    private func parseRest(_ s: String?) -> Int? {
+        guard let s else { return nil }
+        let lower = s.lowercased().trimmingCharacters(in: .whitespaces)
+        if lower.contains(":") {
+            let parts = lower.split(separator: ":").compactMap { Int($0) }
+            if parts.count == 2 { return parts[0] * 60 + parts[1] }
+        }
+        let digits = lower.prefix(while: { $0.isNumber || $0 == "." })
+        guard let n = Double(digits) else { return nil }
+        if lower.contains("min") { return Int(n * 60) }
+        return Int(n)
     }
 
     /// Subscribe to memoryStore.$memory and silently regenerate the plan

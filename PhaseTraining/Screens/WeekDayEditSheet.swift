@@ -65,10 +65,16 @@ struct WeekDayEditSheet: View {
             }
         }
         .sheet(isPresented: $overridingWorkout) {
-            OverrideTodaySheet(onStartSession: {
-                overridingWorkout = false
-                dismiss()
-            })
+            // Pass targetDate so the picker writes a per-day override
+            // instead of starting a session — the Week tab surface is
+            // for "schedule this for that day," not "start this now."
+            OverrideTodaySheet(
+                onStartSession: {
+                    overridingWorkout = false
+                    dismiss()
+                },
+                targetDate: date
+            )
         }
         .sheet(isPresented: $pickingMoveTarget) {
             MoveDayPickerSheet(

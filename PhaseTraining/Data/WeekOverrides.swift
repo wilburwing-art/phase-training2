@@ -112,6 +112,11 @@ struct WeekOverrides: Codable {
     var unavailableDays: Set<Weekday> = []
     var events: [WeekEvent] = []
     var dayOverrides: [Date: DayKindOverride] = [:]
+    /// Build 105: per-date CustomRoutine override. Date (startOfDay) →
+    /// CustomRoutine.id. PlanStore applies these after Planner.generate()
+    /// so the user's "use my saved leg workout for Thursday" pick survives
+    /// regens + propagates to Today on the day-of.
+    var customRoutineByDate: [Date: String] = [:]
 
     init(weekStart: Date) {
         self.weekStart = weekStart
@@ -121,7 +126,8 @@ struct WeekOverrides: Codable {
 // MARK: - Convenience
 
 extension WeekOverrides {
-    /// True if the unavailableDays / events / dayOverrides reference anything for `date`.
+    /// True if the unavailableDays / events / dayOverrides / customRoutineByDate
+    /// reference anything for `date`.
     func hasAnythingFor(date: Date, calendar: Calendar = .current) -> Bool {
         if unavailableDays.contains(Weekday.from(date: date, calendar: calendar)) {
             return true
@@ -129,7 +135,18 @@ extension WeekOverrides {
         if events.contains(where: { calendar.isDate($0.date, inSameDayAs: date) }) {
             return true
         }
-        return dayOverrides.keys.contains(where: { calendar.isDate($0, inSameDayAs: date) })
+        if dayOverrides.keys.contains(where: { calendar.isDate($0, inSameDayAs: date) }) {
+            return true
+        }
+        return customRoutineByDate.keys.contains(where: { calendar.isDate($0, inSameDayAs: date) })
+    }
+
+    /// CustomRoutine.id selected for `date`, if any.
+    func customRoutineId(for date: Date, calendar: Calendar = .current) -> String? {
+        for (k, v) in customRoutineByDate where calendar.isDate(k, inSameDayAs: date) {
+            return v
+        }
+        return nil
     }
 
     /// All events landing on `date`. Usually 0 or 1; planner defends against >1
@@ -153,6 +170,8 @@ extension WeekOverrides {
         events.removeAll { calendar.isDate($0.date, inSameDayAs: date) }
         let stale = dayOverrides.keys.filter { calendar.isDate($0, inSameDayAs: date) }
         for k in stale { dayOverrides.removeValue(forKey: k) }
+        let staleCustom = customRoutineByDate.keys.filter { calendar.isDate($0, inSameDayAs: date) }
+        for k in staleCustom { customRoutineByDate.removeValue(forKey: k) }
     }
 }
 
