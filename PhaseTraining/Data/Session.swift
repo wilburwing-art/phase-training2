@@ -12,6 +12,36 @@ struct LoggedSet: Codable, Equatable {
     var reps: String
     var rpe: String
     var done: Bool
+    /// Marks a warm-up set. Warmup sets are tracked + displayed in the log
+    /// but EXCLUDED from PR detection, volume aggregation, and Epley 1RM
+    /// math (see UserDatabase.bestWeightsByExerciseAndReps, MuscleVolume,
+    /// StrengthStandards, GeneratorContext.buildStagnantExercises). Optional
+    /// on decode so pre-build-100 sessions round-trip cleanly without a
+    /// JSON migration; defaults to false.
+    var isWarmup: Bool = false
+
+    enum CodingKeys: String, CodingKey {
+        case num, weight, reps, rpe, done, isWarmup
+    }
+
+    init(num: Int, weight: String, reps: String, rpe: String, done: Bool, isWarmup: Bool = false) {
+        self.num = num
+        self.weight = weight
+        self.reps = reps
+        self.rpe = rpe
+        self.done = done
+        self.isWarmup = isWarmup
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.num = try c.decode(Int.self, forKey: .num)
+        self.weight = try c.decode(String.self, forKey: .weight)
+        self.reps = try c.decode(String.self, forKey: .reps)
+        self.rpe = try c.decode(String.self, forKey: .rpe)
+        self.done = try c.decode(Bool.self, forKey: .done)
+        self.isWarmup = (try? c.decode(Bool.self, forKey: .isWarmup)) ?? false
+    }
 }
 
 struct LoggedExercise: Codable, Identifiable, Equatable {

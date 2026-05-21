@@ -351,7 +351,8 @@ final class SessionStore: ObservableObject {
         var out: [PersonalRecord] = []
         var emitted: Set<String> = []
         for ex in exercises {
-            for set in ex.sets where set.done {
+            // Warmup sets excluded — never count as PRs.
+            for set in ex.sets where set.done && !set.isWarmup {
                 let reps = Int(set.reps) ?? 0
                 let weight = Double(set.weight) ?? 0
                 guard reps > 0, weight > 0 else { continue }

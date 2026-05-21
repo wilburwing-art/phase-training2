@@ -91,6 +91,35 @@ final class StrengthStandardsTests: XCTestCase {
         XCTAssertEqual(rows.first?.bestWeightLb ?? 0, 200, accuracy: 0.5)
     }
 
+    /// A 95×5 warmup must not flag as the user's "best bench"; only the
+    /// working set counts toward Epley + tier resolution.
+    func test_rows_ignoresWarmupSets() {
+        let logged = LoggedExercise(
+            id: "Bench Press", name: "Bench Press", type: nil, unit: "lbs",
+            targetSets: 2, targetReps: 5, rest: 90,
+            sets: [
+                LoggedSet(num: 1, weight: "95",  reps: "5", rpe: "", done: true, isWarmup: true),
+                LoggedSet(num: 2, weight: "225", reps: "5", rpe: "", done: true, isWarmup: false),
+            ],
+            prevSets: []
+        )
+        let session = SavedSession(
+            templateId: "t", name: "Bench Press", category: "",
+            startTime: Date().addingTimeInterval(-3600),
+            exercises: [logged], feel: nil, note: nil,
+            endTime: Date(), duration: 3600
+        )
+        let rows = StrengthStandards.rows(
+            from: [session],
+            bodyweightKg: BodyMetrics.lbToKg(180),
+            gender: .male
+        )
+        guard let row = rows.first else { return XCTFail("Expected a Bench Press row") }
+        XCTAssertEqual(row.bestWeightLb, 225, accuracy: 0.5,
+                       "Best lifted weight must come from the working set, not the warmup")
+        XCTAssertEqual(row.bestReps, 5)
+    }
+
     // MARK: - Helpers
 
     private func savedSession(name: String, sets: [(weight: String, reps: String)]) -> SavedSession {

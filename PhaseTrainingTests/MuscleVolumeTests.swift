@@ -94,6 +94,36 @@ final class MuscleVolumeTests: XCTestCase {
         XCTAssertTrue(rows.isEmpty)
     }
 
+    /// Warmup sets must NOT contribute to weekly muscle volume — otherwise
+    /// a 5×95 warmup ramp would inflate chest volume next to the working
+    /// top set, distorting the muscle-balance card.
+    func test_warmupSets_areIgnored() {
+        let logged = LoggedExercise(
+            id: "Bench Press", name: "Bench Press", type: nil, unit: "lbs",
+            targetSets: 2, targetReps: 5, rest: 90,
+            sets: [
+                LoggedSet(num: 1, weight: "95",  reps: "5", rpe: "", done: true, isWarmup: true),
+                LoggedSet(num: 2, weight: "225", reps: "5", rpe: "", done: true, isWarmup: false),
+            ],
+            prevSets: []
+        )
+        let session = SavedSession(
+            templateId: "t", name: "Bench Press", category: "",
+            startTime: Date().addingTimeInterval(-3600),
+            exercises: [logged], feel: nil, note: nil,
+            endTime: Date(), duration: 3600
+        )
+        let rows = MuscleVolume.rows(
+            from: [session],
+            resolve: resolver([
+                "Bench Press": [(slug: "chest", role: "primary", label: "Chest")]
+            ])
+        )
+        XCTAssertEqual(rows.count, 1)
+        XCTAssertEqual(rows[0].volume, 225 * 5, accuracy: 0.5,
+                       "Volume should reflect the working set only (warmup 95×5 excluded)")
+    }
+
     // MARK: - Helpers
 
     private func savedSession(name: String,

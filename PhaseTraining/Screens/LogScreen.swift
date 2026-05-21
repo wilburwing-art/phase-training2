@@ -439,11 +439,24 @@ struct LogScreen: View {
             }
 
             HStack(spacing: 4) {
-                Text("\(set.num)")
-                    .styled(.monoXS)
-                    .foregroundStyle(setNumberColor)
-                    .frame(width: 22, alignment: .center)
-                    .monospacedDigit()
+                if set.isWarmup {
+                    // "W" pill replaces the set-number for warmup sets.
+                    // Visually flags the row as a non-counting ramp set.
+                    Text("W")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(Color.bg)
+                        .frame(width: 18, height: 14)
+                        .background(Color.ink3)
+                        .clipShape(Capsule())
+                        .frame(width: 22, alignment: .center)
+                        .accessibilityLabel("Warmup set")
+                } else {
+                    Text("\(set.num)")
+                        .styled(.monoXS)
+                        .foregroundStyle(setNumberColor)
+                        .frame(width: 22, alignment: .center)
+                        .monospacedDigit()
+                }
 
                 Rectangle()
                     .fill(Color.line)
@@ -487,6 +500,18 @@ struct LogScreen: View {
             }
         }
         .padding(.vertical, 6)
+        // Warmup sets render smaller + dimmed so the working sets read as
+        // the primary content. Toggle via the contextMenu below.
+        .font(.callout)
+        .opacity(set.isWarmup ? 0.6 : 1.0)
+        .contextMenu {
+            Button {
+                toggleWarmup(exIdx: exIdx, setIdx: setIdx)
+            } label: {
+                Label(set.isWarmup ? "Unmark warmup" : "Mark as warmup",
+                      systemImage: "flame")
+            }
+        }
     }
 
     @ViewBuilder
@@ -605,6 +630,18 @@ struct LogScreen: View {
     }
 
     // MARK: - Mutations
+
+    /// Long-press menu hook on a set row. Flips the warmup flag, which is
+    /// the single source of truth for the PR / volume / 1RM exclusion path
+    /// (see UserDatabase.bestWeightsByExerciseAndReps, MuscleVolume,
+    /// StrengthStandards). UI re-renders pick up smaller font + dimmed
+    /// opacity + leading "W" pill automatically via the @State binding.
+    private func toggleWarmup(exIdx: Int, setIdx: Int) {
+        guard session.exercises.indices.contains(exIdx),
+              session.exercises[exIdx].sets.indices.contains(setIdx) else { return }
+        session.exercises[exIdx].sets[setIdx].isWarmup.toggle()
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
 
     private func toggleSet(exIdx: Int, setIdx: Int) {
         let wasDone = session.exercises[exIdx].sets[setIdx].done

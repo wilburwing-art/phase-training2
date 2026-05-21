@@ -192,10 +192,11 @@ struct ProgressScreen: View {
     // MARK: - Volume trend
 
     private var volumeCard: some View {
+        // Warmup sets excluded — VOLUME / WEEK reflects working sets only.
         let volumes = weeklyBuckets { session, _ in
             session.exercises.reduce(0.0) { acc, ex in
                 acc + ex.sets.reduce(0.0) { a, set in
-                    guard set.done,
+                    guard set.done, !set.isWarmup,
                           let w = Double(set.weight),
                           let r = Double(set.reps) else { return a }
                     return a + (w * r)
@@ -204,7 +205,7 @@ struct ProgressScreen: View {
         }
         let useSetCount = volumes.allSatisfy { $0 == 0 }
         let series: [Double] = useSetCount
-            ? weeklyBuckets { s, _ in Double(s.exercises.reduce(0) { $0 + $1.sets.filter(\.done).count }) }
+            ? weeklyBuckets { s, _ in Double(s.exercises.reduce(0) { $0 + $1.sets.filter { $0.done && !$0.isWarmup }.count }) }
             : volumes
         let maxVal = max(series.max() ?? 0, 1)
         return card(title: useSetCount ? "SETS / WEEK" : "VOLUME / WEEK") {
@@ -724,7 +725,9 @@ struct ProgressScreen: View {
             for ex in s.exercises {
                 var bestThisSession: Double = 0
                 var hasWeightedSet = false
-                for set in ex.sets where set.done {
+                // Warmup sets excluded — per-exercise best-weight sparkline
+                // tracks working sets only.
+                for set in ex.sets where set.done && !set.isWarmup {
                     if let w = Double(set.weight), w > 0 {
                         hasWeightedSet = true
                         if w > bestThisSession { bestThisSession = w }
@@ -732,7 +735,7 @@ struct ProgressScreen: View {
                 }
                 if !hasWeightedSet { continue }
                 var entry = agg[ex.name] ?? Agg(unit: ex.unit, setCount: 0, perSession: [])
-                entry.setCount += ex.sets.filter(\.done).count
+                entry.setCount += ex.sets.filter { $0.done && !$0.isWarmup }.count
                 entry.perSession.append((s.startTime, bestThisSession))
                 agg[ex.name] = entry
             }
