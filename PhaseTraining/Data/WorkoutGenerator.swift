@@ -170,6 +170,7 @@ enum WorkoutGenerator {
                 original: initial,
                 context: context,
                 envs: envs,
+                allowedEquipmentSlugs: profile.allowedEquipmentSlugs,
                 excludeKws: excludeKws,
                 excludeIds: pickedIds,
                 slot: slot
@@ -288,6 +289,10 @@ enum WorkoutGenerator {
                 if !envs.isEmpty, let env = candidate.environment, !env.isEmpty, !envs.contains(env) {
                     continue
                 }
+                if !profile.allowedEquipmentSlugs.isEmpty {
+                    let required = CoachDatabase.shared.requiredEquipmentSlugs(forExerciseIds: [candidate.id])[candidate.id] ?? []
+                    if !required.isSubset(of: profile.allowedEquipmentSlugs) { continue }
+                }
                 let lowerName = candidate.name.lowercased()
                 if excludeKws.contains(where: { lowerName.contains($0) }) { continue }
                 return (candidate, bucket.slug)
@@ -389,7 +394,8 @@ enum WorkoutGenerator {
                     excludeKeywords: excludeKws,
                     excludeIds: excludeIds,
                     modalities: slot.requiredModalities,
-                    userSportSlugs: profile.userSportSlugs
+                    userSportSlugs: profile.userSportSlugs,
+                    allowedEquipmentSlugs: profile.allowedEquipmentSlugs
                 )
                 let candidates = applyStaplePreference(applySoreFilter(raw), pattern)
                 if let pick = deterministicPick(from: applyVariety(candidates), slotIdx: slotIdx, hashSeed: hashSeed) {
@@ -404,7 +410,8 @@ enum WorkoutGenerator {
                 excludeKeywords: excludeKws,
                 excludeIds: excludeIds,
                 modalities: slot.requiredModalities,
-                userSportSlugs: profile.userSportSlugs
+                userSportSlugs: profile.userSportSlugs,
+                allowedEquipmentSlugs: profile.allowedEquipmentSlugs
             )
             let relaxed = applyStaplePreference(applySoreFilter(relaxedRaw), pattern)
             if let pick = deterministicPick(from: applyVariety(relaxed), slotIdx: slotIdx, hashSeed: hashSeed) {
@@ -445,6 +452,7 @@ enum WorkoutGenerator {
         original: Exercise,
         context: GeneratorContext,
         envs: Set<String>,
+        allowedEquipmentSlugs: Set<String>,
         excludeKws: [String],
         excludeIds: Set<Int>,
         slot: PatternSlot
@@ -459,6 +467,10 @@ enum WorkoutGenerator {
             // Env filter: empty envs = no restriction (e.g. fullGym user).
             if !envs.isEmpty, let env = candidate.environment, !envs.contains(env) {
                 continue
+            }
+            if !allowedEquipmentSlugs.isEmpty {
+                let required = CoachDatabase.shared.requiredEquipmentSlugs(forExerciseIds: [candidate.id])[candidate.id] ?? []
+                if !required.isSubset(of: allowedEquipmentSlugs) { continue }
             }
             // Dislike-keyword filter.
             let lowerName = candidate.name.lowercased()

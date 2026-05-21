@@ -516,7 +516,8 @@ final class CoachDatabase {
         excludeKeywords: [String] = [],
         excludeIds: Set<Int> = [],
         modalities: Set<String> = [],
-        userSportSlugs: [String] = []
+        userSportSlugs: [String] = [],
+        allowedEquipmentSlugs: Set<String> = []
     ) -> [Exercise] { withLock {
         guard let db else { return [] }
         // Sport filter mirrors listExercises: keep matching-sport rows AND
@@ -573,6 +574,15 @@ final class CoachDatabase {
         }
 
         let lowerExcludes = excludeKeywords.map { $0.lowercased() }
+        // Equipment allow-list is the proper axis: per-exercise required slugs
+        // (is_required = 1) joined from exercise_equipment. Fetched in one
+        // batch so we don't paginate the catalog per-row. Empty allow-list =
+        // no filter, preserving the pre-build-103 behaviour for full-gym
+        // callers and for code paths that don't pass equipment.
+        let requiredByExId: [Int: Set<String>] =
+            allowedEquipmentSlugs.isEmpty
+                ? [:]
+                : requiredEquipmentSlugs(forExerciseIds: Set(raw.map(\.id)))
         return raw.filter { ex in
             if excludeIds.contains(ex.id) { return false }
             if !difficulties.isEmpty {
@@ -589,6 +599,14 @@ final class CoachDatabase {
             if !lowerExcludes.isEmpty {
                 let lowerName = ex.name.lowercased()
                 if lowerExcludes.contains(where: { lowerName.contains($0) }) {
+                    return false
+                }
+            }
+            if !allowedEquipmentSlugs.isEmpty {
+                let required = requiredByExId[ex.id] ?? []
+                // Exercise passes iff every required slug is in the allow-list.
+                // An exercise with no required equipment passes freely.
+                if !required.isSubset(of: allowedEquipmentSlugs) {
                     return false
                 }
             }
@@ -893,6 +911,63 @@ final class CoachDatabase {
         default:             return nil
         }
     }
+
+    // MARK: - Equipment lookups
+
+    /// Per-exercise required equipment slugs (is_required = 1). Single-shot
+    /// batch query keyed on coach.db exercise.id. Equipment that's tagged
+    /// optional (is_required = 0) is intentionally excluded — an exercise
+    /// that "optionally uses a mat" should not be filtered out for a user
+    /// who didn't pick a mat. Empty Set in the result means "no required
+    /// equipment" (pure bodyweight or unmapped) — those pass any filter.
+    func requiredEquipmentSlugs(forExerciseIds ids: Set<Int>) -> [Int: Set<String>] { withLock {
+        guard !ids.isEmpty, let db else { return [:] }
+        let placeholders = ids.map { _ in "?" }.joined(separator: ",")
+        let sql = """
+        SELECT ee.exercise_id, eq.slug
+        FROM exercise_equipment ee
+        JOIN equipment eq ON eq.id = ee.equipment_id
+        WHERE ee.exercise_id IN (\(placeholders))
+          AND ee.is_required = 1
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [:] }
+        defer { sqlite3_finalize(stmt) }
+        for (i, id) in ids.enumerated() {
+            sqlite3_bind_int64(stmt, Int32(i + 1), Int64(id))
+        }
+        var result: [Int: Set<String>] = [:]
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            let exId = Int(sqlite3_column_int64(stmt, 0))
+            let slug = text(stmt, 1) ?? ""
+            result[exId, default: []].insert(slug)
+        }
+        return result
+    } }
+
+    /// Union of required equipment slugs across every exercise in a bundled
+    /// routine. Used to vet a routine before recommending it to a user with
+    /// a constrained equipment set.
+    func requiredEquipmentSlugs(forRoutineId routineId: Int) -> Set<String> { withLock {
+        guard let db else { return [] }
+        let sql = """
+        SELECT DISTINCT eq.slug
+        FROM routine_exercises re
+        JOIN exercise_equipment ee ON ee.exercise_id = re.exercise_id
+        JOIN equipment eq ON eq.id = ee.equipment_id
+        WHERE re.routine_id = ?
+          AND ee.is_required = 1
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_int64(stmt, 1, Int64(routineId))
+        var result: Set<String> = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            if let slug = text(stmt, 0) { result.insert(slug) }
+        }
+        return result
+    } }
 
     func exercises(forRoutineId routineId: Int) -> [RoutineExercise] { withLock {
         guard let db else { return [] }

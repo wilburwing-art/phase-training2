@@ -732,8 +732,18 @@ enum Planner {
         guard let goals = goalsFor(kind), !goals.isEmpty else { return nil }
 
         // Equipment + constraints — applied to every pass below.
+        //
+        // Equipment is two filters now: the existing routines.environment
+        // whitelist (where) AND a per-routine required-equipment check
+        // that joins exercise_equipment for every exercise the routine
+        // contains. Build 103 — pre-fix, a bodyweight user could land on a
+        // "home" routine whose exercises required barbells. The new check
+        // rejects the routine when its required-equipment union isn't a
+        // subset of the user's allow-list. Empty allow-list = no filter
+        // (fullGym user).
         let envAndConstraintAllowed: (BundledRoutineRow) -> Bool = { r in
             environmentAllowed(r, allowed: profile.allowedEnvironments)
+            && equipmentAllowed(r, allowed: profile.allowedEquipmentSlugs)
             && !constraintConflict(r, keywords: profile.excludedNameKeywords)
         }
 
@@ -772,9 +782,12 @@ enum Planner {
 
         // Last resort within env filter — drop constraint exclusions (better
         // a flagged routine than no routine; user can swap via long-press).
+        // Equipment check is NOT dropped: shipping a routine the user
+        // physically can't do is worse than shipping a name-keyword brush.
         let envOnlyNoConstraints = routines.filter { r in
             goalMatches(r, goals: goals)
                 && environmentAllowed(r, allowed: profile.allowedEnvironments)
+                && equipmentAllowed(r, allowed: profile.allowedEquipmentSlugs)
         }
         if let pick = deterministicPick(from: envOnlyNoConstraints, offset: slotOffset, hash: memory.planInputsHash) {
             return pick
@@ -824,6 +837,16 @@ enum Planner {
         guard !allowed.isEmpty else { return true }       // empty = no filter
         guard let env = r.environment, !env.isEmpty else { return true }
         return allowed.contains(env)
+    }
+
+    /// Routine passes iff every required equipment slug across its exercises
+    /// lies inside the user's allow-list. Empty allow-list = no filter
+    /// (fullGym user). A routine with no required equipment (pure bodyweight
+    /// pool with no junction rows) always passes.
+    private static func equipmentAllowed(_ r: BundledRoutineRow, allowed: Set<String>) -> Bool {
+        guard !allowed.isEmpty else { return true }
+        let required = CoachDatabase.shared.requiredEquipmentSlugs(forRoutineId: r.id)
+        return required.isSubset(of: allowed)
     }
 
     private static func constraintConflict(_ r: BundledRoutineRow, keywords: [String]) -> Bool {

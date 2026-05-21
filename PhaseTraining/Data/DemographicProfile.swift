@@ -91,6 +91,12 @@ struct DemographicProfile: Equatable {
     /// equipment. Empty = no filter.
     let allowedEnvironments: Set<String>
 
+    /// coach.db `equipment.slug` values the user has access to. The planner
+    /// and generator exclude any exercise whose `exercise_equipment` row
+    /// names a required slug outside this set. Empty = no filter
+    /// (`.fullGym` user). Set via `Equipment.allowedCoachDbSlugs`.
+    let allowedEquipmentSlugs: Set<String>
+
     /// Substring matches (case-insensitive) used to exclude routines whose
     /// name brushes against any LEGACY free-text constraint (e.g. notes the
     /// user typed before the structured injury picker existed).
@@ -174,6 +180,13 @@ extension DemographicProfile {
         }
 
         // --- Equipment → environment whitelist ---
+        //
+        // `environment` is the WHERE filter (gym / home / outdoor / etc.).
+        // We keep it, but it's no longer the equipment filter — that lives
+        // in `allowedEquipmentSlugs` below, sourced from the proper
+        // `exercise_equipment` junction. Pre-build-103 the environment list
+        // was double-duty as an equipment proxy, which silently let
+        // dumbbell/barbell exercises through to a bodyweight-only user.
         let envs: Set<String> = {
             if m.equipment.contains(.fullGym) { return [] }
             if m.equipment.contains(.dumbbells) {
@@ -184,6 +197,9 @@ extension DemographicProfile {
             }
             return []
         }()
+
+        // --- Equipment → coach.db slug allow-list (proper axis) ---
+        let equipmentSlugs = Equipment.allowedCoachDbSlugs(Set(m.equipment))
 
         // --- Injuries: structured first, with legacy slugs-in-constraints fallback ---
         //
@@ -259,6 +275,7 @@ extension DemographicProfile {
             minRecoveryDaysBetweenLifts: recovery,
             preferredDifficulties: difficulties,
             allowedEnvironments: envs,
+            allowedEquipmentSlugs: equipmentSlugs,
             excludedNameKeywords: excludes,
             excludedExerciseIds: contraindicated,
             excludedByInjury: excludedByInjury,

@@ -459,6 +459,59 @@ enum Equipment: String, Codable, CaseIterable, Identifiable {
         case .fullGym:      return "building.2.fill"
         }
     }
+
+    // MARK: - coach.db equipment.slug mapping
+    //
+    // The DB stores required equipment per exercise in `exercise_equipment`
+    // joined to `equipment.slug`. This onboarding enum is coarser — one
+    // selection unlocks a SET of DB slugs. The planner + generator filter
+    // candidates by checking that every required slug for an exercise lies
+    // inside the user's union allow-list.
+    //
+    // The "always available" set (bodyweight + chair/wall/table) is added
+    // regardless of selection so the floor case stays useful. Picking nothing
+    // ≠ no workouts; it means STRICTLY bodyweight floor exercises only.
+
+    /// Slugs anyone has, regardless of what they picked. Furniture-grade
+    /// "equipment" sits in coach.db's bodyweight category and gates a real
+    /// chunk of the floor / chair-step catalog.
+    static let bodyweightAlwaysAvailable: Set<String> = [
+        "bodyweight", "chair", "wall", "table"
+    ]
+
+    /// Slugs unlocked specifically by THIS selection, ON TOP of the
+    /// always-available set. `.bodyweight` strictly adds nothing — picking
+    /// "bodyweight only" in onboarding means no pull-up bar, no bench, no
+    /// rings. Users who own those pick the corresponding Equipment case.
+    var specificCoachDbSlugs: Set<String> {
+        switch self {
+        case .bodyweight:   return []
+        case .dumbbells:    return ["dumbbells"]
+        case .barbell:      return ["barbell", "weight-plates", "squat-rack", "flat-bench"]
+        case .kettlebell:   return ["kettlebell"]
+        case .bands:        return ["band-light", "band-medium", "band-heavy", "mini-band", "suspension-trainer"]
+        case .pullUpBar:    return ["pull-up-bar", "dip-station", "gymnastic-rings", "parallettes"]
+        case .cableMachine: return ["cable-machine", "cable-crossover", "lat-pulldown"]
+        case .bench:        return ["flat-bench", "adjustable-bench"]
+        case .yogaMat:      return ["yoga-mat", "foam-pad", "yoga-block", "yoga-wheel", "stretch-strap"]
+        case .plyoBox:      return ["plyo-box"]
+        case .medicineBall: return ["medicine-ball", "slam-ball"]
+        case .weightVest:   return ["weight-vest"]
+        case .sandbag:      return ["sandbag"]
+        case .fullGym:      return []  // handled by allowedCoachDbSlugs
+        }
+    }
+
+    /// Union allow-list for a user's selection. `.fullGym` → empty set, which
+    /// the SQL filter treats as "no equipment restriction." Otherwise the
+    /// always-available floor is unioned with each picked equipment's
+    /// specific slugs.
+    static func allowedCoachDbSlugs(_ selection: Set<Equipment>) -> Set<String> {
+        if selection.contains(.fullGym) { return [] }
+        var result = bodyweightAlwaysAvailable
+        for eq in selection { result.formUnion(eq.specificCoachDbSlugs) }
+        return result
+    }
 }
 
 enum ExperienceLevel: String, Codable, CaseIterable, Identifiable {
