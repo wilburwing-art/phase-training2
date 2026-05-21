@@ -65,17 +65,16 @@ struct LogScreen: View {
         }
         .sheet(item: swappingBinding) { wrapped in
             let original = session.exercises[wrapped.index]
-            // Resolve the underlying coach.db Exercise id from the LoggedExercise.id.
-            // The id is set at session-create time using format "rex-<routine_exercise_id>"
-            // (see Routine.toWorkoutTemplate) so we can't recover the exercise_id
-            // without a lookup. Instead, find by name — the substitutes table is
-            // exercise-keyed and the name matches what coach.db stores.
-            let originalExerciseId = CoachDatabase.shared
-                .listExercises(search: original.name)
-                .first { $0.name.caseInsensitiveCompare(original.name) == .orderedSame }?.id
-            SubstituteExerciseSheet(
-                originalName: original.name,
-                substitutes: originalExerciseId.map { CoachDatabase.shared.substitutes(forExerciseId: $0) } ?? [],
+            // Build 99 — switched from SubstituteExerciseSheet (sparse
+            // curated table — many exercises had zero substitutes, so the
+            // list was empty) to ExercisePickerSheet pre-filtered to
+            // "similar exercises": same muscle bucket + same movement
+            // category as the source. Same fix the preview sheet shipped
+            // in build 78 + Today inline in build 94. User can clear
+            // either filter to broaden if they want anything in the library.
+            ExercisePickerSheet(
+                title: "Replace \(original.name)",
+                initialFilters: similarFiltersForExerciseName(original.name),
                 onPick: { picked in
                     swapExercise(at: wrapped.index, with: picked)
                 }
@@ -102,6 +101,38 @@ struct LogScreen: View {
             .listExercises(search: name)
             .first { $0.name.caseInsensitiveCompare(name) == .orderedSame }
             .flatMap { $0.thumbnailURL ?? $0.imageURL }
+    }
+
+    /// Resolve "similar exercises" filters for the picker — same muscle
+    /// bucket AND same movement category as the source. Mirrors the
+    /// helper on DayWorkoutPreviewSheet + TodayScreen so all three swap
+    /// surfaces filter the same way. Returns empty filters when the
+    /// source exercise can't be resolved in coach.db (custom routines
+    /// without a backing exerciseId).
+    private func similarFiltersForExerciseName(_ name: String) -> ExerciseFilters {
+        var filters = ExerciseFilters()
+        guard let dbEx = CoachDatabase.shared
+                .listExercises(search: name)
+                .first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame })
+        else { return filters }
+
+        let muscles = CoachDatabase.shared.musclesForExercise(dbEx.id).sorted { lhs, rhs in
+            let rank: (String) -> Int = { r in r == "primary" ? 0 : (r == "secondary" ? 1 : 2) }
+            return rank(lhs.role) < rank(rhs.role)
+        }
+        for entry in muscles {
+            if let bucket = MuscleBucket.bucket(forSlug: entry.slug) {
+                filters.bucket = bucket
+                break
+            }
+        }
+        for slug in CoachDatabase.shared.patternsForExercise(dbEx.id) {
+            if let cat = MovementCategory.category(forSlug: slug) {
+                filters.category = cat
+                break
+            }
+        }
+        return filters
     }
 
     /// In-session substitution. Replace the exercise's name + display type
