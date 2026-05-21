@@ -1,98 +1,31 @@
-// RecoveryScreen.swift — the "Body" tab.
+// ProgressRecoverySection.swift — full recovery view, embedded on Progress.
 //
-// Top: a body silhouette (BodyAnatomyView) where each muscle is shaded by
-// its freshness — red = needs recovery, gray = fresh. The user can flip
-// between front/back via a corner button. Above the silhouette: two big
-// stats (days since last workout / N fresh muscle groups).
-//
-// Bottom: a sectioned list of muscles ("MAIN" / "ACCESSORY") with a small
-// 60pt body thumbnail per row (focused on just that muscle), label, and
-// "X days" / "no recent exercises" subtitle.
-//
-// The freshness model + slug→intensity mapping live in MuscleFreshness;
-// the silhouette renderer lives in BodyAnatomyView. This screen is the
-// composition layer.
+// Lives alongside the existing muscleBalanceCard / strengthRatiosCard /
+// prFeedCard on ProgressScreen. The full body silhouette + per-muscle
+// freshness list lived in RecoveryScreen (a separate Body tab) before the
+// IA rework; consolidated here so muscle data has one home.
 
 import SwiftUI
 
-struct RecoveryScreen: View {
+struct ProgressRecoverySection: View {
     @EnvironmentObject private var store: SessionStore
 
-    /// Front / back toggle for the big body silhouette. Default to back —
-    /// the screenshot reference + most lifting routines hammer posterior
-    /// chain, so the back view is more interesting day-to-day.
+    /// Front / back toggle for the big body silhouette. Back default —
+    /// most lifting hammers posterior chain, so back is more interesting
+    /// day-to-day.
     @State private var side: BodyAnatomyView.AnatomySide = .back
 
-    /// Selected mode at the top — Recovery (default) or Results. Results is
-    /// stubbed in this first pass: it points back to the Progress tab's
-    /// muscle-balance card concept and reads the same volume rollup, but
-    /// the heavy chart UI lives there. Keeping the toggle here so the
-    /// shape matches the reference screenshot.
-    @State private var mode: Mode = .recovery
-
-    enum Mode: String, CaseIterable, Identifiable {
-        case recovery = "Recovery"
-        case results  = "Results"
-        var id: String { rawValue }
-    }
-
-    // MARK: - Body
-
     var body: some View {
-        ZStack {
-            Color.bg.ignoresSafeArea()
-            content
-        }
-        .preferredColorScheme(.dark)
-    }
-
-    private var content: some View {
         let rows = MuscleFreshness.rows(from: store.savedSessions)
         let highlights = recoveryHighlights(from: rows)
-        return ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                TabHeader(
-                    eyebrow: "BODY",
-                    eyebrowTrailing: nil,
-                    title: "Recovery",
-                    subtitle: nil
-                )
-                .padding(.horizontal, -20)
-
-                modeToggle
-                topStats(rows: rows)
-                bodySilhouette(highlights: highlights)
-                muscleSections(rows: rows)
-
-                Spacer().frame(height: 60)
-            }
-            .padding(.horizontal, 20)
+        VStack(alignment: .leading, spacing: 12) {
+            Text("RECOVERY")
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            topStats(rows: rows)
+            bodySilhouette(highlights: highlights)
+            muscleSections(rows: rows)
         }
-    }
-
-    // MARK: - Mode toggle
-
-    private var modeToggle: some View {
-        HStack(spacing: 0) {
-            ForEach(Mode.allCases) { m in
-                Button {
-                    mode = m
-                } label: {
-                    Text(m.rawValue.uppercased())
-                        .styled(.micro)
-                        .foregroundStyle(m == mode ? Color.accentInk : Color.ink2)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(m == mode ? Color.accent : Color.surface)
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.line, lineWidth: 0.5)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
     // MARK: - Top stats
@@ -149,9 +82,9 @@ struct RecoveryScreen: View {
         ZStack(alignment: .topTrailing) {
             VStack {
                 BodyAnatomyView(highlights: highlights, side: side)
-                    .frame(height: 360)
+                    .frame(height: 320)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 20)
+                    .padding(.vertical, 16)
             }
             .background(Color.surface)
             .overlay(
@@ -184,7 +117,7 @@ struct RecoveryScreen: View {
         let accessory = rows.filter { !Self.mainSlugs.contains($0.slug) }
             .sorted { $0.freshness < $1.freshness }
 
-        return VStack(alignment: .leading, spacing: 24) {
+        return VStack(alignment: .leading, spacing: 16) {
             if !main.isEmpty {
                 muscleSection(title: "MAIN MUSCLE GROUPS", rows: main)
             }
@@ -199,7 +132,7 @@ struct RecoveryScreen: View {
             Text(title)
                 .styled(.micro)
                 .foregroundStyle(Color.ink3)
-                .padding(.bottom, 4)
+                .padding(.top, 8)
             VStack(spacing: 6) {
                 ForEach(rows, id: \.slug) { row in
                     muscleRow(row: row)
@@ -210,9 +143,6 @@ struct RecoveryScreen: View {
 
     private func muscleRow(row: MuscleFreshness.Row) -> some View {
         HStack(spacing: 12) {
-            // Tiny silhouette focused on just this muscle. Render whichever
-            // side is currently selected — keeps the row in sync with the
-            // big silhouette above.
             BodyAnatomyView(
                 highlights: [row.slug: .primary],
                 side: side
@@ -256,8 +186,8 @@ struct RecoveryScreen: View {
     private func freshnessColor(_ f: Double) -> Color {
         if f >= 1.0 { return Color.ok }
         if f < 0.33 { return Color.danger }
-        if f < 0.66 { return Color(red: 0.95, green: 0.61, blue: 0.07) }   // #F39C12
-        return Color(red: 0.95, green: 0.77, blue: 0.06)                    // #F1C40F
+        if f < 0.66 { return Color(red: 0.95, green: 0.61, blue: 0.07) }
+        return Color(red: 0.95, green: 0.77, blue: 0.06)
     }
 
     // MARK: - Helpers
@@ -265,28 +195,11 @@ struct RecoveryScreen: View {
     private func recoveryHighlights(
         from rows: [MuscleFreshness.Row]
     ) -> [String: BodyAnatomyView.HighlightIntensity] {
-        if mode == .recovery {
-            var out: [String: BodyAnatomyView.HighlightIntensity] = [:]
-            for row in rows where row.intensity != .none {
-                out[row.slug] = row.intensity
-            }
-            return out
-        } else {
-            // Results mode (stub): highlight the muscles that have been
-            // trained at all in the last 14 days — same volume-rollup
-            // intent as the Progress muscle-balance card, in the
-            // body-silhouette format.
-            let volumes = MuscleVolume.rows(from: store.savedSessions, weeks: 2, limit: 20)
-            guard let max = volumes.first?.volume, max > 0 else { return [:] }
-            var out: [String: BodyAnatomyView.HighlightIntensity] = [:]
-            for row in volumes {
-                let frac = row.volume / max
-                if frac > 0.66 { out[row.slug] = .primary }
-                else if frac > 0.33 { out[row.slug] = .secondary }
-                else if frac > 0 { out[row.slug] = .tertiary }
-            }
-            return out
+        var out: [String: BodyAnatomyView.HighlightIntensity] = [:]
+        for row in rows where row.intensity != .none {
+            out[row.slug] = row.intensity
         }
+        return out
     }
 
     private func daysSinceLastWorkout() -> Int? {
@@ -295,12 +208,6 @@ struct RecoveryScreen: View {
         return max(0, Int((seconds / 86_400).rounded(.down)))
     }
 
-    // MARK: - Section taxonomy
-
-    /// "Main" muscle groups the average lifter cares about day-to-day —
-    /// these get top billing. Everything else falls to "Accessory" (calves,
-    /// forearms, grip, neck, rotator-cuff, etc.) Order here mirrors the
-    /// screenshot reference: chest, back, shoulders, arms, core, lower body.
     static let mainSlugs: Set<String> = [
         "chest", "pec-major-clav", "pec-major-sternal",
         "lats", "rhomboids", "erector-thoracic",
@@ -312,9 +219,12 @@ struct RecoveryScreen: View {
     ]
 }
 
-// MARK: - Preview
-
-#Preview("Recovery") {
-    RecoveryScreen()
-        .environmentObject(SessionStore(defaults: UserDefaults(suiteName: "RecoveryScreen.preview")!))
+#Preview("Progress recovery section") {
+    ScrollView {
+        ProgressRecoverySection()
+            .padding(20)
+    }
+    .background(Color.bg)
+    .environmentObject(SessionStore(defaults: UserDefaults(suiteName: "ProgressRecoverySection.preview")!))
+    .preferredColorScheme(.dark)
 }

@@ -184,6 +184,9 @@ struct TodayScreen: View {
                 )
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
+                        TodayRecoveryCard()
+                            .padding(.horizontal, 20)
+                            .padding(.top, 14)
                         if planEndingSoon {
                             planNextWeekPill
                                 .padding(.horizontal, 20)

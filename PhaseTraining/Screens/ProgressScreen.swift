@@ -80,6 +80,7 @@ struct ProgressScreen: View {
                 volumeCard
                 strengthRatiosCard
                 muscleBalanceCard
+                ProgressRecoverySection()
                 perExerciseCard
                 prFeedCard
                 feedbackCard
