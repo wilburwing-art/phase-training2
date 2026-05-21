@@ -61,6 +61,9 @@ final class ProfileFieldCoverageTests: XCTestCase {
         Probe(name: "coachInsights", mutateForHash: nil, mutateForSnapshot: nil,
               snapshotMarker: nil,
               skipReason: "Coach-written observations; not part of input context."),
+        Probe(name: "exerciseAffinities", mutateForHash: nil, mutateForSnapshot: nil,
+              snapshotMarker: nil,
+              skipReason: "Captured by post-workout action sheet (MemoryStore.bumpAffinity); planner doesn't yet consume it and the coach context doesn't surface raw scores. Promote to a hash + snapshot probe when a ranking pass starts reading it."),
 
         // Display preference — does not change plan or coach prose.
         Probe(name: "usesImperial", mutateForHash: nil, mutateForSnapshot: nil,
