@@ -1,8 +1,9 @@
-// TodayRecoveryCard.swift — glance-view recovery card on Today.
+// TodayRecoveryCard.swift — glance pill for recovery on Today.
 //
-// Compact body silhouette + two stats, sized to live above the workout
-// hero on Today. Tap → switches to Progress tab where the full per-muscle
-// list lives. No tab of its own.
+// Single-row pill above the workout hero — small body silhouette + inline
+// counts + chevron. Tap → switches to Progress tab where the full per-muscle
+// list lives. Deliberately understated: recovery is a pre-workout signal,
+// not the primary action.
 
 import SwiftUI
 
@@ -19,42 +20,40 @@ struct TodayRecoveryCard: View {
         Button {
             tabSelection.selected = .progress
         } label: {
-            HStack(alignment: .center, spacing: 16) {
+            HStack(spacing: 10) {
                 BodyAnatomyView(highlights: highlights, side: .back)
-                    .frame(width: 70, height: 130)
-
-                VStack(alignment: .leading, spacing: 12) {
-                    statRow(value: "\(freshCount)", label: "FRESH")
-                    statRow(value: "\(needsRestCount)", label: "NEEDS REST")
-                }
+                    .frame(width: 22, height: 40)
+                Text("\(freshCount)")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink)
+                Text("FRESH")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                Text("·")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                Text("\(needsRestCount)")
+                    .font(.monoXS)
+                    .foregroundStyle(needsRestCount > 0 ? Color.danger : Color.ink)
+                Text("NEEDS REST")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(Color.ink3)
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
             .background(Color.surface)
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 10)
                     .stroke(Color.line, lineWidth: 0.5)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Muscle recovery — \(freshCount) fresh, \(needsRestCount) need rest. Tap for details.")
-    }
-
-    private func statRow(value: String, label: String) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Text(value)
-                .font(.custom("SpaceGrotesk-SemiBold", size: 22))
-                .tracking(-0.025 * 22)
-                .foregroundStyle(Color.ink)
-            Text(label)
-                .styled(.micro)
-                .foregroundStyle(Color.ink3)
-        }
     }
 
     private func recoveryHighlights(
@@ -68,7 +67,7 @@ struct TodayRecoveryCard: View {
     }
 }
 
-#Preview("Today recovery card") {
+#Preview("Today recovery pill") {
     TodayRecoveryCard()
         .environmentObject(SessionStore(defaults: UserDefaults(suiteName: "TodayRecoveryCard.preview")!))
         .environmentObject(TabSelectionStore())
