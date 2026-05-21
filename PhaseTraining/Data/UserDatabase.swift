@@ -124,6 +124,7 @@ final class UserDatabase {
               reps               TEXT NOT NULL,
               rpe                TEXT NOT NULL,
               done               INTEGER NOT NULL,
+              is_warmup          INTEGER NOT NULL DEFAULT 0,
               PRIMARY KEY (session_start, exercise_position, num),
               FOREIGN KEY (session_start, exercise_position)
                 REFERENCES session_exercises(session_start, position) ON DELETE CASCADE
@@ -140,6 +141,13 @@ final class UserDatabase {
                 if let err { sqlite3_free(err) }
             }
         }
+        // Idempotent ALTER for pre-existing session_sets rows from earlier
+        // builds where the table existed without is_warmup. The DEFAULT 0
+        // in the CREATE handles fresh installs; this handles upgrades.
+        // Errors are expected + ignored on subsequent runs (duplicate column).
+        var alterErr: UnsafeMutablePointer<CChar>?
+        sqlite3_exec(db, "ALTER TABLE session_sets ADD COLUMN is_warmup INTEGER NOT NULL DEFAULT 0", nil, nil, &alterErr)
+        if let alterErr { sqlite3_free(alterErr) }
     }
 
     // MARK: - Reads
@@ -363,8 +371,11 @@ final class UserDatabase {
     } }
 
     /// Most recent LoggedExercise (by name, case-insensitive) that has at
-    /// least one completed set with a non-empty weight. Indexed lookup
-    /// replacing the O(N×M) cross-session scan in SessionStore.
+    /// least one completed WORKING set with a non-empty weight. Indexed
+    /// lookup replacing the O(N×M) cross-session scan in SessionStore.
+    ///
+    /// Warmup sets excluded — progressive-overload autofill should reflect
+    /// the user's last working weight, not the warmup ramp.
     func mostRecentExerciseByName(_ name: String) -> LoggedExercise? { withLock {
         guard let db else { return nil }
         let sql = """
@@ -376,6 +387,7 @@ final class UserDatabase {
             WHERE ss.session_start = se.session_start
               AND ss.exercise_position = se.position
               AND ss.done = 1
+              AND ss.is_warmup = 0
               AND ss.weight <> ''
           )
         ORDER BY se.session_start DESC
@@ -462,7 +474,7 @@ final class UserDatabase {
 
     private func loadSetsLocked(sessionStart: Int64, position: Int) -> [LoggedSet] {
         guard let db else { return [] }
-        let sql = "SELECT num, weight, reps, rpe, done FROM session_sets WHERE session_start = ? AND exercise_position = ? ORDER BY num ASC"
+        let sql = "SELECT num, weight, reps, rpe, done, is_warmup FROM session_sets WHERE session_start = ? AND exercise_position = ? ORDER BY num ASC"
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
         defer { sqlite3_finalize(stmt) }
@@ -475,7 +487,8 @@ final class UserDatabase {
                 weight: text(stmt, 1) ?? "",
                 reps: text(stmt, 2) ?? "",
                 rpe: text(stmt, 3) ?? "",
-                done: sqlite3_column_int64(stmt, 4) == 1
+                done: sqlite3_column_int64(stmt, 4) == 1,
+                isWarmup: sqlite3_column_int64(stmt, 5) == 1
             ))
         }
         return out
@@ -537,8 +550,8 @@ final class UserDatabase {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         let setSQL = """
-        INSERT INTO session_sets(session_start, exercise_position, num, weight, reps, rpe, done)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO session_sets(session_start, exercise_position, num, weight, reps, rpe, done, is_warmup)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """
         let enc = JSONEncoder()
         for (pos, ex) in session.exercises.enumerated() {
@@ -569,6 +582,7 @@ final class UserDatabase {
                     sqlite3_bind_text(sStmt, 5, set.reps, -1, SQLITE_TRANSIENT_USER)
                     sqlite3_bind_text(sStmt, 6, set.rpe, -1, SQLITE_TRANSIENT_USER)
                     sqlite3_bind_int64(sStmt, 7, set.done ? 1 : 0)
+                    sqlite3_bind_int64(sStmt, 8, set.isWarmup ? 1 : 0)
                     sqlite3_step(sStmt)
                 }
                 sqlite3_finalize(sStmt)
@@ -609,6 +623,8 @@ final class UserDatabase {
     /// session_start ASC then by position. GLOB filters mirror Swift's
     /// `Int(set.reps)` strictness (rejects "8-12", "AMRAP"); `CAST AS REAL > 0`
     /// matches `Double(set.weight) ?? 0` + `> 0` guard.
+    ///
+    /// Warmup sets excluded — never count as PRs.
     func qualifyingSetsForPRs() -> [PRSetRow] { withLock {
         guard let db else { return [] }
         let sql = """
@@ -621,6 +637,7 @@ final class UserDatabase {
           ON se.session_start = ss.session_start
          AND se.position = ss.exercise_position
         WHERE ss.done = 1
+          AND ss.is_warmup = 0
           AND ss.weight <> ''
           AND ss.reps GLOB '[0-9]*'
           AND ss.reps NOT GLOB '*[^0-9]*'
@@ -646,6 +663,8 @@ final class UserDatabase {
     /// completed sets. Optionally excludes one session by start_time (used
     /// by `personalRecords(in:excludingSessionId:)` when comparing a
     /// just-saved session against pre-existing history).
+    ///
+    /// Warmup sets excluded — never count as PRs.
     func bestWeightsByExerciseAndReps(excludingSessionStart: Int64? = nil) -> [String: [Int: Double]] { withLock {
         guard let db else { return [:] }
         var sql = """
@@ -657,6 +676,7 @@ final class UserDatabase {
           ON se.session_start = ss.session_start
          AND se.position = ss.exercise_position
         WHERE ss.done = 1
+          AND ss.is_warmup = 0
           AND ss.weight <> ''
           AND ss.reps GLOB '[0-9]*'
           AND ss.reps NOT GLOB '*[^0-9]*'

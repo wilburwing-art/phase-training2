@@ -108,9 +108,11 @@ extension GeneratorContext {
                 let key = ex.name.lowercased()
                 guard out[key] == nil else { continue } // most recent session wins
                 // Heaviest completed set in this session.
+                // Warmup sets excluded — progressive-overload signal needs the
+                // working top set, not a warmup ramp weight.
                 var bestWeight = 0.0
                 var bestReps = 0
-                for set in ex.sets where set.done {
+                for set in ex.sets where set.done && !set.isWarmup {
                     let w = Double(set.weight) ?? 0
                     let r = Int(set.reps) ?? 0
                     guard w > 0, r > 0 else { continue }
@@ -201,7 +203,9 @@ extension GeneratorContext {
             for ex in session.exercises {
                 let key = ex.name.lowercased()
                 var bestEpley = 0.0
-                for set in ex.sets where set.done {
+                // Warmup sets excluded — stagnation detection compares working
+                // 1RM-equivalents over time.
+                for set in ex.sets where set.done && !set.isWarmup {
                     let w = Double(set.weight) ?? 0
                     let r = Int(set.reps) ?? 0
                     guard w > 0, r > 0 else { continue }

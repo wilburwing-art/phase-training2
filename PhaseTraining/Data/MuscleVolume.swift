@@ -67,7 +67,9 @@ enum MuscleVolume {
                 let allocations = normalisedAllocations(for: exerciseInfo.muscles)
                 if allocations.isEmpty { continue }
 
-                for set in ex.sets where set.done {
+                // Warmup sets excluded — volume aggregation reflects working
+                // sets only. Warmups distort weekly volume comparisons.
+                for set in ex.sets where set.done && !set.isWarmup {
                     let reps = Double(Int(set.reps) ?? 0)
                     let weight = Double(set.weight) ?? 0
                     guard reps > 0, weight > 0 else { continue }

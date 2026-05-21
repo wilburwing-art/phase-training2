@@ -123,7 +123,28 @@ struct EditSessionSheet: View {
             get: { draft.exercises[exIdx].sets[setIdx] },
             set: { draft.exercises[exIdx].sets[setIdx] = $0 }
         )
+        let isWarmup = setBinding.wrappedValue.isWarmup
         return HStack(spacing: 8) {
+            // Warmup toggle — tap "W" pill flips isWarmup. Filled when set is
+            // a warmup; outlined otherwise. Excluding warmups from PR/volume/
+            // 1RM math is enforced downstream (UserDatabase, MuscleVolume,
+            // StrengthStandards, GeneratorContext).
+            Button {
+                draft.exercises[exIdx].sets[setIdx].isWarmup.toggle()
+            } label: {
+                Text("W")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(isWarmup ? Color.bg : Color.ink3)
+                    .frame(width: 18, height: 14)
+                    .background(isWarmup ? Color.ink3 : Color.clear)
+                    .overlay(
+                        Capsule().stroke(Color.line, lineWidth: 0.5)
+                    )
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(isWarmup ? "Unmark warmup" : "Mark as warmup")
+
             Text("\(setBinding.wrappedValue.num)")
                 .styled(.monoXS)
                 .foregroundColor(.ink3)
@@ -139,6 +160,7 @@ struct EditSessionSheet: View {
                 .labelsHidden()
                 .scaleEffect(0.85)
         }
+        .opacity(isWarmup ? 0.6 : 1.0)
     }
 
     private func field(text: Binding<String>, placeholder: String, width: CGFloat, keyboard: UIKeyboardType) -> some View {

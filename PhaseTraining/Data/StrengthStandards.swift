@@ -205,7 +205,10 @@ enum StrengthStandards {
                 guard let lift = CanonicalLift.allCases.first(where: { $0.matches(name: ex.name) }) else {
                     continue
                 }
-                for set in ex.sets where set.done {
+                // Warmup sets excluded — Epley 1RM estimation must only see
+                // working sets. A 95-lb warmup at 5 reps would otherwise
+                // tank a 225-lb working top set's tier label.
+                for set in ex.sets where set.done && !set.isWarmup {
                     let reps = Int(set.reps) ?? 0
                     let weight = Double(set.weight) ?? 0
                     guard reps > 0 else { continue }

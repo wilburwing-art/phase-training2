@@ -185,4 +185,53 @@ final class SessionStorePRTests: XCTestCase {
         let store = freshStore()
         XCTAssertTrue(store.allPersonalRecords().isEmpty)
     }
+
+    // MARK: - Warmup-set exclusion (correctness invariant)
+
+    /// A warmup set heavier than any working set must NEVER fire a PR.
+    /// This is the load-bearing invariant for the warmup column.
+    func test_warmupSet_neverCountsAsPR_inProgressFlow() {
+        let store = freshStore()
+        let logged = LoggedExercise(
+            id: "Bench Press", name: "Bench Press", type: nil, unit: "lbs",
+            targetSets: 2, targetReps: 5, rest: 90,
+            sets: [
+                LoggedSet(num: 1, weight: "999", reps: "5", rpe: "", done: true, isWarmup: true),
+                LoggedSet(num: 2, weight: "135", reps: "5", rpe: "", done: true, isWarmup: false),
+            ],
+            prevSets: []
+        )
+        let prs = store.personalRecords(in: [logged])
+        XCTAssertEqual(prs.count, 1, "Working set fires PR; warmup does not")
+        XCTAssertEqual(prs.first?.weight, 135,
+                       "PR weight reflects working set, not the heavier warmup")
+    }
+
+    func test_warmupSet_neverCountsAsPR_acrossHistory() {
+        let store = freshStore()
+        // Save a session where the warmup is heavier than the working set.
+        let now = Date()
+        let warmupHeavy = LoggedExercise(
+            id: "Bench Press", name: "Bench Press", type: nil, unit: "lbs",
+            targetSets: 2, targetReps: 5, rest: 90,
+            sets: [
+                LoggedSet(num: 1, weight: "315", reps: "5", rpe: "", done: true, isWarmup: true),
+                LoggedSet(num: 2, weight: "135", reps: "5", rpe: "", done: true, isWarmup: false),
+            ],
+            prevSets: []
+        )
+        let session = SavedSession(
+            templateId: "t", name: "Bench Press", category: "",
+            startTime: now.addingTimeInterval(-3600),
+            exercises: [warmupHeavy],
+            feel: nil, note: nil,
+            endTime: now, duration: 3600
+        )
+        store.saveAll([session])
+
+        let events = store.allPersonalRecords()
+        XCTAssertEqual(events.count, 1, "Only the working set should produce a PR event")
+        XCTAssertEqual(events.first?.weight, 135,
+                       "Historical-walk PR must come from the working set, not the warmup")
+    }
 }
