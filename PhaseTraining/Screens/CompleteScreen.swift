@@ -13,8 +13,12 @@
 //   7. Note: multiline TextField (Inter 13)
 //   8. Sticky Save button (lime primary)
 //
-// Save action delegates to `SessionStore.saveCompleted(_:feel:note:)` then
-// invokes `onSave()` to let the orchestrator return to Start.
+// Save action delegates to `SessionStore.saveCompleted(_:feel:note:)` and then
+// auto-presents `PostWorkoutFeedbackSheet` to capture structured feedback
+// (difficulty / hurt areas / notes → FeedbackEntry). The sheet's onDone
+// invokes the orchestrator's `onSave()` so the user lands back on Today
+// whether they tap Save or Skip. Build 99 — replaced the inline FeedbackChips
+// row with this modal so the capture surface is single-purpose and skippable.
 
 import SwiftUI
 
@@ -29,13 +33,15 @@ struct CompleteScreen: View {
     @State private var feel: String? = nil
     @State private var note: String = ""
     @State private var showDiscardConfirm = false
-    @State private var feedback: FeedbackEntry
+    /// True once "Save session" is tapped — drives the post-workout feedback
+    /// sheet. Sheet's onDone triggers the orchestrator's onSave handoff back
+    /// to Today so the user lands somewhere after the sheet dismisses.
+    @State private var showFeedbackSheet = false
 
     init(session: ActiveSession, onSave: @escaping () -> Void, onDiscard: (() -> Void)? = nil) {
         self.session = session
         self.onSave = onSave
         self.onDiscard = onDiscard
-        self._feedback = State(initialValue: FeedbackEntry(date: Date(), sessionId: session.templateId))
     }
 
     private static let feelOptions = ["Too easy", "Easy", "Right", "Hard", "Too much"]
@@ -107,10 +113,6 @@ struct CompleteScreen: View {
                             .padding(.horizontal, 20)
                             .padding(.top, 20)
 
-                        FeedbackChips(entry: $feedback, exerciseOptions: feedbackExerciseOptions)
-                            .padding(.horizontal, 20)
-                            .padding(.top, 20)
-
                         noteSection
                             .padding(.horizontal, 20)
                             .padding(.top, 18)
@@ -137,6 +139,12 @@ struct CompleteScreen: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This session won't be saved to history. You can't undo this.")
+        }
+        .sheet(isPresented: $showFeedbackSheet) {
+            PostWorkoutFeedbackSheet(
+                sessionId: session.templateId,
+                onDone: { onSave() }
+            )
         }
     }
 
@@ -325,29 +333,14 @@ struct CompleteScreen: View {
         }
     }
 
-    /// Exercises that had at least one logged set, used as hurt-area options.
-    private var feedbackExerciseOptions: [(id: String, name: String)] {
-        session.exercises
-            .filter { ex in ex.sets.contains(where: { $0.done }) }
-            .map { ex in (id: ex.id, name: ex.name) }
-    }
-
-    /// True when the user touched any structured-feedback control.
-    /// Avoids polluting memory with empty entries when they only logged sets.
-    private var hasStructuredFeedback: Bool {
-        feedback.difficulty != nil || !feedback.hurtAreas.isEmpty || feedback.ranLong
-    }
-
     private var saveButton: some View {
         Button {
+            // Save the session immediately; structured feedback is captured
+            // separately in the PostWorkoutFeedbackSheet that auto-presents
+            // here. The sheet's onDone hands off back to the orchestrator
+            // (onSave) once the user taps Save or Skip.
             store.saveCompleted(session, feel: feel, note: note.isEmpty ? nil : note)
-            if hasStructuredFeedback {
-                var stamped = feedback
-                stamped.date = Date()
-                if !note.isEmpty { stamped.notes = note }
-                memoryStore.update { $0.feedback.append(stamped) }
-            }
-            onSave()
+            showFeedbackSheet = true
         } label: {
             HStack(spacing: 8) {
                 Text("Save session")
