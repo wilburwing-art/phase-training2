@@ -151,6 +151,9 @@ CREATE TABLE exercises (
   image_url                TEXT,
   thumbnail_url            TEXT,
   source_video_attribution TEXT,
+  image_source             TEXT,   -- free-exercise-db | wger | wikimedia | youtube | other
+  image_license            TEXT,   -- MIT | Unlicense | CC-BY-SA-4 | CC-BY-4 | PUBLIC-DOMAIN | CC0 | YouTube ToS
+  image_attribution        TEXT,   -- human-readable attribution string
 
   source_name              TEXT,
   source_url               TEXT,
