@@ -381,7 +381,7 @@
     "exercise_id": 111,
     "injury_id": 41,
     "role": "rehab_early",
-    "notes": "Achilles tendinopathy — Alfredson protocol."
+    "notes": "Achilles tendinopathy \u2014 Alfredson protocol."
   },
   {
     "exercise_id": 111,
@@ -571,12 +571,6 @@
   },
   {
     "exercise_id": 316,
-    "injury_id": 10,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 316,
     "injury_id": 11,
     "role": "prehab",
     "notes": null
@@ -627,7 +621,7 @@
     "exercise_id": 323,
     "injury_id": 50,
     "role": "contraindicated",
-    "notes": "Acute tennis elbow — cease bag work."
+    "notes": "Acute tennis elbow \u2014 cease bag work."
   },
   {
     "exercise_id": 323,
@@ -664,18 +658,6 @@
     "injury_id": 50,
     "role": "prehab",
     "notes": "Tennis-elbow prevention."
-  },
-  {
-    "exercise_id": 335,
-    "injury_id": 50,
-    "role": "rehab_late",
-    "notes": "Gold-standard eccentric loading for tennis elbow."
-  },
-  {
-    "exercise_id": 336,
-    "injury_id": 51,
-    "role": "prehab",
-    "notes": null
   },
   {
     "exercise_id": 336,
@@ -732,12 +714,6 @@
     "notes": "Scapular control reduces impingement."
   },
   {
-    "exercise_id": 342,
-    "injury_id": 11,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
     "exercise_id": 343,
     "injury_id": 10,
     "role": "prehab",
@@ -783,7 +759,7 @@
     "exercise_id": 359,
     "injury_id": 2,
     "role": "contraindicated",
-    "notes": null
+    "notes": "Pro-agility contraindicated in acute ACL rehab."
   },
   {
     "exercise_id": 361,
@@ -909,7 +885,7 @@
     "exercise_id": 417,
     "injury_id": 30,
     "role": "prehab",
-    "notes": "Hip flexor strain prevention — key for seated paddlers."
+    "notes": "Hip flexor strain prevention \u2014 key for seated paddlers."
   },
   {
     "exercise_id": 419,
@@ -933,7 +909,7 @@
     "exercise_id": 420,
     "injury_id": 66,
     "role": "prehab",
-    "notes": "Reverse nordic lengthens rectus femoris and builds eccentric control — quad strain prevention."
+    "notes": "Reverse nordic lengthens rectus femoris and builds eccentric control \u2014 quad strain prevention."
   },
   {
     "exercise_id": 421,
@@ -984,12 +960,6 @@
     "notes": "Active ankle mobility prevents re-sprain."
   },
   {
-    "exercise_id": 426,
-    "injury_id": 40,
-    "role": "rehab_late",
-    "notes": "Late-stage ankle sprain mobility work."
-  },
-  {
     "exercise_id": 427,
     "injury_id": 10,
     "role": "prehab",
@@ -1026,22 +996,10 @@
     "notes": "Assisted Nordic is the early-stage hamstring strain prevention option."
   },
   {
-    "exercise_id": 434,
-    "injury_id": 65,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
     "exercise_id": 435,
     "injury_id": 10,
     "role": "prehab",
     "notes": "Long-toss progression is the arm-care warmup for throwers."
-  },
-  {
-    "exercise_id": 436,
-    "injury_id": 2,
-    "role": "contraindicated",
-    "notes": "Pro-agility contraindicated in acute ACL rehab."
   },
   {
     "exercise_id": 442,
@@ -1101,7 +1059,7 @@
     "exercise_id": 456,
     "injury_id": 10,
     "role": "rehab_late",
-    "notes": "Rotator cuff rehab at 90° position."
+    "notes": "Rotator cuff rehab at 90\u00b0 position."
   },
   {
     "exercise_id": 459,
@@ -1114,12 +1072,6 @@
     "injury_id": 69,
     "role": "prehab",
     "notes": "Copenhagen progression for adductor strain prevention."
-  },
-  {
-    "exercise_id": 460,
-    "injury_id": 69,
-    "role": "rehab_late",
-    "notes": null
   },
   {
     "exercise_id": 461,
@@ -1137,19 +1089,7 @@
     "exercise_id": 471,
     "injury_id": 40,
     "role": "prehab",
-    "notes": "Peroneal strengthening — direct ankle-sprain prevention."
-  },
-  {
-    "exercise_id": 471,
-    "injury_id": 40,
-    "role": "rehab_late",
-    "notes": "Late-stage ankle sprain loading."
-  },
-  {
-    "exercise_id": 473,
-    "injury_id": 40,
-    "role": "contraindicated",
-    "notes": "Avoid single-leg plyo lateral bounds during early ankle rehab."
+    "notes": "Peroneal strengthening \u2014 direct ankle-sprain prevention."
   },
   {
     "exercise_id": 477,

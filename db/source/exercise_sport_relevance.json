@@ -13247,7 +13247,7 @@
     "notes": null
   },
   {
-    "exercise_id": 405,
+    "exercise_id": 347,
     "sport_id": 380,
     "relevance_score": 0.85,
     "specificity": "general",
@@ -13260,7 +13260,7 @@
     "notes": null
   },
   {
-    "exercise_id": 405,
+    "exercise_id": 347,
     "sport_id": 395,
     "relevance_score": 0.85,
     "specificity": "general",
@@ -13273,7 +13273,7 @@
     "notes": null
   },
   {
-    "exercise_id": 405,
+    "exercise_id": 347,
     "sport_id": 403,
     "relevance_score": 0.9,
     "specificity": "highly_specific",
@@ -13286,7 +13286,7 @@
     "notes": null
   },
   {
-    "exercise_id": 405,
+    "exercise_id": 347,
     "sport_id": 421,
     "relevance_score": 0.85,
     "specificity": "general",
@@ -13299,7 +13299,7 @@
     "notes": null
   },
   {
-    "exercise_id": 405,
+    "exercise_id": 347,
     "sport_id": 691,
     "relevance_score": 0.9,
     "specificity": "highly_specific",
@@ -13312,7 +13312,7 @@
     "notes": null
   },
   {
-    "exercise_id": 405,
+    "exercise_id": 347,
     "sport_id": 692,
     "relevance_score": 0.9,
     "specificity": "highly_specific",
@@ -13325,7 +13325,7 @@
     "notes": null
   },
   {
-    "exercise_id": 405,
+    "exercise_id": 347,
     "sport_id": 693,
     "relevance_score": 0.9,
     "specificity": "highly_specific",
@@ -13338,7 +13338,7 @@
     "notes": null
   },
   {
-    "exercise_id": 405,
+    "exercise_id": 347,
     "sport_id": 694,
     "relevance_score": 0.95,
     "specificity": "highly_specific",
@@ -13351,7 +13351,7 @@
     "notes": "Dressage needs a free T-spine."
   },
   {
-    "exercise_id": 405,
+    "exercise_id": 347,
     "sport_id": 695,
     "relevance_score": 0.9,
     "specificity": "highly_specific",
@@ -13364,7 +13364,7 @@
     "notes": null
   },
   {
-    "exercise_id": 405,
+    "exercise_id": 347,
     "sport_id": 696,
     "relevance_score": 0.9,
     "specificity": "highly_specific",
@@ -14595,7 +14595,7 @@
     "notes": null
   },
   {
-    "exercise_id": 436,
+    "exercise_id": 359,
     "sport_id": 531,
     "relevance_score": 0.95,
     "specificity": "highly_specific",
@@ -14609,7 +14609,7 @@
     "notes": null
   },
   {
-    "exercise_id": 436,
+    "exercise_id": 359,
     "sport_id": 534,
     "relevance_score": 0.95,
     "specificity": "highly_specific",
@@ -14623,7 +14623,7 @@
     "notes": null
   },
   {
-    "exercise_id": 436,
+    "exercise_id": 359,
     "sport_id": 543,
     "relevance_score": 0.95,
     "specificity": "highly_specific",
@@ -14637,7 +14637,7 @@
     "notes": null
   },
   {
-    "exercise_id": 436,
+    "exercise_id": 359,
     "sport_id": 544,
     "relevance_score": 0.9,
     "specificity": "highly_specific",
@@ -14651,7 +14651,7 @@
     "notes": null
   },
   {
-    "exercise_id": 436,
+    "exercise_id": 359,
     "sport_id": 545,
     "relevance_score": 0.85,
     "specificity": "general",
@@ -14665,7 +14665,7 @@
     "notes": null
   },
   {
-    "exercise_id": 436,
+    "exercise_id": 359,
     "sport_id": 555,
     "relevance_score": 0.85,
     "specificity": "general",
@@ -16326,7 +16326,7 @@
     "notes": null
   },
   {
-    "exercise_id": 473,
+    "exercise_id": 329,
     "sport_id": 581,
     "relevance_score": 0.9,
     "specificity": "highly_specific",
@@ -16340,7 +16340,7 @@
     "notes": null
   },
   {
-    "exercise_id": 473,
+    "exercise_id": 329,
     "sport_id": 586,
     "relevance_score": 0.95,
     "specificity": "highly_specific",
@@ -16354,7 +16354,7 @@
     "notes": null
   },
   {
-    "exercise_id": 473,
+    "exercise_id": 329,
     "sport_id": 587,
     "relevance_score": 0.95,
     "specificity": "highly_specific",
@@ -16368,7 +16368,7 @@
     "notes": null
   },
   {
-    "exercise_id": 473,
+    "exercise_id": 329,
     "sport_id": 615,
     "relevance_score": 0.85,
     "specificity": "general",
@@ -25031,7 +25031,7 @@
     "notes": null
   },
   {
-    "exercise_id": 693,
+    "exercise_id": 123,
     "sport_id": 50,
     "relevance_score": 0.85,
     "specificity": "highly_specific",
@@ -25044,7 +25044,7 @@
     "notes": null
   },
   {
-    "exercise_id": 693,
+    "exercise_id": 123,
     "sport_id": 51,
     "relevance_score": 0.85,
     "specificity": "highly_specific",
@@ -25057,7 +25057,7 @@
     "notes": null
   },
   {
-    "exercise_id": 693,
+    "exercise_id": 123,
     "sport_id": 57,
     "relevance_score": 0.8,
     "specificity": "general",
@@ -25070,7 +25070,7 @@
     "notes": null
   },
   {
-    "exercise_id": 693,
+    "exercise_id": 123,
     "sport_id": 66,
     "relevance_score": 0.75,
     "specificity": "general",
@@ -25083,7 +25083,7 @@
     "notes": null
   },
   {
-    "exercise_id": 693,
+    "exercise_id": 123,
     "sport_id": 67,
     "relevance_score": 0.9,
     "specificity": "highly_specific",
@@ -25096,7 +25096,7 @@
     "notes": null
   },
   {
-    "exercise_id": 693,
+    "exercise_id": 123,
     "sport_id": 68,
     "relevance_score": 0.8,
     "specificity": "general",
@@ -25109,7 +25109,7 @@
     "notes": null
   },
   {
-    "exercise_id": 693,
+    "exercise_id": 123,
     "sport_id": 288,
     "relevance_score": 0.75,
     "specificity": "general",
@@ -25122,7 +25122,7 @@
     "notes": null
   },
   {
-    "exercise_id": 693,
+    "exercise_id": 123,
     "sport_id": 356,
     "relevance_score": 0.8,
     "specificity": "general",
@@ -25135,7 +25135,7 @@
     "notes": null
   },
   {
-    "exercise_id": 693,
+    "exercise_id": 123,
     "sport_id": 501,
     "relevance_score": 0.8,
     "specificity": "general",
@@ -25148,7 +25148,7 @@
     "notes": null
   },
   {
-    "exercise_id": 693,
+    "exercise_id": 123,
     "sport_id": 530,
     "relevance_score": 0.7,
     "specificity": "general",
@@ -25161,7 +25161,7 @@
     "notes": null
   },
   {
-    "exercise_id": 693,
+    "exercise_id": 123,
     "sport_id": 730,
     "relevance_score": 0.75,
     "specificity": "general",
@@ -25174,7 +25174,7 @@
     "notes": null
   },
   {
-    "exercise_id": 693,
+    "exercise_id": 123,
     "sport_id": 732,
     "relevance_score": 0.75,
     "specificity": "general",
@@ -25187,7 +25187,7 @@
     "notes": null
   },
   {
-    "exercise_id": 693,
+    "exercise_id": 123,
     "sport_id": 753,
     "relevance_score": 0.75,
     "specificity": "general",

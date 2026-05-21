@@ -49,7 +49,7 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 superset — balance the push"
+    "notes": "A2 superset \u2014 balance the push"
   },
   {
     "id": 5,
@@ -75,7 +75,7 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B2 reverse wrist curl — superset"
+    "notes": "B2 reverse wrist curl \u2014 superset"
   },
   {
     "id": 8,
@@ -140,7 +140,7 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Easy hangs to prep — NOT near-max"
+    "notes": "Easy hangs to prep \u2014 NOT near-max"
   },
   {
     "id": 13,
@@ -2090,7 +2090,7 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Alfredson protocol — straight knee"
+    "notes": "Alfredson protocol \u2014 straight knee"
   },
   {
     "id": 165,
@@ -3208,7 +3208,7 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Active hang — shoulder decompression"
+    "notes": "Active hang \u2014 shoulder decompression"
   },
   {
     "id": 262,
@@ -6666,7 +6666,7 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 eccentric wrist extensor curl — main work"
+    "notes": "A1 eccentric wrist extensor curl \u2014 main work"
   },
   {
     "id": 569,
@@ -6978,7 +6978,7 @@
     "rest": "15 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Forearm trigger point release — the MVP"
+    "notes": "Forearm trigger point release \u2014 the MVP"
   },
   {
     "id": 604,
@@ -8629,7 +8629,7 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1: lateral band walk — glute med activation"
+    "notes": "A1: lateral band walk \u2014 glute med activation"
   },
   {
     "id": 761,
@@ -8746,7 +8746,7 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Barbell hip thrust — posterior chain activation"
+    "notes": "Barbell hip thrust \u2014 posterior chain activation"
   },
   {
     "id": 770,
@@ -8759,7 +8759,7 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Nordic curl (assisted) — main eccentric work"
+    "notes": "Nordic curl (assisted) \u2014 main eccentric work"
   },
   {
     "id": 771,
@@ -8837,7 +8837,7 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Depth drop to stick — reactive prep"
+    "notes": "Depth drop to stick \u2014 reactive prep"
   },
   {
     "id": 777,
@@ -8850,7 +8850,7 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Back squat — heavy lower body"
+    "notes": "Back squat \u2014 heavy lower body"
   },
   {
     "id": 778,
@@ -9149,7 +9149,7 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Cable ER at 90°"
+    "notes": "Cable ER at 90\u00b0"
   },
   {
     "id": 809,
@@ -9227,7 +9227,7 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Front squat — base lower power"
+    "notes": "Front squat \u2014 base lower power"
   },
   {
     "id": 816,
@@ -9318,7 +9318,7 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Trap bar deadlift — base posterior chain"
+    "notes": "Trap bar deadlift \u2014 base posterior chain"
   },
   {
     "id": 832,
@@ -9422,7 +9422,7 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Banded TKE — knee support"
+    "notes": "Banded TKE \u2014 knee support"
   },
   {
     "id": 842,
@@ -9435,7 +9435,7 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg RDL — controlled"
+    "notes": "Single-leg RDL \u2014 controlled"
   },
   {
     "id": 843,
@@ -9669,7 +9669,7 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Squat jump CMJ — prep vertical"
+    "notes": "Squat jump CMJ \u2014 prep vertical"
   },
   {
     "id": 861,
@@ -9760,7 +9760,7 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Long toss progression — MVP"
+    "notes": "Long toss progression \u2014 MVP"
   },
   {
     "id": 868,
@@ -9773,7 +9773,7 @@
     "rest": "15 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Easy walking — active recovery"
+    "notes": "Easy walking \u2014 active recovery"
   },
   {
     "id": 869,
@@ -10215,7 +10215,7 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Cable ER at 90°"
+    "notes": "Cable ER at 90\u00b0"
   },
   {
     "id": 911,
@@ -10922,7 +10922,7 @@
   {
     "id": 970,
     "routine_id": 262,
-    "exercise_id": 473,
+    "exercise_id": 329,
     "position": 4,
     "superset_group": null,
     "sets": 3,
@@ -11013,7 +11013,7 @@
   {
     "id": 978,
     "routine_id": 263,
-    "exercise_id": 473,
+    "exercise_id": 329,
     "position": 5,
     "superset_group": null,
     "sets": 3,
@@ -11463,7 +11463,7 @@
     "rest": "15 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Relevé calf raise"
+    "notes": "Relev\u00e9 calf raise"
   },
   {
     "id": 1030,
@@ -11866,7 +11866,7 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Belt squat — main accessory"
+    "notes": "Belt squat \u2014 main accessory"
   },
   {
     "id": 1064,
@@ -11931,7 +11931,7 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Pallof press — anti-rotation"
+    "notes": "Pallof press \u2014 anti-rotation"
   },
   {
     "id": 1069,
@@ -12126,7 +12126,7 @@
     "rest": "3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Yoke walk — heavy"
+    "notes": "Yoke walk \u2014 heavy"
   },
   {
     "id": 1084,
@@ -12230,7 +12230,7 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Rice bucket — forearm finisher"
+    "notes": "Rice bucket \u2014 forearm finisher"
   },
   {
     "id": 1093,
@@ -12326,7 +12326,7 @@
   {
     "id": 1101,
     "routine_id": 281,
-    "exercise_id": 405,
+    "exercise_id": 347,
     "position": 1,
     "superset_group": null,
     "sets": 2,
@@ -12404,7 +12404,7 @@
   {
     "id": 1108,
     "routine_id": 282,
-    "exercise_id": 405,
+    "exercise_id": 347,
     "position": 1,
     "superset_group": null,
     "sets": 2,
@@ -12521,7 +12521,7 @@
   {
     "id": 1117,
     "routine_id": 283,
-    "exercise_id": 405,
+    "exercise_id": 347,
     "position": 2,
     "superset_group": null,
     "sets": 1,
@@ -12963,7 +12963,7 @@
   {
     "id": 1195,
     "routine_id": 294,
-    "exercise_id": 405,
+    "exercise_id": 347,
     "position": 2,
     "superset_group": null,
     "sets": 1,
