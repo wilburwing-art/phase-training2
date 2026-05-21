@@ -24,6 +24,24 @@ struct RoutineExercise: Identifiable, Hashable {
     let reps: String?
     let rest: String?
     let notes: String?
+    /// routine_exercises.superset_group (nullable). Same int across two-plus
+    /// exercises = "do these in a round-robin." Propagated all the way down
+    /// to LoggedExercise so LogScreen can render the band + reorder rest nav.
+    let supersetGroup: Int?
+
+    init(id: Int, exerciseId: Int, name: String, position: Int,
+         sets: Int? = nil, reps: String? = nil, rest: String? = nil,
+         notes: String? = nil, supersetGroup: Int? = nil) {
+        self.id = id
+        self.exerciseId = exerciseId
+        self.name = name
+        self.position = position
+        self.sets = sets
+        self.reps = reps
+        self.rest = rest
+        self.notes = notes
+        self.supersetGroup = supersetGroup
+    }
 }
 
 extension BundledRoutineRow {
@@ -57,7 +75,8 @@ extension BundledRoutineRow {
                     unit: "lbs",
                     targetSets: rex.sets ?? 3,
                     targetReps: parseRepsLeading(rex.reps) ?? 8,
-                    rest: parseRestSeconds(rex.rest) ?? 90
+                    rest: parseRestSeconds(rex.rest) ?? 90,
+                    supersetGroup: rex.supersetGroup
                 )
             }
         )

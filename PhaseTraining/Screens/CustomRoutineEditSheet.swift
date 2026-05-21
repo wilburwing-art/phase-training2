@@ -94,10 +94,19 @@ struct CustomRoutineEditSheet: View {
             }
 
             Section {
-                ForEach($draft.exercises) { $exercise in
-                    customExerciseTile($exercise)
-                        .listRowBackground(Color.surface)
-                        .listRowSeparatorTint(Color.lineSoft)
+                // Render in superset-grouped order so A1/A2/… members stay
+                // adjacent. The ForEach is now keyed off the grouped view —
+                // `.onMove`'s render-order indices get translated back to
+                // source order in moveExercises so the underlying draft
+                // stays group-adjacent.
+                let grouped = SupersetGrouping.layout(draft.exercises) { $0.supersetGroup }
+                ForEach(Array(grouped.enumerated()), id: \.element.element.id) { _, gi in
+                    customExerciseTile(
+                        binding(forId: gi.element.id),
+                        grouping: gi
+                    )
+                    .listRowBackground(Color.surface)
+                    .listRowSeparatorTint(Color.lineSoft)
                 }
                 .onMove(perform: moveExercises)
                 .onDelete(perform: deleteExercises)
@@ -144,13 +153,26 @@ struct CustomRoutineEditSheet: View {
     /// distinguishing feature of this sheet and CustomRoutineExercise stores
     /// free-form strings ("8-10", "AMRAP") that the generic
     /// `ExerciseEditorSheet` (Int-only) can't represent without rework.
+    ///
+    /// `grouping` carries the superset label + first/last hints so the row
+    /// can prefix "A1"/"A2"/… to the title and draw the accent left band.
+    /// The long-press contextMenu provides the "Add to superset" / "Remove
+    /// from superset" affordance that mutates `draft.exercises`.
     @ViewBuilder
-    private func customExerciseTile(_ exercise: Binding<CustomRoutineExercise>) -> some View {
+    private func customExerciseTile(
+        _ exercise: Binding<CustomRoutineExercise>,
+        grouping: SupersetGroupedItem<CustomRoutineExercise>
+    ) -> some View {
+        let displayName: String = {
+            if let label = grouping.label { return "\(label)  \(exercise.wrappedValue.name)" }
+            return exercise.wrappedValue.name
+        }()
+        let inSuperset = grouping.groupSize >= 2
         VStack(alignment: .leading, spacing: 8) {
             ExerciseTile(
                 vm: .init(
                     leading: .handle,
-                    title: exercise.wrappedValue.name,
+                    title: displayName,
                     meta: nil,
                     trailing: .controls(
                         onInfo: {
@@ -173,6 +195,108 @@ struct CustomRoutineEditSheet: View {
             }
         }
         .padding(.vertical, 4)
+        .overlay(alignment: .leading) {
+            if inSuperset {
+                let topRadius: CGFloat = grouping.isFirstInGroup ? 1.5 : 0
+                let bottomRadius: CGFloat = grouping.isLastInGroup ? 1.5 : 0
+                UnevenRoundedRectangle(
+                    topLeadingRadius: topRadius,
+                    bottomLeadingRadius: bottomRadius,
+                    bottomTrailingRadius: bottomRadius,
+                    topTrailingRadius: topRadius,
+                    style: .continuous
+                )
+                .fill(Color.accent)
+                .frame(width: 3)
+                .padding(.leading, -8)
+                .accessibilityHidden(true)
+            }
+        }
+        .contextMenu {
+            if exercise.wrappedValue.supersetGroup == nil {
+                Button {
+                    addToSuperset(id: exercise.wrappedValue.id)
+                } label: {
+                    Label("Add to superset", systemImage: "link")
+                }
+            } else {
+                Button(role: .destructive) {
+                    removeFromSuperset(id: exercise.wrappedValue.id)
+                } label: {
+                    Label("Remove from superset", systemImage: "link.badge.minus")
+                }
+            }
+        }
+    }
+
+    /// Resolve a binding into `draft.exercises` by row id. Needed because
+    /// we render in superset-grouped (not source) order, so iterating
+    /// `$draft.exercises` directly would deliver the wrong index.
+    private func binding(forId id: String) -> Binding<CustomRoutineExercise> {
+        Binding(
+            get: { draft.exercises.first(where: { $0.id == id }) ?? draft.exercises[0] },
+            set: { newValue in
+                if let i = draft.exercises.firstIndex(where: { $0.id == id }) {
+                    draft.exercises[i] = newValue
+                }
+            }
+        )
+    }
+
+    /// Assign the row to a superset group. Strategy:
+    ///   1. If an adjacent neighbor (above or below in source order) is
+    ///      already in a group, join that group — the user implicitly meant
+    ///      "pair with the row next to me."
+    ///   2. Otherwise, mint the next unused integer (max(existing) + 1, or
+    ///      1 if no groups exist yet) AND auto-pair with the next un-grouped
+    ///      neighbor so we don't leave a solo group of size 1.
+    /// Adjacency is preserved because the rendered list re-groups on every
+    /// pass via SupersetGrouping.layout.
+    private func addToSuperset(id: String) {
+        guard let i = draft.exercises.firstIndex(where: { $0.id == id }) else { return }
+
+        if let neighborGroup = adjacentGroup(at: i) {
+            draft.exercises[i].supersetGroup = neighborGroup
+            return
+        }
+
+        let existing = Set(draft.exercises.compactMap(\.supersetGroup))
+        let nextGroup = (existing.max() ?? 0) + 1
+        draft.exercises[i].supersetGroup = nextGroup
+
+        // Pair with the next un-grouped neighbor so the affordance produces
+        // a real superset (≥ 2 members) on first tap. Prefer the row below,
+        // fall back to the row above.
+        let candidates: [Int] = [i + 1, i - 1].filter { draft.exercises.indices.contains($0) }
+        for j in candidates where draft.exercises[j].supersetGroup == nil {
+            draft.exercises[j].supersetGroup = nextGroup
+            break
+        }
+    }
+
+    /// Strip the row's group assignment. If only one other row was in that
+    /// group (leaving an orphan solo), strip the orphan too — no point
+    /// retaining a singleton group, the UI hides its label anyway.
+    private func removeFromSuperset(id: String) {
+        guard let i = draft.exercises.firstIndex(where: { $0.id == id }) else { return }
+        guard let group = draft.exercises[i].supersetGroup else { return }
+        draft.exercises[i].supersetGroup = nil
+        let stillInGroup = draft.exercises.indices.filter { draft.exercises[$0].supersetGroup == group }
+        if stillInGroup.count == 1, let solo = stillInGroup.first {
+            draft.exercises[solo].supersetGroup = nil
+        }
+    }
+
+    /// Group id of an adjacent row (above/below) in source order, or nil
+    /// if neither neighbor is in a superset. Used by `addToSuperset` to
+    /// extend an existing group instead of starting a new singleton.
+    private func adjacentGroup(at idx: Int) -> Int? {
+        for j in [idx - 1, idx + 1] where draft.exercises.indices.contains(j) {
+            if let g = draft.exercises[j].supersetGroup {
+                return g
+            }
+        }
+        return nil
     }
 
     private func fieldBlock(_ label: String, text: Binding<String>) -> some View {
@@ -242,13 +366,38 @@ struct CustomRoutineEditSheet: View {
         )
     }
 
+    /// .onMove fires in RENDER-order indices (the superset-grouped view),
+    /// not source order. Re-layout, apply the move on the grouped sequence,
+    /// then write back as the new source — this preserves group adjacency
+    /// "for free" since adjacent group members stay together through the
+    /// move operation.
     private func moveExercises(from source: IndexSet, to dest: Int) {
-        draft.exercises.move(fromOffsets: source, toOffset: dest)
+        let grouped = SupersetGrouping.layout(draft.exercises) { $0.supersetGroup }
+        var renderOrder = grouped.map { $0.element }
+        renderOrder.move(fromOffsets: source, toOffset: dest)
+        draft.exercises = renderOrder
         renumberPositions()
     }
 
+    /// Mirror moveExercises — offsets are in render order, so remove from
+    /// the rendered list and write back. Removing the last member of a
+    /// superset auto-orphans the partner; clean that up so we don't leave
+    /// a labeled singleton.
     private func deleteExercises(at offsets: IndexSet) {
-        draft.exercises.remove(atOffsets: offsets)
+        let grouped = SupersetGrouping.layout(draft.exercises) { $0.supersetGroup }
+        var renderOrder = grouped.map { $0.element }
+        renderOrder.remove(atOffsets: offsets)
+
+        // Drop singleton supersets left behind by the delete.
+        let groupCounts = Dictionary(grouping: renderOrder.compactMap(\.supersetGroup), by: { $0 })
+            .mapValues { $0.count }
+        for i in renderOrder.indices {
+            if let g = renderOrder[i].supersetGroup, (groupCounts[g] ?? 0) < 2 {
+                renderOrder[i].supersetGroup = nil
+            }
+        }
+
+        draft.exercises = renderOrder
         renumberPositions()
     }
 

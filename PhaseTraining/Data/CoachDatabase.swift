@@ -874,7 +874,7 @@ final class CoachDatabase {
     func exercises(forRoutineId routineId: Int) -> [RoutineExercise] { withLock {
         guard let db else { return [] }
         let sql = """
-        SELECT re.id, re.exercise_id, e.name, re.position, re.sets, re.reps, re.rest, re.notes
+        SELECT re.id, re.exercise_id, e.name, re.position, re.sets, re.reps, re.rest, re.notes, re.superset_group
         FROM routine_exercises re
         JOIN exercises e ON e.id = re.exercise_id
         WHERE re.routine_id = ?
@@ -895,7 +895,8 @@ final class CoachDatabase {
                 sets: intOrNil(stmt, 4),
                 reps: text(stmt, 5),
                 rest: text(stmt, 6),
-                notes: text(stmt, 7)
+                notes: text(stmt, 7),
+                supersetGroup: intOrNil(stmt, 8)
             ))
         }
         return rows

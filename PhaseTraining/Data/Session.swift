@@ -28,6 +28,12 @@ struct LoggedExercise: Codable, Identifiable, Equatable {
     /// pre-build-70 saved sessions decode cleanly without a migration.
     var rpe: String?
     var tempo: String?
+    /// Superset grouping — propagated from routine_exercises.superset_group
+    /// (or CustomRoutineExercise.supersetGroup). Exercises sharing a value
+    /// render adjacently with a colored band + "A1"/"A2" labels in the
+    /// LogScreen + DayWorkoutPreviewSheet, and round-robin during rest
+    /// navigation. Optional so pre-superset saved sessions decode cleanly.
+    var supersetGroup: Int?
 }
 
 struct ActiveSession: Codable, Equatable {

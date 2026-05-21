@@ -141,10 +141,15 @@ struct DayWorkoutPreviewSheet: View {
             }
 
             Section {
-                ForEach(Array(template.exercises.enumerated()), id: \.element.id) { idx, ex in
-                    previewExerciseTile(ex, position: idx + 1)
-                        .listRowBackground(Color.surface)
-                        .listRowSeparatorTint(Color.lineSoft)
+                let grouped = SupersetGrouping.layout(template.exercises) { $0.supersetGroup }
+                ForEach(Array(grouped.enumerated()), id: \.offset) { idx, gi in
+                    previewExerciseTile(
+                        gi.element,
+                        position: idx + 1,
+                        grouping: gi
+                    )
+                    .listRowBackground(Color.surface)
+                    .listRowSeparatorTint(Color.lineSoft)
                 }
                 .onMove(perform: moveExercises)
                 addExerciseRow
@@ -175,15 +180,23 @@ struct DayWorkoutPreviewSheet: View {
     }
 
     /// SwiftUI .onMove handler — reorder the in-flight template's exercises.
+    ///
+    /// .onMove fires in RENDER-order indices, but `template.exercises` is in
+    /// source order (which is what coach.db / saveToLibrary persist). Since
+    /// `previewExerciseTile` already iterates a superset-grouped view, the
+    /// render order has group members adjacent — applying the move to that
+    /// grouped view then writing the result back to source preserves group
+    /// adjacency for free.
     private func moveExercises(from source: IndexSet, to dest: Int) {
         guard let tmpl = template else { return }
-        var reordered = tmpl.exercises
-        reordered.move(fromOffsets: source, toOffset: dest)
+        let grouped = SupersetGrouping.layout(tmpl.exercises) { $0.supersetGroup }
+        var renderOrder = grouped.map { $0.element }
+        renderOrder.move(fromOffsets: source, toOffset: dest)
         template = WorkoutTemplate(
             id: tmpl.id,
             name: tmpl.name,
             category: tmpl.category,
-            exercises: reordered
+            exercises: renderOrder
         )
     }
 
@@ -212,15 +225,48 @@ struct DayWorkoutPreviewSheet: View {
     /// HANDOFF §4: identical shape to TodayScreen's tile. Info/swap collapse
     /// into the row-tap ExerciseEditorSheet (option a), so the trailing slot
     /// is `.setsReps` even though this surface still maintains the swap state.
-    private func previewExerciseTile(_ ex: ExerciseTemplate, position: Int) -> some View {
-        ExerciseTile(vm: .init(
+    ///
+    /// `grouping` carries the superset label + first/last hints so the row
+    /// can prefix "A1"/"A2"/… to the title and draw the accent left band.
+    /// Tap-to-edit dispatches via `grouping.originalIndex` (NOT the rendered
+    /// position) so the editor sheet still hits the right `template.exercises`
+    /// slot even when supersets re-order the visual list.
+    private func previewExerciseTile(
+        _ ex: ExerciseTemplate,
+        position: Int,
+        grouping: SupersetGroupedItem<ExerciseTemplate>
+    ) -> some View {
+        let displayName: String = {
+            if let label = grouping.label { return "\(label)  \(ex.name)" }
+            return ex.name
+        }()
+        let inSuperset = grouping.groupSize >= 2
+        return ExerciseTile(vm: .init(
             leading: .index(position),
-            title: ex.name,
+            title: displayName,
             meta: "rest \(ex.rest)s",
             trailing: .setsReps(sets: ex.targetSets, reps: ex.targetReps,
                                 unit: ex.unit, lastWeight: nil),
-            onTap: { editingExIdx = position - 1 }
+            onTap: { editingExIdx = grouping.originalIndex }
         ))
+        .overlay(alignment: .leading) {
+            if inSuperset {
+                let topRadius: CGFloat = grouping.isFirstInGroup ? 1.5 : 0
+                let bottomRadius: CGFloat = grouping.isLastInGroup ? 1.5 : 0
+                UnevenRoundedRectangle(
+                    topLeadingRadius: topRadius,
+                    bottomLeadingRadius: bottomRadius,
+                    bottomTrailingRadius: bottomRadius,
+                    topTrailingRadius: topRadius,
+                    style: .continuous
+                )
+                .fill(Color.accent)
+                .frame(width: 3)
+                .padding(.top, grouping.isFirstInGroup ? 4 : -2)
+                .padding(.bottom, grouping.isLastInGroup ? 4 : -2)
+                .accessibilityHidden(true)
+            }
+        }
         .accessibilityIdentifier("preview-edit-\(position)")
     }
 

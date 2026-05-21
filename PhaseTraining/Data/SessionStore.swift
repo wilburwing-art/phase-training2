@@ -288,7 +288,8 @@ final class SessionStore: ObservableObject {
                 sets: sets,
                 prevSets: prevEx?.sets ?? [],
                 rpe: ex.rpe,
-                tempo: ex.tempo
+                tempo: ex.tempo,
+                supersetGroup: ex.supersetGroup
             )
         }
 
