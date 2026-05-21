@@ -654,6 +654,7 @@ extension AppTab {
         case .today:    return "Today"
         case .week:     return "Week"
         case .library:  return "Library"
+        case .body:     return "Body"
         case .progress: return "Progress"
         case .profile:  return "Profile"
         }

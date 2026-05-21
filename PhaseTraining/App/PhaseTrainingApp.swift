@@ -78,6 +78,7 @@ struct PhaseTrainingApp: App {
                     switch url.host {
                     case "today":     tabSelection.selected = .today
                     case "week":      tabSelection.selected = .week
+                    case "body":      tabSelection.selected = .body
                     case "progress":  tabSelection.selected = .progress
                     case "profile":   tabSelection.selected = .profile
                     case "plan-week":
