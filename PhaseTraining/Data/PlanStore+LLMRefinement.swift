@@ -57,13 +57,20 @@ extension PlanStore {
     func refineCurrentPlanWithLLM(memory: TrainingMemory) async {
         guard let snapshotPlan = plan else { return }
         let sessions = sessionStore?.savedSessions ?? []
+        // Build 99: sport logs feed the refinement snapshot too, so each
+        // day's LLM polish knows when the user's been climbing hard 3×
+        // this week and can demote intensity / shift accessory selection
+        // accordingly. Defaulted in CoachContext.snapshot, so omitting
+        // this would silently regress.
+        let sportLogs = sportLogStore?.entries ?? []
         let snapshot = CoachContext.snapshot(
             activeTab: .today,
             memory: memory,
             plan: snapshotPlan,
             recentSessions: sessions,
             recentFeedback: memory.feedback,
-            recentSoreness: memory.soreness
+            recentSoreness: memory.soreness,
+            recentSportLogs: sportLogs
         )
 
         // Candidates: lift + mobility days that haven't been refined yet

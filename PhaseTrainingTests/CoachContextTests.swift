@@ -403,6 +403,155 @@ final class CoachContextTests: XCTestCase {
         XCTAssertTrue(snap.contains("bad ankle"))
     }
 
+    // MARK: - Sport logs
+
+    func test_snapshot_includesRecentSportLogs() {
+        // User climbed Monday for 75 min hard, with a note. Coach should
+        // see name, date, duration, intensity, and note — same level of
+        // detail RECENT SESSIONS gives for lift days.
+        let cal = Calendar.current
+        let now = cal.startOfDay(for: Date())
+        let monday = cal.date(byAdding: .day, value: -2, to: now)!
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        let log = SportLogEntry(
+            date: cal.startOfDay(for: monday),
+            sport: climbing,
+            durationMinutes: 75,
+            intensity: .hard,
+            note: "bouldering V4",
+            loggedAt: monday.addingTimeInterval(3600)
+        )
+
+        let snap = CoachContext.snapshot(
+            now: now,
+            activeTab: .today,
+            memory: TrainingMemory(),
+            plan: nil,
+            recentSessions: [],
+            recentFeedback: [],
+            recentSoreness: [],
+            recentSportLogs: [log]
+        )
+
+        XCTAssertTrue(snap.contains("RECENT SPORT LOGS"),
+                      "Block header must appear. Got:\n\(snap)")
+        XCTAssertTrue(snap.contains("Climbing"),
+                      "Sport name must render. Got:\n\(snap)")
+        XCTAssertTrue(snap.contains("75 min"),
+                      "Duration must render. Got:\n\(snap)")
+        XCTAssertTrue(snap.contains("hard"),
+                      "Intensity must render. Got:\n\(snap)")
+        XCTAssertTrue(snap.contains("bouldering V4"),
+                      "Note must surface. Got:\n\(snap)")
+    }
+
+    func test_snapshot_omitsSportLogBlockWhenEmpty() {
+        let snap = CoachContext.snapshot(
+            activeTab: .today,
+            memory: TrainingMemory(),
+            plan: nil,
+            recentSessions: [],
+            recentFeedback: [],
+            recentSoreness: [],
+            recentSportLogs: []
+        )
+        XCTAssertFalse(snap.contains("RECENT SPORT LOGS"),
+                       "Block must be hidden when there are no logs — prompt budget matters")
+    }
+
+    func test_snapshot_sportLogs_capsAtFiveMostRecent() {
+        // Seven logs across seven days; only the five most-recent must
+        // appear. Matches the RECENT SESSIONS cap so the coach sees a
+        // consistent window across surfaces.
+        let cal = Calendar.current
+        let now = cal.startOfDay(for: Date())
+        let climbing = Sport.catalog.first { $0.slug == "climbing" }!
+        let logs: [SportLogEntry] = (1...7).map { offset in
+            let day = cal.date(byAdding: .day, value: -offset, to: now)!
+            return SportLogEntry(
+                date: day,
+                sport: climbing,
+                durationMinutes: offset * 10, // 10, 20, 30… distinguishable
+                intensity: .moderate,
+                note: nil,
+                loggedAt: day
+            )
+        }
+
+        let snap = CoachContext.snapshot(
+            now: now,
+            activeTab: .today,
+            memory: TrainingMemory(),
+            plan: nil,
+            recentSessions: [],
+            recentFeedback: [],
+            recentSoreness: [],
+            recentSportLogs: logs
+        )
+
+        // The two oldest (60 min, 70 min) must NOT appear.
+        XCTAssertFalse(snap.contains("60 min"),
+                       "Sixth-oldest log must be trimmed. Got:\n\(snap)")
+        XCTAssertFalse(snap.contains("70 min"),
+                       "Seventh-oldest log must be trimmed. Got:\n\(snap)")
+        // The most-recent five (10–50 min) must.
+        for mins in [10, 20, 30, 40, 50] {
+            XCTAssertTrue(snap.contains("\(mins) min"),
+                          "Recent log \(mins) min must surface. Got:\n\(snap)")
+        }
+    }
+
+    // MARK: - Plan exercise visibility
+
+    func test_snapshot_includesExercisesForNonTodayWorkoutDays() {
+        // Today is a sport day (climbing) — no generatedWorkout on today.
+        // Tomorrow is a Push day with two named exercises. The coach used to
+        // only render today's exercises, so when a user opened the coach on
+        // a climbing day and asked about tomorrow's Push session, the coach
+        // truthfully said "I don't have the individual exercise lists." This
+        // pins that exercises for future workout days now surface too.
+        let cal = Calendar.current
+        let now = cal.startOfDay(for: Date())
+        let tomorrow = cal.date(byAdding: .day, value: 1, to: now)!
+        let pushWorkout = GeneratedWorkout(
+            title: "Push Day",
+            summary: "2 movements",
+            exercises: [
+                GeneratedExercise(id: "ex-0", exerciseId: 11, name: "Bench Press",
+                                  pattern: "horizontal_push", isCompound: true,
+                                  sets: 5, reps: "5", restSeconds: 180, notes: nil),
+                GeneratedExercise(id: "ex-1", exerciseId: 12, name: "Overhead Press",
+                                  pattern: "vertical_push", isCompound: true,
+                                  sets: 4, reps: "8", restSeconds: 120, notes: nil),
+            ],
+            estimatedMinutes: 45,
+            provenance: "test"
+        )
+        let days = [
+            DayPlan(date: now, kind: .sport, title: "Climbing"),
+            DayPlan(date: tomorrow, kind: .lift, title: "Push Day",
+                    generatedWorkout: pushWorkout),
+        ]
+        let plan = WeekPlan(days: days, generatedAt: now, inputsHash: "test")
+
+        let snap = CoachContext.snapshot(
+            now: now,
+            activeTab: .today,
+            memory: TrainingMemory(),
+            plan: plan,
+            recentSessions: [],
+            recentFeedback: [],
+            recentSoreness: []
+        )
+
+        XCTAssertTrue(snap.contains("Bench Press"),
+                      "Tomorrow's Push exercises must appear in the snapshot. Got:\n\(snap)")
+        XCTAssertTrue(snap.contains("Overhead Press"),
+                      "Tomorrow's Push exercises must appear in the snapshot. Got:\n\(snap)")
+        XCTAssertTrue(snap.contains("5 × 5"),
+                      "Sets × reps must be rendered for non-today days. Got:\n\(snap)")
+    }
+
     // MARK: - Helpers
 
     private func savedSession(

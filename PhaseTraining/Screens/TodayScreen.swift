@@ -4,8 +4,10 @@
 // treatment:
 //   - .lift / .mobility → workout-style hero (date, last-session card,
 //     exercise preview from coach.db routine, "Start workout" CTA)
-//   - .sport            → sport-day card; no exercise list, no CTA (log
-//     externally for now; sport-flavored logging is a Phase 12 surface)
+//   - .sport            → sport-day card; no exercise list. "Log session"
+//     CTA opens SportLogSheet; once logged, the hero subtitle swaps to a
+//     "45 min · hard" recap and the CTA hides. Tapping the recap re-opens
+//     the sheet for edits.
 //   - .rest             → rest card; encourages mobility
 //   - .event            → event card
 //   - no plan / pre-onboard → falls back to upper-1 hardcoded template
@@ -24,6 +26,7 @@ struct TodayScreen: View {
     @EnvironmentObject var memoryStore: MemoryStore
     @EnvironmentObject var tabSelection: TabSelectionStore
     @EnvironmentObject var customStore: CustomRoutineStore
+    @EnvironmentObject var sportLogStore: SportLogStore
 
     let onStart: () -> Void
 
@@ -50,6 +53,7 @@ struct TodayScreen: View {
     /// Build 99 — pre-workout soreness check-in moved from an inline
     /// expand/collapse card to a header-adjacent pill that opens a modal sheet.
     @State private var showSorenessSheet: Bool = false
+    @State private var showingSportLog: Bool = false
 
     // MARK: - Derived state
 
@@ -170,12 +174,22 @@ struct TodayScreen: View {
         case .lift, .mobility:
             return template?.category ?? ""
         case .sport:
-            return todayPlan?.sport != nil ? "Log it after." : "Sport day."
+            if let log = todaySportLog {
+                return "Logged · \(log.durationMinutes) min · \(log.intensity.label.lowercased())"
+            }
+            return todayPlan?.sport != nil ? "Log it when you're done." : "Sport day."
         case .rest:
             return "Sleep, food, walk. The work is in recovery."
         case .event:
             return todayPlan?.title ?? "Today's event."
         }
+    }
+
+    /// Today's most recent sport log, if any. Drives the subtitle swap
+    /// and the "edit log" sheet pre-fill. Only meaningful on .sport days
+    /// but read defensively (anyone could tap a stale link).
+    private var todaySportLog: SportLogEntry? {
+        sportLogStore.entry(on: Date())
     }
 
     // MARK: - Body
@@ -294,6 +308,36 @@ struct TodayScreen: View {
         }
         .sheet(isPresented: $showSorenessSheet) {
             SorenessCheckInSheet(onDone: {})
+        }
+        .sheet(isPresented: $showingSportLog) {
+            // Guard inside the sheet builder rather than gating the modifier —
+            // SwiftUI evaluates the builder only when isPresented goes true,
+            // and the CTA wouldn't be visible without a sport in the first
+            // place. The `?? Date()` is defensive: if the plan vanished
+            // between tap and sheet build, we still render against today.
+            if let sport = todayPlan?.sport {
+                SportLogSheet(
+                    date: Calendar.current.startOfDay(for: Date()),
+                    sport: sport,
+                    existing: todaySportLog,
+                    onSave: { mins, intensity, note in
+                        if var existing = todaySportLog {
+                            existing.durationMinutes = mins
+                            existing.intensity = intensity
+                            existing.note = note
+                            sportLogStore.update(existing)
+                        } else {
+                            sportLogStore.log(
+                                sport: sport,
+                                on: Date(),
+                                durationMinutes: mins,
+                                intensity: intensity,
+                                note: note
+                            )
+                        }
+                    }
+                )
+            }
         }
         .onAppear {
             if editableTemplate == nil { editableTemplate = template }
@@ -736,10 +780,40 @@ struct TodayScreen: View {
         switch effectiveKind {
         case .lift, .mobility:
             workoutStartButton
-        case .sport, .rest, .event:
+        case .sport:
+            // Only offer the log CTA when the day actually has a sport;
+            // a bare sport day with no sport (rare — stale override) has
+            // nothing to log against.
+            if todayPlan?.sport != nil {
+                sportLogButton
+            } else {
+                EmptyView()
+            }
+        case .rest, .event:
             // No primary action — the user sees today's status, no session to start.
             EmptyView()
         }
+    }
+
+    private var sportLogButton: some View {
+        // Same visual treatment as the workout-start CTA — keeps the bottom
+        // bar consistent across day kinds. Label flips to "Edit log" when
+        // a log already exists for today so a re-tap clearly means edit.
+        Button(action: { showingSportLog = true }) {
+            HStack(spacing: 6) {
+                Image(systemName: todaySportLog == nil ? "checkmark.circle" : "pencil.circle")
+                    .font(.system(size: 14, weight: .semibold))
+                Text(todaySportLog == nil ? "Log session" : "Edit log")
+                    .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+            }
+            .foregroundStyle(Color.accentInk)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(Color.accent)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("today-log-sport")
     }
 
     private var workoutStartButton: some View {
@@ -817,6 +891,7 @@ struct TodayScreen: View {
         .environmentObject(MemoryStore(defaults: defaults))
         .environmentObject(TabSelectionStore())
         .environmentObject(CustomRoutineStore(defaults: defaults))
+        .environmentObject(SportLogStore(defaults: defaults))
 }
 
 #Preview("No plan (fallback)") {
@@ -829,6 +904,7 @@ struct TodayScreen: View {
         .environmentObject(MemoryStore(defaults: defaults))
         .environmentObject(TabSelectionStore())
         .environmentObject(CustomRoutineStore(defaults: defaults))
+        .environmentObject(SportLogStore(defaults: defaults))
 }
 
 /// Identifiable wrapper so `.sheet(item:)` can bind to an optional exercise

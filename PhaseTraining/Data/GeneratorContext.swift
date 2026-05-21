@@ -45,15 +45,22 @@ struct GeneratorContext: Equatable {
     /// hitting muscles in the bottom third by volume.
     var muscleVolume: [String: Double]
 
+    /// Distinct calendar days in the last 7 with a HARD sport log. Used by
+    /// the planner's recent-signal bias to trim lift volume when the user
+    /// is already carrying heavy non-lift load. Moderate / light sport days
+    /// don't count — only intensities the user labeled as hard.
+    var recentHardSportDays: Int
+
     static let empty = GeneratorContext(
         priorBest: [:], patternFrequency: [:], recentSoreAreas: [],
-        stagnantExercises: [], muscleVolume: [:]
+        stagnantExercises: [], muscleVolume: [:],
+        recentHardSportDays: 0
     )
 
     var isEmpty: Bool {
         priorBest.isEmpty && patternFrequency.isEmpty &&
         recentSoreAreas.isEmpty && stagnantExercises.isEmpty &&
-        muscleVolume.isEmpty
+        muscleVolume.isEmpty && recentHardSportDays == 0
     }
 }
 
@@ -76,6 +83,10 @@ extension GeneratorContext {
         sessions: [SavedSession],
         soreness: [SorenessEntry],
         feedback: [FeedbackEntry],
+        // Defaulted so the test/preview surfaces that already call .from
+        // don't have to thread sport logs through. Production callers
+        // (PlanStore.buildGeneratorContext) pass the real list.
+        sportLogs: [SportLogEntry] = [],
         now: Date = Date()
     ) -> GeneratorContext {
         let cal = Calendar.current
@@ -89,8 +100,30 @@ extension GeneratorContext {
                                                   feedback: feedback,
                                                   cutoff: weekSoreCutoff),
             stagnantExercises: buildStagnantExercises(sessions: sessions, now: now),
-            muscleVolume: buildMuscleVolume(sessions: sessions, now: now)
+            muscleVolume: buildMuscleVolume(sessions: sessions, now: now),
+            recentHardSportDays: buildRecentHardSportDays(sportLogs: sportLogs,
+                                                          cutoff: weekSoreCutoff,
+                                                          calendar: cal)
         )
+    }
+
+    // MARK: - recentHardSportDays
+
+    /// Count distinct calendar days within the 7-day window that have at
+    /// least one HARD sport log. We dedupe by start-of-day so the same
+    /// long climbing session split into two entries (rare but possible)
+    /// doesn't double-count.
+    private static func buildRecentHardSportDays(
+        sportLogs: [SportLogEntry],
+        cutoff: Date,
+        calendar: Calendar
+    ) -> Int {
+        let hardDays = Set(
+            sportLogs
+                .filter { $0.intensity == .hard && $0.date >= cutoff }
+                .map { calendar.startOfDay(for: $0.date) }
+        )
+        return hardDays.count
     }
 
     // MARK: - priorBest

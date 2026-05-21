@@ -67,24 +67,28 @@ enum CoachTools {
         ]
         changeItem.required = ["op"]
 
-        let changesArray = JSONSchema(type: "array", description: "One or more workout changes for today's session.")
+        let changesArray = JSONSchema(type: "array", description: "One or more workout changes for the targeted day's session.")
         changesArray.items = changeItem
 
         let reasoning = JSONSchema(type: "string", description: "One short sentence explaining why. Will appear above the diff card.")
+        // Build 99: chat can now edit any day in the current week plan, not
+        // just today. The per-turn context renders every day's exercises so
+        // the model can address Tuesday's Push or Thursday's Pull by name.
+        let date = JSONSchema(type: "string", description: "Optional yyyy-MM-dd target day. Defaults to today. Must match a day in the current week plan that has a generated workout (lift / mobility); for sport / rest / event days there's nothing to edit.")
 
         let root = JSONSchema(type: "object")
-        root.properties = ["changes": changesArray, "reasoning": reasoning]
+        root.properties = ["changes": changesArray, "reasoning": reasoning, "date": date]
         root.required = ["changes", "reasoning"]
 
         return AnthropicTool(
             name: "propose_workout_changes",
             description: """
-            Propose exercise-level changes to today's lift / mobility workout (swap an exercise for another, or adjust sets/reps/rest). The user accepts or rejects via UI — this tool does NOT apply changes. Call ONLY when:
-              - The user explicitly asks for a workout-level change ("swap X for Y", "drop deadlifts today", "fewer sets on bench", "lighter reps").
-              - The CURRENT CONTEXT shows today's exercises (in the plan's `today` day). If today is sport / rest / event, refuse — there's no workout to edit.
-              - No active workout is in progress. If the user has already started logging, suggest they finish first.
+            Propose exercise-level changes to a lift / mobility workout (swap an exercise for another, or adjust sets/reps/rest). The user accepts or rejects via UI — this tool does NOT apply changes. Call ONLY when:
+              - The user explicitly asks for a workout-level change ("swap X for Y", "drop deadlifts on Thursday", "fewer sets on bench", "lighter reps").
+              - The targeted day has a generated workout in the CURRENT CONTEXT. If you target sport / rest / event, the proposal will be rejected — refuse instead.
+              - For TODAY specifically, if an active workout is in progress, suggest the user finish first. Edits to OTHER days are fine during an active session.
 
-            Address exercises by their CURRENT NAME as shown in the context. The decoder matches case-insensitively.
+            Pass `date` (yyyy-MM-dd) to target a non-today day. Omit it when the user means today. Address exercises by their CURRENT NAME as shown in the context. The decoder matches case-insensitively.
             """,
             inputSchema: root
         )
@@ -398,11 +402,15 @@ enum CoachToolDecoder {
     }
 
     /// Decode a propose_workout_changes payload. Caller passes today's
-    /// yyyy-MM-dd so the proposal carries an unambiguous target day.
-    static func decodeWorkoutProposal(from data: Data, dateString: String) -> CoachWorkoutProposal? {
+    /// yyyy-MM-dd as `fallbackDate` so the proposal carries an unambiguous
+    /// target day even when the model omits the optional `date` field.
+    /// When the model provides `date`, that wins — chat can edit any day
+    /// in the current plan, not just today.
+    static func decodeWorkoutProposal(from data: Data, fallbackDate: String) -> CoachWorkoutProposal? {
         guard let payload = try? JSONDecoder().decode(WorkoutProposalToolInput.self, from: data) else { return nil }
+        let resolved = payload.date?.isEmpty == false ? payload.date! : fallbackDate
         return CoachWorkoutProposal(
-            dateString: dateString,
+            dateString: resolved,
             changes: payload.changes,
             reasoning: payload.reasoning
         )

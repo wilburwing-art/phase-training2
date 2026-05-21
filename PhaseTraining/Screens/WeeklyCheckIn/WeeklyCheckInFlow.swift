@@ -69,6 +69,7 @@ enum WeeklyCheckInStep: Int, CaseIterable {
 struct WeeklyCheckInFlow: View {
     @EnvironmentObject private var memoryStore: MemoryStore
     @EnvironmentObject private var planStore: PlanStore
+    @EnvironmentObject private var sportLogStore: SportLogStore
 
     let onDismiss: () -> Void
 
@@ -169,7 +170,8 @@ struct WeeklyCheckInFlow: View {
             memory: memoryStore.memory,
             overrides: planStore.overrides,
             routines: routines,
-            previousFeedback: Array(memoryStore.memory.feedback.suffix(20))
+            previousFeedback: Array(memoryStore.memory.feedback.suffix(20)),
+            recentSportLogs: sportLogStore.entries
         )
         previewPlan = plan
         advance()

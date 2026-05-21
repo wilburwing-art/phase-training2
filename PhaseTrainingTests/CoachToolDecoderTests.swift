@@ -209,4 +209,51 @@ final class CoachToolDecoderTests: XCTestCase {
         XCTAssertEqual(edits.count, 1)
         if case .removeSession = edits[0] {} else { XCTFail("Expected the valid op to survive") }
     }
+
+    // MARK: - decodeWorkoutProposal (build 99 — date field)
+
+    func testWorkoutProposalUsesInputDateWhenProvided() {
+        // The model targeted Thursday explicitly. Decoder must thread that
+        // date through, not fall back to "today".
+        let json = #"""
+        {
+          "changes": [{"op": "swap", "fromName": "Deadlift", "toName": "Trap Bar Deadlift"}],
+          "reasoning": "Easier on the lower back.",
+          "date": "2026-05-21"
+        }
+        """#
+        let proposal = CoachToolDecoder.decodeWorkoutProposal(
+            from: Data(json.utf8), fallbackDate: "2026-05-18")
+        XCTAssertEqual(proposal?.dateString, "2026-05-21",
+                       "Input date must win over fallback")
+    }
+
+    func testWorkoutProposalFallsBackWhenDateOmitted() {
+        // No `date` in the input → fallback (today) is used. Preserves the
+        // pre-build-99 behavior for plain "swap deadlifts" prompts.
+        let json = #"""
+        {
+          "changes": [{"op": "adjust", "exerciseName": "Bench Press", "sets": 3}],
+          "reasoning": "Drop a set."
+        }
+        """#
+        let proposal = CoachToolDecoder.decodeWorkoutProposal(
+            from: Data(json.utf8), fallbackDate: "2026-05-18")
+        XCTAssertEqual(proposal?.dateString, "2026-05-18")
+    }
+
+    func testWorkoutProposalFallsBackWhenDateEmpty() {
+        // Empty string is treated the same as missing — guards against the
+        // model returning "" when it means "use the default".
+        let json = #"""
+        {
+          "changes": [{"op": "swap", "fromName": "Squat", "toName": "Front Squat"}],
+          "reasoning": "Lighter on the back.",
+          "date": ""
+        }
+        """#
+        let proposal = CoachToolDecoder.decodeWorkoutProposal(
+            from: Data(json.utf8), fallbackDate: "2026-05-18")
+        XCTAssertEqual(proposal?.dateString, "2026-05-18")
+    }
 }

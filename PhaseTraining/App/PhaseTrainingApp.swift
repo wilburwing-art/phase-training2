@@ -12,6 +12,7 @@ struct PhaseTrainingApp: App {
     @StateObject private var recentPicks = RecentPicksStore()
     @StateObject private var tabSelection = TabSelectionStore()
     @StateObject private var conv = CoachConversationStore()
+    @StateObject private var sportLog = SportLogStore()
 
     /// UI tests pass `--ui-test-onboarded` to skip the first-launch onboarding cover
     /// without persisting state to UserDefaults.
@@ -26,7 +27,8 @@ struct PhaseTrainingApp: App {
                         "pt_week_plan", "pt_week_overrides",
                         "pt_weekly_reminder_enabled",
                         "pt_custom_routines",
-                        "pt_recent_exercise_picks"] {
+                        "pt_recent_exercise_picks",
+                        "pt_sport_logs"] {
                 UserDefaults.standard.removeObject(forKey: key)
             }
         }
@@ -138,6 +140,7 @@ struct PhaseTrainingApp: App {
                 .environmentObject(recentPicks)
                 .environmentObject(tabSelection)
                 .environmentObject(conv)
+                .environmentObject(sportLog)
                 .preferredColorScheme(.dark)
                 .fullScreenCover(isPresented: .constant(!memory.isOnboarded && !uiTestSkipsOnboarding)) {
                     OnboardingFlow()
@@ -149,6 +152,7 @@ struct PhaseTrainingApp: App {
                     WeeklyCheckInFlow(onDismiss: { tabSelection.showWeeklyCheckIn = false })
                         .environmentObject(memory)
                         .environmentObject(plan)
+                        .environmentObject(sportLog)
                         .presentationBackground(Color.bg)
                 }
                 .onChange(of: scenePhase) { _, phase in

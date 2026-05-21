@@ -26,13 +26,24 @@ enum Planner {
         overrides: WeekOverrides? = nil,
         routines: [BundledRoutineRow],
         previousFeedback: [FeedbackEntry] = [],
+        // Build 99: hybrid-athlete signal. When the user's already loading
+        // the body with hard sport (climbing, skiing) and we're about to
+        // schedule a full lifting week on top, trim one lift day. Defaulted
+        // so existing callers (tests, previews) don't have to thread it.
+        recentSportLogs: [SportLogEntry] = [],
         recentlyPicked: Set<Int> = [],
         today: Date = Date(),
         calendar: Calendar = .current,
         context: GeneratorContext = .empty,
         strategy: GeneratorStrategy = .auto
     ) -> WeekPlan {
-        let biased = applyFeedbackBias(memory: memory, feedback: previousFeedback, calendar: calendar)
+        let biased = applyRecentSignalBias(
+            memory: memory,
+            feedback: previousFeedback,
+            sportLogs: recentSportLogs,
+            calendar: calendar,
+            now: today
+        )
         return generateUnbiased(
             memory: biased,
             overrides: overrides,
@@ -45,28 +56,64 @@ enum Planner {
         )
     }
 
-    /// Inspect the most recent 7-day feedback window and nudge the memory
-    /// before planning. Conservative — at most ±1 lift day per regen so
-    /// repeated "too hard" weeks don't collapse to zero in one shot.
+    /// Inspect the most recent 7-day feedback + sport-log windows and nudge
+    /// the memory before planning. Conservative — at most ±1 lift day per
+    /// regen so repeated "too hard" weeks (or a heavy sport week) don't
+    /// collapse the schedule to zero in one shot.
+    ///
+    /// Signals combine into a SINGLE nudge: trim wins over expand (we
+    /// always err toward recovery), and the two trim triggers (feedback
+    /// "too_hard" ≥2, OR hard sport days ≥3) don't double-stack.
+    static func applyRecentSignalBias(
+        memory: TrainingMemory,
+        feedback: [FeedbackEntry],
+        sportLogs: [SportLogEntry] = [],
+        calendar: Calendar = .current,
+        now: Date = Date()
+    ) -> TrainingMemory {
+        let cutoff = calendar.date(byAdding: .day, value: -7, to: now) ?? Date.distantPast
+
+        let recentFb = feedback.filter { $0.date >= cutoff }
+        let tooHard = recentFb.filter { $0.difficulty == "too_hard" }.count
+        let tooEasy = recentFb.filter { $0.difficulty == "too_easy" }.count
+
+        // Distinct calendar days with at least one HARD sport log. Mirrors
+        // GeneratorContext.recentHardSportDays — we recompute here rather
+        // than depend on context so this function stays pure / testable.
+        let hardSportDays = Set(
+            sportLogs
+                .filter { $0.intensity == .hard && $0.date >= cutoff }
+                .map { calendar.startOfDay(for: $0.date) }
+        ).count
+
+        let feedbackTrim = tooHard >= 2 && tooHard > tooEasy
+        let sportTrim    = hardSportDays >= 3
+        let feedbackExpand = tooEasy >= 2 && tooEasy > tooHard
+
+        var adjusted = memory
+        if feedbackTrim || sportTrim {
+            adjusted.liftDaysPerWeek = max(0, adjusted.liftDaysPerWeek - 1)
+        } else if feedbackExpand {
+            // Planner's per-week loop already caps against actual empty slots.
+            adjusted.liftDaysPerWeek = min(6, adjusted.liftDaysPerWeek + 1)
+        }
+        return adjusted
+    }
+
+    /// Back-compat shim. Kept so any external caller / future test that
+    /// asks for feedback bias in isolation still works. New code should
+    /// call `applyRecentSignalBias` directly.
     static func applyFeedbackBias(
         memory: TrainingMemory,
         feedback: [FeedbackEntry],
         calendar: Calendar = .current
     ) -> TrainingMemory {
-        guard !feedback.isEmpty else { return memory }
-        let cutoff = calendar.date(byAdding: .day, value: -7, to: Date()) ?? Date.distantPast
-        let recent = feedback.filter { $0.date >= cutoff }
-        let tooHard = recent.filter { $0.difficulty == "too_hard" }.count
-        let tooEasy = recent.filter { $0.difficulty == "too_easy" }.count
-
-        var adjusted = memory
-        if tooHard >= 2 && tooHard > tooEasy {
-            adjusted.liftDaysPerWeek = max(0, adjusted.liftDaysPerWeek - 1)
-        } else if tooEasy >= 2 && tooEasy > tooHard {
-            // Planner's per-week loop already caps against actual empty slots.
-            adjusted.liftDaysPerWeek = min(6, adjusted.liftDaysPerWeek + 1)
-        }
-        return adjusted
+        applyRecentSignalBias(
+            memory: memory,
+            feedback: feedback,
+            sportLogs: [],
+            calendar: calendar
+        )
     }
 
     private static func generateUnbiased(

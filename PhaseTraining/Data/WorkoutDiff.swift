@@ -34,6 +34,10 @@ struct WorkoutChange: Codable, Hashable {
 struct WorkoutProposalToolInput: Codable {
     var changes: [WorkoutChange]
     var reasoning: String?
+    /// Optional yyyy-MM-dd target day. nil means "today" — the decoder
+    /// fills in the caller-provided fallback. Added in build 99 so chat
+    /// can edit any day in the current week plan, not just today.
+    var date: String?
 }
 
 // MARK: - Persisted proposal attached to a CoachMessage
