@@ -117,6 +117,14 @@ struct LogScreen: View {
 
     // MARK: - Body content
 
+    /// Re-ordered + labeled view of `session.exercises` for rendering.
+    /// Members of the same superset render adjacently with an "A1/A2/…"
+    /// prefix on the title and a 3pt accent left band spanning the group.
+    /// Solo (un-supersetted) rows pass through unchanged.
+    private var groupedExercises: [SupersetGroupedItem<LoggedExercise>] {
+        SupersetGrouping.layout(session.exercises) { $0.supersetGroup }
+    }
+
     private var content: some View {
         VStack(spacing: 0) {
             stickyHeader
@@ -129,9 +137,10 @@ struct LogScreen: View {
                         .padding(.horizontal, 20)
                         .padding(.top, 4)
 
-                    ForEach(Array(session.exercises.enumerated()), id: \.element.id) { exIdx, _ in
-                        exerciseBlock(exIdx: exIdx)
-                        if exIdx < session.exercises.count - 1 {
+                    let grouped = groupedExercises
+                    ForEach(Array(grouped.enumerated()), id: \.offset) { i, gi in
+                        exerciseBlock(exIdx: gi.originalIndex, grouping: gi)
+                        if i < grouped.count - 1 {
                             Rectangle()
                                 .fill(Color.line)
                                 .frame(height: 0.5)
@@ -241,10 +250,15 @@ struct LogScreen: View {
     // MARK: - Exercise block
 
     @ViewBuilder
-    private func exerciseBlock(exIdx: Int) -> some View {
+    private func exerciseBlock(exIdx: Int, grouping: SupersetGroupedItem<LoggedExercise>? = nil) -> some View {
         let ex = session.exercises[exIdx]
         let firstUndone = ex.sets.firstIndex { !$0.done }
         let allDone = ex.sets.allSatisfy { $0.done }
+        let displayName: String = {
+            if let label = grouping?.label { return "\(label)  \(ex.name)" }
+            return ex.name
+        }()
+        let inSuperset = (grouping?.groupSize ?? 1) >= 2
 
         VStack(spacing: 0) {
             // Header row
@@ -261,7 +275,7 @@ struct LogScreen: View {
                             .foregroundStyle(Color.ok)
                     }
                 }
-                Text(ex.name)
+                Text(displayName)
                     .styled(.displayS)
                     .foregroundStyle(allDone ? Color.ink2 : Color.ink)
                 if let type = ex.type, !type.isEmpty {
@@ -359,6 +373,38 @@ struct LogScreen: View {
             }
         }
         .padding(.horizontal, 20)
+        .overlay(alignment: .leading) {
+            // Superset visual band — 3pt accent left edge spanning the row.
+            // Drawn per-row so consecutive members of the same group form
+            // one continuous band; rounding the corners on first/last members
+            // gives the group endpoints a clean cap without per-group
+            // wrapper geometry.
+            if inSuperset {
+                supersetBand(grouping: grouping!)
+            }
+        }
+    }
+
+    /// 3pt-wide accent band drawn at the leading edge of a supersetted row.
+    /// Rounded only on the first/last member so adjacent group members
+    /// visually join into one continuous band.
+    @ViewBuilder
+    private func supersetBand(grouping: SupersetGroupedItem<LoggedExercise>) -> some View {
+        let topRadius: CGFloat = grouping.isFirstInGroup ? 1.5 : 0
+        let bottomRadius: CGFloat = grouping.isLastInGroup ? 1.5 : 0
+        UnevenRoundedRectangle(
+            topLeadingRadius: topRadius,
+            bottomLeadingRadius: bottomRadius,
+            bottomTrailingRadius: bottomRadius,
+            topTrailingRadius: topRadius,
+            style: .continuous
+        )
+        .fill(Color.accent)
+        .frame(width: 3)
+        .padding(.leading, 8)
+        .padding(.top, grouping.isFirstInGroup ? 8 : 0)
+        .padding(.bottom, grouping.isLastInGroup ? 8 : 0)
+        .accessibilityHidden(true)
     }
 
     /// Build-70 coaching hint row — small mono line above the column
@@ -651,9 +697,20 @@ struct LogScreen: View {
 
         if !wasDone {
             // Just marked done. Start rest timer if not the final set.
+            //
+            // Superset-aware: when this exercise belongs to a superset and
+            // there are still un-completed siblings at THIS set index in the
+            // group, skip the rest timer — the user is mid-round-robin and
+            // should move to the next member's matching set. The rest only
+            // fires after the LAST member of the group completes set `setIdx`.
             let ex = session.exercises[exIdx]
             let hasMoreSets = setIdx < ex.sets.count - 1
-            if hasMoreSets {
+
+            if isMidSupersetRound(exIdx: exIdx, setIdx: setIdx) {
+                // Clear any pending rest from a prior round so the active band
+                // moves cleanly to the next group member.
+                clearRest()
+            } else if hasMoreSets {
                 restExIdx = exIdx
                 restSetIdx = setIdx
                 restStartedAt = Date()
@@ -665,6 +722,28 @@ struct LogScreen: View {
                 clearRest()
             }
         }
+    }
+
+    /// True when this exercise belongs to a superset AND at least one
+    /// sibling in the same group still has `set[setIdx]` un-done. Used to
+    /// suppress the rest timer mid-round so it only fires after the last
+    /// group member completes the round.
+    private func isMidSupersetRound(exIdx: Int, setIdx: Int) -> Bool {
+        guard session.exercises.indices.contains(exIdx) else { return false }
+        guard let group = session.exercises[exIdx].supersetGroup else { return false }
+        let siblings = session.exercises.enumerated().filter {
+            $0.offset != exIdx && $0.element.supersetGroup == group
+        }
+        guard !siblings.isEmpty else { return false }
+        for (_, sibling) in siblings {
+            // A sibling is "still owed this round" when it has a set at
+            // this index that's not yet done. Siblings with fewer sets
+            // don't gate the rest timer (their round ended earlier).
+            if sibling.sets.indices.contains(setIdx), !sibling.sets[setIdx].done {
+                return true
+            }
+        }
+        return false
     }
 
     /// Mark every set in this exercise done in one tap. Propagates the most
@@ -772,6 +851,85 @@ private struct LogRowIndex: Identifiable {
     _ = {
         UserDefaults(suiteName: "preview.log")!.removePersistentDomain(forName: "preview.log")
     }()
+    return LogScreen(onFinish: {})
+        .environmentObject(store)
+}
+
+#Preview("Supersets") {
+    // Mock superset session: A1 (Bench) + A2 (DB Row) form group 1,
+    // then a solo squat in between, then B1 (Curl) + B2 (Pushdown) form
+    // group 2. Demonstrates the band, the A1/A2/B1/B2 labels, the
+    // round-robin reorder (group 2 anchored at its first appearance).
+    let suite = "preview.log.supersets"
+    let defaults = UserDefaults(suiteName: suite)!
+    defaults.removePersistentDomain(forName: suite)
+    let store = SessionStore(defaults: defaults)
+    let mock = ActiveSession(
+        templateId: "mock-superset",
+        name: "Upper · superset preview",
+        category: "Demo",
+        startTime: Date().addingTimeInterval(-12 * 60),
+        exercises: [
+            LoggedExercise(
+                id: "bench", name: "Bench Press", type: "Barbell", unit: "lbs",
+                targetSets: 3, targetReps: 8, rest: 90,
+                sets: [
+                    LoggedSet(num: 1, weight: "135", reps: "8", rpe: "7", done: true),
+                    LoggedSet(num: 2, weight: "135", reps: "8", rpe: "", done: false),
+                    LoggedSet(num: 3, weight: "135", reps: "8", rpe: "", done: false),
+                ],
+                prevSets: [],
+                supersetGroup: 1
+            ),
+            LoggedExercise(
+                id: "row", name: "DB Row", type: "Dumbbell", unit: "lbs",
+                targetSets: 3, targetReps: 10, rest: 90,
+                sets: [
+                    LoggedSet(num: 1, weight: "55", reps: "10", rpe: "7", done: true),
+                    LoggedSet(num: 2, weight: "55", reps: "10", rpe: "", done: false),
+                    LoggedSet(num: 3, weight: "55", reps: "10", rpe: "", done: false),
+                ],
+                prevSets: [],
+                supersetGroup: 1
+            ),
+            LoggedExercise(
+                id: "squat", name: "Back Squat", type: "Barbell", unit: "lbs",
+                targetSets: 3, targetReps: 5, rest: 180,
+                sets: [
+                    LoggedSet(num: 1, weight: "225", reps: "5", rpe: "8", done: false),
+                    LoggedSet(num: 2, weight: "225", reps: "5", rpe: "", done: false),
+                    LoggedSet(num: 3, weight: "225", reps: "5", rpe: "", done: false),
+                ],
+                prevSets: [],
+                supersetGroup: nil
+            ),
+            LoggedExercise(
+                id: "curl", name: "Cable Curl", type: "Cable", unit: "lbs",
+                targetSets: 3, targetReps: 12, rest: 60,
+                sets: [
+                    LoggedSet(num: 1, weight: "40", reps: "12", rpe: "", done: false),
+                    LoggedSet(num: 2, weight: "40", reps: "12", rpe: "", done: false),
+                    LoggedSet(num: 3, weight: "40", reps: "12", rpe: "", done: false),
+                ],
+                prevSets: [],
+                supersetGroup: 2
+            ),
+            LoggedExercise(
+                id: "pushdown", name: "Tricep Pushdown", type: "Cable", unit: "lbs",
+                targetSets: 3, targetReps: 12, rest: 60,
+                sets: [
+                    LoggedSet(num: 1, weight: "50", reps: "12", rpe: "", done: false),
+                    LoggedSet(num: 2, weight: "50", reps: "12", rpe: "", done: false),
+                    LoggedSet(num: 3, weight: "50", reps: "12", rpe: "", done: false),
+                ],
+                prevSets: [],
+                supersetGroup: 2
+            ),
+        ],
+        feel: nil,
+        note: nil
+    )
+    store.saveActive(mock)
     return LogScreen(onFinish: {})
         .environmentObject(store)
 }

@@ -29,6 +29,11 @@ struct CustomRoutineExercise: Codable, Identifiable, Hashable {
     var reps: String?
     var rest: String?
     var notes: String?
+    /// Optional integer that groups two-plus exercises into a superset.
+    /// Same value across rows = "rotate sets between these, rest after the
+    /// last." Mirrors routine_exercises.superset_group. Optional so older
+    /// JSON-encoded routines decode unchanged.
+    var supersetGroup: Int?
 }
 
 // MARK: - Bridging to the workout runtime
@@ -59,7 +64,8 @@ extension CustomRoutine {
                     unit: "lbs",
                     targetSets: cex.sets ?? 3,
                     targetReps: Self.parseRepsLeading(cex.reps) ?? 8,
-                    rest: Self.parseRestSeconds(cex.rest) ?? 90
+                    rest: Self.parseRestSeconds(cex.rest) ?? 90,
+                    supersetGroup: cex.supersetGroup
                 )
             }
         )

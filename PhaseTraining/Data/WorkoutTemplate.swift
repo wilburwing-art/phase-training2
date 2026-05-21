@@ -16,12 +16,19 @@ struct ExerciseTemplate: Identifiable, Codable, Equatable {
     /// prescription path. Surface to the user above the set rows.
     var rpe: String?
     var tempo: String?
+    /// Superset grouping (build 99). Propagated from
+    /// routine_exercises.superset_group; null = not in a superset. Same
+    /// integer across two-plus exercises means "rotate between these
+    /// sets, then rest." Survives the trip through SessionStore into
+    /// LoggedExercise so LogScreen can use it for visual + nav grouping.
+    var supersetGroup: Int?
 
     /// Convenience init so the upper-1 template + everywhere else that
     /// constructs an ExerciseTemplate without coaching hints stays unchanged.
     init(id: String, name: String, type: String?, unit: String,
          targetSets: Int, targetReps: Int, rest: Int,
-         rpe: String? = nil, tempo: String? = nil) {
+         rpe: String? = nil, tempo: String? = nil,
+         supersetGroup: Int? = nil) {
         self.id = id
         self.name = name
         self.type = type
@@ -31,6 +38,7 @@ struct ExerciseTemplate: Identifiable, Codable, Equatable {
         self.rest = rest
         self.rpe = rpe
         self.tempo = tempo
+        self.supersetGroup = supersetGroup
     }
 }
 
