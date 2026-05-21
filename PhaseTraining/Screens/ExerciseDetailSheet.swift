@@ -53,6 +53,7 @@ private struct ExerciseDetailContent: View {
             VStack(alignment: .leading, spacing: 20) {
                 header
                 metaBadges
+                anatomySection
                 heroImage
                 if let desc = exercise.description, !desc.isEmpty {
                     section(title: "Overview") {
@@ -111,6 +112,85 @@ private struct ExerciseDetailContent: View {
             .padding(.horizontal, 20)
             .padding(.top, 18)
             .padding(.bottom, 32)
+        }
+    }
+
+    // MARK: - Anatomy
+
+    /// Pair of front/back silhouettes with this exercise's primary /
+    /// secondary / stabilizer muscles shaded. Sits below the meta-badge row
+    /// and above the hero image; this is supplementary to (not a replacement
+    /// for) the textual cue / instruction sections below. Hidden when the
+    /// exercise has no muscle relations on file (mostly cardio / mobility).
+    @ViewBuilder
+    private var anatomySection: some View {
+        let muscles = CoachDatabase.shared.musclesForExercise(exercise.id)
+        if !muscles.isEmpty {
+            let highlights = anatomyHighlights(from: muscles)
+            VStack(spacing: 8) {
+                HStack(alignment: .top, spacing: 16) {
+                    BodyAnatomyView(highlights: highlights, side: .front)
+                        .frame(width: 120, height: 220)
+                    BodyAnatomyView(highlights: highlights, side: .back)
+                        .frame(width: 120, height: 220)
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+                anatomyLegend
+            }
+            .padding(.vertical, 4)
+        }
+    }
+
+    private var anatomyLegend: some View {
+        HStack(spacing: 14) {
+            legendDot(color: BodyAnatomyView.HighlightIntensity.primary.color, label: "Primary")
+            legendDot(color: BodyAnatomyView.HighlightIntensity.secondary.color, label: "Secondary")
+            legendDot(color: BodyAnatomyView.HighlightIntensity.tertiary.color, label: "Stabilizer")
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+
+    private func legendDot(color: Color?, label: String) -> some View {
+        HStack(spacing: 5) {
+            Circle()
+                .fill(color ?? Color.ink3)
+                .frame(width: 8, height: 8)
+            Text(label)
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+        }
+    }
+
+    /// Collapse the `(slug, role, label)` rows from CoachDatabase into the
+    /// slug → intensity dict BodyAnatomyView consumes. Highest role wins
+    /// when a single slug appears under multiple roles (shouldn't happen
+    /// given the PK, but defensive).
+    private func anatomyHighlights(
+        from muscles: [(slug: String, role: String, label: String)]
+    ) -> [String: BodyAnatomyView.HighlightIntensity] {
+        var map: [String: BodyAnatomyView.HighlightIntensity] = [:]
+        for row in muscles {
+            let intensity: BodyAnatomyView.HighlightIntensity
+            switch row.role {
+            case "primary":    intensity = .primary
+            case "secondary":  intensity = .secondary
+            case "stabilizer": intensity = .tertiary
+            default:           continue
+            }
+            if let existing = map[row.slug], priority(existing) >= priority(intensity) {
+                continue
+            }
+            map[row.slug] = intensity
+        }
+        return map
+    }
+
+    private func priority(_ intensity: BodyAnatomyView.HighlightIntensity) -> Int {
+        switch intensity {
+        case .primary:   return 3
+        case .secondary: return 2
+        case .tertiary:  return 1
+        case .none:      return 0
         }
     }
 
