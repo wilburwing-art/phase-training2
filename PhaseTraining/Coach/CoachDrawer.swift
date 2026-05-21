@@ -13,6 +13,7 @@ struct CoachDrawer: View {
     @EnvironmentObject private var planStore: PlanStore
     @EnvironmentObject private var sessionStore: SessionStore
     @EnvironmentObject private var tabSelection: TabSelectionStore
+    @EnvironmentObject private var sportLogStore: SportLogStore
 
     @State private var input: String = ""
     @State private var sending: Bool = false
@@ -297,13 +298,23 @@ struct CoachDrawer: View {
         sending = true
 
         let history = conv.wireHistory().dropLast()  // exclude the new user msg itself
+        // Sport logs window: last 21 days, capped to the most recent 30 to
+        // keep the prompt bounded if the user is a high-frequency logger.
+        // CoachContext re-trims to 5 for display; we just want the relevant
+        // tail here rather than the full history.
+        let cutoff = Calendar.current.date(byAdding: .day, value: -21, to: Date()) ?? Date.distantPast
+        let recentSportLogs = sportLogStore.entries
+            .filter { $0.date >= cutoff }
+            .suffix(30)
+
         let snapshot = CoachContext.snapshot(
             activeTab: tabSelection.selected,
             memory: memoryStore.memory,
             plan: planStore.plan,
             recentSessions: sessionStore.savedSessions,
             recentFeedback: memoryStore.memory.feedback,
-            recentSoreness: memoryStore.memory.soreness
+            recentSoreness: memoryStore.memory.soreness,
+            recentSportLogs: Array(recentSportLogs)
         )
 
         inflightTask = Task {
@@ -328,9 +339,14 @@ struct CoachDrawer: View {
                                 await MainActor.run { conv.setProposal(on: assistantMsg.id, proposal) }
                             }
                         case "propose_workout_changes":
+                            // Build 99: pass today as the FALLBACK, not as
+                            // an override. If the model supplied a `date`
+                            // in the tool input it wins — chat can now
+                            // edit any day in the current plan, not just
+                            // today.
                             let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"
                             let today = df.string(from: Date())
-                            if let proposal = CoachToolDecoder.decodeWorkoutProposal(from: inputData, dateString: today) {
+                            if let proposal = CoachToolDecoder.decodeWorkoutProposal(from: inputData, fallbackDate: today) {
                                 await MainActor.run { conv.setWorkoutProposal(on: assistantMsg.id, proposal) }
                             }
                         case "propose_memory_update":
@@ -387,4 +403,5 @@ struct CoachDrawer: View {
         .environmentObject(PlanStore(defaults: defaults))
         .environmentObject(SessionStore(defaults: defaults))
         .environmentObject(TabSelectionStore())
+        .environmentObject(SportLogStore(defaults: defaults))
 }

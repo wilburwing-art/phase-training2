@@ -19,7 +19,12 @@ enum CoachContext {
         plan: WeekPlan?,
         recentSessions: [SavedSession],
         recentFeedback: [FeedbackEntry],
-        recentSoreness: [SorenessEntry]
+        recentSoreness: [SorenessEntry],
+        // Defaulted so existing callers (insight generation, LLM refinement,
+        // tests) keep working without churn. Wire-up exists in CoachDrawer
+        // — the surface where the user actually chats and might say
+        // "how was my climbing this week?"
+        recentSportLogs: [SportLogEntry] = []
     ) -> String {
         var blocks: [String] = []
 
@@ -113,32 +118,43 @@ enum CoachContext {
             let today = plan.today(now: now)
             var planLines: [String] = []
             planLines.append("range: \(plan.rangeLabel)")
+            // Resolved once and reused — keeps the prehab annotation cheap
+            // when expanding exercises across every day in the week.
+            let injuryNamesBySlug = injuryNameLookup()
+
+            // Render the exercises in a day's GeneratedWorkout as indented
+            // bullets. Used for today AND for the other days in the week so
+            // the coach can describe Tuesday's Push or Wednesday's Pull, not
+            // just today's session. propose_workout_changes still only
+            // operates on today (the cached system prompt enforces that) —
+            // visibility just isn't restricted to today anymore.
+            func appendExercises(_ workout: GeneratedWorkout) {
+                for ex in workout.exercises {
+                    var line = "  • \(ex.name) — \(ex.sets) × \(ex.reps)"
+                    if let rpe = ex.rpe { line += " @RPE \(rpe)" }
+                    if case .prehab(let slug) = ex.source {
+                        let label = injuryNamesBySlug[slug] ?? slug
+                        line += " (prehab for \(label))"
+                    }
+                    planLines.append(line)
+                }
+            }
+
             if let t = today {
                 var hero = "today (\(weekday(t.date))): \(t.kind.label) — \(t.title)"
                 if t.protected { hero += " [protected]" }
                 if let mins = t.durationMinutes { hero += " · \(mins) min" }
                 planLines.append(hero)
-                // List today's generated workout exercises so the model can
-                // reference them by name (this is what propose_workout_changes
-                // operates on). Annotate prehab picks with the injury they
-                // serve — closes the "coach can't say what got swapped"
-                // gap when the user asks "what's in today's workout?"
                 if let workout = t.generatedWorkout {
-                    let injuryNamesBySlug = injuryNameLookup()
-                    for ex in workout.exercises {
-                        var line = "  • \(ex.name) — \(ex.sets) × \(ex.reps)"
-                        if let rpe = ex.rpe { line += " @RPE \(rpe)" }
-                        if case .prehab(let slug) = ex.source {
-                            let label = injuryNamesBySlug[slug] ?? slug
-                            line += " (prehab for \(label))"
-                        }
-                        planLines.append(line)
-                    }
+                    appendExercises(workout)
                 }
             }
             for day in plan.days where !Calendar.current.isDate(day.date, inSameDayAs: now) {
                 let prefix = day.protected ? "[protected] " : ""
                 planLines.append("- \(weekday(day.date)) \(short(day.date)): \(prefix)\(day.kind.label) — \(day.title)")
+                if let workout = day.generatedWorkout {
+                    appendExercises(workout)
+                }
             }
             blocks.append("CURRENT WEEK PLAN\n" + planLines.joined(separator: "\n"))
         } else {
@@ -167,6 +183,27 @@ enum CoachContext {
                 lines.append("- \(short(s.startTime)) · \(s.name) · \(done) sets · \(s.duration / 60) min\(feel)")
             }
             blocks.append("\(header)\n" + lines.joined(separator: "\n"))
+        }
+
+        // Recent sport logs (last 5). Mirrors RECENT SESSIONS so the coach
+        // has visible context for non-lift load — when the user says "I
+        // climbed 90 min Tuesday" the next conversation turn shouldn't need
+        // them to repeat it. Sorted ascending in; reverse for display so
+        // the most-recent entry is first (matches RECENT SESSIONS).
+        let sportLogs = recentSportLogs
+            .sorted { $0.date < $1.date }
+            .suffix(5)
+            .reversed()
+        if !sportLogs.isEmpty {
+            var lines: [String] = []
+            for log in sportLogs {
+                var line = "- \(short(log.date)) · \(log.sport.name) · \(log.durationMinutes) min · \(log.intensity.label.lowercased())"
+                if let note = log.note, !note.isEmpty {
+                    line += " · note: \(note)"
+                }
+                lines.append(line)
+            }
+            blocks.append("RECENT SPORT LOGS\n" + lines.joined(separator: "\n"))
         }
 
         if let familiarity = familiaritySection(sessions: recentSessions, now: now) {

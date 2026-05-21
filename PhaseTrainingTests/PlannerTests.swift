@@ -864,4 +864,132 @@ final class PlannerTests: XCTestCase {
             )
         }
     }
+
+    // MARK: - Recent-signal bias (feedback + sport logs)
+
+    private func climbingSport() -> Sport {
+        Sport.catalog.first { $0.slug == "climbing" }!
+    }
+
+    private func hardClimbLog(daysAgo: Int, now: Date = Date()) -> SportLogEntry {
+        let date = Calendar.current.date(byAdding: .day, value: -daysAgo, to: now)!
+        return SportLogEntry(
+            date: Calendar.current.startOfDay(for: date),
+            sport: climbingSport(),
+            durationMinutes: 90,
+            intensity: .hard,
+            note: nil,
+            loggedAt: date
+        )
+    }
+
+    func test_recentSignalBias_threeHardSportDays_trimsOneLiftDay() {
+        var memory = TrainingMemory()
+        memory.liftDaysPerWeek = 4
+        let logs = [hardClimbLog(daysAgo: 1),
+                    hardClimbLog(daysAgo: 3),
+                    hardClimbLog(daysAgo: 5)]
+        let adjusted = Planner.applyRecentSignalBias(
+            memory: memory, feedback: [], sportLogs: logs
+        )
+        XCTAssertEqual(adjusted.liftDaysPerWeek, 3,
+                       "Three hard sport days in 7d window must trim one lift day")
+    }
+
+    func test_recentSignalBias_twoHardSportDays_doesNotTrim() {
+        var memory = TrainingMemory()
+        memory.liftDaysPerWeek = 4
+        let logs = [hardClimbLog(daysAgo: 1), hardClimbLog(daysAgo: 3)]
+        let adjusted = Planner.applyRecentSignalBias(
+            memory: memory, feedback: [], sportLogs: logs
+        )
+        XCTAssertEqual(adjusted.liftDaysPerWeek, 4,
+                       "Two hard sport days is below the trim threshold")
+    }
+
+    func test_recentSignalBias_moderateSportNeverTrims() {
+        // Five moderate climbing days must not trim — only HARD counts.
+        var memory = TrainingMemory()
+        memory.liftDaysPerWeek = 4
+        let cal = Calendar.current
+        let logs: [SportLogEntry] = (1...5).map { offset in
+            let date = cal.date(byAdding: .day, value: -offset, to: Date())!
+            return SportLogEntry(
+                date: cal.startOfDay(for: date),
+                sport: climbingSport(),
+                durationMinutes: 60,
+                intensity: .moderate,
+                note: nil,
+                loggedAt: date
+            )
+        }
+        let adjusted = Planner.applyRecentSignalBias(
+            memory: memory, feedback: [], sportLogs: logs
+        )
+        XCTAssertEqual(adjusted.liftDaysPerWeek, 4)
+    }
+
+    func test_recentSignalBias_sportAndFeedback_doNotDoubleTrim() {
+        // User has BOTH 3 hard sport days AND two "too_hard" feedback
+        // entries. Both signals would individually trim — net adjustment
+        // must still be -1, not -2.
+        var memory = TrainingMemory()
+        memory.liftDaysPerWeek = 5
+        let cal = Calendar.current
+        let feedback: [FeedbackEntry] = (1...2).map { offset in
+            FeedbackEntry(
+                date: cal.date(byAdding: .day, value: -offset, to: Date())!,
+                sessionId: nil,
+                difficulty: "too_hard",
+                hurtAreas: [],
+                ranLong: false,
+                notes: nil
+            )
+        }
+        let logs = [hardClimbLog(daysAgo: 1),
+                    hardClimbLog(daysAgo: 3),
+                    hardClimbLog(daysAgo: 5)]
+        let adjusted = Planner.applyRecentSignalBias(
+            memory: memory, feedback: feedback, sportLogs: logs
+        )
+        XCTAssertEqual(adjusted.liftDaysPerWeek, 4,
+                       "Combined signals must not double-stack — single -1 cap")
+    }
+
+    func test_recentSignalBias_hardSportOutsideWindow_doesNotCount() {
+        // Hard climbs 8+ days ago must not count toward the 7-day window.
+        var memory = TrainingMemory()
+        memory.liftDaysPerWeek = 4
+        let logs = [hardClimbLog(daysAgo: 8),
+                    hardClimbLog(daysAgo: 10),
+                    hardClimbLog(daysAgo: 12)]
+        let adjusted = Planner.applyRecentSignalBias(
+            memory: memory, feedback: [], sportLogs: logs
+        )
+        XCTAssertEqual(adjusted.liftDaysPerWeek, 4,
+                       "Old logs must fall out of the 7-day window")
+    }
+
+    func test_generatorContext_recentHardSportDays_dedupesByDay() {
+        // Two HARD logs on the same calendar day must count as ONE day —
+        // long sessions split into multiple entries shouldn't double-count.
+        let cal = Calendar.current
+        let now = cal.startOfDay(for: Date())
+        let dayMinus2 = cal.date(byAdding: .day, value: -2, to: now)!
+        let log1 = SportLogEntry(
+            date: dayMinus2, sport: climbingSport(),
+            durationMinutes: 60, intensity: .hard, note: nil,
+            loggedAt: dayMinus2.addingTimeInterval(3600)
+        )
+        let log2 = SportLogEntry(
+            date: dayMinus2, sport: climbingSport(),
+            durationMinutes: 30, intensity: .hard, note: nil,
+            loggedAt: dayMinus2.addingTimeInterval(7200)
+        )
+        let ctx = GeneratorContext.from(
+            sessions: [], soreness: [], feedback: [],
+            sportLogs: [log1, log2], now: now
+        )
+        XCTAssertEqual(ctx.recentHardSportDays, 1)
+    }
 }

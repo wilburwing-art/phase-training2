@@ -37,6 +37,12 @@ final class PlanStore: ObservableObject {
     /// context — same behavior as pre-build-66.
     var sessionStore: SessionStore?
 
+    /// Sport-log feed. Build 99 — surfaces non-lift load (e.g. "climbed
+    /// hard 3× this week") to the planner so it can trim lift volume when
+    /// the user's already cooked. Optional + post-init like sessionStore
+    /// so the test/preview surfaces stay no-op.
+    var sportLogStore: SportLogStore?
+
     /// Memory feed for the auto-regen subscription (build 69+). When set,
     /// PlanStore observes the published memory and silently regenerates the
     /// week whenever the user's profile changes enough to drift
@@ -89,6 +95,15 @@ final class PlanStore: ObservableObject {
             memory: memory,
             overrides: overrides,
             routines: routines,
+            // Build 99: auto-regen paths used to drop feedback bias on the
+            // floor — only WeeklyCheckInFlow passed it. So "marked 3
+            // workouts too hard, planner kept handing me the same volume"
+            // was a real complaint. Surfacing it here means every regen
+            // (profile drift, overrides change, sport-log change) honors
+            // the same ±1 lift-day nudge that the check-in flow already
+            // honored.
+            previousFeedback: memory.feedback,
+            recentSportLogs: sportLogStore?.entries ?? [],
             recentlyPicked: recentPicks?.recentlyPickedIds() ?? [],
             today: today,
             context: context
@@ -138,6 +153,7 @@ final class PlanStore: ObservableObject {
             sessions: sessionStore.savedSessions,
             soreness: memory.soreness,
             feedback: memory.feedback,
+            sportLogs: sportLogStore?.entries ?? [],
             now: today
         )
     }
@@ -245,6 +261,15 @@ final class PlanStore: ObservableObject {
             defaults.set(data, forKey: Self.planKey)
         }
         plan = after
+        // Build 99: structural edits (move/swap_kind/add/remove a day)
+        // can produce freshly-composed workouts via composeWorkout above,
+        // which are NOT yet LLM-personalized. Re-fire refinement so the
+        // user sees the same "coach polished this" treatment they'd have
+        // gotten from a full regen. No-op without consent or when there
+        // are no candidate days.
+        if let memory = memoryStore?.memory {
+            kickOffLLMRefinementIfConsented(memory: memory)
+        }
     }
 
     /// Build a `GeneratedWorkout` for a single day from its kind, anchored in
@@ -295,9 +320,22 @@ final class PlanStore: ObservableObject {
         guard let idx = current.days.firstIndex(where: { cal.isDate($0.date, inSameDayAs: date) }) else {
             return false
         }
-        current.days[idx].generatedWorkout = diff.after
+        // Build 99: human-edited workout invalidates any prior LLM
+        // personalization on that day. Clearing refinedByLLMAt lets the
+        // next refinement pass re-personalize from the edited baseline
+        // instead of skipping it (the candidate filter in
+        // PlanStore+LLMRefinement.swift treats non-nil refinedByLLMAt as
+        // "already done, skip").
+        var edited = diff.after
+        edited.refinedByLLMAt = nil
+        current.days[idx].generatedWorkout = edited
         plan = current
         savePlan()
+        // And re-fire refinement so the user's edit gets personalized in
+        // the background (same fire-and-forget contract as initial regen).
+        if let memory = memoryStore?.memory {
+            kickOffLLMRefinementIfConsented(memory: memory)
+        }
         return true
     }
 
