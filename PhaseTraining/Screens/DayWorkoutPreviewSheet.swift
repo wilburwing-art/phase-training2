@@ -84,7 +84,15 @@ struct DayWorkoutPreviewSheet: View {
                     tempo: ex?.tempo,
                     onSave: { sets, reps, rest in
                         updateExercise(at: wrapped.index, sets: sets, reps: reps, rest: rest)
-                    }
+                    },
+                    onInfo: {
+                        if let ex {
+                            detailExercise = CoachDatabase.shared
+                                .listExercises(search: ex.name)
+                                .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }
+                        }
+                    },
+                    onSwap: { swappingExIdx = wrapped.index }
                 )
             }
             .sheet(isPresented: $addingExercise) {
@@ -134,7 +142,7 @@ struct DayWorkoutPreviewSheet: View {
 
             Section {
                 ForEach(Array(template.exercises.enumerated()), id: \.element.id) { idx, ex in
-                    exerciseRow(ex, position: idx + 1)
+                    previewExerciseTile(ex, position: idx + 1)
                         .listRowBackground(Color.surface)
                         .listRowSeparatorTint(Color.lineSoft)
                 }
@@ -201,19 +209,18 @@ struct DayWorkoutPreviewSheet: View {
         return movements
     }
 
-    private func exerciseRow(_ ex: ExerciseTemplate, position: Int) -> some View {
-        WorkoutExerciseRow(
-            name: ex.name,
-            position: position,
-            metaText: "\(ex.targetSets) × \(ex.targetReps) · rest \(ex.rest)s",
-            onTap: { editingExIdx = position - 1 },
-            onInfo: {
-                detailExercise = CoachDatabase.shared
-                    .listExercises(search: ex.name)
-                    .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }
-            },
-            onSwap: { swappingExIdx = position - 1 }
-        )
+    /// HANDOFF §4: identical shape to TodayScreen's tile. Info/swap collapse
+    /// into the row-tap ExerciseEditorSheet (option a), so the trailing slot
+    /// is `.setsReps` even though this surface still maintains the swap state.
+    private func previewExerciseTile(_ ex: ExerciseTemplate, position: Int) -> some View {
+        ExerciseTile(vm: .init(
+            leading: .index(position),
+            title: ex.name,
+            meta: "rest \(ex.rest)s",
+            trailing: .setsReps(sets: ex.targetSets, reps: ex.targetReps,
+                                unit: ex.unit, lastWeight: nil),
+            onTap: { editingExIdx = position - 1 }
+        ))
         .accessibilityIdentifier("preview-edit-\(position)")
     }
 

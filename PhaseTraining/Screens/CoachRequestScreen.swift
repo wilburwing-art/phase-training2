@@ -186,19 +186,11 @@ struct CoachRequestScreen: View {
                         .foregroundStyle(Color.ink2)
                 }
 
-                VStack(spacing: 0) {
+                TileList(label: nil, count: nil) {
                     ForEach(Array(preview.exercises.enumerated()), id: \.element.id) { idx, ex in
-                        exerciseRow(ex, position: idx + 1)
-                        if idx < preview.exercises.count - 1 {
-                            Rectangle()
-                                .fill(Color.lineSoft)
-                                .frame(height: 0.5)
-                        }
+                        generatedExerciseTile(ex, position: idx + 1)
                     }
                 }
-                .background(Color.surface)
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
 
                 section("NAME (OPTIONAL)")
                 TextField("", text: $name,
@@ -218,46 +210,21 @@ struct CoachRequestScreen: View {
         }
     }
 
-    private func exerciseRow(_ ex: GeneratedExercise, position: Int) -> some View {
-        HStack(spacing: 12) {
-            Text("\(position)")
-                .font(.monoXS)
-                .foregroundStyle(Color.ink3)
-                .frame(width: 18, alignment: .leading)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(ex.name)
-                    .font(.custom("Inter-Regular", size: 14))
-                    .foregroundStyle(Color.ink)
-                    .lineLimit(1)
-                Text("\(ex.sets) × \(ex.reps) · rest \(ex.restSeconds)s")
-                    .font(.monoXS)
-                    .foregroundStyle(Color.ink3)
-            }
-            Spacer(minLength: 8)
-            Button {
-                detailExercise = CoachDatabase.shared.exercise(id: ex.exerciseId)
-            } label: {
-                Image(systemName: "info.circle")
-                    .font(.system(size: 15, weight: .regular))
-                    .foregroundStyle(Color.ink3)
-                    .frame(width: 32, height: 32)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Show details for \(ex.name)")
-
-            Button {
-                swappingPreviewIdx = (preview?.exercises.firstIndex(where: { $0.id == ex.id }))
-            } label: {
-                Image(systemName: "arrow.left.arrow.right")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.ink2)
-                    .frame(width: 32, height: 32)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Swap \(ex.name)")
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+    /// HANDOFF §4: preview rows are editable in-place (info + swap actions),
+    /// so the trailing slot is `.controls`. Wrapped in TileList below.
+    private func generatedExerciseTile(_ ex: GeneratedExercise, position: Int) -> some View {
+        ExerciseTile(
+            vm: .init(
+                leading: .index(position),
+                title: ex.name,
+                meta: "\(ex.sets) × \(ex.reps) · rest \(ex.restSeconds)s",
+                trailing: .controls(
+                    onInfo: { detailExercise = CoachDatabase.shared.exercise(id: ex.exerciseId) },
+                    onSwap: { swappingPreviewIdx = preview?.exercises.firstIndex(where: { $0.id == ex.id }) }
+                )
+            ),
+            density: .flat
+        )
     }
 
     // MARK: - Bottom bar (state-dependent)

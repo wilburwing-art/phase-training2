@@ -20,6 +20,9 @@ struct CustomRoutineEditSheet: View {
     @State private var showingPicker = false
     @State private var detailExercise: Exercise? = nil
     @State private var showingDeleteConfirm = false
+    /// Index into `draft.exercises` whose alternatives the user is browsing
+    /// (via the row's `.controls` swap button). nil = sheet closed.
+    @State private var swappingExerciseIdx: Int? = nil
 
     init(routine: CustomRoutine) {
         self.original = routine
@@ -48,6 +51,13 @@ struct CustomRoutineEditSheet: View {
             .sheet(isPresented: $showingPicker) {
                 ExercisePickerSheet(title: "Add exercise") { ex in
                     addExercise(ex)
+                }
+            }
+            .sheet(item: swappingBinding) { wrapped in
+                let original = draft.exercises[wrapped.index]
+                ExercisePickerSheet(title: "Replace \(original.name)") { picked in
+                    draft.exercises[wrapped.index].exerciseId = picked.id
+                    draft.exercises[wrapped.index].name = picked.name
                 }
             }
             .sheet(item: $detailExercise) { ex in
@@ -85,7 +95,7 @@ struct CustomRoutineEditSheet: View {
 
             Section {
                 ForEach($draft.exercises) { $exercise in
-                    exerciseRow($exercise)
+                    customExerciseTile($exercise)
                         .listRowBackground(Color.surface)
                         .listRowSeparatorTint(Color.lineSoft)
                 }
@@ -128,23 +138,31 @@ struct CustomRoutineEditSheet: View {
         .environment(\.editMode, .constant(.active))
     }
 
+    /// HANDOFF §4: row chrome is ExerciseTile with `.handle` leading (the
+    /// sheet is always in reorder mode) and `.controls(info, swap)` trailing.
+    /// Inline sets/reps/rest TextFields stay below the tile — they're the
+    /// distinguishing feature of this sheet and CustomRoutineExercise stores
+    /// free-form strings ("8-10", "AMRAP") that the generic
+    /// `ExerciseEditorSheet` (Int-only) can't represent without rework.
     @ViewBuilder
-    private func exerciseRow(_ exercise: Binding<CustomRoutineExercise>) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(exercise.wrappedValue.name)
-                    .styled(.body)
-                    .foregroundStyle(Color.ink)
-                Spacer(minLength: 6)
-                Button {
-                    detailExercise = CoachDatabase.shared.exercise(id: exercise.wrappedValue.exerciseId)
-                } label: {
-                    Image(systemName: "info.circle")
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color.ink3)
-                }
-                .buttonStyle(.plain)
-            }
+    private func customExerciseTile(_ exercise: Binding<CustomRoutineExercise>) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ExerciseTile(
+                vm: .init(
+                    leading: .handle,
+                    title: exercise.wrappedValue.name,
+                    meta: nil,
+                    trailing: .controls(
+                        onInfo: {
+                            detailExercise = CoachDatabase.shared.exercise(id: exercise.wrappedValue.exerciseId)
+                        },
+                        onSwap: {
+                            swappingExerciseIdx = draft.exercises.firstIndex(where: { $0.id == exercise.wrappedValue.id })
+                        }
+                    )
+                ),
+                density: .flat
+            )
             HStack(spacing: 8) {
                 fieldBlock("Sets", text: setsBinding(exercise))
                     .frame(maxWidth: .infinity)
@@ -261,5 +279,21 @@ struct CustomRoutineEditSheet: View {
         renumberPositions()
         store.save(draft)
         dismiss()
+    }
+
+    // MARK: - Swap-index binding helper
+
+    /// Bridges `swappingExerciseIdx: Int?` into a `Binding<SwapWrapper?>`
+    /// so `.sheet(item:)` can drive the swap sheet from an Int? state.
+    private var swappingBinding: Binding<SwapWrapper?> {
+        Binding(
+            get: { swappingExerciseIdx.map(SwapWrapper.init) },
+            set: { swappingExerciseIdx = $0?.index }
+        )
+    }
+
+    private struct SwapWrapper: Identifiable {
+        let index: Int
+        var id: Int { index }
     }
 }

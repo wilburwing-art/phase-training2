@@ -175,7 +175,13 @@ struct TodayScreen: View {
             Color.bg.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                topBar
+                TabHeader(
+                    eyebrow: dateLabel,
+                    eyebrowTrailing: tabHeaderTrailing,
+                    title: heroTitle,
+                    subtitle: heroSubtitle,
+                    caption: heroCaption
+                )
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         if planEndingSoon {
@@ -183,18 +189,10 @@ struct TodayScreen: View {
                                 .padding(.horizontal, 20)
                                 .padding(.top, 14)
                         }
-                        hero
-                            .padding(.horizontal, 20)
-                            .padding(.top, planEndingSoon ? 14 : 24)
-                        if let caption = heroCaption {
-                            heroCaptionView(caption)
-                                .padding(.horizontal, 20)
-                                .padding(.top, 8)
-                        }
                         if effectiveKind.isWorkout {
                             lastSessionCard
                                 .padding(.horizontal, 20)
-                                .padding(.top, 20)
+                                .padding(.top, planEndingSoon ? 20 : 24)
                             if let tmpl = editableTemplate {
                                 inlineExerciseCard(tmpl)
                                     .padding(.horizontal, 20)
@@ -237,7 +235,15 @@ struct TodayScreen: View {
                 tempo: ex?.tempo,
                 onSave: { sets, reps, rest in
                     updateExercise(at: wrapped.index, sets: sets, reps: reps, rest: rest)
-                }
+                },
+                onInfo: {
+                    if let ex {
+                        inlineDetailExercise = CoachDatabase.shared
+                            .listExercises(search: ex.name)
+                            .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }
+                    }
+                },
+                onSwap: { swappingExIdx = wrapped.index }
             )
         }
         .sheet(item: swappingBinding) { wrapped in
@@ -288,70 +294,20 @@ struct TodayScreen: View {
         .accessibilityIdentifier("today-plan-next-week")
     }
 
-    // MARK: - Top bar
-
-    private var topBar: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text(dateLabel)
-                    .styled(.micro)
-                    .foregroundStyle(Color.ink3)
-                Spacer()
-                if effectiveKind.isWorkout, let template {
-                    Text("~\(template.exercises.count) EX · \(totalSets) SETS")
-                        .styled(.micro)
-                        .foregroundStyle(Color.ink3)
-                } else {
-                    Text(effectiveKind.label)
-                        .styled(.micro)
-                        .foregroundStyle(Color.ink3)
-                }
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
-
-            Rectangle()
-                .fill(Color.line)
-                .frame(height: 0.5)
-                .padding(.top, 8)
+    /// Trailing eyebrow text for the unified TabHeader — exercise/set summary
+    /// when there's a workout, otherwise the day's kind label.
+    private var tabHeaderTrailing: String {
+        if effectiveKind.isWorkout, let template {
+            return "~\(template.exercises.count) EX · \(totalSets) SETS"
         }
-    }
-
-    // MARK: - Hero
-
-    private var hero: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(heroTitle)
-                .styled(.displayL)
-                .foregroundStyle(Color.ink)
-                .lineSpacing(-2)
-                .fixedSize(horizontal: false, vertical: true)
-            Text(heroSubtitle)
-                .styled(.body)
-                .foregroundStyle(Color.ink2)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        return effectiveKind.label
     }
 
     /// Single source of truth for the small caption rendered under the hero
     /// subtitle. Coach insight wins if present; otherwise we fall back to
-    /// the planner's static generatedReason. Replaces the pre-build-80
-    /// stacked InsightCard + reasonRow.
+    /// the planner's static generatedReason.
     private var heroCaption: String? {
         insightCopy ?? todayPlan?.generatedReason
-    }
-
-    private func heroCaptionView(_ caption: String) -> some View {
-        HStack(alignment: .top, spacing: 6) {
-            Image(systemName: "sparkle")
-                .font(.system(size: 10))
-                .foregroundStyle(Color.accent)
-                .padding(.top, 2)
-            Text(caption)
-                .font(.monoXS)
-                .foregroundStyle(Color.ink3)
-                .fixedSize(horizontal: false, vertical: true)
-        }
     }
 
     // MARK: - Last session card
@@ -409,9 +365,10 @@ struct TodayScreen: View {
     /// Per-row `.draggable`/`.dropDestination` was tried first and broke
     /// after the first reorder — see `swiftui-drag-reorder-custom-styled`.
     private func inlineExerciseCard(_ tmpl: WorkoutTemplate) -> some View {
-        // Height: ~64pt per row + ~56pt add-row + ~8pt list padding.
-        // Slight overshoot is fine; rows just sit at their intrinsic size.
-        let listHeight = CGFloat(tmpl.exercises.count) * 64 + 56 + 8
+        // Height: ~76pt per ExerciseTile (catalog density min height) + ~56pt
+        // add-row + ~8pt list padding. Slight overshoot is fine; rows just
+        // sit at their intrinsic size.
+        let listHeight = CGFloat(tmpl.exercises.count) * 76 + 56 + 8
 
         return VStack(alignment: .leading, spacing: 0) {
             HStack {
@@ -430,7 +387,7 @@ struct TodayScreen: View {
             List {
                 Section {
                     ForEach(Array(tmpl.exercises.enumerated()), id: \.element.id) { idx, ex in
-                        inlineExerciseRow(ex, position: idx + 1)
+                        todayExerciseTile(ex, position: idx + 1)
                             .listRowBackground(Color.surface)
                             .listRowSeparatorTint(Color.lineSoft)
                             .listRowInsets(EdgeInsets())
@@ -453,23 +410,23 @@ struct TodayScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    private func inlineExerciseRow(_ ex: ExerciseTemplate, position: Int) -> some View {
+    /// HANDOFF §4 option (a): info/swap controls collapsed off this row and
+    /// into ExerciseEditorSheet's toolbar (the same sheet this row taps open).
+    /// Trailing slot is `.setsReps` — last weight pulled from the prior session.
+    private func todayExerciseTile(_ ex: ExerciseTemplate, position: Int) -> some View {
         let prevEx = previous?.exercises.first(where: { $0.id == ex.id })
-        let prevW = prevEx?.sets.first?.weight ?? ""
-        let middle = prevW.isEmpty ? "no prev" : "\(prevW) \(ex.unit)"
+        let prevWeightDouble = prevEx?.sets.first.flatMap { Double($0.weight) }
+        let prevWeightText = prevEx?.sets.first?.weight ?? ""
+        let middle = prevWeightText.isEmpty ? "no prev" : "\(prevWeightText) \(ex.unit)"
 
-        return WorkoutExerciseRow(
-            name: ex.name,
-            position: position,
-            metaText: "\(ex.targetSets) × \(ex.targetReps) · \(middle) · rest \(ex.rest)s",
-            onTap: { editingExIdx = position - 1 },
-            onInfo: {
-                inlineDetailExercise = CoachDatabase.shared
-                    .listExercises(search: ex.name)
-                    .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }
-            },
-            onSwap: { swappingExIdx = position - 1 }
-        )
+        return ExerciseTile(vm: .init(
+            leading: .index(position),
+            title: ex.name,
+            meta: "rest \(ex.rest)s · \(middle)",
+            trailing: .setsReps(sets: ex.targetSets, reps: ex.targetReps,
+                                unit: ex.unit, lastWeight: prevWeightDouble),
+            onTap: { editingExIdx = position - 1 }
+        ))
         .accessibilityIdentifier("today-edit-\(position)")
     }
 

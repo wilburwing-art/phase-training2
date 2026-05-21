@@ -68,7 +68,13 @@ struct ProgressScreen: View {
     private var content: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                header
+                TabHeader(
+                    eyebrow: "PROGRESS",
+                    eyebrowTrailing: "LAST \(Self.weeks) WK",
+                    title: "Last \(Self.weeks) weeks",
+                    subtitle: nil
+                )
+                .padding(.horizontal, -20)
                 statStrip
                 sessionsCard
                 volumeCard
@@ -81,23 +87,10 @@ struct ProgressScreen: View {
                 Spacer().frame(height: 60)
             }
             .padding(.horizontal, 20)
-            .padding(.top, 24)
         }
         .sheet(isPresented: $showingHistory) {
             HistoryScreen()
                 .environmentObject(store)
-        }
-    }
-
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("PROGRESS")
-                .styled(.micro)
-                .foregroundStyle(Color.accent)
-            Text("Last 8 weeks")
-                .font(.custom("SpaceGrotesk-SemiBold", size: 30))
-                .tracking(-0.025 * 30)
-                .foregroundStyle(Color.ink)
         }
     }
 
@@ -351,51 +344,60 @@ struct ProgressScreen: View {
 
     // MARK: - Per-exercise PR card
 
+    /// HANDOFF §4: replaces the bespoke per-exercise row + ad-hoc card chrome
+    /// with TileList + ExerciseTile (.sparkline trailing). Card title moves
+    /// to TileList's eyebrow row, dropping the local `card(title:)` wrapper.
     private var perExerciseCard: some View {
         let series = topExerciseSeries(limit: Self.topExerciseCount)
-        return card(title: "TOP EXERCISES") {
-            if series.isEmpty {
-                Text("Log weighted sets to see per-exercise trends.")
-                    .font(.monoXS)
-                    .foregroundStyle(Color.ink3)
-            } else {
-                VStack(spacing: 0) {
-                    ForEach(Array(series.enumerated()), id: \.element.name) { idx, s in
-                        exerciseRow(s)
-                        if idx < series.count - 1 {
-                            Rectangle()
-                                .fill(Color.lineSoft)
-                                .frame(height: 0.5)
-                        }
-                    }
+        if series.isEmpty {
+            return AnyView(
+                card(title: "TOP EXERCISES") {
+                    Text("Log weighted sets to see per-exercise trends.")
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                }
+            )
+        }
+        return AnyView(
+            TileList(label: "TOP EXERCISES", count: series.count) {
+                ForEach(series, id: \.name) { s in
+                    ExerciseTile(
+                        vm: .init(
+                            leading: .none,
+                            title: s.name,
+                            meta: "\(formatBigNum(s.latest)) \(s.unit)\(prDateSuffix(s.lastPRDate))",
+                            trailing: .sparkline(
+                                points: normalizedPoints(s.points),
+                                pr: isWithin14Days(s.lastPRDate)
+                            )
+                        ),
+                        density: .flat
+                    )
                 }
             }
-        }
+        )
     }
 
-    private func exerciseRow(_ s: ExerciseSeries) -> some View {
-        HStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(s.name)
-                    .font(.custom("Inter-Regular", size: 13))
-                    .foregroundStyle(Color.ink)
-                    .lineLimit(1)
-                HStack(spacing: 6) {
-                    Text("\(formatBigNum(s.latest)) \(s.unit)")
-                        .font(.monoXS)
-                        .foregroundStyle(Color.ink2)
-                    if let prDate = s.lastPRDate {
-                        Text("· PR \(daysAgo(prDate))")
-                            .font(.monoXS)
-                            .foregroundStyle(Color.accent)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            ExerciseSparkline(points: s.points)
-                .frame(width: 96, height: 32)
+    /// Convert per-session SparkPoints (date, weight) to a normalized 0..1
+    /// series for `ExerciseTile.sparkline`. Flat series → all zeros.
+    private func normalizedPoints(_ pts: [SparkPoint]) -> [Double] {
+        guard let min = pts.map(\.weight).min(),
+              let max = pts.map(\.weight).max(),
+              max > min else {
+            return Array(repeating: 0.5, count: pts.count)
         }
-        .padding(.vertical, 10)
+        return pts.map { ($0.weight - min) / (max - min) }
+    }
+
+    private func prDateSuffix(_ date: Date?) -> String {
+        guard let date else { return "" }
+        return " · PR \(daysAgo(date))"
+    }
+
+    private func isWithin14Days(_ date: Date?) -> Bool {
+        guard let date else { return false }
+        let days = Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 999
+        return days <= 14
     }
 
     // MARK: - PR feed

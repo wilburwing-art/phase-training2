@@ -21,6 +21,11 @@ struct ExerciseEditorSheet: View {
     @State private var rest: Int
 
     let onSave: (Int, Int, Int) -> Void
+    /// Optional secondary actions surfaced as toolbar buttons on this sheet.
+    /// HANDOFF-tile-system.md §4 option (a): info/swap collapse off the
+    /// inline row and live here, since this sheet already opens on row tap.
+    let onInfo: (() -> Void)?
+    let onSwap: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
 
     init(
@@ -30,7 +35,9 @@ struct ExerciseEditorSheet: View {
         rest: Int,
         rpe: String? = nil,
         tempo: String? = nil,
-        onSave: @escaping (Int, Int, Int) -> Void
+        onSave: @escaping (Int, Int, Int) -> Void,
+        onInfo: (() -> Void)? = nil,
+        onSwap: (() -> Void)? = nil
     ) {
         self.name = name
         self.rpe = rpe
@@ -39,6 +46,8 @@ struct ExerciseEditorSheet: View {
         self._reps = State(initialValue: reps)
         self._rest = State(initialValue: rest)
         self.onSave = onSave
+        self.onInfo = onInfo
+        self.onSwap = onSwap
     }
 
     var body: some View {
@@ -89,6 +98,35 @@ struct ExerciseEditorSheet: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") { dismiss() }
                         .foregroundStyle(Color.ink2)
+                }
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    if let onInfo {
+                        Button {
+                            dismiss()
+                            // Slight delay so the dismiss animation completes
+                            // before the next sheet presents (SwiftUI won't
+                            // stack two sheets on the same anchor).
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                                onInfo()
+                            }
+                        } label: {
+                            Image(systemName: "info.circle")
+                                .foregroundStyle(Color.ink2)
+                        }
+                        .accessibilityLabel("Info")
+                    }
+                    if let onSwap {
+                        Button {
+                            dismiss()
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                                onSwap()
+                            }
+                        } label: {
+                            Image(systemName: "arrow.left.arrow.right")
+                                .foregroundStyle(Color.ink2)
+                        }
+                        .accessibilityLabel("Swap")
+                    }
                 }
             }
         }

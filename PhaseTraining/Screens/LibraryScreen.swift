@@ -45,6 +45,12 @@ struct LibraryScreen: View {
             ZStack {
                 Color.bg.ignoresSafeArea()
                 VStack(spacing: 0) {
+                    TabHeader(
+                        eyebrow: "LIBRARY",
+                        eyebrowTrailing: libraryEyebrowTrailing,
+                        title: "Library",
+                        subtitle: "Browse every exercise and routine."
+                    )
                     segmentControl
                     if showSearchBar {
                         searchBar
@@ -58,9 +64,7 @@ struct LibraryScreen: View {
                     list
                 }
             }
-            .navigationTitle("Library")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbar(.hidden, for: .navigationBar)
             .sheet(item: $detailExercise) { ex in
                 ExerciseDetailSheet(exercise: ex)
             }
@@ -72,6 +76,24 @@ struct LibraryScreen: View {
             }
         }
         .preferredColorScheme(.dark)
+    }
+
+    /// Counts for the eyebrow trailing slot — exercise total comes from the
+    /// catalog, routine count comes from CustomRoutineStore. Format matches
+    /// HANDOFF §4: "<n> EX · <n> ROUTINES".
+    private var libraryEyebrowTrailing: String {
+        let exCount = CoachDatabase.shared.listExercises(
+            search: nil,
+            muscleSlugs: [],
+            patternSlugs: [],
+            modality: nil,
+            difficulty: nil,
+            environment: nil,
+            compoundOnly: false,
+            userSportSlugs: []
+        ).count
+        let routineCount = customStore.routines.count
+        return "\(exCount) EX · \(routineCount) ROUTINES"
     }
 
     /// Hide search until exercise browsing has hundreds of rows (always) or
@@ -261,7 +283,13 @@ struct LibraryScreen: View {
                 ScrollView {
                     LazyVStack(spacing: 8) {
                         ForEach(rows) { ex in
-                            exerciseRow(ex)
+                            ExerciseTile(vm: .init(
+                                leading: .thumb(urlString: ex.thumbnailURL ?? ex.imageURL),
+                                title: ex.name,
+                                meta: metaLine(ex),
+                                trailing: .chevron,
+                                onTap: { detailExercise = ex }
+                            ))
                         }
                     }
                     .padding(.horizontal, 20)
@@ -283,7 +311,13 @@ struct LibraryScreen: View {
                 ScrollView {
                     LazyVStack(spacing: 8) {
                         ForEach(filtered) { c in
-                            customRow(c)
+                            ExerciseTile(vm: .init(
+                                leading: .icon(systemName: "figure.strengthtraining.traditional"),
+                                title: c.name.isEmpty ? "Untitled workout" : c.name,
+                                meta: customSubtitle(c),
+                                trailing: .chevron,
+                                onTap: { editingRoutine = c }
+                            ))
                         }
                     }
                     .padding(.horizontal, 20)
@@ -327,76 +361,12 @@ struct LibraryScreen: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func exerciseRow(_ ex: Exercise) -> some View {
-        Button {
-            detailExercise = ex
-        } label: {
-            HStack(spacing: 12) {
-                ExerciseThumbnail(urlString: ex.thumbnailURL ?? ex.imageURL, size: 48)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(ex.name)
-                        .styled(.body)
-                        .foregroundStyle(Color.ink)
-                        .multilineTextAlignment(.leading)
-                    Text(metaLine(ex))
-                        .font(.monoXS)
-                        .foregroundStyle(Color.ink3)
-                }
-                Spacer(minLength: 8)
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.ink3)
-            }
-            .padding(14)
-            .background(Color.surface)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
     private func metaLine(_ ex: Exercise) -> String {
         var parts: [String] = []
         if ex.modalityLabel != "—" { parts.append(ex.modalityLabel) }
         if ex.difficultyLabel != "—" { parts.append(ex.difficultyLabel) }
         if ex.isCompound { parts.append("Compound") }
         return parts.joined(separator: " · ")
-    }
-
-    /// One of the user's saved CustomRoutines. Tap → CustomRoutineEditSheet.
-    /// Mirrors the row style used in OverrideTodaySheet.
-    private func customRow(_ c: CustomRoutine) -> some View {
-        Button {
-            editingRoutine = c
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "figure.strengthtraining.traditional")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Color.accent)
-                    .frame(width: 24, alignment: .center)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(c.name.isEmpty ? "Untitled workout" : c.name)
-                        .styled(.displayS)
-                        .foregroundStyle(Color.ink)
-                        .lineLimit(1)
-                    Text(customSubtitle(c))
-                        .styled(.body)
-                        .foregroundStyle(Color.ink3)
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.ink3)
-            }
-            .padding(14)
-            .background(Color.surface)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
     }
 
     private func customSubtitle(_ c: CustomRoutine) -> String {

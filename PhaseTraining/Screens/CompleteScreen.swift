@@ -81,16 +81,17 @@ struct CompleteScreen: View {
             Color.bg.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                topBar
+                TabHeader(
+                    eyebrow: dateLabel,
+                    eyebrowTrailing: durationString.uppercased(),
+                    title: "Workout\nlogged",
+                    subtitle: session.name
+                )
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        hero
-                            .padding(.horizontal, 20)
-                            .padding(.top, 24)
-
                         statGrid
                             .padding(.horizontal, 20)
-                            .padding(.top, 20)
+                            .padding(.top, 24)
 
                         if !prs.isEmpty {
                             prBlock
@@ -140,36 +141,6 @@ struct CompleteScreen: View {
     }
 
     // MARK: - Sections
-
-    private var topBar: some View {
-        VStack(spacing: 10) {
-            HStack {
-                Text("SESSION COMPLETE")
-                    .styled(.micro)
-                    .foregroundStyle(Color.ink3)
-                Spacer()
-                Text(dateLabel)
-                    .styled(.micro)
-                    .foregroundStyle(Color.ink3)
-            }
-            RoundedRectangle(cornerRadius: 2)
-                .fill(Color.accent)
-                .frame(height: 3)
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, 12)
-    }
-
-    private var hero: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Done.")
-                .styled(.displayL)
-                .foregroundStyle(Color.ink)
-            Text(session.name)
-                .styled(.body)
-                .foregroundStyle(Color.ink2)
-        }
-    }
 
     private var statGrid: some View {
         let items: [(value: String, label: String)] = [
@@ -250,75 +221,37 @@ struct CompleteScreen: View {
             )
     }
 
+    /// HANDOFF §4: rows render through ExerciseTile (.summary trailing).
+    /// PR pill, per-set summary text, and RPE range all move into the tile's
+    /// summary slot — no more bespoke layout here.
     private var exerciseSummary: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("EXERCISES")
-                .styled(.micro)
-                .foregroundStyle(Color.ink3)
-
-            let prIds = Set(prs.map(\.id))
-            let rows: [LoggedExercise] = session.exercises.filter { ex in
-                ex.sets.contains(where: { $0.done })
-            }
-
-            VStack(spacing: 0) {
-                ForEach(rows.indices, id: \.self) { i in
-                    exerciseRow(rows[i], isPR: prIds.contains(rows[i].id), isLast: i == rows.count - 1)
-                }
-            }
-            .padding(.top, 8)
+        let prIds = Set(prs.map(\.id))
+        let rows: [LoggedExercise] = session.exercises.filter { ex in
+            ex.sets.contains(where: { $0.done })
         }
-    }
+        return TileList(label: "EXERCISES", count: rows.count) {
+            ForEach(Array(rows.enumerated()), id: \.element.id) { idx, ex in
+                let done = ex.sets.filter { $0.done }
+                let summary = done
+                    .map { "\($0.weight.isEmpty ? "—" : $0.weight)×\($0.reps.isEmpty ? "—" : $0.reps)" }
+                    .joined(separator: " · ")
+                let rpes = done.compactMap { Double($0.rpe) }
+                let rpeString: String? = {
+                    guard let lo = rpes.min(), let hi = rpes.max() else { return nil }
+                    if lo == hi { return "rpe \(formattedRpe(lo))" }
+                    return "rpe \(formattedRpe(lo))–\(formattedRpe(hi))"
+                }()
+                let setsLabel = done.count == 1 ? "1 set" : "\(done.count) sets"
 
-    private func exerciseRow(_ ex: LoggedExercise, isPR: Bool, isLast: Bool) -> some View {
-        let done = ex.sets.filter { $0.done }
-        let summary = done
-            .map { "\($0.weight.isEmpty ? "—" : $0.weight)×\($0.reps.isEmpty ? "—" : $0.reps)" }
-            .joined(separator: " · ")
-        let rpes = done.compactMap { Double($0.rpe) }
-        let rpeString: String? = {
-            guard let lo = rpes.min(), let hi = rpes.max() else { return nil }
-            if lo == hi { return "rpe \(formattedRpe(lo))" }
-            return "rpe \(formattedRpe(lo))–\(formattedRpe(hi))"
-        }()
-
-        return VStack(spacing: 0) {
-            HStack(alignment: .center, spacing: 10) {
-                VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 6) {
-                        Text(ex.name)
-                            .font(.custom("SpaceGrotesk-Medium", size: 14))
-                            .foregroundStyle(Color.ink)
-                        if isPR {
-                            Text("PR")
-                                .font(.custom("JetBrainsMono-Medium", size: 9))
-                                .tracking(0.14 * 9)
-                                .foregroundStyle(Color.accentInk)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 1)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 4).fill(Color.accent)
-                                )
-                        }
-                    }
-                    Text(summary)
-                        .font(.custom("JetBrainsMono-Regular", size: 10.5))
-                        .foregroundStyle(Color.ink3)
-                }
-                Spacer(minLength: 8)
-                if let rpeString {
-                    Text(rpeString)
-                        .font(.custom("JetBrainsMono-Regular", size: 11))
-                        .foregroundStyle(Color.ink2)
-                        .lineLimit(1)
-                }
-            }
-            .padding(.vertical, 10)
-
-            if !isLast {
-                Rectangle()
-                    .fill(Color.lineSoft)
-                    .frame(height: 0.5)
+                ExerciseTile(
+                    vm: .init(
+                        leading: .index(idx + 1),
+                        title: ex.name,
+                        meta: setsLabel,
+                        trailing: .summary(text: summary, rpe: rpeString, isPR: prIds.contains(ex.id))
+                    ),
+                    density: .flat
+                )
             }
         }
     }
