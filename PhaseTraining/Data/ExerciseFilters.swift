@@ -155,6 +155,12 @@ struct ExerciseFilters: Hashable {
     var environment: String? = nil
     /// nil = either, true = compound only, false = isolation only.
     var compoundOnly: Bool? = nil
+    /// When true, the caller passes the user's sport slugs (primary +
+    /// secondaries) to listExercises so niche sport-specific drills hide
+    /// for users who don't train those sports, foundation lifts always
+    /// show, and matching-sport rows rank highest. Default off so callers
+    /// (e.g. picker sheets used from inside a routine builder) can opt in.
+    var hideOtherSports: Bool = true
 
     /// Count of non-default secondary filters — used for the "All filters (N)"
     /// button label so the user sees a chip count without expanding.

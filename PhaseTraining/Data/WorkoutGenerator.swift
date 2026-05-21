@@ -388,7 +388,8 @@ enum WorkoutGenerator {
                     environments: envs,
                     excludeKeywords: excludeKws,
                     excludeIds: excludeIds,
-                    modalities: slot.requiredModalities
+                    modalities: slot.requiredModalities,
+                    userSportSlugs: profile.userSportSlugs
                 )
                 let candidates = applyStaplePreference(applySoreFilter(raw), pattern)
                 if let pick = deterministicPick(from: applyVariety(candidates), slotIdx: slotIdx, hashSeed: hashSeed) {
@@ -402,7 +403,8 @@ enum WorkoutGenerator {
                 environments: envs,
                 excludeKeywords: excludeKws,
                 excludeIds: excludeIds,
-                modalities: slot.requiredModalities
+                modalities: slot.requiredModalities,
+                userSportSlugs: profile.userSportSlugs
             )
             let relaxed = applyStaplePreference(applySoreFilter(relaxedRaw), pattern)
             if let pick = deterministicPick(from: applyVariety(relaxed), slotIdx: slotIdx, hashSeed: hashSeed) {
