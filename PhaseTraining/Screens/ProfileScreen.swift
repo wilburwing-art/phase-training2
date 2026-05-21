@@ -40,6 +40,9 @@ struct ProfileScreen: View {
     @State private var presentingInjuriesEditor = false
     @State private var presentingRemindersEditor = false
     @State private var presentingDataEditor = false
+    #if DEBUG
+    @State private var presentingMuscleChipGenerator = false
+    #endif
 
     // Tap-to-edit alert for the two number fields (build 67). Still triggered
     // by tapping the SettingsRow value cell.
@@ -136,6 +139,12 @@ struct ProfileScreen: View {
                                     value: "Backup / Restore",
                                     icon: "externaldrive",
                                     action: { presentingDataEditor = true })
+                        #if DEBUG
+                        SettingsRow(label: "Regenerate muscle chips",
+                                    value: "DEBUG",
+                                    icon: "figure.strengthtraining.traditional",
+                                    action: { presentingMuscleChipGenerator = true })
+                        #endif
                     }
 
                     Spacer().frame(height: 40)
@@ -178,6 +187,11 @@ struct ProfileScreen: View {
                 onImport: { presentingImporter = true }
             )
         }
+        #if DEBUG
+        .sheet(isPresented: $presentingMuscleChipGenerator) {
+            MuscleChipGeneratorView()
+        }
+        #endif
         // iOS-level surfaces — owned by the parent screen so they survive
         // child-sheet dismissal.
         .sheet(isPresented: $presentingShare) {

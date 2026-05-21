@@ -18,6 +18,14 @@ struct PhaseTrainingApp: App {
     /// without persisting state to UserDefaults.
     private let uiTestSkipsOnboarding = ProcessInfo.processInfo.arguments.contains("--ui-test-onboarded")
 
+    #if DEBUG
+    /// DEBUG-only: when `--regenerate-muscle-chips` is passed, present the
+    /// MuscleChipGeneratorView on launch with `autoRunOnAppear: true` so a
+    /// single simctl launch + ~5s pause completes the entire generation
+    /// cycle. Pair with `--ui-test-onboarded` to skip the welcome gate.
+    @State private var autoRegenerateChips: Bool = ProcessInfo.processInfo.arguments.contains("--regenerate-muscle-chips")
+    #endif
+
     /// UI tests pass `--ui-test-reset` to start from a clean slate (wipes
     /// session + memory + plan + overrides UserDefaults keys on launch).
     init() {
@@ -155,6 +163,12 @@ struct PhaseTrainingApp: App {
                         .environmentObject(sportLog)
                         .presentationBackground(Color.bg)
                 }
+                #if DEBUG
+                .sheet(isPresented: $autoRegenerateChips) {
+                    MuscleChipGeneratorView(autoRunOnAppear: true)
+                        .preferredColorScheme(.dark)
+                }
+                #endif
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active {
                         InsightGenerator.runIfDue(
