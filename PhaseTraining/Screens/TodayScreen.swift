@@ -40,6 +40,9 @@ struct TodayScreen: View {
     @State private var addingExercise: Bool = false
     @State private var inlineDetailExercise: Exercise?
     @State private var didSaveToLibrary: Bool = false
+    /// Build 99 — pre-workout soreness check-in moved from an inline
+    /// expand/collapse card to a header-adjacent pill that opens a modal sheet.
+    @State private var showSorenessSheet: Bool = false
 
     // MARK: - Derived state
 
@@ -184,15 +187,18 @@ struct TodayScreen: View {
                 )
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
+                        sorenessCheckInPill
+                            .padding(.horizontal, 20)
+                            .padding(.top, 14)
                         if planEndingSoon {
                             planNextWeekPill
                                 .padding(.horizontal, 20)
-                                .padding(.top, 14)
+                                .padding(.top, 10)
                         }
                         if effectiveKind.isWorkout {
                             lastSessionCard
                                 .padding(.horizontal, 20)
-                                .padding(.top, planEndingSoon ? 20 : 24)
+                                .padding(.top, 14)
                             if let tmpl = editableTemplate {
                                 inlineExerciseCard(tmpl)
                                     .padding(.horizontal, 20)
@@ -203,9 +209,6 @@ struct TodayScreen: View {
                                         .padding(.top, 10)
                                 }
                             }
-                            PreWorkoutCheckIn()
-                                .padding(.horizontal, 20)
-                                .padding(.top, 14)
                         }
                         Spacer().frame(height: 160)
                     }
@@ -264,9 +267,48 @@ struct TodayScreen: View {
         .sheet(item: $inlineDetailExercise) { ex in
             ExerciseDetailSheet(exercise: ex)
         }
+        .sheet(isPresented: $showSorenessSheet) {
+            SorenessCheckInSheet(onDone: {})
+        }
         .onAppear {
             if editableTemplate == nil { editableTemplate = template }
         }
+    }
+
+    /// Discoverable affordance for the pre-workout body check. Always visible
+    /// on Today (regardless of day kind) so rest-day soreness can still be
+    /// logged. When today's entry exists, the pill shows a "LOGGED" tick to
+    /// signal it's already captured — same behavior the inline card had.
+    private var sorenessCheckInPill: some View {
+        let logged = todaysSorenessLogged
+        return Button { showSorenessSheet = true } label: {
+            HStack(spacing: 8) {
+                Image(systemName: logged ? "checkmark.circle.fill" : "figure.cooldown")
+                    .font(.system(size: 13, weight: .semibold))
+                Text(logged ? "SORENESS · LOGGED" : "HOW SORE ARE YOU TODAY?")
+                    .styled(.micro)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .semibold))
+            }
+            .foregroundStyle(logged ? Color.accent : Color.ink2)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 12)
+            .background(Color.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(logged ? Color.accentBorder : Color.line, lineWidth: 0.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("today-soreness-checkin")
+    }
+
+    /// True when memory has a soreness entry stamped today.
+    private var todaysSorenessLogged: Bool {
+        let cal = Calendar.current
+        return memoryStore.memory.soreness.contains { cal.isDate($0.date, inSameDayAs: Date()) }
     }
 
     private var planNextWeekPill: some View {
