@@ -190,6 +190,9 @@ struct TodayScreen: View {
                         sorenessCheckInPill
                             .padding(.horizontal, 20)
                             .padding(.top, 14)
+                        TodayRecoveryCard()
+                            .padding(.horizontal, 20)
+                            .padding(.top, 10)
                         if planEndingSoon {
                             planNextWeekPill
                                 .padding(.horizontal, 20)

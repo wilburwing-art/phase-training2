@@ -733,6 +733,29 @@ final class CoachDatabase {
         return out
     } }
 
+    /// Every muscle_groups row as (slug, name) pairs. Filters out container
+    /// rollups (`full-body`, `upper-body`, `lower-body`, `arms`, `core`,
+    /// `back`) — the Recovery view wants leaf muscles, not the buckets the
+    /// generator uses for filtering.
+    func allMuscleGroups() -> [(slug: String, name: String)] { withLock {
+        guard let db else { return [] }
+        let sql = """
+        SELECT slug, name FROM muscle_groups
+        WHERE slug NOT IN ('full-body','upper-body','lower-body','arms','core','back')
+        ORDER BY name ASC
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        var out: [(String, String)] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            let slug = text(stmt, 0) ?? ""
+            let name = text(stmt, 1) ?? slug
+            if !slug.isEmpty { out.append((slug, name)) }
+        }
+        return out
+    } }
+
     /// Look up the muscle groups an exercise targets. Used by the Progress
     /// muscle-balance card and the coach context to allocate logged volume
     /// to body areas. Returns (slug, role, label) tuples — slug is
