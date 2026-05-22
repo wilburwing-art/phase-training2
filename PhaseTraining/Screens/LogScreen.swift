@@ -554,6 +554,9 @@ struct LogScreen: View {
                     active: isActive
                 )
                 .frame(maxWidth: .infinity)
+                .onChange(of: session.exercises[exIdx].sets[setIdx].weight) { oldValue, newValue in
+                    propagateWeight(exIdx: exIdx, fromSetIdx: setIdx, oldValue: oldValue, newValue: newValue)
+                }
 
                 numCell(
                     text: $session.exercises[exIdx].sets[setIdx].reps,
@@ -800,6 +803,24 @@ struct LogScreen: View {
         }
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         if restExIdx == exIdx { clearRest() }
+    }
+
+    /// After the user edits a set's weight, copy the new value into any later
+    /// sets in the same exercise that are still empty or still matched the
+    /// previous value. Lets straight-sets users type once into set 1 and have
+    /// 2-N fill in; pyramid users can still overwrite any later row by tapping
+    /// into it (their edit propagates forward from there, or stops if the
+    /// downstream sets have already been customized).
+    private func propagateWeight(exIdx: Int, fromSetIdx: Int, oldValue: String, newValue: String) {
+        let count = session.exercises[exIdx].sets.count
+        guard fromSetIdx + 1 < count else { return }
+        for i in (fromSetIdx + 1)..<count {
+            let target = session.exercises[exIdx].sets[i]
+            if target.done { continue }
+            if target.weight.isEmpty || target.weight == oldValue {
+                session.exercises[exIdx].sets[i].weight = newValue
+            }
+        }
     }
 
     private func addSet(exIdx: Int) {

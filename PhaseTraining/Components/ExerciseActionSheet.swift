@@ -2,8 +2,10 @@
 // `.presentation` density `ExerciseTile` with the `.overflow` trailing.
 //
 // Replaces the inline info.circle + arrow.left.arrow.right button stack that
-// used to live on every Today row. Seven items in fixed order — see
-// HANDOFF-tile-system.md §4a.
+// used to live on every Today row. See HANDOFF-tile-system.md §4a for the
+// base item set; Move up / Move down are surfaced on screens where the row's
+// position is mutable (Today's pre-workout list) since the row no longer
+// renders a drag handle.
 //
 // The sheet owns the "Recommend more / less / never" writes itself (via
 // MemoryStore.bumpAffinity + dislikes). Navigation rows ("Video & instructions",
@@ -24,6 +26,8 @@ struct ExerciseActionSheet: View {
     /// or `onEdit` from screens that don't expose set/rep/rest editing
     /// like the Library catalog).
     var onEdit: (() -> Void)? = nil
+    var onMoveUp: (() -> Void)? = nil
+    var onMoveDown: (() -> Void)? = nil
     var onShowDetails: (() -> Void)? = nil
     var onShowHistory: (() -> Void)? = nil
     var onShowReplace: (() -> Void)? = nil
@@ -44,6 +48,20 @@ struct ExerciseActionSheet: View {
                             row(icon: "slider.horizontal.3", label: "Edit sets, reps, rest") {
                                 dismiss()
                                 onEdit()
+                            }
+                            divider
+                        }
+                        if let onMoveUp {
+                            row(icon: "arrow.up", label: "Move up") {
+                                dismiss()
+                                onMoveUp()
+                            }
+                            divider
+                        }
+                        if let onMoveDown {
+                            row(icon: "arrow.down", label: "Move down") {
+                                dismiss()
+                                onMoveDown()
                             }
                             divider
                         }
