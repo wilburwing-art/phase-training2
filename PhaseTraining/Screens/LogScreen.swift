@@ -20,6 +20,7 @@
 
 import SwiftUI
 import UIKit
+import AudioToolbox
 
 struct LogScreen: View {
     @EnvironmentObject private var store: SessionStore
@@ -35,13 +36,21 @@ struct LogScreen: View {
     @State private var restSetIdx: Int? = nil
     @State private var restStartedAt: Date? = nil
     @State private var restDuration: Int? = nil
+    /// Date a rest timer was anchored at. Reset whenever a new rest starts so
+    /// the expiry-alert fires once per rest instance. nil = no alert pending.
+    @State private var restAlertFiredFor: Date? = nil
+    /// When set, the rest card renders in "expired" flash state. Cleared
+    /// ~1.2s after expiry so the card transitions back to a normal hidden state.
+    @State private var restExpiredFlashUntil: Date? = nil
 
     /// Long-press driven "swap exercise" sheet. nil = closed. Keys by index
     /// into session.exercises so we can mutate it on pick.
     @State private var swappingExIdx: Int? = nil
-    /// Read-only Exercise detail (name → coach.db lookup). Open via row
-    /// long-press contextMenu mid-workout.
+    /// Read-only Exercise detail (name → coach.db lookup). Opens via row tap
+    /// (mid-workout how-to) or contextMenu "Show details".
     @State private var detailExercise: Exercise? = nil
+    /// Mid-workout "Add exercise" picker. true = sheet open.
+    @State private var addingExercise: Bool = false
 
     var body: some View {
         ZStack {
@@ -82,6 +91,17 @@ struct LogScreen: View {
         }
         .sheet(item: $detailExercise) { ex in
             ExerciseDetailSheet(exercise: ex)
+        }
+        .sheet(isPresented: $addingExercise) {
+            // Mid-workout add. No initial filter — user came to the log
+            // wanting to insert something specific that wasn't in the plan,
+            // so we open the picker wide and let them search.
+            ExercisePickerSheet(
+                title: "Add exercise",
+                onPick: { picked in
+                    appendExerciseFromPicker(picked)
+                }
+            )
         }
     }
 
@@ -178,6 +198,28 @@ struct LogScreen: View {
                                 .padding(.horizontal, 20)
                         }
                     }
+
+                    // Mid-workout "Add exercise" — opens the full picker so
+                    // the user can insert anything from coach.db without
+                    // leaving the log to edit the plan.
+                    Rectangle()
+                        .fill(Color.line)
+                        .frame(height: 0.5)
+                        .padding(.horizontal, 20)
+                    Button { addingExercise = true } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 13, weight: .semibold))
+                            Text("Add exercise")
+                                .styled(.body)
+                        }
+                        .foregroundStyle(Color.accent)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("log-add-exercise")
+
                     Color.clear.frame(height: 40)
                 }
             }
@@ -332,6 +374,14 @@ struct LogScreen: View {
             .contentShape(Rectangle())
             .padding(.top, 14)
             .padding(.bottom, 6)
+            // Tap the exercise header (anywhere except the Swap button, which
+            // is its own tappable Button) to open the read-only how-to /
+            // video / instructions sheet. Mid-workout form check.
+            .onTapGesture {
+                detailExercise = CoachDatabase.shared
+                    .listExercises(search: ex.name)
+                    .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }
+            }
             .contextMenu {
                 Button {
                     swappingExIdx = exIdx
@@ -584,12 +634,31 @@ struct LogScreen: View {
         // the primary content. Toggle via the contextMenu below.
         .font(.callout)
         .opacity(set.isWarmup ? 0.6 : 1.0)
+        .contentShape(Rectangle())
+        // Tap a logged set to re-open it for editing (e.g. adding an RPE the
+        // user forgot). Only fires when set.done — un-done rows already
+        // expose TextFields directly.
+        .onTapGesture {
+            if set.done { reopenSet(exIdx: exIdx, setIdx: setIdx) }
+        }
         .contextMenu {
+            if set.done {
+                Button {
+                    reopenSet(exIdx: exIdx, setIdx: setIdx)
+                } label: {
+                    Label("Edit set", systemImage: "pencil")
+                }
+            }
             Button {
                 toggleWarmup(exIdx: exIdx, setIdx: setIdx)
             } label: {
                 Label(set.isWarmup ? "Unmark warmup" : "Mark as warmup",
                       systemImage: "flame")
+            }
+            Button(role: .destructive) {
+                deleteSet(exIdx: exIdx, setIdx: setIdx)
+            } label: {
+                Label("Delete set", systemImage: "trash")
             }
         }
     }
@@ -695,18 +764,71 @@ struct LogScreen: View {
     private func activeRestCard() -> some View {
         TimelineView(.periodic(from: .now, by: 1.0)) { ctx in
             let remaining = currentRestRemaining(at: ctx.date)
+            let isFlashing = restExpiredFlashUntil.map { ctx.date < $0 } ?? false
             if let r = remaining, r > 0 {
                 RestTimer(
                     remaining: r,
+                    expired: false,
                     onAdd15: { restDuration = (restDuration ?? 0) + 15 },
-                    onSkip: { clearRest() }
+                    onSkip: { clearRest() },
+                    onSetDuration: { newDuration in
+                        // Reset start time so the new duration runs from now.
+                        // Otherwise a shorter pick would have us already expired.
+                        restDuration = newDuration
+                        restStartedAt = Date()
+                        restAlertFiredFor = restStartedAt
+                    }
+                )
+                .padding(.vertical, 6)
+                .transition(.opacity)
+                .onAppear { /* TimelineView re-renders trigger checkExpiry */ }
+            } else if isFlashing {
+                // Brief "DONE" flash after expiry — show 0:00 in the expired
+                // style for ~1.2s, then disappear.
+                RestTimer(
+                    remaining: 0,
+                    expired: true,
+                    onAdd15: {},
+                    onSkip: { restExpiredFlashUntil = nil; clearRest() },
+                    onSetDuration: nil
                 )
                 .padding(.vertical, 6)
                 .transition(.opacity)
             } else {
                 Color.clear.frame(height: 0)
             }
+
+            // Fire the expiry alert exactly once per rest instance. Side
+            // effect lives inside the TimelineView render so it polls every
+            // tick (1Hz) without an extra timer.
+            Color.clear
+                .frame(width: 0, height: 0)
+                .onChange(of: ctx.date) { _, now in
+                    maybeFireRestExpiry(at: now)
+                }
+                .onAppear { maybeFireRestExpiry(at: ctx.date) }
         }
+    }
+
+    /// Trigger sound + haptic + visual flash once when the active rest
+    /// transitions to zero. Guarded by `restAlertFiredFor` so consecutive
+    /// TimelineView re-renders don't replay the alert.
+    private func maybeFireRestExpiry(at date: Date) {
+        guard let started = restStartedAt,
+              let duration = restDuration,
+              restAlertFiredFor != started else { return }
+        let elapsed = date.timeIntervalSince(started)
+        guard elapsed >= Double(duration) else { return }
+
+        restAlertFiredFor = started
+        restExpiredFlashUntil = date.addingTimeInterval(1.2)
+
+        // System sound 1322 = "Begin recording" (short, attention-grabbing).
+        // Pair with success haptic so the user notices even with the phone
+        // silenced or laid screen-down on a bench.
+        AudioServicesPlaySystemSound(1322)
+        let haptic = UINotificationFeedbackGenerator()
+        haptic.notificationOccurred(.success)
     }
 
     // MARK: - Mutations
@@ -737,6 +859,13 @@ struct LogScreen: View {
             // group, skip the rest timer — the user is mid-round-robin and
             // should move to the next member's matching set. The rest only
             // fires after the LAST member of the group completes set `setIdx`.
+            //
+            // Inter-exercise auto-rest: when this is the final set of the
+            // exercise (and the superset round is complete) AND there's a
+            // next exercise still owed sets, start a rest anchored to this
+            // set using the current exercise's rest interval. Lifters
+            // expect the same rest window between exercises as between sets,
+            // so we don't change the duration on the transition.
             let ex = session.exercises[exIdx]
             let hasMoreSets = setIdx < ex.sets.count - 1
 
@@ -749,6 +878,18 @@ struct LogScreen: View {
                 restSetIdx = setIdx
                 restStartedAt = Date()
                 restDuration = ex.rest
+                restAlertFiredFor = nil
+                restExpiredFlashUntil = nil
+            } else if hasFollowingWork(afterExIdx: exIdx) {
+                // Last set of this exercise, but the session has more work
+                // ahead — auto-start the rest so the user gets the same
+                // countdown + expiry alert between exercises.
+                restExIdx = exIdx
+                restSetIdx = setIdx
+                restStartedAt = Date()
+                restDuration = ex.rest
+                restAlertFiredFor = nil
+                restExpiredFlashUntil = nil
             }
         } else {
             // Untoggled — clear rest if it was anchored to this set.
@@ -756,6 +897,17 @@ struct LogScreen: View {
                 clearRest()
             }
         }
+    }
+
+    /// True when any exercise after `exIdx` in the session still has at least
+    /// one un-done set. Used by the inter-exercise auto-rest path so we
+    /// don't start a countdown after the very last set of the workout.
+    private func hasFollowingWork(afterExIdx exIdx: Int) -> Bool {
+        guard exIdx + 1 < session.exercises.count else { return false }
+        for ex in session.exercises[(exIdx + 1)...] {
+            if ex.sets.contains(where: { !$0.done }) { return true }
+        }
+        return false
     }
 
     /// True when this exercise belongs to a superset AND at least one
@@ -836,11 +988,76 @@ struct LogScreen: View {
         session.exercises[exIdx].sets.append(newSet)
     }
 
+    /// Remove a logged set and renumber the remaining rows. If this set
+    /// anchored the active rest card, clear the rest too.
+    private func deleteSet(exIdx: Int, setIdx: Int) {
+        guard session.exercises.indices.contains(exIdx),
+              session.exercises[exIdx].sets.indices.contains(setIdx) else { return }
+        // If the rest card was anchored to this set, clear it.
+        if restExIdx == exIdx, restSetIdx == setIdx {
+            clearRest()
+        } else if restExIdx == exIdx, let r = restSetIdx, r > setIdx {
+            // Anchor sits below the deleted row — shift it up by one so it
+            // stays attached to the same logical set.
+            restSetIdx = r - 1
+        }
+        session.exercises[exIdx].sets.remove(at: setIdx)
+        // Renumber. LoggedSet.num is 1-indexed and otherwise diverges from
+        // its row position after deletes.
+        for i in session.exercises[exIdx].sets.indices {
+            session.exercises[exIdx].sets[i].num = i + 1
+        }
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+    }
+
+    /// "Re-open" a set the user marked done so they can edit weight / reps /
+    /// effort. We don't expose this as a hard-delete button on the row
+    /// because un-toggling preserves the previously-entered values, which is
+    /// what the user usually wants (e.g. they hit Done before adding RPE).
+    private func reopenSet(exIdx: Int, setIdx: Int) {
+        guard session.exercises.indices.contains(exIdx),
+              session.exercises[exIdx].sets.indices.contains(setIdx) else { return }
+        session.exercises[exIdx].sets[setIdx].done = false
+        // Clear the rest if it was anchored to this row, otherwise we end up
+        // with an active rest pointing at an un-done set.
+        if restExIdx == exIdx, restSetIdx == setIdx { clearRest() }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    /// Append a freshly picked exercise to the active session. Mirrors the
+    /// "new exercise" branch in SessionStore.applyWorkoutDiffToActiveSession:
+    /// 3 sets × 8 reps × 90s rest, no prevSets, no supersetGroup.
+    private func appendExerciseFromPicker(_ picked: Exercise) {
+        let target = 3
+        let reps = 8
+        let sets = (0..<target).map { i in
+            LoggedSet(num: i + 1, weight: "", reps: "", rpe: "", done: false)
+        }
+        let newEx = LoggedExercise(
+            id: "ad-hoc-\(UUID().uuidString.prefix(8))",
+            name: picked.name,
+            type: picked.modalityLabel,
+            unit: "lbs",
+            targetSets: target,
+            targetReps: reps,
+            rest: 90,
+            sets: sets,
+            prevSets: [],
+            rpe: nil,
+            tempo: nil,
+            supersetGroup: nil
+        )
+        session.exercises.append(newEx)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
     private func clearRest() {
         restExIdx = nil
         restSetIdx = nil
         restStartedAt = nil
         restDuration = nil
+        restAlertFiredFor = nil
+        restExpiredFlashUntil = nil
     }
 
     private func currentRestRemaining(at date: Date) -> Int? {
