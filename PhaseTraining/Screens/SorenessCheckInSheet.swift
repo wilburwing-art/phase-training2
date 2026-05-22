@@ -4,7 +4,9 @@
 // today?" pill. Captures the three signals SorenessEntry already models:
 //   energy   ("low" | "normal" | "high")
 //   soreness ("none" | "mild" | "high")  — overall, single severity
-//   areas    ([String])                   — multi-select body regions
+//   areas    ([String])                   — multi-select MuscleBucket slugs
+//                                          (chest/back/quads/...); pre-build-107
+//                                          this was joints (knee/shoulder/...).
 //
 // Replaces the inline PreWorkoutCheckIn card that lived on Today pre-build-99.
 // Same SorenessEntry append path through MemoryStore.update; the per-day
@@ -41,12 +43,12 @@ struct SorenessCheckInSheet: View {
         ("high", "High"),
     ]
 
-    /// Areas the user can flag as sore. Same vocabulary as the post-workout
-    /// hurt list — keeps the coach context single-language.
-    private static let areaOptions: [String] = [
-        "lower back", "knee", "shoulder", "elbow",
-        "wrist", "neck", "hip", "ankle",
-    ]
+    /// Muscle groups the user can flag as sore. DOMS lives in muscles, so we
+    /// surface the same 11-bucket catalog the picker / filters / progress
+    /// chips use (see `MuscleBucket`). The post-workout hurt list still uses
+    /// joint-level vocab — that's pain, this is soreness.
+    private static let areaOptions: [(slug: String, label: String)] =
+        MuscleBucket.allCases.map { ($0.rawValue, $0.label) }
 
     // MARK: - Body
 
@@ -126,7 +128,7 @@ struct SorenessCheckInSheet: View {
     private var areasSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
-                Text("SORE AREAS")
+                Text("SORE MUSCLES")
                     .styled(.micro)
                     .foregroundStyle(Color.ink3)
                 Text("(optional)")
@@ -135,11 +137,11 @@ struct SorenessCheckInSheet: View {
             }
             let columns = [GridItem(.adaptive(minimum: 100), spacing: 6)]
             LazyVGrid(columns: columns, alignment: .leading, spacing: 6) {
-                ForEach(Self.areaOptions, id: \.self) { area in
-                    chip(label: area.capitalized, active: areas.contains(area)) {
-                        toggleArea(area)
+                ForEach(Self.areaOptions, id: \.slug) { opt in
+                    chip(label: opt.label, active: areas.contains(opt.slug)) {
+                        toggleArea(opt.slug)
                     }
-                    .accessibilityIdentifier("soreness-area-\(area.replacingOccurrences(of: " ", with: "-"))")
+                    .accessibilityIdentifier("soreness-area-\(opt.slug)")
                 }
             }
         }
