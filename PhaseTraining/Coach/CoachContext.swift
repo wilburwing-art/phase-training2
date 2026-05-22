@@ -161,6 +161,23 @@ enum CoachContext {
             blocks.append("CURRENT WEEK PLAN\n(no plan generated yet — user hasn't completed onboarding or hasn't generated one)")
         }
 
+        // Build 106 — per-set detail of the last 2 sessions. RECENT SESSIONS
+        // (below) gives the high-level summary; this block surfaces the
+        // actual loads + reps + RPE so the coach can make smart progression
+        // decisions ("you missed rep 5 on the top set, hold the same load
+        // today" rather than "you did bench, push the load"). Working sets
+        // only — skips warmups + un-done sets that aren't signal.
+        if let detail = lastSessionDetailSection(sessions: recentSessions) {
+            blocks.append(detail)
+        }
+
+        // Build 106 — planned vs completed for the last 7 days. Without
+        // this the coach kept pushing volume into a user who'd skipped
+        // workouts. Empty block when no plan is loaded.
+        if let plan, let adherence = weekAdherenceSection(plan: plan, sessions: recentSessions, now: now) {
+            blocks.append(adherence)
+        }
+
         // Recent sessions (last 5). Header shows days since the most recent
         // completed session so the coach can reason about layoffs without
         // having to do date math on the listed dates.
@@ -662,6 +679,131 @@ enum CoachContext {
             return "- \(row.name): \(row.sets) sets across \(row.sessions) \(plural)"
         }
         return "EXERCISE FAMILIARITY — last \(days)d\n" + lines.joined(separator: "\n")
+    }
+
+    // MARK: - Last session detail (build 106)
+
+    /// Per-set detail of the last 2 completed sessions. The high-level
+    /// RECENT SESSIONS block tells the coach what happened ("Push Day,
+    /// 16 sets, 42 min"); this block tells the coach the *numbers*
+    /// (weight × reps per set, top RPE) so it can decide whether to push
+    /// or hold each lift today.
+    ///
+    /// Working sets only — warmups + un-done sets are filtered out.
+    /// Sessions older than 14 days are skipped (signal stales fast).
+    /// Compact format: weights collapse when constant ("185 × 5,5,5,4,3"),
+    /// expand when varied ("185×5, 190×3, 195×1").
+    static func lastSessionDetailSection(sessions: [SavedSession],
+                                         now: Date = Date(),
+                                         maxSessions: Int = 2) -> String? {
+        guard !sessions.isEmpty else { return nil }
+        let cutoff = Calendar.current.date(byAdding: .day, value: -14, to: now) ?? .distantPast
+        let recent = sessions
+            .filter { $0.startTime >= cutoff }
+            .sorted { $0.startTime > $1.startTime }
+            .prefix(maxSessions)
+        guard !recent.isEmpty else { return nil }
+
+        var sessionBlocks: [String] = []
+        for session in recent {
+            var lines: [String] = []
+            for ex in session.exercises {
+                let workingSets = ex.sets.filter { $0.done && !$0.isWarmup }
+                guard !workingSets.isEmpty else { continue }
+                lines.append("  • \(ex.name): \(renderWorkingSets(workingSets, unit: ex.unit))")
+            }
+            guard !lines.isEmpty else { continue }
+            let header = "\(short(session.startTime)) · \(session.name)"
+            sessionBlocks.append(([header] + lines).joined(separator: "\n"))
+        }
+        guard !sessionBlocks.isEmpty else { return nil }
+        return "LAST SESSION DETAIL (working sets only)\n" + sessionBlocks.joined(separator: "\n\n")
+    }
+
+    /// Render a list of working sets compactly. Collapses the weight when
+    /// every set used the same value ("185 × 5,5,5,4,3"); otherwise lists
+    /// each set explicitly ("185×5, 190×3, 195×1"). Appends top RPE when
+    /// the user logged one for any set.
+    private static func renderWorkingSets(_ sets: [LoggedSet], unit: String) -> String {
+        let weights = Set(sets.map { $0.weight.trimmingCharacters(in: .whitespaces) })
+        let unitSuffix = unit.isEmpty ? "" : " \(unit)"
+        let body: String
+        if weights.count == 1, let w = weights.first, !w.isEmpty {
+            let reps = sets.map(\.reps).joined(separator: ",")
+            body = "\(w)\(unitSuffix) × \(reps)"
+        } else {
+            body = sets.map { s in
+                let w = s.weight.trimmingCharacters(in: .whitespaces)
+                return w.isEmpty ? "BW×\(s.reps)" : "\(w)\(unitSuffix)×\(s.reps)"
+            }.joined(separator: ", ")
+        }
+        let rpes = sets.compactMap { Double($0.rpe.trimmingCharacters(in: .whitespaces)) }
+        if let topRpe = rpes.max() {
+            let rpeStr = topRpe.truncatingRemainder(dividingBy: 1) == 0
+                ? String(Int(topRpe))
+                : String(format: "%.1f", topRpe)
+            return "\(body) (top RPE \(rpeStr))"
+        }
+        return body
+    }
+
+    // MARK: - Week adherence (build 106)
+
+    /// Planned vs completed for the last 7 days. Lets the coach see at a
+    /// glance "user skipped Tuesday's pull day" and reshape the week's
+    /// volume accordingly. Days listed in chronological order, oldest
+    /// first, ending at today. Today shows as `(today)` regardless of
+    /// completion status — the coach shouldn't penalize a planned day
+    /// that hasn't happened yet.
+    static func weekAdherenceSection(plan: WeekPlan,
+                                     sessions: [SavedSession],
+                                     now: Date = Date()) -> String? {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: now)
+        // Last 7 days inclusive of today: days -6..0 relative to today.
+        let dates: [Date] = (0..<7).reversed().compactMap { offset in
+            cal.date(byAdding: .day, value: -offset, to: today)
+        }
+        var lines: [String] = []
+        var plannedSessions = 0
+        var completedSessions = 0
+        for date in dates {
+            let label = weekday(date)
+            let isToday = cal.isDate(date, inSameDayAs: today)
+            let planned = plan.days.first { cal.isDate($0.date, inSameDayAs: date) }
+            let session = sessions
+                .filter { cal.isDate($0.startTime, inSameDayAs: date) }
+                .max(by: { $0.startTime < $1.startTime })
+
+            let status: String
+            switch planned?.kind {
+            case .lift, .mobility:
+                if isToday {
+                    status = session != nil ? "✓ completed" : "planned (today)"
+                } else if session != nil {
+                    let done = session?.exercises.flatMap(\.sets).filter(\.done).count ?? 0
+                    status = "✓ completed (\(done) sets)"
+                    completedSessions += 1
+                } else {
+                    status = "✗ skipped"
+                }
+                if !isToday { plannedSessions += 1 }
+            case .sport:
+                status = "sport"
+            case .rest:
+                status = "rest"
+            case .event:
+                status = "event"
+            case .none:
+                status = session != nil ? "✓ unplanned session" : "—"
+            }
+            let title = planned?.title ?? "—"
+            lines.append("- \(label) \(short(date)) · \(title) → \(status)")
+        }
+        let summary = plannedSessions == 0
+            ? "no past planned sessions this window"
+            : "\(completedSessions)/\(plannedSessions) past planned sessions completed"
+        return "WEEK ADHERENCE (last 7 days)\n" + lines.joined(separator: "\n") + "\n→ \(summary)"
     }
 
     // MARK: - Date helpers
