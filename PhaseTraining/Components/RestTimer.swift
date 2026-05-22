@@ -67,7 +67,9 @@ struct RestTimer: View {
             Spacer(minLength: 4)
 
             chip("+15", action: onAdd15)
+                .accessibilityIdentifier("log-rest-add15")
             chip("Skip", action: onSkip)
+                .accessibilityIdentifier("log-rest-skip")
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -99,12 +101,14 @@ struct RestTimer: View {
             Menu {
                 ForEach(Self.presets, id: \.seconds) { preset in
                     Button(preset.label) { onSetDuration(preset.seconds) }
+                        .accessibilityIdentifier("log-rest-preset-\(preset.seconds)")
                 }
                 Divider()
                 Button("Custom…") {
                     customText = String(remaining)
                     showCustomSheet = true
                 }
+                .accessibilityIdentifier("log-rest-preset-custom")
             } label: {
                 Text(Self.formatTime(remaining))
                     .styled(.monoL)
@@ -113,6 +117,7 @@ struct RestTimer: View {
                     .contentShape(Rectangle())
             }
             .menuStyle(.borderlessButton)
+            .accessibilityIdentifier("log-rest-time")
         } else {
             Text(Self.formatTime(remaining))
                 .styled(.monoL)

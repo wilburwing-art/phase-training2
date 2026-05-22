@@ -192,6 +192,7 @@ struct ExercisePickerSheet: View {
                         .styled(.body)
                         .foregroundStyle(Color.ink)
                         .multilineTextAlignment(.leading)
+                        .accessibilityIdentifier("picker-row-name-\(ex.name)")
                     Text(metaLine(ex))
                         .font(.monoXS)
                         .foregroundStyle(Color.ink3)

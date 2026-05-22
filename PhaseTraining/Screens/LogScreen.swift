@@ -248,6 +248,7 @@ struct LogScreen: View {
                             .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("log-cancel")
                 }
 
                 Image(systemName: "timer")
@@ -274,6 +275,7 @@ struct LogScreen: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("log-finish")
             }
             .padding(.horizontal, 20)
             .padding(.top, 10)
@@ -351,6 +353,7 @@ struct LogScreen: View {
                 Text(displayName)
                     .styled(.displayS)
                     .foregroundStyle(allDone ? Color.ink2 : Color.ink)
+                    .accessibilityIdentifier("log-exercise-name-\(exIdx)")
                 if let type = ex.type, !type.isEmpty {
                     Text("(\(type))")
                         .font(.system(size: 11))
@@ -583,6 +586,7 @@ struct LogScreen: View {
                         .foregroundStyle(setNumberColor)
                         .frame(width: 22, alignment: .center)
                         .monospacedDigit()
+                        .accessibilityIdentifier("log-set-num-\(exIdx)-\(setIdx)")
                 }
 
                 Rectangle()
@@ -604,6 +608,7 @@ struct LogScreen: View {
                     active: isActive
                 )
                 .frame(maxWidth: .infinity)
+                .accessibilityIdentifier("log-set-weight-\(exIdx)-\(setIdx)")
                 .onChange(of: session.exercises[exIdx].sets[setIdx].weight) { oldValue, newValue in
                     propagateWeight(exIdx: exIdx, fromSetIdx: setIdx, oldValue: oldValue, newValue: newValue)
                 }
@@ -615,6 +620,7 @@ struct LogScreen: View {
                     active: isActive
                 )
                 .frame(maxWidth: .infinity)
+                .accessibilityIdentifier("log-set-reps-\(exIdx)-\(setIdx)")
 
                 effortCell(
                     text: $session.exercises[exIdx].sets[setIdx].rpe,
@@ -627,6 +633,7 @@ struct LogScreen: View {
                     toggleSet(exIdx: exIdx, setIdx: setIdx)
                 }
                 .frame(width: 24)
+                .accessibilityIdentifier("log-set-check-\(exIdx)-\(setIdx)")
             }
         }
         .padding(.vertical, 6)
@@ -781,6 +788,7 @@ struct LogScreen: View {
                 )
                 .padding(.vertical, 6)
                 .transition(.opacity)
+                .accessibilityIdentifier("log-rest-card")
                 .onAppear { /* TimelineView re-renders trigger checkExpiry */ }
             } else if isFlashing {
                 // Brief "DONE" flash after expiry — show 0:00 in the expired
@@ -794,6 +802,7 @@ struct LogScreen: View {
                 )
                 .padding(.vertical, 6)
                 .transition(.opacity)
+                .accessibilityIdentifier("log-rest-done")
             } else {
                 Color.clear.frame(height: 0)
             }
@@ -1078,8 +1087,24 @@ struct LogScreen: View {
             session = fresh
             store.saveActive(fresh)
         }
+        // UI-test hook: --ui-test-rest-seconds=N clamps every exercise's rest
+        // so timer-expiry tests can fire in ~2s instead of 60-90s. Has no
+        // effect outside test runs.
+        if let s = Self.uiTestRestOverride {
+            for i in session.exercises.indices {
+                session.exercises[i].rest = s
+            }
+        }
         didLoad = true
     }
+
+    private static let uiTestRestOverride: Int? = {
+        let prefix = "--ui-test-rest-seconds="
+        guard let arg = ProcessInfo.processInfo.arguments.first(where: {
+            $0.hasPrefix(prefix)
+        }) else { return nil }
+        return Int(arg.dropFirst(prefix.count))
+    }()
 
     // MARK: - Formatters
 
