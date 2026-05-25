@@ -301,25 +301,16 @@ final class LogFlowTests: XCTestCase {
                       "+15 should keep the card visible (didn't dismiss/crash)")
     }
 
-    /// Locate a rest-card preset menu item across iOS Menu rendering modes.
-    /// iOS 26 ships SwiftUI menus through several element types depending on
-    /// hierarchy context — we've observed both `.button` and `.menuItem` in
-    /// the wild; some appear under `collectionViews`. Try each in priority
-    /// order; first match wins. Label fallback is for the case where the
-    /// `.accessibilityIdentifier` modifier on a Menu's Button doesn't
-    /// propagate (iOS 26 SwiftUI Menu has been observed to surface the
-    /// label string as the accessibility identifier when no identifier
-    /// would otherwise survive).
+    /// Locate a rest-card preset action-sheet button. RestTimer's preset
+    /// picker is a SwiftUI `confirmationDialog` (UIAlertController), which
+    /// renders buttons that XCUI can sometimes see twice (raw button +
+    /// alert-button wrapper). `.firstMatch` resolves the ambiguity.
     private func restPreset(in app: XCUIApplication, label: String, identifier: String) -> XCUIElement {
-        let candidates: [XCUIElement] = [
-            app.menuItems[identifier],
-            app.buttons[identifier],
-            app.collectionViews.buttons[identifier],
-            app.menuItems[label],
-            app.buttons[label],
-            app.collectionViews.buttons[label],
-        ]
-        return candidates.first(where: { $0.exists }) ?? candidates[0]
+        // The action sheet is reliably findable by identifier; fall back to
+        // label for the rare case where the identifier doesn't propagate.
+        let byId = app.buttons.matching(identifier: identifier).firstMatch
+        if byId.exists { return byId }
+        return app.buttons.matching(identifier: label).firstMatch
     }
 
     // MARK: - 7. Delete logged set

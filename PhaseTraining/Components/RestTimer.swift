@@ -12,9 +12,14 @@
 //   - Mono L remaining-time readout (M:SS, accent) — tap to pick a new duration
 //   - "+15" and "Skip" pill chips
 //
-// Feature: tap the time readout to surface a Menu with duration presets +
-// "Custom…". `expired` flips the band to a brief alert state when the parent
-// fires the timeout (sound + haptic happen in LogScreen, not here).
+// Feature: tap the time readout to surface a confirmationDialog with
+// duration presets + "Custom…". (Previously a SwiftUI Menu — switched
+// because SwiftUI Menu's items are unreliable in iOS 26 XCUITest:
+// .accessibilityIdentifier doesn't propagate to menu items and the
+// item element type varies across hierarchy contexts. confirmationDialog
+// renders as UIAlertController which has stable, well-known XCUI
+// accessibility.) `expired` flips the band to a brief alert state when
+// the parent fires the timeout (sound + haptic happen in LogScreen).
 
 import SwiftUI
 
@@ -31,6 +36,7 @@ struct RestTimer: View {
     var onSetDuration: ((Int) -> Void)? = nil
 
     @State private var pulse = false
+    @State private var showPresetDialog = false
     @State private var showCustomSheet = false
     @State private var customText: String = ""
 
@@ -93,22 +99,15 @@ struct RestTimer: View {
         }
     }
 
-    /// Mono time text. When `onSetDuration` is wired, wrap in a Menu so a tap
-    /// opens preset + Custom options; otherwise render plain text.
+    /// Mono time text. When `onSetDuration` is wired, tap surfaces a
+    /// confirmationDialog with preset + Custom options. Otherwise render
+    /// plain text. The dialog (UIAlertController under the hood) has
+    /// reliable iOS 26 XCUITest accessibility; SwiftUI Menu didn't.
     @ViewBuilder
     private var timeReadout: some View {
         if let onSetDuration {
-            Menu {
-                ForEach(Self.presets, id: \.seconds) { preset in
-                    Button(preset.label) { onSetDuration(preset.seconds) }
-                        .accessibilityIdentifier("log-rest-preset-\(preset.seconds)")
-                }
-                Divider()
-                Button("Custom…") {
-                    customText = String(remaining)
-                    showCustomSheet = true
-                }
-                .accessibilityIdentifier("log-rest-preset-custom")
+            Button {
+                showPresetDialog = true
             } label: {
                 Text(Self.formatTime(remaining))
                     .styled(.monoL)
@@ -116,8 +115,24 @@ struct RestTimer: View {
                     .monospacedDigit()
                     .contentShape(Rectangle())
             }
-            .menuStyle(.borderlessButton)
+            .buttonStyle(.borderless)
             .accessibilityIdentifier("log-rest-time")
+            .confirmationDialog(
+                "Set rest duration",
+                isPresented: $showPresetDialog,
+                titleVisibility: .visible
+            ) {
+                ForEach(Self.presets, id: \.seconds) { preset in
+                    Button(preset.label) { onSetDuration(preset.seconds) }
+                        .accessibilityIdentifier("log-rest-preset-\(preset.seconds)")
+                }
+                Button("Custom…") {
+                    customText = String(remaining)
+                    showCustomSheet = true
+                }
+                .accessibilityIdentifier("log-rest-preset-custom")
+                Button("Cancel", role: .cancel) { }
+            }
         } else {
             Text(Self.formatTime(remaining))
                 .styled(.monoL)
