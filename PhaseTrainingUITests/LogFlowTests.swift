@@ -272,8 +272,9 @@ final class LogFlowTests: XCTestCase {
 
         // Tap the time menu, pick 30s.
         app.buttons["log-rest-time"].tap()
-        let preset30 = app.buttons["log-rest-preset-30"]
-        XCTAssertTrue(preset30.waitForExistence(timeout: 2))
+        let preset30 = restPreset(in: app, label: "30s", identifier: "log-rest-preset-30")
+        XCTAssertTrue(preset30.waitForExistence(timeout: 2),
+                      "30s preset should be in the open menu")
         preset30.tap()
 
         // Original 8s window would have expired by now. After 10s, the rest
@@ -292,10 +293,33 @@ final class LogFlowTests: XCTestCase {
         // Set 30s, then +15 → ~45s. We don't try to read the exact mono time
         // (race with the 1Hz tick); just verify +15 doesn't crash or dismiss.
         app.buttons["log-rest-time"].tap()
-        app.buttons["log-rest-preset-30"].tap()
+        let preset30 = restPreset(in: app, label: "30s", identifier: "log-rest-preset-30")
+        XCTAssertTrue(preset30.waitForExistence(timeout: 2))
+        preset30.tap()
         app.buttons["log-rest-add15"].tap()
         XCTAssertTrue(app.buttons["log-rest-add15"].exists,
                       "+15 should keep the card visible (didn't dismiss/crash)")
+    }
+
+    /// Locate a rest-card preset menu item across iOS Menu rendering modes.
+    /// iOS 26 ships SwiftUI menus through several element types depending on
+    /// hierarchy context — we've observed both `.button` and `.menuItem` in
+    /// the wild; some appear under `collectionViews`. Try each in priority
+    /// order; first match wins. Label fallback is for the case where the
+    /// `.accessibilityIdentifier` modifier on a Menu's Button doesn't
+    /// propagate (iOS 26 SwiftUI Menu has been observed to surface the
+    /// label string as the accessibility identifier when no identifier
+    /// would otherwise survive).
+    private func restPreset(in app: XCUIApplication, label: String, identifier: String) -> XCUIElement {
+        let candidates: [XCUIElement] = [
+            app.menuItems[identifier],
+            app.buttons[identifier],
+            app.collectionViews.buttons[identifier],
+            app.menuItems[label],
+            app.buttons[label],
+            app.collectionViews.buttons[label],
+        ]
+        return candidates.first(where: { $0.exists }) ?? candidates[0]
     }
 
     // MARK: - 7. Delete logged set
