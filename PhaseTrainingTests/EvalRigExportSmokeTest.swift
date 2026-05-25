@@ -139,6 +139,44 @@ final class EvalRigExportSmokeTest: XCTestCase {
         }
     }
 
+    /// Full-body day A — (liftIndex=0, totalLifts=2) → focus.fullBodyA.
+    /// Fourth archetype in the multi-archetype demo (after push, lower, pull).
+    /// Tests the "compound + compound + compound" recipe shape against a
+    /// rubric whose Q2 enforces multi-pattern coverage rather than isolation
+    /// pairing.
+    func test_export_full_body_a_emits() throws {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.focuses = [.hypertrophy]
+        m.liftDaysPerWeek = 2
+        m.sessionMinutes = 60
+        m.age = 32
+
+        let profile = DemographicProfile.from(m)
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: 0,
+            totalLifts: 2,
+            memory: m,
+            profile: profile,
+            hashSeed: "eval-rig-smoke-full-body-a"
+        )
+
+        let outDir = URL(fileURLWithPath: "/tmp/eval-rig-export-full-body-a")
+        let url = try EvalRigExporter.exportToFile(
+            workout: workout,
+            memory: m,
+            archetype: "intermediate-male-hypertrophy-full-body-a",
+            timeBudgetMinutes: 60,
+            to: outDir
+        )
+        print("[EvalRigExportSmokeTest] Wrote \(url.path) (full-body-A)")
+        print("[EvalRigExportSmokeTest] Exercises:")
+        for ex in workout.exercises {
+            print("  - \(ex.name) (\(ex.sets) sets, \(ex.warmUpSets?.count ?? 0) warm-ups)")
+        }
+    }
+
     /// Non-sore variant — same archetype, no SorenessEntry. Exercises the
     /// warm-up-synthesis path that the sore variant intentionally skips
     /// (synthesizeWarmups returns nil on sore prime movers). Used to show

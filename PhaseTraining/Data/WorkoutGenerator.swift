@@ -857,10 +857,13 @@ enum WorkoutGenerator {
         // Hypertrophy's default 90s rest is too short on heavy compound
         // lower-body work — eval-rig's lower-body Q7 expects 3-4 min on the
         // squat slot. Bump primary compound lower-body rest to 180s without
-        // disturbing upper-push (90s is fine for bench / OHP).
+        // disturbing upper-push (90s is fine for bench / OHP). Full-body
+        // days (A: squat-first / B: hinge-first) lead with the same heavy
+        // compound lower-body movement and get the same treatment.
         if memory.primaryFocus == .hypertrophy
             && isPrimary && isCompound
-            && (focus == .lower || focus == .legs) {
+            && (focus == .lower || focus == .legs
+                || focus == .fullBodyA || focus == .fullBodyB) {
             restSec = max(restSec, 180)
         }
 
