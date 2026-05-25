@@ -768,5 +768,185 @@
     "estimated_cost": "low",
     "home_gym_friendly": 1,
     "created_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 101,
+    "slug": "smith-machine",
+    "name": "Smith Machine",
+    "category": "gym",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 102,
+    "slug": "chest-press-machine",
+    "name": "Chest Press Machine",
+    "category": "gym",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 103,
+    "slug": "shoulder-press-machine",
+    "name": "Shoulder Press Machine",
+    "category": "gym",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 104,
+    "slug": "iso-lateral-machine",
+    "name": "Iso-Lateral Plate Loaded Machine",
+    "category": "gym",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 105,
+    "slug": "preacher-bench",
+    "name": "Preacher Bench",
+    "category": "gym",
+    "portability": "any",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 106,
+    "slug": "captains-chair",
+    "name": "Captain's Chair",
+    "category": "gym",
+    "portability": "any",
+    "estimated_cost": "medium",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 107,
+    "slug": "stair-climber",
+    "name": "Stair Climber",
+    "category": "cardio",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 108,
+    "slug": "elliptical",
+    "name": "Elliptical",
+    "category": "cardio",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 109,
+    "slug": "assault-bike",
+    "name": "Assault Bike / Air Bike",
+    "category": "cardio",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 110,
+    "slug": "treadmill",
+    "name": "Treadmill",
+    "category": "cardio",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 111,
+    "slug": "ab-wheel",
+    "name": "Ab Wheel",
+    "category": "minimal",
+    "portability": "any",
+    "estimated_cost": "low",
+    "home_gym_friendly": 1,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 112,
+    "slug": "torso-rotation-machine",
+    "name": "Torso Rotation Machine",
+    "category": "gym",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 113,
+    "slug": "shrug-machine",
+    "name": "Shrug Machine",
+    "category": "gym",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 114,
+    "slug": "glute-kickback-machine",
+    "name": "Glute Kickback Machine",
+    "category": "gym",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 115,
+    "slug": "back-extension-machine",
+    "name": "Back Extension Machine",
+    "category": "gym",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 116,
+    "slug": "bicep-curl-machine",
+    "name": "Bicep Curl Machine",
+    "category": "gym",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 117,
+    "slug": "tricep-extension-machine",
+    "name": "Triceps Extension Machine",
+    "category": "gym",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-22 00:00:00"
+  },
+  {
+    "id": 118,
+    "slug": "pec-deck",
+    "name": "Pec Deck Machine",
+    "category": "gym",
+    "portability": "any",
+    "estimated_cost": "high",
+    "home_gym_friendly": 0,
+    "created_at": "2026-05-22 00:00:00"
   }
 ]
