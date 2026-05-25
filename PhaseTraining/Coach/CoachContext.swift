@@ -763,7 +763,7 @@ enum CoachContext {
 
             let status: String
             switch planned?.kind {
-            case .lift, .mobility:
+            case .lift:
                 if isToday {
                     status = session != nil ? "✓ completed" : "planned (today)"
                 } else if session != nil {
