@@ -44,19 +44,33 @@ all training context — each owns a narrow slice and stays fast.
 
 This is the headline surface. Replaces the current `WeeklyCheckInFlow`.
 
+**Design principle**: the user states *intent per day* (what they want
+to do); the planner builds the actual workouts. Surface stays lean —
+no per-day duration sliders, no routine pickers in v1. Effort scales
+with what actually changed from last week.
+
 **Pre-fill**: each cell starts populated from
 (a) the previous week's *actual* shape (from `WeekPlanSnapshot[]` history
     + matched `SavedSession` records), or
 (b) the user's profile defaults (TrainingMemory) if no history exists.
 
-**Per-cell controls** (tap to expand):
+A "typical week" should require zero edits — user scans the strip,
+sees last week's pattern, accepts. Editing is only for the cells that
+genuinely changed (traveling Friday, taking Thursday off, swapping a
+lift for a sport day).
 
-- **Kind** — Lift / Sport / Rest / Event / Travel
-- **Focus** (lift only) — Push / Pull / Legs / Upper / Lower / Full Body
-- **Duration** — optional per-day override; defaults to declared session minutes
-- **Specific routine** (lift only, behind an expansion) — pick a saved
-  CustomRoutine for exact control
-- **Note / event title** (event / travel) — short label
+**Per-cell controls** — minimal:
+
+- **Kind** (primary tap) — Lift / Sport / Rest / Event / Travel
+- **Focus** (secondary tap, lift only) — Push / Pull / Legs / Upper /
+  Lower / Full Body. Defaults to last week's pattern (planner picks
+  if no history).
+- **Sport pick** (secondary tap, sport only, surfaced only if user has
+  multiple sports configured) — which sport
+- **Note / event title** (event / travel only) — short label
+
+That's it. ~8-10 micro-decisions maximum across a full edit (kind + focus
+on each lift day, kind alone on rest/sport). Most weeks: 0-3 taps.
 
 **Light context chip** at the bottom of the strip:
 
@@ -68,11 +82,15 @@ This is the headline surface. Replaces the current `WeeklyCheckInFlow`.
 **Rules-engine validation** fires on edit + on accept. See §4.
 
 **Add-workout affordance**: long-press a rest day → "Add workout here"
-opens a sheet to pick from saved CustomRoutines or build a Lift+focus
-day. Added workouts feed `WeekPlanSnapshot` for next-week context.
+opens a small sheet to set kind + focus (matches the painted-strip
+vocabulary). Added workouts feed `WeekPlanSnapshot` for next-week context.
 
 **Lock-in summary** — accept dumps to Week tab with a 1-line recap:
 > "3 lifts (Push/Pull/Legs), 2 climbing sessions, 1 rest, 1 mobility · ~5.5h total · 1 warning acknowledged"
+
+**Deferred to v2** (out of v1 scope, kept here for reference):
+- Per-day duration override on each cell (use global `sessionMinutes` for v1)
+- Saved-routine picker inside the strip (Lift + focus is sufficient for v1)
 
 ### 2.2 Pre-workout check-in (extended, not redesigned)
 
@@ -395,10 +413,11 @@ enum LiftFocus: String, Codable {
 ### 11.2 Extensions to existing types
 
 ```swift
-// WeekOverrides additions
+// WeekOverrides additions (v1)
 extension WeekOverrides {
-    var durationByDate: [Date: Int]  // per-day duration override (minutes)
     var weekTone: WeekTone           // light context chip
+    // Note: per-day duration override (durationByDate) deferred to v2.
+    // v1 uses the global TrainingMemory.sessionMinutes for every day.
 }
 
 // DayKindOverride.lift gains a focus
@@ -474,6 +493,8 @@ enum PlanValidator {
 
 | Capability | Deferred because |
 |---|---|
+| **Per-day duration override** on the painted strip | v1 uses the global `TrainingMemory.sessionMinutes` for every day; per-day duration is a power-user surface that adds a slider to every cell |
+| **Saved-routine picker** inside the painted strip (pick a CustomRoutine for a specific day) | Lift + focus chip gives the planner enough to build a great workout; pinning to a saved routine is a power-user override |
 | Training-block periodization (explicit blocks visible to user) | Auto-arc covers 70% of value; explicit blocks add UX surface area we'd rather earn |
 | HRV / sleep / Apple Watch integration | HealthKit infra is non-trivial; users get value without it for v1 |
 | Calendar app integration | Manual "unavailable" works; auto-pull is convenience |

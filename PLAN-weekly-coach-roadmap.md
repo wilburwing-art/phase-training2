@@ -66,13 +66,11 @@ Status: roadmap drafted, no PRs opened yet.
 **Scope:**
 - Add `LiftFocus` enum (push/pull/legs/upper/lower/fullBody)
 - Extend `DayKindOverride.lift` case with `focus: LiftFocus?`
-- Add `WeekOverrides.durationByDate: [Date: Int]`
 - Add `WeekTone` enum + `WeekOverrides.weekTone`
 - Add `WeekEventKind.outOfTown` case → planner generates
   bodyweight/mobility template for those days
 - `Planner.generate` reads new fields:
   - `LiftFocus` on a day overrides the auto-rotation pick
-  - `durationByDate` overrides global `sessionMinutes` for that day
   - `weekTone` biases volume / intensity (recovery → -15%, build → +10%,
     busy → respect time budget aggressively)
   - `outOfTown` → bodyweight/mobility template
@@ -80,12 +78,14 @@ Status: roadmap drafted, no PRs opened yet.
 **Files touched:**
 - `PhaseTraining/Data/WeekOverrides.swift` (extend)
 - `PhaseTraining/Data/Planner.swift` (read new fields)
-- `PhaseTraining/Data/WorkoutGenerator.swift` (respect focus + duration)
+- `PhaseTraining/Data/WorkoutGenerator.swift` (respect focus)
 - `PhaseTrainingTests/PlannerTests.swift` (extend)
 
 **Not in scope:**
 - UI changes — the strip itself ships in PR 6
 - Rules engine — ships in PR 7
+- Per-day duration override (`durationByDate`) — deferred to v2;
+  v1 uses the global `TrainingMemory.sessionMinutes`
 
 **Why second:** the planner needs to understand the new intent
 vocabulary before the UI lets users express it.
@@ -101,10 +101,15 @@ vocabulary before the UI lets users express it.
 - Unified Week tab: same `PaintedStripView` shown on Week tab;
   weekly check-in entry mode just opens it with the rules-engine
   banner enabled (PR 7 wires this)
-- Per-cell expansion sheet: kind picker, focus chip, duration
-  stepper, "Use saved routine" expansion
+- Per-cell expansion sheet: kind picker (Lift/Sport/Rest/Event/Travel),
+  focus chip for lift days (Push/Pull/Legs/Upper/Lower/Full Body),
+  sport picker when applicable, event/travel title text field
+- **Not in scope for v1**: per-day duration slider, "Use saved routine"
+  expansion (both deferred — see PLAN-weekly-coach.md §12)
 - Light context chip below the strip (`Typical/Recovery/Build/Busy`)
-- Long-press a rest day → "Add workout here" sheet
+- Long-press a rest day → "Add workout here" sheet (kind + focus only)
+- "Typical week" fast path — pre-fill from last week's actual shape;
+  unchanged weeks are a 1-tap accept
 - Accept flow → Week tab summary card (1-line recap)
 
 **Files touched:**
