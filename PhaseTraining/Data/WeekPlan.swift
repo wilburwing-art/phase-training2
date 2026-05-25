@@ -18,24 +18,39 @@ import Foundation
 // MARK: - DayKind
 
 enum DayKind: String, Codable, CaseIterable {
-    case lift, sport, mobility, rest, event
+    case lift, sport, rest, event
 
     /// Short label rendered in the Week tab badge.
     var label: String {
         switch self {
-        case .lift:     return "LIFT"
-        case .sport:    return "SPORT"
-        case .mobility: return "MOBILITY"
-        case .rest:     return "REST"
-        case .event:    return "EVENT"
+        case .lift:  return "LIFT"
+        case .sport: return "SPORT"
+        case .rest:  return "REST"
+        case .event: return "EVENT"
         }
     }
 
     /// Loose grouping used by Today's hero card to pick a copy treatment.
     var isWorkout: Bool {
         switch self {
-        case .lift, .mobility: return true
+        case .lift: return true
         case .sport, .rest, .event: return false
+        }
+    }
+
+    /// Pre-cleanup builds had a `.mobility` case driven by a prehab/mobility
+    /// catalog that no longer exists. Saved plans from those builds may still
+    /// carry `"mobility"` as the raw value — silently rewrite it to `.rest` on
+    /// decode so the plan keeps loading. Active recovery is now self-directed.
+    init(from decoder: Decoder) throws {
+        let raw = try decoder.singleValueContainer().decode(String.self)
+        if raw == "mobility" {
+            self = .rest
+        } else if let v = DayKind(rawValue: raw) {
+            self = v
+        } else {
+            throw DecodingError.dataCorruptedError(in: try decoder.singleValueContainer(),
+                                                   debugDescription: "Unknown DayKind: \(raw)")
         }
     }
 }
@@ -48,15 +63,14 @@ struct DayPlan: Codable, Identifiable, Hashable {
     var date: Date
     var kind: DayKind
     var title: String
-    /// coach.db routine id when kind == .lift / .mobility AND the slot was
-    /// satisfied by an explicit user-picked routine (day override). nil for
-    /// generated workouts — those carry exercises directly in
-    /// `generatedWorkout`.
+    /// coach.db routine id when kind == .lift AND the slot was satisfied by
+    /// an explicit user-picked routine (day override). nil for generated
+    /// workouts — those carry exercises directly in `generatedWorkout`.
     var routineId: Int?
     /// Workout assembled exercise-by-exercise from the user's demographic
     /// profile + movement-pattern recipes. Replaces routineId as the primary
-    /// source for lift / mobility days. nil for non-workout days or for days
-    /// whose slot was overridden by a routineId pick.
+    /// source for lift days. nil for non-workout days or for days whose slot
+    /// was overridden by a routineId pick.
     var generatedWorkout: GeneratedWorkout?
     /// Sport for kind == .sport days; nil otherwise.
     var sport: Sport?
@@ -307,12 +321,12 @@ extension TrainingMemory {
 
 extension WeekPlan {
     /// Deterministic sample for previews + tests. Mon=lift, Tue=sport,
-    /// Wed=mobility, Thu=lift, Fri=rest, Sat=sport, Sun=rest.
+    /// Wed=rest, Thu=lift, Fri=rest, Sat=sport, Sun=rest.
     static func sample(startingAt date: Date = Date()) -> WeekPlan {
         let cal = Calendar.current
         let start = cal.startOfDay(for: date)
-        let kinds: [DayKind] = [.lift, .sport, .mobility, .lift, .rest, .sport, .rest]
-        let titles = ["Push & Pull", "Climb session", "Hip mobility", "Lower body", "Rest", "Trail run", "Rest"]
+        let kinds: [DayKind] = [.lift, .sport, .rest, .lift, .rest, .sport, .rest]
+        let titles = ["Push & Pull", "Climb session", "Rest", "Lower body", "Rest", "Trail run", "Rest"]
         let days: [DayPlan] = (0..<7).map { i in
             DayPlan(
                 date: cal.date(byAdding: .day, value: i, to: start) ?? start,

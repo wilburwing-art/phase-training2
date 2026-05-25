@@ -61,24 +61,21 @@ struct WeekEvent: Codable, Identifiable, Hashable {
 
 enum DayKindOverride: Codable, Hashable {
     case rest
-    case mobility(routineId: Int? = nil)
     case lift(routineId: Int? = nil)
     case sport(sportSlug: String? = nil)
 
     var asKind: DayKind {
         switch self {
-        case .rest:     return .rest
-        case .mobility: return .mobility
-        case .lift:     return .lift
-        case .sport:    return .sport
+        case .rest:  return .rest
+        case .lift:  return .lift
+        case .sport: return .sport
         }
     }
 
     var routineId: Int? {
         switch self {
-        case .lift(let id):     return id
-        case .mobility(let id): return id
-        case .rest, .sport:     return nil
+        case .lift(let id): return id
+        case .rest, .sport: return nil
         }
     }
 
@@ -94,11 +91,10 @@ enum DayKindOverride: Codable, Hashable {
     /// shouldn't be swapped.
     static func from(plan: DayPlan) -> DayKindOverride {
         switch plan.kind {
-        case .rest:     return .rest
-        case .mobility: return .mobility(routineId: plan.routineId)
-        case .lift:     return .lift(routineId: plan.routineId)
-        case .sport:    return .sport(sportSlug: plan.sport?.slug)
-        case .event:    return .rest
+        case .rest:  return .rest
+        case .lift:  return .lift(routineId: plan.routineId)
+        case .sport: return .sport(sportSlug: plan.sport?.slug)
+        case .event: return .rest
         }
     }
 }

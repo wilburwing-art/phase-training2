@@ -60,21 +60,6 @@ final class RpeTempoPrescriptionTests: XCTestCase {
                       "sport-performance compound primary should have explosive concentric ('X'). Got: \(String(describing: first.tempo))")
     }
 
-    func test_mobilityWorkout_omitsRpe() {
-        var m = TrainingMemory()
-        m.experience = .intermediate
-        m.equipment = [.fullGym]
-        let p = DemographicProfile.from(m)
-        let workout = WorkoutGenerator.generateMobility(
-            memory: m, profile: p, hashSeed: "mob"
-        )
-        // Mobility flows skip RPE (the cue doesn't map to slow controlled
-        // work). Tempo stays — controlled hold.
-        for ex in workout.exercises {
-            XCTAssertNil(ex.rpe, "mobility should not prescribe RPE on \(ex.name)")
-        }
-    }
-
     // MARK: - LLM overrides
 
     func test_strategyOverridesWinOverDefaults() {

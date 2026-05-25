@@ -11,7 +11,7 @@ enum PlanEdit: Hashable {
     /// a day in the plan, the two swap positions (so the week stays 7 contiguous).
     case move(dayId: UUID, toDate: Date)
 
-    /// Change a day's kind in place. routineId only meaningful for .lift/.mobility.
+    /// Change a day's kind in place. routineId only meaningful for .lift.
     case swapKind(dayId: UUID, to: DayKind, title: String, routineId: Int?)
 
     /// Convert a day to a protected event. Locks `protected = true` so the

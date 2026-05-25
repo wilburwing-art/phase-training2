@@ -139,7 +139,7 @@ struct WeekDayEditSheet: View {
 
     private var actionList: some View {
         VStack(spacing: 8) {
-            if dayPlan?.kind == .lift || dayPlan?.kind == .mobility {
+            if dayPlan?.kind == .lift {
                 ActionRow(
                     title: Calendar.current.isDateInToday(date)
                         ? "Preview & start workout"
@@ -175,7 +175,7 @@ struct WeekDayEditSheet: View {
                 action: { addingEvent = true }
             )
 
-            if dayPlan?.kind == .lift || dayPlan?.kind == .mobility || dayPlan?.kind == .sport {
+            if dayPlan?.kind == .lift || dayPlan?.kind == .sport {
                 ActionRow(
                     title: "Move workout to another day",
                     subtitle: "Swap with another day this week",
@@ -184,7 +184,7 @@ struct WeekDayEditSheet: View {
                 )
             }
 
-            if dayPlan?.kind == .lift || dayPlan?.kind == .mobility {
+            if dayPlan?.kind == .lift {
                 ActionRow(
                     title: "Override workout",
                     subtitle: "Pick a saved workout or build a new one",

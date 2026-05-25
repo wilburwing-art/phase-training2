@@ -225,8 +225,7 @@ final class PlannerTests: XCTestCase {
 
         XCTAssertEqual(kinds.filter { $0 == .sport }.count, 2)
         XCTAssertEqual(kinds.filter { $0 == .lift }.count, 1)
-        XCTAssertEqual(kinds.filter { $0 == .mobility }.count, 1)
-        XCTAssertEqual(kinds.filter { $0 == .rest }.count, 3)
+        XCTAssertEqual(kinds.filter { $0 == .rest }.count, 4)
     }
 
     func testRunningOffSeasonFavorsLifts() {
@@ -494,7 +493,7 @@ final class PlannerTests: XCTestCase {
         XCTAssertEqual(friPlan?.kind, .event, "Peak day should be an event slot")
         XCTAssertEqual(friPlan?.title, "Peak day")
         XCTAssertEqual(thuPlan?.kind, .rest, "Day-1 should be rest. Got: \(plan.days.map(\.kind))")
-        XCTAssertEqual(wedPlan?.kind, .mobility, "Day-2 should be mobility. Got: \(plan.days.map(\.kind))")
+        XCTAssertEqual(wedPlan?.kind, .rest, "Day-2 should be rest (pre-cleanup this was mobility). Got: \(plan.days.map(\.kind))")
     }
 
     func testPeakDateOutsideWeekIsNoOp() {
@@ -630,21 +629,26 @@ final class PlannerTests: XCTestCase {
     // MARK: - Multi-focus
 
     func testMultiFocusUsesFirstAsPrimary() {
+        // Pre-cleanup this test used `.mobility` as the primary focus to
+        // verify focuses[0] drives shape selection. PrimaryFocus.mobility is
+        // gone; this rewrites against .endurance which has a distinct shape
+        // (heavy sport/cardio bias) different from the .hypertrophy default.
         var memory = fixtureMemory()
-        memory.focuses = [.mobility, .hypertrophy]    // primary = mobility
+        memory.focuses = [.endurance, .hypertrophy]    // primary = endurance
         memory.liftDaysPerWeek = 1
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
-        let mobs = plan.days.filter { $0.kind == .mobility }.count
-        // Mobility focus shape: 4 mobility / 3 rest. With liftDaysPerWeek=1 we
-        // promote 1 of the 4 mobilities → lift, leaving ≥3 mobilities.
-        XCTAssertGreaterThanOrEqual(mobs, 3)
+        let sports = plan.days.filter { $0.kind == .sport }.count
+        // Endurance shape: 4 sport / 1 lift / 2 rest. With liftDaysPerWeek=1
+        // the sport days survive intact (we only swap rests/mobilities to hit
+        // the lift target, not sports).
+        XCTAssertGreaterThanOrEqual(sports, 3)
     }
 
     // MARK: - adjustForLiftBudget unit
 
     func testAdjustDemotesExcessLiftsFromTheEnd() {
-        let queue: [DayKind] = [.lift, .rest, .lift, .rest, .lift, .mobility, .rest]
+        let queue: [DayKind] = [.lift, .rest, .lift, .rest, .lift, .rest, .rest]
         let result = Planner.adjustForLiftBudget(queue, target: 1)
         XCTAssertEqual(result.filter { $0 == .lift }.count, 1)
         XCTAssertEqual(result.first, .lift, "First lift should survive (early-week emphasis)")
@@ -738,8 +742,8 @@ final class PlannerTests: XCTestCase {
 
         XCTAssertEqual(plan.days.first { cal.isDate($0.date, inSameDayAs: friday) }?.kind, .rest,
                        "Friday (Day -1) should be rest before a hard race")
-        XCTAssertEqual(plan.days.first { cal.isDate($0.date, inSameDayAs: thursday) }?.kind, .mobility,
-                       "Thursday (Day -2) should be mobility before a hard race")
+        XCTAssertEqual(plan.days.first { cal.isDate($0.date, inSameDayAs: thursday) }?.kind, .rest,
+                       "Thursday (Day -2) should be rest before a hard race (pre-cleanup this was mobility)")
     }
 
     func testModerateRaceOnlyTapersDayMinusOne() {
@@ -762,7 +766,9 @@ final class PlannerTests: XCTestCase {
 
         XCTAssertEqual(plan.days.first { cal.isDate($0.date, inSameDayAs: friday) }?.kind, .rest,
                        "Friday (Day -1) should be rest before a moderate race")
-        XCTAssertNotEqual(plan.days.first { cal.isDate($0.date, inSameDayAs: thursday) }?.kind, .mobility,
+        // For a moderate race the day-2 taper rule shouldn't fire — Thursday
+        // keeps whatever the shape gave it (not a forced demotion).
+        XCTAssertNotEqual(plan.days.first { cal.isDate($0.date, inSameDayAs: thursday) }?.kind, .rest,
                           "Thursday should NOT be tapered for a moderate race")
     }
 
@@ -831,8 +837,8 @@ final class PlannerTests: XCTestCase {
         let plan = Planner.generate(memory: memory, overrides: overrides,
                                     routines: catalog(), today: mondayAnchor())
         let tuesKind = plan.days.first { cal.isDate($0.date, inSameDayAs: tuesday) }?.kind
-        XCTAssertEqual(tuesKind, .mobility,
-                       "Lift day before a hard sport session should be demoted to mobility")
+        XCTAssertEqual(tuesKind, .rest,
+                       "Lift day before a hard sport session should be demoted to rest (pre-cleanup this was mobility)")
     }
 
     func testModerateSportSessionDoesNotDemotePreviousLift() {
@@ -852,12 +858,13 @@ final class PlannerTests: XCTestCase {
 
         let plan = Planner.generate(memory: memory, overrides: overrides,
                                     routines: catalog(), today: mondayAnchor())
-        // Day before moderate sport session keeps the planner's normal pick — i.e.
-        // not forced to mobility. Since this is data-shape dependent, we only
-        // assert that the buffer rule didn't fire (i.e., day before isn't a
-        // taper/buffer-titled mobility).
+        // Day before a moderate sport session keeps the planner's normal pick
+        // — the buffer rule only fires for hard intensity. The pre-cleanup
+        // version of this test also checked that a buffer-titled mobility
+        // didn't appear; with mobility gone, a rest still wouldn't carry the
+        // buffer title either, so any non-rest pick passes.
         let tuesPlan = plan.days[1]
-        if tuesPlan.kind == .mobility {
+        if tuesPlan.kind == .rest {
             XCTAssertFalse(
                 tuesPlan.title.contains("buffer"),
                 "Buffer rule shouldn't fire for moderate sport sessions"

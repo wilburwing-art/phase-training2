@@ -122,10 +122,16 @@ struct TrainingMemory: Codable {
         self.sports          = (try? c.decode([Sport].self,        forKey: .sports))          ?? []
         self.primarySport    =  try? c.decodeIfPresent(Sport.self, forKey: .primarySport)
 
-        // Focus migration: prefer focuses[]; fall back to legacy primaryFocus singleton.
-        if let arr = try? c.decode([PrimaryFocus].self, forKey: .focuses), !arr.isEmpty {
-            self.focuses = arr
-        } else if let legacy = try? c.decode(PrimaryFocus.self, forKey: .primaryFocus) {
+        // Focus migration: prefer focuses[]; fall back to legacy primaryFocus
+        // singleton. Decode element-by-element from strings so saved data
+        // containing dropped cases (.mobility/.rehab — removed when the
+        // prehab/mobility catalog was cleared) doesn't poison the whole array
+        // and we keep the other focuses the user picked.
+        if let rawArr = try? c.decode([String].self, forKey: .focuses) {
+            let mapped = rawArr.compactMap(PrimaryFocus.init(rawValue:))
+            self.focuses = mapped.isEmpty ? [.generalStrength] : mapped
+        } else if let legacyRaw = try? c.decode(String.self, forKey: .primaryFocus),
+                  let legacy = PrimaryFocus(rawValue: legacyRaw) {
             self.focuses = [legacy]
         } else {
             self.focuses = [.generalStrength]
@@ -323,10 +329,8 @@ enum PrimaryFocus: String, Codable, CaseIterable, Identifiable {
     case hypertrophy
     case sportPerformance   = "sport_performance"
     case endurance
-    case mobility
     case weightLoss         = "weight_loss"
     case longevity
-    case rehab
 
     var id: String { rawValue }
 
@@ -336,10 +340,8 @@ enum PrimaryFocus: String, Codable, CaseIterable, Identifiable {
         case .hypertrophy:      return "Build muscle"
         case .sportPerformance: return "Sport performance"
         case .endurance:        return "Build endurance"
-        case .mobility:         return "Move better"
         case .weightLoss:       return "Lose weight"
         case .longevity:        return "Longevity / healthspan"
-        case .rehab:            return "Recover from injury"
         }
     }
 
@@ -349,10 +351,8 @@ enum PrimaryFocus: String, Codable, CaseIterable, Identifiable {
         case .hypertrophy:      return "Volume + isolation, look the part"
         case .sportPerformance: return "Power + prehab + sport-specific"
         case .endurance:        return "Zone 2, intervals, work capacity"
-        case .mobility:         return "Range of motion + control"
         case .weightLoss:       return "Calorie burn + lean mass retention"
         case .longevity:        return "Strength + balance + cardio mix"
-        case .rehab:            return "Targeted PT-style work"
         }
     }
 }

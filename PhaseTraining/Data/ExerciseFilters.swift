@@ -76,6 +76,23 @@ enum MuscleBucket: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
+    /// Buckets surfaced in the soreness check-in (and downstream coach
+    /// summaries). The accessory groups — biceps, triceps, forearms, calves —
+    /// rarely get flagged usefully (they get sore as a side-effect of compound
+    /// work, not as a recovery signal worth its own UI) so we omit them to
+    /// keep the chip grid tight. Core stays because heavy compound work +
+    /// dedicated core sessions both produce real DOMS there.
+    static let sorenessPrimaryCases: [MuscleBucket] = [
+        .chest, .back, .shoulders, .quads, .hamstrings, .glutes, .core,
+    ]
+
+    /// Lower-cased rawValue set for fast filter-on-read of `SorenessEntry.areas`.
+    /// Used to suppress legacy entries that tagged buckets we no longer surface,
+    /// so coach summaries don't say "areas: calves" after the UI stopped offering it.
+    static let sorenessPrimarySlugs: Set<String> = Set(
+        sorenessPrimaryCases.map { $0.rawValue }
+    )
+
     /// Reverse map: given a muscle_groups.slug, which bucket does it fall in?
     /// Returns nil for slugs we don't surface (full-body, neck, etc.) — those
     /// exercises simply won't match any bucket filter, which is intended.
@@ -114,6 +131,68 @@ enum MuscleBucket: String, CaseIterable, Identifiable, Hashable {
             return .back
         case .chest, .shoulders, .biceps, .forearms, .quads, .core:
             return .front
+        }
+    }
+}
+
+// MARK: - LibraryTile
+
+/// Coarser muscle grouping the Library tab uses as its landing grid (7 tiles
+/// instead of the 11 MuscleBucket chips). Pre-scopes the exercise list so
+/// users never face the 551-row firehose: tap "Arms" → 33 exercises across
+/// biceps+triceps+forearms; tap "Hams + Glutes" → posterior-chain set
+/// including calves. MuscleBucket stays the source of truth — LibraryTile
+/// just rolls members together.
+enum LibraryTile: String, CaseIterable, Identifiable, Hashable {
+    case chest, back, shoulders, arms, quads, hamsGlutes, core
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .chest:      return "Chest"
+        case .back:       return "Back"
+        case .shoulders:  return "Shoulders"
+        case .arms:       return "Arms"
+        case .quads:      return "Quads"
+        case .hamsGlutes: return "Hams + Glutes"
+        case .core:       return "Core"
+        }
+    }
+
+    /// Which MuscleBucket(s) roll into this tile. Compound tiles (Arms,
+    /// Hams + Glutes) have multiple members — the drill-down screen surfaces
+    /// them as sub-chips so users can narrow to a single muscle.
+    var members: [MuscleBucket] {
+        switch self {
+        case .chest:      return [.chest]
+        case .back:       return [.back]
+        case .shoulders:  return [.shoulders]
+        case .arms:       return [.biceps, .triceps, .forearms]
+        case .quads:      return [.quads]
+        case .hamsGlutes: return [.hamstrings, .glutes, .calves]
+        case .core:       return [.core]
+        }
+    }
+
+    /// Flat OR'd list of muscle_groups.slug values to pass into
+    /// CoachDatabase.listExercises(muscleSlugs:). Already handles the
+    /// multi-bucket case for Arms / Hams + Glutes.
+    var memberSlugs: [String] {
+        members.flatMap { $0.memberSlugs }
+    }
+
+    /// SF Symbol shown on the tile face. Same icon style across all 7 so the
+    /// grid reads as a family.
+    var symbol: String {
+        switch self {
+        case .chest:      return "figure.cooldown"
+        case .back:       return "figure.strengthtraining.functional"
+        case .shoulders:  return "figure.boxing"
+        case .arms:       return "dumbbell.fill"
+        case .quads:      return "figure.run"
+        case .hamsGlutes: return "figure.walk"
+        case .core:       return "figure.core.training"
         }
     }
 }

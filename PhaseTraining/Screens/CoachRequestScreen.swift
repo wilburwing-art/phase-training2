@@ -471,23 +471,15 @@ struct CoachRequestScreen: View {
             soreness: mem.soreness,
             feedback: mem.feedback
         )
-        let workout: GeneratedWorkout
+        // Map the focus back to a liftIndex/totalLifts pair that resolves
+        // to it via WorkoutFocus.lift — generator preserves the override.
         let effectiveFocus = strategy.focus ?? focus.workoutFocus
-        if effectiveFocus == .mobility {
-            workout = WorkoutGenerator.generateMobility(
-                memory: mem, profile: profile, hashSeed: seed,
-                context: context, strategy: strategy
-            )
-        } else {
-            // Map the focus back to a liftIndex/totalLifts pair that resolves
-            // to it via WorkoutFocus.lift — generator preserves the override.
-            let (liftIdx, total) = liftIndexTotalPair(for: effectiveFocus)
-            workout = WorkoutGenerator.generateLift(
-                liftIndex: liftIdx, totalLifts: total,
-                memory: mem, profile: profile, hashSeed: seed,
-                context: context, strategy: strategy
-            )
-        }
+        let (liftIdx, total) = liftIndexTotalPair(for: effectiveFocus)
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: liftIdx, totalLifts: total,
+            memory: mem, profile: profile, hashSeed: seed,
+            context: context, strategy: strategy
+        )
         coachReasoning = reasoning
         preview = workout
         phase = .preview
@@ -496,12 +488,11 @@ struct CoachRequestScreen: View {
     private func liftIndexTotalPair(for focus: WorkoutFocus) -> (Int, Int) {
         switch focus {
         case .fullBodyA, .fullBodyB: return (0, 1)
-        case .push:     return (0, 3)
-        case .pull:     return (1, 3)
-        case .legs:     return (2, 3)
-        case .upper:    return (0, 4)
-        case .lower:    return (1, 4)
-        case .mobility: return (0, 0)
+        case .push:  return (0, 3)
+        case .pull:  return (1, 3)
+        case .legs:  return (2, 3)
+        case .upper: return (0, 4)
+        case .lower: return (1, 4)
         }
     }
 
@@ -582,10 +573,9 @@ private struct PreviewRowIndex: Identifiable {
 // MARK: - RequestFocus
 
 /// Focus options the user can request. Maps to WorkoutGenerator's
-/// (liftIndex, totalLifts) inputs, except `.mobility` which has its own entry
-/// on the generator.
+/// (liftIndex, totalLifts) inputs.
 enum RequestFocus: String, CaseIterable, Hashable {
-    case fullBody, push, pull, legs, upper, lower, mobility
+    case fullBody, push, pull, legs, upper, lower
 
     var label: String {
         switch self {
@@ -595,12 +585,11 @@ enum RequestFocus: String, CaseIterable, Hashable {
         case .legs:     return "Legs"
         case .upper:    return "Upper body"
         case .lower:    return "Lower body"
-        case .mobility: return "Mobility"
         }
     }
 
     /// Return (liftIndex, totalLifts) such that WorkoutFocus.lift(...) yields
-    /// the focus this request asks for. Mobility is handled separately.
+    /// the focus this request asks for.
     func liftIndexTotalPair() -> (Int, Int) {
         switch self {
         case .fullBody: return (0, 1)   // totalLifts 0/1 → fullBodyA
@@ -609,7 +598,6 @@ enum RequestFocus: String, CaseIterable, Hashable {
         case .legs:     return (2, 3)   // 2=legs
         case .upper:    return (0, 4)   // 4-day rotation: 0=upper
         case .lower:    return (1, 4)   // 1=lower
-        case .mobility: return (0, 0)   // unused, caller branches first
         }
     }
 
@@ -624,7 +612,6 @@ enum RequestFocus: String, CaseIterable, Hashable {
         case .legs:     return .legs
         case .upper:    return .upper
         case .lower:    return .lower
-        case .mobility: return .mobility
         }
     }
 }

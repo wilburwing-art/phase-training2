@@ -147,7 +147,7 @@ final class PlanStoreRegenTests: XCTestCase {
         // set but no generatedWorkout. This mirrors what UserDefaults would
         // decode for a user upgrading from the old picker.
         let cal = Calendar.current
-        let kinds: [DayKind] = [.lift, .rest, .lift, .rest, .lift, .mobility, .rest]
+        let kinds: [DayKind] = [.lift, .rest, .lift, .rest, .lift, .rest, .rest]
         let staleDays = (0..<7).map { i -> DayPlan in
             DayPlan(
                 date: cal.date(byAdding: .day, value: i, to: today) ?? today,
@@ -167,9 +167,9 @@ final class PlanStoreRegenTests: XCTestCase {
 
         store.migrateIfStale(memory: memory, today: today)
 
-        // After migration: every lift/mobility day has a generatedWorkout.
+        // After migration: every lift day has a generatedWorkout.
         for day in store.plan?.days ?? [] {
-            if day.kind == .lift || day.kind == .mobility {
+            if day.kind == .lift {
                 XCTAssertNotNil(day.generatedWorkout,
                                 "\(day.title) on \(day.date) should have a generated workout after migration")
                 XCTAssertNil(day.routineId,

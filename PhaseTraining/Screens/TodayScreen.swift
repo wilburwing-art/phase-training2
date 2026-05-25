@@ -125,7 +125,7 @@ struct TodayScreen: View {
 
     private var heroTitle: String {
         switch effectiveKind {
-        case .lift, .mobility:
+        case .lift:
             return template?.name.replacingOccurrences(of: " Day ", with: "\nDay ")
                 ?? (todayPlan?.title ?? "Train")
         case .sport:
@@ -171,7 +171,7 @@ struct TodayScreen: View {
 
     private var heroSubtitle: String {
         switch effectiveKind {
-        case .lift, .mobility:
+        case .lift:
             return template?.category ?? ""
         case .sport:
             if let log = todaySportLog {
@@ -779,7 +779,7 @@ struct TodayScreen: View {
     @ViewBuilder
     private var primaryButton: some View {
         switch effectiveKind {
-        case .lift, .mobility:
+        case .lift:
             workoutStartButton
         case .sport:
             // Only offer the log CTA when the day actually has a sport;

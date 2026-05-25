@@ -216,17 +216,6 @@ final class DemographicProfileTests: XCTestCase {
                        "Single-injury union should match the per-slug set")
     }
 
-    func test_userInjuries_populatePrehabSuggestions() {
-        var m = TrainingMemory()
-        m.userInjuries = [UserInjury(slug: "patellar-tendinopathy")]
-        let p = DemographicProfile.from(m)
-        XCTAssertEqual(p.prehabSuggestions.count, 1,
-                       "Exactly one prehab bucket for one structured injury")
-        XCTAssertEqual(p.prehabSuggestions.first?.slug, "patellar-tendinopathy")
-        XCTAssertLessThanOrEqual(p.prehabSuggestions.first?.exercises.count ?? 0, 3,
-                                 "Capped at 3 prehab exercises per injury")
-    }
-
     func test_legacySlugInConstraints_stillBackfillsExcludedByInjury() {
         // Pre-87 saves wrote slugs into constraints[]. DemographicProfile must
         // pick them up via the straggler path even if migration didn't run.
@@ -240,6 +229,5 @@ final class DemographicProfileTests: XCTestCase {
     func test_noInjuries_emitsEmptyBuckets() {
         let p = DemographicProfile.from(TrainingMemory())
         XCTAssertTrue(p.excludedByInjury.isEmpty)
-        XCTAssertTrue(p.prehabSuggestions.isEmpty)
     }
 }

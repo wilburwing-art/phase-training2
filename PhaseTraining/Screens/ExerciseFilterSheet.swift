@@ -19,13 +19,8 @@ struct ExerciseFilterSheet: View {
         ("strength", "Strength"),
         ("endurance", "Endurance"),
         ("power", "Power"),
-        ("mobility", "Mobility"),
-        ("prehab", "Prehab"),
-        ("balance", "Balance"),
         ("plyometric", "Plyometric"),
         ("agility", "Agility"),
-        ("flexibility", "Flexibility"),
-        ("recovery", "Recovery"),
     ]
     private let difficulties: [(slug: String, label: String)] = [
         ("beginner", "Beginner"),

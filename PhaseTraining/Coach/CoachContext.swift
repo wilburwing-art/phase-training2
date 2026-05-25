@@ -99,9 +99,6 @@ enum CoachContext {
         if let block = injuryFiltersSection(profile: demoProfile, memory: memory) {
             blocks.append(block)
         }
-        if let block = prehabCandidatesSection(profile: demoProfile, memory: memory) {
-            blocks.append(block)
-        }
         // Legacy free-text constraints (anything in memory.constraints that
         // doesn't match a coach.db injury slug). Kept as a separate block so
         // the model still sees user-typed notes like "bad ankle" without us
@@ -249,7 +246,8 @@ enum CoachContext {
             if let e = today.energy { parts.append("energy: \(e)") }
             if let s = today.soreness { parts.append("soreness: \(s)") }
             if today.pain { parts.append("pain: yes") }
-            if !today.areas.isEmpty { parts.append("areas: \(today.areas.joined(separator: ", "))") }
+            let displayAreas = today.areas.filter { MuscleBucket.sorenessPrimarySlugs.contains($0) }
+            if !displayAreas.isEmpty { parts.append("areas: \(displayAreas.joined(separator: ", "))") }
             if let t = today.timeBudget { parts.append("time: \(t) min") }
             if today.equipmentChanged { parts.append("equipment changed: yes") }
             if !parts.isEmpty {
@@ -390,20 +388,6 @@ enum CoachContext {
         }
         guard !lines.isEmpty else { return nil }
         return "INJURY FILTERS — exercises currently excluded\n" + lines.joined(separator: "\n")
-    }
-
-    static func prehabCandidatesSection(profile: DemographicProfile, memory: TrainingMemory) -> String? {
-        guard !profile.prehabSuggestions.isEmpty else { return nil }
-        let names = injuryNameLookup()
-        var lines: [String] = []
-        for entry in profile.prehabSuggestions {
-            guard !entry.exercises.isEmpty else { continue }
-            let display = names[entry.slug] ?? entry.slug
-            let exNames = entry.exercises.map(\.name).joined(separator: ", ")
-            lines.append("- \(display): \(exNames)")
-        }
-        guard !lines.isEmpty else { return nil }
-        return "PREHAB CANDIDATES — coach.db-tagged for the user's injuries\n" + lines.joined(separator: "\n")
     }
 
     // MARK: - Section builders (build 62: richer profile signal for the coach)
@@ -579,7 +563,9 @@ enum CoachContext {
         var painDays = 0
         for entry in recent {
             if entry.pain { painDays += 1 }
-            for area in entry.areas { areaCounts[area, default: 0] += 1 }
+            for area in entry.areas where MuscleBucket.sorenessPrimarySlugs.contains(area) {
+                areaCounts[area, default: 0] += 1
+            }
             if let e = entry.energy { energyBuckets[e, default: 0] += 1 }
             if let s = entry.soreness { sorenessBuckets[s, default: 0] += 1 }
         }

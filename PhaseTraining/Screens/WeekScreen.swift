@@ -151,7 +151,7 @@ struct WeekScreen: View {
     private func planSummary(_ plan: WeekPlan) -> String {
         var counts: [DayKind: Int] = [:]
         for d in plan.days { counts[d.kind, default: 0] += 1 }
-        let order: [DayKind] = [.lift, .sport, .mobility, .rest, .event]
+        let order: [DayKind] = [.lift, .sport, .rest, .event]
         let parts = order.compactMap { kind -> String? in
             guard let n = counts[kind], n > 0 else { return nil }
             return "\(n) \(kind.label.lowercased())"
@@ -336,17 +336,16 @@ private struct KindBadge: View {
 
     private var bgColor: Color {
         switch kind {
-        case .lift:     return Color.accent
-        case .sport:    return Color.ok.opacity(0.85)
-        case .mobility: return Color.ink2.opacity(0.7)
-        case .rest:     return Color.elevated
-        case .event:    return Color.danger.opacity(0.9)
+        case .lift:  return Color.accent
+        case .sport: return Color.ok.opacity(0.85)
+        case .rest:  return Color.elevated
+        case .event: return Color.danger.opacity(0.9)
         }
     }
 
     private var textColor: Color {
         switch kind {
-        case .lift, .sport, .mobility, .event: return Color.accentInk
+        case .lift, .sport, .event: return Color.accentInk
         case .rest: return Color.ink3
         }
     }

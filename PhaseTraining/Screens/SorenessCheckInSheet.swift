@@ -43,12 +43,13 @@ struct SorenessCheckInSheet: View {
         ("high", "High"),
     ]
 
-    /// Muscle groups the user can flag as sore. DOMS lives in muscles, so we
-    /// surface the same 11-bucket catalog the picker / filters / progress
-    /// chips use (see `MuscleBucket`). The post-workout hurt list still uses
-    /// joint-level vocab — that's pain, this is soreness.
+    /// Muscle groups the user can flag as sore. We surface only the soreness
+    /// primary buckets (see `MuscleBucket.sorenessPrimaryCases`) — accessory
+    /// groups like biceps/triceps/forearms/calves are dropped from the grid
+    /// because they're side-effect soreness from compounds, not a recovery
+    /// signal worth its own chip.
     private static let areaOptions: [(slug: String, label: String)] =
-        MuscleBucket.allCases.map { ($0.rawValue, $0.label) }
+        MuscleBucket.sorenessPrimaryCases.map { ($0.rawValue, $0.label) }
 
     // MARK: - Body
 

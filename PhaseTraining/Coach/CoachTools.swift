@@ -474,11 +474,10 @@ enum CoachToolDecoder {
 
     private static func defaultTitle(for kind: DayKind) -> String {
         switch kind {
-        case .lift:     return "Lift"
-        case .sport:    return "Sport"
-        case .mobility: return "Mobility"
-        case .rest:     return "Rest"
-        case .event:    return "Event"
+        case .lift:  return "Lift"
+        case .sport: return "Sport"
+        case .rest:  return "Rest"
+        case .event: return "Event"
         }
     }
 }

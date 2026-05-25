@@ -293,31 +293,6 @@ enum Planner {
                            protected: true,
                            generatedReason: "You set this day to rest")
 
-        case .mobility(let routineId):
-            // User picked a specific routine → honor it; else generate a
-            // fresh mobility flow from the profile so the day isn't empty.
-            if let id = routineId, let r = routines.first(where: { $0.id == id }) {
-                return DayPlan(date: date, kind: .mobility,
-                               title: r.name,
-                               routineId: r.id,
-                               protected: true,
-                               generatedReason: "You picked this routine for this day")
-            }
-            let profile = DemographicProfile.from(memory)
-            let workout = WorkoutGenerator.generateMobility(
-                memory: memory,
-                profile: profile,
-                hashSeed: memory.planInputsHash + "-mob-override",
-                recentlyPicked: recentlyPicked,
-                context: context,
-                strategy: strategy
-            )
-            return DayPlan(date: date, kind: .mobility,
-                           title: workout.title,
-                           generatedWorkout: workout,
-                           protected: true,
-                           generatedReason: "You set this day to mobility")
-
         case .lift(let routineId):
             if let id = routineId, let r = routines.first(where: { $0.id == id }) {
                 return DayPlan(date: date, kind: .lift,
@@ -417,22 +392,6 @@ enum Planner {
                 generatedWorkout: workout,
                 generatedReason: workout.provenance
             )
-        case .mobility:
-            let workout = WorkoutGenerator.generateMobility(
-                memory: memory,
-                profile: profile,
-                hashSeed: memory.planInputsHash + "-mob-\(slotOffset)",
-                recentlyPicked: recentlyPicked,
-                context: context,
-                strategy: strategy
-            )
-            return DayPlan(
-                date: date,
-                kind: .mobility,
-                title: workout.title,
-                generatedWorkout: workout,
-                generatedReason: workout.provenance
-            )
         case .sport:
             return DayPlan(
                 date: date,
@@ -460,11 +419,10 @@ enum Planner {
 
     private static func defaultTitle(for kind: DayKind) -> String {
         switch kind {
-        case .lift:     return "Strength"
-        case .mobility: return "Mobility"
-        case .sport:    return "Sport"
-        case .rest:     return "Rest"
-        case .event:    return "Event"
+        case .lift:  return "Strength"
+        case .sport: return "Sport"
+        case .rest:  return "Rest"
+        case .event: return "Event"
         }
     }
 
@@ -495,11 +453,12 @@ enum Planner {
                 reason: "Tapering before \(eventTitle(event))"
             )
 
-            // Day -2: mobility (hard only).
+            // Day -2: extra rest (hard only). Pre-cleanup this was a mobility
+            // slot; with the mobility catalog gone, easing in just means rest.
             if event.intensity == .hard {
                 demote(
                     &slots, at: eventIdx - 2,
-                    to: .mobility, title: "Mobility",
+                    to: .rest, title: "Rest",
                     reason: "Easing into \(eventTitle(event))"
                 )
             }
@@ -527,7 +486,7 @@ enum Planner {
     }
 
     /// Pre-sport buffer. Day before a hard SPORT SESSION (not race — races
-    /// already get the pre-event taper) → no heavy lift, demoted to mobility.
+    /// already get the pre-event taper) → no heavy lift, demoted to rest.
     /// Lets the user show up fresh for hard climbing/grappling/etc.
     private static func applyPreSportBuffer(
         _ slots: inout [DayPlan?],
@@ -540,7 +499,7 @@ enum Planner {
             guard let eventIdx = dates.firstIndex(where: { calendar.isDate($0, inSameDayAs: event.date) }) else {
                 continue
             }
-            // Only demote if the preceding slot is a lift (.mobility/.rest already fine).
+            // Only demote if the preceding slot is a lift (.rest already fine).
             let priorIdx = eventIdx - 1
             guard priorIdx >= 0,
                   let prior = slots[priorIdx],
@@ -548,7 +507,7 @@ enum Planner {
                   prior.kind == .lift else { continue }
             demote(
                 &slots, at: priorIdx,
-                to: .mobility, title: "Mobility",
+                to: .rest, title: "Rest",
                 reason: "Going light before \(eventTitle(event))"
             )
         }
@@ -586,7 +545,7 @@ enum Planner {
         )
         demote(&slots, at: peakIdx - 1, to: .rest, title: "Rest",
                reason: "Tapering before peak day")
-        demote(&slots, at: peakIdx - 2, to: .mobility, title: "Mobility",
+        demote(&slots, at: peakIdx - 2, to: .rest, title: "Rest",
                reason: "Easing into peak day")
     }
 
@@ -663,11 +622,10 @@ enum Planner {
 
     private static func severity(_ kind: DayKind) -> Int {
         switch kind {
-        case .lift:     return 4
-        case .sport:    return 3
-        case .event:    return 3
-        case .mobility: return 2
-        case .rest:     return 1
+        case .lift:  return 4
+        case .sport: return 3
+        case .event: return 3
+        case .rest:  return 1
         }
     }
 
@@ -720,13 +678,6 @@ enum Planner {
                 needed -= 1
             }
 
-            // If we still need more, promote mobility slots (front-first).
-            for i in result.indices where needed > 0 {
-                if result[i] == .mobility {
-                    result[i] = .lift
-                    needed -= 1
-                }
-            }
             // We never demote sports — fixed sports are protected, and shape sports
             // express the user's intent through their primary sport.
         }
@@ -859,9 +810,8 @@ enum Planner {
 
     private static func goalsFor(_ kind: DayKind) -> Set<String>? {
         switch kind {
-        case .lift:     return ["strength", "direct_strength", "power", "accessory", "conditioning"]
-        case .mobility: return ["mobility", "warm_up", "recovery", "prehab"]
-        default:        return nil
+        case .lift: return ["strength", "direct_strength", "power", "accessory", "conditioning"]
+        default:    return nil
         }
     }
 

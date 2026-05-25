@@ -210,7 +210,9 @@ extension GeneratorContext {
     ) -> Set<String> {
         var out: Set<String> = []
         for entry in soreness where entry.date >= cutoff {
-            for area in entry.areas { out.insert(area.lowercased()) }
+            for area in entry.areas where MuscleBucket.sorenessPrimarySlugs.contains(area) {
+                out.insert(area.lowercased())
+            }
         }
         for entry in feedback where entry.date >= cutoff {
             for area in entry.hurtAreas { out.insert(area.lowercased()) }

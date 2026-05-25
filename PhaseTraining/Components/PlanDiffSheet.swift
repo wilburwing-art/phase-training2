@@ -190,11 +190,10 @@ private struct DiffDayRow: View {
 
     private var kindColor: Color {
         switch day.kind {
-        case .lift:     return Color.accent
-        case .sport:    return Color.ok.opacity(0.85)
-        case .mobility: return Color.ink2.opacity(0.7)
-        case .rest:     return Color.elevated
-        case .event:    return Color.danger.opacity(0.9)
+        case .lift:  return Color.accent
+        case .sport: return Color.ok.opacity(0.85)
+        case .rest:  return Color.elevated
+        case .event: return Color.danger.opacity(0.9)
         }
     }
 }

@@ -73,11 +73,11 @@ extension PlanStore {
             recentSportLogs: sportLogs
         )
 
-        // Candidates: lift + mobility days that haven't been refined yet
-        // for the current plan. We don't re-refine a day that was already
-        // polished by an earlier LLM pass — refinement is per-plan-version.
+        // Candidates: lift days that haven't been refined yet for the current
+        // plan. We don't re-refine a day that was already polished by an
+        // earlier LLM pass — refinement is per-plan-version.
         let candidates: [(index: Int, day: DayPlan)] = snapshotPlan.days.enumerated().compactMap { idx, day in
-            guard day.kind == .lift || day.kind == .mobility else { return nil }
+            guard day.kind == .lift else { return nil }
             guard day.generatedWorkout != nil else { return nil }
             if day.generatedWorkout?.refinedByLLMAt != nil { return nil }
             return (idx, day)
@@ -180,11 +180,6 @@ extension PlanStore {
 
         let workout: GeneratedWorkout
         switch day.kind {
-        case .mobility:
-            workout = WorkoutGenerator.generateMobility(
-                memory: memory, profile: profile, hashSeed: seed,
-                context: context, strategy: strategy
-            )
         case .lift:
             let liftDays = plan.days.filter { $0.kind == .lift }
             let cal = Calendar.current
@@ -209,10 +204,7 @@ extension PlanStore {
     /// generation for this day. Used to anchor the LLM's strategy so it
     /// can't shift the week's structure.
     private func existingFocus(for workout: GeneratedWorkout, plan: WeekPlan, day: DayPlan) -> WorkoutFocus? {
-        // Recompute the focus from (liftIndex, totalLifts) the same way
-        // the planner did. Mobility days are unambiguous.
         switch day.kind {
-        case .mobility: return .mobility
         case .lift:
             let liftDays = plan.days.filter { $0.kind == .lift }
             let cal = Calendar.current

@@ -196,17 +196,21 @@ final class CoachContextTests: XCTestCase {
     }
 
     func test_recoveryTrendSection_flagsRecurringHurtAreas() {
+        // Build 107 switched soreness areas from joint vocab (knee, shoulder)
+        // to muscle-bucket slugs (quads, back, shoulders). Coach summaries
+        // filter to MuscleBucket.sorenessPrimarySlugs on read so legacy
+        // joint-tagged entries don't leak through.
         let now = Date()
         let cal = Calendar.current
         let entries: [SorenessEntry] = (1...5).map { dayOffset in
             var e = SorenessEntry(date: cal.date(byAdding: .day, value: -dayOffset, to: now)!)
-            e.areas = ["knee"]
+            e.areas = ["quads"]
             e.energy = "normal"
             return e
         }
         let s = CoachContext.recoveryTrendSection(soreness: entries, now: now) ?? ""
         XCTAssertTrue(s.contains("RECOVERY TREND"))
-        XCTAssertTrue(s.contains("knee"), "recurring 'knee' should be flagged: \(s)")
+        XCTAssertTrue(s.contains("quads"), "recurring 'quads' should be flagged: \(s)")
         XCTAssertTrue(s.contains("5x"), "should count the recurrences: \(s)")
         XCTAssertTrue(s.contains("normal"), "energy histogram should appear: \(s)")
     }
@@ -360,15 +364,6 @@ final class CoachContextTests: XCTestCase {
         // block must NOT be just the header + slug.
         let lines = block.split(separator: "\n").map(String.init)
         XCTAssertTrue(lines.count >= 2, "Expected header + at least one injury line")
-    }
-
-    func test_prehabCandidates_listsCoachDbTaggedExercises() {
-        var m = TrainingMemory()
-        m.userInjuries = [UserInjury(slug: "patellar-tendinopathy")]
-        let p = DemographicProfile.from(m)
-        let block = CoachContext.prehabCandidatesSection(profile: p, memory: m) ?? ""
-        XCTAssertTrue(block.contains("PREHAB CANDIDATES"))
-        XCTAssertTrue(block.contains("Patellar Tendinopathy"))
     }
 
     func test_snapshot_neverRendersRawSlugInConstraintsBlock() {

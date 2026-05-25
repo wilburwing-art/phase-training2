@@ -61,13 +61,6 @@ struct InjuryContraindication: Hashable {
     let exerciseIds: Set<Int>
 }
 
-/// Per-injury prehab pool entry. Up to 3 exercises per injury, sourced from
-/// coach.db `exercise_injury_relevance` (roles: prehab, rehab_late).
-struct InjuryPrehabSuggestion: Hashable {
-    let slug: String
-    let exercises: [Exercise]
-}
-
 struct DemographicProfile: Equatable {
     /// Sane lift-days range for this demographic. The user's
     /// `liftDaysPerWeek` is still authoritative — this is a recommendation
@@ -112,13 +105,6 @@ struct DemographicProfile: Equatable {
     /// write "INJURY FILTERS — ACL: Back Squat, ..." per-injury lines so
     /// the coach can name which exercise got dropped for which reason.
     let excludedByInjury: [InjuryContraindication]
-
-    /// Per-injury prehab / rehab_late exercise list pulled from
-    /// `exercise_injury_relevance`. Build 87 — the WorkoutGenerator pulls
-    /// from this on mobility days when the user has any injury; CoachContext
-    /// also surfaces it as a PREHAB CANDIDATES block. Empty when no
-    /// structured injuries.
-    let prehabSuggestions: [InjuryPrehabSuggestion]
 
     /// Human-readable bullets explaining *why* the planner is structured
     /// the way it is. Surfaced in Profile.
@@ -231,18 +217,6 @@ extension DemographicProfile {
             .sorted { $0.key < $1.key }
             .map { InjuryContraindication(slug: $0.key, exerciseIds: $0.value) }
 
-        // Prehab pool. Both "prehab" and "rehab_late" are safe to recommend
-        // generically; "rehab_early" is too sensitive (acute load tolerance
-        // varies wildly) and stays out. Top 3 per injury, alphabetised by the
-        // SQL ORDER BY in the DB call.
-        let prehabRaw = CoachDatabase.shared.exercises(
-            forInjurySlugs: injurySlugs,
-            roles: ["prehab", "rehab_late"]
-        )
-        let prehab: [InjuryPrehabSuggestion] = prehabRaw
-            .sorted { $0.key < $1.key }
-            .map { InjuryPrehabSuggestion(slug: $0.key, exercises: Array($0.value.prefix(3))) }
-
         // --- Rationale ---
         var why: [String] = []
         why.append("\(m.experience.label) lifters do best with \(liftLow)-\(liftHigh) lift days at \(sessLow)-\(sessHigh) min per session.")
@@ -254,10 +228,6 @@ extension DemographicProfile {
         }
         if !injurySlugs.isEmpty {
             why.append("Avoiding exercises contraindicated for: \(injurySlugs.count) injur\(injurySlugs.count == 1 ? "y" : "ies").")
-        }
-        if !prehab.isEmpty {
-            let total = prehab.reduce(0) { $0 + $1.exercises.count }
-            why.append("Surfacing \(total) prehab move\(total == 1 ? "" : "s") for your injuries on mobility days.")
         }
         if !excludes.isEmpty {
             why.append("Free-text constraint keywords filtered: \(excludes.sorted().joined(separator: ", ")).")
@@ -279,7 +249,6 @@ extension DemographicProfile {
             excludedNameKeywords: excludes,
             excludedExerciseIds: contraindicated,
             excludedByInjury: excludedByInjury,
-            prehabSuggestions: prehab,
             rationale: why,
             userSportSlugs: m.sports.map(\.slug)
         )

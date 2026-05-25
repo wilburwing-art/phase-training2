@@ -333,7 +333,7 @@ final class PlanStore: ObservableObject {
                 let day = after.days[idx]
                 guard let prior = beforeById[day.id], prior.kind != day.kind else { continue }
                 switch day.kind {
-                case .lift, .mobility:
+                case .lift:
                     if let workout = composeWorkout(for: day, in: after, memory: memory) {
                         after.days[idx].generatedWorkout = workout
                         after.days[idx].title = workout.title
@@ -382,14 +382,6 @@ final class PlanStore: ObservableObject {
             return WorkoutGenerator.generateLift(
                 liftIndex: liftIndex,
                 totalLifts: liftDays.count,
-                memory: memory,
-                profile: profile,
-                hashSeed: seed,
-                recentlyPicked: recentIds,
-                context: context
-            )
-        case .mobility:
-            return WorkoutGenerator.generateMobility(
                 memory: memory,
                 profile: profile,
                 hashSeed: seed,
@@ -454,7 +446,7 @@ final class PlanStore: ObservableObject {
             guard let idx = plan.days.firstIndex(where: { $0.id == id }) else { return }
             plan.days[idx].kind = to
             plan.days[idx].title = title
-            plan.days[idx].routineId = (to == .lift || to == .mobility) ? routineId : nil
+            plan.days[idx].routineId = (to == .lift) ? routineId : nil
             if to != .sport { plan.days[idx].sport = nil }
 
         case .protectDay(let id, let eventTitle):
@@ -474,7 +466,7 @@ final class PlanStore: ObservableObject {
             if let idx = plan.days.firstIndex(where: { cal.isDate($0.date, inSameDayAs: target) }) {
                 plan.days[idx].kind = kind
                 plan.days[idx].title = title
-                plan.days[idx].routineId = (kind == .lift || kind == .mobility) ? routineId : nil
+                plan.days[idx].routineId = (kind == .lift) ? routineId : nil
             }
 
         case .removeSession(let id):
@@ -549,7 +541,7 @@ final class PlanStore: ObservableObject {
 
         let day = plan.days[idx]
         guard !day.protected else { return }
-        guard day.kind == .lift || day.kind == .mobility else { return }
+        guard day.kind == .lift else { return }
 
         let profile = DemographicProfile.from(memory)
         let saltValue = salt ?? String(Int(Date().timeIntervalSince1970))
@@ -557,33 +549,19 @@ final class PlanStore: ObservableObject {
         let recentIds = recentPicks?.recentlyPickedIds() ?? []
         let context = buildGeneratorContext(memory: memory, today: today)
 
-        let workout: GeneratedWorkout
-        switch day.kind {
-        case .lift:
-            // Re-derive this lift's index so push/pull/legs rotation stays
-            // coherent if the user has multiple lifts in the week.
-            let liftDays = plan.days.filter { $0.kind == .lift }
-            let liftIndex = liftDays.firstIndex(where: { cal.isDate($0.date, inSameDayAs: today) }) ?? 0
-            workout = WorkoutGenerator.generateLift(
-                liftIndex: liftIndex,
-                totalLifts: liftDays.count,
-                memory: memory,
-                profile: profile,
-                hashSeed: seed,
-                recentlyPicked: recentIds,
-                context: context
-            )
-        case .mobility:
-            workout = WorkoutGenerator.generateMobility(
-                memory: memory,
-                profile: profile,
-                hashSeed: seed,
-                recentlyPicked: recentIds,
-                context: context
-            )
-        default:
-            return
-        }
+        // Re-derive this lift's index so push/pull/legs rotation stays
+        // coherent if the user has multiple lifts in the week.
+        let liftDays = plan.days.filter { $0.kind == .lift }
+        let liftIndex = liftDays.firstIndex(where: { cal.isDate($0.date, inSameDayAs: today) }) ?? 0
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: liftIndex,
+            totalLifts: liftDays.count,
+            memory: memory,
+            profile: profile,
+            hashSeed: seed,
+            recentlyPicked: recentIds,
+            context: context
+        )
 
         plan.days[idx].generatedWorkout = workout
         plan.days[idx].title = workout.title
@@ -614,14 +592,14 @@ final class PlanStore: ObservableObject {
     /// Development" that has nothing to do with their actual sport
     /// selection — the old picker matched by goal only).
     ///
-    /// Triggers when ANY lift / mobility day in the current plan lacks a
+    /// Triggers when ANY lift day in the current plan lacks a
     /// generatedWorkout. No-op for fresh installs, post-migration plans,
     /// and rest-only weeks. User-pinned routines via dayOverrides survive
     /// because overrides live in WeekOverrides, not the WeekPlan.
     func migrateIfStale(memory: TrainingMemory, today: Date = Date()) {
         guard let plan = plan else { return }
         let needsLegacyRegen = plan.days.contains { day in
-            (day.kind == .lift || day.kind == .mobility) && day.generatedWorkout == nil
+            day.kind == .lift && day.generatedWorkout == nil
         }
         // Plans built before build 78 used a rolling 7-days-starting-today
         // window. Detect those by checking whether day[0] is the Monday of

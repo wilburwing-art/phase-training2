@@ -1,11 +1,12 @@
 // LibraryScreen.swift — browse the bundled coach.db catalog.
 //
-// Restores the browse surface retired in Phase 11: a tab that lets the user
-// explore the exercise + routine library directly instead of only seeing
-// them through generated workouts. Two segments:
-//   - Exercises: muscle-bucket chip strip (primary) + "All filters" sheet
-//     for movement category / modality / difficulty / environment /
-//     compound-vs-iso. Mirrors ExercisePickerSheet.
+// Two segments:
+//   - Exercises: 7-tile LazyVGrid landing (LibraryTile cases). Tap a tile to
+//     push LibraryMuscleScreen, which owns search + secondary filters scoped
+//     to that muscle group. Replaces the prior chip-strip + flat 551-row
+//     list, which was a clutter firehose. Custom workouts stay flat
+//     (Workouts segment) per intent — they're user-built, scrolled
+//     deliberately, not browsed.
 //   - Routines:  custom routines list + manual-build CTA (coach-driven
 //                generation lives behind the bubble, not here).
 //
@@ -31,8 +32,6 @@ struct LibraryScreen: View {
 
     @State private var segment: Segment = .exercises
     @State private var query: String = ""
-    @State private var filters = ExerciseFilters()
-    @State private var showingFilterSheet = false
     @State private var detailExercise: Exercise? = nil
     @State private var editingRoutine: CustomRoutine? = nil
 
@@ -52,27 +51,24 @@ struct LibraryScreen: View {
                         subtitle: "Browse every exercise and routine."
                     )
                     segmentControl
-                    if showSearchBar {
+                    if segment == .routines && showSearchBar {
                         searchBar
                     }
                     if segment == .routines {
                         createCustomCTA
                     }
-                    if segment == .exercises {
-                        filterChips
-                    }
                     list
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
+            .navigationDestination(for: LibraryTile.self) { tile in
+                LibraryMuscleScreen(tile: tile)
+            }
             .sheet(item: $detailExercise) { ex in
                 ExerciseDetailSheet(exercise: ex)
             }
             .sheet(item: $editingRoutine) { routine in
                 CustomRoutineEditSheet(routine: routine)
-            }
-            .sheet(isPresented: $showingFilterSheet) {
-                ExerciseFilterSheet(filters: $filters)
             }
         }
         .preferredColorScheme(.dark)
@@ -96,13 +92,11 @@ struct LibraryScreen: View {
         return "\(exCount) EX · \(routineCount) ROUTINES"
     }
 
-    /// Hide search until exercise browsing has hundreds of rows (always) or
-    /// the user has built up enough custom routines for filtering to matter.
+    /// Search only matters on the Workouts segment once the user has enough
+    /// custom routines to justify filtering. Exercises now lands on a 7-tile
+    /// grid; search lives inside LibraryMuscleScreen scoped to one tile.
     private var showSearchBar: Bool {
-        switch segment {
-        case .exercises: return true
-        case .routines:  return customStore.routines.count >= Self.routineSearchThreshold
-        }
+        customStore.routines.count >= Self.routineSearchThreshold
     }
 
     // MARK: - Create custom CTA (Routines segment only)
@@ -152,7 +146,6 @@ struct LibraryScreen: View {
                 Button {
                     segment = seg
                     query = ""
-                    filters = ExerciseFilters()
                 } label: {
                     Text(seg.label)
                         .styled(.micro)
@@ -201,62 +194,55 @@ struct LibraryScreen: View {
         .padding(.top, 12)
     }
 
-    // MARK: - Filter chips (exercises segment only)
+    // MARK: - Tile grid (Exercises segment)
 
-    @ViewBuilder
-    private var filterChips: some View {
-        VStack(spacing: 0) {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    chip("All", selected: filters.bucket == nil) { filters.bucket = nil }
-                    ForEach(MuscleBucket.allCases) { bucket in
-                        chip(bucket.label, selected: filters.bucket == bucket) {
-                            filters.bucket = (filters.bucket == bucket) ? nil : bucket
-                        }
+    /// 7-tile landing for the Exercises segment. Each tile is a
+    /// `NavigationLink` carrying a `LibraryTile`; the destination
+    /// (`LibraryMuscleScreen`) is registered on the enclosing
+    /// `NavigationStack` via `.navigationDestination(for: LibraryTile.self)`.
+    private var tileGrid: some View {
+        let columns = [
+            GridItem(.flexible(), spacing: 12),
+            GridItem(.flexible(), spacing: 12),
+        ]
+        return ScrollView {
+            LazyVGrid(columns: columns, spacing: 12) {
+                ForEach(LibraryTile.allCases) { tile in
+                    NavigationLink(value: tile) {
+                        tileFace(tile)
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("library-tile-\(tile.rawValue)")
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 10)
             }
-            allFiltersBar
+            .padding(.horizontal, 20)
+            .padding(.top, 12)
+            .padding(.bottom, 32)
         }
     }
 
-    private var allFiltersBar: some View {
-        HStack(spacing: 12) {
-            Button { showingFilterSheet = true } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "line.3.horizontal.decrease")
-                        .font(.system(size: 12, weight: .medium))
-                    Text(filters.secondaryCount > 0 ? "All filters (\(filters.secondaryCount))" : "All filters")
-                        .styled(.micro)
-                }
-                .foregroundStyle(filters.secondaryCount > 0 ? Color.accentInk : Color.ink2)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(filters.secondaryCount > 0 ? Color.accent : Color.surface)
-                .overlay(RoundedRectangle(cornerRadius: 6).stroke(filters.secondaryCount > 0 ? Color.clear : Color.line, lineWidth: 0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+    private func tileFace(_ tile: LibraryTile) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Image(systemName: tile.symbol)
+                .font(.system(size: 22, weight: .regular))
+                .foregroundStyle(Color.accent)
+            Text(tile.label)
+                .styled(.displayS)
+                .foregroundStyle(Color.ink)
+            HStack(spacing: 4) {
+                Text("Browse")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(Color.ink3)
             }
-            .buttonStyle(.plain)
-            Spacer()
         }
-        .padding(.horizontal, 20)
-        .padding(.bottom, 4)
-    }
-
-    private func chip(_ label: String, selected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(label)
-                .styled(.micro)
-                .foregroundStyle(selected ? Color.accentInk : Color.ink2)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(selected ? Color.accent : Color.surface)
-                .overlay(RoundedRectangle(cornerRadius: 6).stroke(selected ? Color.clear : Color.line, lineWidth: 0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-        }
-        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(Color.surface)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     // MARK: - List
@@ -265,38 +251,7 @@ struct LibraryScreen: View {
     private var list: some View {
         switch segment {
         case .exercises:
-            let rows = CoachDatabase.shared.listExercises(
-                search: query.isEmpty ? nil : query,
-                muscleSlugs: filters.bucket?.memberSlugs ?? [],
-                patternSlugs: filters.category?.memberPatternSlugs ?? [],
-                modality: filters.modality,
-                difficulty: filters.difficulty,
-                environment: filters.environment,
-                compoundOnly: filters.compoundOnly,
-                userSportSlugs: filters.hideOtherSports
-                    ? memoryStore.memory.sports.map(\.slug)
-                    : []
-            )
-            if rows.isEmpty {
-                searchEmptyState
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 8) {
-                        ForEach(rows) { ex in
-                            ExerciseTile(vm: .init(
-                                leading: .thumb(exerciseID: ex.id, urlString: ex.thumbnailURL ?? ex.imageURL),
-                                title: ex.name,
-                                meta: metaLine(ex),
-                                trailing: .chevron,
-                                onTap: { detailExercise = ex }
-                            ))
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 4)
-                    .padding(.bottom, 32)
-                }
-            }
+            tileGrid
 
         case .routines:
             let allCustoms = customStore.routines

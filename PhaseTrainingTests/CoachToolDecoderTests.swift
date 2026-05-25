@@ -28,8 +28,8 @@ final class CoachToolDecoderTests: XCTestCase {
         df.dateFormat = "yyyy-MM-dd"
         let start = df.date(from: "2026-05-18")!
         let cal = Calendar.current
-        let kinds: [DayKind] = [.lift, .sport, .mobility, .lift, .rest, .sport, .rest]
-        let titles = ["Push Day", "Climb", "Mobility flow", "Pull Day", "Rest", "Trail run", "Rest"]
+        let kinds: [DayKind] = [.lift, .sport, .rest, .lift, .rest, .sport, .rest]
+        let titles = ["Push Day", "Climb", "Rest", "Pull Day", "Rest", "Trail run", "Rest"]
         let days = (0..<7).map { i in
             DayPlan(
                 date: cal.date(byAdding: .day, value: i, to: start)!,
@@ -112,10 +112,10 @@ final class CoachToolDecoderTests: XCTestCase {
     func testSwapKindFillsDefaultTitleWhenOmitted() {
         let (plan, _) = fixturePlan()
         let edits = CoachToolDecoder.planEdits(for: proposal([
-            ProposalOp(op: "swap_kind", date: "2026-05-21", kind: "mobility")
+            ProposalOp(op: "swap_kind", date: "2026-05-21", kind: "sport")
         ]), in: plan)
         if case .swapKind(_, _, let title, _) = edits[0] {
-            XCTAssertEqual(title, "Mobility")
+            XCTAssertEqual(title, "Sport")
         } else { XCTFail() }
     }
 

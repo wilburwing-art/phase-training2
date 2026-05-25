@@ -44,9 +44,13 @@ final class GeneratorContextTests: XCTestCase {
     // MARK: - Builder: recentSoreAreas
 
     func test_recentSoreAreas_unionsSorenessAndFeedback() {
+        // Build 107 switched soreness.areas from joint vocab to muscle-bucket
+        // slugs. recentSoreAreas filters soreness entries to
+        // MuscleBucket.sorenessPrimarySlugs; feedback.hurtAreas stays
+        // unfiltered (pain vocab is still free-text).
         let now = Date()
         var sore = SorenessEntry(date: now.addingTimeInterval(-2 * 86400))
-        sore.areas = ["Knee", "Lower back"]
+        sore.areas = ["quads", "back"]
         let fb = FeedbackEntry(
             date: now.addingTimeInterval(-1 * 86400),
             sessionId: "x",
@@ -57,18 +61,18 @@ final class GeneratorContextTests: XCTestCase {
         let ctx = GeneratorContext.from(
             sessions: [], soreness: [sore], feedback: [fb], now: now
         )
-        XCTAssertTrue(ctx.recentSoreAreas.contains("knee"))
-        XCTAssertTrue(ctx.recentSoreAreas.contains("lower back"))
+        XCTAssertTrue(ctx.recentSoreAreas.contains("quads"))
+        XCTAssertTrue(ctx.recentSoreAreas.contains("back"))
         XCTAssertTrue(ctx.recentSoreAreas.contains("shoulder"))
     }
 
     func test_recentSoreAreas_excludesOlderThanSevenDays() {
         let now = Date()
         var oldSore = SorenessEntry(date: now.addingTimeInterval(-10 * 86400))
-        oldSore.areas = ["knee"]
+        oldSore.areas = ["quads"]
         let ctx = GeneratorContext.from(sessions: [], soreness: [oldSore],
                                         feedback: [], now: now)
-        XCTAssertFalse(ctx.recentSoreAreas.contains("knee"))
+        XCTAssertFalse(ctx.recentSoreAreas.contains("quads"))
     }
 
     // MARK: - Builder: stagnantExercises

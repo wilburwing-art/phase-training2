@@ -56,3 +56,6 @@ db/coach.db
 # temp working files. See PLAN-image-quality.md.
 db/quality/candidate_thumbs/
 
+coach.db.backup-*
+.derived-integration/
+.xcodebuildmcp/
