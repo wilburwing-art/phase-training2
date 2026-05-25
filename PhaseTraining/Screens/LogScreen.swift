@@ -759,7 +759,14 @@ struct LogScreen: View {
                     .frame(width: 22, height: 22)
             }
         }
-        .buttonStyle(.plain)
+        // .borderless instead of .plain. Visually identical here (the label
+        // is a Circle with an explicit fill, not a tinted system image), but
+        // iOS 26 XCUITest synthesized taps do not fire .plain Button actions
+        // when the label is < ~44pt — they DO fire .borderless. That broke
+        // every rest-card-after-set-done UI test (the 22pt check dot tap
+        // synthesized cleanly but never flipped done, so no rest card ever
+        // rendered for the test to assert against).
+        .buttonStyle(.borderless)
     }
 
     // MARK: - Inline rest UI
@@ -796,7 +803,10 @@ struct LogScreen: View {
                 )
                 .padding(.vertical, 6)
                 .transition(.opacity)
-                .accessibilityIdentifier("log-rest-card")
+                // No parent accessibilityIdentifier — in iOS 26 that overrides
+                // every child identifier (log-rest-add15, log-rest-skip,
+                // log-rest-time, log-rest-preset-30, …) so the UI tests can't
+                // find the chips inside.
                 .onAppear { /* TimelineView re-renders trigger checkExpiry */ }
             } else if isFlashing {
                 // Brief "DONE" flash after expiry — show 0:00 in the expired
@@ -810,7 +820,6 @@ struct LogScreen: View {
                 )
                 .padding(.vertical, 6)
                 .transition(.opacity)
-                .accessibilityIdentifier("log-rest-done")
             } else {
                 Color.clear.frame(height: 0)
             }
