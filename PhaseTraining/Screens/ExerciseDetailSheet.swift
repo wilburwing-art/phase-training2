@@ -144,8 +144,6 @@ private struct ExerciseDetailContent: View {
     private var anatomyLegend: some View {
         HStack(spacing: 14) {
             legendDot(color: BodyAnatomyView.HighlightIntensity.primary.color, label: "Primary")
-            legendDot(color: BodyAnatomyView.HighlightIntensity.secondary.color, label: "Secondary")
-            legendDot(color: BodyAnatomyView.HighlightIntensity.tertiary.color, label: "Stabilizer")
         }
         .frame(maxWidth: .infinity, alignment: .center)
     }
@@ -170,28 +168,12 @@ private struct ExerciseDetailContent: View {
     ) -> [String: BodyAnatomyView.HighlightIntensity] {
         var map: [String: BodyAnatomyView.HighlightIntensity] = [:]
         for row in muscles {
-            let intensity: BodyAnatomyView.HighlightIntensity
-            switch row.role {
-            case "primary":    intensity = .primary
-            case "secondary":  intensity = .secondary
-            case "stabilizer": intensity = .tertiary
-            default:           continue
-            }
-            if let existing = map[row.slug], priority(existing) >= priority(intensity) {
-                continue
-            }
-            map[row.slug] = intensity
+            // Only show primary muscles. Secondary + stabilizer were
+            // accessory-group noise that Wilbur audited out 2026-05-25.
+            guard row.role == "primary" else { continue }
+            map[row.slug] = .primary
         }
         return map
-    }
-
-    private func priority(_ intensity: BodyAnatomyView.HighlightIntensity) -> Int {
-        switch intensity {
-        case .primary:   return 3
-        case .secondary: return 2
-        case .tertiary:  return 1
-        case .none:      return 0
-        }
     }
 
     // MARK: - Pieces

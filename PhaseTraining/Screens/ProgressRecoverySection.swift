@@ -112,17 +112,14 @@ struct ProgressRecoverySection: View {
     // MARK: - Sections
 
     private func muscleSections(rows: [MuscleFreshness.Row]) -> some View {
+        // Show only main muscle groups — accessory groups were noisy without
+        // adding useful per-session decisions. Wilbur audit 2026-05-25.
         let main = rows.filter { Self.mainSlugs.contains($0.slug) }
-            .sorted { $0.freshness < $1.freshness }
-        let accessory = rows.filter { !Self.mainSlugs.contains($0.slug) }
             .sorted { $0.freshness < $1.freshness }
 
         return VStack(alignment: .leading, spacing: 16) {
             if !main.isEmpty {
-                muscleSection(title: "MAIN MUSCLE GROUPS", rows: main)
-            }
-            if !accessory.isEmpty {
-                muscleSection(title: "ACCESSORY MUSCLE GROUPS", rows: accessory)
+                muscleSection(title: "MUSCLE GROUPS", rows: main)
             }
         }
     }

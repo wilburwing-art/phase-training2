@@ -220,7 +220,15 @@ struct LogScreen: View {
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("log-add-exercise")
 
-                    Color.clear.frame(height: 40)
+                    // Bottom clearance for the system tab bar. Without this
+                    // the last few exercise rows render UNDER the tab bar
+                    // (snapshot_ui showed tab bar at y=791-874 occluding
+                    // log-set-check-2-N for the 3rd-of-5 exercise in the
+                    // supersets demo seed). Tab bar visible height is
+                    // 49pt + home-indicator inset ~34pt = ~83pt. 120pt
+                    // gives an extra safety margin so reorder-handles and
+                    // contextMenus don't get shadowed either.
+                    Color.clear.frame(height: 120)
                 }
             }
             .scrollDismissesKeyboard(.interactively)
