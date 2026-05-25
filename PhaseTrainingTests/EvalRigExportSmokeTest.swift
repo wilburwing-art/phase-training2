@@ -66,4 +66,73 @@ final class EvalRigExportSmokeTest: XCTestCase {
             print("[EvalRigExportSmokeTest] JSON END")
         }
     }
+
+    /// Lower-body day variant — (liftIndex=1, totalLifts=4) → focus.lower.
+    /// Used to demo the multi-archetype rubric (eval-rig's
+    /// intermediate-male-hypertrophy-lower-body snap-questions file).
+    func test_export_lower_body_emits() throws {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.focuses = [.hypertrophy]
+        m.liftDaysPerWeek = 4
+        m.sessionMinutes = 60
+        m.age = 32
+
+        let profile = DemographicProfile.from(m)
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: 1,
+            totalLifts: 4,
+            memory: m,
+            profile: profile,
+            hashSeed: "eval-rig-smoke-lower"
+        )
+
+        let outDir = URL(fileURLWithPath: "/tmp/eval-rig-export-lower")
+        let url = try EvalRigExporter.exportToFile(
+            workout: workout,
+            memory: m,
+            archetype: "intermediate-male-hypertrophy-lower-body",
+            timeBudgetMinutes: 60,
+            to: outDir
+        )
+        print("[EvalRigExportSmokeTest] Wrote \(url.path) (lower-body)")
+        print("[EvalRigExportSmokeTest] Exercises:")
+        for ex in workout.exercises {
+            print("  - \(ex.name) (\(ex.sets) sets, \(ex.warmUpSets?.count ?? 0) warm-ups)")
+        }
+    }
+
+    /// Non-sore variant — same archetype, no SorenessEntry. Exercises the
+    /// warm-up-synthesis path that the sore variant intentionally skips
+    /// (synthesizeWarmups returns nil on sore prime movers). Used to show
+    /// that the rubric's Q1 (ramp-set check) fires for a normal-day export.
+    func test_export_nosoreness_emits_warmups() throws {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.focuses = [.hypertrophy]
+        m.liftDaysPerWeek = 4
+        m.sessionMinutes = 60
+        m.age = 32
+
+        let profile = DemographicProfile.from(m)
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: 0,
+            totalLifts: 4,
+            memory: m,
+            profile: profile,
+            hashSeed: "eval-rig-smoke-nosore"
+        )
+
+        let outDir = URL(fileURLWithPath: "/tmp/eval-rig-export")
+        let url = try EvalRigExporter.exportToFile(
+            workout: workout,
+            memory: m,
+            archetype: "intermediate-male-hypertrophy-upper-push",
+            timeBudgetMinutes: 60,
+            to: outDir
+        )
+        print("[EvalRigExportSmokeTest] Wrote \(url.path) (non-sore variant)")
+    }
 }

@@ -119,6 +119,18 @@ enum ExercisePickSource: Codable, Hashable {
     case prehab(injurySlug: String)
 }
 
+/// One warm-up set entry — N reps at a percent of the picked exercise's
+/// working weight, with rest before the next set. Synthesized by
+/// WorkoutGenerator for compound primary lifts when the prime mover isn't
+/// sore. EvalRigExporter passes these through to the eval-rig schema's
+/// warm_up_sets array so the rubric's Q1 (ramp-set check) has a signal.
+struct WarmUpSet: Codable, Hashable {
+    var reps: Int
+    /// e.g. 40, 60, 80 — relative to the first working set's load.
+    var loadPctOfWorking: Int
+    var restSeconds: Int
+}
+
 struct GeneratedExercise: Codable, Hashable, Identifiable {
     // Build 70 — coaching prescription depth.
     //
@@ -154,21 +166,28 @@ struct GeneratedExercise: Codable, Hashable, Identifiable {
     /// Why this exercise got picked. Defaults to .recipe so existing decoders
     /// don't need to write the field.
     var source: ExercisePickSource = .recipe
+    /// Optional warm-up ramp sets BELOW working weight. Synthesized by the
+    /// generator for compound primary lifts where the muscle isn't sore
+    /// (eval-rig rubric Q1 — "first compound press has a ramp set listed
+    /// below working weight"). Empty / nil = no ramp prescribed.
+    var warmUpSets: [WarmUpSet]? = nil
 
     enum CodingKeys: String, CodingKey {
         case id, exerciseId, name, pattern, isCompound, sets, reps
-        case restSeconds, notes, rpe, tempo, source
+        case restSeconds, notes, rpe, tempo, source, warmUpSets
     }
 
     init(id: String, exerciseId: Int, name: String, pattern: String? = nil,
          isCompound: Bool, sets: Int, reps: String, restSeconds: Int,
          notes: String? = nil, rpe: String? = nil, tempo: String? = nil,
-         source: ExercisePickSource = .recipe) {
+         source: ExercisePickSource = .recipe,
+         warmUpSets: [WarmUpSet]? = nil) {
         self.id = id; self.exerciseId = exerciseId; self.name = name
         self.pattern = pattern; self.isCompound = isCompound
         self.sets = sets; self.reps = reps; self.restSeconds = restSeconds
         self.notes = notes; self.rpe = rpe; self.tempo = tempo
         self.source = source
+        self.warmUpSets = warmUpSets
     }
 
     init(from decoder: Decoder) throws {
@@ -185,6 +204,7 @@ struct GeneratedExercise: Codable, Hashable, Identifiable {
         self.rpe = (try? c.decodeIfPresent(String.self, forKey: .rpe)) ?? nil
         self.tempo = (try? c.decodeIfPresent(String.self, forKey: .tempo)) ?? nil
         self.source = (try? c.decode(ExercisePickSource.self, forKey: .source)) ?? .recipe
+        self.warmUpSets = (try? c.decodeIfPresent([WarmUpSet].self, forKey: .warmUpSets)) ?? nil
     }
 }
 

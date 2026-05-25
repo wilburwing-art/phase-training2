@@ -162,6 +162,20 @@ enum WorkoutGenerator {
                 strategy: strategy
             )
 
+            // Warm-up ramp synthesis: only for the FIRST compound primary
+            // lift (slotIdx == 0 + isCompound) AND only when the prime mover
+            // isn't sore (don't ramp into a capped top set on sore work).
+            // Three sets at 40/60/80% of working weight — matches eval-rig's
+            // synthesizeWarmups recipe so canon-vs-generator comparisons stay
+            // apples-to-apples.
+            let warmUps: [WarmUpSet]? = (slotIdx == 0 && picked.isCompound && !isMuscleSoreForExercise(picked, memory: memory))
+                ? [
+                    WarmUpSet(reps: 5, loadPctOfWorking: 40, restSeconds: 60),
+                    WarmUpSet(reps: 5, loadPctOfWorking: 60, restSeconds: 60),
+                    WarmUpSet(reps: 3, loadPctOfWorking: 80, restSeconds: 90),
+                  ]
+                : nil
+
             picks.append(GeneratedExercise(
                 id: "\(hashSeed)-\(slotIdx)-\(picked.id)",
                 exerciseId: picked.id,
@@ -173,7 +187,8 @@ enum WorkoutGenerator {
                 restSeconds: restSec,
                 notes: notes,
                 rpe: rpe,
-                tempo: tempo
+                tempo: tempo,
+                warmUpSets: warmUps
             ))
             pickedIds.insert(picked.id)
             // Accumulate using baseDurSec so the running total reflects a

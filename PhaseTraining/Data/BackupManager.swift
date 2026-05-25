@@ -53,7 +53,7 @@ enum BackupManager {
     /// reminder live in UserDefaults; saved sessions + custom routines live
     /// in `user.db` (UserDatabase) since the SQLite migration.
     static func snapshot(defaults: UserDefaults = .standard,
-                         userDB: UserDatabase = .shared) -> BackupEnvelope {
+                         userDB: UserDatabase = .defaultStore()) -> BackupEnvelope {
         BackupEnvelope(
             exportedAt: Date(),
             memory: decodeIfPresent(defaults: defaults, key: "pt_training_memory"),

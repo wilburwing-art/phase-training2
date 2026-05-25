@@ -101,6 +101,7 @@ enum EvalRigExporter {
         let prime_mover: String
         let movement_pattern: String
         let implement: String
+        let warm_up_sets: [WarmUpPayload]?
         let working_sets: [SetPayload]
         let swap_alternates: [SwapPayload]?
     }
@@ -109,6 +110,13 @@ enum EvalRigExporter {
         let reps: String
         let load_intent: String?
         let rest_seconds: Int?
+    }
+
+    private struct WarmUpPayload: Encodable {
+        let reps: Int
+        let load_pct_1rm: Int
+        let load_intent: String?
+        let rest_seconds: Int
     }
 
     private struct SwapPayload: Encodable {
@@ -184,6 +192,17 @@ enum EvalRigExporter {
             )
         }
 
+        let warmUps: [WarmUpPayload]? = ex.warmUpSets.flatMap { wus in
+            wus.isEmpty ? nil : wus.map { w in
+                WarmUpPayload(
+                    reps: w.reps,
+                    load_pct_1rm: w.loadPctOfWorking,
+                    load_intent: "warm-up · \(w.loadPctOfWorking)% of working weight",
+                    rest_seconds: w.restSeconds
+                )
+            }
+        }
+
         return ExercisePayload(
             order: order,
             name: ex.name,
@@ -191,6 +210,7 @@ enum EvalRigExporter {
             prime_mover: primeMover,
             movement_pattern: pattern,
             implement: implementSlug,
+            warm_up_sets: warmUps,
             working_sets: workingSets,
             swap_alternates: swaps.isEmpty ? nil : swaps
         )
