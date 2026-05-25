@@ -138,7 +138,6 @@ enum WorkoutGenerator {
             // means fewer sets across the same exercises, not a longer
             // workout list. Build 97 fix.
             let baseDurSec = baseSets * (45 + restSec) + 30
-            let durSec = sets * (45 + restSec) + 30
 
             // Optional slots that bust the budget get dropped; required slots
             // override (we'd rather give a slightly-over workout than skip a
