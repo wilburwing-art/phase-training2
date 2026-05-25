@@ -103,6 +103,42 @@ final class EvalRigExportSmokeTest: XCTestCase {
         }
     }
 
+    /// Pull-day variant — (liftIndex=1, totalLifts=3) → focus.pull (the PPL
+    /// pull day). Used to demo the multi-archetype rubric's third archetype
+    /// (intermediate-male-hypertrophy-pull) after upper-push + lower-body.
+    func test_export_pull_emits() throws {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.focuses = [.hypertrophy]
+        m.liftDaysPerWeek = 3
+        m.sessionMinutes = 60
+        m.age = 32
+
+        let profile = DemographicProfile.from(m)
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: 1,
+            totalLifts: 3,
+            memory: m,
+            profile: profile,
+            hashSeed: "eval-rig-smoke-pull"
+        )
+
+        let outDir = URL(fileURLWithPath: "/tmp/eval-rig-export-pull")
+        let url = try EvalRigExporter.exportToFile(
+            workout: workout,
+            memory: m,
+            archetype: "intermediate-male-hypertrophy-pull",
+            timeBudgetMinutes: 60,
+            to: outDir
+        )
+        print("[EvalRigExportSmokeTest] Wrote \(url.path) (pull)")
+        print("[EvalRigExportSmokeTest] Exercises:")
+        for ex in workout.exercises {
+            print("  - \(ex.name) (\(ex.sets) sets, \(ex.warmUpSets?.count ?? 0) warm-ups)")
+        }
+    }
+
     /// Non-sore variant — same archetype, no SorenessEntry. Exercises the
     /// warm-up-synthesis path that the sore variant intentionally skips
     /// (synthesizeWarmups returns nil on sore prime movers). Used to show

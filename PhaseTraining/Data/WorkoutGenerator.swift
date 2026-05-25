@@ -345,6 +345,29 @@ enum WorkoutGenerator {
         alternatives = reorderByPatternFrequency(alternatives, context: context)
 
         for pattern in alternatives {
+            // Staples-across-all-allowed-difficulties pre-pass — a canonical
+            // lift (Standing Calf Raise, Romanian Deadlift) should beat a
+            // sport-flavored alternative even when the staple is tagged at
+            // a lower difficulty than the user's preferred *bucket*. The
+            // query still constrains to `profile.preferredDifficulties` —
+            // a beginner does NOT get advanced staples (e.g. Explosive
+            // Pull-Up). It just removes the per-bucket fallback ordering.
+            let staplesPool = CoachDatabase.shared.exercises(
+                matchingPattern: pattern,
+                difficulties: Set(profile.preferredDifficulties),
+                environments: envs,
+                excludeKeywords: excludeKws,
+                excludeIds: excludeIds,
+                modalities: slot.requiredModalities,
+                userSportSlugs: profile.userSportSlugs,
+                allowedEquipmentSlugs: profile.allowedEquipmentSlugs
+            ).filter { ExerciseStaples.isStaple(name: $0.name, forPattern: pattern) }
+            if !staplesPool.isEmpty,
+               let pick = deterministicPick(from: applyVariety(applySoreFilter(staplesPool)), slotIdx: slotIdx, hashSeed: hashSeed) {
+                slot.satisfiedBy = pattern
+                return pick
+            }
+
             // Try preferred difficulties first, then fall back across the
             // whole allowed set (so a beginner-only catalog still returns
             // something for an advanced user).
@@ -634,8 +657,12 @@ enum WorkoutGenerator {
             }
         }
 
-        // Calf isolation — Standing Calf Raise is the canonical fit.
-        if !existingMuscles.contains("calves") {
+        // Calf isolation — Standing Calf Raise is the canonical fit. Check
+        // gastrocnemius + soleus too: coach.db tags Standing Calf Raise's
+        // primaries as ["gastrocnemius", "soleus"] (the muscle components)
+        // not "calves" (the muscle group), so a plain `contains("calves")`
+        // misses an already-present calf isolation slot and double-appends.
+        if existingMuscles.isDisjoint(with: ["calves", "gastrocnemius", "soleus"]) {
             if let ex = pickAccessoryByName(["Standing Calf Raise", "Seated Calf Raise"],
                                             profile: profile, excludedIds: excludedIds) {
                 out.append(makeAccessoryRow(ex: ex, slotIdx: existingPicks.count + out.count,
@@ -835,6 +862,18 @@ enum WorkoutGenerator {
             && isPrimary && isCompound
             && (focus == .lower || focus == .legs) {
             restSec = max(restSec, 180)
+        }
+
+        // Hypertrophy compound pull (weighted pull-up / heavy row /
+        // deadlift) sits between upper-push and squat for systemic load —
+        // 2-3 min rest is the modern guidance, eval-rig's pull Q7 enforces
+        // it. Bump compound pull primary to 120s. Picks up focus.pull
+        // (PPL split) but NOT focus.upper (which mixes vertical/horizontal
+        // push + pull — 90s default stays right for that aggregate).
+        if memory.primaryFocus == .hypertrophy
+            && isPrimary && isCompound
+            && focus == .pull {
+            restSec = max(restSec, 120)
         }
 
         return (sets, reps, restSec)

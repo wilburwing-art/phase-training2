@@ -52,7 +52,9 @@ enum ExerciseStaples {
         // the more specific "bicep curl" name. Keyword is broad enough to
         // catch them while not capturing weird wrist-curl variants
         // (those live under separate forearm patterns anyway).
-        "elbow-flexion":   ["curl"],
+        "elbow-flexion":   ["barbell curl", "dumbbell curl", "hammer curl", "preacher curl",
+                            "ez-bar curl", "ez bar curl", "cable curl", "concentration curl",
+                            "incline dumbbell curl"],
         "elbow-extension": ["triceps extension", "skull crusher", "tricep pushdown", "close-grip push-up"],
         "climbing-pull":   ["pull-up", "chin-up"],
     ]
