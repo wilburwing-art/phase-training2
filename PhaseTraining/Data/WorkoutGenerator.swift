@@ -213,8 +213,24 @@ enum WorkoutGenerator {
             case .pull, .legs, .lower: return false
             }
         }()
+        let isLowerBody: Bool = (focus == .legs || focus == .lower)
         if memory.primaryFocus == .hypertrophy && isUpperPush {
             let appended = appendHypertrophyUpperPushAccessories(
+                memory: memory,
+                profile: profile,
+                hashSeed: hashSeed,
+                existingPicks: picks,
+                excludedIds: pickedIds,
+                strategy: strategy
+            )
+            for ex in appended {
+                picks.append(ex.generated)
+                pickedIds.insert(ex.generated.exerciseId)
+                elapsedSec += ex.durSec
+            }
+        }
+        if memory.primaryFocus == .hypertrophy && isLowerBody {
+            let appended = appendHypertrophyLowerBodyAccessories(
                 memory: memory,
                 profile: profile,
                 hashSeed: hashSeed,
@@ -589,6 +605,48 @@ enum WorkoutGenerator {
         return out
     }
 
+    /// Lower-body twin of `appendHypertrophyUpperPushAccessories`. Stock
+    /// lower / legs recipes pair a squat compound with RDL (hip hinge,
+    /// compound) and a calf raise. The hinge satisfies hamstrings via
+    /// compound work but not isolation — eval-rig's lower-body Q2 ("direct
+    /// hamstring isolation AND calf isolation present") catches this.
+    /// Append Lying Leg Curl + Standing Calf Raise when no existing
+    /// isolation pick covers the muscle.
+    private static func appendHypertrophyLowerBodyAccessories(
+        memory: TrainingMemory,
+        profile: DemographicProfile,
+        hashSeed: String,
+        existingPicks: [GeneratedExercise],
+        excludedIds: Set<Int>,
+        strategy: GeneratorStrategy
+    ) -> [(generated: GeneratedExercise, durSec: Int)] {
+        var out: [(GeneratedExercise, Int)] = []
+        let existingMuscles = primeMusclesOfPicks(existingPicks.filter { !$0.isCompound })
+
+        // Hamstring isolation — Lying Leg Curl is the canonical fit; seated
+        // is a near-twin fallback when the gym only has the seated machine.
+        if !existingMuscles.contains("hamstrings") {
+            if let ex = pickAccessoryByName(["Lying Leg Curl", "Seated Leg Curl"],
+                                            profile: profile, excludedIds: excludedIds) {
+                out.append(makeAccessoryRow(ex: ex, slotIdx: existingPicks.count + out.count,
+                                            memory: memory, profile: profile,
+                                            hashSeed: hashSeed, strategy: strategy))
+            }
+        }
+
+        // Calf isolation — Standing Calf Raise is the canonical fit.
+        if !existingMuscles.contains("calves") {
+            if let ex = pickAccessoryByName(["Standing Calf Raise", "Seated Calf Raise"],
+                                            profile: profile, excludedIds: excludedIds) {
+                out.append(makeAccessoryRow(ex: ex, slotIdx: existingPicks.count + out.count,
+                                            memory: memory, profile: profile,
+                                            hashSeed: hashSeed, strategy: strategy))
+            }
+        }
+
+        return out
+    }
+
     /// Collect prime-muscle slugs across all picks so the accessory layer
     /// knows what's already covered.
     private static func primeMusclesOfPicks(_ picks: [GeneratedExercise]) -> Set<String> {
@@ -758,7 +816,7 @@ enum WorkoutGenerator {
         // tagged bench as "5". Fallback path is preserved as a safety net in
         // case a future focus addition forgets to populate the bias table.
         let reps: String
-        let restSec: Int
+        var restSec: Int
         if let bias = bias {
             reps = bias.reps
             restSec = bias.restSec
@@ -767,6 +825,16 @@ enum WorkoutGenerator {
                 ?? defaultRepsFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
             restSec = exercise.defaultRest.flatMap(parseRestSeconds)
                 ?? defaultRestFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
+        }
+
+        // Hypertrophy's default 90s rest is too short on heavy compound
+        // lower-body work — eval-rig's lower-body Q7 expects 3-4 min on the
+        // squat slot. Bump primary compound lower-body rest to 180s without
+        // disturbing upper-push (90s is fine for bench / OHP).
+        if memory.primaryFocus == .hypertrophy
+            && isPrimary && isCompound
+            && (focus == .lower || focus == .legs) {
+            restSec = max(restSec, 180)
         }
 
         return (sets, reps, restSec)

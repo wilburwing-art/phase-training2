@@ -6907,5 +6907,19 @@
     "context": "pre_event_safe",
     "similarity_score": 0.7,
     "notes": null
+  },
+  {
+    "exercise_id": 57,
+    "substitute_id": 450,
+    "context": "equipment_swap",
+    "similarity_score": 0.9,
+    "notes": "Front squat — same barbell + squat pattern, more quad-dominant emphasis."
+  },
+  {
+    "exercise_id": 57,
+    "substitute_id": 932,
+    "context": "equipment_swap",
+    "similarity_score": 0.8,
+    "notes": "Hack squat machine isolates the quad-driven squat pattern with reduced spinal loading."
   }
 ]
