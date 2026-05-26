@@ -140,7 +140,11 @@ struct RestTimer: View {
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         }
-        .buttonStyle(.plain)
+        // .borderless rather than .plain: iOS 26 XCUITest synthesized taps
+        // do not fire .plain Button actions when the label is smaller than
+        // ~44pt (these chips are ~38pt wide). Foregrounds are set explicitly
+        // on the Text, so .borderless's accent tint doesn't change visuals.
+        .buttonStyle(.borderless)
     }
 
     static func formatTime(_ seconds: Int) -> String {

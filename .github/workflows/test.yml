@@ -7,7 +7,11 @@ on:
 
 jobs:
   test:
-    runs-on: macos-15
+    # macos-26 ships Xcode 17 with iOS 26 SDK, matching the dev environment.
+    # macos-15 / Xcode 16 / iOS 18 caused divergent SwiftUI accessibility
+    # behavior in UI tests — rest-card preset Menu items rendered differently
+    # between iOS 18 and iOS 26, making LogFlowTests unfixable on both.
+    runs-on: macos-26
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
