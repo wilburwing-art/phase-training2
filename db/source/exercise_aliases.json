@@ -1,1 +1,434 @@
-[]
+[
+  {
+    "exercise_id": 909,
+    "alias": "Arnold Press (Dumbbell)"
+  },
+  {
+    "exercise_id": 900,
+    "alias": "Bench Press (Barbell)"
+  },
+  {
+    "exercise_id": 14,
+    "alias": "Bench Press (Dumbbell)"
+  },
+  {
+    "exercise_id": 902,
+    "alias": "Bench Press - Close Grip (Barbell)"
+  },
+  {
+    "exercise_id": 8,
+    "alias": "Bent Over Row (Band)"
+  },
+  {
+    "exercise_id": 8,
+    "alias": "Bent Over Row (Barbell)"
+  },
+  {
+    "exercise_id": 8,
+    "alias": "Bent Over Row (Dumbbell)"
+  },
+  {
+    "exercise_id": 946,
+    "alias": "Bicep Curl (Barbell)"
+  },
+  {
+    "exercise_id": 952,
+    "alias": "Bicep Curl (Cable)"
+  },
+  {
+    "exercise_id": 948,
+    "alias": "Bicep Curl (Dumbbell)"
+  },
+  {
+    "exercise_id": 920,
+    "alias": "Box Squat (Barbell)"
+  },
+  {
+    "exercise_id": 956,
+    "alias": "Cable Kickback"
+  },
+  {
+    "exercise_id": 923,
+    "alias": "Chin Up (Assisted)"
+  },
+  {
+    "exercise_id": 951,
+    "alias": "Concentration Curl (Dumbbell)"
+  },
+  {
+    "exercise_id": 968,
+    "alias": "Crunch (Machine)"
+  },
+  {
+    "exercise_id": 968,
+    "alias": "Crunch (Stability Ball)"
+  },
+  {
+    "exercise_id": 451,
+    "alias": "Deadlift (Band)"
+  },
+  {
+    "exercise_id": 451,
+    "alias": "Deadlift (Barbell)"
+  },
+  {
+    "exercise_id": 451,
+    "alias": "Deadlift (Dumbbell)"
+  },
+  {
+    "exercise_id": 451,
+    "alias": "Deadlift (Smith Machine)"
+  },
+  {
+    "exercise_id": 918,
+    "alias": "Deficit Deadlift (Barbell)"
+  },
+  {
+    "exercise_id": 915,
+    "alias": "Dumbbell Snatch"
+  },
+  {
+    "exercise_id": 956,
+    "alias": "Dumbbell Tricep Kickback"
+  },
+  {
+    "exercise_id": 24,
+    "alias": "Face Pull (Cable)"
+  },
+  {
+    "exercise_id": 64,
+    "alias": "Farmers Carry"
+  },
+  {
+    "exercise_id": 959,
+    "alias": "Front Raise (Band)"
+  },
+  {
+    "exercise_id": 959,
+    "alias": "Front Raise (Barbell)"
+  },
+  {
+    "exercise_id": 959,
+    "alias": "Front Raise (Cable)"
+  },
+  {
+    "exercise_id": 959,
+    "alias": "Front Raise (Dumbbell)"
+  },
+  {
+    "exercise_id": 959,
+    "alias": "Front Raise (Plate)"
+  },
+  {
+    "exercise_id": 941,
+    "alias": "Glute Ham Raise"
+  },
+  {
+    "exercise_id": 60,
+    "alias": "Goblet Squat (Kettlebell)"
+  },
+  {
+    "exercise_id": 921,
+    "alias": "Good Morning (Barbell)"
+  },
+  {
+    "exercise_id": 932,
+    "alias": "Hack Squat"
+  },
+  {
+    "exercise_id": 932,
+    "alias": "Hack Squat (Barbell)"
+  },
+  {
+    "exercise_id": 950,
+    "alias": "Hammer Curl (Band)"
+  },
+  {
+    "exercise_id": 950,
+    "alias": "Hammer Curl (Cable)"
+  },
+  {
+    "exercise_id": 950,
+    "alias": "Hammer Curl (Dumbbell)"
+  },
+  {
+    "exercise_id": 910,
+    "alias": "Hang Clean (Barbell)"
+  },
+  {
+    "exercise_id": 936,
+    "alias": "Hip Abductor (Machine)"
+  },
+  {
+    "exercise_id": 101,
+    "alias": "Hip Thrust (Barbell)"
+  },
+  {
+    "exercise_id": 101,
+    "alias": "Hip Thrust (Bodyweight)"
+  },
+  {
+    "exercise_id": 901,
+    "alias": "Incline Bench Press (Barbell)"
+  },
+  {
+    "exercise_id": 901,
+    "alias": "Incline Bench Press (Cable)"
+  },
+  {
+    "exercise_id": 907,
+    "alias": "Incline Bench Press (Dumbbell)"
+  },
+  {
+    "exercise_id": 901,
+    "alias": "Incline Bench Press (Smith Machine)"
+  },
+  {
+    "exercise_id": 949,
+    "alias": "Incline Curl (Dumbbell)"
+  },
+  {
+    "exercise_id": 135,
+    "alias": "Inverted Row (Bodyweight)"
+  },
+  {
+    "exercise_id": 915,
+    "alias": "Kettlebell Snatch"
+  },
+  {
+    "exercise_id": 119,
+    "alias": "Kettlebell Turkish Get Up"
+  },
+  {
+    "exercise_id": 925,
+    "alias": "Lat Pulldown - Wide Grip (Cable)"
+  },
+  {
+    "exercise_id": 602,
+    "alias": "Lateral Box Jump"
+  },
+  {
+    "exercise_id": 546,
+    "alias": "Lateral Raise (Band)"
+  },
+  {
+    "exercise_id": 958,
+    "alias": "Lateral Raise (Cable)"
+  },
+  {
+    "exercise_id": 546,
+    "alias": "Lateral Raise (Dumbbell)"
+  },
+  {
+    "exercise_id": 546,
+    "alias": "Lateral Raise (Machine)"
+  },
+  {
+    "exercise_id": 933,
+    "alias": "Leg Extension (Machine)"
+  },
+  {
+    "exercise_id": 934,
+    "alias": "Lying Leg Curl (Machine)"
+  },
+  {
+    "exercise_id": 955,
+    "alias": "Overhead Cable Tricep Extension"
+  },
+  {
+    "exercise_id": 15,
+    "alias": "Overhead Press (Barbell)"
+  },
+  {
+    "exercise_id": 15,
+    "alias": "Overhead Press (Cable)"
+  },
+  {
+    "exercise_id": 15,
+    "alias": "Overhead Press (Dumbbell)"
+  },
+  {
+    "exercise_id": 15,
+    "alias": "Overhead Press (Smith Machine)"
+  },
+  {
+    "exercise_id": 967,
+    "alias": "Pec Deck (Machine)"
+  },
+  {
+    "exercise_id": 927,
+    "alias": "Pendlay Row (Barbell)"
+  },
+  {
+    "exercise_id": 912,
+    "alias": "Power Snatch (Barbell)"
+  },
+  {
+    "exercise_id": 543,
+    "alias": "Preacher Curl (Barbell)"
+  },
+  {
+    "exercise_id": 543,
+    "alias": "Preacher Curl (Dumbbell)"
+  },
+  {
+    "exercise_id": 543,
+    "alias": "Preacher Curl (Machine)"
+  },
+  {
+    "exercise_id": 922,
+    "alias": "Pull Up (Assisted)"
+  },
+  {
+    "exercise_id": 922,
+    "alias": "Pull Up (Band)"
+  },
+  {
+    "exercise_id": 312,
+    "alias": "Pullover (Dumbbell)"
+  },
+  {
+    "exercise_id": 312,
+    "alias": "Pullover (Machine)"
+  },
+  {
+    "exercise_id": 13,
+    "alias": "Push Up (Band)"
+  },
+  {
+    "exercise_id": 960,
+    "alias": "Reverse Fly (Cable)"
+  },
+  {
+    "exercise_id": 452,
+    "alias": "Reverse Fly (Dumbbell)"
+  },
+  {
+    "exercise_id": 452,
+    "alias": "Reverse Fly (Machine)"
+  },
+  {
+    "exercise_id": 944,
+    "alias": "Reverse Lunge"
+  },
+  {
+    "exercise_id": 58,
+    "alias": "Romanian Deadlift (Dumbbell)"
+  },
+  {
+    "exercise_id": 942,
+    "alias": "Seated Calf Raise (Machine)"
+  },
+  {
+    "exercise_id": 942,
+    "alias": "Seated Calf Raise (Plate Loaded)"
+  },
+  {
+    "exercise_id": 935,
+    "alias": "Seated Leg Curl (Machine)"
+  },
+  {
+    "exercise_id": 9,
+    "alias": "Seated Row (Cable)"
+  },
+  {
+    "exercise_id": 9,
+    "alias": "Seated Row (Machine)"
+  },
+  {
+    "exercise_id": 963,
+    "alias": "Shrug (Barbell)"
+  },
+  {
+    "exercise_id": 964,
+    "alias": "Shrug (Dumbbell)"
+  },
+  {
+    "exercise_id": 963,
+    "alias": "Shrug (Machine)"
+  },
+  {
+    "exercise_id": 963,
+    "alias": "Shrug (Smith Machine)"
+  },
+  {
+    "exercise_id": 533,
+    "alias": "Sled Push"
+  },
+  {
+    "exercise_id": 915,
+    "alias": "Snatch (Barbell)"
+  },
+  {
+    "exercise_id": 913,
+    "alias": "Snatch Pull (Barbell)"
+  },
+  {
+    "exercise_id": 112,
+    "alias": "Standing Calf Raise (Barbell)"
+  },
+  {
+    "exercise_id": 112,
+    "alias": "Standing Calf Raise (Bodyweight)"
+  },
+  {
+    "exercise_id": 112,
+    "alias": "Standing Calf Raise (Dumbbell)"
+  },
+  {
+    "exercise_id": 112,
+    "alias": "Standing Calf Raise (Machine)"
+  },
+  {
+    "exercise_id": 112,
+    "alias": "Standing Calf Raise (Smith Machine)"
+  },
+  {
+    "exercise_id": 238,
+    "alias": "Step-up"
+  },
+  {
+    "exercise_id": 917,
+    "alias": "Stiff Leg Deadlift (Barbell)"
+  },
+  {
+    "exercise_id": 917,
+    "alias": "Stiff Leg Deadlift (Dumbbell)"
+  },
+  {
+    "exercise_id": 916,
+    "alias": "Sumo Deadlift (Barbell)"
+  },
+  {
+    "exercise_id": 220,
+    "alias": "Superman"
+  },
+  {
+    "exercise_id": 953,
+    "alias": "Tricep Rope Pushdown"
+  },
+  {
+    "exercise_id": 962,
+    "alias": "Upright Row (Cable)"
+  },
+  {
+    "exercise_id": 962,
+    "alias": "Upright Row (Dumbbell)"
+  },
+  {
+    "exercise_id": 504,
+    "alias": "Wall Walk"
+  },
+  {
+    "exercise_id": 922,
+    "alias": "Wide Pull Up"
+  },
+  {
+    "exercise_id": 115,
+    "alias": "Wood Chop (Cable)"
+  },
+  {
+    "exercise_id": 200,
+    "alias": "Straight-Arm Pulldown"
+  }
+]

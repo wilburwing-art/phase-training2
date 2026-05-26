@@ -59,3 +59,9 @@ db/quality/candidate_thumbs/
 coach.db.backup-*
 .derived-integration/
 .xcodebuildmcp/
+
+# Intermediate work products from the exercise-catalog addition pipeline.
+# Regenerate via scripts/db/export_exercises.py, draft_new_exercises.py, etc.
+gap_classification.csv
+proposed_new_exercises.csv
+proposed_aliases.json

@@ -3758,5 +3758,810 @@
     "exercise_id": 979,
     "equipment_id": 11,
     "is_required": 1
+  },
+  {
+    "exercise_id": 980,
+    "equipment_id": 111,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 981,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 981,
+    "equipment_id": 95,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 982,
+    "equipment_id": 109,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 983,
+    "equipment_id": 90,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 984,
+    "equipment_id": 115,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 985,
+    "equipment_id": 15,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 986,
+    "equipment_id": 26,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 987,
+    "equipment_id": 95,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 988,
+    "equipment_id": 24,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 988,
+    "equipment_id": 95,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 989,
+    "equipment_id": 101,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 989,
+    "equipment_id": 95,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 990,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 990,
+    "equipment_id": 95,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 991,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 992,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 993,
+    "equipment_id": 116,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 994,
+    "equipment_id": 24,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 995,
+    "equipment_id": 24,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 996,
+    "equipment_id": 85,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 997,
+    "equipment_id": 85,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 998,
+    "equipment_id": 3,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 999,
+    "equipment_id": 3,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 999,
+    "equipment_id": 21,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1000,
+    "equipment_id": 118,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1001,
+    "equipment_id": 21,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1002,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1002,
+    "equipment_id": 95,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1003,
+    "equipment_id": 21,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1004,
+    "equipment_id": 102,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1005,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1006,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1007,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1008,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1009,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1010,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1010,
+    "equipment_id": 96,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1011,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1011,
+    "equipment_id": 96,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1012,
+    "equipment_id": 101,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1012,
+    "equipment_id": 96,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1013,
+    "equipment_id": 96,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1014,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1015,
+    "equipment_id": 95,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1016,
+    "equipment_id": 108,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1017,
+    "equipment_id": 20,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1018,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1019,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1020,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1021,
+    "equipment_id": 114,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1022,
+    "equipment_id": 99,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1023,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1024,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1025,
+    "equipment_id": 92,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1026,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1026,
+    "equipment_id": 96,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1027,
+    "equipment_id": 102,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1028,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1028,
+    "equipment_id": 96,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1029,
+    "equipment_id": 104,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1030,
+    "equipment_id": 104,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1031,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1032,
+    "equipment_id": 54,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1033,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1034,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1035,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1036,
+    "equipment_id": 12,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1037,
+    "equipment_id": 2,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1038,
+    "equipment_id": 106,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1039,
+    "equipment_id": 21,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1039,
+    "equipment_id": 2,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1040,
+    "equipment_id": 2,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1041,
+    "equipment_id": 4,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1042,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1042,
+    "equipment_id": 16,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1043,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1043,
+    "equipment_id": 16,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1044,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1044,
+    "equipment_id": 16,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1045,
+    "equipment_id": 24,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1045,
+    "equipment_id": 88,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1046,
+    "equipment_id": 88,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1047,
+    "equipment_id": 24,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1048,
+    "equipment_id": 22,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1048,
+    "equipment_id": 2,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1049,
+    "equipment_id": 24,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1049,
+    "equipment_id": 88,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1050,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1051,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1052,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1053,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1054,
+    "equipment_id": 2,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1054,
+    "equipment_id": 5,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1055,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1056,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1057,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1058,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1059,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1060,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1061,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1062,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1062,
+    "equipment_id": 97,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1063,
+    "equipment_id": 21,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1064,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1065,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1066,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1066,
+    "equipment_id": 95,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1067,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1068,
+    "equipment_id": 71,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1069,
+    "equipment_id": 110,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1070,
+    "equipment_id": 85,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1071,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1071,
+    "equipment_id": 96,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1072,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1072,
+    "equipment_id": 96,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1073,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1073,
+    "equipment_id": 95,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1074,
+    "equipment_id": 24,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1075,
+    "equipment_id": 103,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1076,
+    "equipment_id": 104,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1077,
+    "equipment_id": 21,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1078,
+    "equipment_id": 24,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1079,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1080,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1081,
+    "equipment_id": 72,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1082,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1082,
+    "equipment_id": 95,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1083,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1083,
+    "equipment_id": 95,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1084,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1084,
+    "equipment_id": 105,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1085,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1086,
+    "equipment_id": 21,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1087,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1087,
+    "equipment_id": 97,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1088,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1089,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1090,
+    "equipment_id": 93,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1091,
+    "equipment_id": 101,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1092,
+    "equipment_id": 107,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1093,
+    "equipment_id": 22,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1094,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1095,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1096,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1097,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1098,
+    "equipment_id": 12,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1099,
+    "equipment_id": 2,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1100,
+    "equipment_id": 112,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1101,
+    "equipment_id": 3,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1102,
+    "equipment_id": 3,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1102,
+    "equipment_id": 21,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1103,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1104,
+    "equipment_id": 10,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1105,
+    "equipment_id": 24,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1106,
+    "equipment_id": 11,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1107,
+    "equipment_id": 117,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1108,
+    "equipment_id": 24,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1109,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1110,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1111,
+    "equipment_id": 10,
+    "is_required": 1
   }
 ]
