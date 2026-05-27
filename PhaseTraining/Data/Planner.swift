@@ -100,6 +100,34 @@ enum Planner {
         return adjusted
     }
 
+    /// PR 5 (weekly-coach roadmap) — merge a `WeekTone` into the
+    /// generator strategy. Composes orthogonally with whatever the LLM
+    /// supplied: tone fills in defaults but never overwrites an
+    /// explicitly-set strategy field. Returns the base strategy
+    /// unchanged when tone is nil or `.typical`.
+    static func applyWeekTone(
+        base: GeneratorStrategy,
+        tone: WeekTone?,
+        sessionMinutes: Int
+    ) -> GeneratorStrategy {
+        guard let tone, tone != .typical else { return base }
+        var out = base
+        // intensityBias: only override when the caller didn't already pick
+        // a non-normal bias. An explicit LLM "push" beats a tone-derived
+        // "deload" — the LLM saw the user's specific request.
+        if out.intensityBias == .normal {
+            out.intensityBias = tone.asIntensityBias
+        }
+        // durationMinutes: only `.busy` actively compresses sessions, and
+        // only when the caller didn't already set a duration. Clamp to
+        // the same [15, 180] bound the rest of the pipeline respects.
+        if out.durationMinutes == nil && tone.durationMultiplier != 1.0 {
+            let compressed = Int(Double(sessionMinutes) * tone.durationMultiplier)
+            out.durationMinutes = max(15, min(180, compressed))
+        }
+        return out
+    }
+
     /// Back-compat shim. Kept so any external caller / future test that
     /// asks for feedback bias in isolation still works. New code should
     /// call `applyRecentSignalBias` directly.
@@ -126,6 +154,16 @@ enum Planner {
         context: GeneratorContext = .empty,
         strategy: GeneratorStrategy = .auto
     ) -> WeekPlan {
+        // PR 5 (weekly-coach roadmap) — apply week-level intent dial.
+        // `WeekTone` biases intensity and (for `.busy`) compresses session
+        // duration. Composes with any incoming LLM strategy: LLM-set
+        // fields win, tone fills in where the strategy is auto.
+        let strategy = applyWeekTone(
+            base: strategy,
+            tone: overrides?.weekTone,
+            sessionMinutes: memory.sessionMinutes
+        )
+
         // Always Monday-of-this-week → Sunday. The Week tab shows the
         // prescription for the current calendar week, not a rolling 7-day
         // window starting today. Past days (e.g. Mon/Tue when today is Wed)
@@ -293,14 +331,24 @@ enum Planner {
                            protected: true,
                            generatedReason: "You set this day to rest")
 
-        case .lift(let routineId):
+        case .lift(let routineId, let focus):
             if let id = routineId, let r = routines.first(where: { $0.id == id }) {
+                // User-picked routine wins over focus — a routine is a
+                // specific recipe; focus is a category. If the user wanted
+                // both they'd pick a routine whose focus matches.
                 return DayPlan(date: date, kind: .lift,
                                title: r.name,
                                routineId: r.id,
                                protected: true,
                                generatedReason: "You picked this routine for this day")
             }
+            // PR 5: when the override carries a focus, fold it into the
+            // strategy so the generator picks a push/pull/legs/etc. shape
+            // matching the user's intent. focus overrides anything the
+            // tone-merged strategy already had — the focus is a more
+            // specific directive than the week-level tone.
+            var liftStrategy = strategy
+            if let focus { liftStrategy.focus = focus.asWorkoutFocus }
             let profile = DemographicProfile.from(memory)
             let workout = WorkoutGenerator.generateLift(
                 liftIndex: 0,
@@ -310,13 +358,15 @@ enum Planner {
                 hashSeed: memory.planInputsHash + "-lift-override",
                 recentlyPicked: recentlyPicked,
                 context: context,
-                strategy: strategy
+                strategy: liftStrategy
             )
+            let reason = focus.map { "You set this day as \($0.label.lowercased())" }
+                ?? "You set this day to lift"
             return DayPlan(date: date, kind: .lift,
                            title: workout.title,
                            generatedWorkout: workout,
                            protected: true,
-                           generatedReason: "You set this day to lift")
+                           generatedReason: reason)
 
         case .sport(let slug):
             let sport = (slug ?? memory.primarySport?.slug).flatMap { s in
@@ -354,7 +404,65 @@ enum Planner {
                 protected: true,
                 generatedReason: "Event you scheduled (\(event.intensity.label.lowercased()) intensity)"
             )
+        case .outOfTown:
+            // PR 5 — travel day. Generate a bodyweight `.lift` template
+            // the user can run anywhere. The exercise picks are
+            // hand-curated against the bundled catalog (Push-Up, Bird
+            // Dog, Glute Bridge, Plank, Mountain Climber) rather than
+            // routed through WorkoutGenerator because the generator
+            // doesn't currently filter by equipment availability.
+            // Replacing this with a generator-driven bodyweight path is
+            // a planned follow-up.
+            let title = event.title.isEmpty ? "Travel — bodyweight flow" : event.title
+            return DayPlan(
+                date: date,
+                kind: .lift,
+                title: title,
+                generatedWorkout: bodyweightTravelWorkout(title: title, date: date),
+                protected: true,
+                generatedReason: "You marked this day as out of town — bodyweight flow you can do anywhere"
+            )
         }
+    }
+
+    /// Hand-built bodyweight template for `.outOfTown` event days. Five
+    /// exercises drawn from the bundled catalog by stable id, so the
+    /// resulting DayPlan renders correctly in LogScreen + carries real
+    /// exerciseId values for the substitution / detail flows. Sets/reps
+    /// are conservative defaults — the user can modify in-workout.
+    private static func bodyweightTravelWorkout(title: String, date: Date) -> GeneratedWorkout {
+        // (catalog id, name, pattern hint) — IDs stable in coach.db
+        let template: [(id: Int, name: String, pattern: String)] = [
+            (13,   "Push-Up",          "horizontal-push"),
+            (1020, "Glute Bridge",     "hip-hinge"),
+            (110,  "Bird Dog",         "anti-rotation"),
+            (1058, "Plank",            "anti-extension"),
+            (1053, "Mountain Climber", "locomotion"),
+        ]
+        let dateKey = Int(date.timeIntervalSince1970)
+        let exercises = template.enumerated().map { (idx, ex) -> GeneratedExercise in
+            GeneratedExercise(
+                id: "travel-\(dateKey)-\(idx)-\(ex.id)",
+                exerciseId: ex.id,
+                name: ex.name,
+                pattern: ex.pattern,
+                isCompound: false,
+                sets: 3,
+                reps: ex.id == 1058 ? "30s hold" : "10-15",
+                restSeconds: 60,
+                notes: nil,
+                rpe: "7-8",
+                tempo: nil,
+                source: .recipe
+            )
+        }
+        return GeneratedWorkout(
+            title: title,
+            summary: "5 movements · ~20 min · bodyweight",
+            exercises: exercises,
+            estimatedMinutes: 20,
+            provenance: "Travel-friendly bodyweight flow"
+        )
     }
 
     // MARK: - Slot construction

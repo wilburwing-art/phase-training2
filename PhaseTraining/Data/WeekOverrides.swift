@@ -27,6 +27,10 @@ enum WeekEventKind: String, Codable, CaseIterable {
     /// A competition / race / performance day. Renders as a `.event` DayPlan.
     /// Hard-intensity races trigger pre-event taper.
     case race
+    /// PR 5 (weekly-coach roadmap) — travel / away-from-gym days. Planner
+    /// renders a bodyweight-only `.lift` DayPlan so the user still has a
+    /// workout to follow without needing equipment.
+    case outOfTown = "out_of_town"
 }
 
 enum EventIntensity: String, Codable, CaseIterable {
@@ -50,6 +54,92 @@ struct WeekEvent: Codable, Identifiable, Hashable {
     var intensity: EventIntensity = .moderate
 }
 
+// MARK: - LiftFocus
+//
+// PR 5 (weekly-coach roadmap) — user-facing focus vocabulary for a lift day.
+// The painted strip in PR 6 lets the user tap "Push" / "Pull" / "Legs" /
+// "Upper" / "Lower" / "Full body" for any planned lift day; that selection
+// becomes a `LiftFocus` on the corresponding `DayKindOverride.lift`.
+//
+// We expose a separate enum from `WorkoutFocus` (the generator's internal
+// shape vocabulary) so the user's intent stays user-facing — `WorkoutFocus`
+// has `fullBodyA` / `fullBodyB` split for variety rotation, which is an
+// internal concern. `LiftFocus.fullBody` maps to one of those at generation
+// time.
+
+enum LiftFocus: String, Codable, Hashable, CaseIterable {
+    case push, pull, legs, upper, lower, fullBody = "full_body"
+
+    /// Display label for the painted strip chip.
+    var label: String {
+        switch self {
+        case .push:     return "Push"
+        case .pull:     return "Pull"
+        case .legs:     return "Legs"
+        case .upper:    return "Upper"
+        case .lower:    return "Lower"
+        case .fullBody: return "Full body"
+        }
+    }
+
+    /// Map to the generator's internal `WorkoutFocus`. `.fullBody` resolves
+    /// to `.fullBodyA` by default — variety-rotation across multiple
+    /// full-body days within a week is a planner concern, not a UI one.
+    var asWorkoutFocus: WorkoutFocus {
+        switch self {
+        case .push:     return .push
+        case .pull:     return .pull
+        case .legs:     return .legs
+        case .upper:    return .upper
+        case .lower:    return .lower
+        case .fullBody: return .fullBodyA
+        }
+    }
+}
+
+// MARK: - WeekTone
+//
+// PR 5 — the week-level intent dial. User picks once per week from the
+// painted strip: "typical" (default, no adjustment), "recovery" (-15%
+// volume, deload bias), "build" (+10% volume, push bias), "busy" (trim
+// sessions aggressively to respect the time budget).
+
+enum WeekTone: String, Codable, Hashable, CaseIterable {
+    case typical, recovery, build, busy
+
+    /// Display label for the painted strip context chip.
+    var label: String {
+        switch self {
+        case .typical:  return "Typical"
+        case .recovery: return "Recovery"
+        case .build:    return "Build"
+        case .busy:     return "Busy"
+        }
+    }
+
+    /// Map to the generator's intensity dial. `.typical` is identity
+    /// (`.normal`); `.recovery` deloads; `.build` pushes; `.busy` stays
+    /// at `.normal` (the time-budget effect is handled by trimming
+    /// `durationMinutes`, not by changing per-set intensity).
+    var asIntensityBias: GeneratorStrategy.IntensityBias {
+        switch self {
+        case .typical, .busy: return .normal
+        case .recovery:       return .deload
+        case .build:          return .push
+        }
+    }
+
+    /// Multiplier applied to the session's minute budget. `.busy` is the
+    /// only tone that compresses time; other tones keep the user's declared
+    /// session length intact and let `intensityBias` do the work.
+    var durationMultiplier: Double {
+        switch self {
+        case .busy: return 0.7
+        default:    return 1.0
+        }
+    }
+}
+
 // MARK: - DayKindOverride
 //
 // User-forced kind for a specific date. Survives plan regeneration. The
@@ -58,10 +148,15 @@ struct WeekEvent: Codable, Identifiable, Hashable {
 // .lift carries an optional routineId so a moved lift keeps its picked
 // routine (otherwise the planner would re-pick deterministically and might
 // land on a different one).
+//
+// PR 5 added the optional `focus` associated value. Existing persisted
+// payloads decode cleanly: Swift's synthesized enum codec uses
+// `decodeIfPresent` for Optional associated values, so old JSON without
+// the `focus` key resolves to `focus = nil`.
 
 enum DayKindOverride: Codable, Hashable {
     case rest
-    case lift(routineId: Int? = nil)
+    case lift(routineId: Int? = nil, focus: LiftFocus? = nil)
     case sport(sportSlug: String? = nil)
 
     var asKind: DayKind {
@@ -74,13 +169,20 @@ enum DayKindOverride: Codable, Hashable {
 
     var routineId: Int? {
         switch self {
-        case .lift(let id): return id
-        case .rest, .sport: return nil
+        case .lift(let id, _): return id
+        case .rest, .sport:    return nil
         }
     }
 
     var sportSlug: String? {
         if case .sport(let slug) = self { return slug }
+        return nil
+    }
+
+    /// PR 5 — user-selected focus for a lift day, if any. nil = let the
+    /// planner pick from auto-rotation.
+    var liftFocus: LiftFocus? {
+        if case .lift(_, let focus) = self { return focus }
         return nil
     }
 
@@ -92,7 +194,7 @@ enum DayKindOverride: Codable, Hashable {
     static func from(plan: DayPlan) -> DayKindOverride {
         switch plan.kind {
         case .rest:  return .rest
-        case .lift:  return .lift(routineId: plan.routineId)
+        case .lift:  return .lift(routineId: plan.routineId, focus: nil)
         case .sport: return .sport(sportSlug: plan.sport?.slug)
         case .event: return .rest
         }
@@ -113,6 +215,10 @@ struct WeekOverrides: Codable {
     /// so the user's "use my saved leg workout for Thursday" pick survives
     /// regens + propagates to Today on the day-of.
     var customRoutineByDate: [Date: String] = [:]
+    /// PR 5 (weekly-coach roadmap) — week-level intent dial. nil = typical
+    /// (no adjustment). Optional + decoded with decodeIfPresent so existing
+    /// persisted payloads decode unchanged.
+    var weekTone: WeekTone?
 
     init(weekStart: Date) {
         self.weekStart = weekStart
