@@ -27,6 +27,11 @@ struct WeekDayEditSheet: View {
     @State private var pickingMoveTarget = false
     @State private var editingIntensity = false
     @State private var previewingWorkout = false
+    /// PR 6 (weekly-coach roadmap) — opens the inline LiftFocus picker
+    /// for lift days. Sheet-style picker rather than inline-expand because
+    /// the picker grid takes vertical room the sheet body doesn't have
+    /// without scrolling, especially on iPhone SE.
+    @State private var pickingLiftFocus = false
 
     var body: some View {
         NavigationStack {
@@ -101,6 +106,15 @@ struct WeekDayEditSheet: View {
                     dismiss()
                 })
             }
+        }
+        .sheet(isPresented: $pickingLiftFocus) {
+            LiftFocusPickerSheet(
+                current: currentLiftFocus,
+                onPick: { focus in
+                    setLiftFocus(focus)
+                    pickingLiftFocus = false
+                }
+            )
         }
     }
 
@@ -191,6 +205,31 @@ struct WeekDayEditSheet: View {
                     icon: "arrow.triangle.swap",
                     action: { overridingWorkout = true }
                 )
+
+                // PR 6 — LiftFocus picker. Shows current selection when set
+                // so the user can tell at a glance whether they've already
+                // picked a focus for this day.
+                ActionRow(
+                    title: currentLiftFocus.map { "Focus: \($0.label)" } ?? "Pick a focus",
+                    subtitle: currentLiftFocus.map { _ in "Tap to change push / pull / legs / etc." }
+                        ?? "Push / Pull / Legs / Upper / Lower / Full body",
+                    icon: "scope",
+                    action: { pickingLiftFocus = true }
+                )
+                .accessibilityIdentifier("week-day-focus-action")
+            }
+
+            // PR 6 — out-of-town option. Available on any non-rest day
+            // since the user might want to mark even a planned rest day
+            // as travel (to hide it from "missed workout" tracking later).
+            if currentEvent?.kind != .outOfTown {
+                ActionRow(
+                    title: "Mark as travel day",
+                    subtitle: "Bodyweight flow you can do anywhere",
+                    icon: "airplane",
+                    action: addOutOfTownEvent
+                )
+                .accessibilityIdentifier("week-day-travel-action")
             }
 
             if currentEvent != nil {
@@ -287,6 +326,130 @@ struct WeekDayEditSheet: View {
                 o.events[idx].intensity = intensity
             }
         }
+    }
+
+    // MARK: - PR 6 — Focus + Travel
+
+    /// Currently-selected LiftFocus for this day, derived from
+    /// `dayOverrides`. nil = not set; planner picks from auto-rotation.
+    private var currentLiftFocus: LiftFocus? {
+        for (k, v) in planStore.overrides.dayOverrides
+        where Calendar.current.isDate(k, inSameDayAs: date) {
+            return v.liftFocus
+        }
+        return nil
+    }
+
+    /// Set (or update) the LiftFocus override for this date. Preserves any
+    /// routineId already set on the same date — focus + routine compose,
+    /// with routine winning at generation time per Planner.makeOverrideSlot.
+    private func setLiftFocus(_ focus: LiftFocus) {
+        planStore.updateOverrides(memory: memory.memory) { o in
+            // Find existing override on this date to preserve routineId.
+            var existingRoutineId: Int? = nil
+            for (k, v) in o.dayOverrides
+            where Calendar.current.isDate(k, inSameDayAs: date) {
+                if case .lift(let rid, _) = v { existingRoutineId = rid }
+            }
+            // Remove any stale entry for this date (key equality is exact,
+            // so we have to walk and remove by predicate).
+            let stale = o.dayOverrides.keys.filter { Calendar.current.isDate($0, inSameDayAs: date) }
+            for k in stale { o.dayOverrides.removeValue(forKey: k) }
+            o.dayOverrides[Calendar.current.startOfDay(for: date)] =
+                .lift(routineId: existingRoutineId, focus: focus)
+        }
+    }
+
+    /// Add a `.outOfTown` event for this date. Replaces any existing event
+    /// on this date so we don't pile up — mirrors the existing
+    /// `addSportSession` / `addEvent` behavior.
+    private func addOutOfTownEvent() {
+        planStore.updateOverrides(memory: memory.memory) { o in
+            o.events.removeAll { Calendar.current.isDate($0.date, inSameDayAs: date) }
+            o.events.append(WeekEvent(
+                date: date,
+                title: "Travel day",
+                kind: .outOfTown,
+                sport: nil
+            ))
+        }
+    }
+}
+
+// MARK: - LiftFocusPickerSheet
+//
+// PR 6 — small sheet with a 2×3 chip grid of LiftFocus options. Tap a
+// chip → onPick fires and the sheet dismisses. Current selection (if
+// any) is highlighted.
+
+private struct LiftFocusPickerSheet: View {
+    let current: LiftFocus?
+    let onPick: (LiftFocus) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.bg.ignoresSafeArea()
+                VStack(alignment: .leading, spacing: 18) {
+                    Text("PICK A FOCUS")
+                        .styled(.micro)
+                        .foregroundStyle(Color.accent)
+                    Text("What kind of lift day?")
+                        .font(.custom("SpaceGrotesk-SemiBold", size: 24))
+                        .tracking(-0.025 * 24)
+                        .foregroundStyle(Color.ink)
+
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())],
+                              spacing: 10) {
+                        ForEach(LiftFocus.allCases, id: \.self) { focus in
+                            FocusChip(
+                                label: focus.label,
+                                isSelected: focus == current,
+                                action: { onPick(focus) }
+                            )
+                            .accessibilityIdentifier("focus-chip-\(focus.rawValue)")
+                        }
+                    }
+
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 18)
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundStyle(Color.ink2)
+                }
+            }
+            .toolbarBackground(.hidden, for: .navigationBar)
+        }
+        .presentationDetents([.medium])
+        .presentationBackground(Color.bg)
+    }
+}
+
+private struct FocusChip: View {
+    let label: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(label)
+                .styled(.body)
+                .foregroundStyle(isSelected ? Color.accentInk : Color.ink)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(isSelected ? Color.accent : Color.surface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(isSelected ? Color.clear : Color.line, lineWidth: 0.5)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+        .buttonStyle(.plain)
     }
 }
 

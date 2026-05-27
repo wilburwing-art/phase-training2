@@ -13,6 +13,8 @@ struct WeekScreen: View {
     @EnvironmentObject private var planStore: PlanStore
     @EnvironmentObject private var memory: MemoryStore
     @State private var editingDate: Date? = nil
+    /// PR 6 (weekly-coach roadmap) — opens the WeekTone picker sheet.
+    @State private var pickingWeekTone = false
 
     var body: some View {
         ZStack {
@@ -25,6 +27,20 @@ struct WeekScreen: View {
         }
         .sheet(item: editingDateBinding) { wrapped in
             WeekDayEditSheet(date: wrapped.date, dayPlan: dayPlan(for: wrapped.date))
+        }
+        .sheet(isPresented: $pickingWeekTone) {
+            WeekTonePickerSheet(
+                current: planStore.overrides.weekTone,
+                onPick: { tone in
+                    planStore.updateOverrides(memory: memory.memory) { o in
+                        // tone == .typical encodes as "no adjustment"; clear
+                        // to nil so the chip reads "set tone" again rather
+                        // than "Typical" (less noise on the default).
+                        o.weekTone = (tone == .typical) ? nil : tone
+                    }
+                    pickingWeekTone = false
+                }
+            )
         }
     }
 
@@ -142,9 +158,19 @@ struct WeekScreen: View {
                 .font(.custom("SpaceGrotesk-SemiBold", size: 26))
                 .tracking(-0.025 * 26)
                 .foregroundStyle(Color.ink)
-            Text(planSummary(plan))
-                .font(.monoXS)
-                .foregroundStyle(Color.ink3)
+            HStack(spacing: 8) {
+                Text(planSummary(plan))
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+                Spacer(minLength: 4)
+                // PR 6 — WeekTone chip. Tap → picker. When unset, reads
+                // "Set tone"; when set, reads the chosen tone label.
+                WeekToneChip(
+                    tone: planStore.overrides.weekTone,
+                    action: { pickingWeekTone = true }
+                )
+                .accessibilityIdentifier("week-tone-chip")
+            }
         }
     }
 
@@ -363,6 +389,144 @@ private struct KindBadge: View {
         .environmentObject(store)
         .environmentObject(MemoryStore(defaults: defaults))
         .environmentObject(SessionStore(defaults: defaults))
+}
+
+// MARK: - WeekToneChip + WeekTonePickerSheet
+//
+// PR 6 (weekly-coach roadmap) — the light-touch context chip below the
+// strip header. When unset (no week-level adjustment), reads "Set tone"
+// and points at the picker. When set to `.recovery` / `.build` / `.busy`,
+// shows the chosen tone label so the user knows the week is biased.
+
+private struct WeekToneChip: View {
+    let tone: WeekTone?
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Image(systemName: tone == nil ? "slider.horizontal.3" : icon(for: tone!))
+                    .font(.system(size: 11, weight: .medium))
+                Text(tone?.label ?? "Set tone")
+                    .styled(.monoXS)
+            }
+            .foregroundStyle(tone == nil ? Color.ink2 : Color.accent)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 5)
+            .background(tone == nil ? Color.surface : Color.accentWash)
+            .overlay(
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .strokeBorder(tone == nil ? Color.line : Color.accentBorder,
+                                  lineWidth: 0.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func icon(for tone: WeekTone) -> String {
+        switch tone {
+        case .typical:  return "circle"
+        case .recovery: return "leaf"
+        case .build:    return "arrow.up.right"
+        case .busy:     return "hourglass"
+        }
+    }
+}
+
+private struct WeekTonePickerSheet: View {
+    let current: WeekTone?
+    let onPick: (WeekTone) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.bg.ignoresSafeArea()
+                VStack(alignment: .leading, spacing: 18) {
+                    Text("WEEK TONE")
+                        .styled(.micro)
+                        .foregroundStyle(Color.accent)
+                    Text("How's this week shaping up?")
+                        .font(.custom("SpaceGrotesk-SemiBold", size: 24))
+                        .tracking(-0.025 * 24)
+                        .foregroundStyle(Color.ink)
+
+                    VStack(spacing: 10) {
+                        ForEach(WeekTone.allCases, id: \.self) { tone in
+                            ToneCard(
+                                tone: tone,
+                                isSelected: tone == current,
+                                action: { onPick(tone) }
+                            )
+                            .accessibilityIdentifier("tone-card-\(tone.rawValue)")
+                        }
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 18)
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundStyle(Color.ink2)
+                }
+            }
+            .toolbarBackground(.hidden, for: .navigationBar)
+        }
+        .presentationDetents([.medium])
+        .presentationBackground(Color.bg)
+    }
+}
+
+private struct ToneCard: View {
+    let tone: WeekTone
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(tone.label)
+                        .styled(.body)
+                        .foregroundStyle(isSelected ? Color.accentInk : Color.ink)
+                    Text(subtitle)
+                        .styled(.monoXS)
+                        .foregroundStyle(isSelected ? Color.accentInk.opacity(0.85) : Color.ink2)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer(minLength: 4)
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.accentInk)
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(isSelected ? Color.accent : Color.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(isSelected ? Color.clear : Color.line, lineWidth: 0.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Subtitle text — explains what each tone actually does. Keeps the
+    /// chip non-mysterious; users shouldn't have to guess what "Build"
+    /// means.
+    private var subtitle: String {
+        switch tone {
+        case .typical:  return "Default — no adjustment to volume or duration"
+        case .recovery: return "Lower volume (~30% fewer sets) for a deload week"
+        case .build:    return "Higher volume (~15% more sets) for a hard push"
+        case .busy:     return "Shorter sessions (~70% of usual length)"
+        }
+    }
 }
 
 #Preview("Empty") {
