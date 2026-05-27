@@ -130,6 +130,23 @@ struct WeekScreen: View {
                 .padding(.top, 12)
                 .padding(.bottom, 8)
 
+            // PR 7 — surface rules-engine issues inline. Banner renders
+            // 0–2 rows by default with a "+N more" affordance; collapses
+            // when there are no visible issues so the strip stays clean
+            // on healthy weeks.
+            let issues = planStore.currentValidationIssues(memory: memory.memory)
+            if !issues.isEmpty {
+                PlanValidationBanner(
+                    issues: issues,
+                    onAcknowledge: { issue in
+                        planStore.recordPlanOverride(issue)
+                    }
+                )
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+                .accessibilityIdentifier("plan-validation-banner")
+            }
+
             GeometryReader { geo in
                 let spacing: CGFloat = 6
                 let rowH = max(48, (geo.size.height - spacing * 6) / 7)
