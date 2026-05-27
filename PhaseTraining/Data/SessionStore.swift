@@ -307,8 +307,7 @@ final class SessionStore: ObservableObject {
     /// Persist a completed session: insert into SQLite, prepend to the
     /// @Published cache, clear active.
     @discardableResult
-    func saveCompleted(_ active: ActiveSession, feel: String?, note: String?) -> SavedSession {
-        let endTime = Date()
+    func saveCompleted(_ active: ActiveSession, feel: String?, note: String?, endTime: Date = Date()) -> SavedSession {
         let duration = max(0, Int(endTime.timeIntervalSince(active.startTime)))
         let saved = SavedSession(
             templateId: active.templateId,

@@ -204,7 +204,15 @@ enum CoachTools {
         )
     }()
 
-    static let all: [AnthropicTool] = [proposePlanEdits, proposeWorkoutChanges, proposeMemoryUpdate, buildWorkout]
+    /// Tools offered to the conversational coach (CoachDrawer). Excludes
+    /// `buildWorkout`: the chat drawer has no card to render a freshly built
+    /// workout (the conversation store has no build-workout proposal setter),
+    /// so the model calling it produced an empty bubble — the tool call was
+    /// silently dropped by the drawer's `default:` case. `buildWorkout` stays
+    /// available to the request + refinement flows, which pass it explicitly
+    /// and render the result. Surfacing it in chat behind a preview card is a
+    /// follow-up.
+    static let chat: [AnthropicTool] = [proposePlanEdits, proposeWorkoutChanges, proposeMemoryUpdate]
 }
 
 // MARK: - Anthropic tool wire shape

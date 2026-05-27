@@ -358,6 +358,14 @@ struct TodayScreen: View {
         .onAppear {
             if editableTemplate == nil { editableTemplate = template }
         }
+        .onChange(of: template) { _, newTemplate in
+            // The underlying plan can change while Today stays on-screen — the
+            // plan regenerates, a day override is scheduled, or an active
+            // session appears/clears. Re-sync the editable copy so Start
+            // consumes the current shape, unless the user hand-edited it (in
+            // which case keep their edits rather than clobber them).
+            if !didModify { editableTemplate = newTemplate }
+        }
     }
 
     // MARK: - PR 8 — Missed-workout banner glue

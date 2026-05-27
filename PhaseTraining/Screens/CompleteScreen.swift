@@ -32,6 +32,11 @@ struct CompleteScreen: View {
 
     @State private var feel: String? = nil
     @State private var note: String = ""
+    /// Frozen at the moment this screen appears (i.e. the session completed),
+    /// so DURATION doesn't keep ticking up while the user fills feel/note.
+    /// The same timestamp is handed to `saveCompleted` so the stored duration
+    /// matches what was displayed.
+    @State private var completedAt = Date()
     @State private var showDiscardConfirm = false
     /// True once "Save session" is tapped — drives the post-workout feedback
     /// sheet. Sheet's onDone triggers the orchestrator's onSave handoff back
@@ -51,7 +56,7 @@ struct CompleteScreen: View {
     private var stats: SessionStats { store.stats(for: session) }
 
     private var elapsedSeconds: Int {
-        max(0, Int(Date().timeIntervalSince(session.startTime)))
+        max(0, Int(completedAt.timeIntervalSince(session.startTime)))
     }
 
     private var durationString: String {
@@ -339,7 +344,7 @@ struct CompleteScreen: View {
             // separately in the PostWorkoutFeedbackSheet that auto-presents
             // here. The sheet's onDone hands off back to the orchestrator
             // (onSave) once the user taps Save or Skip.
-            store.saveCompleted(session, feel: feel, note: note.isEmpty ? nil : note)
+            store.saveCompleted(session, feel: feel, note: note.isEmpty ? nil : note, endTime: completedAt)
             showFeedbackSheet = true
         } label: {
             HStack(spacing: 8) {

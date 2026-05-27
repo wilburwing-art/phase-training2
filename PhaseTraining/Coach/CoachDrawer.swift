@@ -324,7 +324,7 @@ struct CoachDrawer: View {
                     perTurnContext: CoachSystemPrompt.contextBlock(snapshot: snapshot),
                     history: Array(history.dropLast()),
                     userMessage: wireText,
-                    tools: CoachTools.all
+                    tools: CoachTools.chat
                 )
                 for try await part in stream {
                     switch part {
