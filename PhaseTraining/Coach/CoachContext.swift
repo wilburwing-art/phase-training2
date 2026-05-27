@@ -24,7 +24,11 @@ enum CoachContext {
         // tests) keep working without churn. Wire-up exists in CoachDrawer
         // — the surface where the user actually chats and might say
         // "how was my climbing this week?"
-        recentSportLogs: [SportLogEntry] = []
+        recentSportLogs: [SportLogEntry] = [],
+        // PR 4: rolling 12-week history. Just counts + completion ratios —
+        // full plan shapes are too verbose for the per-turn context budget.
+        // The coach can reason about consistency without seeing every day.
+        pastPlans: [WeekPlanSnapshot] = []
     ) -> String {
         var blocks: [String] = []
 
@@ -218,6 +222,29 @@ enum CoachContext {
                 lines.append(line)
             }
             blocks.append("RECENT SPORT LOGS\n" + lines.joined(separator: "\n"))
+        }
+
+        // PR 4: past-plan history summary. Last 6 weeks (capped from the
+        // 12-week store) so the block stays under ~200 chars. Per-week
+        // line is one row: planned counts + completion ratio + missed.
+        // The coach can detect patterns ("missed Tuesdays 3 weeks in a
+        // row") without us shipping the whole DayPlan inline. Excludes
+        // the current week (still in-flight) so completion ratios are
+        // meaningful — a Monday-morning snapshot would read 0% across
+        // the board.
+        let nowWeekStart = now.startOfTrainingWeek()
+        let historical = pastPlans
+            .filter { $0.weekStart < nowWeekStart }
+            .prefix(6)
+        if !historical.isEmpty {
+            var lines: [String] = []
+            for snap in historical {
+                let planned = snap.plannedLiftDays + snap.plannedSportDays
+                let done = snap.completedSessionCount(in: recentSessions)
+                let pct = planned > 0 ? Int((Double(done) / Double(planned) * 100).rounded()) : 0
+                lines.append("- week of \(short(snap.weekStart)): planned \(planned), completed \(done) (\(pct)%)")
+            }
+            blocks.append("PAST WEEKS (last \(lines.count))\n" + lines.joined(separator: "\n"))
         }
 
         if let familiarity = familiaritySection(sessions: recentSessions, now: now) {

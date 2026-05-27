@@ -19,9 +19,25 @@ import Combine
 final class PlanStore: ObservableObject {
     private static let planKey      = "pt_week_plan"
     private static let overridesKey = "pt_week_overrides"
+    /// PR 4 — historical plan snapshots, rolling 12-week cap.
+    /// Foundation for the weekly-coach features in
+    /// PLAN-weekly-coach-roadmap.md (painted strip, rules engine,
+    /// missed-workout autopilot, progress visualizations).
+    private static let pastPlansKey = "pt_past_plans"
+
+    /// How many weeks of history we retain. Anything older rolls off on
+    /// the next snapshot. Twelve weeks matches the coach's longest-window
+    /// summaries (12-week mesocycle, 12-week strength-progress chart) and
+    /// keeps the persisted blob small (worst case ~50 KB compressed).
+    static let pastPlansLimit = 12
 
     @Published var plan: WeekPlan?
     @Published var overrides: WeekOverrides
+    /// Rolling history of past weeks' plans. Snapshotted on every
+    /// `setPlan(_:)` call (idempotent by `weekStart` — re-snapshotting the
+    /// same week replaces the prior entry, keeping the latest capture) and
+    /// on weekly rollover detection in `init`. Sorted newest-first.
+    @Published var pastPlans: [WeekPlanSnapshot]
 
     /// Variety memory. Wired up post-init by the App so PlanStore can stay
     /// instantiable with a single defaults param (tests, previews) while
@@ -91,6 +107,43 @@ final class PlanStore: ObservableObject {
         } else {
             self.overrides = WeekOverrides(weekStart: thisWeek)
         }
+
+        // PR 4: load past-plan history. Decoded list is already trimmed +
+        // sorted on save, but defensively re-trim on load in case the
+        // persisted blob predates the cap rule (forward-compat with
+        // future cap increases too).
+        if let data = defaults.data(forKey: Self.pastPlansKey),
+           let list = try? Self.decoder().decode([WeekPlanSnapshot].self, from: data) {
+            self.pastPlans = WeekPlanSnapshot.trim(list, limit: Self.pastPlansLimit)
+        } else {
+            self.pastPlans = []
+        }
+
+        // Weekly-rollover detection: if we have an active plan that
+        // belongs to a prior week and we haven't snapshotted it yet,
+        // capture it now. This catches the case where the user opens
+        // the app on a Monday after a quiet week — `setPlan` won't fire
+        // until the planner regenerates, but the prior week deserves a
+        // snapshot before that overwrite.
+        captureRolloverIfNeeded(today: today)
+    }
+
+    /// Snapshot the currently-loaded plan if it belongs to a past week
+    /// and isn't already in `pastPlans`. Called at init and from external
+    /// rollover triggers (e.g. app foregrounding on a new week).
+    func captureRolloverIfNeeded(today: Date = Date()) {
+        guard let plan, let firstDate = plan.days.first?.date else { return }
+        let planWeekStart = firstDate.startOfTrainingWeek()
+        let nowWeekStart = today.startOfTrainingWeek()
+        // Only snapshot if the active plan belongs to a PAST week. The
+        // current week gets snapshotted from setPlan instead so we don't
+        // capture an empty-Monday view of the in-flight week.
+        guard planWeekStart < nowWeekStart else { return }
+        // Idempotent: skip if we already have a snapshot of this week.
+        if pastPlans.contains(where: { Calendar.current.isDate($0.weekStart, inSameDayAs: planWeekStart) }) {
+            return
+        }
+        snapshotCurrentPlan(now: today)
     }
 
     // MARK: - Generation
@@ -125,6 +178,9 @@ final class PlanStore: ObservableObject {
         self.plan = pWithCustoms
         savePlan()
         recordPickedExercises(in: pWithCustoms)
+        // PR 4: snapshot every generated plan into history (idempotent by
+        // weekStart — a same-week regen replaces the prior entry).
+        snapshotCurrentPlan(now: today)
         // Build 98: kick off background LLM refinement for consent-on
         // users. Deterministic plan above renders immediately; the
         // refinement task progressively replaces each lift/mobility day
@@ -265,14 +321,50 @@ final class PlanStore: ObservableObject {
     func setPlan(_ p: WeekPlan) {
         self.plan = p
         savePlan()
+        // PR 4: snapshot the plan we just installed. Idempotent — repeated
+        // setPlan calls for the same week replace rather than append.
+        snapshotCurrentPlan()
+    }
+
+    // MARK: - PR 4 — Plan history
+
+    /// Capture a snapshot of the active plan into `pastPlans`. Idempotent
+    /// by `weekStart`: re-snapshotting the same week replaces the prior
+    /// entry, preserving the latest captured shape (so a Wednesday edit
+    /// is what history records, not the empty-Monday baseline). Trimmed
+    /// to the rolling 12-week cap after each insert.
+    func snapshotCurrentPlan(now: Date = Date()) {
+        guard let plan else { return }
+        let sessions = sessionStore?.savedSessions ?? []
+        let snap = WeekPlanSnapshot.capture(plan, sessions: sessions, now: now)
+        var next = pastPlans.filter { !Calendar.current.isDate($0.weekStart, inSameDayAs: snap.weekStart) }
+        next.insert(snap, at: 0)
+        pastPlans = WeekPlanSnapshot.trim(next, limit: Self.pastPlansLimit)
+        savePastPlans()
+    }
+
+    /// Derive the "actual shape" for a given week's start date. Combines
+    /// the persisted snapshot (the planned shape) with current
+    /// `SessionStore.savedSessions` (the actual sessions). Returns nil
+    /// when no snapshot exists for that week — caller can decide whether
+    /// to render a "no data" state or fall back to live data.
+    func shape(forWeek weekStart: Date) -> WeekShape? {
+        let normalized = weekStart.startOfTrainingWeek()
+        guard let snap = pastPlans.first(where: {
+            Calendar.current.isDate($0.weekStart, inSameDayAs: normalized)
+        }) else { return nil }
+        let sessions = sessionStore?.savedSessions ?? []
+        return WeekShape(snapshot: snap, sessions: sessions)
     }
 
     /// Wipe everything — dev / "Start over" flows.
     func clear() {
         plan = nil
         overrides = WeekOverrides(weekStart: Date().startOfTrainingWeek())
+        pastPlans = []
         defaults.removeObject(forKey: Self.planKey)
         defaults.removeObject(forKey: Self.overridesKey)
+        defaults.removeObject(forKey: Self.pastPlansKey)
     }
 
     // MARK: - Per-week overrides
@@ -631,6 +723,15 @@ final class PlanStore: ObservableObject {
     private func saveOverrides() {
         if let data = try? Self.encoder().encode(overrides) {
             defaults.set(data, forKey: Self.overridesKey)
+        }
+    }
+
+    /// PR 4 — persist the rolling history. Empty list still writes (vs
+    /// removeObject) so the load path can distinguish "no history yet"
+    /// from "history was cleared by Start Over".
+    private func savePastPlans() {
+        if let data = try? Self.encoder().encode(pastPlans) {
+            defaults.set(data, forKey: Self.pastPlansKey)
         }
     }
 
