@@ -29,6 +29,17 @@ final class PlanStore: ObservableObject {
     /// dismissed across ≥3 distinct weekStarts self-suppresses for
     /// the user.
     private static let planOverridesKey = "pt_plan_overrides"
+    /// PR 8 — log of missed workouts. Tracks each detection so we
+    /// don't re-banner the same miss twice, and feeds CoachContext
+    /// with "the user has missed 3 Tuesday lifts in a row".
+    private static let missedWorkoutsKey = "pt_missed_workouts"
+    /// PR 8 — mid-week reshuffle counter. Resets on weekly rollover.
+    /// Spec §3 rule 5: cap at 2 per week across missed + abandoned
+    /// events combined (PR 9 will hit the same counter).
+    private static let reshuffleCountKey = "pt_reshuffle_count"
+    /// PR 8 — weekStart we last computed reshuffleCount against.
+    /// When the active week changes, counter resets to 0.
+    private static let reshuffleWeekKey = "pt_reshuffle_week"
 
     /// How many weeks of history we retain. Anything older rolls off on
     /// the next snapshot. Twelve weeks matches the coach's longest-window
@@ -54,6 +65,14 @@ final class PlanStore: ObservableObject {
     /// suppression set the rules engine consults so a rule the user
     /// has overridden 3 weeks in a row goes silent.
     @Published var recentPlanOverrides: [WeeklyPlanOverride]
+    /// PR 8 — log of missed planned workouts. Sorted newest-first.
+    /// Rolling 90-day window pruned on every detection/reshuffle so
+    /// the coach doesn't get fed a year-old miss.
+    @Published var missedWorkouts: [MissedWorkoutEntry]
+    /// PR 8 — count of mid-week reshuffles (missed + abandoned)
+    /// applied in the current week. Resets on weekly rollover.
+    /// Spec §3 rule 5 caps at 2/week.
+    @Published var midWeekReshuffleCount: Int
 
     /// Variety memory. Wired up post-init by the App so PlanStore can stay
     /// instantiable with a single defaults param (tests, previews) while
@@ -144,6 +163,26 @@ final class PlanStore: ObservableObject {
             self.recentPlanOverrides = list.filter { $0.loggedAt >= cutoff }
         } else {
             self.recentPlanOverrides = []
+        }
+
+        // PR 8: load missed-workout log + reshuffle counter. The counter
+        // gets reset whenever the persisted weekStart no longer matches
+        // the current training-week Monday.
+        let thisWeekStart = today.startOfTrainingWeek()
+        if let data = defaults.data(forKey: Self.missedWorkoutsKey),
+           let list = try? Self.decoder().decode([MissedWorkoutEntry].self, from: data) {
+            let cutoff = today.addingTimeInterval(-Double(Self.planOverridesRetentionDays) * 86_400)
+            self.missedWorkouts = list
+                .filter { $0.loggedAt >= cutoff }
+                .sorted { $0.date > $1.date }
+        } else {
+            self.missedWorkouts = []
+        }
+        if let savedWeek = defaults.object(forKey: Self.reshuffleWeekKey) as? Date,
+           Calendar.current.isDate(savedWeek, inSameDayAs: thisWeekStart) {
+            self.midWeekReshuffleCount = defaults.integer(forKey: Self.reshuffleCountKey)
+        } else {
+            self.midWeekReshuffleCount = 0
         }
 
         // Weekly-rollover detection: if we have an active plan that
@@ -407,6 +446,114 @@ final class PlanStore: ObservableObject {
         )
     }
 
+    // MARK: - PR 8 — Missed-workout autopilot
+
+    /// Spec §3 rule 5: cap mid-week reshuffles at 2 per week across
+    /// missed + abandoned events combined.
+    static let weeklyReshuffleCap = 2
+
+    /// All planned-but-not-completed days in the current plan that
+    /// haven't already been logged into `missedWorkouts`. The caller
+    /// (typically the Today screen) shows a banner per result; once
+    /// the user acts, `applyMissedReshuffle` / `dismissMissed`
+    /// records the entry so we don't re-banner the same date.
+    func pendingMissedWorkouts(now: Date = Date()) -> [DayPlan] {
+        guard let plan, let sessions = sessionStore?.savedSessions else { return [] }
+        let detected = MissedWorkoutAutopilot.detect(
+            plan: plan,
+            sessions: sessions,
+            overrides: overrides,
+            now: now
+        )
+        let calendar = Calendar.current
+        // Skip days we've already logged a MissedWorkoutEntry for.
+        let loggedDates = Set(missedWorkouts.map { calendar.startOfDay(for: $0.date) })
+        return detected.filter { day in
+            !loggedDates.contains(calendar.startOfDay(for: day.date))
+        }
+    }
+
+    /// Propose a reshuffle for the given missed date using the
+    /// autopilot rules. Returns nil when budget is exhausted, the
+    /// drop-rule fires, or no valid target exists — caller in that
+    /// case should call `dismissMissed(_:asDropped:)` to log the
+    /// outcome.
+    func proposeMissedReshuffle(missedDate: Date,
+                                now: Date = Date()) -> PlanDiff? {
+        guard plan != nil else { return nil }
+        let remainingBudget = max(0, Self.weeklyReshuffleCap - midWeekReshuffleCount)
+        let edits = MissedWorkoutAutopilot.proposeReshuffle(
+            missedDate: missedDate,
+            plan: plan!,
+            overrides: overrides,
+            remainingBudget: remainingBudget,
+            now: now
+        )
+        guard !edits.isEmpty else { return nil }
+        return propose(edits, reasoning: "Missed workout — moved to keep coverage")
+    }
+
+    /// Apply the autopilot's proposed reshuffle, log the resolution,
+    /// and bump the per-week counter.
+    func applyMissedReshuffle(_ diff: PlanDiff,
+                              missedDate: Date,
+                              now: Date = Date()) {
+        guard let day = plan?.days.first(where: {
+            Calendar.current.isDate($0.date, inSameDayAs: missedDate)
+        }) else { return }
+        // The move targets the date that day-id now lives at, which is
+        // the "to" date of the .move edit in the diff. Pull it out so
+        // we can record the resolution.
+        let newDate: Date? = diff.edits.compactMap { edit -> Date? in
+            if case .move(_, let toDate) = edit { return toDate }
+            return nil
+        }.first
+
+        apply(diff)
+        let resolution: MissResolution = newDate.map { .reshuffledTo($0) } ?? .dropped
+        recordMiss(date: day.date, kind: day.kind, title: day.title,
+                   resolution: resolution, now: now)
+        midWeekReshuffleCount += 1
+        saveReshuffleCount(now: now)
+    }
+
+    /// Log a miss without applying any plan changes. Used for the
+    /// drop-rule fire and the user-dismissed paths. `asDropped`
+    /// distinguishes the two — autopilot-dropped vs user-dismissed —
+    /// so the coach can tell the difference.
+    func dismissMissed(date: Date, asDropped: Bool, now: Date = Date()) {
+        guard let day = plan?.days.first(where: {
+            Calendar.current.isDate($0.date, inSameDayAs: date)
+        }) else { return }
+        recordMiss(date: day.date, kind: day.kind, title: day.title,
+                   resolution: asDropped ? .dropped : .userDismissed, now: now)
+    }
+
+    /// Persist a MissedWorkoutEntry. Removes any existing entry for
+    /// the same date (idempotent on re-detection).
+    private func recordMiss(date: Date,
+                            kind: DayKind,
+                            title: String,
+                            resolution: MissResolution,
+                            now: Date = Date()) {
+        var next = missedWorkouts.filter {
+            !Calendar.current.isDate($0.date, inSameDayAs: date)
+        }
+        next.append(MissedWorkoutEntry(
+            date: Calendar.current.startOfDay(for: date),
+            plannedKind: kind,
+            plannedTitle: title,
+            resolution: resolution,
+            loggedAt: now
+        ))
+        // Trim 90-day window
+        let cutoff = now.addingTimeInterval(-Double(Self.planOverridesRetentionDays) * 86_400)
+        missedWorkouts = next
+            .filter { $0.loggedAt >= cutoff }
+            .sorted { $0.date > $1.date }
+        saveMissedWorkouts()
+    }
+
     /// User tapped "Got it" / dismissed a validation issue. Logs a
     /// `WeeklyPlanOverride`, prunes anything outside the 90-day window,
     /// and persists. Same-week dupes for the same (rule, pattern) are
@@ -438,10 +585,15 @@ final class PlanStore: ObservableObject {
         overrides = WeekOverrides(weekStart: Date().startOfTrainingWeek())
         pastPlans = []
         recentPlanOverrides = []
+        missedWorkouts = []
+        midWeekReshuffleCount = 0
         defaults.removeObject(forKey: Self.planKey)
         defaults.removeObject(forKey: Self.overridesKey)
         defaults.removeObject(forKey: Self.pastPlansKey)
         defaults.removeObject(forKey: Self.planOverridesKey)
+        defaults.removeObject(forKey: Self.missedWorkoutsKey)
+        defaults.removeObject(forKey: Self.reshuffleCountKey)
+        defaults.removeObject(forKey: Self.reshuffleWeekKey)
     }
 
     // MARK: - Per-week overrides
@@ -817,6 +969,21 @@ final class PlanStore: ObservableObject {
         if let data = try? Self.encoder().encode(recentPlanOverrides) {
             defaults.set(data, forKey: Self.planOverridesKey)
         }
+    }
+
+    /// PR 8 — persist the rolling missed-workout log.
+    private func saveMissedWorkouts() {
+        if let data = try? Self.encoder().encode(missedWorkouts) {
+            defaults.set(data, forKey: Self.missedWorkoutsKey)
+        }
+    }
+
+    /// PR 8 — persist the per-week reshuffle counter. Tagged with
+    /// the current training-week Monday so we know to reset when
+    /// the week rolls over.
+    private func saveReshuffleCount(now: Date = Date()) {
+        defaults.set(midWeekReshuffleCount, forKey: Self.reshuffleCountKey)
+        defaults.set(now.startOfTrainingWeek(), forKey: Self.reshuffleWeekKey)
     }
 
     private static func encoder() -> JSONEncoder {
