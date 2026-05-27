@@ -28,7 +28,12 @@ enum CoachContext {
         // PR 4: rolling 12-week history. Just counts + completion ratios —
         // full plan shapes are too verbose for the per-turn context budget.
         // The coach can reason about consistency without seeing every day.
-        pastPlans: [WeekPlanSnapshot] = []
+        pastPlans: [WeekPlanSnapshot] = [],
+        // PR 7: rules-engine issues active against the current plan. The
+        // coach can mention them in chat ("you've got 4 push days lined
+        // up — want to swap one to pull?"). Suppressed (rule, pattern)
+        // combinations don't appear here.
+        planIssues: [PlanValidationIssue] = []
     ) -> String {
         var blocks: [String] = []
 
@@ -245,6 +250,19 @@ enum CoachContext {
                 lines.append("- week of \(short(snap.weekStart)): planned \(planned), completed \(done) (\(pct)%)")
             }
             blocks.append("PAST WEEKS (last \(lines.count))\n" + lines.joined(separator: "\n"))
+        }
+
+        // PR 7: active rules-engine issues. Only present when the
+        // planner produced something the user might want feedback on.
+        // Tight format — one line per issue (severity + title), no
+        // explanation body (the coach already has the rules taxonomy
+        // in its system prompt + can ask if it needs more detail).
+        if !planIssues.isEmpty {
+            var lines: [String] = []
+            for issue in planIssues.prefix(5) {
+                lines.append("- [\(issue.severity.rawValue)] \(issue.title) (rule: \(issue.ruleKey))")
+            }
+            blocks.append("PLAN ISSUES\n" + lines.joined(separator: "\n"))
         }
 
         if let familiarity = familiaritySection(sessions: recentSessions, now: now) {

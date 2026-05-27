@@ -24,12 +24,23 @@ final class PlanStore: ObservableObject {
     /// PLAN-weekly-coach-roadmap.md (painted strip, rules engine,
     /// missed-workout autopilot, progress visualizations).
     private static let pastPlansKey = "pt_past_plans"
+    /// PR 7 — log of dismissed PlanValidationIssues. Used to derive
+    /// `suppressedRulePatterns`: a (rule, pattern) combination
+    /// dismissed across ≥3 distinct weekStarts self-suppresses for
+    /// the user.
+    private static let planOverridesKey = "pt_plan_overrides"
 
     /// How many weeks of history we retain. Anything older rolls off on
     /// the next snapshot. Twelve weeks matches the coach's longest-window
     /// summaries (12-week mesocycle, 12-week strength-progress chart) and
     /// keeps the persisted blob small (worst case ~50 KB compressed).
     static let pastPlansLimit = 12
+
+    /// PR 7 — keep validation-override history bounded. Older entries
+    /// roll off so a rule that bothered a user once a year ago doesn't
+    /// stay suppressed forever. 90 days mirrors the soreness/feedback
+    /// windows the coach already uses.
+    static let planOverridesRetentionDays = 90
 
     @Published var plan: WeekPlan?
     @Published var overrides: WeekOverrides
@@ -38,6 +49,11 @@ final class PlanStore: ObservableObject {
     /// same week replaces the prior entry, keeping the latest capture) and
     /// on weekly rollover detection in `init`. Sorted newest-first.
     @Published var pastPlans: [WeekPlanSnapshot]
+    /// PR 7 — recent dismissals of PlanValidationIssues. Trimmed to
+    /// the last 90 days on load + on every record. Drives the
+    /// suppression set the rules engine consults so a rule the user
+    /// has overridden 3 weeks in a row goes silent.
+    @Published var recentPlanOverrides: [WeeklyPlanOverride]
 
     /// Variety memory. Wired up post-init by the App so PlanStore can stay
     /// instantiable with a single defaults param (tests, previews) while
@@ -117,6 +133,17 @@ final class PlanStore: ObservableObject {
             self.pastPlans = WeekPlanSnapshot.trim(list, limit: Self.pastPlansLimit)
         } else {
             self.pastPlans = []
+        }
+
+        // PR 7: load validation-override log. Trim to the 90-day window
+        // on load so an old blob from a fresh install doesn't carry
+        // stale entries forward indefinitely.
+        if let data = defaults.data(forKey: Self.planOverridesKey),
+           let list = try? Self.decoder().decode([WeeklyPlanOverride].self, from: data) {
+            let cutoff = today.addingTimeInterval(-Double(Self.planOverridesRetentionDays) * 86_400)
+            self.recentPlanOverrides = list.filter { $0.loggedAt >= cutoff }
+        } else {
+            self.recentPlanOverrides = []
         }
 
         // Weekly-rollover detection: if we have an active plan that
@@ -357,14 +384,64 @@ final class PlanStore: ObservableObject {
         return WeekShape(snapshot: snap, sessions: sessions)
     }
 
+    // MARK: - PR 7 — Plan validation
+
+    /// Set of `"rule:pattern"` keys the user has dismissed enough times
+    /// (≥3 distinct weekStarts) that the rules engine should stop
+    /// surfacing them.
+    var suppressedRulePatterns: Set<String> {
+        PlanOverrideSuppression.suppressedKeys(from: recentPlanOverrides)
+    }
+
+    /// Run the rules engine against the current plan + overrides +
+    /// memory. Returns the visible issues — already filtered through
+    /// `suppressedRulePatterns`. Pure computation; safe to call on
+    /// every render. Returns empty when no plan exists.
+    func currentValidationIssues(memory: TrainingMemory) -> [PlanValidationIssue] {
+        guard let plan else { return [] }
+        return PlanValidator.validate(
+            plan: plan,
+            memory: memory,
+            overrides: overrides,
+            suppressedRulePatterns: suppressedRulePatterns
+        )
+    }
+
+    /// User tapped "Got it" / dismissed a validation issue. Logs a
+    /// `WeeklyPlanOverride`, prunes anything outside the 90-day window,
+    /// and persists. Same-week dupes for the same (rule, pattern) are
+    /// dropped so a double-tap doesn't double-count toward suppression.
+    func recordPlanOverride(_ issue: PlanValidationIssue, now: Date = Date()) {
+        let weekStart = now.startOfTrainingWeek()
+        // Drop any existing entry for this (week, rule, pattern) — same
+        // week shouldn't tick the suppression counter twice.
+        var next = recentPlanOverrides.filter { o in
+            !(o.rule == issue.ruleKey
+              && o.pattern == issue.patternKey
+              && Calendar.current.isDate(o.weekStart, inSameDayAs: weekStart))
+        }
+        next.append(WeeklyPlanOverride(
+            weekStart: weekStart,
+            rule: issue.ruleKey,
+            pattern: issue.patternKey,
+            loggedAt: now
+        ))
+        // Trim past 90 days
+        let cutoff = now.addingTimeInterval(-Double(Self.planOverridesRetentionDays) * 86_400)
+        recentPlanOverrides = next.filter { $0.loggedAt >= cutoff }
+        savePlanOverrides()
+    }
+
     /// Wipe everything — dev / "Start over" flows.
     func clear() {
         plan = nil
         overrides = WeekOverrides(weekStart: Date().startOfTrainingWeek())
         pastPlans = []
+        recentPlanOverrides = []
         defaults.removeObject(forKey: Self.planKey)
         defaults.removeObject(forKey: Self.overridesKey)
         defaults.removeObject(forKey: Self.pastPlansKey)
+        defaults.removeObject(forKey: Self.planOverridesKey)
     }
 
     // MARK: - Per-week overrides
@@ -732,6 +809,13 @@ final class PlanStore: ObservableObject {
     private func savePastPlans() {
         if let data = try? Self.encoder().encode(pastPlans) {
             defaults.set(data, forKey: Self.pastPlansKey)
+        }
+    }
+
+    /// PR 7 — persist the rolling validation-override log.
+    private func savePlanOverrides() {
+        if let data = try? Self.encoder().encode(recentPlanOverrides) {
+            defaults.set(data, forKey: Self.planOverridesKey)
         }
     }
 
