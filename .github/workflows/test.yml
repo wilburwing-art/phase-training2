@@ -42,6 +42,14 @@ jobs:
           echo "udid=$UDID" >> "$GITHUB_OUTPUT"
 
       - name: Run tests
+        # -retry-tests-on-failure + -test-iterations 3: retry only the
+        # individual failing test cases (not the whole suite), up to 2
+        # retries each. Absorbs the macos-26 cold-boot XCUITest rig flake
+        # we've been chasing — synthesized taps occasionally fail to
+        # register on a freshly-booted simulator, hitting a different test
+        # each run. A real regression still fails (it'd fail all 3 tries);
+        # a single-shot rig flake gets absorbed transparently. Apple-
+        # supported since Xcode 13.
         run: |
           set -o pipefail
           xcodebuild test \
@@ -49,6 +57,8 @@ jobs:
             -scheme PhaseTraining \
             -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
             -resultBundlePath build/TestResults.xcresult \
+            -retry-tests-on-failure \
+            -test-iterations 3 \
             CODE_SIGNING_ALLOWED=NO \
             | xcbeautify --renderer github-actions
 
