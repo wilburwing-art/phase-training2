@@ -115,6 +115,7 @@ SLUG_TO_SLOT_OVERRIDES = {
     "gymnastic-rings":         "rings",
     "landmine":                "landmine",
     "weight-plate":            "plate",
+    "weight-plates":           "plate",
     "plate":                   "plate",
 }
 
