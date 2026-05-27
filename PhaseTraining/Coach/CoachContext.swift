@@ -33,7 +33,11 @@ enum CoachContext {
         // coach can mention them in chat ("you've got 4 push days lined
         // up — want to swap one to pull?"). Suppressed (rule, pattern)
         // combinations don't appear here.
-        planIssues: [PlanValidationIssue] = []
+        planIssues: [PlanValidationIssue] = [],
+        // PR 8: missed-workout history. Let the coach see patterns
+        // ("you've missed Tuesday's lift 3 weeks in a row"). Recent
+        // (last 14 days) entries only — older misses aren't actionable.
+        missedWorkouts: [MissedWorkoutEntry] = []
     ) -> String {
         var blocks: [String] = []
 
@@ -263,6 +267,23 @@ enum CoachContext {
                 lines.append("- [\(issue.severity.rawValue)] \(issue.title) (rule: \(issue.ruleKey))")
             }
             blocks.append("PLAN ISSUES\n" + lines.joined(separator: "\n"))
+        }
+
+        // PR 8: recent missed-workout history (last 14 days). The coach
+        // can read patterns like "you've missed Tuesday lifts 3 weeks
+        // running" from this block.
+        let missedCutoff = now.addingTimeInterval(-14 * 86_400)
+        let recentMissed = missedWorkouts
+            .filter { $0.date >= missedCutoff }
+            .sorted { $0.date > $1.date }
+            .prefix(8)
+        if !recentMissed.isEmpty {
+            var lines: [String] = []
+            for entry in recentMissed {
+                let title = entry.plannedTitle ?? entry.plannedKind.label.lowercased()
+                lines.append("- \(short(entry.date)) (\(weekday(entry.date))): \(title) — \(entry.resolution.summary)")
+            }
+            blocks.append("MISSED WORKOUTS (last 14 days)\n" + lines.joined(separator: "\n"))
         }
 
         if let familiarity = familiaritySection(sessions: recentSessions, now: now) {

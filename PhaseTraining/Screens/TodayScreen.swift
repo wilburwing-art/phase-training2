@@ -208,6 +208,22 @@ struct TodayScreen: View {
                 )
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
+                        // PR 8 — missed-workout banner. Renders the most
+                        // recent pending miss (planned day passed with
+                        // no logged session). Once the user acts, the
+                        // next pending miss (if any) takes its place.
+                        if let pending = currentPendingMiss {
+                            MissedWorkoutBanner(
+                                missedDay: pending,
+                                proposedDiff: planStore.proposeMissedReshuffle(missedDate: pending.date),
+                                onAccept: { acceptMissedReshuffle(for: pending) },
+                                onDismiss: { dismissMissed(for: pending) }
+                            )
+                            .padding(.horizontal, 20)
+                            .padding(.top, 14)
+                            .accessibilityIdentifier("missed-workout-banner")
+                        }
+
                         sorenessCheckInPill
                             .padding(.horizontal, 20)
                             .padding(.top, 14)
@@ -342,6 +358,29 @@ struct TodayScreen: View {
         .onAppear {
             if editableTemplate == nil { editableTemplate = template }
         }
+    }
+
+    // MARK: - PR 8 — Missed-workout banner glue
+
+    /// The single pending missed workout we surface in the banner.
+    /// Picks the most recent unresolved miss; once the user acts on
+    /// it (Accept / Skip), the next pending miss surfaces.
+    private var currentPendingMiss: DayPlan? {
+        planStore.pendingMissedWorkouts().last  // last = most recent date
+    }
+
+    private func acceptMissedReshuffle(for day: DayPlan) {
+        if let diff = planStore.proposeMissedReshuffle(missedDate: day.date) {
+            planStore.applyMissedReshuffle(diff, missedDate: day.date)
+        } else {
+            // Drop-rule fired or no valid target → log as dropped so we
+            // don't re-banner the same date.
+            planStore.dismissMissed(date: day.date, asDropped: true)
+        }
+    }
+
+    private func dismissMissed(for day: DayPlan) {
+        planStore.dismissMissed(date: day.date, asDropped: false)
     }
 
     /// Discoverable affordance for the pre-workout body check. Always visible
