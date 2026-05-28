@@ -48,6 +48,31 @@ extension PlanStore {
         UserDefaults.standard.bool(forKey: CoachConsent.storageKey)
     }
 
+    // MARK: - Candidate selection
+
+    /// Days eligible for background LLM refinement. A day qualifies only if
+    /// it's a lift day with a deterministic workout that:
+    ///   - hasn't already been refined for this plan version
+    ///     (refinement is per-plan-version; we don't re-polish), AND
+    ///   - doesn't carry a user custom-routine override.
+    ///
+    /// The override exclusion is load-bearing: composeWorkout(fromCustom:)
+    /// stamps a nil refinedByLLMAt, so a Week-tab "Override workout" day would
+    /// otherwise look like a fresh candidate and get rerolled by the LLM —
+    /// silently reverting the user's pick 5-10s after they made it. An
+    /// override is the user's intent; refinement must not touch it. Extracted
+    /// from the refinement loop so these rules are unit-testable without a
+    /// live CoachClient.
+    func refinementCandidates(in plan: WeekPlan) -> [(index: Int, day: DayPlan)] {
+        plan.days.enumerated().compactMap { idx, day in
+            guard day.kind == .lift else { return nil }
+            guard day.generatedWorkout != nil else { return nil }
+            if day.generatedWorkout?.refinedByLLMAt != nil { return nil }
+            if overrides.customRoutineId(for: day.date) != nil { return nil }
+            return (idx, day)
+        }
+    }
+
     // MARK: - Core refinement loop
 
     /// Run LLM refinement for every lift/mobility day in the current plan.
@@ -73,15 +98,7 @@ extension PlanStore {
             recentSportLogs: sportLogs
         )
 
-        // Candidates: lift days that haven't been refined yet for the current
-        // plan. We don't re-refine a day that was already polished by an
-        // earlier LLM pass — refinement is per-plan-version.
-        let candidates: [(index: Int, day: DayPlan)] = snapshotPlan.days.enumerated().compactMap { idx, day in
-            guard day.kind == .lift else { return nil }
-            guard day.generatedWorkout != nil else { return nil }
-            if day.generatedWorkout?.refinedByLLMAt != nil { return nil }
-            return (idx, day)
-        }
+        let candidates = refinementCandidates(in: snapshotPlan)
         guard !candidates.isEmpty else { return }
 
         let profile = DemographicProfile.from(memory)

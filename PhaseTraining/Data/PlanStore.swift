@@ -724,22 +724,22 @@ final class PlanStore: ObservableObject {
         guard let idx = current.days.firstIndex(where: { cal.isDate($0.date, inSameDayAs: date) }) else {
             return false
         }
-        // Build 99: human-edited workout invalidates any prior LLM
-        // personalization on that day. Clearing refinedByLLMAt lets the
-        // next refinement pass re-personalize from the edited baseline
-        // instead of skipping it (the candidate filter in
-        // PlanStore+LLMRefinement.swift treats non-nil refinedByLLMAt as
-        // "already done, skip").
+        // An applied workout diff is the user's final word for this day — it
+        // arrives from a coach proposal (MiniWorkoutDiffCard "Apply") or a
+        // manual swap. Stamp refinedByLLMAt so the background refinement
+        // candidate filter skips this day.
+        //
+        // The previous build-99 code cleared the flag and re-fired refinement
+        // "to re-personalize from the edited baseline" — but refineSingleDay
+        // regenerates the day from scratch (it never reads the edited
+        // exercises), so the refire silently rerolled the edit away ~5-10s
+        // after the user applied it. Re-personalization belongs to the next
+        // full regen (profile drift), which rebuilds the whole day anyway.
         var edited = diff.after
-        edited.refinedByLLMAt = nil
+        edited.refinedByLLMAt = Date()
         current.days[idx].generatedWorkout = edited
         plan = current
         savePlan()
-        // And re-fire refinement so the user's edit gets personalized in
-        // the background (same fire-and-forget contract as initial regen).
-        if let memory = memoryStore?.memory {
-            kickOffLLMRefinementIfConsented(memory: memory)
-        }
         return true
     }
 
