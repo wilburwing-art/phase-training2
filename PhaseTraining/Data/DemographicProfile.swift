@@ -224,7 +224,7 @@ extension DemographicProfile {
             why.append("Age \(age) — capping volume and adding recovery between hard days.")
         }
         if !envs.isEmpty {
-            why.append("Equipment-aware routine pool: only \(envs.sorted().joined(separator: ", ")) routines.")
+            why.append("Equipment-aware workout pool: only \(envs.sorted().joined(separator: ", ")) workouts.")
         }
         if !injurySlugs.isEmpty {
             why.append("Avoiding exercises contraindicated for: \(injurySlugs.count) injur\(injurySlugs.count == 1 ? "y" : "ies").")

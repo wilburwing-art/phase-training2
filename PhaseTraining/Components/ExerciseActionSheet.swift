@@ -132,7 +132,7 @@ struct ExerciseActionSheet: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("\(exerciseName) will be removed from today's workout. The bundled routine isn't affected.")
+                Text("\(exerciseName) will be removed from today's workout. The bundled workout isn't affected.")
             }
         }
         .presentationDetents([.medium, .large])

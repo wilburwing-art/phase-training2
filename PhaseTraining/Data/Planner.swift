@@ -340,7 +340,7 @@ enum Planner {
                                title: r.name,
                                routineId: r.id,
                                protected: true,
-                               generatedReason: "You picked this routine for this day")
+                               generatedReason: "You picked this workout for this day")
             }
             // PR 5: when the override carries a focus, fold it into the
             // strategy so the generator picks a push/pull/legs/etc. shape

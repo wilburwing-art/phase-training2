@@ -48,7 +48,7 @@ struct LibraryScreen: View {
                         eyebrow: "LIBRARY",
                         eyebrowTrailing: libraryEyebrowTrailing,
                         title: "Library",
-                        subtitle: "Browse every exercise and routine."
+                        subtitle: "Browse every exercise and workout."
                     )
                     segmentControl
                     if segment == .routines && showSearchBar {
@@ -75,8 +75,8 @@ struct LibraryScreen: View {
     }
 
     /// Counts for the eyebrow trailing slot — exercise total comes from the
-    /// catalog, routine count comes from CustomRoutineStore. Format matches
-    /// HANDOFF §4: "<n> EX · <n> ROUTINES".
+    /// catalog, workout count comes from CustomRoutineStore. Format:
+    /// "<n> EX · <n> WORKOUTS" (UI glossary uses "Workouts" not "Routines").
     private var libraryEyebrowTrailing: String {
         let exCount = CoachDatabase.shared.listExercises(
             search: nil,
@@ -89,7 +89,7 @@ struct LibraryScreen: View {
             userSportSlugs: []
         ).count
         let routineCount = customStore.routines.count
-        return "\(exCount) EX · \(routineCount) ROUTINES"
+        return "\(exCount) EX · \(routineCount) WORKOUTS"
     }
 
     /// Search only matters on the Workouts segment once the user has enough
