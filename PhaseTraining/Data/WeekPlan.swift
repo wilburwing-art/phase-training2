@@ -328,6 +328,12 @@ extension TrainingMemory {
             "cn:\(constraints.sorted().joined(separator: ","))",
             "ui:\(injuries)",
             "st:\(startingState.rawValue)",
+            // Phase-1 era affinity. Either the user's explicit override
+            // OR the derived cohort from age (which is already in via
+            // `ag:`, but the resolution table can shift independently —
+            // including the resolved-or-explicit override here so the
+            // plan regenerates when the user changes their pick).
+            "er:\(eraOverride ?? "_")",
         ].joined(separator: "|")
         var hash: UInt64 = 5381
         for byte in canonical.utf8 {

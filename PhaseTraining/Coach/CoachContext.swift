@@ -102,8 +102,17 @@ enum CoachContext {
         // separate `current_readiness_pct` line in Phase 2. Per the
         // phase-training-personalization-three-axes skill, the three
         // axes must remain orthogonal in the prompt as well as in code.
-        if let eraCohort {
-            let style = EraAffinity.style(for: eraCohort)
+        //
+        // Resolution: caller-supplied `eraCohort:` wins (LLM refinement
+        // path already has a DemographicProfile in hand and passes it
+        // through). Otherwise resolve from memory.eraOverride ->
+        // derived-from-age here, so CoachDrawer and tests don't have
+        // to plumb the lookup separately.
+        let resolvedEra: EraCohort? = eraCohort
+            ?? memory.eraOverride.flatMap { EraCohort(rawValue: $0) }
+            ?? EraAffinity.derivedCohort(forAge: memory.age, asOf: now)
+        if let resolvedEra {
+            let style = EraAffinity.style(for: resolvedEra)
             var lines: [String] = []
             lines.append("- cohort: \(style.displayName)")
             lines.append("- style: \(style.narrativeBlurb)")
