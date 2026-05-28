@@ -307,9 +307,12 @@ struct TodayScreen: View {
         }
         .sheet(item: actionSheetBinding) { wrapped in
             let exerciseName = editableTemplate?.exercises[wrapped.index].name ?? "Exercise"
+            let count = editableTemplate?.exercises.count ?? 0
             ExerciseActionSheet(
                 exerciseName: exerciseName,
                 onEdit: { editingExIdx = wrapped.index },
+                onMoveUp: wrapped.index > 0 ? { moveExercise(at: wrapped.index, by: -1) } : nil,
+                onMoveDown: wrapped.index < count - 1 ? { moveExercise(at: wrapped.index, by: 1) } : nil,
                 onShowDetails: {
                     inlineDetailExercise = ExerciseLookupCache.shared.exercise(forName: exerciseName)
                 },
@@ -512,16 +515,11 @@ struct TodayScreen: View {
     // MARK: - Inline editable exercise card (build 93)
 
     /// Today's exercise list as a directly-editable card: tap a row to
-    /// adjust sets/reps/rest, tap swap to replace, tap info to inspect,
-    /// drag the trailing handle to reorder. The Add Exercise row appends
-    /// to the end. All mutations flow through `editableTemplate` so Start
-    /// consumes the edited shape.
-    ///
-    /// Reorder uses `List` + `.onMove` + `editMode: .active` (same pattern
-    /// as `DayWorkoutPreviewSheet`). The List is height-bounded so it
-    /// doesn't scroll independently inside the page's outer ScrollView.
-    /// Per-row `.draggable`/`.dropDestination` was tried first and broke
-    /// after the first reorder — see `swiftui-drag-reorder-custom-styled`.
+    /// open the action sheet (adjust, swap, inspect, remove). The Add
+    /// Exercise row appends to the end. All mutations flow through
+    /// `editableTemplate` so Start consumes the edited shape. The List is
+    /// height-bounded so it doesn't scroll independently inside the page's
+    /// outer ScrollView.
     private func inlineExerciseCard(_ tmpl: WorkoutTemplate) -> some View {
         // Height: ~88pt per ExerciseTile (.presentation density min) + ~56pt
         // add-row + ~8pt list padding. Slight overshoot is fine; rows just
@@ -550,7 +548,6 @@ struct TodayScreen: View {
                             .listRowSeparatorTint(Color.lineSoft)
                             .listRowInsets(EdgeInsets())
                     }
-                    .onMove(perform: moveInlineExercise)
                     inlineAddExerciseRow
                         .listRowBackground(Color.surface)
                         .listRowSeparator(.hidden)
@@ -559,7 +556,6 @@ struct TodayScreen: View {
             }
             .scrollContentBackground(.hidden)
             .listStyle(.plain)
-            .environment(\.editMode, .constant(.active))
             .scrollDisabled(true)
             .frame(height: listHeight)
         }
@@ -607,6 +603,26 @@ struct TodayScreen: View {
         ExerciseLookupCache.shared.thumbnailURL(forName: name)
     }
 
+    /// Move the exercise at `idx` by `offset` (-1 for up, +1 for down) inside
+    /// the editable template. Wired to the action sheet's Move up / Move down
+    /// rows, which the sheet only shows when the index isn't at the boundary.
+    private func moveExercise(at idx: Int, by offset: Int) {
+        guard let tmpl = editableTemplate else { return }
+        let target = idx + offset
+        guard tmpl.exercises.indices.contains(idx),
+              tmpl.exercises.indices.contains(target) else { return }
+        var reordered = tmpl.exercises
+        reordered.swapAt(idx, target)
+        editableTemplate = WorkoutTemplate(
+            id: tmpl.id,
+            name: tmpl.name,
+            category: tmpl.category,
+            exercises: reordered
+        )
+        didModify = true
+        didSaveToLibrary = false
+    }
+
     /// Remove the exercise at `idx` from the editable template. Wired to the
     /// action sheet's destructive "Delete from workout" row.
     private func deleteExercise(at idx: Int) {
@@ -633,22 +649,6 @@ struct TodayScreen: View {
             get: { historyFilterExerciseName.map(NamedExercise.init) },
             set: { historyFilterExerciseName = $0?.name }
         )
-    }
-
-    /// SwiftUI .onMove handler — reorder editableTemplate's exercises in
-    /// place. The closure's `dest` is already in original-array coordinates.
-    private func moveInlineExercise(from source: IndexSet, to dest: Int) {
-        guard let tmpl = editableTemplate else { return }
-        var reordered = tmpl.exercises
-        reordered.move(fromOffsets: source, toOffset: dest)
-        editableTemplate = WorkoutTemplate(
-            id: tmpl.id,
-            name: tmpl.name,
-            category: tmpl.category,
-            exercises: reordered
-        )
-        didModify = true
-        didSaveToLibrary = false
     }
 
     private var inlineAddExerciseRow: some View {
