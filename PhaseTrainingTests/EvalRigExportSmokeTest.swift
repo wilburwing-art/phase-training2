@@ -177,6 +177,116 @@ final class EvalRigExportSmokeTest: XCTestCase {
         }
     }
 
+    // MARK: - Phase 1 era-affinity batches
+    //
+    // Cohort-specific 20-workout batches the eval-rig ship gate consumes
+    // for Phase 1. Both archetypes use the same equipment + soreness
+    // context as the canonical intermediate-male-hypertrophy-upper-push
+    // archetype documented in /Users/wilburpyn/Downloads/eval-rig-handoff.md.
+    // The only thing that changes is the demographic + eraOverride —
+    // letting the rubric measure whether the affinity axis produces a
+    // visibly different style for older-male-bodybuilding vs gen-z-
+    // science-based, while keeping the ship gate (total >= 7 AND no
+    // 'no' on Q3 / Q6 / Q9) the same for both.
+
+    /// 20 workouts for the older-male-bodybuilding cohort. Age 58 with
+    /// explicit magazineBodybuilding override. Same chest+front-delt
+    /// soreness as the anchor archetype.
+    func test_export_batch_older_male_bodybuilding_upper_push() throws {
+        try emitCohortBatch(
+            archetype: "older-male-bodybuilding-cohort-upper-push",
+            batchDir: "batch-007-older-male-bodybuilding",
+            age: 58,
+            eraOverrideRaw: EraCohort.magazineBodybuilding.rawValue,
+            count: 20
+        )
+    }
+
+    /// 20 workouts for the gen-z-science-based cohort. Age 22 with
+    /// explicit scienceBased override.
+    func test_export_batch_gen_z_science_based_upper_push() throws {
+        try emitCohortBatch(
+            archetype: "gen-z-science-based-upper-push",
+            batchDir: "batch-008-gen-z-science",
+            age: 22,
+            eraOverrideRaw: EraCohort.scienceBased.rawValue,
+            count: 20
+        )
+    }
+
+    /// Shared batch emitter. Builds a TrainingMemory matching the
+    /// anchor archetype (intermediate male, full gym, hypertrophy,
+    /// 4-day split, 60-min cap, moderate chest/front-delt soreness)
+    /// and varies hashSeed across `count` workouts so the generator's
+    /// variety + tiebreak surfaces span the batch.
+    private func emitCohortBatch(
+        archetype: String,
+        batchDir: String,
+        age: Int,
+        eraOverrideRaw: String,
+        count: Int
+    ) throws {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.focuses = [.hypertrophy]
+        m.liftDaysPerWeek = 4
+        m.sessionMinutes = 60
+        m.age = age
+        m.gender = .male
+        m.eraOverride = eraOverrideRaw
+
+        // Moderate chest + front-delt soreness, matching the v1 anchor.
+        var soreness = SorenessEntry(date: Date())
+        soreness.areas = ["chest", "shoulders"]
+        soreness.soreness = "moderate"
+        soreness.energy = "normal"
+        m.soreness.append(soreness)
+
+        let profile = DemographicProfile.from(m)
+
+        // Write directly into the eval-rig workouts folder so the grader
+        // can `npm run eval -- grade <batch-id>` immediately.
+        let outDir = URL(fileURLWithPath: "/Users/wilburpyn/repos/eval-rig/workouts/\(batchDir)")
+        try? FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
+
+        // exportToFile derives its filename from (planInputsHash, time)
+        // and the seconds-precision timestamp would collide across the
+        // batch run. Bypass it: call `encode` directly and write each
+        // workout to an indexed filename ourselves.
+        var workoutPaths: [String] = []
+        for i in 0..<count {
+            let workout = WorkoutGenerator.generateLift(
+                liftIndex: 0,                       // upper-push slot
+                totalLifts: 4,
+                memory: m,
+                profile: profile,
+                // Vary the seed so the deterministic-pick + variety + era
+                // aesthetic tiebreaker land on different candidates across
+                // the 20 workouts. Each integer maps to a distinct stable
+                // pick — same code path the real per-week generator runs.
+                hashSeed: "phase1-era-batch-\(batchDir)-\(String(format: "%02d", i + 1))"
+            )
+            XCTAssertFalse(workout.exercises.isEmpty,
+                           "Empty workout at i=\(i) for \(archetype)")
+            let data = try EvalRigExporter.encode(
+                workout: workout,
+                memory: m,
+                archetype: archetype,
+                timeBudgetMinutes: 60
+            )
+            let fileName = "\(archetype)-\(String(format: "%02d", i + 1)).json"
+            let url = outDir.appendingPathComponent(fileName)
+            try data.write(to: url, options: .atomic)
+            workoutPaths.append(url.path)
+        }
+
+        print("[EvalRigBatch] \(archetype) → \(workoutPaths.count) workouts in \(outDir.path)")
+        for p in workoutPaths {
+            print("[EvalRigBatch]   - \(p)")
+        }
+    }
+
     /// Non-sore variant — same archetype, no SorenessEntry. Exercises the
     /// warm-up-synthesis path that the sore variant intentionally skips
     /// (synthesizeWarmups returns nil on sore prime movers). Used to show
