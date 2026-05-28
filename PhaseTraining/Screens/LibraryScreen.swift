@@ -34,6 +34,11 @@ struct LibraryScreen: View {
     @State private var query: String = ""
     @State private var detailExercise: Exercise? = nil
     @State private var editingRoutine: CustomRoutine? = nil
+    /// Bundled stock workouts from coach.db (`routines` table). Loaded once
+    /// on appear and cached — `listRoutines()` is heavier than the audit
+    /// expects when fired on every render. Tap a row → read-only preview.
+    @State private var stockRoutines: [BundledRoutineRow] = []
+    @State private var previewingStock: BundledRoutineRow? = nil
 
     /// Search field only appears once the user has accumulated enough custom
     /// routines to make filtering useful.
@@ -70,6 +75,17 @@ struct LibraryScreen: View {
             .sheet(item: $editingRoutine) { routine in
                 CustomRoutineEditSheet(routine: routine)
             }
+            .sheet(item: $previewingStock) { row in
+                BundledRoutinePreviewSheet(row: row)
+            }
+            .onAppear {
+                // Cache the stock routines list once per screen lifetime.
+                // The DB query takes a recursive lock; running it on every
+                // render of the Workouts segment is unnecessary churn.
+                if stockRoutines.isEmpty {
+                    stockRoutines = CoachDatabase.shared.listRoutines()
+                }
+            }
         }
         .preferredColorScheme(.dark)
     }
@@ -88,15 +104,15 @@ struct LibraryScreen: View {
             compoundOnly: false,
             userSportSlugs: []
         ).count
-        let routineCount = customStore.routines.count
+        let routineCount = customStore.routines.count + stockRoutines.count
         return "\(exCount) EX · \(routineCount) WORKOUTS"
     }
 
-    /// Search only matters on the Workouts segment once the user has enough
-    /// custom routines to justify filtering. Exercises now lands on a 7-tile
-    /// grid; search lives inside LibraryMuscleScreen scoped to one tile.
+    /// Search appears in Workouts once there's enough to filter — the bundled
+    /// stock library (~148 rows) already clears the threshold on its own, so
+    /// the bar shows from the first launch when stock is loaded.
     private var showSearchBar: Bool {
-        customStore.routines.count >= Self.routineSearchThreshold
+        (customStore.routines.count + stockRoutines.count) >= Self.routineSearchThreshold
     }
 
     // MARK: - Create custom CTA (Routines segment only)
@@ -255,24 +271,47 @@ struct LibraryScreen: View {
 
         case .routines:
             let allCustoms = customStore.routines
-            let filtered = query.isEmpty
+            let filteredCustoms = query.isEmpty
                 ? allCustoms
                 : allCustoms.filter { $0.name.localizedCaseInsensitiveContains(query) }
-            if allCustoms.isEmpty {
+            let filteredStock = query.isEmpty
+                ? stockRoutines
+                : stockRoutines.filter {
+                    $0.name.localizedCaseInsensitiveContains(query)
+                        || ($0.description ?? "").localizedCaseInsensitiveContains(query)
+                }
+            if allCustoms.isEmpty && stockRoutines.isEmpty {
                 routinesEmptyState
-            } else if filtered.isEmpty {
+            } else if filteredCustoms.isEmpty && filteredStock.isEmpty {
                 searchEmptyState
             } else {
                 ScrollView {
                     LazyVStack(spacing: 8) {
-                        ForEach(filtered) { c in
-                            ExerciseTile(vm: .init(
-                                leading: .icon(systemName: "figure.strengthtraining.traditional"),
-                                title: c.name.isEmpty ? "Untitled workout" : c.name,
-                                meta: customSubtitle(c),
-                                trailing: .chevron,
-                                onTap: { editingRoutine = c }
-                            ))
+                        if !filteredCustoms.isEmpty {
+                            workoutsSectionHeader("YOUR WORKOUTS")
+                            ForEach(filteredCustoms) { c in
+                                ExerciseTile(vm: .init(
+                                    leading: .icon(systemName: "figure.strengthtraining.traditional"),
+                                    title: c.name.isEmpty ? "Untitled workout" : c.name,
+                                    meta: customSubtitle(c),
+                                    trailing: .chevron,
+                                    onTap: { editingRoutine = c }
+                                ))
+                            }
+                        }
+                        if !filteredStock.isEmpty {
+                            workoutsSectionHeader("BROWSE LIBRARY")
+                                .padding(.top, filteredCustoms.isEmpty ? 0 : 12)
+                            ForEach(filteredStock) { row in
+                                ExerciseTile(vm: .init(
+                                    leading: .icon(systemName: "books.vertical.fill"),
+                                    title: row.name,
+                                    meta: stockSubtitle(row),
+                                    trailing: .chevron,
+                                    onTap: { previewingStock = row }
+                                ))
+                                .accessibilityIdentifier("library-stock-routine-\(row.id)")
+                            }
                         }
                     }
                     .padding(.horizontal, 20)
@@ -281,6 +320,30 @@ struct LibraryScreen: View {
                 }
             }
         }
+    }
+
+    /// Section label between the user's own workouts and the bundled stock
+    /// library inside the Workouts segment.
+    private func workoutsSectionHeader(_ text: String) -> some View {
+        HStack {
+            Text(text)
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            Spacer()
+        }
+        .padding(.top, 4)
+        .padding(.bottom, 2)
+    }
+
+    /// Meta line for a stock routine row — duration / exercise count and any
+    /// available difficulty + goal tags. Mirrors the shape of customSubtitle.
+    private func stockSubtitle(_ row: BundledRoutineRow) -> String {
+        var parts: [String] = []
+        if let mins = row.durationMinutes { parts.append("\(mins) min") }
+        parts.append("\(row.exerciseCount) ex")
+        if let d = row.difficulty, !d.isEmpty { parts.append(d.capitalized) }
+        if let g = row.goal, !g.isEmpty { parts.append(g.replacingOccurrences(of: "_", with: " ").capitalized) }
+        return parts.joined(separator: " · ")
     }
 
     /// First-time / no-customs state for the Routines segment. CTA above the
@@ -329,4 +392,113 @@ struct LibraryScreen: View {
         return count == 1 ? "1 movement" : "\(count) movements"
     }
 
+}
+
+// MARK: - Stock routine read-only preview
+//
+// Opens when the user taps a row in the new "BROWSE LIBRARY" section of the
+// Workouts segment. Read-only by intent — the 148 stock routines shipped in
+// coach.db are reference material; the user's own copies live in
+// CustomRoutineStore. Loads the routine's exercises on appear (one indexed
+// query via CoachDatabase). Forking to a custom is a deliberate follow-up.
+private struct BundledRoutinePreviewSheet: View {
+    let row: BundledRoutineRow
+    @State private var exercises: [RoutineExercise] = []
+    @Environment(\.dismiss) private var dismiss
+
+    private var headerMeta: String {
+        var parts: [String] = []
+        if let mins = row.durationMinutes { parts.append("\(mins) min") }
+        parts.append("\(row.exerciseCount) ex")
+        if let d = row.difficulty, !d.isEmpty { parts.append(d.capitalized) }
+        return parts.joined(separator: " · ")
+    }
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.bg.ignoresSafeArea()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(row.name)
+                                .font(.system(size: 22, weight: .bold))
+                                .foregroundStyle(Color.ink)
+                            Text(headerMeta)
+                                .styled(.micro)
+                                .foregroundStyle(Color.ink3)
+                            if let desc = row.description, !desc.isEmpty {
+                                Text(desc)
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(Color.ink2)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .padding(.top, 4)
+                            }
+                        }
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("EXERCISES")
+                                .styled(.micro)
+                                .foregroundStyle(Color.ink3)
+                            if exercises.isEmpty {
+                                Text("Loading…")
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(Color.ink3)
+                            } else {
+                                ForEach(exercises) { ex in
+                                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                                        Text("\(ex.position + 1)")
+                                            .font(.monoXS)
+                                            .foregroundStyle(Color.ink3)
+                                            .frame(width: 18, alignment: .trailing)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(ex.name)
+                                                .font(.system(size: 15, weight: .semibold))
+                                                .foregroundStyle(Color.ink)
+                                            if let line = setRepLine(ex) {
+                                                Text(line)
+                                                    .font(.monoXS)
+                                                    .foregroundStyle(Color.ink3)
+                                            }
+                                        }
+                                        Spacer()
+                                    }
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 12)
+                                    .background(Color.surface)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(Color.line, lineWidth: 0.5)
+                                    )
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                }
+                            }
+                        }
+                    }
+                    .padding(20)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Close") { dismiss() }
+                        .foregroundStyle(Color.accent)
+                }
+            }
+            .onAppear {
+                if exercises.isEmpty {
+                    exercises = CoachDatabase.shared.exercises(forRoutineId: row.id)
+                }
+            }
+        }
+        .preferredColorScheme(.dark)
+    }
+
+    private func setRepLine(_ ex: RoutineExercise) -> String? {
+        var parts: [String] = []
+        if let s = ex.sets { parts.append("\(s) sets") }
+        if let r = ex.reps, !r.isEmpty { parts.append(r) }
+        if let rest = ex.rest, !rest.isEmpty { parts.append("rest \(rest)") }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
 }
