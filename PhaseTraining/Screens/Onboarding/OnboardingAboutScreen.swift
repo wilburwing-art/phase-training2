@@ -26,30 +26,36 @@ struct OnboardingAboutScreen: View {
     @FocusState private var ageFocused: Bool
 
     var body: some View {
-        OnboardingScaffold(
-            step: .about,
-            title: "About you.",
-            subtitle: "All optional. Skip anything you'd rather not share.",
-            onNext: onNext,
-            onBack: onBack
-        ) {
-            VStack(alignment: .leading, spacing: 24) {
-                ageSection
-                genderSection
-                bodyMetricsSection
-            }
-            // Tap empty content to dismiss the number-pad keyboard. The
-            // .toolbar Done below works only when this screen is inside a
-            // NavigationStack — kept as belt-and-suspenders.
-            .contentShape(Rectangle())
-            .onTapGesture { hideKeyboard() }
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("Done") { hideKeyboard() }
-                        .foregroundStyle(Color.accent)
+        // NavigationStack provides the container `.toolbar(placement: .keyboard)`
+        // needs to register the Done accessory. Without it (and with both this
+        // screen AND BodyMetricsEditor each adding a keyboard toolbar), iOS 26
+        // crashes when focus moves between the age TextField and the body-
+        // metrics TextFields. The hidden nav bar keeps OnboardingScaffold's
+        // own top bar visually unchanged.
+        NavigationStack {
+            OnboardingScaffold(
+                step: .about,
+                title: "About you.",
+                subtitle: "All optional. Skip anything you'd rather not share.",
+                onNext: onNext,
+                onBack: onBack
+            ) {
+                VStack(alignment: .leading, spacing: 24) {
+                    ageSection
+                    genderSection
+                    bodyMetricsSection
+                }
+                .contentShape(Rectangle())
+                .onTapGesture { hideKeyboard() }
+                .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("Done") { hideKeyboard() }
+                            .foregroundStyle(Color.accent)
+                    }
                 }
             }
+            .toolbar(.hidden, for: .navigationBar)
         }
         .onAppear { ageText = draft.age.map(String.init) ?? "" }
         .onChange(of: draft.age) { _, new in
