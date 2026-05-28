@@ -22,6 +22,10 @@ enum OnboardingStep: Int, CaseIterable {
     case experience
     case about              // age + gender (optional)
     case constraints
+    /// Apple Guideline 5.1.2(i) consent gate for the AI Coach. Defaults to ON
+    /// with explicit accept-via-Continue. If skipped on a fresh install the
+    /// coach bubble never appears, which is the bug this step closes.
+    case coachConsent
     /// Final confirmation: shows the generated plan + Accept CTA. Not counted
     /// in the questionnaire numerator/denominator since it's not a question.
     case planPreview
@@ -81,6 +85,8 @@ struct OnboardingFlow: View {
             OnboardingAboutScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .constraints:
             OnboardingConstraintsScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
+        case .coachConsent:
+            OnboardingCoachConsentScreen(onNext: { advance() }, onBack: { back() })
         case .planPreview:
             OnboardingPlanPreviewScreen(memory: draft, onAccept: finish, onBack: { back() })
         }

@@ -1,9 +1,10 @@
-// OnboardingConstraintsScreen.swift — step 8 of 8 (final).
+// OnboardingConstraintsScreen.swift — penultimate questionnaire step.
 // Two free-text lists: dislikes ("don't program these") and constraints
 // ("watch out for these"). Both are advisory inputs to the planner + the
 // future coach; they don't gate anything.
 //
-// "Finish" is enabled unconditionally — both lists are optional.
+// "Continue" is enabled unconditionally — both lists are optional. The
+// final step before planPreview is OnboardingCoachConsentScreen.
 
 import SwiftUI
 
@@ -20,7 +21,7 @@ struct OnboardingConstraintsScreen: View {
             step: .constraints,
             title: "Anything we should know?",
             subtitle: "Optional — exercises you hate, joints to be careful with, time blocks that change weekly.",
-            nextLabel: "See my plan",
+            nextLabel: "Continue",
             onNext: onNext,
             onBack: onBack
         ) {
