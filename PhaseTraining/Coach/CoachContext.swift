@@ -37,7 +37,13 @@ enum CoachContext {
         // PR 8: missed-workout history. Let the coach see patterns
         // ("you've missed Tuesday's lift 3 weeks in a row"). Recent
         // (last 14 days) entries only — older misses aren't actionable.
-        missedWorkouts: [MissedWorkoutEntry] = []
+        missedWorkouts: [MissedWorkoutEntry] = [],
+        // Phase 1 era-affinity: pass-through of the resolved cohort
+        // (memory.eraOverride ?? derived-from-age, computed by the
+        // call site) so the coach can pick era-appropriate exercise
+        // names + cues. Defaulted nil → snapshot reads exactly like
+        // pre-Phase-1 for callers that haven't been updated yet.
+        eraCohort: EraCohort? = nil
     ) -> String {
         var blocks: [String] = []
 
@@ -88,6 +94,23 @@ enum CoachContext {
             profile.append("session length: \(memory.sessionMinutes) min")
         }
         blocks.append("USER PROFILE\n" + profile.map { "- \($0)" }.joined(separator: "\n"))
+
+        // Phase-1 era affinity. Emit a short vocabulary nudge so the
+        // model picks era-appropriate exercise names / cues. Only the
+        // affinity axis is here — competency stays in `experience` (in
+        // the USER PROFILE block above) and readiness will land as a
+        // separate `current_readiness_pct` line in Phase 2. Per the
+        // phase-training-personalization-three-axes skill, the three
+        // axes must remain orthogonal in the prompt as well as in code.
+        if let eraCohort {
+            let style = EraAffinity.style(for: eraCohort)
+            var lines: [String] = []
+            lines.append("- cohort: \(style.displayName)")
+            lines.append("- style: \(style.narrativeBlurb)")
+            let vocab = style.terminologyHints.joined(separator: ", ")
+            lines.append("- vocabulary: \(vocab)")
+            blocks.append("TRAINING ERA AFFINITY (vocabulary + style nudge only — does NOT change movement competency or load)\n" + lines.joined(separator: "\n"))
+        }
 
         if let body = bodySection(memory: memory) {
             blocks.append(body)

@@ -58,7 +58,24 @@ enum WorkoutGenerator {
         // Strategy's focus wins over the (liftIndex, totalLifts) derivation
         // when set — the LLM can explicitly ask for "push day" even on what
         // would normally be a leg slot.
-        let focus = strategy.focus ?? WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts)
+        //
+        // Phase-1 era-affinity: when profile.eraStyle exposes a
+        // splitPreference that's compatible with totalLifts, pull the
+        // focus from there instead of the default rotation. Compatibility
+        // = the cohort's preference array has at least `totalLifts`
+        // entries (it covers a full week without wrapping). We index by
+        // liftIndex % preference.count so 3-day weeks with a 6-day PPL
+        // preference still cycle through push/pull/legs correctly.
+        let focus: WorkoutFocus
+        if let strategyFocus = strategy.focus {
+            focus = strategyFocus
+        } else if let eraStyle = profile.eraStyle,
+                  !eraStyle.splitPreference.isEmpty,
+                  totalLifts >= 3 {   // 1-2 lift weeks stick to fullBodyA/B
+            focus = eraStyle.splitPreference[liftIndex % eraStyle.splitPreference.count]
+        } else {
+            focus = WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts)
+        }
         return generate(focus: focus, memory: memory, profile: profile,
                         hashSeed: hashSeed, liftIndex: liftIndex,
                         totalLifts: totalLifts, recentlyPicked: recentlyPicked,
@@ -322,6 +339,58 @@ enum WorkoutGenerator {
             return staples.isEmpty ? candidates : staples
         }
 
+        // Phase-1 era-affinity aesthetic tiebreak. Stable-partition the
+        // candidates so exercises whose required equipment matches the
+        // cohort's preferred AestheticTags come FIRST. The hash pick
+        // then resolves WITHIN the preferred group when present.
+        //
+        // Per the phase-training-personalization-three-axes skill, this
+        // is the aesthetic axis only — competency / equipment-allowed
+        // / staples / variety all run BEFORE this, so era can never
+        // promote an exercise that wouldn't have been chosen anyway.
+        // It just nudges the hash-tie to the cohort's implement family.
+        let applyEraAesthetic: ([Exercise]) -> [Exercise] = { candidates in
+            guard let style = profile.eraStyle, !style.aestheticTags.isEmpty,
+                  candidates.count > 1 else { return candidates }
+            let ids = Set(candidates.map(\.id))
+            let equipmentByExercise = CoachDatabase.shared.requiredEquipmentSlugs(forExerciseIds: ids)
+            let matchesEra: (Exercise) -> Bool = { ex in
+                let equip = equipmentByExercise[ex.id] ?? []
+                for tag in style.aestheticTags {
+                    switch tag {
+                    case .machineFavor:
+                        // The catalog uses many machine-specific slugs;
+                        // matching any of the big machine families counts.
+                        let machines: Set<String> = [
+                            "cable-machine", "smith-machine", "leg-press",
+                            "leg-curl-machine", "leg-extension", "lat-pulldown",
+                            "cable-crossover", "chest-press-machine",
+                            "shoulder-press-machine", "iso-lateral-machine",
+                            "preacher-bench", "hack-squat", "belt-squat",
+                            "back-extension-machine", "pec-deck",
+                            "tricep-extension-machine", "bicep-curl-machine",
+                            "shrug-machine", "glute-kickback-machine",
+                            "hip-ad-ab-machine"
+                        ]
+                        if !equip.intersection(machines).isEmpty { return true }
+                    case .barbellFavor:
+                        if equip.contains("barbell") || equip.contains("trap-bar")
+                            || equip.contains("ez-bar") { return true }
+                    case .cableFavor:
+                        if equip.contains("cable-machine") || equip.contains("cable-crossover")
+                            || equip.contains("lat-pulldown") { return true }
+                    case .dbFavor:
+                        if equip.contains("dumbbells") { return true }
+                    }
+                }
+                return false
+            }
+            let preferred = candidates.filter(matchesEra)
+            let rest = candidates.filter { !matchesEra($0) }
+            if preferred.isEmpty || rest.isEmpty { return candidates }
+            return preferred + rest
+        }
+
         // Reorder slot.alternatives. Two layers:
         //   1. LLM strategy (emphasize / deprioritize) — definitive: an
         //      emphasized pattern jumps to the front; a deprioritized one
@@ -362,7 +431,7 @@ enum WorkoutGenerator {
                 allowedEquipmentSlugs: profile.allowedEquipmentSlugs
             ).filter { ExerciseStaples.isStaple(name: $0.name, forPattern: pattern) }
             if !staplesPool.isEmpty,
-               let pick = deterministicPick(from: applyVariety(applySoreFilter(staplesPool)), slotIdx: slotIdx, hashSeed: hashSeed) {
+               let pick = deterministicPick(from: applyEraAesthetic(applyVariety(applySoreFilter(staplesPool))), slotIdx: slotIdx, hashSeed: hashSeed) {
                 slot.satisfiedBy = pattern
                 return pick
             }
@@ -382,7 +451,7 @@ enum WorkoutGenerator {
                     allowedEquipmentSlugs: profile.allowedEquipmentSlugs
                 )
                 let candidates = applyStaplePreference(applySoreFilter(raw), pattern)
-                if let pick = deterministicPick(from: applyVariety(candidates), slotIdx: slotIdx, hashSeed: hashSeed) {
+                if let pick = deterministicPick(from: applyEraAesthetic(applyVariety(candidates)), slotIdx: slotIdx, hashSeed: hashSeed) {
                     slot.satisfiedBy = pattern
                     return pick
                 }
@@ -398,7 +467,7 @@ enum WorkoutGenerator {
                 allowedEquipmentSlugs: profile.allowedEquipmentSlugs
             )
             let relaxed = applyStaplePreference(applySoreFilter(relaxedRaw), pattern)
-            if let pick = deterministicPick(from: applyVariety(relaxed), slotIdx: slotIdx, hashSeed: hashSeed) {
+            if let pick = deterministicPick(from: applyEraAesthetic(applyVariety(relaxed)), slotIdx: slotIdx, hashSeed: hashSeed) {
                 slot.satisfiedBy = pattern
                 return pick
             }
@@ -878,7 +947,31 @@ enum WorkoutGenerator {
             restSec = max(restSec, 120)
         }
 
-        return (sets, reps, restSec)
+        // Phase-1 era-affinity rep-range nudge.
+        //
+        // Only applies when memory.primaryFocus is .hypertrophy — that's
+        // the focus most flavored by era (bro-split mid reps vs PPL low
+        // reps vs current-meta high reps on isolation). Strength /
+        // sport-performance / endurance focuses have their own
+        // load-intent intent that should NOT be overridden by aesthetic
+        // affinity (orthogonality rule:
+        // phase-training-personalization-three-axes skill).
+        //
+        // For .hypertrophy users the era picks the rep band: low / mid /
+        // high. Primary compound uses .compound band, accessories use
+        // .isolation band. Sets + rest stay as focusBias computed them —
+        // only the rep STRING is replaced.
+        let finalReps: String
+        if let eraStyle = profile.eraStyle, memory.primaryFocus == .hypertrophy {
+            let band = (isPrimary && isCompound)
+                ? eraStyle.repRangeBias.compound
+                : eraStyle.repRangeBias.isolation
+            finalReps = band.display
+        } else {
+            finalReps = reps
+        }
+
+        return (sets, finalReps, restSec)
     }
 
     /// Map the user's stated goal to a coherent sets × reps × rest scheme.
