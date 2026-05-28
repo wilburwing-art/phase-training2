@@ -116,6 +116,18 @@ struct DemographicProfile: Equatable {
     /// surface for users who train those sports. Foundation lifts and
     /// general-specificity rows are always visible.
     let userSportSlugs: [String]
+
+    /// Phase-1 era-affinity cohort. Resolved as
+    /// `EraCohort(rawValue: m.eraOverride) ?? EraAffinity.derivedCohort(forAge: m.age)`.
+    /// Nil when no age + no override.
+    let eraCohort: EraCohort?
+
+    /// Style table entry for `eraCohort`. Nil iff cohort is nil.
+    /// Routing discipline: era controls split style + rep-range bias +
+    /// exercise-aesthetic tiebreak + LLM vocabulary ONLY. It does NOT
+    /// touch volume/intensity scaling or movement competency — see
+    /// the phase-training-personalization-three-axes skill.
+    let eraStyle: EraStyle?
 }
 
 extension DemographicProfile {
@@ -239,6 +251,19 @@ extension DemographicProfile {
             why.append("Gender is recorded for future recovery / intensity models but isn't used to shape exercise selection.")
         }
 
+        // --- Era affinity (Phase 1) ---
+        // Resolve `memory.eraOverride` -> `EraCohort` first; fall through
+        // to the age-derived cohort. Unknown override strings (legacy or
+        // forward-compat saves) resolve to nil here, then the derived
+        // cohort takes over, which is the safe fallback.
+        let overrideCohort: EraCohort? = m.eraOverride.flatMap { EraCohort(rawValue: $0) }
+        let eraCohort: EraCohort? = overrideCohort
+            ?? EraAffinity.derivedCohort(forAge: m.age, asOf: Date())
+        let eraStyle: EraStyle? = eraCohort.map(EraAffinity.style(for:))
+        if let eraStyle {
+            why.append("Era affinity: \(eraStyle.displayName) — biases split style + rep ranges + exercise aesthetic only; volume and movement competency are unchanged.")
+        }
+
         return DemographicProfile(
             recommendedLiftDays: liftRange,
             recommendedSessionMinutes: sessRange,
@@ -250,7 +275,9 @@ extension DemographicProfile {
             excludedExerciseIds: contraindicated,
             excludedByInjury: excludedByInjury,
             rationale: why,
-            userSportSlugs: m.sports.map(\.slug)
+            userSportSlugs: m.sports.map(\.slug),
+            eraCohort: eraCohort,
+            eraStyle: eraStyle
         )
     }
 }

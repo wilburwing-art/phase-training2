@@ -21,6 +21,11 @@ enum OnboardingStep: Int, CaseIterable {
     case equipment          // tier-based
     case experience
     case about              // age + gender (optional)
+    /// Phase-1 era-affinity surface. Sits AFTER .about so the derived
+    /// cohort (which keys off draft.age) is populated, and BEFORE
+    /// .constraints. Three actions: accept derived / pick / skip. See
+    /// OnboardingEraAffinityScreen.
+    case eraAffinity
     case constraints
     /// Apple Guideline 5.1.2(i) consent gate for the AI Coach. Defaults to ON
     /// with explicit accept-via-Continue. If skipped on a fresh install the
@@ -83,6 +88,8 @@ struct OnboardingFlow: View {
             OnboardingExperienceScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .about:
             OnboardingAboutScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
+        case .eraAffinity:
+            OnboardingEraAffinityScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .constraints:
             OnboardingConstraintsScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .coachConsent:

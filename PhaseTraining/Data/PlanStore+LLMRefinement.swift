@@ -88,6 +88,10 @@ extension PlanStore {
         // accordingly. Defaulted in CoachContext.snapshot, so omitting
         // this would silently regress.
         let sportLogs = sportLogStore?.entries ?? []
+        // Resolve the Phase-1 era cohort here once so we can pass it both
+        // into the per-turn coach context AND through the rest of the
+        // refinement pass. DemographicProfile owns the resolution logic.
+        let profile = DemographicProfile.from(memory)
         let snapshot = CoachContext.snapshot(
             activeTab: .today,
             memory: memory,
@@ -95,13 +99,12 @@ extension PlanStore {
             recentSessions: sessions,
             recentFeedback: memory.feedback,
             recentSoreness: memory.soreness,
-            recentSportLogs: sportLogs
+            recentSportLogs: sportLogs,
+            eraCohort: profile.eraCohort
         )
 
         let candidates = refinementCandidates(in: snapshotPlan)
         guard !candidates.isEmpty else { return }
-
-        let profile = DemographicProfile.from(memory)
 
         await withTaskGroup(of: (Int, GeneratedWorkout?).self) { group in
             for (idx, day) in candidates {

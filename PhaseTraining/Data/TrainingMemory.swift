@@ -53,6 +53,19 @@ struct TrainingMemory: Codable {
     // About you (optional)
     var age: Int? = nil
     var gender: Gender? = nil
+    /// Phase 1 era-affinity: user's training-culture cohort preference.
+    /// Stored as the `EraCohort` rawValue ("magazine_bodybuilding" etc.)
+    /// so this file doesn't have to depend on EraCohort directly —
+    /// mirrors the precedent set by Sport (slug stored, catalog resolved
+    /// at decode time on the consumer side). Nil = "use derived from age"
+    /// — `DemographicProfile.eraStyle` does the override-vs-derived
+    /// resolution.
+    ///
+    /// Per-PROFILE preference (long-lived), contrasted with
+    /// `WeeklyPlanOverride` (PR 7), which is per-WEEK and lives on
+    /// `PlanStore.recentPlanOverrides`. Era affinity is a stable trait of
+    /// how the user thinks about training, so it belongs here.
+    var eraOverride: String? = nil
     /// Body height in whole centimetres. Stored metric; rendered in the
     /// user's preferred unit system (see `usesImperial`). Nil = skipped.
     var heightCm: Int? = nil
@@ -107,6 +120,7 @@ struct TrainingMemory: Codable {
         case equipment, experience
         case startingState
         case age, gender
+        case eraOverride
         case heightCm, weightKg, usesImperial
         case dislikes, constraints
         case exerciseAffinities
@@ -163,6 +177,10 @@ struct TrainingMemory: Codable {
         self.startingState   = (try? c.decode(StartingState.self,  forKey: .startingState))   ?? .freshStart
         self.age             =  try? c.decodeIfPresent(Int.self,    forKey: .age)
         self.gender          =  try? c.decodeIfPresent(Gender.self, forKey: .gender)
+        // Defaulted to nil — pre-Phase-1 saves never wrote the key, so
+        // `decodeIfPresent` returns nil and the generator keeps using the
+        // derived cohort from `age`.
+        self.eraOverride     = (try? c.decodeIfPresent(String.self, forKey: .eraOverride)) ?? nil
         self.heightCm        =  try? c.decodeIfPresent(Int.self,    forKey: .heightCm)
         self.weightKg        =  try? c.decodeIfPresent(Double.self, forKey: .weightKg)
         self.usesImperial    = (try? c.decode(Bool.self,            forKey: .usesImperial)) ?? true
@@ -210,6 +228,7 @@ struct TrainingMemory: Codable {
         try c.encode(startingState,   forKey: .startingState)
         try c.encodeIfPresent(age,    forKey: .age)
         try c.encodeIfPresent(gender, forKey: .gender)
+        try c.encodeIfPresent(eraOverride, forKey: .eraOverride)
         try c.encodeIfPresent(heightCm, forKey: .heightCm)
         try c.encodeIfPresent(weightKg, forKey: .weightKg)
         try c.encode(usesImperial, forKey: .usesImperial)
