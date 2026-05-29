@@ -20,6 +20,7 @@ import UniformTypeIdentifiers
 struct ProfileScreen: View {
     @EnvironmentObject private var store: MemoryStore
     @EnvironmentObject private var planStore: PlanStore
+    @EnvironmentObject private var subStore: SubscriptionStore
 
     // Backup / restore UI state (the iOS-level presentation surfaces stay on
     // this screen; DataEditorSheet just fires callbacks).
@@ -41,6 +42,7 @@ struct ProfileScreen: View {
     @State private var presentingRemindersEditor = false
     @State private var presentingDataEditor = false
     @State private var presentingHealthImports = false
+    @State private var presentingPaywall = false
     #if DEBUG
     @State private var presentingMuscleChipGenerator = false
     #endif
@@ -140,6 +142,10 @@ struct ProfileScreen: View {
                                     value: "Workout history",
                                     icon: "heart.text.square",
                                     action: { presentingHealthImports = true })
+                        SettingsRow(label: "Subscription",
+                                    value: subscriptionRowValue,
+                                    icon: "sparkles",
+                                    action: { presentingPaywall = true })
                         SettingsRow(label: "Data",
                                     value: "Backup / Restore",
                                     icon: "externaldrive",
@@ -199,6 +205,10 @@ struct ProfileScreen: View {
         .sheet(isPresented: $presentingHealthImports) {
             HealthImportsScreen()
                 .environmentObject(store)
+        }
+        .sheet(isPresented: $presentingPaywall) {
+            PaywallView()
+                .environmentObject(subStore)
         }
         #if DEBUG
         .sheet(isPresented: $presentingMuscleChipGenerator) {
@@ -427,6 +437,12 @@ struct ProfileScreen: View {
         if count == 0 { return "None" }
         if count == 1 { return store.memory.dislikes[0] }
         return "\(count) items"
+    }
+
+    /// Trailing summary for the Subscription row. Shows "Pro" when the
+    /// entitlement is active, otherwise prompts the user to upgrade.
+    private var subscriptionRowValue: String {
+        subStore.isPro ? "Pro" : "Upgrade"
     }
 
     private var injuriesSummary: String {

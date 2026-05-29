@@ -13,6 +13,7 @@ struct PhaseTrainingApp: App {
     @StateObject private var tabSelection = TabSelectionStore()
     @StateObject private var conv = CoachConversationStore()
     @StateObject private var sportLog = SportLogStore()
+    @StateObject private var subscriptions = SubscriptionStore()
 
     /// UI tests pass `--ui-test-onboarded` to skip the first-launch onboarding cover
     /// without persisting state to UserDefaults.
@@ -149,6 +150,12 @@ struct PhaseTrainingApp: App {
                 .environmentObject(tabSelection)
                 .environmentObject(conv)
                 .environmentObject(sportLog)
+                .environmentObject(subscriptions)
+                .task {
+                    // Sync products + entitlement state once on launch.
+                    // Cheap and safe to call on every cold start.
+                    await subscriptions.refresh()
+                }
                 .preferredColorScheme(.dark)
                 .fullScreenCover(isPresented: .constant(!memory.isOnboarded && !uiTestSkipsOnboarding)) {
                     OnboardingFlow()
