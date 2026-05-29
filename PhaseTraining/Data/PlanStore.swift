@@ -370,12 +370,16 @@ final class PlanStore: ObservableObject {
         guard let sessionStore else { return .empty }
         let profile = DemographicProfile.from(memory)
         let imported = UserDatabase.shared.recentImportedWorkouts(within: 28)
+        // Phase 3: lifetime peaks from CSV imports warm-start priorBest
+        // for exercises the user has imported but never logged natively.
+        let peaks = UserDatabase.shared.importedSetsLifetimePeaks()
         return GeneratorContext.from(
             sessions: sessionStore.savedSessions,
             soreness: memory.soreness,
             feedback: memory.feedback,
             sportLogs: sportLogStore?.entries ?? [],
             importedWorkouts: imported,
+            importedPeaks: peaks,
             cohort: profile.eraCohort,
             now: today
         )

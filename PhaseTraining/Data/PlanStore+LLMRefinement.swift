@@ -98,12 +98,14 @@ extension PlanStore {
         // for the LLM prompt's IN-SEASON READINESS block we want "today's"
         // score, which is what this top-level context gives us.
         let topImported = UserDatabase.shared.recentImportedWorkouts(within: 28)
+        let topPeaks = UserDatabase.shared.importedSetsLifetimePeaks()
         let topContext = GeneratorContext.from(
             sessions: sessions,
             soreness: memory.soreness,
             feedback: memory.feedback,
             sportLogs: sportLogs,
             importedWorkouts: topImported,
+            importedPeaks: topPeaks,
             cohort: profile.eraCohort
         )
         let snapshot = CoachContext.snapshot(
@@ -207,11 +209,13 @@ extension PlanStore {
         // Re-run the generator with the LLM strategy.
         let seed = "llm-refine-\(memory.planInputsHash)-\(Int(day.date.timeIntervalSince1970))"
         let imported = UserDatabase.shared.recentImportedWorkouts(within: 28)
+        let peaks = UserDatabase.shared.importedSetsLifetimePeaks()
         let context = GeneratorContext.from(
             sessions: sessions,
             soreness: memory.soreness,
             feedback: memory.feedback,
             importedWorkouts: imported,
+            importedPeaks: peaks,
             cohort: profile.eraCohort,
             now: day.date
         )

@@ -958,6 +958,60 @@ final class CoachDatabase {
         if sqlite3_column_type(stmt, idx) == SQLITE_NULL { return nil }
         return Int(sqlite3_column_int64(stmt, idx))
     }
+
+    /// Phase 3 CSV import name resolution. Tries exercises.name, then slug,
+    /// then exercise_aliases.alias — all case-insensitive. Also retries
+    /// with any trailing "(Foo)" suffix stripped because Fitbod sometimes
+    /// writes "Bench Press (Barbell)" where coach.db has "Barbell Bench
+    /// Press". Returns nil if no candidate resolves; caller stores
+    /// `exercise_name_raw` for later remediation. Exposed publicly for
+    /// `WorkoutCSVImporter` use.
+    func exerciseId(forImportName raw: String) -> Int? { withLock {
+        guard let db else { return nil }
+        let normalized = Self.normalizeImportName(raw)
+        if normalized.isEmpty { return nil }
+
+        let noParen = Self.stripTrailingParen(normalized)
+        let candidates: [String] = noParen == normalized ? [normalized] : [normalized, noParen]
+
+        for candidate in candidates {
+            if let id = lookupExerciseIdLocked(db: db,
+                sql: "SELECT id FROM exercises WHERE LOWER(name) = ? LIMIT 1",
+                bind: candidate) { return id }
+            if let id = lookupExerciseIdLocked(db: db,
+                sql: "SELECT id FROM exercises WHERE LOWER(slug) = ? LIMIT 1",
+                bind: candidate) { return id }
+            if let id = lookupExerciseIdLocked(db: db,
+                sql: "SELECT exercise_id FROM exercise_aliases WHERE LOWER(alias) = ? LIMIT 1",
+                bind: candidate) { return id }
+        }
+        return nil
+    } }
+
+    private func lookupExerciseIdLocked(db: OpaquePointer, sql: String, bind value: String) -> Int? {
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return nil }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_text(stmt, 1, value, -1, SQLITE_TRANSIENT)
+        guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
+        return Int(sqlite3_column_int64(stmt, 0))
+    }
+
+    /// Normalize a CSV exercise name for matching: lowercase, trim, collapse
+    /// internal whitespace. Exposed for parser tests.
+    static func normalizeImportName(_ raw: String) -> String {
+        let lowered = raw.lowercased()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return lowered.split(separator: " ", omittingEmptySubsequences: true)
+            .joined(separator: " ")
+    }
+
+    /// "bench press (barbell)" → "bench press". Idempotent.
+    static func stripTrailingParen(_ s: String) -> String {
+        guard let openIdx = s.lastIndex(of: "("),
+              s.last == ")" else { return s }
+        return String(s[..<openIdx]).trimmingCharacters(in: .whitespaces)
+    }
 }
 
 private let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)

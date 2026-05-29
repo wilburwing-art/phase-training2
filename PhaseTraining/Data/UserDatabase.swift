@@ -159,6 +159,35 @@ final class UserDatabase {
             """,
             "CREATE INDEX IF NOT EXISTS idx_imported_workouts_start ON imported_workouts(start_time DESC)",
             "CREATE INDEX IF NOT EXISTS idx_imported_workouts_kind  ON imported_workouts(kind)",
+            // Phase 3: set-level import history. Lives alongside imported_workouts
+            // (workout-level summary). CSV sources emit both: the workout-level
+            // row gives readiness signal (frequency/recency); the set-level rows
+            // give priorBest + true training-age + lifetime-peak detection. The
+            // two are joined by performed_at proximity in Swift, NOT by FK —
+            // workout-level rows from HK arrive without set detail.
+            //
+            // exercise_id is nullable: CSV exercise names that don't fuzzy-match
+            // any coach.db row are still preserved (we never drop data) but
+            // can't feed priorBest until the user manually maps or coach.db
+            // grows aliases.
+            """
+            CREATE TABLE IF NOT EXISTS imported_sets (
+              id                   TEXT PRIMARY KEY,
+              source               TEXT NOT NULL,
+              exercise_id          INTEGER,
+              exercise_name_raw    TEXT NOT NULL,
+              performed_at         INTEGER NOT NULL,
+              set_num              INTEGER NOT NULL,
+              weight               REAL,
+              reps                 INTEGER,
+              rir                  REAL,
+              rpe                  REAL,
+              imported_at          INTEGER NOT NULL
+            )
+            """,
+            "CREATE INDEX IF NOT EXISTS idx_imported_sets_exercise ON imported_sets(exercise_id, performed_at DESC)",
+            "CREATE INDEX IF NOT EXISTS idx_imported_sets_perf     ON imported_sets(performed_at DESC)",
+            "CREATE INDEX IF NOT EXISTS idx_imported_sets_source   ON imported_sets(source)",
             "PRAGMA foreign_keys = ON"
         ]
         for sql in stmts {
@@ -854,6 +883,135 @@ final class UserDatabase {
             ? nil
             : Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(stmt, 3)))
         return (count, oldest, newest, last)
+    } }
+
+    // MARK: - Imported sets (Phase 3: CSV strength history)
+
+    /// Insert (or replace on id conflict) a batch of imported sets in a
+    /// single transaction. A 5k-row Fitbod history is typical; per-row
+    /// commits would noticeably slow the first import. `imported_at` is
+    /// stamped at write time. `exercise_id` is nullable — unmatched names
+    /// keep `exercise_name_raw` for later remediation.
+    func insertImportedSets(_ rows: [ImportedSet]) { withLock {
+        guard let db, !rows.isEmpty else { return }
+        sqlite3_exec(db, "BEGIN IMMEDIATE", nil, nil, nil)
+        defer { sqlite3_exec(db, "COMMIT", nil, nil, nil) }
+
+        let sql = """
+        INSERT OR REPLACE INTO imported_sets(
+          id, source, exercise_id, exercise_name_raw, performed_at, set_num,
+          weight, reps, rir, rpe, imported_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return }
+        defer { sqlite3_finalize(stmt) }
+
+        let now = Int64(Date().timeIntervalSince1970)
+        for row in rows {
+            sqlite3_bind_text(stmt, 1, row.id, -1, SQLITE_TRANSIENT_USER)
+            sqlite3_bind_text(stmt, 2, row.source.rawValue, -1, SQLITE_TRANSIENT_USER)
+            if let exId = row.exerciseId {
+                sqlite3_bind_int64(stmt, 3, Int64(exId))
+            } else {
+                sqlite3_bind_null(stmt, 3)
+            }
+            sqlite3_bind_text(stmt, 4, row.exerciseNameRaw, -1, SQLITE_TRANSIENT_USER)
+            sqlite3_bind_int64(stmt, 5, Int64(row.performedAt.timeIntervalSince1970))
+            sqlite3_bind_int64(stmt, 6, Int64(row.setNum))
+            if let w = row.weight { sqlite3_bind_double(stmt, 7, w) } else { sqlite3_bind_null(stmt, 7) }
+            if let r = row.reps { sqlite3_bind_int64(stmt, 8, Int64(r)) } else { sqlite3_bind_null(stmt, 8) }
+            if let rir = row.rir { sqlite3_bind_double(stmt, 9, rir) } else { sqlite3_bind_null(stmt, 9) }
+            if let rpe = row.rpe { sqlite3_bind_double(stmt, 10, rpe) } else { sqlite3_bind_null(stmt, 10) }
+            sqlite3_bind_int64(stmt, 11, now)
+
+            sqlite3_step(stmt)
+            sqlite3_reset(stmt)
+        }
+    } }
+
+    /// Per-exercise heaviest matched set in the import history. Used by
+    /// `GeneratorContext.from(...)` to seed priorBest for users who
+    /// import lifetime history before they've logged a native session.
+    /// Returns rows for exercises with a resolved `exercise_id` only —
+    /// unmatched names can't safely back priorBest.
+    func importedSetsLifetimePeaks() -> [(exerciseId: Int, weight: Double, reps: Int, performedAt: Date)] { withLock {
+        guard let db else { return [] }
+        // Heaviest single-set weight per exercise, with the rep count and
+        // date from that same row. Tiebreak by most recent (we prefer
+        // newer evidence of the same peak).
+        let sql = """
+        SELECT exercise_id, weight, reps, performed_at
+        FROM imported_sets
+        WHERE exercise_id IS NOT NULL
+          AND weight IS NOT NULL
+          AND reps IS NOT NULL
+        ORDER BY exercise_id, weight DESC, performed_at DESC
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+
+        var lastEx = -1
+        var out: [(exerciseId: Int, weight: Double, reps: Int, performedAt: Date)] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            let exId = Int(sqlite3_column_int64(stmt, 0))
+            if exId == lastEx { continue }  // first row per exId is the peak
+            lastEx = exId
+            let w = sqlite3_column_double(stmt, 1)
+            let r = Int(sqlite3_column_int64(stmt, 2))
+            let at = Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(stmt, 3)))
+            out.append((exId, w, r, at))
+        }
+        return out
+    } }
+
+    /// Settings diagnostic + per-source delete preflight. Returns count,
+    /// oldest, newest, plus a per-source breakdown for the import list UI.
+    func importedSetsSummary() -> (count: Int, oldest: Date?, newest: Date?, perSource: [String: Int])? { withLock {
+        guard let db else { return nil }
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, "SELECT COUNT(*), MIN(performed_at), MAX(performed_at) FROM imported_sets", -1, &stmt, nil) == SQLITE_OK else { return nil }
+        defer { sqlite3_finalize(stmt) }
+        guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
+        let count = Int(sqlite3_column_int64(stmt, 0))
+        if count == 0 { return (0, nil, nil, [:]) }
+        let oldest = Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(stmt, 1)))
+        let newest = Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(stmt, 2)))
+
+        var perSource: [String: Int] = [:]
+        var src: OpaquePointer?
+        if sqlite3_prepare_v2(db, "SELECT source, COUNT(*) FROM imported_sets GROUP BY source", -1, &src, nil) == SQLITE_OK {
+            defer { sqlite3_finalize(src) }
+            while sqlite3_step(src) == SQLITE_ROW {
+                if let s = text(src, 0) {
+                    perSource[s] = Int(sqlite3_column_int64(src, 1))
+                }
+            }
+        }
+        return (count, oldest, newest, perSource)
+    } }
+
+    /// Drop both imported_sets AND imported_workouts for a given source.
+    /// Used by the Settings → Imports per-source delete row. Wrapped in a
+    /// single transaction so partial deletes can't desync the two tables.
+    func deleteImports(source: ImportSource) { withLock {
+        guard let db else { return }
+        sqlite3_exec(db, "BEGIN IMMEDIATE", nil, nil, nil)
+        defer { sqlite3_exec(db, "COMMIT", nil, nil, nil) }
+
+        var stmt: OpaquePointer?
+        if sqlite3_prepare_v2(db, "DELETE FROM imported_sets WHERE source = ?", -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, source.rawValue, -1, SQLITE_TRANSIENT_USER)
+            sqlite3_step(stmt)
+            sqlite3_finalize(stmt)
+        }
+        var stmt2: OpaquePointer?
+        if sqlite3_prepare_v2(db, "DELETE FROM imported_workouts WHERE source = ?", -1, &stmt2, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt2, 1, source.rawValue, -1, SQLITE_TRANSIENT_USER)
+            sqlite3_step(stmt2)
+            sqlite3_finalize(stmt2)
+        }
     } }
 }
 

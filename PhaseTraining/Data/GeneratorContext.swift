@@ -122,6 +122,13 @@ extension GeneratorContext {
         // need to thread them. PlanStore.buildGeneratorContext does pass
         // the real list once HK auth is granted.
         importedWorkouts: [ImportedWorkout] = [],
+        // Phase 3 — per-exercise heaviest set from imported_sets, in kg.
+        // Used to warm-start priorBest for exercises the user has never
+        // logged natively but DOES have imported history for. PlanStore
+        // sources this from UserDatabase.importedSetsLifetimePeaks().
+        // Each tuple resolves to a coach.db exercise the importer was
+        // able to match by name — unmatched rows never reach here.
+        importedPeaks: [(exerciseId: Int, weight: Double, reps: Int, performedAt: Date)] = [],
         // Phase 2 — cohort for the readiness density norm. nil → default
         // 3 sessions/wk. PlanStore resolves this from DemographicProfile.
         cohort: EraCohort? = nil,
@@ -149,7 +156,7 @@ extension GeneratorContext {
         let hasData = !readinessEvents.isEmpty
 
         return GeneratorContext(
-            priorBest: buildPriorBest(sessions: sessions),
+            priorBest: buildPriorBest(sessions: sessions, importedPeaks: importedPeaks),
             patternFrequency: buildPatternFrequency(sessions: sessions, cutoff: weekCutoff),
             recentSoreAreas: buildRecentSoreAreas(soreness: soreness,
                                                   feedback: feedback,
@@ -236,7 +243,19 @@ extension GeneratorContext {
     /// completed set in the user's most recent session for that exercise,
     /// not the all-time max — the generator wants "what did you actually
     /// do last time?" not "your best ever".
-    private static func buildPriorBest(sessions: [SavedSession]) -> [String: PriorBest] {
+    ///
+    /// Phase 3 addition: after the native pass, fill gaps from `importedPeaks`
+    /// (lifetime peak per exercise from CSV history). Imports never override
+    /// a native entry — native session > imported peak. For exercises the
+    /// user has imported but never logged natively, the peak warm-starts
+    /// priorBest so the generator has a real baseline weight to work from.
+    /// Imported weight arrives in kg (Fitbod schema literally calls the
+    /// column `Weight(kg)`) and is converted to lb to match the native
+    /// path's convention.
+    private static func buildPriorBest(
+        sessions: [SavedSession],
+        importedPeaks: [(exerciseId: Int, weight: Double, reps: Int, performedAt: Date)] = []
+    ) -> [String: PriorBest] {
         let ordered = sessions.sorted { $0.startTime > $1.startTime }
         var out: [String: PriorBest] = [:]
         for session in ordered {
@@ -261,6 +280,24 @@ extension GeneratorContext {
                     out[key] = PriorBest(weight: bestWeight, reps: bestReps,
                                          date: session.startTime)
                 }
+            }
+        }
+
+        // Phase 3: fill gaps from imported peaks. Resolve coach.db exercise
+        // by id → name, key by lowercased name to match the native path.
+        if !importedPeaks.isEmpty {
+            let db = CoachDatabase.shared
+            let kgToLb = 2.20462
+            for peak in importedPeaks {
+                guard let ex = db.exercise(id: peak.exerciseId) else { continue }
+                let key = ex.name.lowercased()
+                guard out[key] == nil else { continue }  // native always wins
+                guard peak.weight > 0, peak.reps > 0 else { continue }
+                out[key] = PriorBest(
+                    weight: peak.weight * kgToLb,
+                    reps: peak.reps,
+                    date: peak.performedAt
+                )
             }
         }
         return out
