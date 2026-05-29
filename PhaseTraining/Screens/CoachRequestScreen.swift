@@ -466,10 +466,13 @@ struct CoachRequestScreen: View {
         var mem = memoryStore.memory
         mem.sessionMinutes = strategy.durationMinutes ?? durationMinutes
         let profile = DemographicProfile.from(mem)
+        let imported = UserDatabase.shared.recentImportedWorkouts(within: 28)
         let context = GeneratorContext.from(
             sessions: sessionStore.savedSessions,
             soreness: mem.soreness,
-            feedback: mem.feedback
+            feedback: mem.feedback,
+            importedWorkouts: imported,
+            cohort: profile.eraCohort
         )
         // Map the focus back to a liftIndex/totalLifts pair that resolves
         // to it via WorkoutFocus.lift — generator preserves the override.

@@ -43,7 +43,16 @@ enum CoachContext {
         // call site) so the coach can pick era-appropriate exercise
         // names + cues. Defaulted nil → snapshot reads exactly like
         // pre-Phase-1 for callers that haven't been updated yet.
-        eraCohort: EraCohort? = nil
+        eraCohort: EraCohort? = nil,
+        // Phase 2 readiness: pass-through of the in-season readiness
+        // score (0..1, 0.5 = neutral / no data) so the LLM knows
+        // whether to nudge intensity up or down in its prose. Per the
+        // `phase-training-personalization-three-axes` skill, this is a
+        // SILENT signal — the coach must not surface a "you might be
+        // detrained" prompt. The number lets the LLM avoid pushing 90%
+        // intensity copy on a user whose deterministic prescription
+        // was already capped. Defaulted nil → no readiness block.
+        readinessScore: Double? = nil
     ) -> String {
         var blocks: [String] = []
 
@@ -119,6 +128,25 @@ enum CoachContext {
             let vocab = style.terminologyHints.joined(separator: ", ")
             lines.append("- vocabulary: \(vocab)")
             blocks.append("TRAINING ERA AFFINITY (vocabulary + style nudge only — does NOT change movement competency or load)\n" + lines.joined(separator: "\n"))
+        }
+
+        // Phase 2 readiness block. Emitted only when the caller computed a
+        // real score (callers that don't yet thread it pass nil, and we
+        // skip the block entirely). The block instructs the LLM to treat
+        // this as a SILENT prior — never surface "you might be detrained"
+        // language to the user — but to scale its intensity prose to match.
+        if let readinessScore {
+            let pct = Int((readinessScore * 100).rounded())
+            var lines: [String] = []
+            lines.append("- current_readiness_pct: \(pct)")
+            let band: String
+            switch readinessScore {
+            case ..<0.3:  band = "detrained — generator already capped volume + RPE; do NOT push the user harder"
+            case 0.3..<0.7: band = "neutral / mid — match the prescribed intensity, no extra push or hold-back"
+            default:        band = "in-season — user can handle the prescribed load; reinforce, don't sandbag"
+            }
+            lines.append("- guidance: \(band)")
+            blocks.append("IN-SEASON READINESS (silent prior — do NOT name a 'detrained' or 'underprepared' status to the user)\n" + lines.joined(separator: "\n"))
         }
 
         if let body = bodySection(memory: memory) {

@@ -146,9 +146,23 @@ enum WorkoutGenerator {
                 memory: memory,
                 profile: profile
             )
+            // Phase 2 — readiness silent volume scaling. Only applied when
+            // `context.hasReadinessData == true`; when the user has skipped
+            // HK auth AND has no native session history, readinessScore is
+            // the 0.5 sentinel and we deliberately scale by 1.0× (no
+            // effect) to preserve pre-Phase-2 generator output. See
+            // `phase-training-personalization-three-axes` skill —
+            // readiness drives volume/intensity ONLY, never competency.
+            let readinessSetsMultiplier: Double = context.hasReadinessData
+                ? lerp(0.6, 1.0, context.readinessScore)
+                : 1.0
             // Apply LLM-supplied intensity multiplier — guarded so a hostile
-            // strategy can't produce 0 sets or runaway volume.
-            let sets = max(1, min(8, Int((Double(baseSets) * strategy.intensityBias.setsMultiplier).rounded())))
+            // strategy can't produce 0 sets or runaway volume. Readiness
+            // composes BEFORE the LLM intensityBias so the LLM still has
+            // last say (a deload week tone shouldn't be amplified by an
+            // already-detrained readiness score).
+            let combinedSetsMul = readinessSetsMultiplier * strategy.intensityBias.setsMultiplier
+            let sets = max(1, min(8, Int((Double(baseSets) * combinedSetsMul).rounded())))
 
             // Budget check uses the PRE-multiplier duration so a deload day
             // doesn't "free up" time for additional accessories — deload
@@ -170,13 +184,25 @@ enum WorkoutGenerator {
             let notes = progressiveOverloadHint(for: picked, context: context, memory: memory, strategy: strategy)
             // RPE + tempo prescription (build 70). Defaults from focus +
             // slot position; LLM strategy overrides win per-exercise.
-            let (rpe, tempo) = rpeTempoHints(
+            let (rpeRaw, tempo) = rpeTempoHints(
                 for: picked,
                 slotIdx: slotIdx,
                 focus: focus,
                 memory: memory,
                 strategy: strategy
             )
+            // Phase 2 readiness RPE cap — compound lifts only, applied
+            // when the user has real readiness data. Detrained user (0.0)
+            // capped at RPE 7; in-shape user (1.0) capped at RPE 9; mid
+            // (0.5) capped at RPE 8. The `rpeTempoHints` baseline for
+            // compounds is RPE 7-8 already; cap reduces it further on
+            // low-readiness days without affecting non-compound work.
+            let rpe: String? = {
+                guard let raw = rpeRaw,
+                      picked.isCompound,
+                      context.hasReadinessData else { return rpeRaw }
+                return capCompoundRPE(raw, readinessScore: context.readinessScore)
+            }()
 
             // Warm-up ramp synthesis: only for the FIRST compound primary
             // lift (slotIdx == 0 + isCompound) AND only when the prime mover
@@ -1218,4 +1244,64 @@ final class PatternSlot {
 
 private extension String {
     var nilIfEmpty: String? { isEmpty ? nil : self }
+}
+
+// MARK: - Phase 2 readiness helpers
+
+/// Linear interpolation between `lo` and `hi` at `t` in [0, 1]. Clamps t.
+func lerp(_ lo: Double, _ hi: Double, _ t: Double) -> Double {
+    let clamped = min(max(t, 0.0), 1.0)
+    return lo + (hi - lo) * clamped
+}
+
+/// Apply the Phase 2 compound-RPE cap given a readiness score in [0, 1].
+/// The cap floor is RPE 7 at score 0 → RPE 9 at score 1. We parse the
+/// existing RPE string ("7", "8", "RPE 8", "RPE 7-8" etc.), extract the
+/// highest number, and replace it with `min(originalMax, cap)`. Inputs
+/// the parser doesn't understand pass through unchanged — the cap is a
+/// safety floor, not a coercion.
+func capCompoundRPE(_ rpeRaw: String, readinessScore: Double) -> String {
+    let capValue = lerp(7.0, 9.0, readinessScore)
+    let trimmed = rpeRaw.trimmingCharacters(in: .whitespaces)
+    guard !trimmed.isEmpty else { return rpeRaw }
+
+    // Try simple integer first ("8").
+    if let single = Double(trimmed) {
+        let capped = min(single, capValue)
+        return formatRPE(capped)
+    }
+    // Range form: "7-8" or "RPE 7-8".
+    let stripped = trimmed.replacingOccurrences(of: "RPE", with: "",
+                                                 options: .caseInsensitive)
+        .replacingOccurrences(of: " ", with: "")
+    if stripped.contains("-") {
+        let parts = stripped.split(separator: "-")
+        if parts.count == 2,
+           let lo = Double(parts[0]),
+           let hi = Double(parts[1]) {
+            let cappedHi = min(hi, capValue)
+            if cappedHi <= lo {
+                return formatRPE(cappedHi)
+            } else {
+                return "\(formatRPE(lo))-\(formatRPE(cappedHi))"
+            }
+        }
+    }
+    // Single number with RPE prefix.
+    if let single = Double(stripped) {
+        let capped = min(single, capValue)
+        return formatRPE(capped)
+    }
+    // Couldn't parse — leave unchanged. Safer than mangling.
+    return rpeRaw
+}
+
+/// Format an RPE number — drop trailing ".0" for whole values, otherwise
+/// one decimal. Keeps the output looking like the existing RPE strings.
+private func formatRPE(_ value: Double) -> String {
+    let rounded = (value * 10).rounded() / 10
+    if abs(rounded - rounded.rounded()) < 0.05 {
+        return String(format: "%.0f", rounded)
+    }
+    return String(format: "%.1f", rounded)
 }

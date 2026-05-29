@@ -92,6 +92,20 @@ extension PlanStore {
         // into the per-turn coach context AND through the rest of the
         // refinement pass. DemographicProfile owns the resolution logic.
         let profile = DemographicProfile.from(memory)
+        // Phase 2 readiness — build a top-level snapshot context just to
+        // get the score for the coach snapshot. We rebuild the per-day
+        // context inside `refineSingleDay` against that day's date, but
+        // for the LLM prompt's IN-SEASON READINESS block we want "today's"
+        // score, which is what this top-level context gives us.
+        let topImported = UserDatabase.shared.recentImportedWorkouts(within: 28)
+        let topContext = GeneratorContext.from(
+            sessions: sessions,
+            soreness: memory.soreness,
+            feedback: memory.feedback,
+            sportLogs: sportLogs,
+            importedWorkouts: topImported,
+            cohort: profile.eraCohort
+        )
         let snapshot = CoachContext.snapshot(
             activeTab: .today,
             memory: memory,
@@ -100,7 +114,8 @@ extension PlanStore {
             recentFeedback: memory.feedback,
             recentSoreness: memory.soreness,
             recentSportLogs: sportLogs,
-            eraCohort: profile.eraCohort
+            eraCohort: profile.eraCohort,
+            readinessScore: topContext.hasReadinessData ? topContext.readinessScore : nil
         )
 
         let candidates = refinementCandidates(in: snapshotPlan)
@@ -191,10 +206,13 @@ extension PlanStore {
 
         // Re-run the generator with the LLM strategy.
         let seed = "llm-refine-\(memory.planInputsHash)-\(Int(day.date.timeIntervalSince1970))"
+        let imported = UserDatabase.shared.recentImportedWorkouts(within: 28)
         let context = GeneratorContext.from(
             sessions: sessions,
             soreness: memory.soreness,
             feedback: memory.feedback,
+            importedWorkouts: imported,
+            cohort: profile.eraCohort,
             now: day.date
         )
 

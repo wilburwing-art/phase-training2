@@ -107,6 +107,11 @@ targets:
         UIStatusBarStyle: UIStatusBarStyleLightContent
         UIUserInterfaceStyle: Dark
         ITSAppUsesNonExemptEncryption: false
+        # Phase 2 HealthKit read capability. Reviewer-facing string —
+        # Apple App Review rejects generic copy here, so name the actual
+        # behavior (read workouts → drive readiness signal → match
+        # generated workout difficulty to real activity).
+        NSHealthShareUsageDescription: "PhaseTraining reads recent workout history to gauge your current training readiness, so generated workouts match how active you've actually been."
         # AI Coach (Phase 13) — third-party AI prompts disclosed per Apple
         # Guideline 5.1.2(i). Privacy nutrition labels should mirror this.
         NSPrivacyCollectedDataTypes:
@@ -128,6 +133,10 @@ targets:
         SUPPORTS_MACCATALYST: NO
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: NO
+        # Phase 2 HealthKit read capability. Read-only on HKWorkoutType —
+        # no clinical-record access, no HK write. Usage description is in
+        # PhaseTraining/Info.plist as NSHealthShareUsageDescription.
+        CODE_SIGN_ENTITLEMENTS: PhaseTraining/PhaseTraining.entitlements
       configs:
         Release:
           CODE_SIGN_STYLE: Manual

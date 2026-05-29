@@ -44,8 +44,15 @@ enum Planner {
             calendar: calendar,
             now: today
         )
+        // Phase 2 readiness floor — when the user is clearly detrained
+        // AND we have real data to say so, cap lift days at 3/wk
+        // regardless of self-reported preference. Silent: the user's
+        // declared `liftDaysPerWeek` is preserved in their profile; only
+        // THIS planning pass uses the floor. Independent of (and stacks
+        // with) the existing feedback / sport-log trim.
+        let readinessCapped = applyReadinessLiftDayFloor(memory: biased, context: context)
         return generateUnbiased(
-            memory: biased,
+            memory: readinessCapped,
             overrides: overrides,
             routines: routines,
             recentlyPicked: recentlyPicked,
@@ -54,6 +61,25 @@ enum Planner {
             context: context,
             strategy: strategy
         )
+    }
+
+    /// Phase 2: when readinessScore < 0.3 AND we have real data, cap
+    /// liftDaysPerWeek at 3 for this planning pass. Pure / testable —
+    /// no side effects, no persistence. The brief explicitly anchors
+    /// this as a SILENT rule; the user's self-reported value stays
+    /// untouched in TrainingMemory.
+    static func applyReadinessLiftDayFloor(
+        memory: TrainingMemory,
+        context: GeneratorContext
+    ) -> TrainingMemory {
+        guard context.hasReadinessData,
+              context.readinessScore < 0.3,
+              memory.liftDaysPerWeek > 3 else {
+            return memory
+        }
+        var out = memory
+        out.liftDaysPerWeek = 3
+        return out
     }
 
     /// Inspect the most recent 7-day feedback + sport-log windows and nudge

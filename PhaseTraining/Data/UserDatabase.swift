@@ -133,6 +133,32 @@ final class UserDatabase {
             "CREATE INDEX IF NOT EXISTS idx_sessions_template_start ON sessions(template_id, start_time DESC)",
             "CREATE INDEX IF NOT EXISTS idx_sessions_start ON sessions(start_time DESC)",
             "CREATE INDEX IF NOT EXISTS idx_session_exercises_name ON session_exercises(name COLLATE NOCASE, session_start DESC)",
+            // Phase 2 — imported workouts (HealthKit in v1, CSV imports
+            // in Phase 3). One row per externally-sourced workout. Keyed
+            // by the source's own UUID (HK UUID for HK, generated UUID
+            // for CSV) so re-import is idempotent. We persist both
+            // `source` and `hk_uuid` separately because Phase 3 CSV
+            // sources will reuse the same table and we want HK rows
+            // queryable on the original UUID for sync diagnostics.
+            //
+            // Indexed on start_time DESC for the readiness-window query
+            // (most recent 28 days) and on kind for any future per-kind
+            // filtering. No FK to native sessions — these are parallel
+            // history streams that GeneratorContext unions in Swift.
+            """
+            CREATE TABLE IF NOT EXISTS imported_workouts (
+              id                TEXT PRIMARY KEY,
+              source            TEXT NOT NULL,
+              hk_uuid           TEXT,
+              kind              TEXT NOT NULL,
+              start_time        INTEGER NOT NULL,
+              duration_seconds  REAL NOT NULL,
+              energy_kcal       REAL,
+              imported_at       INTEGER NOT NULL
+            )
+            """,
+            "CREATE INDEX IF NOT EXISTS idx_imported_workouts_start ON imported_workouts(start_time DESC)",
+            "CREATE INDEX IF NOT EXISTS idx_imported_workouts_kind  ON imported_workouts(kind)",
             "PRAGMA foreign_keys = ON"
         ]
         for sql in stmts {
@@ -714,6 +740,121 @@ final class UserDatabase {
         if sqlite3_column_type(stmt, idx) == SQLITE_NULL { return nil }
         return Int(sqlite3_column_int64(stmt, idx))
     }
+
+    // MARK: - Imported workouts (Phase 2: HealthKit; Phase 3: CSV)
+
+    /// Insert (or replace on id conflict) a batch of imported workouts.
+    /// Wrapped in a single transaction — HK syncs typically batch the
+    /// whole 28-day window, so per-row commits would cost real ms on
+    /// the first sync. `imported_at` is stamped at insert time so the
+    /// Settings screen can show "last synced N min ago" without keeping
+    /// a separate timestamp.
+    func insertImportedWorkouts(_ rows: [ImportedWorkout]) { withLock {
+        guard let db, !rows.isEmpty else { return }
+        sqlite3_exec(db, "BEGIN IMMEDIATE", nil, nil, nil)
+        defer { sqlite3_exec(db, "COMMIT", nil, nil, nil) }
+
+        let sql = """
+        INSERT OR REPLACE INTO imported_workouts(
+          id, source, hk_uuid, kind, start_time, duration_seconds,
+          energy_kcal, imported_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return }
+        defer { sqlite3_finalize(stmt) }
+
+        let now = Int64(Date().timeIntervalSince1970)
+        for row in rows {
+            sqlite3_bind_text(stmt, 1, row.id, -1, SQLITE_TRANSIENT_USER)
+            sqlite3_bind_text(stmt, 2, row.source.rawValue, -1, SQLITE_TRANSIENT_USER)
+            // HK rows carry the same UUID in `id` and `hk_uuid`. For CSV
+            // rows, hk_uuid is NULL.
+            if row.source == .healthKit {
+                sqlite3_bind_text(stmt, 3, row.id, -1, SQLITE_TRANSIENT_USER)
+            } else {
+                sqlite3_bind_null(stmt, 3)
+            }
+            sqlite3_bind_text(stmt, 4, row.kind.rawValue, -1, SQLITE_TRANSIENT_USER)
+            sqlite3_bind_int64(stmt, 5, Int64(row.startTime.timeIntervalSince1970))
+            sqlite3_bind_double(stmt, 6, row.duration)
+            if let kcal = row.energyKcal {
+                sqlite3_bind_double(stmt, 7, kcal)
+            } else {
+                sqlite3_bind_null(stmt, 7)
+            }
+            sqlite3_bind_int64(stmt, 8, now)
+
+            sqlite3_step(stmt)
+            sqlite3_reset(stmt)
+        }
+    } }
+
+    /// Fetch imported workouts whose `start_time` falls within the last
+    /// `days` days, newest first. Used by `GeneratorContext.from(...)`
+    /// to union with native sessions for readiness signal computation.
+    func recentImportedWorkouts(within days: Int) -> [ImportedWorkout] { withLock {
+        guard let db, days > 0 else { return [] }
+        let cutoff = Int64(Date().addingTimeInterval(-Double(days) * 86_400).timeIntervalSince1970)
+        let sql = """
+        SELECT id, source, kind, start_time, duration_seconds, energy_kcal
+        FROM imported_workouts
+        WHERE start_time >= ?
+        ORDER BY start_time DESC
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_int64(stmt, 1, cutoff)
+
+        var out: [ImportedWorkout] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            guard
+                let id = text(stmt, 0),
+                let sourceRaw = text(stmt, 1),
+                let source = ImportSource(rawValue: sourceRaw),
+                let kindRaw = text(stmt, 2),
+                let kind = WorkoutKind(rawValue: kindRaw)
+            else { continue }
+            let startTime = Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(stmt, 3)))
+            let dur = sqlite3_column_double(stmt, 4)
+            let kcal: Double? = sqlite3_column_type(stmt, 5) == SQLITE_NULL
+                ? nil
+                : sqlite3_column_double(stmt, 5)
+            out.append(ImportedWorkout(
+                id: id,
+                source: source,
+                kind: kind,
+                startTime: startTime,
+                duration: dur,
+                energyKcal: kcal
+            ))
+        }
+        return out
+    } }
+
+    /// Diagnostic helper for Settings → Health & Imports. Returns
+    /// (row count, oldest start, newest start, last import timestamp)
+    /// or nil if no imports exist.
+    func importedWorkoutSummary() -> (count: Int, oldest: Date?, newest: Date?, lastImported: Date?)? { withLock {
+        guard let db else { return nil }
+        let sql = """
+        SELECT COUNT(*), MIN(start_time), MAX(start_time), MAX(imported_at)
+        FROM imported_workouts
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return nil }
+        defer { sqlite3_finalize(stmt) }
+        guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
+        let count = Int(sqlite3_column_int64(stmt, 0))
+        if count == 0 { return (0, nil, nil, nil) }
+        let oldest = Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(stmt, 1)))
+        let newest = Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(stmt, 2)))
+        let last = sqlite3_column_type(stmt, 3) == SQLITE_NULL
+            ? nil
+            : Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(stmt, 3)))
+        return (count, oldest, newest, last)
+    } }
 }
 
 private let SQLITE_TRANSIENT_USER = unsafeBitCast(-1, to: sqlite3_destructor_type.self)

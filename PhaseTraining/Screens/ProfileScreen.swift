@@ -40,6 +40,7 @@ struct ProfileScreen: View {
     @State private var presentingInjuriesEditor = false
     @State private var presentingRemindersEditor = false
     @State private var presentingDataEditor = false
+    @State private var presentingHealthImports = false
     #if DEBUG
     @State private var presentingMuscleChipGenerator = false
     #endif
@@ -135,6 +136,10 @@ struct ProfileScreen: View {
                                     icon: "bell",
                                     action: { presentingRemindersEditor = true })
                         CoachSettingsRow()
+                        SettingsRow(label: "Health & Imports",
+                                    value: "Workout history",
+                                    icon: "heart.text.square",
+                                    action: { presentingHealthImports = true })
                         SettingsRow(label: "Data",
                                     value: "Backup / Restore",
                                     icon: "externaldrive",
@@ -190,6 +195,10 @@ struct ProfileScreen: View {
                 onExport: exportBackup,
                 onImport: { presentingImporter = true }
             )
+        }
+        .sheet(isPresented: $presentingHealthImports) {
+            HealthImportsScreen()
+                .environmentObject(store)
         }
         #if DEBUG
         .sheet(isPresented: $presentingMuscleChipGenerator) {

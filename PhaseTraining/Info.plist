@@ -33,6 +33,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>PhaseTraining reads recent workout history to gauge your current training readiness, so generated workouts match how active you've actually been.</string>
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>
 		<dict>

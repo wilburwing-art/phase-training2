@@ -51,16 +51,39 @@ struct GeneratorContext: Equatable {
     /// don't count — only intensities the user labeled as hard.
     var recentHardSportDays: Int
 
+    /// Phase 2 readiness signal (0.0 = fully detrained → 0.5 = neutral / no
+    /// data → 1.0 = high training state). Computed from native sessions +
+    /// imported workouts + sport logs over a 28-day window. Drives volume,
+    /// RPE cap, and recommended-days floor SILENTLY in the generator — does
+    /// NOT affect movement competency (that's `ExperienceLevel`) or
+    /// aesthetic (that's `DemographicProfile.eraStyle`).
+    var readinessScore: Double = 0.5
+
+    /// Per-axis breakdown of `readinessScore` — surfaced only in debug
+    /// builds. Generator never reads this; included so the Settings →
+    /// Health & Imports screen can render it diagnostically.
+    var readinessBreakdown: ReadinessBreakdown = ReadinessSignal.neutral.breakdown
+
+    /// True when readiness came from real data (the caller had at least one
+    /// session/workout/sportLog in the window). When false, the generator
+    /// SKIPS readiness-based scaling entirely — explicit anti-pattern: the
+    /// neutral 0.5 sentinel must not be mistaken for "low real readiness".
+    var hasReadinessData: Bool = false
+
     static let empty = GeneratorContext(
         priorBest: [:], patternFrequency: [:], recentSoreAreas: [],
         stagnantExercises: [], muscleVolume: [:],
-        recentHardSportDays: 0
+        recentHardSportDays: 0,
+        readinessScore: 0.5,
+        readinessBreakdown: ReadinessSignal.neutral.breakdown,
+        hasReadinessData: false
     )
 
     var isEmpty: Bool {
         priorBest.isEmpty && patternFrequency.isEmpty &&
         recentSoreAreas.isEmpty && stagnantExercises.isEmpty &&
-        muscleVolume.isEmpty && recentHardSportDays == 0
+        muscleVolume.isEmpty && recentHardSportDays == 0 &&
+        !hasReadinessData
     }
 }
 
@@ -79,6 +102,13 @@ extension GeneratorContext {
     /// `memory.soreness`, `memory.feedback`. Honors a 4-week window for
     /// pattern + volume signals, 7 days for soreness, 4 weeks since last PR
     /// for stagnation. `now` is injectable for tests.
+    ///
+    /// Phase 2 additions:
+    /// - `importedWorkouts` — HK + (Phase 3) CSV history, unioned with
+    ///   native sessions for readiness density/recency/trend.
+    /// - `cohort` — sets the density-component denominator. Default 3/wk
+    ///   when nil. Per the three-axes skill, cohort here drives ONLY the
+    ///   readiness norm; it does NOT touch competency.
     static func from(
         sessions: [SavedSession],
         soreness: [SorenessEntry],
@@ -87,11 +117,36 @@ extension GeneratorContext {
         // don't have to thread sport logs through. Production callers
         // (PlanStore.buildGeneratorContext) pass the real list.
         sportLogs: [SportLogEntry] = [],
+        // Phase 2 — HK / CSV imports. Defaulted so existing test surfaces
+        // and the LLM-refinement path (which builds its own context) don't
+        // need to thread them. PlanStore.buildGeneratorContext does pass
+        // the real list once HK auth is granted.
+        importedWorkouts: [ImportedWorkout] = [],
+        // Phase 2 — cohort for the readiness density norm. nil → default
+        // 3 sessions/wk. PlanStore resolves this from DemographicProfile.
+        cohort: EraCohort? = nil,
         now: Date = Date()
     ) -> GeneratorContext {
         let cal = Calendar.current
         let weekCutoff = cal.date(byAdding: .weekOfYear, value: -4, to: now) ?? now
         let weekSoreCutoff = cal.date(byAdding: .day, value: -7, to: now) ?? now
+
+        // Readiness inputs — union native sessions + imports + hard sport
+        // days. All three count equally toward density/recency/trend (the
+        // signal layer doesn't distinguish strength from cardio from sport;
+        // the unionized "did the user move this week" is what matters).
+        let readinessEvents = buildReadinessEvents(
+            sessions: sessions,
+            importedWorkouts: importedWorkouts,
+            sportLogs: sportLogs,
+            now: now
+        )
+        let signal = ReadinessSignal.compute(
+            events: readinessEvents,
+            cohort: cohort,
+            now: now
+        )
+        let hasData = !readinessEvents.isEmpty
 
         return GeneratorContext(
             priorBest: buildPriorBest(sessions: sessions),
@@ -103,8 +158,56 @@ extension GeneratorContext {
             muscleVolume: buildMuscleVolume(sessions: sessions, now: now),
             recentHardSportDays: buildRecentHardSportDays(sportLogs: sportLogs,
                                                           cutoff: weekSoreCutoff,
-                                                          calendar: cal)
+                                                          calendar: cal),
+            readinessScore: signal.score,
+            readinessBreakdown: signal.breakdown,
+            hasReadinessData: hasData
         )
+    }
+
+    // MARK: - readiness events (Phase 2)
+
+    /// Union native sessions + imported workouts + sport logs within the
+    /// 28-day readiness window. Each contributes ONE ReadinessEvent per
+    /// distinct calendar day so the same date hit by both a native session
+    /// AND an HK record (the user logged in-app AND HK detected it from
+    /// the watch) doesn't double-count.
+    private static func buildReadinessEvents(
+        sessions: [SavedSession],
+        importedWorkouts: [ImportedWorkout],
+        sportLogs: [SportLogEntry],
+        now: Date
+    ) -> [ReadinessEvent] {
+        let cutoff = now.addingTimeInterval(-28 * 86_400)
+        let cal = Calendar.current
+
+        // Native sessions: use startTime as-is.
+        var byDay: [Date: ReadinessEvent] = [:]
+        for s in sessions where s.startTime >= cutoff {
+            let day = cal.startOfDay(for: s.startTime)
+            // Prefer the earliest event on that day so trend math sees the
+            // session start consistently — the within-day choice doesn't
+            // matter for density/recency/trend which are at day granularity.
+            if byDay[day] == nil || byDay[day]!.startTime > s.startTime {
+                byDay[day] = ReadinessEvent(startTime: s.startTime)
+            }
+        }
+        // Imported workouts.
+        for w in importedWorkouts where w.startTime >= cutoff {
+            let day = cal.startOfDay(for: w.startTime)
+            if byDay[day] == nil || byDay[day]!.startTime > w.startTime {
+                byDay[day] = ReadinessEvent(startTime: w.startTime)
+            }
+        }
+        // Sport logs — only entries the user marked as having actual
+        // movement (any intensity). Skip nil/none-intensity entries.
+        for log in sportLogs where log.date >= cutoff {
+            let day = cal.startOfDay(for: log.date)
+            if byDay[day] == nil || byDay[day]!.startTime > log.date {
+                byDay[day] = ReadinessEvent(startTime: log.date)
+            }
+        }
+        return Array(byDay.values)
     }
 
     // MARK: - recentHardSportDays
