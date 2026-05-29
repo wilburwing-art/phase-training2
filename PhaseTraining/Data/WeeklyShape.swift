@@ -56,16 +56,16 @@ private let sportSeasonShapes: [ShapeKey: WeeklyShape] = [
     // Climbing
     ShapeKey(sport: "climbing", season: .inSeason): WeeklyShape(
         kinds:       [.sport, .rest, .lift, .sport, .rest, .rest, .rest],
-        description: "Climbing in-season: 2 climbs, 1 lift, 1 mobility, 3 rest"),
+        description: "Climbing in-season: 2 climbs, 1 lift, 4 rest"),
     ShapeKey(sport: "climbing", season: .preSeason): WeeklyShape(
         kinds:       [.lift, .sport, .rest, .sport, .lift, .rest, .rest],
-        description: "Climbing pre-season: 2 climbs, 2 lifts, 1 mobility, 2 rest"),
+        description: "Climbing pre-season: 2 climbs, 2 lifts, 3 rest"),
     ShapeKey(sport: "climbing", season: .offSeason): WeeklyShape(
         kinds:       [.lift, .sport, .rest, .lift, .lift, .rest, .rest],
-        description: "Climbing off-season: 1 climb, 3 lifts, 1 mobility, 2 rest"),
+        description: "Climbing off-season: 1 climb, 3 lifts, 3 rest"),
     ShapeKey(sport: "climbing", season: .maintenance): WeeklyShape(
         kinds:       [.sport, .rest, .lift, .sport, .rest, .rest, .rest],
-        description: "Climbing maintenance: 2 climbs, 1 lift, 1 mobility, 3 rest"),
+        description: "Climbing maintenance: 2 climbs, 1 lift, 4 rest"),
 
     // Running
     ShapeKey(sport: "running", season: .inSeason): WeeklyShape(
@@ -82,7 +82,7 @@ private let sportSeasonShapes: [ShapeKey: WeeklyShape] = [
         description: "Running maintenance: 2 runs, 2 lifts, 3 rest"),
     ShapeKey(sport: "trail-running", season: .maintenance): WeeklyShape(
         kinds:       [.sport, .lift, .rest, .sport, .rest, .lift, .rest],
-        description: "Trail running maintenance: 2 runs, 2 lifts, 1 mobility, 2 rest"),
+        description: "Trail running maintenance: 2 runs, 2 lifts, 3 rest"),
 
     // Cycling
     ShapeKey(sport: "cycling", season: .inSeason): WeeklyShape(
@@ -98,35 +98,35 @@ private let sportSeasonShapes: [ShapeKey: WeeklyShape] = [
     // Snow sports / skiing
     ShapeKey(sport: "snow-sports", season: .preSeason): WeeklyShape(
         kinds:       [.lift, .rest, .lift, .rest, .rest, .lift, .rest],
-        description: "Ski pre-season: 3 lifts, 1 mobility, 3 rest (no snow yet)"),
+        description: "Ski pre-season: 3 lifts, 4 rest (no snow yet)"),
     ShapeKey(sport: "snow-sports", season: .inSeason): WeeklyShape(
         kinds:       [.sport, .rest, .lift, .sport, .rest, .rest, .rest],
-        description: "Ski in-season: 2 ski days, 1 lift, 1 mobility, 3 rest"),
+        description: "Ski in-season: 2 ski days, 1 lift, 4 rest"),
     ShapeKey(sport: "alpine-skiing", season: .preSeason): WeeklyShape(
         kinds:       [.lift, .rest, .lift, .rest, .rest, .lift, .rest],
-        description: "Alpine ski pre-season: 3 lifts, 1 mobility, 3 rest"),
+        description: "Alpine ski pre-season: 3 lifts, 4 rest"),
     ShapeKey(sport: "alpine-skiing", season: .inSeason): WeeklyShape(
         kinds:       [.sport, .rest, .lift, .sport, .rest, .rest, .rest],
-        description: "Alpine ski in-season: 2 ski, 1 lift, 1 mobility, 3 rest"),
+        description: "Alpine ski in-season: 2 ski, 1 lift, 4 rest"),
 
-    // Combat sports — high frequency sport days, prehab heavy
+    // Combat sports — high frequency sport days
     ShapeKey(sport: "bjj", season: .maintenance): WeeklyShape(
         kinds:       [.sport, .lift, .rest, .sport, .rest, .sport, .rest],
-        description: "BJJ maintenance: 3 grapples, 1 lift, 1 mobility, 2 rest"),
+        description: "BJJ maintenance: 3 grapples, 1 lift, 3 rest"),
     ShapeKey(sport: "boxing", season: .maintenance): WeeklyShape(
         kinds:       [.sport, .lift, .rest, .sport, .rest, .sport, .rest],
-        description: "Boxing maintenance: 3 sessions, 1 lift, 1 mobility, 2 rest"),
+        description: "Boxing maintenance: 3 sessions, 1 lift, 3 rest"),
     ShapeKey(sport: "muay-thai", season: .maintenance): WeeklyShape(
         kinds:       [.sport, .lift, .rest, .sport, .rest, .sport, .rest],
-        description: "Muay Thai maintenance: 3 sessions, 1 lift, 1 mobility, 2 rest"),
+        description: "Muay Thai maintenance: 3 sessions, 1 lift, 3 rest"),
 
     // Court sports
     ShapeKey(sport: "tennis", season: .inSeason): WeeklyShape(
         kinds:       [.sport, .lift, .rest, .sport, .rest, .sport, .rest],
-        description: "Tennis in-season: 3 courts, 1 lift, 1 mobility, 2 rest"),
+        description: "Tennis in-season: 3 courts, 1 lift, 3 rest"),
     ShapeKey(sport: "pickleball", season: .maintenance): WeeklyShape(
         kinds:       [.sport, .rest, .lift, .sport, .rest, .sport, .rest],
-        description: "Pickleball maintenance: 3 courts, 1 lift, 1 mobility, 2 rest"),
+        description: "Pickleball maintenance: 3 courts, 1 lift, 3 rest"),
 
     // Strength sports
     ShapeKey(sport: "powerlifting", season: .maintenance): WeeklyShape(
@@ -134,21 +134,21 @@ private let sportSeasonShapes: [ShapeKey: WeeklyShape] = [
         description: "Powerlifting maintenance: 4 lifts, 3 rest"),
     ShapeKey(sport: "olympic-weightlifting", season: .maintenance): WeeklyShape(
         kinds:       [.lift, .lift, .rest, .lift, .rest, .lift, .rest],
-        description: "Oly weightlifting: 4 lifts, 1 mobility, 2 rest"),
+        description: "Oly weightlifting: 4 lifts, 3 rest"),
     ShapeKey(sport: "bodybuilding", season: .maintenance): WeeklyShape(
         kinds:       [.lift, .lift, .rest, .lift, .lift, .lift, .rest],
         description: "Bodybuilding maintenance: 5 lifts, 2 rest"),
     ShapeKey(sport: "crossfit", season: .maintenance): WeeklyShape(
         kinds:       [.lift, .lift, .rest, .lift, .rest, .lift, .rest],
-        description: "CrossFit maintenance: 4 lifts, 1 mobility, 2 rest"),
+        description: "CrossFit maintenance: 4 lifts, 3 rest"),
 
     // Mobility-first practices
     ShapeKey(sport: "yoga", season: .maintenance): WeeklyShape(
         kinds:       [.rest, .rest, .rest, .lift, .rest, .rest, .rest],
-        description: "Yoga: 3 mobility, 1 lift, 3 rest"),
+        description: "Yoga: 1 lift, 6 rest"),
     ShapeKey(sport: "pilates", season: .maintenance): WeeklyShape(
         kinds:       [.rest, .rest, .rest, .lift, .rest, .rest, .rest],
-        description: "Pilates: 3 mobility, 1 lift, 3 rest"),
+        description: "Pilates: 1 lift, 6 rest"),
 
     // Multi-sport endurance
     ShapeKey(sport: "obstacle-course-racing", season: .preSeason): WeeklyShape(
@@ -161,7 +161,7 @@ private let sportSeasonShapes: [ShapeKey: WeeklyShape] = [
 private let focusShapes: [PrimaryFocus: WeeklyShape] = [
     .generalStrength: WeeklyShape(
         kinds:       [.lift, .rest, .lift, .rest, .lift, .rest, .rest],
-        description: "General strength: 3 lifts, 1 mobility, 3 rest"),
+        description: "General strength: 3 lifts, 4 rest"),
     .hypertrophy: WeeklyShape(
         kinds:       [.lift, .lift, .rest, .lift, .lift, .lift, .rest],
         description: "Hypertrophy: 5 lifts, 2 rest"),
@@ -173,7 +173,7 @@ private let focusShapes: [PrimaryFocus: WeeklyShape] = [
         description: "Weight loss: 3 lifts, 2 cardio, 2 rest"),
     .longevity: WeeklyShape(
         kinds:       [.lift, .sport, .rest, .lift, .rest, .sport, .rest],
-        description: "Longevity: 2 lifts, 2 cardio, 1 mobility, 2 rest"),
+        description: "Longevity: 2 lifts, 2 cardio, 3 rest"),
     .sportPerformance: WeeklyShape(
         kinds:       [.lift, .sport, .rest, .sport, .lift, .rest, .rest],
         description: "Sport performance: 2 sport, 2 lifts, 3 rest")

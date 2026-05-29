@@ -700,57 +700,6 @@ final class CoachDatabase {
         return out
     } }
 
-    /// Exercises tagged with the given role(s) for any of the given injury
-    /// slugs, bucketed per slug. Used to build the prehab pool — for each
-    /// injury the user has, the generator picks one of these on mobility
-    /// days, and the CoachContext lists them as suggested alternatives. Roles
-    /// of interest: "prehab" (stay-healthy) and "rehab_late" (you've healed
-    /// enough to load it). "rehab_early" is too sensitive to recommend
-    /// generically and stays out.
-    func exercises(forInjurySlugs slugs: Set<String>,
-                   roles: Set<String>) -> [String: [Exercise]] { withLock {
-        guard !slugs.isEmpty, !roles.isEmpty, let db else { return [:] }
-        let slugPlaceholders = slugs.map { _ in "?" }.joined(separator: ",")
-        let rolePlaceholders = roles.map { _ in "?" }.joined(separator: ",")
-        let sql = """
-        SELECT ci.slug,
-               e.id, e.name, e.slug, e.description, e.instructions,
-               e.cues, e.difficulty, e.modality, e.environment,
-               e.is_compound, e.is_unilateral,
-               e.default_sets, e.default_reps, e.default_rest, e.default_duration,
-               e.regression, e.progression, e.image_url, e.thumbnail_url,
-               e.video_url, e.source_video_attribution
-        FROM exercise_injury_relevance eir
-        JOIN common_injuries ci ON ci.id = eir.injury_id
-        JOIN exercises e ON e.id = eir.exercise_id
-        WHERE ci.slug IN (\(slugPlaceholders))
-          AND eir.role IN (\(rolePlaceholders))
-        ORDER BY ci.slug ASC, e.name ASC
-        """
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [:] }
-        defer { sqlite3_finalize(stmt) }
-        var bindIdx: Int32 = 1
-        for slug in slugs {
-            sqlite3_bind_text(stmt, bindIdx, slug, -1, SQLITE_TRANSIENT)
-            bindIdx += 1
-        }
-        for role in roles {
-            sqlite3_bind_text(stmt, bindIdx, role, -1, SQLITE_TRANSIENT)
-            bindIdx += 1
-        }
-        var out: [String: [Exercise]] = [:]
-        while sqlite3_step(stmt) == SQLITE_ROW {
-            let slug = text(stmt, 0) ?? ""
-            guard !slug.isEmpty else { continue }
-            // Decode shares the same column layout as decodeExercise(stmt) but
-            // we offset by 1 because column 0 is the slug.
-            let ex = decodeExerciseStartingAt(stmt, offset: 1)
-            out[slug, default: []].append(ex)
-        }
-        return out
-    } }
-
     /// Every muscle_groups row as (slug, name) pairs. Filters out container
     /// rollups (`full-body`, `upper-body`, `lower-body`, `arms`, `core`,
     /// `back`) — the Recovery view wants leaf muscles, not the buckets the

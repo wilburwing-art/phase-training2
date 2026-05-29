@@ -16,7 +16,7 @@ import Foundation
 enum CoachTools {
     static let proposePlanEdits: AnthropicTool = {
         let opEnum: [String] = ["move", "swap_kind", "protect_day", "shorten", "add_session", "remove_session"]
-        let kindEnum: [String] = ["lift", "sport", "mobility", "rest", "event"]
+        let kindEnum: [String] = ["lift", "sport", "rest", "event"]
 
         let opItem = JSONSchema(type: "object")
         opItem.properties = [
@@ -74,7 +74,7 @@ enum CoachTools {
         // Build 99: chat can now edit any day in the current week plan, not
         // just today. The per-turn context renders every day's exercises so
         // the model can address Tuesday's Push or Thursday's Pull by name.
-        let date = JSONSchema(type: "string", description: "Optional yyyy-MM-dd target day. Defaults to today. Must match a day in the current week plan that has a generated workout (lift / mobility); for sport / rest / event days there's nothing to edit.")
+        let date = JSONSchema(type: "string", description: "Optional yyyy-MM-dd target day. Defaults to today. Must match a day in the current week plan that has a generated workout (lift); for sport / rest / event days there's nothing to edit.")
 
         let root = JSONSchema(type: "object")
         root.properties = ["changes": changesArray, "reasoning": reasoning, "date": date]
@@ -83,7 +83,7 @@ enum CoachTools {
         return AnthropicTool(
             name: "propose_workout_changes",
             description: """
-            Propose exercise-level changes to a lift / mobility workout (swap an exercise for another, or adjust sets/reps/rest). The user accepts or rejects via UI — this tool does NOT apply changes. Call ONLY when:
+            Propose exercise-level changes to a lift workout (swap an exercise for another, or adjust sets/reps/rest). The user accepts or rejects via UI — this tool does NOT apply changes. Call ONLY when:
               - The user explicitly asks for a workout-level change ("swap X for Y", "drop deadlifts on Thursday", "fewer sets on bench", "lighter reps").
               - The targeted day has a generated workout in the CURRENT CONTEXT. If you target sport / rest / event, the proposal will be rejected — refuse instead.
               - For TODAY specifically, if an active workout is in progress, suggest the user finish first. Edits to OTHER days are fine during an active session.
@@ -131,23 +131,20 @@ enum CoachTools {
         let focusEnum = [
             "push", "pull", "legs",
             "upper", "lower",
-            "fullBodyA", "fullBodyB",
-            "mobility"
+            "fullBodyA", "fullBodyB"
         ]
         let intensityEnum = ["deload", "normal", "push"]
         // Movement-pattern slugs the planner's slot recipes anchor on. The
         // LLM picks from this fixed list so it can't hallucinate a pattern
         // that doesn't exist in coach.db.
         let patternEnum = [
-            "squat", "hip-hinge", "lunge",
+            "squat", "hip-hinge",
             "horizontal-push", "vertical-push",
             "horizontal-pull", "vertical-pull",
             "anti-extension", "anti-rotation", "anti-lateral-flexion",
             "loaded-carry", "calf-raise", "single-leg-squat",
             "scapular-protraction", "scapular-retraction",
-            "elbow-extension", "elbow-flexion",
-            "mobility-thoracic", "mobility-hip", "mobility-ankle",
-            "rotation", "jump", "throw"
+            "elbow-extension", "elbow-flexion"
         ]
 
         let targetWeightItem = JSONSchema(type: "object")
@@ -194,7 +191,7 @@ enum CoachTools {
 
             Reason from the CURRENT CONTEXT: body / strength / muscle balance / pattern frequency / recovery trend. Examples of good strategy choices:
               - Last 4w shows 12 push sessions and 0 pull → focus 'pull', emphasize 'horizontal-pull' + 'vertical-pull'.
-              - Knee reported sore 3 days running → focus 'push' or 'pull', deprioritize 'squat' + 'lunge'.
+              - Knee reported sore 3 days running → focus 'push' or 'pull', deprioritize 'squat' + 'single-leg-squat'.
               - Bench velocity flat 4w → focus 'push', emphasize 'horizontal-push' (the user gets a variation via the generator's stagnation swap).
               - User said "i'm fried" / "yesterday was brutal" → intensityBias 'deload'.
 

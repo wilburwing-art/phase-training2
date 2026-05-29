@@ -387,13 +387,11 @@ enum CoachContext {
 
     // MARK: - Injury sections (build 87)
     //
-    // Three blocks replace the slug-only CONSTRAINTS dump:
+    // Two blocks replace the slug-only CONSTRAINTS dump:
     //   STRUCTURED INJURIES   — human-readable name + region + severity + side
     //                           + onset + coach.db description / mechanism.
     //   INJURY FILTERS        — names of the exercises the planner is
     //                           subtracting per injury (top 5 + remainder).
-    //   PREHAB CANDIDATES     — names of the prehab / rehab_late exercises
-    //                           the planner would prefer for each injury.
     //
     // Without these, the coach saw `- patellar-tendinopathy` and had to know
     // by training what that slug meant; it also couldn't say "I dropped Back
