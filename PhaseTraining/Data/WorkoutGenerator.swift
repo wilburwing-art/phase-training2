@@ -633,13 +633,13 @@ enum WorkoutGenerator {
         }
 
         // Sore-area RPE cap: when the exercise's prime mover matches a
-        // recent SorenessEntry at moderate+ severity, the generator already
+        // recent SorenessEntry at mild+ severity, the generator already
         // picked a softer movement (the recentSoreAreas filter in
         // pickForSlot prefers exercises that don't load the sore muscle as
         // primary). But the prescription still defaults to the focus's
         // standard intensity, which sends the user into RPE 8-9 work on a
         // sore chest — the eval rig's Q9 catches this. Cap to RPE 7 (3 RIR)
-        // whenever the prime mover IS still sore at moderate+, so the
+        // whenever the prime mover IS still sore at mild+, so the
         // intensity matches the movement softening.
         if isMuscleSoreForExercise(exercise, memory: memory) {
             return (rpe: "7", tempo: tempo)
@@ -833,14 +833,18 @@ enum WorkoutGenerator {
     /// True when the exercise's primary muscle group (resolved via
     /// CoachDatabase.musclesForExercise + MuscleBucket.bucket(forSlug:))
     /// matches any area on the user's most recent (≤36h) SorenessEntry at
-    /// moderate or high severity. `entry.areas` carries MuscleBucket slugs
-    /// post-build-107; we bucket the granular muscle slug back up to compare.
+    /// mild or high severity. The check-in only ever produces none|mild|high
+    /// (SorenessEntry.soreness), so gating on "mild"||"high" is what makes a
+    /// real user report actually fire the cap — gating on the nonexistent
+    /// "moderate" left mild reports silently un-regulated. `entry.areas`
+    /// carries MuscleBucket slugs post-build-107; we bucket the granular
+    /// muscle slug back up to compare.
     private static func isMuscleSoreForExercise(_ exercise: Exercise, memory: TrainingMemory) -> Bool {
         let cutoff = Date().addingTimeInterval(-36 * 60 * 60)
         guard let entry = memory.soreness
                 .filter({ $0.date >= cutoff })
                 .max(by: { $0.date < $1.date }),
-              entry.soreness == "moderate" || entry.soreness == "high",
+              entry.soreness == "mild" || entry.soreness == "high",
               !entry.areas.isEmpty
         else { return false }
 

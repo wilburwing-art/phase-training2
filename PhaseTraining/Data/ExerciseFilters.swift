@@ -77,14 +77,12 @@ enum MuscleBucket: String, CaseIterable, Identifiable, Hashable {
     }
 
     /// Buckets surfaced in the soreness check-in (and downstream coach
-    /// summaries). The accessory groups — biceps, triceps, forearms, calves —
-    /// rarely get flagged usefully (they get sore as a side-effect of compound
-    /// work, not as a recovery signal worth its own UI) so we omit them to
-    /// keep the chip grid tight. Core stays because heavy compound work +
-    /// dedicated core sessions both produce real DOMS there.
-    static let sorenessPrimaryCases: [MuscleBucket] = [
-        .chest, .back, .shoulders, .quads, .hamstrings, .glutes, .core,
-    ]
+    /// summaries). All 11 buckets are selectable: the accessory groups —
+    /// biceps, triceps, forearms, calves — genuinely get sore (curl/extension
+    /// volume, sprint/calf-raise work) and, when flagged, must be able to drive
+    /// the RPE-7 down-regulation and warm-up suppression in WorkoutGenerator.
+    /// Omitting them left those paths permanently unreachable for arms/calves.
+    static let sorenessPrimaryCases: [MuscleBucket] = MuscleBucket.allCases
 
     /// Lower-cased rawValue set for fast filter-on-read of `SorenessEntry.areas`.
     /// Used to suppress legacy entries that tagged buckets we no longer surface,

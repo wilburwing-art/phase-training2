@@ -353,12 +353,17 @@ enum EvalRigExporter {
         return out.isEmpty ? nil : out
     }
 
+    /// Canonical soreness vocabulary is none|mild|high (SorenessEntry.soreness,
+    /// produced by SorenessCheckInSheet). Map straight through and treat any
+    /// unknown/nil as "mild" — a present soreness signal we can't classify
+    /// should still down-regulate, matching WorkoutGenerator's "mild"||"high"
+    /// cap. Never emit "moderate": it isn't in the vocabulary and the generator
+    /// no longer recognizes it.
     private static func mapSeverity(_ raw: String?) -> String {
         switch raw {
         case "none": return "none"
-        case "mild": return "mild"
         case "high": return "high"
-        default:     return "moderate"
+        default:     return "mild"
         }
     }
 

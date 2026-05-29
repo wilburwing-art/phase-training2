@@ -43,11 +43,10 @@ struct SorenessCheckInSheet: View {
         ("high", "High"),
     ]
 
-    /// Muscle groups the user can flag as sore. We surface only the soreness
-    /// primary buckets (see `MuscleBucket.sorenessPrimaryCases`) — accessory
-    /// groups like biceps/triceps/forearms/calves are dropped from the grid
-    /// because they're side-effect soreness from compounds, not a recovery
-    /// signal worth its own chip.
+    /// Muscle groups the user can flag as sore — all 11 buckets, including the
+    /// accessory groups (biceps/triceps/forearms/calves). Flagging them is what
+    /// lets the generator apply the RPE-7 cap + warm-up suppression for sore
+    /// arms/calves; see `MuscleBucket.sorenessPrimaryCases`.
     private static let areaOptions: [(slug: String, label: String)] =
         MuscleBucket.sorenessPrimaryCases.map { ($0.rawValue, $0.label) }
 

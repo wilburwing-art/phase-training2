@@ -21,11 +21,13 @@ final class EvalRigExportSmokeTest: XCTestCase {
         m.sessionMinutes = 60
         m.age = 32
 
-        // Embed moderate chest + front-delt soreness so the eval-rig Q9 has
-        // the same signal real users have on an upper-push day post-bench.
+        // Embed chest + front-delt soreness so the eval-rig Q9 has the same
+        // signal real users have on an upper-push day post-bench. "high" is a
+        // valid SorenessEntry.soreness value (vocabulary is none|mild|high) —
+        // it reliably trips the generator's sore-muscle RPE-7 cap below.
         var soreness = SorenessEntry(date: Date())
         soreness.areas = ["chest", "shoulders"]
-        soreness.soreness = "moderate"
+        soreness.soreness = "high"
         soreness.energy = "normal"
         m.soreness.append(soreness)
 
@@ -41,6 +43,13 @@ final class EvalRigExportSmokeTest: XCTestCase {
         )
 
         XCTAssertFalse(workout.exercises.isEmpty, "Generator should produce a non-empty upper-push workout")
+
+        // Rubric gates — guard the score-bearing invariants so a generator
+        // change can't silently regress the eval-rig 9/9.
+        assertSetSchemeSane(workout)
+        assertRestBandsRespected(workout, memory: m)
+        assertSoreMuscleRPECapApplied(workout, memory: m,
+                                      soreAreas: ["chest", "shoulders"])
 
         let outDir = URL(fileURLWithPath: "/tmp/eval-rig-export")
         let url = try EvalRigExporter.exportToFile(
@@ -216,7 +225,7 @@ final class EvalRigExportSmokeTest: XCTestCase {
 
     /// Shared batch emitter. Builds a TrainingMemory matching the
     /// anchor archetype (intermediate male, full gym, hypertrophy,
-    /// 4-day split, 60-min cap, moderate chest/front-delt soreness)
+    /// 4-day split, 60-min cap, high chest/front-delt soreness)
     /// and varies hashSeed across `count` workouts so the generator's
     /// variety + tiebreak surfaces span the batch.
     private func emitCohortBatch(
@@ -236,10 +245,11 @@ final class EvalRigExportSmokeTest: XCTestCase {
         m.gender = .male
         m.eraOverride = eraOverrideRaw
 
-        // Moderate chest + front-delt soreness, matching the v1 anchor.
+        // Chest + front-delt soreness, matching the v1 anchor. "high" is a
+        // valid SorenessEntry value (none|mild|high); "moderate" is not.
         var soreness = SorenessEntry(date: Date())
         soreness.areas = ["chest", "shoulders"]
-        soreness.soreness = "moderate"
+        soreness.soreness = "high"
         soreness.energy = "normal"
         m.soreness.append(soreness)
 
@@ -309,6 +319,13 @@ final class EvalRigExportSmokeTest: XCTestCase {
             hashSeed: "eval-rig-smoke-nosore"
         )
 
+        // No soreness → set scheme + rest bands still hold, and the slot-0
+        // compound prime mover gets synthesized warm-up ramp sets (the path
+        // the sore variant intentionally skips). Rubric Q1 depends on these.
+        assertSetSchemeSane(workout)
+        assertRestBandsRespected(workout, memory: m)
+        assertWarmupRampPresentOnPrimaryCompound(workout)
+
         let outDir = URL(fileURLWithPath: "/tmp/eval-rig-export")
         let url = try EvalRigExporter.exportToFile(
             workout: workout,
@@ -318,5 +335,82 @@ final class EvalRigExportSmokeTest: XCTestCase {
             to: outDir
         )
         print("[EvalRigExportSmokeTest] Wrote \(url.path) (non-sore variant)")
+    }
+
+    // MARK: - Rubric assertions
+    //
+    // These guard the gates the eval-rig rubric scores (set scheme, rest
+    // bands, sore-muscle RPE cap, warm-up ramp). Kept tolerant of legitimate
+    // generator variety (exact exercise picks, rep strings) while pinning the
+    // invariants a regression would break.
+
+    /// Every prescribed exercise must have a real set count and a non-empty
+    /// reps target. Catches a generator that drops sets/reps on a slot.
+    private func assertSetSchemeSane(_ workout: GeneratedWorkout) {
+        XCTAssertFalse(workout.exercises.isEmpty, "Workout must have exercises")
+        for ex in workout.exercises {
+            XCTAssertGreaterThanOrEqual(ex.sets, 1, "\(ex.name): sets must be >= 1")
+            XCTAssertLessThanOrEqual(ex.sets, 6, "\(ex.name): sets unexpectedly high (\(ex.sets))")
+            XCTAssertFalse(ex.reps.trimmingCharacters(in: .whitespaces).isEmpty,
+                           "\(ex.name): reps target must be non-empty")
+        }
+    }
+
+    /// Rest bands the rubric's Q7 enforces: every slot has a positive rest;
+    /// hypertrophy primary-compound lower/full-body lead lift rests >= 180s,
+    /// compound pull primary >= 120s.
+    private func assertRestBandsRespected(_ workout: GeneratedWorkout, memory: TrainingMemory) {
+        for ex in workout.exercises {
+            XCTAssertGreaterThanOrEqual(ex.restSeconds, 45,
+                                        "\(ex.name): rest must be a sane positive band")
+            XCTAssertLessThanOrEqual(ex.restSeconds, 300,
+                                     "\(ex.name): rest unexpectedly long (\(ex.restSeconds)s)")
+        }
+        // The heavy lower/full-body compound lead lift must respect the 3-min
+        // floor. Only assert when such a slot exists (upper-push won't have one).
+        if let lead = workout.exercises.first, lead.isCompound,
+           memory.primaryFocus == .hypertrophy,
+           let pattern = lead.pattern,
+           pattern.contains("squat") || pattern.contains("hinge") || pattern.contains("deadlift") {
+            XCTAssertGreaterThanOrEqual(lead.restSeconds, 180,
+                "Heavy compound lead lift \(lead.name) must rest >= 180s")
+        }
+    }
+
+    /// With the given muscle areas sore, every exercise whose primary muscle
+    /// buckets into a sore area must be capped to RPE 7 (3 RIR). This is the
+    /// down-regulation Item 2 makes reachable for "mild"/"high" reports.
+    private func assertSoreMuscleRPECapApplied(_ workout: GeneratedWorkout,
+                                               memory: TrainingMemory,
+                                               soreAreas: Set<String>) {
+        var sawCappedExercise = false
+        for ex in workout.exercises {
+            let muscles = CoachDatabase.shared.musclesForExercise(ex.exerciseId)
+            let primary = muscles.first(where: { $0.role == "primary" })
+            guard let slug = primary?.slug,
+                  let bucket = MuscleBucket.bucket(forSlug: slug)?.rawValue,
+                  soreAreas.contains(bucket) else { continue }
+            sawCappedExercise = true
+            XCTAssertEqual(ex.rpe, "7",
+                "\(ex.name) loads sore \(bucket) as primary — RPE must be capped to 7, got \(ex.rpe ?? "nil")")
+        }
+        XCTAssertTrue(sawCappedExercise,
+            "Expected at least one exercise primary-loading a sore area to exercise the RPE cap")
+    }
+
+    /// The slot-0 compound prime mover on a non-sore day must carry warm-up
+    /// ramp sets (5/5/3 at 40/60/80 %TM). Rubric Q1 (ramp-set check).
+    private func assertWarmupRampPresentOnPrimaryCompound(_ workout: GeneratedWorkout) {
+        guard let lead = workout.exercises.first(where: { $0.isCompound }) else {
+            return XCTFail("Expected at least one compound exercise")
+        }
+        let warmups = lead.warmUpSets ?? []
+        XCTAssertFalse(warmups.isEmpty,
+            "Non-sore compound prime mover \(lead.name) must have synthesized warm-up sets")
+        for w in warmups {
+            XCTAssertGreaterThan(w.reps, 0, "warm-up reps must be positive")
+            XCTAssertGreaterThan(w.loadPctOfWorking, 0, "warm-up load %% must be positive")
+            XCTAssertLessThan(w.loadPctOfWorking, 100, "warm-up load %% must be below working load")
+        }
     }
 }
