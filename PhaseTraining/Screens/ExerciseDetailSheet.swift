@@ -43,6 +43,11 @@ struct ExerciseDetailSheet: View {
 private struct ExerciseDetailContent: View {
     let exercise: Exercise
 
+    /// Pre-curated substitutes from `exercise_substitutions`, loaded once
+    /// per pushed instance. Ranked by similarity score. The DB query takes
+    /// a recursive lock; per-render evaluation would be wasted churn.
+    @State private var substitutes: [ExerciseSubstitute] = []
+
     private var adjacency: (easier: Exercise?, harder: Exercise?) {
         CoachDatabase.shared.adjacentByDifficulty(forExerciseId: exercise.id)
     }
@@ -96,6 +101,15 @@ private struct ExerciseDetailContent: View {
                         freeTextChainRows
                     }
                 }
+                if !substitutes.isEmpty {
+                    section(title: "Swaps") {
+                        VStack(spacing: 8) {
+                            ForEach(substitutes) { sub in
+                                substituteLink(sub)
+                            }
+                        }
+                    }
+                }
                 if adj.easier != nil || adj.harder != nil {
                     section(title: "Difficulty chain") {
                         VStack(spacing: 8) {
@@ -112,6 +126,11 @@ private struct ExerciseDetailContent: View {
             .padding(.horizontal, 20)
             .padding(.top, 18)
             .padding(.bottom, 32)
+        }
+        .onAppear {
+            if substitutes.isEmpty {
+                substitutes = CoachDatabase.shared.substitutes(forExerciseId: exercise.id)
+            }
         }
     }
 
@@ -363,6 +382,71 @@ private struct ExerciseDetailContent: View {
         case easier, harder
         var symbol: String { self == .easier ? "arrow.down" : "arrow.up" }
         var label: String { self == .easier ? "EASIER" : "HARDER" }
+    }
+
+    /// Mirrors `chainLink`'s NavigationLink-into-the-same-content pattern so
+    /// substitutes are tappable and step into a fresh `ExerciseDetailContent`
+    /// — same as the difficulty chain, no nested NavigationStack.
+    private func substituteLink(_ sub: ExerciseSubstitute) -> some View {
+        NavigationLink {
+            ExerciseDetailContent(exercise: sub.exercise)
+                .navigationTitle("Exercise")
+                .navigationBarTitleDisplayMode(.inline)
+        } label: {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "arrow.triangle.swap")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.ink3)
+                    .frame(width: 18)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(sub.exercise.name)
+                            .styled(.body)
+                            .foregroundStyle(Color.ink)
+                            .multilineTextAlignment(.leading)
+                        Spacer(minLength: 4)
+                        Text("\(sub.matchPercent)%")
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
+                    }
+                    if !sub.contextLabels.isEmpty {
+                        WrappingFlow(spacing: 4) {
+                            ForEach(sub.contextLabels, id: \.self) { label in
+                                Text(label)
+                                    .font(.monoXS)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.bg)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .stroke(Color.line, lineWidth: 0.5)
+                                    )
+                                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                                    .foregroundStyle(Color.ink3)
+                            }
+                        }
+                    }
+                    if let notes = sub.notes, !notes.isEmpty {
+                        Text(notes)
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.ink3)
+                    .padding(.top, 2)
+            }
+            .padding(14)
+            .background(Color.surface)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("exercise-substitute-\(sub.exercise.id)")
     }
 
     private func chainLink(direction: ChainDirection, peer: Exercise) -> some View {

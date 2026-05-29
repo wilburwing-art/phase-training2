@@ -54,6 +54,11 @@ struct TodayScreen: View {
     /// expand/collapse card to a header-adjacent pill that opens a modal sheet.
     @State private var showSorenessSheet: Bool = false
     @State private var showingSportLog: Bool = false
+    /// Drives the read-only explanation sheet for the "personalized by coach"
+    /// badge — shown only when today's generated workout was LLM-refined
+    /// (`refinedByLLMAt` stamped). No accept / reject: the refinement is
+    /// already applied; this is pure transparency.
+    @State private var showCoachPolishedSheet: Bool = false
 
     // MARK: - Derived state
 
@@ -239,6 +244,11 @@ struct TodayScreen: View {
                             lastSessionCard
                                 .padding(.horizontal, 20)
                                 .padding(.top, 14)
+                            if isCoachPolished {
+                                coachPolishedBadge
+                                    .padding(.horizontal, 20)
+                                    .padding(.top, 10)
+                            }
                             if let tmpl = editableTemplate {
                                 inlineExerciseCard(tmpl)
                                     .padding(.horizontal, 20)
@@ -327,6 +337,12 @@ struct TodayScreen: View {
         }
         .sheet(isPresented: $showSorenessSheet) {
             SorenessCheckInSheet(onDone: {})
+        }
+        .sheet(isPresented: $showCoachPolishedSheet) {
+            CoachPolishedExplanationSheet(
+                refinedAt: todayPlan?.generatedWorkout?.refinedByLLMAt,
+                provenance: todayPlan?.generatedReason
+            )
         }
         .sheet(isPresented: $showingSportLog) {
             // Guard inside the sheet builder rather than gating the modifier —
@@ -469,6 +485,45 @@ struct TodayScreen: View {
     /// the planner's static generatedReason.
     private var heroCaption: String? {
         insightCopy ?? todayPlan?.generatedReason
+    }
+
+    /// True when today's generated workout was LLM-polished in the background
+    /// by the build-98 refinement pass. Drives the "personalized by coach"
+    /// pill — purely informational; the change is already applied (refinement
+    /// is the visible default for consented users, not a coach proposal).
+    private var isCoachPolished: Bool {
+        todayPlan?.generatedWorkout?.refinedByLLMAt != nil
+    }
+
+    /// Non-blocking transparency pill: signals that the background LLM
+    /// refinement reshaped today's exercise picks / intensity. Tapping opens
+    /// a read-only explanation sheet — no Apply / Reject, since the change
+    /// is already in the plan.
+    private var coachPolishedBadge: some View {
+        Button { showCoachPolishedSheet = true } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 13, weight: .semibold))
+                Text("PERSONALIZED BY COACH")
+                    .styled(.micro)
+                Spacer()
+                Image(systemName: "info.circle")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Color.ink3)
+            }
+            .foregroundStyle(Color.accent)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 12)
+            .background(Color.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.accentBorder, lineWidth: 0.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("today-coach-polished-badge")
+        .accessibilityLabel("Personalized by coach. Tap for details.")
     }
 
     // MARK: - Last session card
@@ -960,4 +1015,84 @@ struct TodayScreen: View {
 private struct NamedExercise: Identifiable {
     let name: String
     var id: String { name }
+}
+
+// MARK: - Coach-polished transparency sheet
+//
+// Read-only explanation for the "personalized by coach" pill on Today (and
+// reusable on any surface that wants to expose the build-98 background
+// refinement). Deliberately not a diff card: refinement is the visible
+// default for consented users (per the build-98 design in
+// `PlanStore+LLMRefinement.swift`), not a proposal awaiting Apply. The audit
+// flagged a lack of transparency, not a missing consent gate — this is the
+// transparency answer without re-introducing a friction prompt.
+private struct CoachPolishedExplanationSheet: View {
+    let refinedAt: Date?
+    let provenance: String?
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(spacing: 8) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Color.accent)
+                Text("Personalized by your coach")
+                    .font(.system(size: 18, weight: .bold))
+            }
+
+            Text("Your coach reshaped today's workout based on recent sessions, soreness, and goals. The shape of your week — push / pull / legs and rest days — is unchanged. Only this day's exercise picks, sets, RPE, or weights are different from the deterministic default.")
+                .font(.system(size: 14))
+                .foregroundStyle(Color.ink2)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let provenance, !provenance.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("REASON")
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                    Text(provenance)
+                        .font(.system(size: 14))
+                        .foregroundStyle(Color.ink)
+                }
+            }
+
+            if let refinedAt {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("UPDATED")
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                    Text(refinedAt.formatted(date: .abbreviated, time: .shortened))
+                        .font(.system(size: 14))
+                        .foregroundStyle(Color.ink)
+                }
+            }
+
+            Text("To opt out of background polishing, turn the coach off in Profile.")
+                .font(.system(size: 12))
+                .foregroundStyle(Color.ink3)
+                .padding(.top, 4)
+
+            Spacer(minLength: 8)
+
+            Button { dismiss() } label: {
+                Text("Done")
+                    .font(.system(size: 15, weight: .semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.accent)
+                    .foregroundStyle(Color.accentInk)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("coach-polished-explanation-done")
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.bg.ignoresSafeArea())
+        .foregroundStyle(Color.ink)
+        .preferredColorScheme(.dark)
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+    }
 }
