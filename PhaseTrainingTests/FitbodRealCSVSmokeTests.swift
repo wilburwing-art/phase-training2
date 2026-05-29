@@ -70,12 +70,11 @@ final class FitbodRealCSVSmokeTests: XCTestCase {
         // exact counts (the export changes over time).
         XCTAssertGreaterThan(result.totalRows, 100, "too few rows — header rejected?")
         XCTAssertGreaterThan(result.sets.count, 50, "almost nothing parsed as strength")
-        // Real-world floor — 9 years of Fitbod history against a coach.db
-        // that doesn't have full alias coverage for variants like
-        // "Alternating Dumbbell Bench Press", "Hammerstrength Chest Press",
-        // and machine names lands ~24% with the current alias set. Floor
-        // catches a regression to single-digit %, not the absolute level.
-        XCTAssertGreaterThan(result.nameMatchRate, 0.15, "name match rate dropped below 15% (\(result.nameMatchRate)) — alias/slug rules regressed?")
+        // Real-world floor — after the Phase 3.5 alias expansion we run
+        // ~67% on the user's 9-year Fitbod export. Floor at 50% catches
+        // a regression to the pre-expansion ~24% baseline while leaving
+        // headroom for future exports that pick up new niche names.
+        XCTAssertGreaterThan(result.nameMatchRate, 0.50, "name match rate dropped below 50% (\(result.nameMatchRate)) — alias coverage regressed below the Phase 3.5 baseline?")
         XCTAssertLessThan(Double(result.errors.count) / Double(max(result.totalRows, 1)), 0.05,
                           "more than 5% of rows failed to parse — schema drift?")
     }
