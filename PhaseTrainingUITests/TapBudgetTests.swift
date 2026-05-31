@@ -38,7 +38,7 @@ final class TapBudgetTests: XCTestCase {
     /// taps + 1 Finish = 6.
     func testTapBudget_logWorkout_inWorkout() throws {
         let app = launchInLog()
-        var counter = TapCounter(app: app, testCase: self, flow: "log-workout-in-workout")
+        var counter = TapCounter(app: app, flow: "log-workout-in-workout")
 
         bulkLogAllExercises(&counter)
         counter.tap("log-finish")
@@ -56,7 +56,7 @@ final class TapBudgetTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments += ["--ui-test-onboarded", "--ui-test-reset"]
         app.launch()
-        var counter = TapCounter(app: app, testCase: self, flow: "log-workout-full")
+        var counter = TapCounter(app: app, flow: "log-workout-full")
 
         // Today: start the (upper-1 fallback) workout.
         counter.tap("today-start-workout")
@@ -80,7 +80,7 @@ final class TapBudgetTests: XCTestCase {
     /// pick the first offered replacement. Reference: 1 open + 1 pick = 2.
     func testTapBudget_swapExercise() throws {
         let app = launchInLog()
-        var counter = TapCounter(app: app, testCase: self, flow: "swap-exercise")
+        var counter = TapCounter(app: app, flow: "swap-exercise")
 
         counter.tap("log-swap-2")
 
@@ -154,7 +154,6 @@ final class TapBudgetTests: XCTestCase {
 /// is recorded, not enforced.
 struct TapCounter {
     let app: XCUIApplication
-    let testCase: XCTestCase
     let flow: String
     private(set) var count = 0
 
