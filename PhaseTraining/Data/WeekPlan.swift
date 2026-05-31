@@ -224,7 +224,11 @@ extension GeneratedWorkout {
     /// Bridge to the existing WorkoutTemplate -> ActiveSession runtime so the
     /// log screen + history don't need to learn a new model.
     func toWorkoutTemplate(id: String) -> WorkoutTemplate {
-        WorkoutTemplate(
+        // Classify up front so reps-only movements (bird dog, dead bug, ...)
+        // log as bodyweight and the LogScreen hides their weight input.
+        let categories = CoachDatabase.shared.equipmentCategory(
+            forExerciseIds: Set(exercises.map(\.exerciseId)))
+        return WorkoutTemplate(
             id: id,
             name: title,
             category: "Generated",
@@ -233,7 +237,7 @@ extension GeneratedWorkout {
                     id: "gex-\(gex.id)",
                     name: gex.name,
                     type: nil,
-                    unit: "lbs",
+                    unit: LoggedExercise.unit(for: categories[gex.exerciseId]),
                     targetSets: gex.sets,
                     targetReps: Self.parseRepsLeading(gex.reps) ?? 8,
                     rest: gex.restSeconds,

@@ -63,7 +63,10 @@ extension BundledRoutineRow {
 
 extension BundledRoutineRow {
     func toWorkoutTemplate(with exercises: [RoutineExercise]) -> WorkoutTemplate {
-        WorkoutTemplate(
+        // Reps-only movements log as bodyweight (no weight input on the log row).
+        let categories = CoachDatabase.shared.equipmentCategory(
+            forExerciseIds: Set(exercises.map(\.exerciseId)))
+        return WorkoutTemplate(
             id: slug,
             name: name,
             category: [goal, phase].compactMap { $0 }.joined(separator: " · "),
@@ -72,7 +75,7 @@ extension BundledRoutineRow {
                     id: "rex-\(rex.id)",
                     name: rex.name,
                     type: nil,
-                    unit: "lbs",
+                    unit: LoggedExercise.unit(for: categories[rex.exerciseId]),
                     targetSets: rex.sets ?? 3,
                     targetReps: parseRepsLeading(rex.reps) ?? 8,
                     rest: parseRestSeconds(rex.rest) ?? 90,

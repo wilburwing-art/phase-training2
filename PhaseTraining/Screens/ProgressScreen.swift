@@ -735,7 +735,7 @@ struct ProgressScreen: View {
                     }
                 }
                 if !hasWeightedSet { continue }
-                var entry = agg[ex.name] ?? Agg(unit: ex.unit, setCount: 0, perSession: [])
+                var entry = agg[ex.name] ?? Agg(unit: ex.displayUnit, setCount: 0, perSession: [])
                 entry.setCount += ex.sets.filter { $0.done && !$0.isWarmup }.count
                 entry.perSession.append((s.startTime, bestThisSession))
                 agg[ex.name] = entry

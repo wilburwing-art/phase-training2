@@ -820,7 +820,7 @@ enum CoachContext {
             for ex in session.exercises {
                 let workingSets = ex.sets.filter { $0.done && !$0.isWarmup }
                 guard !workingSets.isEmpty else { continue }
-                lines.append("  • \(ex.name): \(renderWorkingSets(workingSets, unit: ex.unit))")
+                lines.append("  • \(ex.name): \(renderWorkingSets(workingSets, unit: ex.displayUnit))")
             }
             guard !lines.isEmpty else { continue }
             let header = "\(short(session.startTime)) · \(session.name)"
