@@ -363,6 +363,7 @@ struct CompleteScreen: View {
             )
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("complete-save")
     }
 
     private var discardButton: some View {

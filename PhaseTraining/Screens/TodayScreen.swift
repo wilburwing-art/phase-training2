@@ -935,6 +935,7 @@ struct TodayScreen: View {
         }
         .buttonStyle(.plain)
         .disabled(template == nil)
+        .accessibilityIdentifier("today-start-workout")
     }
 
     private func startWorkout() {
