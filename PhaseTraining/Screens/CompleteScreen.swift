@@ -88,7 +88,7 @@ struct CompleteScreen: View {
                 id: "\(record.exerciseName)|\(record.reps)",
                 name: record.exerciseName,
                 diff: record.previousBest.map { record.weight - $0 } ?? record.weight,
-                unit: session.exercises.first { $0.name == record.exerciseName }?.unit ?? "lbs"
+                unit: session.exercises.first { $0.name == record.exerciseName }?.displayUnit ?? "lbs"
             )
         }
     }

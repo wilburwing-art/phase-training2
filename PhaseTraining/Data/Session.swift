@@ -112,6 +112,31 @@ struct LoggedExercise: Codable, Identifiable, Equatable {
     var supersetGroup: Int?
 }
 
+extension LoggedExercise {
+    /// Sentinel `unit` value marking a reps-only / bodyweight exercise
+    /// (bird dog, dead bug, plank-to-row, ...). The LogScreen reads this to
+    /// collapse the weight input to a "BW" label so the user logs reps + done
+    /// without tapping a 0 into every set. Weight stays addable for the rare
+    /// weighted case (weight vest, holding a plate).
+    static let bodyweightUnit = "bw"
+
+    /// Map an `EquipmentCategory` to the weight-logging unit carried on the
+    /// session row. `.repsOnly` collapses to bodyweight; everything else logs
+    /// in lbs. Centralised so the generated / custom / bundled template
+    /// builders stay in sync.
+    static func unit(for category: EquipmentCategory?) -> String {
+        category == .repsOnly ? bodyweightUnit : "lbs"
+    }
+
+    /// True when this row should hide the weight input by default.
+    var isBodyweight: Bool { unit == Self.bodyweightUnit }
+
+    /// Unit to show beside an actual numeric weight. The bodyweight sentinel
+    /// is a logging-mode marker, not a real unit, so any load the user *did*
+    /// log (weight vest, plate) reads in lbs rather than "bw".
+    var displayUnit: String { isBodyweight ? "lbs" : unit }
+}
+
 struct ActiveSession: Codable, Equatable {
     var templateId: String
     var name: String

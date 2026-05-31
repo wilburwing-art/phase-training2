@@ -52,6 +52,12 @@ struct LogScreen: View {
     /// Mid-workout "Add exercise" picker. true = sheet open.
     @State private var addingExercise: Bool = false
 
+    /// Exercise indices (into `session.exercises`) where the user tapped the
+    /// "BW" label to reveal a weight input for a bodyweight movement — the
+    /// rare weighted-bird-dog / weight-vest case. Bodyweight exercises hide
+    /// the weight column by default so reps-only sets need zero weight taps.
+    @State private var weightEntryExercises: Set<Int> = []
+
     var body: some View {
         ZStack {
             Color.bg.ignoresSafeArea()
@@ -446,7 +452,7 @@ struct LogScreen: View {
             progressionPill(for: ex)
 
             // Column headers
-            columnHeaders(unit: ex.unit)
+            columnHeaders(weightLabel: weightColumnLabel(exIdx: exIdx))
 
             // Set rows + inline rest dividers + active rest card
             ForEach(Array(ex.sets.enumerated()), id: \.offset) { setIdx, _ in
@@ -610,14 +616,14 @@ struct LogScreen: View {
         return ProgressionPillModel(text: label, tint: tint)
     }
 
-    private func columnHeaders(unit: String) -> some View {
+    private func columnHeaders(weightLabel: String) -> some View {
         HStack(spacing: 4) {
             headerLabel("SET").frame(width: 22)
             Rectangle()
                 .fill(Color.line)
                 .frame(width: 0.5, height: 12)
             headerLabel("Last", align: .leading, color: .ink2).frame(width: 58)
-            headerLabel((unit.isEmpty ? "lbs" : unit).uppercased()).frame(maxWidth: .infinity)
+            headerLabel(weightLabel.uppercased()).frame(maxWidth: .infinity)
             headerLabel("REPS").frame(maxWidth: .infinity)
             headerLabel("Effort").frame(width: 52)
             Color.clear.frame(width: 24)
@@ -698,17 +704,8 @@ struct LogScreen: View {
                     .monospacedDigit()
                     .frame(width: 58, alignment: .leading)
 
-                numCell(
-                    text: $session.exercises[exIdx].sets[setIdx].weight,
-                    placeholder: "—",
-                    done: set.done,
-                    active: isActive
-                )
-                .frame(maxWidth: .infinity)
-                .accessibilityIdentifier("log-set-weight-\(exIdx)-\(setIdx)")
-                .onChange(of: session.exercises[exIdx].sets[setIdx].weight) { oldValue, newValue in
-                    propagateWeight(exIdx: exIdx, fromSetIdx: setIdx, oldValue: oldValue, newValue: newValue)
-                }
+                weightCell(exIdx: exIdx, setIdx: setIdx, done: set.done, isActive: isActive)
+                    .frame(maxWidth: .infinity)
 
                 numCell(
                     text: $session.exercises[exIdx].sets[setIdx].reps,
@@ -774,6 +771,76 @@ struct LogScreen: View {
                 Label("Delete set", systemImage: "trash")
             }
         }
+    }
+
+    /// Weight column for one set. Bodyweight exercises (bird dog, dead bug, …)
+    /// render a tappable "BW" label instead of a number field so the user logs
+    /// reps + done without entering 0 every set. Tapping "BW" reveals the
+    /// normal weight input for the rare weighted case.
+    @ViewBuilder
+    private func weightCell(exIdx: Int, setIdx: Int, done: Bool, isActive: Bool) -> some View {
+        if showsWeightInput(exIdx: exIdx) {
+            numCell(
+                text: $session.exercises[exIdx].sets[setIdx].weight,
+                placeholder: "—",
+                done: done,
+                active: isActive
+            )
+            .accessibilityIdentifier("log-set-weight-\(exIdx)-\(setIdx)")
+            .onChange(of: session.exercises[exIdx].sets[setIdx].weight) { oldValue, newValue in
+                propagateWeight(exIdx: exIdx, fromSetIdx: setIdx, oldValue: oldValue, newValue: newValue)
+            }
+        } else {
+            bodyweightCell(exIdx: exIdx, setIdx: setIdx, done: done)
+        }
+    }
+
+    /// Dimmed "BW" label shown in the weight column for a bodyweight set.
+    /// Tapping (when the set isn't already logged) reveals the weight input
+    /// for every set of this exercise — for adding a weight vest / plate.
+    @ViewBuilder
+    private func bodyweightCell(exIdx: Int, setIdx: Int, done: Bool) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.15)) {
+                weightEntryExercises.insert(exIdx)
+            }
+            UISelectionFeedbackGenerator().selectionChanged()
+        } label: {
+            Text("BW")
+                .styled(.monoS)
+                .foregroundStyle(Color.ink3)
+                .monospacedDigit()
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.vertical, done ? 6 : 7)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(done)
+        .accessibilityIdentifier("log-set-bodyweight-\(exIdx)-\(setIdx)")
+        .accessibilityLabel(done ? "Bodyweight" : "Bodyweight, tap to add weight")
+    }
+
+    /// Whether the weight column shows an editable number field for this
+    /// exercise. Always true for weighted exercises. Bodyweight exercises
+    /// collapse to a "BW" label unless the user opted into weight entry or a
+    /// set already carries a weight (a weighted round logged earlier).
+    private func showsWeightInput(exIdx: Int) -> Bool {
+        guard session.exercises.indices.contains(exIdx) else { return true }
+        let ex = session.exercises[exIdx]
+        if !ex.isBodyweight { return true }
+        if weightEntryExercises.contains(exIdx) { return true }
+        return ex.sets.contains { !$0.weight.isEmpty }
+    }
+
+    /// Header text for the weight column: the exercise's unit normally, "BW"
+    /// for a collapsed bodyweight exercise, "+lbs" once weight entry is shown.
+    private func weightColumnLabel(exIdx: Int) -> String {
+        guard session.exercises.indices.contains(exIdx) else { return "lbs" }
+        let ex = session.exercises[exIdx]
+        if ex.isBodyweight {
+            return showsWeightInput(exIdx: exIdx) ? "+lbs" : "BW"
+        }
+        return ex.unit.isEmpty ? "lbs" : ex.unit
     }
 
     @ViewBuilder

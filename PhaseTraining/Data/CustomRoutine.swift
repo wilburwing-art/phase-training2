@@ -52,7 +52,10 @@ extension CustomRoutine {
     /// Convert to a WorkoutTemplate so SessionStore.createSession can consume
     /// it the same way it consumes bundled routines.
     func toWorkoutTemplate() -> WorkoutTemplate {
-        WorkoutTemplate(
+        // Reps-only movements log as bodyweight (no weight input on the log row).
+        let categories = CoachDatabase.shared.equipmentCategory(
+            forExerciseIds: Set(exercises.map(\.exerciseId)))
+        return WorkoutTemplate(
             id: "custom-\(id)",
             name: name.isEmpty ? "Custom workout" : name,
             category: "Custom",
@@ -61,7 +64,7 @@ extension CustomRoutine {
                     id: "cex-\(cex.id)",
                     name: cex.name,
                     type: nil,
-                    unit: "lbs",
+                    unit: LoggedExercise.unit(for: categories[cex.exerciseId]),
                     targetSets: cex.sets ?? 3,
                     targetReps: Self.parseRepsLeading(cex.reps) ?? 8,
                     rest: Self.parseRestSeconds(cex.rest) ?? 90,
