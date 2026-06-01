@@ -32,7 +32,8 @@ struct OnboardingWelcomeScreen: View {
             .padding(.horizontal, 24)
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            OnboardingPrimaryButton(label: "Get started", action: onStart)
+            OnboardingPrimaryButton(label: "Get started", action: onStart,
+                                    a11yId: "onboarding-continue-welcome")
                 .padding(.horizontal, 20)
                 .padding(.bottom, 28)
         }

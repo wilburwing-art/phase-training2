@@ -182,7 +182,11 @@ struct OnboardingScaffold<Content: View>: View {
                 }
             }
 
-            OnboardingPrimaryButton(label: nextLabel, enabled: nextEnabled, action: onNext)
+            // Step-specific id so a UI test advancing the flow waits for the
+            // actual step it's on — a shared id races across the step
+            // transition (both the leaving + entering button exist briefly).
+            OnboardingPrimaryButton(label: nextLabel, enabled: nextEnabled, action: onNext,
+                                    a11yId: "onboarding-continue-\(step)")
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
         }
@@ -254,6 +258,9 @@ struct OnboardingPrimaryButton: View {
     let label: String
     var enabled: Bool = true
     let action: () -> Void
+    /// UI-test hook. The shared scaffold passes "onboarding-continue" so the
+    /// tap-budget suite can advance every step by one stable id.
+    var a11yId: String? = nil
 
     var body: some View {
         Button(action: action) {
@@ -271,6 +278,7 @@ struct OnboardingPrimaryButton: View {
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
+        .accessibilityIdentifier(a11yId ?? "")
     }
 }
 
@@ -280,6 +288,7 @@ struct OnboardingChip: View {
     let label: String
     let selected: Bool
     let action: () -> Void
+    var a11yId: String? = nil
 
     var body: some View {
         Button(action: action) {
@@ -296,6 +305,7 @@ struct OnboardingChip: View {
                 .clipShape(RoundedRectangle(cornerRadius: 999))
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier(a11yId ?? "")
     }
 }
 
@@ -307,6 +317,7 @@ struct OnboardingPickRow: View {
     let selected: Bool
     var leading: String? = nil      // optional SF Symbol
     let action: () -> Void
+    var a11yId: String? = nil
 
     var body: some View {
         Button(action: action) {
@@ -345,6 +356,7 @@ struct OnboardingPickRow: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier(a11yId ?? "")
     }
 }
 

@@ -52,6 +52,7 @@ jobs:
         # supported since Xcode 13.
         run: |
           set -o pipefail
+          mkdir -p build
           xcodebuild test \
             -project PhaseTraining.xcodeproj \
             -scheme PhaseTraining \
@@ -60,7 +61,16 @@ jobs:
             -retry-tests-on-failure \
             -test-iterations 3 \
             CODE_SIGNING_ALLOWED=NO \
+            | tee build/raw-test.log \
             | xcbeautify --renderer github-actions
+
+      - name: Tap budget drift (non-gating)
+        # Parses the TAP-BUDGET-JSON markers from the test log and diffs each
+        # flow's tap count against PhaseTrainingUITests/tap-budget-baseline.json,
+        # writing a table to the run's step summary. Never fails the build —
+        # honors the track-don't-gate decision; surfaces drift for review.
+        if: always()
+        run: python3 scripts/quality/tap_budget_diff.py build/raw-test.log
 
       - name: Upload xcresult on failure
         if: failure()

@@ -152,6 +152,7 @@ private struct TierCard: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("onboarding-equip-\(tier.rawValue)")
     }
 }
 

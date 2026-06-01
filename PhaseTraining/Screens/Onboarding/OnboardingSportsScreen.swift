@@ -34,7 +34,8 @@ struct OnboardingSportsScreen: View {
                         OnboardingChip(
                             label: sport.name,
                             selected: draft.sports.contains(sport),
-                            action: { toggle(sport) }
+                            action: { toggle(sport) },
+                            a11yId: "onboarding-sport-\(sport.slug)"
                         )
                     }
                 }

@@ -30,7 +30,8 @@ struct OnboardingFocusScreen: View {
                             title: focus.label,
                             subtitle: focus.subtitle,
                             selected: draft.focuses.contains(focus),
-                            action: { toggle(focus) }
+                            action: { toggle(focus) },
+                            a11yId: "onboarding-focus-\(focus.id)"
                         )
                     }
                 }
