@@ -218,7 +218,11 @@ final class TapBudgetTests: XCTestCase {
                       "Finish should land on CompleteScreen")
         counter.tap("complete-discard")
 
-        // Destructive confirm is a system alert — tap the "Discard" button by label.
+        // Destructive confirm is a SwiftUI `.alert`; its buttons can't carry a
+        // reliable accessibilityIdentifier (an explicit id produced duplicate
+        // matches on iOS 26), so tap the destructive button by its label. This
+        // keys on the English string — fine for the en-US CI sim, would need a
+        // localized lookup if the CI locale ever changes.
         let confirm = app.buttons["Discard"]
         XCTAssertTrue(confirm.waitForExistence(timeout: 5),
                       "discard confirm alert should appear")
@@ -311,12 +315,15 @@ final class TapBudgetTests: XCTestCase {
         counter.tap("checkin-continue-feedback")                     // "Generate plan"
         counter.tapWhenEnabled("checkin-continue-preview", timeout: 12)  // Accept
 
-        // Accepting dismisses the sheet back to the app.
+        // Record the count first — it's complete once Accept is tapped, so the
+        // CI marker emits even if the dismissal smoke-check below is slow.
+        recordTapBudget(counter, reference: 6)
+
+        // Smoke-check that Accept dismissed the sheet back to the app. Generous
+        // timeout: sheet-dismiss animation + a11y teardown can lag on a cold sim.
         let gone = expectation(for: NSPredicate(format: "exists == false"),
                                evaluatedWith: app.buttons["checkin-continue-preview"])
-        wait(for: [gone], timeout: 6)
-
-        recordTapBudget(counter, reference: 6)
+        wait(for: [gone], timeout: 12)
     }
 
     // MARK: - Launch helpers

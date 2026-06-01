@@ -49,11 +49,23 @@ def parse_actuals(text):
 
 
 def load_baseline():
+    """Return (baseline_dict, error_or_None).
+
+    A MISSING file is legitimate (no baseline committed yet) → ({}, None). A
+    file that EXISTS but won't parse / isn't an object is corruption → ({}, msg)
+    so the caller flags it loudly instead of silently reclassifying every flow
+    as brand-new (which reads as "the whole suite regressed").
+    """
     try:
         with open(BASELINE_PATH) as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}
+            data = json.load(f)
+    except FileNotFoundError:
+        return {}, None
+    except (OSError, json.JSONDecodeError) as e:
+        return {}, f"unreadable/corrupt ({type(e).__name__}: {e})"
+    if not isinstance(data, dict):
+        return {}, "not a JSON object"
+    return data, None
 
 
 def main():
@@ -72,7 +84,7 @@ def main():
         text = sys.stdin.read()
 
     actuals = parse_actuals(text)
-    baseline = load_baseline()
+    baseline, baseline_err = load_baseline()
 
     if not actuals:
         print("tap-budget: no TAP-BUDGET-JSON markers found in log — did the "
@@ -128,6 +140,10 @@ def main():
     table = "\n".join(lines)
 
     footer = []
+    if baseline_err:
+        footer.append(f"**Baseline {baseline_err}** — fix "
+                      "PhaseTrainingUITests/tap-budget-baseline.json; until then "
+                      "every flow shows as NEW (not a real regression).")
     if drift:
         footer.append(f"**Drift:** {', '.join(drift)} — update "
                       "tap-budget-baseline.json to accept, or investigate.")

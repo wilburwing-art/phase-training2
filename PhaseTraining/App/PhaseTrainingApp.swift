@@ -158,20 +158,23 @@ struct PhaseTrainingApp: App {
     }
 
     #if DEBUG
-    /// UITest-only: write a deterministic 7-day WeekPlan to `pt_week_plan` whose
-    /// day 0 is `makeToday(startOfDay)` and the rest are rest days, encoded with
-    /// `.secondsSince1970` to match `PlanStore.decoder()`. Shared by the
-    /// --seed-*-demo hooks. Safe against clobber: PlanStore's auto-regen is
-    /// gated on `memory.onboardedAt` (nil under --ui-test-reset), and
-    /// --ui-test-reset clears `pt_week_plan` in `init()` before this runs.
-    private static func seedWeekPlan(makeToday: (Date) -> DayPlan) {
+    /// UITest-only: write a deterministic 7-day WeekPlan to `pt_week_plan` where
+    /// `day(date)` builds each day, encoded with `.secondsSince1970` to match
+    /// `PlanStore.decoder()`. Shared by the --seed-*-demo hooks.
+    ///
+    /// EVERY day is built by `day(_:)` (same kind), not just today, so a midnight
+    /// rollover between `init()` (which stamps these dates) and the first Today
+    /// render (which re-resolves "today" via `startOfDay(now)`) can't land
+    /// "today" on a different day kind and make the seeded CTA vanish.
+    ///
+    /// Safe against clobber: PlanStore's auto-regen is gated on
+    /// `memory.onboardedAt` (nil under --ui-test-reset), and --ui-test-reset
+    /// clears `pt_week_plan` in `init()` before this runs.
+    private static func seedWeekPlan(day: (Date) -> DayPlan) {
         let cal = Calendar.current
         let start = cal.startOfDay(for: Date())
         let days: [DayPlan] = (0..<7).map { i in
-            i == 0
-                ? makeToday(start)
-                : DayPlan(date: cal.date(byAdding: .day, value: i, to: start) ?? start,
-                          kind: .rest, title: "Rest", generatedReason: "UITest seed")
+            day(cal.date(byAdding: .day, value: i, to: start) ?? start)
         }
         let plan = WeekPlan(days: days, generatedAt: Date(), inputsHash: "ui-test-seed")
         let encoder = JSONEncoder()
@@ -208,8 +211,8 @@ struct PhaseTrainingApp: App {
             estimatedMinutes: 50,
             provenance: "UITest seed · push/pull/legs day 1"
         )
-        seedWeekPlan { start in
-            DayPlan(date: start, kind: .lift, title: "Push day",
+        seedWeekPlan { date in
+            DayPlan(date: date, kind: .lift, title: "Push day",
                     generatedWorkout: workout, generatedReason: "UITest seed")
         }
     }
@@ -220,8 +223,8 @@ struct PhaseTrainingApp: App {
     private static func seedSportDemo() {
         guard let sport = Sport.catalog.first(where: { $0.slug == "climbing" })
                 ?? Sport.catalog.first else { return }
-        seedWeekPlan { start in
-            DayPlan(date: start, kind: .sport, title: sport.name,
+        seedWeekPlan { date in
+            DayPlan(date: date, kind: .sport, title: sport.name,
                     sport: sport, generatedReason: "UITest seed")
         }
     }
