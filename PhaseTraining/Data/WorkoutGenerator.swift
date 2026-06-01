@@ -181,7 +181,7 @@ enum WorkoutGenerator {
             // for this exercise, emit it in notes so the LogScreen can
             // surface a coaching prompt above the autofill column. LLM
             // strategy can override the target ("bench at 90% today").
-            let notes = progressiveOverloadHint(for: picked, context: context, memory: memory, strategy: strategy)
+            let notes = progressiveOverloadHint(for: picked, context: context, memory: memory, prescribedReps: reps, strategy: strategy)
             // RPE + tempo prescription (build 70). Defaults from focus +
             // slot position; LLM strategy overrides win per-exercise.
             let (rpeRaw, tempo) = rpeTempoHints(
@@ -330,23 +330,23 @@ enum WorkoutGenerator {
             return fresh.isEmpty ? candidates : fresh
         }
 
-        // Apply sore-area exclude: drop exercises whose primary muscle group
-        // matches anything in context.recentSoreAreas (case-insensitive
-        // substring match against the muscle-group label, since user-typed
-        // areas can be "knee" while coach.db labels are "Quadriceps").
-        // Empty context = no filtering, preserves old behavior.
+        // Apply sore-area exclude: drop exercises whose primary muscle maps to
+        // a MuscleBucket the user flagged sore. recentSoreAreas holds
+        // MuscleBucket rawValues (chest/quads/shoulders/...); coach.db tags
+        // muscles by granular slug ("quadriceps", "gastrocnemius", ...), so we
+        // bridge slug -> bucket via MuscleBucket.bucket(forSlug:) — the same
+        // mapping the RPE-7 cap path (isMuscleSoreForExercise) uses. The prior
+        // label-substring match silently missed quads ("Quadriceps"),
+        // shoulders ("Anterior Deltoid"), back ("Latissimus Dorsi"), calves
+        // ("Gastrocnemius"), and core. Empty context = no filtering.
         let applySoreFilter: ([Exercise]) -> [Exercise] = { candidates in
             guard !context.recentSoreAreas.isEmpty else { return candidates }
             return candidates.filter { ex in
                 let muscles = CoachDatabase.shared.musclesForExercise(ex.id)
-                    .filter { $0.role == "primary" }
-                    .map { $0.label.lowercased() }
-                for area in context.recentSoreAreas {
-                    if muscles.contains(where: { $0.contains(area) || area.contains($0) }) {
-                        return false
-                    }
-                }
-                return true
+                let primary = muscles.filter { $0.role == "primary" }
+                let slugs = primary.isEmpty ? muscles.map(\.slug) : primary.map(\.slug)
+                let exerciseBuckets = Set(slugs.compactMap { MuscleBucket.bucket(forSlug: $0)?.rawValue })
+                return exerciseBuckets.isDisjoint(with: context.recentSoreAreas)
             }
         }
 
@@ -565,41 +565,88 @@ enum WorkoutGenerator {
         return original
     }
 
-    /// "target: 230 lb × 5" style hint. Priority order:
+    /// "target: 195 lb" style hint — a LOAD to work up to at the prescribed
+    /// reps. Priority order:
     ///   1. LLM strategy targetWeightOverrides — explicit prescriptions ("bench at 90%").
-    ///   2. Context priorBest + 2.5% step-up — progressive overload from history.
+    ///   2. priorBest → e1RM → load for the prescribed rep band, +2.5% step.
     ///   3. Nothing — no signal, no note.
     private static func progressiveOverloadHint(
         for exercise: Exercise,
         context: GeneratorContext,
         memory: TrainingMemory,
+        prescribedReps: String,
         strategy: GeneratorStrategy = .auto
     ) -> String? {
         let key = exercise.name.lowercased()
-        // Layer 1: explicit LLM override.
+        // Layer 1: explicit LLM override — a load to work up to, as given.
         if let override = strategy.targetWeightOverrides[key] {
-            // Reps for the override default to the prior best's reps when
-            // available — the LLM is suggesting a load, not a rep scheme.
-            let reps = context.priorBest[key]?.reps ?? 5
-            return formatTargetHint(weightLb: override, reps: reps, memory: memory)
+            return formatTargetHint(weightLb: override, memory: memory)
         }
-        // Layer 2: priorBest + step-up.
+        // Layer 2: priorBest mapped to the prescribed rep range, then stepped.
         guard let prior = context.priorBest[key] else { return nil }
-        // Small step-up — 2.5% rounded to nearest 5 lb, or the same weight
-        // back if the user is below the floor. Conservative: we'd rather
-        // prescribe last week's weight than push too hard blindly.
-        let stepped = (prior.weight * 1.025 / 5.0).rounded() * 5.0
-        let target = max(prior.weight, stepped)
-        return formatTargetHint(weightLb: target, reps: prior.reps, memory: memory)
+        let target = progressiveTargetLb(
+            priorWeight: prior.weight,
+            priorReps: prior.reps,
+            prescribedReps: prescribedReps
+        ) ?? steppedTargetLb(priorWeightLb: prior.weight)
+        return formatTargetHint(weightLb: target, memory: memory)
     }
 
-    private static func formatTargetHint(weightLb: Double, reps: Int, memory: TrainingMemory) -> String {
+    /// Target working load for the prescribed rep band, progressed 2.5%.
+    /// `priorBest` is the heaviest set at ANY rep count, so a 3-rep top set
+    /// must NOT be shown as the target for a 12-rep prescription. Estimate 1RM
+    /// (Epley) from the prior set, then map it back down to the band's midpoint
+    /// reps before the step-up: 225×3 → e1RM ~248 → ~195 lb for a 6-12 set
+    /// (vs the old rep-blind 230). Returns nil when the band has no numeric
+    /// reps (AMRAP, "30s hold") so the caller falls back to the raw stepped
+    /// prior weight. Internal for testability.
+    static func progressiveTargetLb(priorWeight: Double, priorReps: Int, prescribedReps: String) -> Double? {
+        guard priorReps > 0, let targetReps = repBandMidpoint(prescribedReps) else { return nil }
+        let e1rm = StrengthStandards.epley1RM(weight: priorWeight, reps: priorReps)
+        let loadForReps = e1rm / (1 + Double(targetReps) / 30.0)
+        return steppedTargetLb(priorWeightLb: loadForReps)
+    }
+
+    /// Midpoint rep count of a prescription string: "5" → 5, "6-12" → 9,
+    /// "8-15" → 12. Returns nil for non-numeric bands ("AMRAP", "30s hold").
+    static func repBandMidpoint(_ reps: String) -> Int? {
+        let parts = reps.split(separator: "-")
+        if parts.count == 1, let r = Int(parts[0].trimmingCharacters(in: .whitespaces)) {
+            return r
+        }
+        if parts.count == 2,
+           let lo = Int(parts[0].trimmingCharacters(in: .whitespaces)),
+           let hi = Int(parts[1].trimmingCharacters(in: .whitespaces)) {
+            return Int((Double(lo + hi) / 2).rounded())
+        }
+        return nil
+    }
+
+    /// 2.5% step-up snapped to the nearest 2.5 lb, floored at the prior
+    /// weight. Internal for testability. Rounding to 2.5 (not 5) lets mid
+    /// loads progress — a 5-lb grid zeroed the 2.5% step for every working
+    /// weight <= 100 lb (e.g. 95 -> 95, 100 -> 100). Loads under ~50 lb still
+    /// no-op, which is intended: you can't micro-load below the smallest
+    /// plate, so progression there comes from reps/RPE, not added weight.
+    static func steppedTargetLb(priorWeightLb w: Double) -> Double {
+        let stepped = (w * 1.025 / 2.5).rounded() * 2.5
+        return max(w, stepped)
+    }
+
+    /// The note is a LOAD to work up to at the prescribed reps shown on the
+    /// row — NOT a rep prescription, so it omits a rep count. The prior-best
+    /// reps (often a low-rep top set) contradicted the row's focus band
+    /// ("target 230 × 3" over a "6-12" set). Deeper open issue: the load isn't
+    /// yet adjusted to the prescribed rep range — see docs/generator-audit.md.
+    private static func formatTargetHint(weightLb: Double, memory: TrainingMemory) -> String {
         let display: String
         if memory.usesImperial {
-            display = "\(Int(weightLb)) lb × \(reps)"
+            let snapped = (weightLb * 2).rounded() / 2   // nearest 0.5 lb
+            let wStr = snapped == snapped.rounded() ? "\(Int(snapped))" : "\(snapped)"
+            display = "\(wStr) lb"
         } else {
             let kg = BodyMetrics.lbToKg(weightLb)
-            display = "\(Int(kg.rounded())) kg × \(reps)"
+            display = "\(Int(kg.rounded())) kg"
         }
         return "target: \(display)"
     }

@@ -483,4 +483,154 @@ final class WorkoutGeneratorTests: XCTestCase {
             "15-min budget (\(shortW.exercises.count) ex) should drop optional slots vs 90-min (\(longW.exercises.count) ex)")
     }
 
+    // MARK: - Progressive overload step-up
+
+    /// Pins steppedTargetLb: 2.5% snapped to the nearest 2.5 lb, floored at
+    /// the prior weight. The pre-fix 5-lb grid zeroed the step for every
+    /// working weight <= 100 lb (e.g. 95 -> 95), so progression silently
+    /// stalled for all light/dumbbell/beginner loads.
+    func test_steppedTargetLb_progressesMidLoadsNotMicroLoads() {
+        XCTAssertEqual(WorkoutGenerator.steppedTargetLb(priorWeightLb: 65), 67.5, accuracy: 0.001)
+        XCTAssertEqual(WorkoutGenerator.steppedTargetLb(priorWeightLb: 95), 97.5, accuracy: 0.001)
+        XCTAssertEqual(WorkoutGenerator.steppedTargetLb(priorWeightLb: 135), 137.5, accuracy: 0.001)
+        XCTAssertEqual(WorkoutGenerator.steppedTargetLb(priorWeightLb: 225), 230, accuracy: 0.001)
+        // Never below last week's weight.
+        XCTAssertGreaterThanOrEqual(WorkoutGenerator.steppedTargetLb(priorWeightLb: 185), 185)
+        // Sub-~50 lb intentionally no-ops — can't micro-load below a plate.
+        XCTAssertEqual(WorkoutGenerator.steppedTargetLb(priorWeightLb: 30), 30, accuracy: 0.001)
+    }
+
+    // MARK: - Sore-area exclusion
+
+    /// With quads flagged sore, no generated exercise should have a
+    /// quad-primary muscle. Control proves the filter is doing the work:
+    /// without the flag, a legs day DOES include quad-primary work. Pre-fix,
+    /// the label-substring match never connected "quads" to "Quadriceps", so
+    /// squats were never excluded.
+    func test_soreFilter_excludesQuadPrimaryExercisesWhenQuadsSore() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.sessionMinutes = 60
+        let p = DemographicProfile.from(m)
+
+        func hasQuadPrimary(_ w: GeneratedWorkout) -> Bool {
+            w.exercises.contains { ex in
+                CoachDatabase.shared.musclesForExercise(ex.exerciseId)
+                    .filter { $0.role == "primary" }
+                    .contains { MuscleBucket.bucket(forSlug: $0.slug) == .quads }
+            }
+        }
+
+        // Control: a legs day normally leads with quad-primary work.
+        let control = WorkoutGenerator.generateLift(
+            liftIndex: 2, totalLifts: 3,
+            memory: m, profile: p, hashSeed: m.planInputsHash,
+            context: .empty
+        )
+        XCTAssertTrue(hasQuadPrimary(control),
+            "Control legs day should include a quad-primary exercise; got: \(control.exercises.map { $0.name })")
+
+        // Sore quads → quad-primary work excluded, workout still non-empty.
+        var ctx = GeneratorContext.empty
+        ctx.recentSoreAreas = ["quads"]
+        let sore = WorkoutGenerator.generateLift(
+            liftIndex: 2, totalLifts: 3,
+            memory: m, profile: p, hashSeed: m.planInputsHash,
+            context: ctx
+        )
+        XCTAssertFalse(sore.exercises.isEmpty,
+            "Sore-quads legs day should still produce non-quad work (hinge/calf/etc.)")
+        XCTAssertFalse(hasQuadPrimary(sore),
+            "Sore quads must exclude quad-primary exercises; got: \(sore.exercises.map { $0.name })")
+    }
+
+    // MARK: - focusBias coverage (weightLoss / longevity)
+
+    func test_focusBias_weightLoss_runsModerateCircuit() {
+        let primary = WorkoutGenerator.focusBias(.weightLoss, isPrimary: true)
+        XCTAssertEqual(primary?.sets, 3)
+        XCTAssertEqual(primary?.reps, "8-12")
+        XCTAssertEqual(primary?.restSec, 60)
+
+        let accessory = WorkoutGenerator.focusBias(.weightLoss, isPrimary: false)
+        XCTAssertEqual(accessory?.sets, 3)
+        XCTAssertEqual(accessory?.reps, "10-15")
+        XCTAssertEqual(accessory?.restSec, 60)
+    }
+
+    func test_focusBias_longevity_runsLowVolumeControlled() {
+        let primary = WorkoutGenerator.focusBias(.longevity, isPrimary: true)
+        XCTAssertEqual(primary?.sets, 3)
+        XCTAssertEqual(primary?.reps, "5-8")
+        XCTAssertEqual(primary?.restSec, 90)
+
+        let accessory = WorkoutGenerator.focusBias(.longevity, isPrimary: false)
+        XCTAssertEqual(accessory?.sets, 3)
+        XCTAssertEqual(accessory?.reps, "8-10")
+        XCTAssertEqual(accessory?.restSec, 90)
+    }
+
+    // MARK: - Build 97: deload reduces sets, not exercise count
+
+    /// The budget check uses pre-multiplier (base) duration, so a deload must
+    /// shrink sets per exercise WITHOUT freeing budget for extra slots. At a
+    /// constrained session length, normal and deload yield the same exercise
+    /// count; only total set volume drops. Guards against reverting to a
+    /// scaled-sets budget (which would let a deload pack in more exercises).
+    func test_deloadReducesSetsNotExerciseCount() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.sessionMinutes = 25   // tight enough to drop optional slots
+        let p = DemographicProfile.from(m)
+
+        let normal = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: p, hashSeed: m.planInputsHash,
+            strategy: .auto
+        )
+        var deload = GeneratorStrategy.auto
+        deload.intensityBias = .deload
+        let deloaded = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: p, hashSeed: m.planInputsHash,
+            strategy: deload
+        )
+
+        XCTAssertEqual(deloaded.exercises.count, normal.exercises.count,
+            "Deload must not change exercise count (build 97): normal \(normal.exercises.map { $0.name }) vs deload \(deloaded.exercises.map { $0.name })")
+        let normalSets = normal.exercises.reduce(0) { $0 + $1.sets }
+        let deloadSets = deloaded.exercises.reduce(0) { $0 + $1.sets }
+        XCTAssertLessThan(deloadSets, normalSets,
+            "Deload should reduce total sets (normal=\(normalSets), deload=\(deloadSets))")
+    }
+
+    // MARK: - Progressive-overload load is rep-range-aware (e1RM)
+
+    /// priorBest is the heaviest set at ANY rep count, so the target load must
+    /// be mapped to the prescribed rep band — otherwise a 3-rep max is shown as
+    /// the target for a 12-rep set (the old rep-blind bug, "target 230" for 6-12).
+    func test_progressiveTargetLb_mapsPriorBestToPrescribedReps() {
+        // 225×3 top set → e1RM ~248 → ~195 lb for a 6-12 set (not 230).
+        XCTAssertEqual(
+            WorkoutGenerator.progressiveTargetLb(priorWeight: 225, priorReps: 3, prescribedReps: "6-12")!,
+            195, accuracy: 0.001)
+        // Lighter, higher-rep history → heavier target for fewer reps.
+        XCTAssertEqual(
+            WorkoutGenerator.progressiveTargetLb(priorWeight: 100, priorReps: 10, prescribedReps: "5")!,
+            117.5, accuracy: 0.001)
+        // Non-numeric bands fall back (caller uses raw stepped prior weight).
+        XCTAssertNil(WorkoutGenerator.progressiveTargetLb(priorWeight: 225, priorReps: 3, prescribedReps: "AMRAP"))
+        XCTAssertNil(WorkoutGenerator.progressiveTargetLb(priorWeight: 100, priorReps: 5, prescribedReps: "30s hold"))
+    }
+
+    func test_repBandMidpoint_parsesBands() {
+        XCTAssertEqual(WorkoutGenerator.repBandMidpoint("5"), 5)
+        XCTAssertEqual(WorkoutGenerator.repBandMidpoint("6-12"), 9)
+        XCTAssertEqual(WorkoutGenerator.repBandMidpoint("8-15"), 12)
+        XCTAssertNil(WorkoutGenerator.repBandMidpoint("AMRAP"))
+        XCTAssertNil(WorkoutGenerator.repBandMidpoint("30s hold"))
+    }
+
 }

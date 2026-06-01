@@ -40,11 +40,6 @@ struct GeneratorContext: Equatable {
     /// prefers a substitute from `exercise_substitutions`.
     var stagnantExercises: Set<String>
 
-    /// muscle_groups.slug → role-allocated volume in the last 4 weeks (same
-    /// math as `MuscleVolume.rows`). Accessory slot picks prefer exercises
-    /// hitting muscles in the bottom third by volume.
-    var muscleVolume: [String: Double]
-
     /// Distinct calendar days in the last 7 with a HARD sport log. Used by
     /// the planner's recent-signal bias to trim lift volume when the user
     /// is already carrying heavy non-lift load. Moderate / light sport days
@@ -72,7 +67,7 @@ struct GeneratorContext: Equatable {
 
     static let empty = GeneratorContext(
         priorBest: [:], patternFrequency: [:], recentSoreAreas: [],
-        stagnantExercises: [], muscleVolume: [:],
+        stagnantExercises: [],
         recentHardSportDays: 0,
         readinessScore: 0.5,
         readinessBreakdown: ReadinessSignal.neutral.breakdown,
@@ -82,7 +77,7 @@ struct GeneratorContext: Equatable {
     var isEmpty: Bool {
         priorBest.isEmpty && patternFrequency.isEmpty &&
         recentSoreAreas.isEmpty && stagnantExercises.isEmpty &&
-        muscleVolume.isEmpty && recentHardSportDays == 0 &&
+        recentHardSportDays == 0 &&
         !hasReadinessData
     }
 }
@@ -162,7 +157,6 @@ extension GeneratorContext {
                                                   feedback: feedback,
                                                   cutoff: weekSoreCutoff),
             stagnantExercises: buildStagnantExercises(sessions: sessions, now: now),
-            muscleVolume: buildMuscleVolume(sessions: sessions, now: now),
             recentHardSportDays: buildRecentHardSportDays(sportLogs: sportLogs,
                                                           cutoff: weekSoreCutoff,
                                                           calendar: cal),
@@ -206,9 +200,14 @@ extension GeneratorContext {
                 byDay[day] = ReadinessEvent(startTime: w.startTime)
             }
         }
-        // Sport logs — only entries the user marked as having actual
-        // movement (any intensity). Skip nil/none-intensity entries.
-        for log in sportLogs where log.date >= cutoff {
+        // Sport logs feed readiness as "you've been active" — EXCEPT hard
+        // sport days. The planner's recent-signal bias already treats >=3 hard
+        // sport days as fatigue (it trims a lift day), so counting them here
+        // too would let one hard sport week BOTH cut a day AND inflate
+        // readiness (keeping per-session volume high). Sport = fatigue: hard
+        // days don't raise the readiness/training signal. Light/moderate sport
+        // still counts as general activity.
+        for log in sportLogs where log.date >= cutoff && log.intensity != .hard {
             let day = cal.startOfDay(for: log.date)
             if byDay[day] == nil || byDay[day]!.startTime > log.date {
                 byDay[day] = ReadinessEvent(startTime: log.date)
@@ -403,16 +402,4 @@ extension GeneratorContext {
         return out
     }
 
-    // MARK: - muscleVolume
-
-    /// Delegate to `MuscleVolume.rows`, which already handles the role-weighted
-    /// allocation. We re-export as `[slug: volume]` for cheap lookup during
-    /// slot pick.
-    private static func buildMuscleVolume(
-        sessions: [SavedSession],
-        now: Date
-    ) -> [String: Double] {
-        let rows = MuscleVolume.rows(from: sessions, weeks: 4, limit: 50, now: now)
-        return Dictionary(uniqueKeysWithValues: rows.map { ($0.slug, $0.volume) })
-    }
 }

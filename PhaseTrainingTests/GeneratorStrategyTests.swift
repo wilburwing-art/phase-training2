@@ -112,8 +112,8 @@ final class GeneratorStrategyTests: XCTestCase {
             context: ctx, strategy: strat
         )
         let match = workout.exercises.first { $0.name == picked.name }
-        XCTAssertEqual(match?.notes, "target: 175 lb × 5",
-                       "override should win over priorBest-derived target. Got: \(String(describing: match?.notes))")
+        XCTAssertEqual(match?.notes, "target: 175 lb",
+                       "override should win over priorBest-derived target (load only, no rep count). Got: \(String(describing: match?.notes))")
     }
 
     // MARK: - Decoder
