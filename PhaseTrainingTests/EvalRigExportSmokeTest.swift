@@ -235,6 +235,17 @@ final class EvalRigExportSmokeTest: XCTestCase {
         eraOverrideRaw: String,
         count: Int
     ) throws {
+        // Dev-only: these batches write into the local eval-rig repo so the
+        // grader can consume them. That path only exists on a dev machine
+        // with eval-rig checked out; on CI it's absent, so the directory
+        // create silently no-ops and the write fails with mktemp ENOENT.
+        // Skip rather than fail — same convention as FitbodRealCSVSmokeTests.
+        let evalRigRoot = "/Users/wilburpyn/repos/eval-rig/workouts"
+        try XCTSkipUnless(
+            FileManager.default.fileExists(atPath: evalRigRoot),
+            "eval-rig workouts dir not present (\(evalRigRoot)) — dev-only batch export, skipping"
+        )
+
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
