@@ -55,9 +55,17 @@ def load_baseline():
 
 
 def main():
+    # NON-GATING contract: this must never raise / exit non-zero, even on a
+    # missing or unreadable log. The CI step runs `if: always()`, so a crash
+    # here would red an otherwise-passing job.
     if len(sys.argv) > 1:
-        with open(sys.argv[1], errors="replace") as f:
-            text = f.read()
+        try:
+            with open(sys.argv[1], errors="replace") as f:
+                text = f.read()
+        except OSError as e:
+            print(f"tap-budget: could not read log '{sys.argv[1]}': {e} "
+                  "(non-gating, continuing)")
+            return 0
     else:
         text = sys.stdin.read()
 
@@ -70,7 +78,9 @@ def main():
         return 0
 
     rows = []
-    drift = []
+    drift = []      # actual moved vs baseline, or a brand-new flow
+    missing = []    # in baseline but no marker emitted (test removed / crashed)
+    errored = []    # baseline value isn't a number (bad hand-edit)
     for flow in sorted(set(actuals) | set(baseline)):
         a = actuals.get(flow, {})
         actual = a.get("actual")
@@ -78,9 +88,15 @@ def main():
         base = baseline.get(flow)
         if actual is None:
             status, delta = "MISSING (in baseline, not run)", ""
+            missing.append(flow)
         elif base is None:
             status, delta = "NEW (no baseline)", ""
             drift.append(flow)
+        elif not isinstance(actual, int) or not isinstance(base, int):
+            # bool is an int subclass; that's fine. Strings/floats-as-strings
+            # from a bad baseline edit would otherwise crash `actual - base`.
+            status, delta = "BASELINE ERROR (non-numeric)", ""
+            errored.append(flow)
         elif actual == base:
             status, delta = "unchanged", "0"
         else:
@@ -102,22 +118,33 @@ def main():
         )
     table = "\n".join(lines)
 
+    footer = []
+    if drift:
+        footer.append(f"**Drift:** {', '.join(drift)} — update "
+                      "tap-budget-baseline.json to accept, or investigate.")
+    if missing:
+        footer.append(f"**Not run (in baseline, no marker):** {', '.join(missing)} "
+                      "— a tracked flow stopped emitting its marker; investigate.")
+    if errored:
+        footer.append(f"**Baseline error (non-numeric):** {', '.join(errored)} "
+                      "— fix the value in tap-budget-baseline.json.")
+    if not footer:
+        footer.append("All flows match baseline.")
+
     print("## Tap budget\n")
     print(table)
-    if drift:
-        print(f"\n**Drift:** {', '.join(drift)} — "
-              "update tap-budget-baseline.json to accept, or investigate.")
-    else:
-        print("\nAll flows match baseline.")
+    for line in footer:
+        print("\n" + line)
 
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
-        with open(summary, "a") as f:
-            f.write("## Tap budget\n\n")
-            f.write(table + "\n")
-            if drift:
-                f.write(f"\n**Drift:** {', '.join(drift)} — update "
-                        "tap-budget-baseline.json to accept, or investigate.\n")
+        try:
+            with open(summary, "a") as f:
+                f.write("## Tap budget\n\n" + table + "\n")
+                for line in footer:
+                    f.write("\n" + line + "\n")
+        except OSError:
+            pass  # step summary is best-effort; never fail the step over it
 
     return 0
 

@@ -252,6 +252,20 @@ struct OnboardingProgressBar: View {
     }
 }
 
+// MARK: - Conditional a11y id
+//
+// Apply an accessibility identifier ONLY when one is provided. Setting
+// `.accessibilityIdentifier("")` on the shared components would stamp an empty
+// id on every instance that doesn't opt in — and on iOS 26 a parent identifier
+// overrides nested child identity (see LogScreen's note), so an empty parent id
+// erases the labels of un-ided chips/rows. This keeps un-ided components clean.
+extension View {
+    @ViewBuilder
+    func accessibilityIdentifier(optional id: String?) -> some View {
+        if let id { self.accessibilityIdentifier(id) } else { self }
+    }
+}
+
 // MARK: - Buttons
 
 struct OnboardingPrimaryButton: View {
@@ -278,7 +292,7 @@ struct OnboardingPrimaryButton: View {
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
-        .accessibilityIdentifier(a11yId ?? "")
+        .accessibilityIdentifier(optional: a11yId)
     }
 }
 
@@ -305,7 +319,7 @@ struct OnboardingChip: View {
                 .clipShape(RoundedRectangle(cornerRadius: 999))
         }
         .buttonStyle(.plain)
-        .accessibilityIdentifier(a11yId ?? "")
+        .accessibilityIdentifier(optional: a11yId)
     }
 }
 
@@ -356,7 +370,7 @@ struct OnboardingPickRow: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
-        .accessibilityIdentifier(a11yId ?? "")
+        .accessibilityIdentifier(optional: a11yId)
     }
 }
 
