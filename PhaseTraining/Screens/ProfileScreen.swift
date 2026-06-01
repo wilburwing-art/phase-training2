@@ -21,6 +21,8 @@ struct ProfileScreen: View {
     @EnvironmentObject private var store: MemoryStore
     @EnvironmentObject private var planStore: PlanStore
     @EnvironmentObject private var subStore: SubscriptionStore
+    @EnvironmentObject private var sessionStore: SessionStore
+    @EnvironmentObject private var customStore: CustomRoutineStore
 
     // Backup / restore UI state (the iOS-level presentation surfaces stay on
     // this screen; DataEditorSheet just fires callbacks).
@@ -29,6 +31,10 @@ struct ProfileScreen: View {
     @State private var presentingShare = false
     @State private var backupError: String? = nil
     @State private var restoreCompleted = false
+    // Decoded-but-not-yet-applied backup, held while the user confirms the
+    // destructive overwrite. Restore only runs after explicit confirmation.
+    @State private var pendingRestore: BackupEnvelope? = nil
+    @State private var confirmingRestore = false
 
     // Editor-sheet presentation flags.
     @State private var presentingSportsEditor = false
@@ -237,10 +243,16 @@ struct ProfileScreen: View {
         } message: {
             Text(backupError ?? "")
         }
+        .alert("Replace all data?", isPresented: $confirmingRestore, presenting: pendingRestore) { envelope in
+            Button("Replace", role: .destructive) { performRestore(envelope) }
+            Button("Cancel", role: .cancel) { pendingRestore = nil }
+        } message: { envelope in
+            Text("This replaces your current profile, workouts, history, and plan with the backup from \(formattedShort(envelope.exportedAt)). It can't be undone.")
+        }
         .alert("Restore complete", isPresented: $restoreCompleted) {
             Button("Done") {}
         } message: {
-            Text("Your data was restored. Restart the app to refresh every screen.")
+            Text("Your data was restored.")
         }
         .alert(editingField?.title ?? "", isPresented: editingFieldBinding) {
             TextField(editingField?.unit ?? "", text: $editingText)
@@ -575,13 +587,31 @@ struct ProfileScreen: View {
             let didStart = url.startAccessingSecurityScopedResource()
             defer { if didStart { url.stopAccessingSecurityScopedResource() } }
             do {
+                // Decode + validate now, but defer the destructive write until
+                // the user confirms — restore replaces ALL local data.
                 let data = try Data(contentsOf: url)
                 let envelope = try BackupManager.decode(data)
-                try BackupManager.restore(envelope, into: .standard)
-                restoreCompleted = true
+                pendingRestore = envelope
+                confirmingRestore = true
             } catch {
                 backupError = (error as? BackupError)?.errorDescription ?? error.localizedDescription
             }
+        }
+    }
+
+    /// Apply a confirmed restore, then reload every in-memory store from its
+    /// source so the UI reflects the imported data immediately — no relaunch.
+    private func performRestore(_ envelope: BackupEnvelope) {
+        do {
+            try BackupManager.restore(envelope, into: .standard)
+            store.reload()
+            planStore.reloadFromDefaults()
+            sessionStore.reload()
+            customStore.reload()
+            pendingRestore = nil
+            restoreCompleted = true
+        } catch {
+            backupError = (error as? BackupError)?.errorDescription ?? error.localizedDescription
         }
     }
 
@@ -597,6 +627,8 @@ struct ProfileScreen: View {
     return ProfileScreen()
         .environmentObject(MemoryStore(defaults: defaults))
         .environmentObject(PlanStore(defaults: defaults))
+        .environmentObject(SessionStore(defaults: defaults))
+        .environmentObject(CustomRoutineStore(defaults: defaults))
 }
 
 #Preview("Populated") {
@@ -622,6 +654,8 @@ struct ProfileScreen: View {
     return ProfileScreen()
         .environmentObject(store)
         .environmentObject(PlanStore(defaults: defaults))
+        .environmentObject(SessionStore(defaults: defaults))
+        .environmentObject(CustomRoutineStore(defaults: defaults))
 }
 
 // MARK: - Share sheet bridge

@@ -22,7 +22,7 @@ struct CustomRoutineEditSheet: View {
     @State private var showingDeleteConfirm = false
     /// Index into `draft.exercises` whose alternatives the user is browsing
     /// (via the row's `.controls` swap button). nil = sheet closed.
-    @State private var swappingExerciseIdx: Int? = nil
+    @State private var swappingExerciseId: String? = nil
 
     init(routine: CustomRoutine) {
         self.original = routine
@@ -54,10 +54,14 @@ struct CustomRoutineEditSheet: View {
                 }
             }
             .sheet(item: swappingBinding) { wrapped in
-                let original = draft.exercises[wrapped.index]
-                ExercisePickerSheet(title: "Replace \(original.name)") { picked in
-                    draft.exercises[wrapped.index].exerciseId = picked.id
-                    draft.exercises[wrapped.index].name = picked.name
+                // Look the row up by stable id, not array index — the row can
+                // be deleted between tapping Swap and this sheet rendering.
+                let name = draft.exercises.first(where: { $0.id == wrapped.id })?.name ?? "exercise"
+                ExercisePickerSheet(title: "Replace \(name)") { picked in
+                    if let i = draft.exercises.firstIndex(where: { $0.id == wrapped.id }) {
+                        draft.exercises[i].exerciseId = picked.id
+                        draft.exercises[i].name = picked.name
+                    }
                 }
             }
             .sheet(item: $detailExercise) { ex in
@@ -179,7 +183,7 @@ struct CustomRoutineEditSheet: View {
                             detailExercise = CoachDatabase.shared.exercise(id: exercise.wrappedValue.exerciseId)
                         },
                         onSwap: {
-                            swappingExerciseIdx = draft.exercises.firstIndex(where: { $0.id == exercise.wrappedValue.id })
+                            swappingExerciseId = exercise.wrappedValue.id
                         }
                     )
                 ),
@@ -432,17 +436,16 @@ struct CustomRoutineEditSheet: View {
 
     // MARK: - Swap-index binding helper
 
-    /// Bridges `swappingExerciseIdx: Int?` into a `Binding<SwapWrapper?>`
-    /// so `.sheet(item:)` can drive the swap sheet from an Int? state.
+    /// Bridges `swappingExerciseId: String?` into a `Binding<SwapWrapper?>`
+    /// so `.sheet(item:)` can drive the swap sheet from a stable-id state.
     private var swappingBinding: Binding<SwapWrapper?> {
         Binding(
-            get: { swappingExerciseIdx.map(SwapWrapper.init) },
-            set: { swappingExerciseIdx = $0?.index }
+            get: { swappingExerciseId.map(SwapWrapper.init) },
+            set: { swappingExerciseId = $0?.id }
         )
     }
 
     private struct SwapWrapper: Identifiable {
-        let index: Int
-        var id: Int { index }
+        let id: String
     }
 }

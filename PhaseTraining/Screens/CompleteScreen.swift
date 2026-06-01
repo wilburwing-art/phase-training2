@@ -69,7 +69,7 @@ struct CompleteScreen: View {
         // exercise, matched by name across all stored sessions". Captures
         // PRs that the old same-template comparison missed (e.g. you swap
         // routines, you set a new bench PR — it still counts).
-        store.personalRecords(in: session.exercises).map { record in
+        store.personalRecords(in: session.exercises, sessionDate: session.startTime).map { record in
             PRItem(
                 id: "\(record.exerciseName)|\(record.reps)",
                 name: record.exerciseName,

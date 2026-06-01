@@ -45,6 +45,13 @@ final class CustomRoutineStore: ObservableObject {
         routines = []
     }
 
+    /// Re-read the routine list from user.db. Used after a destructive
+    /// backup-restore so this already-instantiated store reflects the
+    /// imported data without an app relaunch.
+    func reload() {
+        routines = userDB.listRoutines()
+    }
+
     // MARK: - One-shot migration
 
     /// Imports the old UserDefaults JSON blob into UserDatabase on first

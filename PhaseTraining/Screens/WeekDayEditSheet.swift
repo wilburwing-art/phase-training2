@@ -32,6 +32,7 @@ struct WeekDayEditSheet: View {
     /// the picker grid takes vertical room the sheet body doesn't have
     /// without scrolling, especially on iPhone SE.
     @State private var pickingLiftFocus = false
+    @State private var showingClearConfirm = false
 
     var body: some View {
         NavigationStack {
@@ -115,6 +116,12 @@ struct WeekDayEditSheet: View {
                     pickingLiftFocus = false
                 }
             )
+        }
+        .alert("Clear overrides for this day?", isPresented: $showingClearConfirm) {
+            Button("Clear", role: .destructive) { clearOverrides() }
+            Button("Keep", role: .cancel) {}
+        } message: {
+            Text("This removes sport sessions, events, and the unavailable mark for this day. It can't be undone.")
         }
     }
 
@@ -247,7 +254,7 @@ struct WeekDayEditSheet: View {
                     subtitle: "Remove sport sessions, events, and unavailable mark",
                     icon: "arrow.counterclockwise",
                     destructive: true,
-                    action: clearOverrides
+                    action: { showingClearConfirm = true }
                 )
             }
         }

@@ -120,6 +120,14 @@ final class SessionStore: ObservableObject {
         savedSessions = userDB.listSavedSessions()
     }
 
+    /// Re-read saved history + active session from their stores. Used after a
+    /// destructive backup-restore so this already-instantiated store reflects
+    /// the imported data without an app relaunch.
+    func reload() {
+        savedSessions = userDB.listSavedSessions()
+        active = loadActive()
+    }
+
     /// Upsert one already-saved session with edits (weight / reps / rpe /
     /// done) intact. UserDatabase.saveSession is upsert-by-start_time so
     /// the row is replaced in place; the @Published list is refreshed so
@@ -343,7 +351,8 @@ final class SessionStore: ObservableObject {
     /// `excludingSessionId` lets a post-save call self-exclude when the
     /// current session is already in user.db.
     func personalRecords(in exercises: [LoggedExercise],
-                         excludingSessionId: TimeInterval? = nil) -> [PersonalRecord] {
+                         excludingSessionId: TimeInterval? = nil,
+                         sessionDate: Date = Date()) -> [PersonalRecord] {
         let best = userDB.bestWeightsByExerciseAndReps(
             excludingSessionStart: excludingSessionId.map { Int64($0) }
         )
@@ -366,7 +375,7 @@ final class SessionStore: ObservableObject {
                     reps: reps,
                     weight: weight,
                     previousBest: prior > 0 ? prior : nil,
-                    date: Date()
+                    date: sessionDate
                 ))
             }
         }

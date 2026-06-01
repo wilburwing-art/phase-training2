@@ -246,13 +246,15 @@ private struct DraggableDayRow: View {
                 .opacity(0.92)
         }
         .dropDestination(for: MovableDay.self) { items, _ in
-            guard let source = items.first else { return false }
+            // Abort if the payload date can't be parsed — a silent fallback to
+            // "today" would move the wrong day and corrupt the plan.
+            guard let source = items.first, let sourceDate = source.date else { return false }
             // Self-drop is a no-op; PlanStore.swap already guards but we exit
             // early to avoid the haptic.
-            if Calendar.current.isDate(source.date, inSameDayAs: day.date) {
+            if Calendar.current.isDate(sourceDate, inSameDayAs: day.date) {
                 return false
             }
-            planStore.swap(sourceDate: source.date,
+            planStore.swap(sourceDate: sourceDate,
                            targetDate: day.date,
                            memory: memory.memory)
             let haptic = UIImpactFeedbackGenerator(style: .medium)
@@ -278,11 +280,13 @@ struct MovableDay: Codable, Transferable {
         self.dateISO = f.string(from: date)
     }
 
-    var date: Date {
+    /// nil when the payload string can't be parsed — callers must abort the
+    /// drop rather than silently fall back to "today" and move the wrong day.
+    var date: Date? {
         let f = DateFormatter()
         f.dateFormat = "yyyy-MM-dd"
         f.timeZone = .current
-        return f.date(from: dateISO) ?? Date()
+        return f.date(from: dateISO)
     }
 
     static var transferRepresentation: some TransferRepresentation {

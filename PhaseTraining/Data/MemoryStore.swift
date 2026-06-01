@@ -59,6 +59,18 @@ final class MemoryStore: ObservableObject {
         }
     }
 
+    /// Re-read memory from UserDefaults, discarding the in-memory copy. Used
+    /// after a destructive backup-restore so this already-instantiated store
+    /// reflects the imported data without an app relaunch.
+    func reload() {
+        if let data = defaults.data(forKey: Self.key),
+           let m = try? Self.decoder().decode(TrainingMemory.self, from: data) {
+            memory = m
+        } else {
+            memory = TrainingMemory()
+        }
+    }
+
     /// Reset everything — only used in dev / preview / "Reset onboarding" debug action.
     func reset() {
         memory = TrainingMemory()

@@ -212,6 +212,28 @@ final class PlanStore: ObservableObject {
         snapshotCurrentPlan(now: today)
     }
 
+    /// Re-read plan + overrides from UserDefaults after an external write
+    /// (e.g. a destructive backup-restore) so this already-instantiated store
+    /// reflects the imported data without an app relaunch. Mirrors the decode
+    /// path in init for these two keys (history/missed logs aren't part of the
+    /// backup envelope, so they're left untouched).
+    func reloadFromDefaults(today: Date = Date()) {
+        if let data = defaults.data(forKey: Self.planKey),
+           let p = try? Self.decoder().decode(WeekPlan.self, from: data) {
+            plan = p
+        } else {
+            plan = nil
+        }
+        let thisWeek = today.startOfTrainingWeek()
+        if let data = defaults.data(forKey: Self.overridesKey),
+           let o = try? Self.decoder().decode(WeekOverrides.self, from: data),
+           Calendar.current.isDate(o.weekStart, inSameDayAs: thisWeek) {
+            overrides = o
+        } else {
+            overrides = WeekOverrides(weekStart: thisWeek)
+        }
+    }
+
     // MARK: - Generation
 
     /// Generate a fresh plan from memory + the current overrides; persist both.
