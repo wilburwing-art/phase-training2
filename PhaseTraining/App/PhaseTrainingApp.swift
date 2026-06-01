@@ -50,23 +50,24 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-supersets-demo") {
             Self.seedSupersetsDemo()
         }
-        // UITest seed: drop a deterministic WeekPlan whose TODAY is a lift day
-        // carrying a 5-exercise `generatedWorkout`, so TodayScreen resolves the
-        // planned-user branch instead of the upper-1 no-plan fallback. Lets the
-        // tap-budget suite measure the start→log→save path for a real plan.
-        // Launched via `--seed-plan-demo`; pair with `--ui-test-onboarded` +
-        // `--ui-test-reset`.
+        // UITest seeds, DEBUG-only so they can't ship in a release binary and
+        // overwrite a real user's plan:
+        //   --seed-plan-demo  → TODAY is a lift day with a 5-exercise
+        //     generatedWorkout (TodayScreen resolves the planned-user branch,
+        //     not the upper-1 fallback) — the start→log→save path.
+        //   --seed-sport-demo → TODAY is a SPORT day (today-log-sport CTA) —
+        //     the log-a-sport-session path.
+        // Both pair with --ui-test-onboarded + --ui-test-reset; the latter
+        // clears pt_week_plan first so the seed lands last. Auto-regen is gated
+        // on memory.onboardedAt (nil under reset), so the seed isn't clobbered.
+        #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("--seed-plan-demo") {
             Self.seedPlanDemo()
         }
-        // UITest seed: a WeekPlan whose TODAY is a SPORT day, so TodayScreen
-        // shows the `today-log-sport` CTA (instead of a lift's start button).
-        // Lets the tap-budget suite measure the log-a-sport-session path.
-        // Launched via `--seed-sport-demo`; pair with `--ui-test-onboarded` +
-        // `--ui-test-reset`. Same auto-regen safety as seedPlanDemo.
         if ProcessInfo.processInfo.arguments.contains("--seed-sport-demo") {
             Self.seedSportDemo()
         }
+        #endif
         // Upsize URLCache so coach.db image bytes survive across app launches.
         // The catalog serves ~555 images from raw.githubusercontent.com; the
         // default 4 MB memory + 20 MB disk evicts them almost immediately.
@@ -156,17 +157,33 @@ struct PhaseTrainingApp: App {
         }
     }
 
-    /// UITest-only: write a deterministic WeekPlan into UserDefaults whose
-    /// TODAY (startOfDay) is a lift day carrying a 5-exercise `generatedWorkout`.
-    /// TodayScreen's `template` then resolves the `todayPlan?.generatedWorkout`
-    /// branch — the path a *planned* user takes — rather than the upper-1
-    /// fallback that only fires when `planStore.plan == nil`. Mirrors the
-    /// secondsSince1970 encoding PlanStore decodes with.
-    ///
-    /// Safe against clobber: PlanStore's auto-regen subscription is gated on
-    /// `memory.onboardedAt != nil`, which is nil under `--ui-test-reset`, so
-    /// the seeded plan is never regenerated on launch. `--ui-test-reset` clears
-    /// `pt_week_plan` in `init()` before this runs, so the seed lands last.
+    #if DEBUG
+    /// UITest-only: write a deterministic 7-day WeekPlan to `pt_week_plan` whose
+    /// day 0 is `makeToday(startOfDay)` and the rest are rest days, encoded with
+    /// `.secondsSince1970` to match `PlanStore.decoder()`. Shared by the
+    /// --seed-*-demo hooks. Safe against clobber: PlanStore's auto-regen is
+    /// gated on `memory.onboardedAt` (nil under --ui-test-reset), and
+    /// --ui-test-reset clears `pt_week_plan` in `init()` before this runs.
+    private static func seedWeekPlan(makeToday: (Date) -> DayPlan) {
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: Date())
+        let days: [DayPlan] = (0..<7).map { i in
+            i == 0
+                ? makeToday(start)
+                : DayPlan(date: cal.date(byAdding: .day, value: i, to: start) ?? start,
+                          kind: .rest, title: "Rest", generatedReason: "UITest seed")
+        }
+        let plan = WeekPlan(days: days, generatedAt: Date(), inputsHash: "ui-test-seed")
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .secondsSince1970
+        if let data = try? encoder.encode(plan) {
+            UserDefaults.standard.set(data, forKey: "pt_week_plan")
+        }
+    }
+
+    /// --seed-plan-demo: TODAY is a lift day carrying a 5-exercise
+    /// generatedWorkout, so TodayScreen resolves the planned-user branch rather
+    /// than the upper-1 fallback (which only fires when `planStore.plan == nil`).
     private static func seedPlanDemo() {
         let workout = GeneratedWorkout(
             title: "Push day",
@@ -191,54 +208,24 @@ struct PhaseTrainingApp: App {
             estimatedMinutes: 50,
             provenance: "UITest seed · push/pull/legs day 1"
         )
-
-        let cal = Calendar.current
-        let start = cal.startOfDay(for: Date())
-        let days: [DayPlan] = (0..<7).map { i in
-            DayPlan(
-                date: cal.date(byAdding: .day, value: i, to: start) ?? start,
-                kind: i == 0 ? .lift : .rest,
-                title: i == 0 ? "Push day" : "Rest",
-                generatedWorkout: i == 0 ? workout : nil,
-                generatedReason: "UITest seed"
-            )
-        }
-        let plan = WeekPlan(days: days, generatedAt: Date(), inputsHash: "ui-test-seed")
-
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .secondsSince1970
-        if let data = try? encoder.encode(plan) {
-            UserDefaults.standard.set(data, forKey: "pt_week_plan")
+        seedWeekPlan { start in
+            DayPlan(date: start, kind: .lift, title: "Push day",
+                    generatedWorkout: workout, generatedReason: "UITest seed")
         }
     }
 
-    /// UITest-only: write a WeekPlan whose TODAY is a `.sport` day with a Sport
-    /// attached, so TodayScreen renders the `today-log-sport` CTA. Mirrors
-    /// seedPlanDemo's encoding + auto-regen safety. SportLogSheet defaults to
+    /// --seed-sport-demo: TODAY is a `.sport` day with a Sport attached, so
+    /// TodayScreen renders the `today-log-sport` CTA. SportLogSheet defaults to
     /// 60 min / moderate, so the minimal log path is open + save (2 taps).
     private static func seedSportDemo() {
         guard let sport = Sport.catalog.first(where: { $0.slug == "climbing" })
                 ?? Sport.catalog.first else { return }
-
-        let cal = Calendar.current
-        let start = cal.startOfDay(for: Date())
-        let days: [DayPlan] = (0..<7).map { i in
-            DayPlan(
-                date: cal.date(byAdding: .day, value: i, to: start) ?? start,
-                kind: i == 0 ? .sport : .rest,
-                title: i == 0 ? sport.name : "Rest",
-                sport: i == 0 ? sport : nil,
-                generatedReason: "UITest seed"
-            )
-        }
-        let plan = WeekPlan(days: days, generatedAt: Date(), inputsHash: "ui-test-seed")
-
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .secondsSince1970
-        if let data = try? encoder.encode(plan) {
-            UserDefaults.standard.set(data, forKey: "pt_week_plan")
+        seedWeekPlan { start in
+            DayPlan(date: start, kind: .sport, title: sport.name,
+                    sport: sport, generatedReason: "UITest seed")
         }
     }
+    #endif
 
     var body: some Scene {
         WindowGroup {
@@ -257,13 +244,16 @@ struct PhaseTrainingApp: App {
                     // Cheap and safe to call on every cold start.
                     await subscriptions.refresh()
                 }
+                #if DEBUG
                 .task {
-                    // UITest hook: deterministically present the weekly check-in
-                    // on launch so the tap-budget suite can measure that flow.
+                    // UITest hook (DEBUG-only): deterministically present the
+                    // weekly check-in on launch so the tap-budget suite can
+                    // measure that flow.
                     if ProcessInfo.processInfo.arguments.contains("--ui-test-open-weekly-checkin") {
                         tabSelection.showWeeklyCheckIn = true
                     }
                 }
+                #endif
                 .preferredColorScheme(.dark)
                 .fullScreenCover(isPresented: .constant(!memory.isOnboarded && !uiTestSkipsOnboarding)) {
                     OnboardingFlow()

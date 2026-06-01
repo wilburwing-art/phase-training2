@@ -497,24 +497,34 @@ struct TapCounter {
             return
         }
         scrollIntoView(el)
+        // A button that exists but is disabled/obscured taps as a SILENT no-op;
+        // counting it would let a broken flow look fine here and fail
+        // misleadingly a step later. Require it to actually be hittable.
+        guard el.isHittable else {
+            XCTFail("[\(flow)] button '\(id)' exists but isn't hittable — disabled "
+                    + "or obscured (would-be tap #\(count + 1))", file: file, line: line)
+            return
+        }
         el.tap()
         count += 1
     }
 
-    /// Tap a button once it exists AND becomes enabled. Used for controls
-    /// gated on async work (e.g. the onboarding Accept button, enabled only
-    /// after the plan finishes generating). A disabled SwiftUI button still
-    /// "exists", so plain `tap` would no-op against it.
+    /// Tap a button once it exists AND becomes enabled. Used for a control that
+    /// is briefly disabled while an on-appear step settles — e.g. the
+    /// plan-preview Accept button, enabled once OnboardingPlanPreviewScreen's
+    /// `.onAppear` plan generation returns (synchronous, but not instant on a
+    /// cold sim). Polls within a SINGLE `timeout` budget (existence + enabled
+    /// together), so worst-case wait is `timeout`, not 2×.
     mutating func tapWhenEnabled(_ id: String, timeout: TimeInterval = 10,
                                  file: StaticString = #file, line: UInt = #line) {
         let el = app.buttons[id]
-        _ = el.waitForExistence(timeout: timeout)
         let deadline = Date().addingTimeInterval(timeout)
-        while !el.isEnabled, Date() < deadline {
+        while Date() < deadline, !(el.exists && el.isEnabled) {
             Thread.sleep(forTimeInterval: 0.2)
         }
-        guard el.isEnabled else {
-            XCTFail("[\(flow)] button '\(id)' never became enabled", file: file, line: line)
+        guard el.exists, el.isEnabled else {
+            XCTFail("[\(flow)] button '\(id)' never became enabled within \(Int(timeout))s",
+                    file: file, line: line)
             return
         }
         scrollIntoView(el)

@@ -22,7 +22,9 @@ import os
 import re
 import sys
 
-MARKER = re.compile(r"TAP-BUDGET-JSON\s+(\{.*\})")
+# Non-greedy so trailing braces elsewhere on the same physical log line can't
+# over-extend the capture (the marker JSON has no nested objects).
+MARKER = re.compile(r"TAP-BUDGET-JSON\s+(\{.*?\})")
 BASELINE_PATH = os.path.join(
     os.path.dirname(__file__), "..", "..",
     "PhaseTrainingUITests", "tap-budget-baseline.json",
@@ -78,9 +80,10 @@ def main():
         return 0
 
     rows = []
-    drift = []      # actual moved vs baseline, or a brand-new flow
-    missing = []    # in baseline but no marker emitted (test removed / crashed)
-    errored = []    # baseline value isn't a number (bad hand-edit)
+    drift = []       # actual moved vs baseline, or a brand-new flow
+    missing = []     # in baseline but no marker emitted (test removed / crashed)
+    errored = []     # baseline value isn't a number (bad hand-edit)
+    divergent = []   # actual==baseline but the in-code reference disagrees
     for flow in sorted(set(actuals) | set(baseline)):
         a = actuals.get(flow, {})
         actual = a.get("actual")
@@ -98,7 +101,13 @@ def main():
             status, delta = "BASELINE ERROR (non-numeric)", ""
             errored.append(flow)
         elif actual == base:
-            status, delta = "unchanged", "0"
+            # The expected count lives in two files (the test's in-code
+            # `reference` and this baseline). Catch them silently diverging.
+            if isinstance(ref, int) and ref != base:
+                status, delta = f"ref≠baseline ({ref} vs {base})", "0"
+                divergent.append(flow)
+            else:
+                status, delta = "unchanged", "0"
         else:
             d = actual - base
             status = "REGRESSED" if d > 0 else "improved"
@@ -128,6 +137,10 @@ def main():
     if errored:
         footer.append(f"**Baseline error (non-numeric):** {', '.join(errored)} "
                       "— fix the value in tap-budget-baseline.json.")
+    if divergent:
+        footer.append(f"**Reference ≠ baseline:** {', '.join(divergent)} — the "
+                      "test's in-code reference and tap-budget-baseline.json "
+                      "disagree; reconcile them.")
     if not footer:
         footer.append("All flows match baseline.")
 
