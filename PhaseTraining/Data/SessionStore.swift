@@ -362,8 +362,8 @@ final class SessionStore: ObservableObject {
         for ex in exercises {
             // Warmup sets excluded — never count as PRs.
             for set in ex.sets where set.done && !set.isWarmup {
-                let reps = Int(set.reps) ?? 0
-                let weight = Double(set.weight) ?? 0
+                let reps = set.repsValue ?? 0
+                let weight = set.weightValue ?? 0
                 guard reps > 0, weight > 0 else { continue }
                 let prior = best[ex.name]?[reps] ?? 0
                 guard weight > prior else { continue }

@@ -144,9 +144,30 @@ struct WeeklyCheckInFlow: View {
     }
 
     private func regenerateAndAdvance() {
-        // Stamp the check-in into memory before regen so the next planner pass
-        // can see it. We don't yet bias by it (Phase 13 + Planner's previousFeedback);
-        // we do bias by the recent FeedbackEntry stream.
+        // PURE: build a candidate plan from the draft WITHOUT mutating memory or
+        // overrides. All commits happen in accept() so that navigating Back from
+        // the preview (or abandoning the flow) never double-stamps the check-in
+        // or leaves a half-applied state. We generate against a LOCAL copy of
+        // overrides merged with the draft's unavailable-days + events.
+        var candidateOverrides = planStore.overrides
+        candidateOverrides.unavailableDays = draft.unavailableDays
+        candidateOverrides.events = draft.events
+        let routines = CoachDatabase.shared.listRoutines()
+        previewPlan = Planner.generate(
+            memory: memoryStore.memory,
+            overrides: candidateOverrides,
+            routines: routines,
+            previousFeedback: Array(memoryStore.memory.feedback.suffix(20)),
+            recentSportLogs: sportLogStore.entries
+        )
+        advance()
+    }
+
+    private func accept() {
+        guard let plan = previewPlan else { onDismiss(); return }
+        // Commit everything together, exactly once, on accept. Stamp the
+        // check-in into memory, push the draft's constraints/events into
+        // overrides (idempotent wholesale replace), then set the plan.
         memoryStore.update { mem in
             mem.weeklyCheckIns.append(
                 WeeklyCheckIn(
@@ -157,30 +178,11 @@ struct WeeklyCheckInFlow: View {
                 )
             )
         }
-        // Push unavailable days + pre-entered events into overrides so the
-        // Planner sees them. Replace events wholesale (not append) — the
-        // events list in the draft is hydrated from the same overrides on
-        // entry, so this is an idempotent re-write.
         planStore.updateOverrides(memory: nil) { ov in
             ov.unavailableDays = draft.unavailableDays
             ov.events = draft.events
         }
-        let routines = CoachDatabase.shared.listRoutines()
-        let plan = Planner.generate(
-            memory: memoryStore.memory,
-            overrides: planStore.overrides,
-            routines: routines,
-            previousFeedback: Array(memoryStore.memory.feedback.suffix(20)),
-            recentSportLogs: sportLogStore.entries
-        )
-        previewPlan = plan
-        advance()
-    }
-
-    private func accept() {
-        if let plan = previewPlan {
-            planStore.setPlan(plan)
-        }
+        planStore.setPlan(plan)
         onDismiss()
     }
 

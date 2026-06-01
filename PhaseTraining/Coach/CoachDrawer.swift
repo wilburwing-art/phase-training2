@@ -33,6 +33,7 @@ struct CoachDrawer: View {
             } else {
                 conversationList
             }
+            if conv.atSoftCap { capBanner }
             inputBar
         }
         .background(Color.bg.ignoresSafeArea())
@@ -237,8 +238,31 @@ struct CoachDrawer: View {
         .background(Color.bg)
     }
 
+    /// Shown above the input once the user crosses the soft daily turn cap.
+    /// Soft cap: informational, sends still go through. Hard cap: input is
+    /// also disabled via `canSend`.
+    private var capBanner: some View {
+        let hard = conv.atHardCap
+        return HStack(spacing: 8) {
+            Image(systemName: hard ? "moon.zzz.fill" : "exclamationmark.triangle.fill")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(hard ? Color.ink2 : Color.accent)
+            Text(hard
+                 ? "Daily coaching limit reached. Pick this up tomorrow — your plan and history stay put."
+                 : "You've sent \(conv.turnsToday) messages today, nearing the daily limit of \(CoachConfig.hardTurnCap).")
+                .font(.monoXS)
+                .foregroundStyle(Color.ink2)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.surface)
+    }
+
     private var canSend: Bool {
-        !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !conv.atHardCap
     }
 
     /// Build a "[STATUS NOTE: ...]" prefix when the previous assistant turn
@@ -280,6 +304,9 @@ struct CoachDrawer: View {
         }
         let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
+        // Hard daily cap: refuse to send. The input is already disabled via
+        // canSend, but guard here too in case .onSubmit fires.
+        guard !conv.atHardCap else { return }
 
         // Phase 13f: if the most recent assistant turn carried a proposal the
         // user has resolved, prepend a synthetic status note so the model
@@ -293,6 +320,7 @@ struct CoachDrawer: View {
         let assistantMsg = CoachMessage(role: "assistant", text: "")
         conv.append(userMsg)
         conv.append(assistantMsg)
+        conv.recordTurn()
         streamingId = assistantMsg.id
         input = ""
         sending = true

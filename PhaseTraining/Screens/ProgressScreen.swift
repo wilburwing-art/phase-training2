@@ -198,9 +198,9 @@ struct ProgressScreen: View {
             session.exercises.reduce(0.0) { acc, ex in
                 acc + ex.sets.reduce(0.0) { a, set in
                     guard set.done, !set.isWarmup,
-                          let w = Double(set.weight),
-                          let r = Double(set.reps) else { return a }
-                    return a + (w * r)
+                          let w = set.weightValue,
+                          let r = set.repsValue else { return a }
+                    return a + (w * Double(r))
                 }
             }
         }
@@ -729,7 +729,7 @@ struct ProgressScreen: View {
                 // Warmup sets excluded — per-exercise best-weight sparkline
                 // tracks working sets only.
                 for set in ex.sets where set.done && !set.isWarmup {
-                    if let w = Double(set.weight), w > 0 {
+                    if let w = set.weightValue, w > 0 {
                         hasWeightedSet = true
                         if w > bestThisSession { bestThisSession = w }
                     }

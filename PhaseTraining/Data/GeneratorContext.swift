@@ -267,8 +267,8 @@ extension GeneratorContext {
                 var bestWeight = 0.0
                 var bestReps = 0
                 for set in ex.sets where set.done && !set.isWarmup {
-                    let w = Double(set.weight) ?? 0
-                    let r = Int(set.reps) ?? 0
+                    let w = set.weightValue ?? 0
+                    let r = set.repsValue ?? 0
                     guard w > 0, r > 0 else { continue }
                     if w > bestWeight {
                         bestWeight = w
@@ -380,8 +380,8 @@ extension GeneratorContext {
                 // Warmup sets excluded — stagnation detection compares working
                 // 1RM-equivalents over time.
                 for set in ex.sets where set.done && !set.isWarmup {
-                    let w = Double(set.weight) ?? 0
-                    let r = Int(set.reps) ?? 0
+                    let w = set.weightValue ?? 0
+                    let r = set.repsValue ?? 0
                     guard w > 0, r > 0 else { continue }
                     let e = StrengthStandards.epley1RM(weight: w, reps: r)
                     if e > bestEpley { bestEpley = e }

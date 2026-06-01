@@ -30,10 +30,15 @@ final class CoachConversationStore: ObservableObject {
     private static let todayKey       = "pt_coach_today"
     private static let lastSeenDayKey = "pt_coach_last_seen_day"
     private static let archivePrefix  = "pt_coach_archive_"
+    private static let turnsKey       = "pt_coach_turns_today"
 
     @Published var messages: [CoachMessage] = []
     @Published var presented: Bool = false
     @Published var prefill: String = ""
+    /// User-initiated sends so far today. Persisted separately from the
+    /// transcript so clearing the chat doesn't reset the daily cost guard;
+    /// reset on calendar-day rollover. Drives the soft/hard turn caps.
+    @Published private(set) var turnsToday: Int = 0
 
     private let defaults: UserDefaults
 
@@ -43,6 +48,7 @@ final class CoachConversationStore: ObservableObject {
             self.messages = stored
         }
         rolloverIfNeeded(now: now)
+        self.turnsToday = defaults.integer(forKey: Self.turnsKey)
     }
 
     // MARK: - Public
@@ -111,6 +117,24 @@ final class CoachConversationStore: ObservableObject {
         presented = true
     }
 
+    // MARK: - Turn caps (cost guard)
+
+    /// Count a user-initiated send against today's cap. Persisted under a
+    /// dedicated key so `clearToday()` does NOT reset it.
+    func recordTurn(now: Date = Date()) {
+        // Roll over first so a session held open across midnight counts the new
+        // day's first turn against a fresh counter, not yesterday's bucket.
+        rolloverIfNeeded(now: now)
+        turnsToday += 1
+        defaults.set(turnsToday, forKey: Self.turnsKey)
+    }
+
+    /// At/above the soft cap: still sends, but the drawer shows a slow-down note.
+    var atSoftCap: Bool { turnsToday >= CoachConfig.softTurnCap }
+
+    /// At/above the hard cap: the drawer blocks further sends until rollover.
+    var atHardCap: Bool { turnsToday >= CoachConfig.hardTurnCap }
+
     /// Conversation history in the wire format CoachClient.stream expects.
     /// Drops empty placeholder bubbles (in-flight assistant turn before any
     /// deltas arrive).
@@ -144,6 +168,8 @@ final class CoachConversationStore: ObservableObject {
             messages = []
             defaults.removeObject(forKey: Self.todayKey)
             defaults.set(today, forKey: Self.lastSeenDayKey)
+            turnsToday = 0
+            defaults.removeObject(forKey: Self.turnsKey)
         }
     }
 

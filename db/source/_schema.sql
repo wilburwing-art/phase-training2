@@ -166,18 +166,6 @@ CREATE TABLE exercises (
   updated_at               TEXT DEFAULT (datetime('now'))
 );
 
-CREATE TABLE explanation_templates (
-  id                       INTEGER PRIMARY KEY,
-  trigger_type_id          INTEGER NOT NULL REFERENCES adjustment_trigger_types(id) ON DELETE CASCADE,
-  adjustment_type          TEXT NOT NULL CHECK (adjustment_type IN (
-                             'swap_exercise','reduce_intensity','reduce_volume','increase_intensity',
-                             'change_focus','skip_day','add_mobility','add_prehab',
-                             'rebalance_week','taper','swap_environment')),
-  template                 TEXT NOT NULL,
-  tone                     TEXT DEFAULT 'observational' CHECK (tone IN ('observational','encouraging','neutral')),
-  example                  TEXT
-);
-
 CREATE TABLE injury_sport_prevalence (
   injury_id       INTEGER NOT NULL REFERENCES common_injuries(id) ON DELETE CASCADE,
   sport_id        INTEGER NOT NULL REFERENCES sport_categories(id) ON DELETE CASCADE,
@@ -323,5 +311,3 @@ CREATE INDEX idx_sport_parent                  ON sport_categories(parent_id);
 CREATE INDEX idx_sub_context                   ON exercise_substitutions(context);
 
 CREATE INDEX idx_sub_substitute                ON exercise_substitutions(substitute_id);
-
-CREATE INDEX idx_templates_trigger             ON explanation_templates(trigger_type_id);

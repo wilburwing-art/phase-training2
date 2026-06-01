@@ -675,9 +675,12 @@ final class UserDatabase {
     }
 
     /// All completed sets with parseable positive (weight, reps), ordered by
-    /// session_start ASC then by position. GLOB filters mirror Swift's
-    /// `Int(set.reps)` strictness (rejects "8-12", "AMRAP"); `CAST AS REAL > 0`
-    /// matches `Double(set.weight) ?? 0` + `> 0` guard.
+    /// session_start ASC then by position. Parsing mirrors Swift's
+    /// `LoggedSet.repsValue`/`weightValue`: reps must START with a digit (the
+    /// leading int via CAST, so "8-10" -> 8 and "AMRAP" is rejected), and a
+    /// decimal comma is normalized before CAST (so "60,5" -> 60.5). Keeping
+    /// these in lock-step with the Swift parser prevents the live PR path
+    /// (personalRecords(in:)) from disagreeing with this baseline.
     ///
     /// Warmup sets excluded — never count as PRs.
     func qualifyingSetsForPRs() -> [PRSetRow] { withLock {
@@ -685,7 +688,7 @@ final class UserDatabase {
         let sql = """
         SELECT se.name,
                CAST(ss.reps AS INTEGER) AS reps_int,
-               CAST(ss.weight AS REAL)  AS weight_real,
+               CAST(REPLACE(ss.weight, ',', '.') AS REAL) AS weight_real,
                ss.session_start
         FROM session_sets ss
         JOIN session_exercises se
@@ -695,8 +698,7 @@ final class UserDatabase {
           AND ss.is_warmup = 0
           AND ss.weight <> ''
           AND ss.reps GLOB '[0-9]*'
-          AND ss.reps NOT GLOB '*[^0-9]*'
-          AND CAST(ss.weight AS REAL) > 0
+          AND CAST(REPLACE(ss.weight, ',', '.') AS REAL) > 0
         ORDER BY ss.session_start ASC, ss.exercise_position ASC, ss.num ASC
         """
         var stmt: OpaquePointer?
@@ -725,7 +727,7 @@ final class UserDatabase {
         var sql = """
         SELECT se.name,
                CAST(ss.reps AS INTEGER) AS reps_int,
-               MAX(CAST(ss.weight AS REAL)) AS max_weight
+               MAX(CAST(REPLACE(ss.weight, ',', '.') AS REAL)) AS max_weight
         FROM session_sets ss
         JOIN session_exercises se
           ON se.session_start = ss.session_start
@@ -734,8 +736,7 @@ final class UserDatabase {
           AND ss.is_warmup = 0
           AND ss.weight <> ''
           AND ss.reps GLOB '[0-9]*'
-          AND ss.reps NOT GLOB '*[^0-9]*'
-          AND CAST(ss.weight AS REAL) > 0
+          AND CAST(REPLACE(ss.weight, ',', '.') AS REAL) > 0
         """
         if excludingSessionStart != nil {
             sql += " AND ss.session_start <> ?"

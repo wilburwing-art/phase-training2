@@ -743,8 +743,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 14,
@@ -964,8 +964,8 @@
     "regression": "Bodyweight finger extension on table edge.",
     "progression": "Heavier dumbbell with slow eccentric.",
     "video_url": null,
-    "image_url": "https://exrx.net/WeightExercises/WristExtensors/DBReverseWristCurl",
-    "thumbnail_url": "https://exrx.net/WeightExercises/WristExtensors/DBReverseWristCurl",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -974,7 +974,7 @@
     "tags": "[\"reverse wrist curl\",\"forearm extensor\",\"antagonist\",\"climbers elbow\",\"tennis elbow\",\"prehab\"]",
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
-    "image_source": "other",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -1135,8 +1135,8 @@
     "regression": "Feet-on-floor pike push-up.",
     "progression": "Feet-on-wall HSPU progression.",
     "video_url": null,
-    "image_url": "https://exrx.net/WeightExercises/PectoralClavicular/BWPikePushup",
-    "thumbnail_url": "https://exrx.net/WeightExercises/PectoralClavicular/BWPikePushup",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -1145,7 +1145,7 @@
     "tags": "[\"pike push-up\",\"antagonist\",\"vertical push\",\"climbing\",\"home\"]",
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
-    "image_source": "other",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -2467,8 +2467,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY 3.0",
+    "image_attribution": "Wikimedia Commons \u2014 Iveto (CC BY 3.0)"
   },
   {
     "id": 45,
@@ -2524,8 +2524,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 Mary O'Neill (Public domain)"
   },
   {
     "id": 46,
@@ -3098,8 +3098,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 58,
@@ -3214,8 +3214,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 2.0",
+    "image_attribution": "Wikimedia Commons \u2014 stu_spivack (CC BY-SA 2.0)"
   },
   {
     "id": 60,
@@ -3664,8 +3664,8 @@
     "regression": "Chair-based version.",
     "progression": "Full yoga class (45-60 min).",
     "video_url": null,
-    "image_url": "https://upload.wikimedia.org/wikipedia/commons/d/d2/Surya_Namaskar_or_Sun_Salutation_at_Lalbagh_Botanical_Garden.jpg",
-    "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/d/d2/Surya_Namaskar_or_Sun_Salutation_at_Lalbagh_Botanical_Garden.jpg",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -3674,7 +3674,7 @@
     "tags": "[\"yoga\",\"recovery\",\"climbing\",\"mobility\",\"low energy\"]",
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
-    "image_source": "wikimedia",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -3846,8 +3846,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Aleksander Durkiewicz (CC BY-SA 4.0)"
   },
   {
     "id": 71,
@@ -4074,8 +4074,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons, Public domain, author: Lance Cpl. Ryan M. Joyner"
   },
   {
     "id": 75,
@@ -4131,8 +4131,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 Mary O'Neill (Public domain)"
   },
   {
     "id": 101,
@@ -4763,8 +4763,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 CFCF (CC BY-SA 4.0)"
   },
   {
     "id": 112,
@@ -5162,8 +5162,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 Airman 1st Class Kayla Newman (Public domain)"
   },
   {
     "id": 121,
@@ -5390,8 +5390,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Evan Mason (CC BY-SA 4.0)"
   },
   {
     "id": 126,
@@ -5778,8 +5778,8 @@
     "regression": "Knee-down side plank.",
     "progression": "Side plank with leg lift.",
     "video_url": null,
-    "image_url": "https://exrx.net/WeightExercises/Obliques/BWSidePlank",
-    "thumbnail_url": "https://exrx.net/WeightExercises/Obliques/BWSidePlank",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -5788,7 +5788,7 @@
     "tags": "[\"side plank\",\"core\",\"anti-lateral-flexion\",\"running\",\"foundation\"]",
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
-    "image_source": "other",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -6302,8 +6302,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Pambelle12 (CC BY-SA 4.0)"
   },
   {
     "id": 216,
@@ -6359,8 +6359,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons, Public domain, author: Marine Corps photo by Sgt. Ryan Young"
   },
   {
     "id": 217,
@@ -7102,8 +7102,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 234,
@@ -7375,8 +7375,8 @@
     "regression": "Lighter pack, shorter walk.",
     "progression": "Heavier pack, longer walk.",
     "video_url": null,
-    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/U.S._Army_Soldiers_complete_a_12-mile_ruck_march.jpg/640px-U.S._Army_Soldiers_complete_a_12-mile_ruck_march.jpg",
-    "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/U.S._Army_Soldiers_complete_a_12-mile_ruck_march.jpg/320px-U.S._Army_Soldiers_complete_a_12-mile_ruck_march.jpg",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -7385,7 +7385,7 @@
     "tags": "[\"rucking\",\"weighted walk\",\"hiking\",\"mountaineering\",\"military\"]",
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
-    "image_source": "wikimedia",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -7443,8 +7443,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 3.0",
+    "image_attribution": "Wikimedia Commons \u2014 No machine-readable author provided. GeorgeStepanek assumed (based on copyright claims). (CC BY-SA 3.0)"
   },
   {
     "id": 300,
@@ -7548,8 +7548,8 @@
     "regression": "Manual resistance only, lighter.",
     "progression": "Heavier plate on harness.",
     "video_url": null,
-    "image_url": "https://exrx.net/WeightExercises/Splenius/WtNeckHarnessExt",
-    "thumbnail_url": "https://exrx.net/WeightExercises/Splenius/WtNeckHarnessExt",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -7558,7 +7558,7 @@
     "tags": "[\"neck harness\",\"four-way neck\",\"wrestling\",\"mma\",\"boxing\",\"taekwondo\"]",
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
-    "image_source": "other",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -8418,8 +8418,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 robzabelyoga.com (CC BY-SA 4.0)"
   },
   {
     "id": 320,
@@ -8589,8 +8589,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons (Public domain)"
   },
   {
     "id": 325,
@@ -8704,8 +8704,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 328,
@@ -9048,8 +9048,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC0",
+    "image_attribution": "Wikimedia Commons \u2014 John Pierce (CC0)"
   },
   {
     "id": 335,
@@ -10302,8 +10302,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 U.S. Air Force photo by Senior Airman Myles Stepp (Public domain)"
   },
   {
     "id": 363,
@@ -11273,8 +11273,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 3.0",
+    "image_attribution": "Wikimedia Commons \u2014 www.localfitness.com.au (CC BY-SA 3.0)"
   },
   {
     "id": 388,
@@ -11957,8 +11957,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 Mary O'Neill (Public domain)"
   },
   {
     "id": 408,
@@ -12299,8 +12299,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Aleksander Durkiewicz (CC BY-SA 4.0)"
   },
   {
     "id": 419,
@@ -13268,8 +13268,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Aleksander Durkiewicz (CC BY-SA 4.0)"
   },
   {
     "id": 445,
@@ -13439,8 +13439,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Kennguru (CC BY-SA 4.0)"
   },
   {
     "id": 448,
@@ -14454,8 +14454,8 @@
     "regression": "Shorter rounds or no rope (ghost rope).",
     "progression": "Double-unders or single-leg skip.",
     "video_url": null,
-    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Jump_rope_in_Tehran.jpg/640px-Jump_rope_in_Tehran.jpg",
-    "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Jump_rope_in_Tehran.jpg/320px-Jump_rope_in_Tehran.jpg",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -14464,7 +14464,7 @@
     "tags": "[\"jump rope\",\"speed rope\",\"conditioning\",\"calves\",\"travel\"]",
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
-    "image_source": "wikimedia",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -14636,8 +14636,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Steffen A. Frost (CC BY-SA 4.0)"
   },
   {
     "id": 477,
@@ -14693,8 +14693,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 RickyBennison (CC BY-SA 4.0)"
   },
   {
     "id": 478,
@@ -15035,8 +15035,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 486,
@@ -15206,8 +15206,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY 2.0",
+    "image_attribution": "Wikimedia Commons \u2014 Anthony Topper (CC BY 2.0)"
   },
   {
     "id": 490,
@@ -15377,8 +15377,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Fomenka (CC BY-SA 4.0)"
   },
   {
     "id": 494,
@@ -15605,8 +15605,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 3.0",
+    "image_attribution": "Wikimedia Commons \u2014 Slyngebehandling (CC BY-SA 3.0)"
   },
   {
     "id": 500,
@@ -15719,8 +15719,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Iveto (CC BY-SA 4.0)"
   },
   {
     "id": 503,
@@ -15776,8 +15776,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY 3.0",
+    "image_attribution": "Wikimedia Commons \u2014 Kennguru (CC BY 3.0)"
   },
   {
     "id": 504,
@@ -15890,8 +15890,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 Mary O'Neill (Public domain)"
   },
   {
     "id": 509,
@@ -16061,8 +16061,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 CFCF (CC BY-SA 4.0)"
   },
   {
     "id": 512,
@@ -16232,8 +16232,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Rosiestep (CC BY-SA 4.0)"
   },
   {
     "id": 519,
@@ -16289,8 +16289,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Rosiestep (CC BY-SA 4.0)"
   },
   {
     "id": 520,
@@ -16403,8 +16403,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Lambtron (CC BY-SA 4.0)"
   },
   {
     "id": 523,
@@ -16688,8 +16688,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 Unknown authorUnknown author (Public domain)"
   },
   {
     "id": 531,
@@ -16975,8 +16975,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 537,
@@ -17079,8 +17079,8 @@
     "regression": "Goblet or front squat.",
     "progression": "Heavier SSB or pause rep.",
     "video_url": null,
-    "image_url": "https://exrx.net/WeightExercises/GluteusMaximus/SBSquat",
-    "thumbnail_url": "https://exrx.net/WeightExercises/GluteusMaximus/SBSquat",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -17089,7 +17089,7 @@
     "tags": "[\"safety bar\",\"ssb\",\"squat\",\"powerlifting\",\"shoulder friendly\",\"accessory\"]",
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
-    "image_source": "other",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -17660,8 +17660,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC0",
+    "image_attribution": "Wikimedia Commons \u2014 Pudpon (CC0)"
   },
   {
     "id": 550,
@@ -18173,8 +18173,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 TSGT Rick Sforza, U.S. Air Force (Public domain)"
   },
   {
     "id": 571,
@@ -18287,8 +18287,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Steffen A. Frost (CC BY-SA 4.0)"
   },
   {
     "id": 574,
@@ -18687,8 +18687,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Evan Mason (CC BY-SA 4.0)"
   },
   {
     "id": 601,
@@ -18976,8 +18976,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 U.S. Air Force photo by Senior Airman Myles Stepp (Public domain)"
   },
   {
     "id": 609,
@@ -19440,8 +19440,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 CFCF (CC BY-SA 4.0)"
   },
   {
     "id": 619,
@@ -19498,8 +19498,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Evan Mason (CC BY-SA 4.0)"
   },
   {
     "id": 620,
@@ -19545,8 +19545,8 @@
     "regression": "Unloaded hike or low-load pack.",
     "progression": "Heavier load, steeper grade, or longer duration.",
     "video_url": null,
-    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/U.S._Army_Soldiers_complete_a_12-mile_ruck_march.jpg/640px-U.S._Army_Soldiers_complete_a_12-mile_ruck_march.jpg",
-    "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/U.S._Army_Soldiers_complete_a_12-mile_ruck_march.jpg/320px-U.S._Army_Soldiers_complete_a_12-mile_ruck_march.jpg",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -19555,7 +19555,7 @@
     "tags": "[\"pack hike\",\"ruck\",\"mountaineering\",\"thru-hike\",\"backcountry\",\"aerobic\"]",
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
-    "image_source": "wikimedia",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -20020,8 +20020,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 3.0",
+    "image_attribution": "Wikimedia Commons \u2014 George Stepanek (CC BY-SA 3.0)"
   },
   {
     "id": 638,
@@ -20426,8 +20426,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 Marines from Arlington, VA, United States (Public domain)"
   },
   {
     "id": 654,
@@ -20600,8 +20600,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 3.0",
+    "image_attribution": "Wikimedia Commons \u2014 www.localfitness.com.au (CC BY-SA 3.0)"
   },
   {
     "id": 659,
@@ -21005,8 +21005,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 Airman 1st Class Erin Currie (Public domain)"
   },
   {
     "id": 676,
@@ -21121,8 +21121,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Pacopac (CC BY-SA 4.0)"
   },
   {
     "id": 679,
@@ -21527,8 +21527,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Pacopac (CC BY-SA 4.0)"
   },
   {
     "id": 688,
@@ -21701,8 +21701,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 Sondrekv (Public domain)"
   },
   {
     "id": 694,
@@ -21805,8 +21805,8 @@
     "regression": "Shorter run or run-walk.",
     "progression": "Longer run with fuel practice.",
     "video_url": null,
-    "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Long_distance_running.jpg/640px-Long_distance_running.jpg",
-    "thumbnail_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Long_distance_running.jpg/320px-Long_distance_running.jpg",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -21815,7 +21815,7 @@
     "tags": "[\"long run\",\"aerobic base\",\"road\",\"trail\",\"ultra\"]",
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
-    "image_source": "wikimedia",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -22570,8 +22570,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 3.0",
+    "image_attribution": "Wikimedia Commons \u2014 Jaykayfit (CC BY-SA 3.0)"
   },
   {
     "id": 735,
@@ -22860,8 +22860,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY 3.0",
+    "image_attribution": "Wikimedia Commons \u2014 David Maisel (CC BY 3.0)"
   },
   {
     "id": 745,
@@ -23324,8 +23324,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY 2.5",
+    "image_attribution": "Wikimedia Commons \u2014 Marie-Lan Nguyen (CC BY 2.5)"
   },
   {
     "id": 762,
@@ -23904,8 +23904,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Pinkpanther0 (CC BY 4.0)"
   },
   {
     "id": 778,
@@ -24078,8 +24078,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Steffen A. Frost (CC BY-SA 4.0)"
   },
   {
     "id": 784,
@@ -24368,8 +24368,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 3.0",
+    "image_attribution": "Wikimedia Commons \u2014 No machine-readable author provided. GeorgeStepanek assumed (based on copyright claims). (CC BY-SA 3.0)"
   },
   {
     "id": 790,
@@ -24484,8 +24484,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Steffen A. Frost (CC BY-SA 4.0)"
   },
   {
     "id": 796,
@@ -24542,8 +24542,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 JIP (CC BY-SA 4.0)"
   },
   {
     "id": 798,
@@ -24774,8 +24774,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Pacopac (CC BY-SA 4.0)"
   },
   {
     "id": 808,
@@ -24832,8 +24832,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 Sondrekv (Public domain)"
   },
   {
     "id": 809,
@@ -25180,8 +25180,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Evan Mason (CC BY-SA 4.0)"
   },
   {
     "id": 826,
@@ -25412,8 +25412,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 2.0",
+    "image_attribution": "Wikimedia Commons \u2014 Tobias Steinhoff (CC BY-SA 2.0)"
   },
   {
     "id": 830,
@@ -25528,8 +25528,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 Andrew Parodi (talk) (Public domain)"
   },
   {
     "id": 833,
@@ -25934,8 +25934,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 JIP (CC BY-SA 4.0)"
   },
   {
     "id": 851,
@@ -25992,8 +25992,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 2.5",
+    "image_attribution": "Wikimedia Commons \u2014 w:User:Jeffness (CC BY-SA 2.5)"
   },
   {
     "id": 854,
@@ -26050,8 +26050,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 3.0",
+    "image_attribution": "Wikimedia Commons \u2014 Jaykayfit (CC BY-SA 3.0)"
   },
   {
     "id": 856,
@@ -26166,8 +26166,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 Unknown authorUnknown author (Public domain)"
   },
   {
     "id": 859,
@@ -26224,8 +26224,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 3.0",
+    "image_attribution": "Wikimedia Commons \u2014 DLangrish (English Wikipedia User Name) (CC BY-SA 3.0)"
   },
   {
     "id": 865,
@@ -26282,8 +26282,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Steffen A. Frost (CC BY-SA 4.0)"
   },
   {
     "id": 869,
@@ -26387,8 +26387,8 @@
     "regression": "Bodyweight pause squat.",
     "progression": "Heavier load or longer pause.",
     "video_url": null,
-    "image_url": "https://exrx.net/WeightExercises/Quadriceps/BBSquat",
-    "thumbnail_url": "https://exrx.net/WeightExercises/Quadriceps/BBSquat",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -26397,7 +26397,7 @@
     "tags": "[\"powerlifting\",\"pause\",\"squat\",\"strength\"]",
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
-    "image_source": "other",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -26456,8 +26456,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Pacopac (CC BY-SA 4.0)"
   },
   {
     "id": 874,
@@ -26804,8 +26804,8 @@
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 Russian post (Public domain)"
   },
   {
     "id": 888,
@@ -27199,8 +27199,8 @@
     "regression": "PVC or pipe.",
     "progression": "Add light plates.",
     "video_url": null,
-    "image_url": "https://exrx.net/WeightExercises/OlympicLifts/SplitJerk",
-    "thumbnail_url": "https://exrx.net/WeightExercises/OlympicLifts/SplitJerk",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -27209,7 +27209,7 @@
     "tags": "[\"olympic lifting\",\"split jerk\",\"position\",\"drill\"]",
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23",
-    "image_source": "other",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -27326,8 +27326,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 901,
@@ -27554,8 +27554,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 3.0",
+    "image_attribution": "Wikimedia Commons \u2014 Everkinetic (CC BY-SA 3.0)"
   },
   {
     "id": 905,
@@ -27611,8 +27611,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 906,
@@ -27668,8 +27668,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "PUBLIC-DOMAIN",
+    "image_attribution": "Wikimedia Commons \u2014 Diplomatic Security Service (Public domain)"
   },
   {
     "id": 907,
@@ -27782,8 +27782,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 909,
@@ -28010,8 +28010,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 913,
@@ -28067,8 +28067,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 914,
@@ -28181,8 +28181,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 916,
@@ -28398,8 +28398,8 @@
     "regression": "Goblet squat with pause.",
     "progression": "Heavier load or longer pause.",
     "video_url": null,
-    "image_url": "https://exrx.net/WeightExercises/Quadriceps/BBSquat",
-    "thumbnail_url": "https://exrx.net/WeightExercises/Quadriceps/BBSquat",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -28408,7 +28408,7 @@
     "tags": "[\"pause squat\",\"powerlifting\",\"strength\"]",
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
-    "image_source": "other",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -28523,8 +28523,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 922,
@@ -28580,8 +28580,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 923,
@@ -28637,8 +28637,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 924,
@@ -28683,8 +28683,8 @@
     "regression": "Band-assisted neutral pull-up.",
     "progression": "Weighted neutral pull-up.",
     "video_url": null,
-    "image_url": "https://exrx.net/WeightExercises/LatissimusDorsi/BWPullupN",
-    "thumbnail_url": "https://exrx.net/WeightExercises/LatissimusDorsi/BWPullupN",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -28693,7 +28693,7 @@
     "tags": "[\"neutral grip\",\"pull up\",\"shoulder friendly\"]",
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
-    "image_source": "other",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -28808,8 +28808,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 927,
@@ -28854,8 +28854,8 @@
     "regression": "Barbell bent-over row.",
     "progression": "Heavier load.",
     "video_url": null,
-    "image_url": "https://exrx.net/WeightExercises/BackGeneral/BBBentOverRow",
-    "thumbnail_url": "https://exrx.net/WeightExercises/BackGeneral/BBBentOverRow",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -28864,7 +28864,7 @@
     "tags": "[\"pendlay row\",\"barbell\",\"row\",\"powerlifting\"]",
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
-    "image_source": "other",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -28968,8 +28968,8 @@
     "regression": "Seated cable row.",
     "progression": "Heavier load.",
     "video_url": null,
-    "image_url": "https://exrx.net/WeightExercises/BackGeneral/LVSeatedRow",
-    "thumbnail_url": "https://exrx.net/WeightExercises/BackGeneral/LVSeatedRow",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -28978,7 +28978,7 @@
     "tags": "[\"machine row\",\"chest supported\",\"back\"]",
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
-    "image_source": "other",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -29207,8 +29207,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 935,
@@ -29264,8 +29264,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 936,
@@ -29492,8 +29492,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 4.0",
+    "image_attribution": "Wikimedia Commons \u2014 Teemeah (CC BY-SA 4.0)"
   },
   {
     "id": 940,
@@ -29663,8 +29663,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 943,
@@ -29720,8 +29720,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 944,
@@ -29777,8 +29777,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 945,
@@ -30336,8 +30336,8 @@
     "regression": "Banded rope pushdown.",
     "progression": "Heavier cable load.",
     "video_url": null,
-    "image_url": "https://exrx.net/WeightExercises/Triceps/CBPushdownRope",
-    "thumbnail_url": "https://exrx.net/WeightExercises/Triceps/CBPushdownRope",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -30346,7 +30346,7 @@
     "tags": "[\"rope pushdown\",\"triceps\",\"cable\"]",
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
-    "image_source": "other",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -30404,8 +30404,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 956,
@@ -30461,8 +30461,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 957,
@@ -30735,8 +30735,8 @@
     "regression": "Lighter load.",
     "progression": "Heavier load.",
     "video_url": null,
-    "image_url": "https://exrx.net/WeightExercises/DeltoidPosterior/LVRearDeltFlyGriplessPecDeck",
-    "thumbnail_url": "https://exrx.net/WeightExercises/DeltoidPosterior/LVRearDeltFlyGriplessPecDeck",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -30745,7 +30745,7 @@
     "tags": "[\"rear delt fly\",\"pec deck reverse\",\"machine\"]",
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
-    "image_source": "other",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -30803,8 +30803,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 963,
@@ -30860,8 +30860,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 964,
@@ -31077,8 +31077,8 @@
     "regression": "Lighter load.",
     "progression": "Heavier load.",
     "video_url": null,
-    "image_url": "https://exrx.net/WeightExercises/PectoralSternal/LVPecDeckFly",
-    "thumbnail_url": "https://exrx.net/WeightExercises/PectoralSternal/LVPecDeckFly",
+    "image_url": null,
+    "thumbnail_url": null,
     "source_video_attribution": null,
     "source_name": null,
     "source_url": null,
@@ -31087,7 +31087,7 @@
     "tags": "[\"pec deck\",\"chest fly\",\"machine\"]",
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
-    "image_source": "other",
+    "image_source": null,
     "image_license": null,
     "image_attribution": null
   },
@@ -31145,8 +31145,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "wikimedia",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "CC BY-SA 3.0",
+    "image_attribution": "Wikimedia Commons \u2014 No machine-readable author provided. GeorgeStepanek assumed (based on copyright claims). (CC BY-SA 3.0)"
   },
   {
     "id": 969,
@@ -31202,8 +31202,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 970,
@@ -31259,8 +31259,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 971,
@@ -31487,8 +31487,8 @@
     "created_at": "2026-05-14 03:01:48",
     "updated_at": "2026-05-14 03:01:48",
     "image_source": "free-exercise-db",
-    "image_license": null,
-    "image_attribution": null
+    "image_license": "Unlicense",
+    "image_attribution": "free-exercise-db (github.com/yuhonas/free-exercise-db)"
   },
   {
     "id": 976,

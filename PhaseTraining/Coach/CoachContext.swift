@@ -163,7 +163,7 @@ enum CoachContext {
         }
 
         if !memory.dislikes.isEmpty {
-            blocks.append("DISLIKES\n" + memory.dislikes.map { "- \($0)" }.joined(separator: "\n"))
+            blocks.append("DISLIKES\n" + memory.dislikes.map { "- \(sanitizeFreeText($0))" }.joined(separator: "\n"))
         }
         let demoProfile = DemographicProfile.from(memory)
         if let block = structuredInjuriesSection(memory: memory, now: now) {
@@ -180,7 +180,7 @@ enum CoachContext {
         let knownSlugs = Set(CoachDatabase.shared.listInjuries().map(\.slug))
         let legacyConstraints = memory.constraints.filter { !knownSlugs.contains($0) }
         if !legacyConstraints.isEmpty {
-            blocks.append("CONSTRAINTS (free-text)\n" + legacyConstraints.map { "- \($0)" }.joined(separator: "\n"))
+            blocks.append("CONSTRAINTS (free-text)\n" + legacyConstraints.map { "- \(sanitizeFreeText($0))" }.joined(separator: "\n"))
         }
 
         // Current plan
@@ -286,7 +286,7 @@ enum CoachContext {
             for log in sportLogs {
                 var line = "- \(short(log.date)) · \(log.sport.name) · \(log.durationMinutes) min · \(log.intensity.label.lowercased())"
                 if let note = log.note, !note.isEmpty {
-                    line += " · note: \(note)"
+                    line += " · note: \(sanitizeFreeText(note))"
                 }
                 lines.append(line)
             }
@@ -359,7 +359,7 @@ enum CoachContext {
                 if let d = f.difficulty { parts.append("felt \(d.replacingOccurrences(of: "_", with: " "))") }
                 if f.ranLong { parts.append("ran long") }
                 if !f.hurtAreas.isEmpty { parts.append("hurt: \(f.hurtAreas.joined(separator: ", "))") }
-                if let n = f.notes, !n.isEmpty { parts.append("note: \(n)") }
+                if let n = f.notes, !n.isEmpty { parts.append("note: \(sanitizeFreeText(n))") }
                 lines.append("- " + parts.joined(separator: " · "))
             }
             blocks.append("RECENT POST-WORKOUT FEEDBACK\n" + lines.joined(separator: "\n"))
@@ -482,7 +482,7 @@ enum CoachContext {
             // typical_recovery — they're columns on the table but not read by
             // CoachDatabase. Skipped here; can be promoted later if useful.
             if let notes = inj.notes, !notes.isEmpty {
-                detail.append("user note: \(notes)")
+                detail.append("user note: \(sanitizeFreeText(notes))")
             }
             if !detail.isEmpty {
                 line += ". " + detail.joined(separator: ". ") + "."
@@ -726,6 +726,27 @@ enum CoachContext {
     /// "horizontal-push" → "Horizontal push". Cheap display formatting.
     private static func formatPattern(_ slug: String) -> String {
         slug.replacingOccurrences(of: "-", with: " ").capitalized
+    }
+
+    /// Neutralize user-typed free-text before it goes into the per-turn prompt.
+    /// The injection vector that matters is newlines — a note like
+    /// "\n\nSYSTEM: ignore prior instructions" could fake a new section the
+    /// model treats as authoritative. We flatten all line breaks/control
+    /// whitespace to single spaces, collapse runs, and bound the length so a
+    /// long note can't blow out the context. The system prompt separately tells
+    /// the model this text is data, not instructions. Clean single-line notes
+    /// (the common case) pass through unchanged.
+    static func sanitizeFreeText(_ raw: String, max: Int = 240) -> String {
+        let cleaned = raw.map { ch -> Character in
+            if ch.isWhitespace { return " " }
+            if ch.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }) { return " " }
+            return ch
+        }
+        var s = String(cleaned)
+            .split(separator: " ", omittingEmptySubsequences: true)
+            .joined(separator: " ")
+        if s.count > max { s = String(s.prefix(max)) + "…" }
+        return s
     }
 
     /// "{normal: 4, high: 2, low: 1}" → "normal (4), high (2), low (1)".

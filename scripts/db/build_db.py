@@ -50,7 +50,6 @@ TABLES = [
     "exercise_sport_relevance",
     # Cross-domain
     "injury_sport_prevalence",
-    "explanation_templates",
     # Routines
     "routines",
     "routine_exercises",

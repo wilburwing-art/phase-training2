@@ -44,6 +44,42 @@ struct LoggedSet: Codable, Equatable {
     }
 }
 
+extension LoggedSet {
+    /// Best-effort numeric load from the free-text `weight` field. The logger
+    /// accepts raw text, so values arrive as "135", " 135 ", "+25", "60kg",
+    /// "1,250", or "BW". `Double(weight)` rejects everything but a bare number,
+    /// which silently drops padded/suffixed/comma'd sets from volume, PRs, and
+    /// trend math. This tolerates a leading "+", surrounding whitespace,
+    /// thousands separators, and a trailing unit; returns nil only when there's
+    /// no number ("", "BW", "bodyweight") — callers using `?? 0` treat those as
+    /// zero external load, which is correct for bodyweight movements.
+    var weightValue: Double? { Self.leadingNumber(weight) }
+
+    /// Best-effort rep count from the free-text `reps` field. Same tolerance as
+    /// `weightValue`; a logged range like "8-10" yields the first number.
+    /// `Int(exactly:)` (not trapping `Int(Double)`) so a pathologically long
+    /// entry — stuck key, paste, bad CSV — yields nil instead of crashing the
+    /// getter and every read path that calls it.
+    var repsValue: Int? { Self.leadingNumber(reps).flatMap { Int(exactly: $0.rounded()) } }
+
+    private static func leadingNumber(_ raw: String) -> Double? {
+        var s = raw.trimmingCharacters(in: .whitespaces)
+        guard !s.isEmpty else { return nil }
+        if s.hasPrefix("+") { s.removeFirst() }
+        // Comma handling: with BOTH separators present, "," is a thousands
+        // grouping ("1,250.5" -> "1250.5"). A lone "," is the decimal separator
+        // on European keypads ("60,5" -> "60.5"), NOT a thousands mark —
+        // stripping it would 10x the value.
+        if s.contains(",") {
+            s = s.contains(".")
+                ? s.replacingOccurrences(of: ",", with: "")
+                : s.replacingOccurrences(of: ",", with: ".")
+        }
+        let numeric = s.prefix { $0.isNumber || $0 == "." }
+        return Double(numeric)
+    }
+}
+
 struct LoggedExercise: Codable, Identifiable, Equatable {
     var id: String
     var name: String
