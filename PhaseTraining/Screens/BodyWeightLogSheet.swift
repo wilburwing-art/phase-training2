@@ -55,6 +55,10 @@ struct BodyWeightLogSheet: View {
         .presentationBackground(Color.bg)
         .preferredColorScheme(.dark)
         .onAppear {
+            // Seed the log from a scalar weight set during onboarding / About
+            // You so it shows in the trend + history (idempotent — only fires
+            // when the log is empty and a scalar exists).
+            store.update { $0.backfillBodyWeightLogFromScalar() }
             // Seed input from the most recent entry so the user sees today's
             // logging as a small delta, not a from-scratch number.
             if weightText.isEmpty, let latest = sortedEntries.first {
@@ -303,17 +307,9 @@ struct BodyWeightLogSheet: View {
     private func logEntry() {
         guard let kg = parseInputAsKg(weightText), kg > 0 else { return }
         let note = noteText.trimmingCharacters(in: .whitespacesAndNewlines)
-        let entry = BodyWeightEntry(
-            date: Date(),
-            weightKg: kg,
-            note: note.isEmpty ? nil : note
-        )
+        // Single funnel: append + mirror the scalar to the newest entry.
         store.update { mem in
-            mem.bodyWeightLog.append(entry)
-            // Mirror the latest weight onto the scalar so existing consumers
-            // (strength-ratios, generator) keep working without bespoke
-            // log-traversal code.
-            mem.weightKg = kg
+            mem.recordBodyWeight(kg, note: note.isEmpty ? nil : note)
         }
         noteText = ""
         weightFocused = false
@@ -322,13 +318,10 @@ struct BodyWeightLogSheet: View {
     private func deleteEntry(_ entry: BodyWeightEntry) {
         store.update { mem in
             mem.bodyWeightLog.removeAll { $0.id == entry.id }
-            // Re-mirror to whatever's still latest (or nil if we drained the
-            // log entirely). Keeps the scalar truthful even after deletes.
-            if let next = mem.bodyWeightLog.sorted(by: { $0.date > $1.date }).first {
-                mem.weightKg = next.weightKg
-            } else {
-                mem.weightKg = nil
-            }
+            // Re-mirror to whatever's still latest. Does NOT null the scalar
+            // when the log drains — an onboarded / About-You weight that was
+            // never logged must survive deleting the last logged entry.
+            mem.remirrorWeightFromLog()
         }
     }
 

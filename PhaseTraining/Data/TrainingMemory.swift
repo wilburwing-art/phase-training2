@@ -313,6 +313,68 @@ extension TrainingMemory {
     }
 }
 
+// MARK: - Body-weight log ↔ scalar reconciliation (build 103)
+//
+// `weightKg` is the scalar every consumer reads (strength ratios, generator,
+// 1RM math). `bodyWeightLog` is the time series that drives the trend. They
+// must not drift, but there are three writers (onboarding/About-You set the
+// scalar directly; the log sheet appends; HealthKit imports merge). These
+// helpers are the single funnel that keeps the pair consistent so no caller
+// can null out a legitimately-set weight or mirror a stale value.
+
+extension TrainingMemory {
+    /// Most-recent entry by date. The log isn't kept sorted at rest (callers
+    /// append without re-sorting), so resolve the newest explicitly rather
+    /// than trusting `.last`.
+    var latestBodyWeightEntry: BodyWeightEntry? {
+        bodyWeightLog.max { $0.date < $1.date }
+    }
+
+    /// Append a logged weight and mirror the scalar to whatever is newest.
+    /// Single writer for the append+mirror pair so a back-dated entry can't
+    /// clobber a newer scalar.
+    mutating func recordBodyWeight(_ kg: Double, on date: Date = Date(), note: String? = nil) {
+        bodyWeightLog.append(BodyWeightEntry(date: date, weightKg: kg, note: note))
+        weightKg = latestBodyWeightEntry?.weightKg
+    }
+
+    /// Re-mirror the scalar to the log's newest entry. Crucially does NOT
+    /// null the scalar when the log is empty — a weight set via onboarding /
+    /// About You (which never created a log entry) must survive deleting the
+    /// last logged entry. Without this guard, deleting your one logged weight
+    /// silently wipes the onboarded bodyweight and the strength-ratios card
+    /// disappears.
+    mutating func remirrorWeightFromLog() {
+        if let newest = latestBodyWeightEntry { weightKg = newest.weightKg }
+    }
+
+    /// Seed the log from a scalar set outside it (onboarding / About You, or
+    /// any pre–build-103 save). Idempotent: no-op once the log has entries or
+    /// when there's no scalar. Anchored to `onboardedAt` so a later HealthKit
+    /// import with real sample dates compares correctly against it instead of
+    /// blindly overwriting it.
+    mutating func backfillBodyWeightLogFromScalar() {
+        guard bodyWeightLog.isEmpty, let kg = weightKg else { return }
+        bodyWeightLog = [BodyWeightEntry(date: onboardedAt ?? Date(), weightKg: kg, note: nil)]
+    }
+
+    /// Reconcile after an external scalar edit (About You writes `weightKg`
+    /// directly): if the scalar no longer matches the newest log entry, record
+    /// a fresh "today" entry so the trend and the scalar agree. Seeds an empty
+    /// log first so the very first edit lands as one point rather than a
+    /// divergence. `< 0.05 kg` tolerance treats a re-open with no change as a
+    /// no-op (the stored value round-trips through one-decimal display).
+    mutating func reconcileScalarIntoLog(on date: Date = Date()) {
+        guard let kg = weightKg else { return }
+        if bodyWeightLog.isEmpty {
+            backfillBodyWeightLogFromScalar()
+            return
+        }
+        if let newest = latestBodyWeightEntry, abs(newest.weightKg - kg) < 0.05 { return }
+        bodyWeightLog.append(BodyWeightEntry(date: date, weightKg: kg, note: nil))
+    }
+}
+
 // MARK: - Sport
 //
 // Stored as a slug (singleValue String). Catalog lookup at decode time means a

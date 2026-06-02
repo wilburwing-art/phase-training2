@@ -406,6 +406,11 @@ struct HealthImportsScreen: View {
             do {
                 _ = try await importer.requestBodyMetricsAuthorization()
                 let samples = try await importer.recentBodyMetrics(days: 365)
+                // Seed any onboarding / About-You scalar into the log FIRST so
+                // it participates in the date comparison. Otherwise an older HK
+                // sample would clobber a manually-set weight that has no log
+                // entry to compete with.
+                store.update { $0.backfillBodyWeightLogFromScalar() }
                 let merged = BodyMetricsMerger.merge(
                     weightLog: store.memory.bodyWeightLog,
                     compositionLog: store.memory.bodyCompositionLog,
@@ -414,12 +419,10 @@ struct HealthImportsScreen: View {
                 store.update { mem in
                     mem.bodyWeightLog = merged.weight
                     mem.bodyCompositionLog = merged.composition
-                    // Mirror the most-recent weight onto the scalar so
-                    // strength ratios / generator pick it up without a
-                    // re-read of the log.
-                    if let newest = merged.weight.first {
-                        mem.weightKg = newest.weightKg
-                    }
+                    // Mirror to whatever is genuinely newest by date — an older
+                    // imported sample no longer overwrites a fresher logged
+                    // weight, and the scalar is never nulled.
+                    mem.remirrorWeightFromLog()
                 }
                 lastBodyMetricsSummary = merged.summary
             } catch {

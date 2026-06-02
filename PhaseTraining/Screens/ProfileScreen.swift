@@ -474,7 +474,10 @@ struct ProfileScreen: View {
     private var bodyWeightSummary: String {
         let logCount = store.memory.bodyWeightLog.count
         let imperial = store.memory.usesImperial
-        guard let kg = store.memory.weightKg else {
+        // Prefer the log's newest entry, fall back to the scalar — so a
+        // populated log never shows "—" just because the mirror lagged.
+        let kg = store.memory.latestBodyWeightEntry?.weightKg ?? store.memory.weightKg
+        guard let kg else {
             return logCount == 0 ? "Not set" : "—"
         }
         let weight = BodyMetrics.formatWeight(kg: kg, imperial: imperial)
