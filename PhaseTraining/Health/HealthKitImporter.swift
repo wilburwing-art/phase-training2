@@ -364,12 +364,19 @@ struct BodyMetricsSyncSummary: Equatable, Sendable {
 
 /// Pure merge logic. Given current logs + a batch of HK samples, returns
 /// the new logs we'd write + a summary of what changed. De-duplicates by
-/// matching timestamp within a 60-second window (HK's sub-second precision
-/// means a re-sync would otherwise spam the log with near-identical
-/// entries). Body-fat + lean-mass samples taken within the same minute
-/// collapse onto one BodyCompositionEntry — most scales report both in
-/// one reading.
+/// matching real timestamps within a 60-second window (HK's sub-second
+/// precision means a re-sync would otherwise spam the log with near-identical
+/// entries). Body-fat + lean-mass samples from one reading collapse onto one
+/// BodyCompositionEntry — most scales report both within a second or two.
 enum BodyMetricsMerger {
+    /// Samples this close together are treated as one composition reading.
+    /// Wider than a scale's BF%/lean emit gap, narrower than any real
+    /// re-measurement interval.
+    private static let pairWindow: TimeInterval = 120
+    /// Two entries within this window are considered the same reading for
+    /// dedup against the existing log + within this batch.
+    private static let dedupWindow: TimeInterval = 60
+
     static func merge(
         weightLog: [BodyWeightEntry],
         compositionLog: [BodyCompositionEntry],
@@ -384,52 +391,37 @@ enum BodyMetricsMerger {
             newestSampleAt: nil
         )
 
-        // Group composition samples (BF% + lean) into one entry per
-        // minute-bucket so a single scale reading lands as one row.
-        var bucketed: [Date: (bf: Double?, lean: Double?)] = [:]
-        for s in samples where s.kind != .bodyMass {
-            let bucket = bucketKey(for: s.date)
-            var entry = bucketed[bucket] ?? (nil, nil)
-            if s.kind == .bodyFatPercent { entry.bf = s.value }
-            if s.kind == .leanBodyMass   { entry.lean = s.value }
-            bucketed[bucket] = entry
-        }
-
         for s in samples {
             if summary.newestSampleAt == nil || s.date > summary.newestSampleAt! {
                 summary.newestSampleAt = s.date
             }
-            switch s.kind {
-            case .bodyMass:
-                if isDuplicate(date: s.date, weights: weight) {
-                    summary.skippedDuplicateSamples += 1
-                    continue
-                }
-                weight.append(BodyWeightEntry(
-                    date: s.date,
-                    weightKg: s.value,
-                    note: "From Health"
-                ))
-                summary.addedWeightEntries += 1
-            case .bodyFatPercent, .leanBodyMass:
-                // Handled below from the bucket map so paired readings
-                // collapse onto one row.
-                continue
-            }
         }
 
-        for (bucket, payload) in bucketed {
-            // bucket is start-of-minute; use the original sample timestamps
-            // when reconstructing the entry so the user sees the actual
-            // reading time, not a floor.
-            if isDuplicate(date: bucket, compositions: composition) {
-                summary.skippedDuplicateSamples += (payload.bf != nil ? 1 : 0) + (payload.lean != nil ? 1 : 0)
+        // Weight: one entry per sample, deduped against the growing log (so
+        // intra-batch near-duplicates collapse too). Uses the real timestamp.
+        for s in samples where s.kind == .bodyMass {
+            if isDuplicate(date: s.date, dates: weight.map(\.date)) {
+                summary.skippedDuplicateSamples += 1
+                continue
+            }
+            weight.append(BodyWeightEntry(date: s.date, weightKg: s.value, note: "From Health"))
+            summary.addedWeightEntries += 1
+        }
+
+        // Composition: cluster BF% + lean by PROXIMITY (not a minute floor),
+        // so a paired reading that straddles a wall-clock minute boundary
+        // still collapses onto one row. The cluster's anchor is the EARLIEST
+        // real sample time — preserved on the entry, no flooring.
+        for group in clusterComposition(samples) {
+            let dates = composition.map(\.date)
+            if isDuplicate(date: group.date, dates: dates) {
+                summary.skippedDuplicateSamples += 1   // per reading — symmetric with adds
                 continue
             }
             composition.append(BodyCompositionEntry(
-                date: bucket,
-                bodyFatPercent: payload.bf,
-                leanMassKg: payload.lean,
+                date: group.date,
+                bodyFatPercent: group.bf,
+                leanMassKg: group.lean,
                 method: "Health",
                 note: nil
             ))
@@ -443,20 +435,47 @@ enum BodyMetricsMerger {
         return (weight, composition, summary)
     }
 
-    /// Minute-precision bucket key — collapses sub-second jitter between
-    /// HK paired readings (a smart scale typically emits BF% and lean
-    /// within the same second, but the underlying timestamps can differ
-    /// by hundredths of a second).
-    private static func bucketKey(for date: Date) -> Date {
-        let t = date.timeIntervalSince1970
-        return Date(timeIntervalSince1970: floor(t / 60) * 60)
+    /// Greedily group composition samples (BF% + lean) that belong to the
+    /// same reading. Samples are sorted by time, then each is folded into the
+    /// current group when it's within `pairWindow` AND fills an empty slot
+    /// (we never overwrite a BF with a second BF). A sample that can't fold
+    /// starts a new group. The group date is its earliest sample's real time.
+    private static func clusterComposition(
+        _ samples: [HKBodyMetricSample]
+    ) -> [(date: Date, bf: Double?, lean: Double?)] {
+        let comp = samples
+            .filter { $0.kind != .bodyMass }
+            .sorted { $0.date < $1.date }
+        var groups: [(date: Date, bf: Double?, lean: Double?)] = []
+        for s in comp {
+            let canFold: Bool = {
+                guard let last = groups.last,
+                      abs(s.date.timeIntervalSince(last.date)) <= pairWindow else { return false }
+                if s.kind == .bodyFatPercent { return last.bf == nil }
+                if s.kind == .leanBodyMass   { return last.lean == nil }
+                return false
+            }()
+            if canFold {
+                var last = groups[groups.count - 1]
+                if s.kind == .bodyFatPercent { last.bf = s.value }
+                if s.kind == .leanBodyMass   { last.lean = s.value }
+                groups[groups.count - 1] = last
+            } else {
+                groups.append((
+                    date: s.date,
+                    bf: s.kind == .bodyFatPercent ? s.value : nil,
+                    lean: s.kind == .leanBodyMass ? s.value : nil
+                ))
+            }
+        }
+        return groups
     }
 
-    private static func isDuplicate(date: Date, weights: [BodyWeightEntry]) -> Bool {
-        weights.contains { abs($0.date.timeIntervalSince(date)) < 60 }
-    }
-
-    private static func isDuplicate(date: Date, compositions: [BodyCompositionEntry]) -> Bool {
-        compositions.contains { abs($0.date.timeIntervalSince(date)) < 60 }
+    /// True when `date` is within the dedup window of any existing entry date.
+    /// Compares REAL timestamps on both sides (no flooring), so a genuine new
+    /// reading isn't dropped by a floored bucket landing near an unrelated
+    /// entry.
+    private static func isDuplicate(date: Date, dates: [Date]) -> Bool {
+        dates.contains { abs($0.timeIntervalSince(date)) < dedupWindow }
     }
 }

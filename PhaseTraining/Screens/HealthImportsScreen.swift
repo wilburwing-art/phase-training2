@@ -386,7 +386,7 @@ struct HealthImportsScreen: View {
                 .font(.subheadline.weight(.medium))
                 .foregroundColor(.ink)
             if s.skippedDuplicateSamples > 0 {
-                Text("Skipped \(s.skippedDuplicateSamples) already-logged sample\(s.skippedDuplicateSamples == 1 ? "" : "s").")
+                Text("Skipped \(s.skippedDuplicateSamples) already-logged entr\(s.skippedDuplicateSamples == 1 ? "y" : "ies").")
                     .font(.caption)
                     .foregroundColor(.ink3)
             }

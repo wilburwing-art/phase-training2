@@ -118,6 +118,52 @@ final class BodyMetricsMergerTests: XCTestCase {
         XCTAssertEqual(result.summary.newestSampleAt, base.addingTimeInterval(-1 * 86_400))
     }
 
+    func test_pairedReading_straddlingMinuteBoundary_stillCollapses() {
+        // BF% at 10:00:58 and lean at 10:01:02 — 4s apart but across a
+        // wall-clock minute. The old minute-floor split these into two rows;
+        // proximity clustering must keep them as one reading.
+        let bfDate = Date(timeIntervalSince1970: 1_700_000_058)  // …:58
+        let leanDate = Date(timeIntervalSince1970: 1_700_000_062) // …:02 next min
+        let bf = HKBodyMetricSample(uuid: UUID(), kind: .bodyFatPercent, date: bfDate, value: 18.0)
+        let lean = HKBodyMetricSample(uuid: UUID(), kind: .leanBodyMass, date: leanDate, value: 64.0)
+        let result = BodyMetricsMerger.merge(weightLog: [], compositionLog: [], samples: [bf, lean])
+        XCTAssertEqual(result.composition.count, 1, "paired reading across a minute boundary must collapse to one row")
+        XCTAssertEqual(result.composition[0].bodyFatPercent, 18.0)
+        XCTAssertEqual(result.composition[0].leanMassKg, 64.0)
+    }
+
+    func test_compositionEntry_keepsRealTimestamp_notMinuteFloor() {
+        // Entry date must be the real sample time, not floored to the minute.
+        let d = Date(timeIntervalSince1970: 1_700_000_037)  // …:37
+        let bf = HKBodyMetricSample(uuid: UUID(), kind: .bodyFatPercent, date: d, value: 20.0)
+        let result = BodyMetricsMerger.merge(weightLog: [], compositionLog: [], samples: [bf])
+        XCTAssertEqual(result.composition[0].date, d, "entry should keep the real timestamp, not a minute floor")
+    }
+
+    func test_dedup_usesRealTimestamps_noFalseSkipFromFlooring() {
+        // Existing entry at 10:01:05; a genuinely new reading at 10:02:50
+        // (105s later). Under the old floored-bucket comparison the buckets
+        // (10:01:00 vs 10:02:00) were 55s apart and wrongly deduped. Real
+        // timestamps are 105s apart → must be kept.
+        let existing = BodyCompositionEntry(
+            date: Date(timeIntervalSince1970: 1_700_000_065),  // 10:01:05
+            bodyFatPercent: 19.0
+        )
+        let newSample = HKBodyMetricSample(
+            uuid: UUID(),
+            kind: .bodyFatPercent,
+            date: Date(timeIntervalSince1970: 1_700_000_170),  // 10:02:50, +105s
+            value: 18.5
+        )
+        let result = BodyMetricsMerger.merge(
+            weightLog: [],
+            compositionLog: [existing],
+            samples: [newSample]
+        )
+        XCTAssertEqual(result.composition.count, 2, "a reading 105s away must not be deduped")
+        XCTAssertEqual(result.summary.addedCompositionEntries, 1)
+    }
+
     func test_existingLog_preserved_newSamplesAppended() {
         // User has an old DEXA entry; HK samples include 2 new fresher
         // readings + a re-read of the same day. The old entry should
