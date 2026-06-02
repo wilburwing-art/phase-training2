@@ -45,9 +45,11 @@ enum PlateMath {
         for plate in plates {
             // Cap at a sane upper count — pathological inputs (e.g. 0.0001 lb
             // plates) shouldn't allocate a millions-long array; 50/side is
-            // already absurd for any real loadout.
+            // already absurd for any real loadout. Clamp as a Double BEFORE
+            // the Int() conversion: a huge pasted target (raw > Int.max) would
+            // otherwise trap on Int(_:) before the min(...) cap could run.
             let raw = remaining / plate
-            let count = min(50, max(0, Int(raw + 1e-9)))
+            let count = max(0, Int(min(raw, 50) + 1e-9))
             if count > 0 {
                 rows.append(Row(plate: plate, count: count))
                 remaining -= Double(count) * plate

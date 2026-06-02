@@ -91,4 +91,16 @@ final class PlateMathTests: XCTestCase {
         XCTAssertEqual(r.achieved, 137.5, accuracy: 0.001)
         XCTAssertEqual(r.remainder, 0, accuracy: 0.001)
     }
+
+    func test_hugeTarget_doesNotCrash() {
+        // A pasted/fat-fingered huge target must not trap on Int(Double) —
+        // raw = perSideTarget/plate can exceed Int.max for small plates.
+        // The per-denomination count is clamped to 50, so the call returns
+        // a (capped, mostly-remainder) result instead of crashing.
+        let r = PlateMath.calculate(target: 9e20, bar: 45, plates: imperial)
+        XCTAssertNotNil(r)
+        for row in r!.perSide {
+            XCTAssertLessThanOrEqual(row.count, 50)
+        }
+    }
 }

@@ -229,7 +229,7 @@ struct TodayScreen: View {
                             .accessibilityIdentifier("missed-workout-banner")
                         }
 
-                        SeasonPhaseBadge(style: .full)
+                        SeasonPhaseBadge(style: .full, surface: "today")
                             .padding(.horizontal, 20)
                             .padding(.top, 14)
                         sorenessCheckInPill

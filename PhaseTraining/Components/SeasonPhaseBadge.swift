@@ -29,6 +29,10 @@ struct SeasonPhaseBadge: View {
     @State private var presentingEditor = false
 
     var style: Style = .full
+    /// Surface the badge is placed on ("today" / "progress" / "week"). Keeps
+    /// the accessibility identifier unique per instance so a UI test (or a
+    /// layout that ever stacks two badges) can't get an ambiguous match.
+    var surface: String = "today"
 
     var body: some View {
         Button { presentingEditor = true } label: {
@@ -38,7 +42,7 @@ struct SeasonPhaseBadge: View {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityIdentifier("season-phase-badge")
+        .accessibilityIdentifier("season-phase-badge-\(surface)")
         .accessibilityLabel(accessibilityLabel)
         .sheet(isPresented: $presentingEditor) {
             SeasonsEditorSheet().environmentObject(memory)
@@ -206,6 +210,12 @@ struct SeasonPhaseBadge: View {
     /// Compact text — "Pre-season · DELOAD NEXT" or "Pre-season · wk 3".
     /// The deload-adjacent variants win the trailing segment so the user
     /// sees the warning even in the tightest pill placement.
+    ///
+    /// The "wk N" number is the CYCLE-relative week (mesoStatus.weekOfCycle),
+    /// matching the full-row meta's "Week N of M" — so the same badge never
+    /// shows two different week numbers across surfaces. Falls back to the
+    /// absolute weeks-in-phase only for off-cycle phases (maintenance), where
+    /// there's no cycle week and the meta shows no number either.
     private var compactLabel: String {
         switch mesoStatus.state {
         case .deload:           return "\(phase.label) · DELOAD"
@@ -213,11 +223,18 @@ struct SeasonPhaseBadge: View {
         case .taper:            return "\(phase.label) · TAPER"
         case .peak:             return "\(phase.label) · PEAK"
         default:
-            if let weeks = memory.memory.weeksInCurrentPhase {
-                return "\(phase.label) · wk \(weeks)"
+            if let week = badgeWeekNumber {
+                return "\(phase.label) · wk \(week)"
             }
             return phase.label
         }
+    }
+
+    /// Single source for the week number shown anywhere on the badge: the
+    /// cycle-relative week when a cycle is running, else the absolute
+    /// weeks-in-phase (off-cycle phases only).
+    private var badgeWeekNumber: Int? {
+        mesoStatus.weekOfCycle ?? memory.memory.weeksInCurrentPhase
     }
 
     /// Multi-line meta. MesocycleProgression owns the copy so the rule and
@@ -238,8 +255,10 @@ struct SeasonPhaseBadge: View {
     }
 
     private var accessibilityLabel: String {
-        if let weeks = memory.memory.weeksInCurrentPhase {
-            return "\(phase.label), week \(weeks). Tap to edit."
+        // Use the same cycle-relative week the visible text shows so VoiceOver
+        // and the pill never disagree.
+        if let week = badgeWeekNumber {
+            return "\(phase.label), week \(week). Tap to edit."
         }
         return "\(phase.label). Tap to edit."
     }

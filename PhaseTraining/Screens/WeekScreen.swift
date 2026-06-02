@@ -173,7 +173,7 @@ struct WeekScreen: View {
                     .styled(.micro)
                     .foregroundStyle(Color.accent)
                 Spacer(minLength: 4)
-                SeasonPhaseBadge(style: .compact)
+                SeasonPhaseBadge(style: .compact, surface: "week")
             }
             Text(plan.rangeLabel)
                 .font(.custom("SpaceGrotesk-SemiBold", size: 26))

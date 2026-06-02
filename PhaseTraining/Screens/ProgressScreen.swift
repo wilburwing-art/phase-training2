@@ -75,7 +75,7 @@ struct ProgressScreen: View {
                     subtitle: nil
                 )
                 .padding(.horizontal, -20)
-                SeasonPhaseBadge(style: .full)
+                SeasonPhaseBadge(style: .full, surface: "progress")
                 statStrip
                 bodyWeightTrendCard
                 bodyCompositionTrendCard
@@ -234,8 +234,10 @@ struct ProgressScreen: View {
             let sign = dKg >= 0 ? "+" : "−"
             return String(format: "%@%.1f", sign, absDisplay)
         }()
-        let dimMax = max(displaySeries.max() ?? 1, 1)
-        let dimMin = min(displaySeries.min() ?? 0, dimMax - 1)
+        // Pass the true min/max; the spark centers a flat series itself
+        // (no dimMax-1 hack that pinned an all-equal line to the top edge).
+        let dimMax = displaySeries.max() ?? 1
+        let dimMin = displaySeries.min() ?? 0
         return card(title: "BODY WEIGHT") {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -300,8 +302,11 @@ struct ProgressScreen: View {
             guard let l = e.leanMassKg else { return nil }
             return imperial ? BodyMetrics.kgToLb(l) : l
         }
-        let latestBF = log.last?.bodyFatPercent
-        let latestLean = log.last?.leanMassKg
+        // Most-recent NON-NIL value per metric — a newest entry that carries
+        // only lean (or only BF) must not blank out the other stat while its
+        // sparkline still renders from the full series.
+        let latestBF = log.last(where: { $0.bodyFatPercent != nil })?.bodyFatPercent
+        let latestLean = log.last(where: { $0.leanMassKg != nil })?.leanMassKg
         let bfDelta = trendDelta(values: bfSeries)
         let leanDelta = trendDelta(values: leanSeries)
 
@@ -369,7 +374,7 @@ struct ProgressScreen: View {
                 .font(.monoXS)
                 .foregroundStyle(Color.ink3)
                 .frame(width: 56, alignment: .leading)
-            BodyWeightSpark(points: values, minValue: minV, maxValue: max(maxV, minV + 0.001))
+            BodyWeightSpark(points: values, minValue: minV, maxValue: maxV)
                 .frame(height: 24)
         }
     }
@@ -1031,7 +1036,12 @@ private struct BodyWeightSpark: View {
             let h = geo.size.height
             let count = max(points.count, 1)
             let stepX = count > 1 ? w / CGFloat(count - 1) : w / 2
-            let range = max(maxValue - minValue, 0.001)
+            let span = maxValue - minValue
+            // Flat series (all weights equal) → render centered, not pinned to
+            // an edge. `frac(_:)` returns 0.5 when there's no spread.
+            let frac: (Double) -> CGFloat = { value in
+                span < 0.0001 ? 0.5 : CGFloat((value - minValue) / span)
+            }
 
             ZStack {
                 Path { p in
@@ -1043,8 +1053,7 @@ private struct BodyWeightSpark: View {
                 Path { p in
                     for (i, value) in points.enumerated() {
                         let x = CGFloat(i) * stepX
-                        let frac = (value - minValue) / range
-                        let y = h - (h * CGFloat(frac))
+                        let y = h - (h * frac(value))
                         if i == 0 { p.move(to: CGPoint(x: x, y: y)) }
                         else { p.addLine(to: CGPoint(x: x, y: y)) }
                     }
@@ -1053,8 +1062,7 @@ private struct BodyWeightSpark: View {
 
                 if let last = points.last {
                     let x = CGFloat(points.count - 1) * stepX
-                    let frac = (last - minValue) / range
-                    let y = h - (h * CGFloat(frac))
+                    let y = h - (h * frac(last))
                     Circle()
                         .fill(Color.accent)
                         .frame(width: 6, height: 6)
