@@ -206,9 +206,9 @@ struct TodayScreen: View {
             VStack(spacing: 0) {
                 TabHeader(
                     eyebrow: dateLabel,
-                    eyebrowTrailing: tabHeaderTrailing,
+                    eyebrowTrailing: phaseEyebrow,
                     title: heroTitle,
-                    subtitle: heroSubtitle,
+                    subtitle: headerSubtitle,
                     caption: heroCaption
                 )
                 ScrollView {
@@ -471,13 +471,45 @@ struct TodayScreen: View {
         .accessibilityIdentifier("today-plan-next-week")
     }
 
-    /// Trailing eyebrow text for the unified TabHeader — exercise/set summary
-    /// when there's a workout, otherwise the day's kind label.
-    private var tabHeaderTrailing: String {
+    /// Trailing eyebrow text — the periodization phase. This is the app's
+    /// namesake context (off-/pre-/in-season, event prep, maintenance), which
+    /// previously surfaced only in Profile and the season editor. Appends
+    /// DELOAD when this week's tone is Recovery — the only honest deload
+    /// signal available (it's user-picked on the Week tab; there's no
+    /// auto-scheduled mesocycle deload to read).
+    private var phaseEyebrow: String {
+        var s = memoryStore.memory.seasonForPlanner.compactLabel.uppercased()
+        if planStore.overrides.weekTone == .recovery { s += " · DELOAD" }
+        return s
+    }
+
+    /// Days until the event-prep peak, when a peak date is set and the
+    /// athlete is in event prep. nil otherwise (nothing to count down to).
+    private var daysToPeak: Int? {
+        guard memoryStore.memory.seasonForPlanner == .eventPrep,
+              let peak = memoryStore.memory.peakDate else { return nil }
+        let cal = Calendar.current
+        let days = cal.dateComponents([.day],
+                                      from: cal.startOfDay(for: Date()),
+                                      to: cal.startOfDay(for: peak)).day ?? 0
+        return days >= 0 ? days : nil
+    }
+
+    /// Subtitle line. The EX·SETS summary moved here from the eyebrow (which
+    /// now carries the phase); non-workout days keep their kind-specific copy.
+    /// An event-prep peak countdown appends on any day kind.
+    private var headerSubtitle: String? {
+        var parts: [String] = []
         if effectiveKind.isWorkout, let template {
-            return "~\(template.exercises.count) EX · \(totalSets) SETS"
+            parts.append("\(template.exercises.count) ex · \(totalSets) sets")
+        } else if !heroSubtitle.isEmpty {
+            parts.append(heroSubtitle)
         }
-        return effectiveKind.label
+        if let d = daysToPeak {
+            parts.append(d == 0 ? "peak today" : "peak in \(d)d")
+        }
+        let joined = parts.joined(separator: " · ")
+        return joined.isEmpty ? nil : joined
     }
 
     /// Single source of truth for the small caption rendered under the hero

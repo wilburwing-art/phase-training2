@@ -404,6 +404,16 @@ enum SeasonPhase: String, Codable, CaseIterable, Identifiable {
         case .maintenance: return "Stay strong — no peak in mind"
         }
     }
+
+    /// Short form for tight chrome (the Today header eyebrow). Identical to
+    /// `label` except maintenance, whose full "Year-round / maintenance"
+    /// overflows the eyebrow row next to the date.
+    var compactLabel: String {
+        switch self {
+        case .maintenance: return "Maintenance"
+        default:           return label
+        }
+    }
 }
 
 enum Weekday: Int, Codable, CaseIterable, Identifiable, Hashable {
