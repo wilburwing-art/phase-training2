@@ -443,9 +443,7 @@ struct LogScreen: View {
             // so the user knows the target for today before logging set 1.
             // Hidden when there's no prior signal — no nag on first-time
             // exercises.
-            if let pill = progressionPill(for: ex) {
-                pill
-            }
+            progressionPill(for: ex)
 
             // Column headers
             columnHeaders(unit: ex.unit)
