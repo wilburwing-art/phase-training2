@@ -241,6 +241,7 @@ struct LogScreen: View {
         let stats = store.stats(for: session)
         let totalSets = max(stats.totalSets, 1)
         let progress = CGFloat(stats.doneSets) / CGFloat(totalSets)
+        let anyUndone = stats.doneSets < stats.totalSets
 
         return VStack(spacing: 0) {
             HStack(spacing: 12) {
@@ -271,6 +272,26 @@ struct LogScreen: View {
                 }
 
                 Spacer()
+
+                // Whole-workout shortcut: log every remaining set in one tap
+                // (rack-first users). Secondary styling keeps Finish the
+                // primary CTA. Hidden once everything's logged.
+                if anyUndone {
+                    Button(action: logAllSetsAllExercises) {
+                        Text("Log all")
+                            .font(.custom("Inter-Regular", size: 13).weight(.bold))
+                            .tracking(-0.01 * 13)
+                            .foregroundStyle(Color.accent)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .stroke(Color.accentBorder, lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("log-all-workout")
+                }
 
                 Button(action: onFinish) {
                     Text("Finish")
@@ -958,12 +979,11 @@ struct LogScreen: View {
         return false
     }
 
-    /// Mark every set in this exercise done in one tap. Propagates the most
-    /// recent filled weight + reps into any empty set (set 1 is usually
-    /// pre-filled, so sets 2-N inherit even when the user only edited set 1).
-    /// Doesn't start a rest timer — the bulk-log path means the user already
-    /// rested at the rack.
-    private func logAllSets(exIdx: Int) {
+    /// Propagate the most-recent filled weight + reps into any empty set and
+    /// mark every set in this exercise done. No haptic / rest side-effects —
+    /// callers own those. Set 1 is usually pre-filled, so sets 2-N inherit even
+    /// when the user only edited set 1.
+    private func markAllSetsDone(exIdx: Int) {
         var sourceWeight: String? = nil
         var sourceReps: String? = nil
         for set in session.exercises[exIdx].sets {
@@ -979,8 +999,24 @@ struct LogScreen: View {
             }
             session.exercises[exIdx].sets[setIdx].done = true
         }
+    }
+
+    /// Mark every set in this exercise done in one tap. Doesn't start a rest
+    /// timer — the bulk-log path means the user already rested at the rack.
+    private func logAllSets(exIdx: Int) {
+        markAllSetsDone(exIdx: exIdx)
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         if restExIdx == exIdx { clearRest() }
+    }
+
+    /// Whole-workout version of `logAllSets`: mark EVERY set in EVERY exercise
+    /// done in one tap, for users who did the whole session at the rack and
+    /// just want to record it. Same per-exercise weight/reps propagation; one
+    /// haptic; clears any pending rest.
+    private func logAllSetsAllExercises() {
+        for exIdx in session.exercises.indices { markAllSetsDone(exIdx: exIdx) }
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        clearRest()
     }
 
     /// After the user edits a set's weight, copy the new value into any later
