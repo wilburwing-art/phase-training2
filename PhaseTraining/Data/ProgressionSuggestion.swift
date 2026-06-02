@@ -43,6 +43,53 @@ enum ProgressionSuggestion {
         let label: String
         /// Free-text rationale for tooltips / accessibility.
         let rationale: String
+
+        /// Suggested weight as a tidy string ("190" or "187.5"). Shared by
+        /// the Today tile + Log pill so they format identically.
+        var suggestedWeightString: String {
+            if suggestedWeight.truncatingRemainder(dividingBy: 1) == 0 {
+                return "\(Int(suggestedWeight))"
+            }
+            return String(format: "%.1f", suggestedWeight)
+        }
+    }
+
+    /// Derive the prior top-set from a session's logged sets. Picks the
+    /// HEAVIEST set that actually MET the target reps as the working top set,
+    /// so a heavy low-rep top single in a pyramid (e.g. 200×3 over 185×8×8,
+    /// target 8) doesn't read as a missed target and trigger a spurious
+    /// BACK OFF. Falls back to the heaviest set overall only when no set hit
+    /// the target — there the user genuinely failed and a hold/back-off is
+    /// the right call. Warm-ups and undone sets are excluded.
+    static func priorPerformance(from prevSets: [LoggedSet], targetReps: Int) -> PriorPerformance? {
+        let working = prevSets
+            .filter { $0.done && !$0.isWarmup }
+            .compactMap { set -> (weight: Double, reps: Int)? in
+                guard let w = set.weightValue, w > 0,
+                      let r = set.repsValue, r > 0 else { return nil }
+                return (w, r)
+            }
+        guard !working.isEmpty else { return nil }
+        let metTarget = working.filter { $0.reps >= targetReps }
+        let chosen = metTarget.max(by: { $0.weight < $1.weight })
+            ?? working.max(by: { $0.weight < $1.weight })!
+        return PriorPerformance(weight: chosen.weight, repsAchieved: chosen.reps, targetReps: targetReps)
+    }
+
+    /// One-shot convenience: extract the prior top-set from a session's logged
+    /// sets and produce a suggestion. Used by both the Today tile and the Log
+    /// pill so the extraction rule + suggestion stay in lockstep.
+    static func suggest(
+        prevSets: [LoggedSet],
+        targetReps: Int,
+        exerciseName: String,
+        unit: String
+    ) -> Result? {
+        suggest(
+            prior: priorPerformance(from: prevSets, targetReps: targetReps),
+            exerciseName: exerciseName,
+            unit: unit
+        )
     }
 
     /// True for movements where the smallest meaningful jump on the available

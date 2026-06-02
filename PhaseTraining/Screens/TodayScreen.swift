@@ -658,45 +658,21 @@ struct TodayScreen: View {
     private func progressionSegment(ex: ExerciseTemplate, prevEx: LoggedExercise?, prevWeightText: String) -> String {
         guard !prevWeightText.isEmpty else { return "—" }
         let unit = ex.unit
-        // Build a PriorPerformance from the prev top set (heaviest done set).
-        let topPrior: (weight: Double, reps: Int)? = {
-            guard let prevEx else { return nil }
-            var bestWeight = 0.0
-            var bestReps = 0
-            for set in prevEx.sets where set.done && !set.isWarmup {
-                if let w = set.weightValue, w > bestWeight {
-                    bestWeight = w
-                    bestReps = set.repsValue ?? 0
-                }
-            }
-            return bestWeight > 0 ? (bestWeight, bestReps) : nil
-        }()
-        guard let topPrior, topPrior.reps > 0 else {
+        // Shared extraction (heaviest set that met target reps) so the Today
+        // tile and the Log pill never disagree on the suggested number.
+        guard let prevEx,
+              let s = ProgressionSuggestion.suggest(
+                prevSets: prevEx.sets,
+                targetReps: ex.targetReps,
+                exerciseName: ex.name,
+                unit: unit
+              ) else {
             return "\(prevWeightText) \(unit)"
         }
-        let suggestion = ProgressionSuggestion.suggest(
-            prior: ProgressionSuggestion.PriorPerformance(
-                weight: topPrior.weight,
-                repsAchieved: topPrior.reps,
-                targetReps: ex.targetReps
-            ),
-            exerciseName: ex.name,
-            unit: unit
-        )
-        guard let s = suggestion else {
-            return "\(prevWeightText) \(unit)"
-        }
-        // Render the suggested weight (sometimes equal to prior on a hold).
-        let nextWeightStr: String = {
-            if s.suggestedWeight.truncatingRemainder(dividingBy: 1) == 0 {
-                return "\(Int(s.suggestedWeight))"
-            }
-            return String(format: "%.1f", s.suggestedWeight)
-        }()
         if s.delta == 0 {
-            return "\(nextWeightStr) \(unit) · hold"
+            return "\(s.suggestedWeightString) \(unit) · hold"
         }
-        return "\(nextWeightStr) \(unit) · \(s.label)"
+        return "\(s.suggestedWeightString) \(unit) · \(s.label)"
     }
 
     /// Resolve the primary muscle bucket for an exercise by name. Routes

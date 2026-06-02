@@ -587,31 +587,15 @@ struct LogScreen: View {
     }
 
     private func computeProgressionSuggestion(for ex: LoggedExercise) -> ProgressionPillModel? {
-        var topWeight = 0.0
-        var topReps = 0
-        for set in ex.prevSets where set.done && !set.isWarmup {
-            if let w = set.weightValue, w > topWeight {
-                topWeight = w
-                topReps = set.repsValue ?? 0
-            }
-        }
-        guard topWeight > 0, topReps > 0 else { return nil }
-        let result = ProgressionSuggestion.suggest(
-            prior: ProgressionSuggestion.PriorPerformance(
-                weight: topWeight,
-                repsAchieved: topReps,
-                targetReps: ex.targetReps
-            ),
+        // Shared extraction: the heaviest set that MET target reps (so a
+        // pyramid's heavy top single doesn't read as a missed target).
+        guard let r = ProgressionSuggestion.suggest(
+            prevSets: ex.prevSets,
+            targetReps: ex.targetReps,
             exerciseName: ex.name,
             unit: ex.unit
-        )
-        guard let r = result else { return nil }
-        let weightStr: String = {
-            if r.suggestedWeight.truncatingRemainder(dividingBy: 1) == 0 {
-                return "\(Int(r.suggestedWeight))"
-            }
-            return String(format: "%.1f", r.suggestedWeight)
-        }()
+        ) else { return nil }
+        let weightStr = r.suggestedWeightString
         let label: String
         let tint: Color
         switch r.delta {
