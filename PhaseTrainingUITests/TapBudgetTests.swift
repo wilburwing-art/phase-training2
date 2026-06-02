@@ -25,17 +25,18 @@
 //
 // Flows tracked:
 //   1. log-workout-in-workout   — boot straight into LogScreen (seeded 5-ex
-//      session), bulk-log every exercise, tap Finish. The tight number.
-//   2. log-workout-full         — cold Today → Start → bulk-log the upper-1
-//      fallback (6 ex) → Finish → Save → skip feedback. End-to-end, no-plan.
+//      session), tap the single whole-workout "Log all" button, tap Finish.
+//      The tight number (2, independent of exercise count).
+//   2. log-workout-full         — cold Today → Start → "Log all" the upper-1
+//      fallback → Finish → Save → skip feedback. End-to-end, no-plan.
 //   3. swap-exercise            — boot into LogScreen, open a row's swap picker,
 //      pick the first replacement.
 //   4. log-workout-planned-full — same shape as flow 2 but for a PLANNED user:
-//      a seeded WeekPlan (`--seed-plan-demo`) makes Today resolve a 5-ex
-//      generatedWorkout, so the number reflects a real plan, not the fallback.
+//      a seeded WeekPlan (`--seed-plan-demo`) makes Today resolve a generated
+//      workout, so the number reflects a real plan, not the fallback.
 //   5. log-workout-per-set      — the REPRESENTATIVE log path: tap each set's
-//      check circle one at a time (no "Log all sets" shortcut) + Finish. The
-//      realistic ceiling that bulk-log (flow 1) floors.
+//      check circle one at a time (no "Log all" shortcut) + Finish. The
+//      realistic ceiling that the whole-workout "Log all" (flow 1) floors.
 //   6. add-exercise-mid-workout — from LogScreen, open the picker, pick the
 //      first catalog exercise; it appends as a new row.
 //   7. edit-then-start          — from Today (planned), open a row's action
@@ -50,10 +51,10 @@
 //
 // What these numbers do and do NOT capture:
 //   - They measure the INTENDED minimal-tap path. Flows 1/2/4 take the
-//     "Log all sets" bulk shortcut (1 tap/exercise); flow 5 is the per-set
-//     counterpart so the bulk-vs-per-set gap is visible. Neither includes the
-//     keystrokes to TYPE weight/reps — set 1 is pre-filled and edits propagate,
-//     so a clean log needs zero typing on the happy path.
+//     whole-workout "Log all" shortcut (1 tap for the whole session); flow 5 is
+//     the per-set counterpart so the shortcut-vs-per-set gap is visible. Neither
+//     includes the keystrokes to TYPE weight/reps — set 1 is pre-filled and
+//     edits propagate, so a clean log needs zero typing on the happy path.
 //   - swap-exercise (flow 3) is the NO-SEARCH floor: it accepts the first
 //     offered replacement. A swap that needs a typed search query costs more;
 //     that's deliberately out of scope (we'd be timing keyboard mechanics).
@@ -78,8 +79,9 @@ final class TapBudgetTests: XCTestCase {
         static let plannedExercises = 5
         /// No-plan fallback: WorkoutTemplate.upper1 has 6 exercises.
         static let fallbackExercises = 6
-        /// Start + Finish + Save + Skip = 4 fixed taps around the bulk-log body
-        /// in the two end-to-end "from Today" flows.
+        /// Start + Finish + Save + Skip = 4 fixed taps around the single
+        /// whole-workout "Log all" tap in the two end-to-end "from Today" flows
+        /// (so each is overhead + 1, independent of exercise count).
         static let fullFlowOverhead = 4
     }
 
@@ -89,24 +91,24 @@ final class TapBudgetTests: XCTestCase {
 
     // MARK: - 1. Log a workout (in-workout slice)
 
-    /// From inside LogScreen with the seeded session: bulk-log every exercise
-    /// via its "Log all sets" button, then Finish. Reference: N bulk + 1 Finish.
+    /// From inside LogScreen with the seeded session: log the WHOLE workout with
+    /// the single header "Log all" button, then Finish. Reference: 1 Log-all +
+    /// 1 Finish = 2 (independent of exercise count — that's the point of the
+    /// whole-workout button vs the per-exercise shortcut).
     func testTapBudget_logWorkout_inWorkout() throws {
         let app = launchInLog()
         var counter = TapCounter(app: app, flow: "log-workout-in-workout")
 
-        let seen = bulkLogAllExercises(&counter)
-        XCTAssertEqual(seen, Seed.supersetsExercises,
-                       "superset demo seed shape changed — update Seed.supersetsExercises")
+        logAllWorkout(&counter, expectedExercises: Seed.supersetsExercises)
         counter.tap("log-finish")
 
-        recordTapBudget(counter, reference: Seed.supersetsExercises + 1)
+        recordTapBudget(counter, reference: 2)
     }
 
     // MARK: - 2. Log a workout (full, Today → saved, no plan)
 
     /// Cold start with no plan and no active session → Today shows the upper-1
-    /// fallback as a startable lift day. Start → bulk-log → Finish → Save →
+    /// fallback as a startable lift day. Start → Log all → Finish → Save →
     /// skip feedback.
     func testTapBudget_logWorkout_full() throws {
         let app = launchOnToday()
@@ -114,7 +116,7 @@ final class TapBudgetTests: XCTestCase {
 
         runFullFlowFromToday(&counter, expectedExercises: Seed.fallbackExercises)
 
-        recordTapBudget(counter, reference: Seed.fallbackExercises + Seed.fullFlowOverhead)
+        recordTapBudget(counter, reference: Seed.fullFlowOverhead + 1)
     }
 
     // MARK: - 3. Swap an exercise
@@ -143,7 +145,7 @@ final class TapBudgetTests: XCTestCase {
 
         runFullFlowFromToday(&counter, expectedExercises: Seed.plannedExercises)
 
-        recordTapBudget(counter, reference: Seed.plannedExercises + Seed.fullFlowOverhead)
+        recordTapBudget(counter, reference: Seed.fullFlowOverhead + 1)
     }
 
     // MARK: - 5. Log a workout per-set (representative, non-bulk)
@@ -389,9 +391,9 @@ final class TapBudgetTests: XCTestCase {
 
 
     /// Spine shared by the two end-to-end "log a workout from Today" flows:
-    /// Start → bulk-log every exercise → Finish → Save → skip feedback. Asserts
-    /// the LogScreen + CompleteScreen waypoints and that the workout had
-    /// `expectedExercises` exercises, so a broken seam is diagnosed precisely.
+    /// Start → Log all → Finish → Save → skip feedback. Asserts the LogScreen +
+    /// CompleteScreen waypoints and that the workout had `expectedExercises`
+    /// exercises, so a broken seam is diagnosed precisely.
     private func runFullFlowFromToday(_ counter: inout TapCounter, expectedExercises: Int) {
         let app = counter.app
 
@@ -399,9 +401,7 @@ final class TapBudgetTests: XCTestCase {
         XCTAssertTrue(app.buttons["log-finish"].waitForExistence(timeout: 8),
                       "[\(counter.flow)] Start should land in LogScreen")
 
-        let seen = bulkLogAllExercises(&counter)
-        XCTAssertEqual(seen, expectedExercises,
-                       "[\(counter.flow)] workout exercise count changed (expected \(expectedExercises))")
+        logAllWorkout(&counter, expectedExercises: expectedExercises)
 
         counter.tap("log-finish")
         XCTAssertTrue(app.buttons["complete-save"].waitForExistence(timeout: 8),
@@ -410,27 +410,21 @@ final class TapBudgetTests: XCTestCase {
         counter.tap("feedback-skip")
     }
 
-    /// Tap each exercise's "Log all sets" button (log-all-<i>) top to bottom.
-    /// Returns the number of exercise rows seen. An exercise with all sets
-    /// already done has no log-all button and is skipped (but still counted as
-    /// seen). XCTFails if the safety cap is hit — that means rows are missing
-    /// from the a11y tree and the count is unreliable.
-    @discardableResult
-    private func bulkLogAllExercises(_ counter: inout TapCounter) -> Int {
+    /// Log the WHOLE workout with the single header "Log all" button (one tap),
+    /// after asserting the session has `expectedExercises` exercise rows — the
+    /// seed-shape guard that catches a seed silently changing. Counting the rows
+    /// also catches a LazyVStack refactor dropping off-screen rows from the
+    /// a11y tree (the row probe would under-count and the guard would fail).
+    private func logAllWorkout(_ counter: inout TapCounter, expectedExercises: Int) {
         let app = counter.app
         let cap = 30
-        var idx = 0
-        while idx < cap, app.staticTexts["log-exercise-name-\(idx)"].exists {
-            if app.buttons["log-all-\(idx)"].exists {
-                counter.tap("log-all-\(idx)")
-            }
-            idx += 1
-        }
-        XCTAssertGreaterThan(idx, 0, "expected at least one exercise to log")
-        XCTAssertLessThan(idx, cap,
-                          "hit the \(cap)-exercise cap — rows likely missing from the a11y tree "
-                          + "(lazy rendering?); tap count is unreliable")
-        return idx
+        var seen = 0
+        while seen < cap, app.staticTexts["log-exercise-name-\(seen)"].exists { seen += 1 }
+        XCTAssertLessThan(seen, cap,
+                          "hit the \(cap)-exercise cap — rows likely missing from the a11y tree")
+        XCTAssertEqual(seen, expectedExercises,
+                       "[\(counter.flow)] workout exercise count changed (expected \(expectedExercises))")
+        counter.tap("log-all-workout")
     }
 
     /// Tap each UNDONE set's check circle, exercise by exercise. Returns the
