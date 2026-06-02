@@ -66,6 +66,16 @@ struct SeasonPhaseBadge: View {
                             .foregroundStyle(Color.ink3)
                             .lineLimit(1)
                     }
+                    if !mesoStatus.badge.isEmpty {
+                        Spacer(minLength: 4)
+                        Text(mesoStatus.badge)
+                            .styled(.micro)
+                            .foregroundStyle(deloadTint(mesoStatus.state, fg: true))
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
+                            .background(deloadTint(mesoStatus.state, fg: false))
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                    }
                 }
                 Text(metaLine)
                     .font(.custom("Inter-Regular", size: 13))
@@ -84,9 +94,31 @@ struct SeasonPhaseBadge: View {
         .background(Color.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.accentBorder, lineWidth: 0.5)
+                .stroke(borderTintForDeload, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    /// Bump the border to the warning tint when we're inside a deload-
+    /// adjacent week so the user sees it from across the screen, not just
+    /// when reading the meta text.
+    private var borderTintForDeload: Color {
+        switch mesoStatus.state {
+        case .deload, .taper, .peak: return Color.danger.opacity(0.4)
+        case .deloadNextWeek:        return Color.accentBorder
+        default:                     return Color.accentBorder
+        }
+    }
+
+    private func deloadTint(_ state: MesocycleProgression.DeloadState, fg: Bool) -> Color {
+        switch state {
+        case .deload, .taper, .peak:
+            return fg ? Color.accentInk : Color.danger.opacity(0.85)
+        case .deloadNextWeek:
+            return fg ? Color.accentInk : Color.accent
+        default:
+            return fg ? Color.ink3 : Color.elevated
+        }
     }
 
     // MARK: - Compact pill (Week tab header)
@@ -98,15 +130,40 @@ struct SeasonPhaseBadge: View {
             Text(compactLabel)
                 .font(.monoXS)
         }
-        .foregroundStyle(Color.accent)
+        .foregroundStyle(compactTint)
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(Color.accentWash)
+        .background(compactBg)
         .overlay(
             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .strokeBorder(Color.accentBorder, lineWidth: 0.5)
+                .strokeBorder(compactBorder, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+    }
+
+    /// Compact-pill tint matrix — same warning gradient as the full row.
+    /// Deload-adjacent weeks bump foreground to danger and background to a
+    /// matching wash so the Week tab header reads "this is the deload" at
+    /// a glance.
+    private var compactTint: Color {
+        switch mesoStatus.state {
+        case .deload, .taper, .peak: return Color.danger
+        default:                     return Color.accent
+        }
+    }
+
+    private var compactBg: Color {
+        switch mesoStatus.state {
+        case .deload, .taper, .peak: return Color.danger.opacity(0.08)
+        default:                     return Color.accentWash
+        }
+    }
+
+    private var compactBorder: Color {
+        switch mesoStatus.state {
+        case .deload, .taper, .peak: return Color.danger.opacity(0.35)
+        default:                     return Color.accentBorder
+        }
     }
 
     // MARK: - Glyph
@@ -137,30 +194,37 @@ struct SeasonPhaseBadge: View {
         return s.name
     }
 
-    /// Compact text — "Pre-season · wk 3" or "Pre-season".
-    private var compactLabel: String {
-        if let weeks = memory.memory.weeksInCurrentPhase {
-            return "\(phase.label) · wk \(weeks)"
-        }
-        return phase.label
+    /// Mesocycle state — drives the deload/taper warning treatment.
+    private var mesoStatus: MesocycleProgression.Status {
+        MesocycleProgression.status(
+            phase: phase,
+            weeksInPhase: memory.memory.weeksInCurrentPhase,
+            daysUntilPeak: memory.memory.daysUntilPeak
+        )
     }
 
-    /// Multi-line meta. For .eventPrep we prefer a peak countdown; for
-    /// everything else we show the week counter + phase subtitle.
-    private var metaLine: String {
-        if phase == .eventPrep, let days = memory.memory.daysUntilPeak {
-            if days > 0 {
-                return "T-\(days)d to peak. \(phase.subtitle)"
-            } else if days == 0 {
-                return "Peak day. \(phase.subtitle)"
-            } else {
-                return "Peak passed \(-days)d ago. \(phase.subtitle)"
+    /// Compact text — "Pre-season · DELOAD NEXT" or "Pre-season · wk 3".
+    /// The deload-adjacent variants win the trailing segment so the user
+    /// sees the warning even in the tightest pill placement.
+    private var compactLabel: String {
+        switch mesoStatus.state {
+        case .deload:           return "\(phase.label) · DELOAD"
+        case .deloadNextWeek:   return "\(phase.label) · deload next"
+        case .taper:            return "\(phase.label) · TAPER"
+        case .peak:             return "\(phase.label) · PEAK"
+        default:
+            if let weeks = memory.memory.weeksInCurrentPhase {
+                return "\(phase.label) · wk \(weeks)"
             }
+            return phase.label
         }
-        if let weeks = memory.memory.weeksInCurrentPhase {
-            return "Week \(weeks) · \(phase.subtitle)"
-        }
-        return phase.subtitle
+    }
+
+    /// Multi-line meta. MesocycleProgression owns the copy so the rule and
+    /// the message stay in lockstep — change the cycle length there once
+    /// and every surface re-reads consistently.
+    private var metaLine: String {
+        mesoStatus.detail
     }
 
     private var phaseIcon: String {

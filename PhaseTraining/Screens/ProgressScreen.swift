@@ -78,6 +78,7 @@ struct ProgressScreen: View {
                 SeasonPhaseBadge(style: .full)
                 statStrip
                 bodyWeightTrendCard
+                bodyCompositionTrendCard
                 sessionsCard
                 volumeCard
                 strengthRatiosCard
@@ -263,6 +264,121 @@ struct ProgressScreen: View {
     private func deltaColor(log: [BodyWeightEntry]) -> Color {
         guard let first = log.first?.weightKg, let last = log.last?.weightKg else { return .ink3 }
         return last >= first ? .accent : .ok
+    }
+
+    // MARK: - Body-composition trend (build 103)
+    //
+    // Symmetric with bodyWeightTrendCard but for BF% + lean mass. Each
+    // series is optional per entry — DEXA users log both, scale users
+    // log just BF% — so the card renders whichever sparklines have data.
+    // Hidden entirely when the user has never logged a composition reading.
+
+    @State private var presentingBodyCompositionSheet = false
+
+    private var bodyCompositionTrendCard: some View {
+        let log = memoryStore.memory.bodyCompositionLog.sorted { $0.date < $1.date }
+        return Group {
+            if log.isEmpty {
+                EmptyView()
+            } else {
+                Button { presentingBodyCompositionSheet = true } label: {
+                    bodyCompositionCardBody(log: log)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("progress-body-composition-card")
+                .sheet(isPresented: $presentingBodyCompositionSheet) {
+                    BodyCompositionLogSheet().environmentObject(memoryStore)
+                }
+            }
+        }
+    }
+
+    private func bodyCompositionCardBody(log: [BodyCompositionEntry]) -> some View {
+        let imperial = memoryStore.memory.usesImperial
+        let bfSeries = log.compactMap(\.bodyFatPercent)
+        let leanSeries: [Double] = log.compactMap { e in
+            guard let l = e.leanMassKg else { return nil }
+            return imperial ? BodyMetrics.kgToLb(l) : l
+        }
+        let latestBF = log.last?.bodyFatPercent
+        let latestLean = log.last?.leanMassKg
+        let bfDelta = trendDelta(values: bfSeries)
+        let leanDelta = trendDelta(values: leanSeries)
+
+        return card(title: "BODY COMPOSITION") {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .firstTextBaseline, spacing: 14) {
+                    if let bf = latestBF {
+                        statBlock(
+                            label: "BF",
+                            value: String(format: "%.1f%%", bf),
+                            delta: bfDelta.map { String(format: "%@%.1f", $0 >= 0 ? "+" : "−", abs($0)) },
+                            tint: bfDelta.map { $0 < 0 ? Color.ok : Color.accent } ?? .ink3
+                        )
+                    }
+                    if let lean = latestLean {
+                        let displayLean = imperial ? BodyMetrics.kgToLb(lean) : lean
+                        statBlock(
+                            label: "LEAN",
+                            value: String(format: "%.0f %@", displayLean, imperial ? "lb" : "kg"),
+                            delta: leanDelta.map { String(format: "%@%.1f", $0 >= 0 ? "+" : "−", abs($0)) },
+                            tint: leanDelta.map { $0 >= 0 ? Color.ok : Color.danger } ?? .ink3
+                        )
+                    }
+                    Spacer()
+                    Text("\(log.count) reading\(log.count == 1 ? "" : "s")")
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                }
+                if bfSeries.count >= 2 {
+                    miniSeries(label: "BF %", values: bfSeries)
+                }
+                if leanSeries.count >= 2 {
+                    miniSeries(label: imperial ? "LEAN LB" : "LEAN KG", values: leanSeries)
+                }
+                Text("Tap to log a new reading.")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+            }
+        }
+    }
+
+    private func statBlock(label: String, value: String, delta: String?, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(value)
+                    .font(.custom("JetBrainsMono-SemiBold", size: 18))
+                    .foregroundStyle(Color.ink)
+                if let delta {
+                    Text(delta)
+                        .font(.monoXS)
+                        .foregroundStyle(tint)
+                }
+            }
+        }
+    }
+
+    private func miniSeries(label: String, values: [Double]) -> some View {
+        let maxV = values.max() ?? 1
+        let minV = values.min() ?? 0
+        return HStack(spacing: 8) {
+            Text(label)
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+                .frame(width: 56, alignment: .leading)
+            BodyWeightSpark(points: values, minValue: minV, maxValue: max(maxV, minV + 0.001))
+                .frame(height: 24)
+        }
+    }
+
+    /// Net change from first → last value in a series. nil for series with
+    /// fewer than 2 points (no delta to compute).
+    private func trendDelta(values: [Double]) -> Double? {
+        guard let first = values.first, let last = values.last, values.count >= 2 else { return nil }
+        return last - first
     }
 
     // MARK: - Volume trend
