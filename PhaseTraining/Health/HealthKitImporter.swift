@@ -69,12 +69,47 @@ struct ImportedWorkout: Equatable, Sendable, Codable {
 
 // MARK: - HKHealthStore protocol seam (for testability)
 
+/// One sample of a body-metrics quantity. Lives at this layer so the rest
+/// of the app doesn't import HealthKit just to consume the data. Both
+/// body-mass and lean-mass arrive in kg; body-fat % arrives 0-100 (already
+/// scaled out of HK's native 0-1 unit by the wrapper).
+struct HKBodyMetricSample: Sendable, Equatable {
+    enum Kind: Sendable, Equatable {
+        case bodyMass        // kg
+        case bodyFatPercent  // %
+        case leanBodyMass    // kg
+    }
+    let uuid: UUID
+    let kind: Kind
+    let date: Date
+    let value: Double
+}
+
 /// Minimal surface of HKHealthStore that the importer touches. Tests fake
 /// this; production passes a `HKHealthStoreWrapper` that forwards to the
 /// real HKHealthStore. Kept tiny so we don't shadow the whole HK surface.
+///
+/// Body-metrics methods come with default no-op implementations so existing
+/// fakes (HealthKitImporterTests.FakeStore) don't have to migrate when the
+/// build-103 body-metrics intake lands.
 protocol HKHealthStoreInterface: Sendable {
     func requestWorkoutReadAuthorization() async throws -> Bool
     func recentWorkouts(days: Int) async throws -> [HKWorkoutLike]
+    func requestBodyMetricsReadAuthorization() async throws -> Bool
+    func recentBodyMetrics(days: Int) async throws -> [HKBodyMetricSample]
+}
+
+extension HKHealthStoreInterface {
+    /// Defaults to true (no-op grant) so existing fakes — written before
+    /// the body-metrics protocol additions — keep compiling without a
+    /// migration. The production wrapper overrides with the real
+    /// per-type authorization request.
+    func requestBodyMetricsReadAuthorization() async throws -> Bool { true }
+
+    /// Defaults to empty so existing fakes keep returning "no body data"
+    /// and the importer's downstream logic (de-dup against existing log)
+    /// stays a no-op for those tests.
+    func recentBodyMetrics(days: Int) async throws -> [HKBodyMetricSample] { [] }
 }
 
 /// Decoupled HKWorkout shape — the fields we actually need. Tests can
@@ -138,6 +173,82 @@ struct HKHealthStoreWrapper: HKHealthStoreInterface, @unchecked Sendable {
                     )
                 }
                 cont.resume(returning: workouts)
+            }
+            store.execute(q)
+        }
+    }
+
+    func requestBodyMetricsReadAuthorization() async throws -> Bool {
+        guard HKHealthStore.isHealthDataAvailable() else { return false }
+        var types: Set<HKObjectType> = []
+        if let bm = HKObjectType.quantityType(forIdentifier: .bodyMass) { types.insert(bm) }
+        if let bf = HKObjectType.quantityType(forIdentifier: .bodyFatPercentage) { types.insert(bf) }
+        if let lm = HKObjectType.quantityType(forIdentifier: .leanBodyMass) { types.insert(lm) }
+        guard !types.isEmpty else { return false }
+        try await store.requestAuthorization(toShare: [], read: types)
+        return true
+    }
+
+    func recentBodyMetrics(days: Int) async throws -> [HKBodyMetricSample] {
+        guard HKHealthStore.isHealthDataAvailable() else { return [] }
+        let end = Date()
+        let start = Calendar.current.date(byAdding: .day, value: -days, to: end) ?? end
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: [])
+        let descriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+
+        var out: [HKBodyMetricSample] = []
+        if let bm = HKObjectType.quantityType(forIdentifier: .bodyMass) {
+            out += try await fetchSamples(type: bm, predicate: predicate, descriptor: descriptor,
+                                          unit: HKUnit.gramUnit(with: .kilo), kind: .bodyMass)
+        }
+        if let bf = HKObjectType.quantityType(forIdentifier: .bodyFatPercentage) {
+            // HK returns body-fat as a fractional Double (0.0-1.0). Multiply
+            // here so every downstream consumer sees the percent in display
+            // form ("18.5", not "0.185").
+            let raw = try await fetchSamples(type: bf, predicate: predicate, descriptor: descriptor,
+                                             unit: HKUnit.percent(), kind: .bodyFatPercent)
+            out += raw.map { s in
+                HKBodyMetricSample(uuid: s.uuid, kind: s.kind, date: s.date, value: s.value * 100)
+            }
+        }
+        if let lm = HKObjectType.quantityType(forIdentifier: .leanBodyMass) {
+            out += try await fetchSamples(type: lm, predicate: predicate, descriptor: descriptor,
+                                          unit: HKUnit.gramUnit(with: .kilo), kind: .leanBodyMass)
+        }
+        return out
+    }
+
+    /// Generic sample fetch for the three HKQuantityType reads. Returns
+    /// our internal value type so the rest of the importer (and the call
+    /// sites in HealthImportsScreen) don't import HealthKit just to
+    /// consume one number per row.
+    private func fetchSamples(
+        type: HKQuantityType,
+        predicate: NSPredicate,
+        descriptor: NSSortDescriptor,
+        unit: HKUnit,
+        kind: HKBodyMetricSample.Kind
+    ) async throws -> [HKBodyMetricSample] {
+        try await withCheckedThrowingContinuation { cont in
+            let q = HKSampleQuery(
+                sampleType: type,
+                predicate: predicate,
+                limit: HKObjectQueryNoLimit,
+                sortDescriptors: [descriptor]
+            ) { _, samples, error in
+                if let error {
+                    cont.resume(throwing: error)
+                    return
+                }
+                let out: [HKBodyMetricSample] = (samples as? [HKQuantitySample] ?? []).map { s in
+                    HKBodyMetricSample(
+                        uuid: s.uuid,
+                        kind: kind,
+                        date: s.startDate,
+                        value: s.quantity.doubleValue(for: unit)
+                    )
+                }
+                cont.resume(returning: out)
             }
             store.execute(q)
         }
@@ -215,5 +326,137 @@ actor HealthKitImporter {
         default:
             return .sport
         }
+    }
+
+    // MARK: - Body metrics (build 103)
+
+    /// Triggers the body-metrics auth dialog. Returns whether the request
+    /// completed (mirrors `requestAuthorization` for workouts — HK won't
+    /// expose post-grant read status, so an empty fetch later is
+    /// ambiguous between "no data" and "denied").
+    func requestBodyMetricsAuthorization() async throws -> Bool {
+        try await store.requestBodyMetricsReadAuthorization()
+    }
+
+    /// Fetch the user's last `days` of body-metrics samples. Default 365
+    /// because composition readings are infrequent (monthly DEXA, weekly
+    /// InBody) and a 28-day window would routinely come back empty for
+    /// people who care most. Returns mixed body-mass + fat-% + lean-mass
+    /// samples sorted newest-first.
+    func recentBodyMetrics(days: Int = 365) async throws -> [HKBodyMetricSample] {
+        try await store.recentBodyMetrics(days: days)
+    }
+}
+
+// MARK: - Sync results
+
+/// What the body-metrics sync actually wrote into TrainingMemory. Surfaced
+/// to HealthImportsScreen so the UX can show "imported 5 weights · 2 BF%
+/// readings" instead of a silent black box.
+struct BodyMetricsSyncSummary: Equatable, Sendable {
+    var addedWeightEntries: Int
+    var addedCompositionEntries: Int
+    var skippedDuplicateSamples: Int
+    /// Newest sample timestamp consumed, for "last synced" UX. nil when
+    /// the sample list was empty.
+    var newestSampleAt: Date?
+}
+
+/// Pure merge logic. Given current logs + a batch of HK samples, returns
+/// the new logs we'd write + a summary of what changed. De-duplicates by
+/// matching timestamp within a 60-second window (HK's sub-second precision
+/// means a re-sync would otherwise spam the log with near-identical
+/// entries). Body-fat + lean-mass samples taken within the same minute
+/// collapse onto one BodyCompositionEntry — most scales report both in
+/// one reading.
+enum BodyMetricsMerger {
+    static func merge(
+        weightLog: [BodyWeightEntry],
+        compositionLog: [BodyCompositionEntry],
+        samples: [HKBodyMetricSample]
+    ) -> (weight: [BodyWeightEntry], composition: [BodyCompositionEntry], summary: BodyMetricsSyncSummary) {
+        var weight = weightLog
+        var composition = compositionLog
+        var summary = BodyMetricsSyncSummary(
+            addedWeightEntries: 0,
+            addedCompositionEntries: 0,
+            skippedDuplicateSamples: 0,
+            newestSampleAt: nil
+        )
+
+        // Group composition samples (BF% + lean) into one entry per
+        // minute-bucket so a single scale reading lands as one row.
+        var bucketed: [Date: (bf: Double?, lean: Double?)] = [:]
+        for s in samples where s.kind != .bodyMass {
+            let bucket = bucketKey(for: s.date)
+            var entry = bucketed[bucket] ?? (nil, nil)
+            if s.kind == .bodyFatPercent { entry.bf = s.value }
+            if s.kind == .leanBodyMass   { entry.lean = s.value }
+            bucketed[bucket] = entry
+        }
+
+        for s in samples {
+            if summary.newestSampleAt == nil || s.date > summary.newestSampleAt! {
+                summary.newestSampleAt = s.date
+            }
+            switch s.kind {
+            case .bodyMass:
+                if isDuplicate(date: s.date, weights: weight) {
+                    summary.skippedDuplicateSamples += 1
+                    continue
+                }
+                weight.append(BodyWeightEntry(
+                    date: s.date,
+                    weightKg: s.value,
+                    note: "From Health"
+                ))
+                summary.addedWeightEntries += 1
+            case .bodyFatPercent, .leanBodyMass:
+                // Handled below from the bucket map so paired readings
+                // collapse onto one row.
+                continue
+            }
+        }
+
+        for (bucket, payload) in bucketed {
+            // bucket is start-of-minute; use the original sample timestamps
+            // when reconstructing the entry so the user sees the actual
+            // reading time, not a floor.
+            if isDuplicate(date: bucket, compositions: composition) {
+                summary.skippedDuplicateSamples += (payload.bf != nil ? 1 : 0) + (payload.lean != nil ? 1 : 0)
+                continue
+            }
+            composition.append(BodyCompositionEntry(
+                date: bucket,
+                bodyFatPercent: payload.bf,
+                leanMassKg: payload.lean,
+                method: "Health",
+                note: nil
+            ))
+            summary.addedCompositionEntries += 1
+        }
+
+        // Sort newest-first so re-renders pick up the imports in time
+        // order without depending on append order.
+        weight.sort { $0.date > $1.date }
+        composition.sort { $0.date > $1.date }
+        return (weight, composition, summary)
+    }
+
+    /// Minute-precision bucket key — collapses sub-second jitter between
+    /// HK paired readings (a smart scale typically emits BF% and lean
+    /// within the same second, but the underlying timestamps can differ
+    /// by hundredths of a second).
+    private static func bucketKey(for date: Date) -> Date {
+        let t = date.timeIntervalSince1970
+        return Date(timeIntervalSince1970: floor(t / 60) * 60)
+    }
+
+    private static func isDuplicate(date: Date, weights: [BodyWeightEntry]) -> Bool {
+        weights.contains { abs($0.date.timeIntervalSince(date)) < 60 }
+    }
+
+    private static func isDuplicate(date: Date, compositions: [BodyCompositionEntry]) -> Bool {
+        compositions.contains { abs($0.date.timeIntervalSince(date)) < 60 }
     }
 }
