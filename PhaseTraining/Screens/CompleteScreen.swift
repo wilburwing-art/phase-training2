@@ -18,8 +18,10 @@
 // post-save summary, not a save gate. `feel`/`note` edits patch the saved
 // record in place (`syncEdits` → `updateSession`); PR detection self-excludes
 // the now-persisted session. "Done" just returns to Today; "Discard" deletes
-// the record (it was saved) and returns. No structured-feedback interstitial —
-// `PostWorkoutFeedbackSheet` is no longer auto-presented (see PR notes).
+// the record (it was saved) and returns. Structured feedback
+// (`PostWorkoutFeedbackSheet` → FeedbackEntry, read by the planner) is OPT-IN:
+// the "Add details for your coach" button presents it; it's never forced, so
+// the happy path stays one tap (Done).
 
 import SwiftUI
 
@@ -46,6 +48,10 @@ struct CompleteScreen: View {
     /// Set just before Discard deletes the record, so the trailing feel/note
     /// onChange syncs don't re-insert the row we're removing.
     @State private var discarded = false
+    /// Drives the OPTIONAL structured-feedback sheet. Not auto-presented (the
+    /// workout already saved) — the user taps "Add details" to open it, which
+    /// is the only thing that captures a FeedbackEntry for the coach/planner.
+    @State private var showFeedbackSheet = false
 
     init(session: ActiveSession, onSave: @escaping () -> Void, onDiscard: (() -> Void)? = nil) {
         self.session = session
@@ -137,6 +143,7 @@ struct CompleteScreen: View {
 
             VStack(spacing: 10) {
                 doneButton
+                feedbackButton
                 if onDiscard != nil {
                     discardButton
                 }
@@ -148,6 +155,15 @@ struct CompleteScreen: View {
         .onAppear(perform: autosaveIfNeeded)
         .onChange(of: feel) { _, _ in syncEdits() }
         .onChange(of: note) { _, _ in syncEdits() }
+        .sheet(isPresented: $showFeedbackSheet) {
+            // Optional, opt-in capture of a structured FeedbackEntry (difficulty
+            // + hurt areas → memory.feedback, read by the planner). The session
+            // is already saved; onDone just dismisses.
+            PostWorkoutFeedbackSheet(
+                sessionId: session.templateId,
+                onDone: { showFeedbackSheet = false }
+            )
+        }
         .alert("Discard workout?", isPresented: $showDiscardConfirm) {
             Button("Discard", role: .destructive) {
                 discarded = true
@@ -385,6 +401,22 @@ struct CompleteScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("complete-done")
+    }
+
+    /// Optional, opt-in: open the structured-feedback sheet (difficulty + hurt
+    /// areas → coach). Tertiary styling — secondary to Done, not a forced step.
+    private var feedbackButton: some View {
+        Button {
+            showFeedbackSheet = true
+        } label: {
+            Text("Add details for your coach")
+                .font(.custom("Inter-Regular", size: 13).weight(.medium))
+                .foregroundStyle(Color.accent)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("complete-feedback")
     }
 
     private var discardButton: some View {
