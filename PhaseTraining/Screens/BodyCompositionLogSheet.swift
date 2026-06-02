@@ -110,13 +110,7 @@ struct BodyCompositionLogSheet: View {
             .disabled(!canLog)
             .accessibilityIdentifier("body-composition-log-submit")
         }
-        .padding(14)
-        .background(Color.surface)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.line, lineWidth: 0.5)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .cardSurface()
     }
 
     private func fieldRow(label: String, placeholder: String, text: Binding<String>, suffix: String) -> some View {
@@ -216,13 +210,7 @@ struct BodyCompositionLogSheet: View {
             }
             .frame(height: 140)
         }
-        .padding(14)
-        .background(Color.surface)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.line, lineWidth: 0.5)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .cardSurface()
     }
 
     // MARK: - History
@@ -241,13 +229,7 @@ struct BodyCompositionLogSheet: View {
                 }
             }
         }
-        .padding(14)
-        .background(Color.surface)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.line, lineWidth: 0.5)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .cardSurface()
     }
 
     private var emptyHistoryCard: some View {
@@ -374,12 +356,7 @@ struct BodyCompositionLogSheet: View {
     }
 
     private func parseDouble(_ raw: String) -> Double? {
-        var s = raw.trimmingCharacters(in: .whitespaces)
-        if s.isEmpty { return nil }
-        if s.contains(",") && !s.contains(".") {
-            s = s.replacingOccurrences(of: ",", with: ".")
-        }
-        return Double(s)
+        BodyMetrics.parseDecimalInput(raw)
     }
 }
 

@@ -119,13 +119,7 @@ struct BodyWeightLogSheet: View {
             .disabled(!canLog)
             .accessibilityIdentifier("body-weight-log-submit")
         }
-        .padding(14)
-        .background(Color.surface)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.line, lineWidth: 0.5)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .cardSurface()
     }
 
     private var trendCard: some View {
@@ -170,13 +164,7 @@ struct BodyWeightLogSheet: View {
             }
             .frame(height: 160)
         }
-        .padding(14)
-        .background(Color.surface)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.line, lineWidth: 0.5)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .cardSurface()
     }
 
     private var historyCard: some View {
@@ -193,13 +181,7 @@ struct BodyWeightLogSheet: View {
                 }
             }
         }
-        .padding(14)
-        .background(Color.surface)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.line, lineWidth: 0.5)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .cardSurface()
     }
 
     private var emptyHistoryCard: some View {
@@ -329,12 +311,7 @@ struct BodyWeightLogSheet: View {
     /// is on we read lb and convert; otherwise we read kg directly. Tolerant
     /// of trailing whitespace + a comma decimal separator.
     private func parseInputAsKg(_ raw: String) -> Double? {
-        var s = raw.trimmingCharacters(in: .whitespaces)
-        if s.isEmpty { return nil }
-        if s.contains(",") && !s.contains(".") {
-            s = s.replacingOccurrences(of: ",", with: ".")
-        }
-        guard let v = Double(s) else { return nil }
+        guard let v = BodyMetrics.parseDecimalInput(raw) else { return nil }
         return store.memory.usesImperial ? BodyMetrics.lbToKg(v) : v
     }
 }

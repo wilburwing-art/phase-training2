@@ -44,4 +44,15 @@ final class BodyMetricsTests: XCTestCase {
         XCTAssertEqual(BodyMetrics.formatHeight(cm: 178, imperial: false), "178 cm")
         XCTAssertEqual(BodyMetrics.formatHeight(cm: 178, imperial: true), "5′ 10″")
     }
+
+    func test_parseDecimalInput_handlesSeparatorsConsistently() {
+        XCTAssertEqual(BodyMetrics.parseDecimalInput("185"), 185)
+        XCTAssertEqual(BodyMetrics.parseDecimalInput(" 185.5 "), 185.5)   // trimmed
+        XCTAssertEqual(BodyMetrics.parseDecimalInput("60,5"), 60.5)       // EU decimal comma
+        // Both separators present → comma is thousands grouping. The old
+        // per-sheet parsers turned this into 1.25.
+        XCTAssertEqual(BodyMetrics.parseDecimalInput("1,250.5"), 1250.5)
+        XCTAssertNil(BodyMetrics.parseDecimalInput(""))
+        XCTAssertNil(BodyMetrics.parseDecimalInput("abc"))
+    }
 }

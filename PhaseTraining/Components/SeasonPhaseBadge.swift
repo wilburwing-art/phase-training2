@@ -106,12 +106,21 @@ struct SeasonPhaseBadge: View {
     /// Bump the border to the warning tint when we're inside a deload-
     /// adjacent week so the user sees it from across the screen, not just
     /// when reading the meta text.
-    private var borderTintForDeload: Color {
+    ///
+    /// Deload / taper / peak are the "warning" weeks that get the danger-family
+    /// treatment across every slot (border, compact fg/bg/border). One bool
+    /// drives all of them so they can't drift; the trailing pill keeps its own
+    /// 3-way `deloadTint` because it also distinguishes the .deloadNextWeek
+    /// pre-warning from a plain build week.
+    private var isWarningWeek: Bool {
         switch mesoStatus.state {
-        case .deload, .taper, .peak: return Color.danger.opacity(0.4)
-        case .deloadNextWeek:        return Color.accentBorder
-        default:                     return Color.accentBorder
+        case .deload, .taper, .peak: return true
+        default:                     return false
         }
+    }
+
+    private var borderTintForDeload: Color {
+        isWarningWeek ? Color.danger.opacity(0.4) : Color.accentBorder
     }
 
     private func deloadTint(_ state: MesocycleProgression.DeloadState, fg: Bool) -> Color {
@@ -145,30 +154,11 @@ struct SeasonPhaseBadge: View {
         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
     }
 
-    /// Compact-pill tint matrix — same warning gradient as the full row.
-    /// Deload-adjacent weeks bump foreground to danger and background to a
-    /// matching wash so the Week tab header reads "this is the deload" at
-    /// a glance.
-    private var compactTint: Color {
-        switch mesoStatus.state {
-        case .deload, .taper, .peak: return Color.danger
-        default:                     return Color.accent
-        }
-    }
-
-    private var compactBg: Color {
-        switch mesoStatus.state {
-        case .deload, .taper, .peak: return Color.danger.opacity(0.08)
-        default:                     return Color.accentWash
-        }
-    }
-
-    private var compactBorder: Color {
-        switch mesoStatus.state {
-        case .deload, .taper, .peak: return Color.danger.opacity(0.35)
-        default:                     return Color.accentBorder
-        }
-    }
+    /// Compact-pill tint matrix — same warning gradient as the full row, all
+    /// driven by `isWarningWeek` so the three slots stay in lockstep.
+    private var compactTint: Color { isWarningWeek ? Color.danger : Color.accent }
+    private var compactBg: Color { isWarningWeek ? Color.danger.opacity(0.08) : Color.accentWash }
+    private var compactBorder: Color { isWarningWeek ? Color.danger.opacity(0.35) : Color.accentBorder }
 
     // MARK: - Glyph
 

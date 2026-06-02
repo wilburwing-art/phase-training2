@@ -110,13 +110,7 @@ struct PlateCalculatorSheet: View {
                 unitLabel: unitSuffix
             )
         }
-        .padding(14)
-        .background(Color.surface)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.line, lineWidth: 0.5)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .cardSurface()
     }
 
     @ViewBuilder
@@ -198,13 +192,7 @@ struct PlateCalculatorSheet: View {
                     .foregroundStyle(result.remainder > 0.01 ? Color.ink2 : Color.accent)
             }
         }
-        .padding(14)
-        .background(Color.surface)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.line, lineWidth: 0.5)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .cardSurface()
     }
 
     private func barVisualization(_ result: PlateResult) -> some View {
@@ -349,12 +337,7 @@ struct PlateCalculatorSheet: View {
     }
 
     private func parseDouble(_ raw: String) -> Double? {
-        var s = raw.trimmingCharacters(in: .whitespaces)
-        if s.isEmpty { return nil }
-        if s.contains(",") && !s.contains(".") {
-            s = s.replacingOccurrences(of: ",", with: ".")
-        }
-        return Double(s)
+        BodyMetrics.parseDecimalInput(raw)
     }
 }
 
