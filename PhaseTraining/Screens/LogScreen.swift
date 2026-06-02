@@ -437,6 +437,16 @@ struct LogScreen: View {
                 coachingHintsRow(rpe: ex.rpe, tempo: ex.tempo)
             }
 
+            // Build 103: deterministic progression suggestion. Reads the
+            // prev-session top set already on `ex.prevSets`, applies the
+            // ProgressionSuggestion rule, renders "SUGGESTED · 190 lb (+5)"
+            // so the user knows the target for today before logging set 1.
+            // Hidden when there's no prior signal — no nag on first-time
+            // exercises.
+            if let pill = progressionPill(for: ex) {
+                pill
+            }
+
             // Column headers
             columnHeaders(unit: ex.unit)
 
@@ -540,6 +550,82 @@ struct LogScreen: View {
         }
         .padding(.top, 4)
         .padding(.bottom, 6)
+    }
+
+    /// Tiny progression hint just under the coaching-hints row. Reads the
+    /// heaviest done working set in `ex.prevSets` and applies the
+    /// deterministic ProgressionSuggestion rule. nil when there's no prior
+    /// signal so first-time-exercise rows stay clean.
+    @ViewBuilder
+    private func progressionPill(for ex: LoggedExercise) -> some View {
+        if let suggestion = computeProgressionSuggestion(for: ex) {
+            HStack(spacing: 6) {
+                Image(systemName: "arrow.up.right.circle")
+                    .font(.system(size: 11, weight: .medium))
+                Text(suggestion.text)
+                    .font(.monoXS)
+                Spacer(minLength: 0)
+            }
+            .foregroundStyle(suggestion.tint)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color.accentWash)
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(Color.accentBorder, lineWidth: 0.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .padding(.top, 4)
+            .padding(.bottom, 4)
+            .accessibilityIdentifier("log-progression-pill")
+        }
+    }
+
+    private struct ProgressionPillModel {
+        let text: String
+        let tint: Color
+    }
+
+    private func computeProgressionSuggestion(for ex: LoggedExercise) -> ProgressionPillModel? {
+        var topWeight = 0.0
+        var topReps = 0
+        for set in ex.prevSets where set.done && !set.isWarmup {
+            if let w = set.weightValue, w > topWeight {
+                topWeight = w
+                topReps = set.repsValue ?? 0
+            }
+        }
+        guard topWeight > 0, topReps > 0 else { return nil }
+        let result = ProgressionSuggestion.suggest(
+            prior: ProgressionSuggestion.PriorPerformance(
+                weight: topWeight,
+                repsAchieved: topReps,
+                targetReps: ex.targetReps
+            ),
+            exerciseName: ex.name,
+            unit: ex.unit
+        )
+        guard let r = result else { return nil }
+        let weightStr: String = {
+            if r.suggestedWeight.truncatingRemainder(dividingBy: 1) == 0 {
+                return "\(Int(r.suggestedWeight))"
+            }
+            return String(format: "%.1f", r.suggestedWeight)
+        }()
+        let label: String
+        let tint: Color
+        switch r.delta {
+        case let d where d > 0:
+            label = "SUGGESTED · \(weightStr) \(ex.unit) · \(r.label)"
+            tint = .accent
+        case let d where d < 0:
+            label = "BACK OFF · \(weightStr) \(ex.unit) · \(r.label)"
+            tint = .danger
+        default:
+            label = "HOLD · \(weightStr) \(ex.unit) — earn the reps"
+            tint = .ink2
+        }
+        return ProgressionPillModel(text: label, tint: tint)
     }
 
     private func columnHeaders(unit: String) -> some View {
