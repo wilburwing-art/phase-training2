@@ -11,14 +11,15 @@
 //   5. Exercise summary: list of done sets per exercise (Display 14 + Mono XS)
 //   6. Feel chips: 5 mutually-exclusive pills (Too easy / Easy / Right / Hard / Too much)
 //   7. Note: multiline TextField (Inter 13)
-//   8. Sticky Save button (lime primary)
+//   8. Sticky Done button (lime primary) — the session is ALREADY saved
 //
-// Save action delegates to `SessionStore.saveCompleted(_:feel:note:)` and then
-// auto-presents `PostWorkoutFeedbackSheet` to capture structured feedback
-// (difficulty / hurt areas / notes → FeedbackEntry). The sheet's onDone
-// invokes the orchestrator's `onSave()` so the user lands back on Today
-// whether they tap Save or Skip. Build 99 — replaced the inline FeedbackChips
-// row with this modal so the capture surface is single-purpose and skippable.
+// FINISH IS THE SAVE: the session auto-saves via `SessionStore.saveCompleted`
+// in `.onAppear` (it also clears the active session), so this screen is a
+// post-save summary, not a save gate. `feel`/`note` edits patch the saved
+// record in place (`syncEdits` → `updateSession`); PR detection self-excludes
+// the now-persisted session. "Done" just returns to Today; "Discard" deletes
+// the record (it was saved) and returns. No structured-feedback interstitial —
+// `PostWorkoutFeedbackSheet` is no longer auto-presented (see PR notes).
 
 import SwiftUI
 
@@ -38,10 +39,13 @@ struct CompleteScreen: View {
     /// matches what was displayed.
     @State private var completedAt = Date()
     @State private var showDiscardConfirm = false
-    /// True once "Save session" is tapped — drives the post-workout feedback
-    /// sheet. Sheet's onDone triggers the orchestrator's onSave handoff back
-    /// to Today so the user lands somewhere after the sheet dismisses.
-    @State private var showFeedbackSheet = false
+    /// The auto-saved record — the workout is committed the moment this screen
+    /// appears (Finish IS the save). Held so `feel`/`note` edits can patch it in
+    /// place and Discard can delete it. nil until the on-appear save runs.
+    @State private var saved: SavedSession? = nil
+    /// Set just before Discard deletes the record, so the trailing feel/note
+    /// onChange syncs don't re-insert the row we're removing.
+    @State private var discarded = false
 
     init(session: ActiveSession, onSave: @escaping () -> Void, onDiscard: (() -> Void)? = nil) {
         self.session = session
@@ -69,7 +73,11 @@ struct CompleteScreen: View {
         // exercise, matched by name across all stored sessions". Captures
         // PRs that the old same-template comparison missed (e.g. you swap
         // routines, you set a new bench PR — it still counts).
-        store.personalRecords(in: session.exercises, sessionDate: session.startTime).map { record in
+        // Self-exclude once auto-saved: the session is in user.db by the time
+        // this recomputes, so PR detection must skip its own rows.
+        store.personalRecords(in: session.exercises,
+                              excludingSessionId: saved?.startTime.timeIntervalSince1970,
+                              sessionDate: session.startTime).map { record in
             PRItem(
                 id: "\(record.exerciseName)|\(record.reps)",
                 name: record.exerciseName,
@@ -128,7 +136,7 @@ struct CompleteScreen: View {
             }
 
             VStack(spacing: 10) {
-                saveButton
+                doneButton
                 if onDiscard != nil {
                     discardButton
                 }
@@ -137,19 +145,18 @@ struct CompleteScreen: View {
             .padding(.bottom, 32)
         }
         .preferredColorScheme(.dark)
+        .onAppear(perform: autosaveIfNeeded)
+        .onChange(of: feel) { _, _ in syncEdits() }
+        .onChange(of: note) { _, _ in syncEdits() }
         .alert("Discard workout?", isPresented: $showDiscardConfirm) {
             Button("Discard", role: .destructive) {
+                discarded = true
+                if let saved { store.deleteSession(id: saved.startTime.timeIntervalSince1970) }
                 onDiscard?()
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This session won't be saved to history. You can't undo this.")
-        }
-        .sheet(isPresented: $showFeedbackSheet) {
-            PostWorkoutFeedbackSheet(
-                sessionId: session.templateId,
-                onDone: { onSave() }
-            )
+            Text("This removes the workout you just logged from your history.")
         }
     }
 
@@ -338,17 +345,31 @@ struct CompleteScreen: View {
         }
     }
 
-    private var saveButton: some View {
-        Button {
-            // Save the session immediately; structured feedback is captured
-            // separately in the PostWorkoutFeedbackSheet that auto-presents
-            // here. The sheet's onDone hands off back to the orchestrator
-            // (onSave) once the user taps Save or Skip.
-            store.saveCompleted(session, feel: feel, note: note.isEmpty ? nil : note, endTime: completedAt)
-            showFeedbackSheet = true
-        } label: {
+    /// Finish IS the save: commit the session the moment this summary appears,
+    /// so there's no separate "Save" tap. `feel`/`note` start empty and are
+    /// patched in via `syncEdits` if the user fills them. saveCompleted clears
+    /// the active session itself.
+    private func autosaveIfNeeded() {
+        guard saved == nil else { return }
+        saved = store.saveCompleted(session, feel: feel,
+                                    note: note.isEmpty ? nil : note,
+                                    endTime: completedAt)
+    }
+
+    /// Patch the auto-saved record's feel/note in place as the user edits them.
+    /// No-op once Discard has removed the row.
+    private func syncEdits() {
+        guard !discarded, var s = saved else { return }
+        s.feel = feel
+        s.note = note.isEmpty ? nil : note
+        store.updateSession(s)
+        saved = s
+    }
+
+    private var doneButton: some View {
+        Button(action: onSave) {
             HStack(spacing: 8) {
-                Text("Save session")
+                Text("Done")
                     .font(.custom("SpaceGrotesk-SemiBold", size: 15))
                     .foregroundStyle(Color.accentInk)
                 Image(systemName: "checkmark")
@@ -363,7 +384,7 @@ struct CompleteScreen: View {
             )
         }
         .buttonStyle(.plain)
-        .accessibilityIdentifier("complete-save")
+        .accessibilityIdentifier("complete-done")
     }
 
     private var discardButton: some View {
