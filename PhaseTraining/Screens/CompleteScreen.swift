@@ -383,6 +383,7 @@ struct CompleteScreen: View {
                 )
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("complete-discard")
     }
 
     // MARK: - Helpers

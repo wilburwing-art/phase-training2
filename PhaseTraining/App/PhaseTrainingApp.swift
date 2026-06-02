@@ -50,6 +50,24 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-supersets-demo") {
             Self.seedSupersetsDemo()
         }
+        // UITest seeds, DEBUG-only so they can't ship in a release binary and
+        // overwrite a real user's plan:
+        //   --seed-plan-demo  → TODAY is a lift day with a 5-exercise
+        //     generatedWorkout (TodayScreen resolves the planned-user branch,
+        //     not the upper-1 fallback) — the start→log→save path.
+        //   --seed-sport-demo → TODAY is a SPORT day (today-log-sport CTA) —
+        //     the log-a-sport-session path.
+        // Both pair with --ui-test-onboarded + --ui-test-reset; the latter
+        // clears pt_week_plan first so the seed lands last. Auto-regen is gated
+        // on memory.onboardedAt (nil under reset), so the seed isn't clobbered.
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--seed-plan-demo") {
+            Self.seedPlanDemo()
+        }
+        if ProcessInfo.processInfo.arguments.contains("--seed-sport-demo") {
+            Self.seedSportDemo()
+        }
+        #endif
         // Upsize URLCache so coach.db image bytes survive across app launches.
         // The catalog serves ~555 images from raw.githubusercontent.com; the
         // default 4 MB memory + 20 MB disk evicts them almost immediately.
@@ -139,6 +157,79 @@ struct PhaseTrainingApp: App {
         }
     }
 
+    #if DEBUG
+    /// UITest-only: write a deterministic 7-day WeekPlan to `pt_week_plan` where
+    /// `day(date)` builds each day, encoded with `.secondsSince1970` to match
+    /// `PlanStore.decoder()`. Shared by the --seed-*-demo hooks.
+    ///
+    /// EVERY day is built by `day(_:)` (same kind), not just today, so a midnight
+    /// rollover between `init()` (which stamps these dates) and the first Today
+    /// render (which re-resolves "today" via `startOfDay(now)`) can't land
+    /// "today" on a different day kind and make the seeded CTA vanish.
+    ///
+    /// Safe against clobber: PlanStore's auto-regen is gated on
+    /// `memory.onboardedAt` (nil under --ui-test-reset), and --ui-test-reset
+    /// clears `pt_week_plan` in `init()` before this runs.
+    private static func seedWeekPlan(day: (Date) -> DayPlan) {
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: Date())
+        let days: [DayPlan] = (0..<7).map { i in
+            day(cal.date(byAdding: .day, value: i, to: start) ?? start)
+        }
+        let plan = WeekPlan(days: days, generatedAt: Date(), inputsHash: "ui-test-seed")
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .secondsSince1970
+        if let data = try? encoder.encode(plan) {
+            UserDefaults.standard.set(data, forKey: "pt_week_plan")
+        }
+    }
+
+    /// --seed-plan-demo: TODAY is a lift day carrying a 5-exercise
+    /// generatedWorkout, so TodayScreen resolves the planned-user branch rather
+    /// than the upper-1 fallback (which only fires when `planStore.plan == nil`).
+    private static func seedPlanDemo() {
+        let workout = GeneratedWorkout(
+            title: "Push day",
+            summary: "5 movements · ~50 min",
+            exercises: [
+                GeneratedExercise(id: "seed-1", exerciseId: 1, name: "Bench Press",
+                                  pattern: "horizontal-press", isCompound: true,
+                                  sets: 4, reps: "5", restSeconds: 150, rpe: "8"),
+                GeneratedExercise(id: "seed-2", exerciseId: 2, name: "Overhead Press",
+                                  pattern: "vertical-press", isCompound: true,
+                                  sets: 3, reps: "8", restSeconds: 120, rpe: "8"),
+                GeneratedExercise(id: "seed-3", exerciseId: 3, name: "Incline DB Press",
+                                  pattern: "horizontal-press", isCompound: true,
+                                  sets: 3, reps: "10", restSeconds: 90),
+                GeneratedExercise(id: "seed-4", exerciseId: 4, name: "Lateral Raise",
+                                  pattern: "lateral-raise", isCompound: false,
+                                  sets: 3, reps: "15", restSeconds: 60),
+                GeneratedExercise(id: "seed-5", exerciseId: 5, name: "Tricep Pushdown",
+                                  pattern: "elbow-extension", isCompound: false,
+                                  sets: 3, reps: "12", restSeconds: 60),
+            ],
+            estimatedMinutes: 50,
+            provenance: "UITest seed · push/pull/legs day 1"
+        )
+        seedWeekPlan { date in
+            DayPlan(date: date, kind: .lift, title: "Push day",
+                    generatedWorkout: workout, generatedReason: "UITest seed")
+        }
+    }
+
+    /// --seed-sport-demo: TODAY is a `.sport` day with a Sport attached, so
+    /// TodayScreen renders the `today-log-sport` CTA. SportLogSheet defaults to
+    /// 60 min / moderate, so the minimal log path is open + save (2 taps).
+    private static func seedSportDemo() {
+        guard let sport = Sport.catalog.first(where: { $0.slug == "climbing" })
+                ?? Sport.catalog.first else { return }
+        seedWeekPlan { date in
+            DayPlan(date: date, kind: .sport, title: sport.name,
+                    sport: sport, generatedReason: "UITest seed")
+        }
+    }
+    #endif
+
     var body: some Scene {
         WindowGroup {
             RootTabView()
@@ -156,6 +247,16 @@ struct PhaseTrainingApp: App {
                     // Cheap and safe to call on every cold start.
                     await subscriptions.refresh()
                 }
+                #if DEBUG
+                .task {
+                    // UITest hook (DEBUG-only): deterministically present the
+                    // weekly check-in on launch so the tap-budget suite can
+                    // measure that flow.
+                    if ProcessInfo.processInfo.arguments.contains("--ui-test-open-weekly-checkin") {
+                        tabSelection.showWeeklyCheckIn = true
+                    }
+                }
+                #endif
                 .preferredColorScheme(.dark)
                 .fullScreenCover(isPresented: .constant(!memory.isOnboarded && !uiTestSkipsOnboarding)) {
                     OnboardingFlow()

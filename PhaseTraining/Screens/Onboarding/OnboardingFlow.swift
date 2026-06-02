@@ -182,7 +182,11 @@ struct OnboardingScaffold<Content: View>: View {
                 }
             }
 
-            OnboardingPrimaryButton(label: nextLabel, enabled: nextEnabled, action: onNext)
+            // Step-specific id so a UI test advancing the flow waits for the
+            // actual step it's on — a shared id races across the step
+            // transition (both the leaving + entering button exist briefly).
+            OnboardingPrimaryButton(label: nextLabel, enabled: nextEnabled, action: onNext,
+                                    a11yId: "onboarding-continue-\(step)")
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
         }
@@ -248,12 +252,29 @@ struct OnboardingProgressBar: View {
     }
 }
 
+// MARK: - Conditional a11y id
+//
+// Apply an accessibility identifier ONLY when one is provided. Setting
+// `.accessibilityIdentifier("")` on the shared components would stamp an empty
+// id on every instance that doesn't opt in — and on iOS 26 a parent identifier
+// overrides nested child identity (see LogScreen's note), so an empty parent id
+// erases the labels of un-ided chips/rows. This keeps un-ided components clean.
+extension View {
+    @ViewBuilder
+    func accessibilityIdentifier(optional id: String?) -> some View {
+        if let id { self.accessibilityIdentifier(id) } else { self }
+    }
+}
+
 // MARK: - Buttons
 
 struct OnboardingPrimaryButton: View {
     let label: String
     var enabled: Bool = true
     let action: () -> Void
+    /// UI-test hook. The shared scaffold passes "onboarding-continue" so the
+    /// tap-budget suite can advance every step by one stable id.
+    var a11yId: String? = nil
 
     var body: some View {
         Button(action: action) {
@@ -271,6 +292,7 @@ struct OnboardingPrimaryButton: View {
         }
         .buttonStyle(.plain)
         .disabled(!enabled)
+        .accessibilityIdentifier(optional: a11yId)
     }
 }
 
@@ -280,6 +302,7 @@ struct OnboardingChip: View {
     let label: String
     let selected: Bool
     let action: () -> Void
+    var a11yId: String? = nil
 
     var body: some View {
         Button(action: action) {
@@ -296,6 +319,7 @@ struct OnboardingChip: View {
                 .clipShape(RoundedRectangle(cornerRadius: 999))
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier(optional: a11yId)
     }
 }
 
@@ -307,6 +331,7 @@ struct OnboardingPickRow: View {
     let selected: Bool
     var leading: String? = nil      // optional SF Symbol
     let action: () -> Void
+    var a11yId: String? = nil
 
     var body: some View {
         Button(action: action) {
@@ -345,6 +370,7 @@ struct OnboardingPickRow: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier(optional: a11yId)
     }
 }
 

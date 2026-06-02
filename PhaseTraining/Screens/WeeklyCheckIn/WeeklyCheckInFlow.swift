@@ -268,7 +268,8 @@ struct CheckInScaffold<Content: View>: View {
                 }
             }
 
-            OnboardingPrimaryButton(label: nextLabel, enabled: nextEnabled, action: onNext)
+            OnboardingPrimaryButton(label: nextLabel, enabled: nextEnabled, action: onNext,
+                                    a11yId: "checkin-continue-\(step)")
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
         }

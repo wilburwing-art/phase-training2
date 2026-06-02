@@ -50,7 +50,8 @@ struct CheckInFeedbackScreen: View {
                     OnboardingChip(
                         label: label,
                         selected: draft.lastWeekRating == value,
-                        action: { draft.lastWeekRating = draft.lastWeekRating == value ? nil : value }
+                        action: { draft.lastWeekRating = draft.lastWeekRating == value ? nil : value },
+                        a11yId: "checkin-rating-\(value)"
                     )
                     .frame(maxWidth: .infinity)
                 }

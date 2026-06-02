@@ -56,6 +56,7 @@ struct ExerciseActionSheet: View {
                                 dismiss()
                                 onMoveUp()
                             }
+                            .accessibilityIdentifier("exercise-action-move-up")
                             divider
                         }
                         if let onMoveDown {
@@ -63,6 +64,7 @@ struct ExerciseActionSheet: View {
                                 dismiss()
                                 onMoveDown()
                             }
+                            .accessibilityIdentifier("exercise-action-move-down")
                             divider
                         }
                         if let onShowDetails {
