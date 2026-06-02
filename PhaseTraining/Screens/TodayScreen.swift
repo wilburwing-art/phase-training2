@@ -629,7 +629,12 @@ struct TodayScreen: View {
     private func todayExerciseTile(_ ex: ExerciseTemplate, position: Int) -> some View {
         let prevEx = previous?.exercises.first(where: { $0.id == ex.id })
         let prevWeightText = prevEx?.sets.first?.weight ?? ""
-        let weightSegment = prevWeightText.isEmpty ? "—" : "\(prevWeightText) \(ex.unit)"
+        // Build 103 — deterministic progression suggestion. Show the next
+        // bump alongside the prior weight so the user sees the progression
+        // story without depending on the LLM coach. Falls back to the bare
+        // prev-weight when we don't have enough signal (no prior set, no
+        // reps logged).
+        let weightSegment = progressionSegment(ex: ex, prevEx: prevEx, prevWeightText: prevWeightText)
         let bucket = bucketForExercise(named: ex.name) ?? .chest
         let photoURL = thumbnailURLForExercise(named: ex.name)
         let exerciseID = ExerciseLookupCache.shared.exerciseID(forName: ex.name)
@@ -645,6 +650,53 @@ struct TodayScreen: View {
             density: .presentation
         )
         .accessibilityIdentifier("today-edit-\(position)")
+    }
+
+    /// Compose the rightmost segment of the tile meta line. Showing both
+    /// the previous and the suggested weight lets the user see "+5" as
+    /// progression in motion, not just a fresh number.
+    private func progressionSegment(ex: ExerciseTemplate, prevEx: LoggedExercise?, prevWeightText: String) -> String {
+        guard !prevWeightText.isEmpty else { return "—" }
+        let unit = ex.unit
+        // Build a PriorPerformance from the prev top set (heaviest done set).
+        let topPrior: (weight: Double, reps: Int)? = {
+            guard let prevEx else { return nil }
+            var bestWeight = 0.0
+            var bestReps = 0
+            for set in prevEx.sets where set.done && !set.isWarmup {
+                if let w = set.weightValue, w > bestWeight {
+                    bestWeight = w
+                    bestReps = set.repsValue ?? 0
+                }
+            }
+            return bestWeight > 0 ? (bestWeight, bestReps) : nil
+        }()
+        guard let topPrior, topPrior.reps > 0 else {
+            return "\(prevWeightText) \(unit)"
+        }
+        let suggestion = ProgressionSuggestion.suggest(
+            prior: ProgressionSuggestion.PriorPerformance(
+                weight: topPrior.weight,
+                repsAchieved: topPrior.reps,
+                targetReps: ex.targetReps
+            ),
+            exerciseName: ex.name,
+            unit: unit
+        )
+        guard let s = suggestion else {
+            return "\(prevWeightText) \(unit)"
+        }
+        // Render the suggested weight (sometimes equal to prior on a hold).
+        let nextWeightStr: String = {
+            if s.suggestedWeight.truncatingRemainder(dividingBy: 1) == 0 {
+                return "\(Int(s.suggestedWeight))"
+            }
+            return String(format: "%.1f", s.suggestedWeight)
+        }()
+        if s.delta == 0 {
+            return "\(nextWeightStr) \(unit) · hold"
+        }
+        return "\(nextWeightStr) \(unit) · \(s.label)"
     }
 
     /// Resolve the primary muscle bucket for an exercise by name. Routes

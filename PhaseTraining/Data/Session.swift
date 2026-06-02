@@ -19,18 +19,27 @@ struct LoggedSet: Codable, Equatable {
     /// on decode so pre-build-100 sessions round-trip cleanly without a
     /// JSON migration; defaults to false.
     var isWarmup: Bool = false
+    /// Reps-in-reserve (build 103). Distinct from RPE: RIR records how many
+    /// reps the user had left in the tank ("3 RIR" = could have done 3
+    /// more). The science-based era cohort speaks in RIR terms, and the
+    /// data flows directly into hypertrophy autoregulation. Stored as raw
+    /// String to match the rest of the row (TextField-friendly, "blank =
+    /// unspecified" sentinel). Optional on decode so pre-build-103 sessions
+    /// round-trip cleanly without migrating the JSON.
+    var rir: String = ""
 
     enum CodingKeys: String, CodingKey {
-        case num, weight, reps, rpe, done, isWarmup
+        case num, weight, reps, rpe, done, isWarmup, rir
     }
 
-    init(num: Int, weight: String, reps: String, rpe: String, done: Bool, isWarmup: Bool = false) {
+    init(num: Int, weight: String, reps: String, rpe: String, done: Bool, isWarmup: Bool = false, rir: String = "") {
         self.num = num
         self.weight = weight
         self.reps = reps
         self.rpe = rpe
         self.done = done
         self.isWarmup = isWarmup
+        self.rir = rir
     }
 
     init(from decoder: Decoder) throws {
@@ -41,6 +50,7 @@ struct LoggedSet: Codable, Equatable {
         self.rpe = try c.decode(String.self, forKey: .rpe)
         self.done = try c.decode(Bool.self, forKey: .done)
         self.isWarmup = (try? c.decode(Bool.self, forKey: .isWarmup)) ?? false
+        self.rir = (try? c.decode(String.self, forKey: .rir)) ?? ""
     }
 }
 
