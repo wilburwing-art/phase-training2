@@ -86,6 +86,12 @@ struct TrainingMemory: Codable {
     /// installs that haven't logged a weight; the Profile + Progress UI
     /// surfaces an empty state until the first entry lands.
     var bodyWeightLog: [BodyWeightEntry] = []
+    /// Append-only body-composition time series (build 103). Separate from
+    /// `bodyWeightLog` because BF% + lean mass are reported by a different
+    /// instrument cadence (monthly DEXA, weekly InBody) than a daily home
+    /// scale weight. The planner doesn't read this yet — surfaces are
+    /// Profile + Progress for now.
+    var bodyCompositionLog: [BodyCompositionEntry] = []
     /// Display preference for height + weight. Defaults true (US default);
     /// users elsewhere can flip on the Profile screen.
     var usesImperial: Bool = true
@@ -137,7 +143,7 @@ struct TrainingMemory: Codable {
         case age, gender
         case eraOverride
         case heightCm, weightKg, usesImperial
-        case bodyWeightLog
+        case bodyWeightLog, bodyCompositionLog
         case dislikes, constraints
         case exerciseAffinities
         case userInjuries
@@ -202,6 +208,7 @@ struct TrainingMemory: Codable {
         self.weightKg        =  try? c.decodeIfPresent(Double.self, forKey: .weightKg)
         self.usesImperial    = (try? c.decode(Bool.self,            forKey: .usesImperial)) ?? true
         self.bodyWeightLog   = (try? c.decode([BodyWeightEntry].self, forKey: .bodyWeightLog)) ?? []
+        self.bodyCompositionLog = (try? c.decode([BodyCompositionEntry].self, forKey: .bodyCompositionLog)) ?? []
         self.dislikes        = (try? c.decode([String].self,       forKey: .dislikes))        ?? []
         self.constraints     = (try? c.decode([String].self,       forKey: .constraints))     ?? []
         self.exerciseAffinities = (try? c.decode([String: Int].self, forKey: .exerciseAffinities)) ?? [:]
@@ -252,6 +259,7 @@ struct TrainingMemory: Codable {
         try c.encodeIfPresent(weightKg, forKey: .weightKg)
         try c.encode(usesImperial, forKey: .usesImperial)
         try c.encode(bodyWeightLog, forKey: .bodyWeightLog)
+        try c.encode(bodyCompositionLog, forKey: .bodyCompositionLog)
         try c.encode(dislikes,        forKey: .dislikes)
         try c.encode(constraints,     forKey: .constraints)
         try c.encode(exerciseAffinities, forKey: .exerciseAffinities)

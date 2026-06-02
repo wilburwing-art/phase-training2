@@ -771,6 +771,15 @@ struct LogScreen: View {
                     Label("Edit set", systemImage: "pencil")
                 }
             }
+            Menu {
+                ForEach(Self.rirOptions, id: \.self) { v in
+                    Button(v) { setRIR(exIdx: exIdx, setIdx: setIdx, value: v) }
+                }
+                Button("Clear") { setRIR(exIdx: exIdx, setIdx: setIdx, value: "") }
+            } label: {
+                Label(set.rir.isEmpty ? "Set RIR…" : "RIR · \(set.rir)",
+                      systemImage: "gauge.with.dots.needle.bottom.50percent")
+            }
             Button {
                 toggleWarmup(exIdx: exIdx, setIdx: setIdx)
             } label: {
@@ -975,6 +984,18 @@ struct LogScreen: View {
         guard session.exercises.indices.contains(exIdx),
               session.exercises[exIdx].sets.indices.contains(setIdx) else { return }
         session.exercises[exIdx].sets[setIdx].isWarmup.toggle()
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    /// Reps-in-reserve (build 103). Wired to the per-set contextMenu Menu.
+    /// Stored as a free-text String to match RPE; "0" through "5+" are the
+    /// canonical options but the field accepts whatever the user picks.
+    private static let rirOptions = ["0", "1", "2", "3", "4", "5+"]
+
+    private func setRIR(exIdx: Int, setIdx: Int, value: String) {
+        guard session.exercises.indices.contains(exIdx),
+              session.exercises[exIdx].sets.indices.contains(setIdx) else { return }
+        session.exercises[exIdx].sets[setIdx].rir = value
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 

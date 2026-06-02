@@ -50,6 +50,7 @@ struct ProfileScreen: View {
     @State private var presentingHealthImports = false
     @State private var presentingPaywall = false
     @State private var presentingBodyWeightLog = false
+    @State private var presentingBodyCompositionLog = false
     @State private var presentingPlateCalculator = false
     #if DEBUG
     @State private var presentingMuscleChipGenerator = false
@@ -131,6 +132,10 @@ struct ProfileScreen: View {
                                     value: bodyWeightSummary,
                                     icon: "scalemass",
                                     action: { presentingBodyWeightLog = true })
+                        SettingsRow(label: "Body composition",
+                                    value: bodyCompositionSummary,
+                                    icon: "chart.bar.xaxis",
+                                    action: { presentingBodyCompositionLog = true })
                     }
 
                     settingsGroup("TOOLS") {
@@ -227,6 +232,9 @@ struct ProfileScreen: View {
         }
         .sheet(isPresented: $presentingBodyWeightLog) {
             BodyWeightLogSheet().environmentObject(store)
+        }
+        .sheet(isPresented: $presentingBodyCompositionLog) {
+            BodyCompositionLogSheet().environmentObject(store)
         }
         .sheet(isPresented: $presentingPlateCalculator) {
             PlateCalculatorSheet().environmentObject(store)
@@ -472,6 +480,22 @@ struct ProfileScreen: View {
         let weight = BodyMetrics.formatWeight(kg: kg, imperial: imperial)
         if logCount <= 1 { return weight }
         return "\(weight) · \(logCount) entries"
+    }
+
+    private var bodyCompositionSummary: String {
+        let log = store.memory.bodyCompositionLog.sorted { $0.date > $1.date }
+        guard let latest = log.first else { return "Not set" }
+        var parts: [String] = []
+        if let bf = latest.bodyFatPercent {
+            parts.append(String(format: "%.1f%%", bf))
+        }
+        if let lean = latest.leanMassKg {
+            let imperial = store.memory.usesImperial
+            let display = imperial ? BodyMetrics.kgToLb(lean) : lean
+            parts.append(String(format: "%.0f %@ LBM", display, imperial ? "lb" : "kg"))
+        }
+        if parts.isEmpty { return "Not set" }
+        return parts.joined(separator: " · ")
     }
 
     private var dislikesSummary: String {
