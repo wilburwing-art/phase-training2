@@ -290,11 +290,14 @@ extension TrainingMemory {
     }
 
     /// Weeks elapsed since `phaseStartedAt`, rounded to a 1-indexed week
-    /// counter (week 1 = first 7 days). Returns nil when the user has
-    /// never explicitly set or changed their phase — the SeasonPhaseBadge
-    /// hides the week counter rather than guessing from `onboardedAt`.
+    /// counter (week 1 = first 7 days). When `phaseStartedAt` is nil (the
+    /// user hasn't re-picked their phase since the build-103 stamp landed),
+    /// we fall back to `onboardedAt` so existing installs still see a
+    /// meaningful counter from the moment they updated. Returns nil only
+    /// when neither timestamp is available — pre-onboarding state.
     var weeksInCurrentPhase: Int? {
-        guard let start = phaseStartedAt else { return nil }
+        let start = phaseStartedAt ?? onboardedAt
+        guard let start else { return nil }
         let cal = Calendar.current
         let days = cal.dateComponents([.day], from: start, to: Date()).day ?? 0
         // 1-indexed: days 0-6 → "Week 1", 7-13 → "Week 2", ...

@@ -7,10 +7,33 @@ import XCTest
 /// because of rounding.
 final class SeasonPhaseTimelineTests: XCTestCase {
 
-    func test_weeksInCurrentPhase_nilWhenNeverStamped() {
+    func test_weeksInCurrentPhase_nilWhenNeitherTimestampSet() {
+        // Pre-onboarding: no phaseStartedAt and no onboardedAt. Counter
+        // hides until the user actually completes onboarding.
         var mem = TrainingMemory()
         mem.phaseStartedAt = nil
+        mem.onboardedAt = nil
         XCTAssertNil(mem.weeksInCurrentPhase)
+    }
+
+    func test_weeksInCurrentPhase_fallsBackToOnboardedAt() {
+        // Build-103 fallback — existing installs that haven't re-picked a
+        // phase since updating still get a counter, anchored to onboarding.
+        var mem = TrainingMemory()
+        mem.phaseStartedAt = nil
+        mem.onboardedAt = Calendar.current.date(byAdding: .day, value: -14, to: Date())
+        XCTAssertEqual(mem.weeksInCurrentPhase, 3)
+    }
+
+    func test_weeksInCurrentPhase_prefersPhaseStartedAtOverOnboardedAt() {
+        // When both are set, phaseStartedAt wins — the user has re-picked
+        // their phase after onboarding, and the counter should reflect the
+        // current block, not their lifetime in the app.
+        var mem = TrainingMemory()
+        let cal = Calendar.current
+        mem.onboardedAt = cal.date(byAdding: .day, value: -90, to: Date())
+        mem.phaseStartedAt = cal.date(byAdding: .day, value: -7, to: Date())
+        XCTAssertEqual(mem.weeksInCurrentPhase, 2)
     }
 
     func test_weeksInCurrentPhase_firstSevenDaysIsWeekOne() {
