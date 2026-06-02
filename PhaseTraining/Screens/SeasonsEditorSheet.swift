@@ -20,7 +20,7 @@ struct SeasonsEditorSheet: View {
                             sectionLabel("DEFAULT")
                             seasonChips(
                                 selected: store.memory.defaultSeason,
-                                onPick: { s in store.update { $0.defaultSeason = s } }
+                                onPick: { s in pickDefaultSeason(s) }
                             )
                         } else {
                             ForEach(store.memory.sports) { sport in
@@ -28,7 +28,7 @@ struct SeasonsEditorSheet: View {
                                     sectionLabel(sport.name.uppercased())
                                     seasonChips(
                                         selected: store.memory.seasonsBySport[sport] ?? store.memory.defaultSeason,
-                                        onPick: { s in store.update { $0.seasonsBySport[sport] = s } }
+                                        onPick: { s in pickSportSeason(sport: sport, season: s) }
                                     )
                                 }
                             }
@@ -36,7 +36,7 @@ struct SeasonsEditorSheet: View {
                                 .padding(.top, 4)
                             seasonChips(
                                 selected: store.memory.defaultSeason,
-                                onPick: { s in store.update { $0.defaultSeason = s } }
+                                onPick: { s in pickDefaultSeason(s) }
                             )
                         }
                         if hasEventPrepSelected {
@@ -60,6 +60,30 @@ struct SeasonsEditorSheet: View {
         .presentationDetents([.medium, .large])
         .presentationBackground(Color.bg)
         .preferredColorScheme(.dark)
+    }
+
+    /// Stamp `phaseStartedAt` whenever the planner-active season actually
+    /// changes — the SeasonPhaseBadge reads this to render "Week N". A tap
+    /// that re-picks the same chip leaves the stamp alone so the user can
+    /// re-open the sheet without resetting their counter.
+    private func pickDefaultSeason(_ season: SeasonPhase) {
+        let prevPlanner = store.memory.seasonForPlanner
+        store.update { mem in
+            mem.defaultSeason = season
+            if mem.seasonForPlanner != prevPlanner {
+                mem.phaseStartedAt = Date()
+            }
+        }
+    }
+
+    private func pickSportSeason(sport: Sport, season: SeasonPhase) {
+        let prevPlanner = store.memory.seasonForPlanner
+        store.update { mem in
+            mem.seasonsBySport[sport] = season
+            if mem.seasonForPlanner != prevPlanner {
+                mem.phaseStartedAt = Date()
+            }
+        }
     }
 
     private func sectionLabel(_ text: String) -> some View {

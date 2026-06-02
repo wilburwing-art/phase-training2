@@ -75,7 +75,9 @@ struct ProgressScreen: View {
                     subtitle: nil
                 )
                 .padding(.horizontal, -20)
+                SeasonPhaseBadge(style: .full)
                 statStrip
+                bodyWeightTrendCard
                 sessionsCard
                 volumeCard
                 strengthRatiosCard
@@ -188,6 +190,79 @@ struct ProgressScreen: View {
                     .offset(y: -(h - targetY))
             }
         }
+    }
+
+    // MARK: - Body-weight trend (build 103)
+    //
+    // The TrainingMemory.bodyWeightLog series surfaces here as a compact
+    // sparkline + delta read-out. Tapping the card opens
+    // BodyWeightLogSheet for a richer log + chart. Hidden entirely when
+    // the user has never logged a weight — empty state would just be
+    // noise on Progress. Mirrors the volume card's hand-drawn LineSpark
+    // for consistency with the rest of the screen.
+
+    @State private var presentingBodyWeightSheet = false
+
+    private var bodyWeightTrendCard: some View {
+        let log = memoryStore.memory.bodyWeightLog.sorted { $0.date < $1.date }
+        return Group {
+            if log.isEmpty {
+                EmptyView()
+            } else {
+                Button { presentingBodyWeightSheet = true } label: {
+                    bodyWeightCardBody(log: log)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("progress-body-weight-card")
+                .sheet(isPresented: $presentingBodyWeightSheet) {
+                    BodyWeightLogSheet().environmentObject(memoryStore)
+                }
+            }
+        }
+    }
+
+    private func bodyWeightCardBody(log: [BodyWeightEntry]) -> some View {
+        let imperial = memoryStore.memory.usesImperial
+        let displaySeries = log.map { imperial ? BodyMetrics.kgToLb($0.weightKg) : $0.weightKg }
+        let latest = log.last?.weightKg ?? 0
+        let latestDisplay = BodyMetrics.formatWeight(kg: latest, imperial: imperial)
+        let deltaStr: String? = {
+            guard let first = log.first?.weightKg, log.count >= 2 else { return nil }
+            let dKg = latest - first
+            let absDisplay = abs(imperial ? BodyMetrics.kgToLb(dKg) : dKg)
+            let sign = dKg >= 0 ? "+" : "−"
+            return String(format: "%@%.1f", sign, absDisplay)
+        }()
+        let dimMax = max(displaySeries.max() ?? 1, 1)
+        let dimMin = min(displaySeries.min() ?? 0, dimMax - 1)
+        return card(title: "BODY WEIGHT") {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(latestDisplay)
+                        .font(.custom("JetBrainsMono-SemiBold", size: 22))
+                        .foregroundStyle(Color.ink)
+                    if let deltaStr {
+                        Text(deltaStr)
+                            .font(.monoXS)
+                            .foregroundStyle(deltaColor(log: log))
+                    }
+                    Spacer()
+                    Text("\(log.count) entr\(log.count == 1 ? "y" : "ies")")
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                }
+                BodyWeightSpark(points: displaySeries, minValue: dimMin, maxValue: dimMax)
+                    .frame(height: 50)
+                Text("Tap to add a new weight.")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+            }
+        }
+    }
+
+    private func deltaColor(log: [BodyWeightEntry]) -> Color {
+        guard let first = log.first?.weightKg, let last = log.last?.weightKg else { return .ink3 }
+        return last >= first ? .accent : .ok
     }
 
     // MARK: - Volume trend
@@ -816,6 +891,57 @@ private struct LineSpark: View {
                     Circle()
                         .fill(Color.accent)
                         .frame(width: i == points.count - 1 ? 6 : 3, height: i == points.count - 1 ? 6 : 3)
+                        .position(x: x, y: y)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - BodyWeightSpark (hand-drawn — used by body-weight card)
+//
+// Unlike LineSpark, this one normalizes against (min, max) instead of 0 so
+// small absolute weight changes stay visible — a 2-lb swing on a 175-lb
+// baseline shouldn't render as a flatline.
+
+private struct BodyWeightSpark: View {
+    let points: [Double]
+    let minValue: Double
+    let maxValue: Double
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            let count = max(points.count, 1)
+            let stepX = count > 1 ? w / CGFloat(count - 1) : w / 2
+            let range = max(maxValue - minValue, 0.001)
+
+            ZStack {
+                Path { p in
+                    p.move(to: CGPoint(x: 0, y: h))
+                    p.addLine(to: CGPoint(x: w, y: h))
+                }
+                .stroke(Color.line, lineWidth: 0.5)
+
+                Path { p in
+                    for (i, value) in points.enumerated() {
+                        let x = CGFloat(i) * stepX
+                        let frac = (value - minValue) / range
+                        let y = h - (h * CGFloat(frac))
+                        if i == 0 { p.move(to: CGPoint(x: x, y: y)) }
+                        else { p.addLine(to: CGPoint(x: x, y: y)) }
+                    }
+                }
+                .stroke(Color.accent, style: StrokeStyle(lineWidth: 2, lineJoin: .round))
+
+                if let last = points.last {
+                    let x = CGFloat(points.count - 1) * stepX
+                    let frac = (last - minValue) / range
+                    let y = h - (h * CGFloat(frac))
+                    Circle()
+                        .fill(Color.accent)
+                        .frame(width: 6, height: 6)
                         .position(x: x, y: y)
                 }
             }

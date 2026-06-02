@@ -49,6 +49,8 @@ struct ProfileScreen: View {
     @State private var presentingDataEditor = false
     @State private var presentingHealthImports = false
     @State private var presentingPaywall = false
+    @State private var presentingBodyWeightLog = false
+    @State private var presentingPlateCalculator = false
     #if DEBUG
     @State private var presentingMuscleChipGenerator = false
     #endif
@@ -125,6 +127,17 @@ struct ProfileScreen: View {
                                     value: aboutSummary,
                                     icon: "person",
                                     action: { presentingAboutEditor = true })
+                        SettingsRow(label: "Body weight",
+                                    value: bodyWeightSummary,
+                                    icon: "scalemass",
+                                    action: { presentingBodyWeightLog = true })
+                    }
+
+                    settingsGroup("TOOLS") {
+                        SettingsRow(label: "Plate calculator",
+                                    value: "Barbell math",
+                                    icon: "circle.grid.cross",
+                                    action: { presentingPlateCalculator = true })
                     }
 
                     settingsGroup("ADJUSTMENTS") {
@@ -211,6 +224,12 @@ struct ProfileScreen: View {
         .sheet(isPresented: $presentingHealthImports) {
             HealthImportsScreen()
                 .environmentObject(store)
+        }
+        .sheet(isPresented: $presentingBodyWeightLog) {
+            BodyWeightLogSheet().environmentObject(store)
+        }
+        .sheet(isPresented: $presentingPlateCalculator) {
+            PlateCalculatorSheet().environmentObject(store)
         }
         .sheet(isPresented: $presentingPaywall) {
             PaywallView()
@@ -442,6 +461,17 @@ struct ProfileScreen: View {
         if let gender = store.memory.gender { parts.append(gender.label) }
         if parts.isEmpty { return "Not set" }
         return parts.joined(separator: " · ")
+    }
+
+    private var bodyWeightSummary: String {
+        let logCount = store.memory.bodyWeightLog.count
+        let imperial = store.memory.usesImperial
+        guard let kg = store.memory.weightKg else {
+            return logCount == 0 ? "Not set" : "—"
+        }
+        let weight = BodyMetrics.formatWeight(kg: kg, imperial: imperial)
+        if logCount <= 1 { return weight }
+        return "\(weight) · \(logCount) entries"
     }
 
     private var dislikesSummary: String {

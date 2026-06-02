@@ -229,9 +229,12 @@ struct TodayScreen: View {
                             .accessibilityIdentifier("missed-workout-banner")
                         }
 
-                        sorenessCheckInPill
+                        SeasonPhaseBadge(style: .full)
                             .padding(.horizontal, 20)
                             .padding(.top, 14)
+                        sorenessCheckInPill
+                            .padding(.horizontal, 20)
+                            .padding(.top, 10)
                         TodayRecoveryCard()
                             .padding(.horizontal, 20)
                             .padding(.top, 10)

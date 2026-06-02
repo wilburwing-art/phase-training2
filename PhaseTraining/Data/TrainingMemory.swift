@@ -14,7 +14,7 @@ import Foundation
 // MARK: - Top-level
 
 struct TrainingMemory: Codable {
-    var schemaVersion: Int = 6
+    var schemaVersion: Int = 7
 
     // Identity / intent
     var sports: [Sport] = []
@@ -30,6 +30,12 @@ struct TrainingMemory: Codable {
     /// with no actual peak/taper behavior. When set, the planner applies a hard-race
     /// style taper to the week containing this date.
     var peakDate: Date? = nil
+    /// Stamped when the user changes their planner season (default or per-sport).
+    /// Powers the "Week N of {phase}" subtext on the SeasonPhaseBadge so the
+    /// user can see how deep they are into the current block at a glance.
+    /// Nil for installs that pre-date the badge — the badge falls back to
+    /// just the phase label without a week counter.
+    var phaseStartedAt: Date? = nil
 
     // Schedule / capacity
     //
@@ -70,8 +76,16 @@ struct TrainingMemory: Codable {
     /// user's preferred unit system (see `usesImperial`). Nil = skipped.
     var heightCm: Int? = nil
     /// Body weight in kilograms with one-decimal precision. Stored metric;
-    /// rendered per `usesImperial`. Nil = skipped.
+    /// rendered per `usesImperial`. Nil = skipped. Mirrors the most recent
+    /// entry in `bodyWeightLog` when the log is non-empty — every existing
+    /// consumer (strength ratios, generator) keeps reading this single
+    /// scalar.
     var weightKg: Double? = nil
+    /// Append-only body-weight time series (build 103). The most recent entry
+    /// is mirrored onto `weightKg` so existing reads keep working. Empty for
+    /// installs that haven't logged a weight; the Profile + Progress UI
+    /// surfaces an empty state until the first entry lands.
+    var bodyWeightLog: [BodyWeightEntry] = []
     /// Display preference for height + weight. Defaults true (US default);
     /// users elsewhere can flip on the Profile screen.
     var usesImperial: Bool = true
@@ -116,12 +130,14 @@ struct TrainingMemory: Codable {
         case focuses, seasonsBySport, defaultSeason, peakDate
         case primaryFocus, season                 // legacy (build 20-23) — read for migration
         case availableDays, fixedSportDays        // legacy (build 20-24) — read but dropped on encode
+        case phaseStartedAt
         case sessionMinutes, liftDaysPerWeek
         case equipment, experience
         case startingState
         case age, gender
         case eraOverride
         case heightCm, weightKg, usesImperial
+        case bodyWeightLog
         case dislikes, constraints
         case exerciseAffinities
         case userInjuries
@@ -165,6 +181,7 @@ struct TrainingMemory: Codable {
             self.defaultSeason = .maintenance
         }
         self.peakDate = try? c.decodeIfPresent(Date.self, forKey: .peakDate)
+        self.phaseStartedAt = try? c.decodeIfPresent(Date.self, forKey: .phaseStartedAt)
 
         // availableDays + fixedSportDays are intentionally not stored anymore;
         // we don't read them on decode because the runtime no longer has slots
@@ -184,6 +201,7 @@ struct TrainingMemory: Codable {
         self.heightCm        =  try? c.decodeIfPresent(Int.self,    forKey: .heightCm)
         self.weightKg        =  try? c.decodeIfPresent(Double.self, forKey: .weightKg)
         self.usesImperial    = (try? c.decode(Bool.self,            forKey: .usesImperial)) ?? true
+        self.bodyWeightLog   = (try? c.decode([BodyWeightEntry].self, forKey: .bodyWeightLog)) ?? []
         self.dislikes        = (try? c.decode([String].self,       forKey: .dislikes))        ?? []
         self.constraints     = (try? c.decode([String].self,       forKey: .constraints))     ?? []
         self.exerciseAffinities = (try? c.decode([String: Int].self, forKey: .exerciseAffinities)) ?? [:]
@@ -221,6 +239,7 @@ struct TrainingMemory: Codable {
         try c.encode(seasonsBySport,  forKey: .seasonsBySport)
         try c.encode(defaultSeason,   forKey: .defaultSeason)
         try c.encodeIfPresent(peakDate, forKey: .peakDate)
+        try c.encodeIfPresent(phaseStartedAt, forKey: .phaseStartedAt)
         try c.encode(sessionMinutes,  forKey: .sessionMinutes)
         try c.encode(liftDaysPerWeek, forKey: .liftDaysPerWeek)
         try c.encode(equipment,       forKey: .equipment)
@@ -232,6 +251,7 @@ struct TrainingMemory: Codable {
         try c.encodeIfPresent(heightCm, forKey: .heightCm)
         try c.encodeIfPresent(weightKg, forKey: .weightKg)
         try c.encode(usesImperial, forKey: .usesImperial)
+        try c.encode(bodyWeightLog, forKey: .bodyWeightLog)
         try c.encode(dislikes,        forKey: .dislikes)
         try c.encode(constraints,     forKey: .constraints)
         try c.encode(exerciseAffinities, forKey: .exerciseAffinities)
@@ -259,6 +279,26 @@ extension TrainingMemory {
             return season
         }
         return defaultSeason
+    }
+
+    /// Weeks elapsed since `phaseStartedAt`, rounded to a 1-indexed week
+    /// counter (week 1 = first 7 days). Returns nil when the user has
+    /// never explicitly set or changed their phase — the SeasonPhaseBadge
+    /// hides the week counter rather than guessing from `onboardedAt`.
+    var weeksInCurrentPhase: Int? {
+        guard let start = phaseStartedAt else { return nil }
+        let cal = Calendar.current
+        let days = cal.dateComponents([.day], from: start, to: Date()).day ?? 0
+        // 1-indexed: days 0-6 → "Week 1", 7-13 → "Week 2", ...
+        return max(1, (days / 7) + 1)
+    }
+
+    /// Days until the configured peak date (.eventPrep). Negative when the
+    /// peak has passed; nil when no peak is set. The badge uses this to
+    /// render "T-21d to peak" instead of just the phase label.
+    var daysUntilPeak: Int? {
+        guard let peak = peakDate else { return nil }
+        return Calendar.current.dateComponents([.day], from: Date(), to: peak).day
     }
 }
 
