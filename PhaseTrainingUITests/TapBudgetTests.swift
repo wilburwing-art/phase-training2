@@ -28,7 +28,7 @@
 //      session), tap the single whole-workout "Log all" button, tap Finish.
 //      The tight number (2, independent of exercise count).
 //   2. log-workout-full         — cold Today → Start → "Log all" the upper-1
-//      fallback → Finish → Save → skip feedback. End-to-end, no-plan.
+//      fallback → Finish (auto-saves to the summary). End-to-end, no-plan.
 //   3. swap-exercise            — boot into LogScreen, open a row's swap picker,
 //      pick the first replacement.
 //   4. log-workout-planned-full — same shape as flow 2 but for a PLANNED user:
@@ -41,7 +41,8 @@
 //      first catalog exercise; it appends as a new row.
 //   7. edit-then-start          — from Today (planned), open a row's action
 //      sheet, move it, then Start. The edit-before-you-lift cost.
-//   8. discard-workout          — Finish → CompleteScreen → Discard → confirm.
+//   8. discard-workout          — Finish (auto-saves) → Discard → confirm
+//      (deletes the just-logged record).
 //   9. log-sport                — seeded sport day → Log session → accept the
 //      default 60 min / moderate → Save. The hybrid non-lift loop.
 //  10. onboarding-to-first-plan — cold launch → minimal onboarding answers →
@@ -79,10 +80,11 @@ final class TapBudgetTests: XCTestCase {
         static let plannedExercises = 5
         /// No-plan fallback: WorkoutTemplate.upper1 has 6 exercises.
         static let fallbackExercises = 6
-        /// Start + Finish + Save + Skip = 4 fixed taps around the single
-        /// whole-workout "Log all" tap in the two end-to-end "from Today" flows
-        /// (so each is overhead + 1, independent of exercise count).
-        static let fullFlowOverhead = 4
+        /// Start + Finish = 2 fixed taps around the single whole-workout "Log
+        /// all" tap in the two end-to-end "from Today" flows (each is overhead
+        /// + 1, independent of exercise count). Finish AUTO-SAVES and lands on
+        /// the summary — no separate Save tap, no feedback Skip.
+        static let fullFlowOverhead = 2
     }
 
     override func setUpWithError() throws {
@@ -108,8 +110,8 @@ final class TapBudgetTests: XCTestCase {
     // MARK: - 2. Log a workout (full, Today → saved, no plan)
 
     /// Cold start with no plan and no active session → Today shows the upper-1
-    /// fallback as a startable lift day. Start → Log all → Finish → Save →
-    /// skip feedback.
+    /// fallback as a startable lift day. Start → Log all → Finish (auto-saves
+    /// to the summary). Reference: Start + Log all + Finish = 3.
     func testTapBudget_logWorkout_full() throws {
         let app = launchOnToday()
         var counter = TapCounter(app: app, flow: "log-workout-full")
@@ -208,16 +210,16 @@ final class TapBudgetTests: XCTestCase {
 
     // MARK: - 8. Discard a workout
 
-    /// From LogScreen, Finish → CompleteScreen → Discard → confirm the alert.
-    /// Reference: 1 Finish + 1 Discard + 1 confirm = 3. The destructive confirm
-    /// is intentional and can't be skipped.
+    /// From LogScreen, Finish (auto-saves) → Discard → confirm the alert. Since
+    /// Finish now saves, Discard deletes the just-logged record. Reference:
+    /// 1 Finish + 1 Discard + 1 confirm = 3. The destructive confirm stays.
     func testTapBudget_discardWorkout() throws {
         let app = launchInLog()
         var counter = TapCounter(app: app, flow: "discard-workout")
 
         counter.tap("log-finish")
         XCTAssertTrue(app.buttons["complete-discard"].waitForExistence(timeout: 8),
-                      "Finish should land on CompleteScreen")
+                      "Finish should auto-save and show the summary")
         counter.tap("complete-discard")
 
         // Destructive confirm is a SwiftUI `.alert`; its buttons can't carry a
@@ -404,10 +406,12 @@ final class TapBudgetTests: XCTestCase {
         logAllWorkout(&counter, expectedExercises: expectedExercises)
 
         counter.tap("log-finish")
-        XCTAssertTrue(app.buttons["complete-save"].waitForExistence(timeout: 8),
-                      "[\(counter.flow)] Finish should land on CompleteScreen")
-        counter.tap("complete-save")
-        counter.tap("feedback-skip")
+        // Finish AUTO-SAVES and lands on the summary — no Save/Skip taps. The
+        // workout is logged at this point; returning to Today via "Done" is
+        // post-logging navigation and isn't part of the budget (the summary
+        // shows with the tab bar visible).
+        XCTAssertTrue(app.buttons["complete-done"].waitForExistence(timeout: 8),
+                      "[\(counter.flow)] Finish should auto-save and show the summary")
     }
 
     /// Log the WHOLE workout with the single header "Log all" button (one tap),
