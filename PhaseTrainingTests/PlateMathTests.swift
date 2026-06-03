@@ -83,12 +83,17 @@ final class PlateMathTests: XCTestCase {
     }
 
     func test_floatingPointWobble_doesntLoseAFullPlate() {
-        // Classic 0.1 + 0.2 != 0.3 territory: 137.5 lb target uses a 2.5,
-        // which would round down to 0 without the 1e-9 tolerance.
-        let r = PlateMath.calculate(target: 137.5, bar: 45, plates: imperial)!
+        // The smallest plate (2.5) must be PLACED as a trailing denomination,
+        // not dropped. 140 = 45-bar + (45 + 2.5) per side. calculate()'s
+        // `+ 1e-9` count tolerance guards the integer boundary so a raw count
+        // that lands a hair under a whole number never floors down and loses
+        // the lifter a plate they need. (137.5 is NOT used here: with the
+        // standard set's smallest plate being 2.5 — no 1.25s — it falls 2.5
+        // short, which test_remainderWhenStandardSetCantHit already covers.)
+        let r = PlateMath.calculate(target: 140, bar: 45, plates: imperial)!
         XCTAssertTrue(r.perSide.contains(PlateMath.Row(plate: 45, count: 1)))
         XCTAssertTrue(r.perSide.contains(PlateMath.Row(plate: 2.5, count: 1)))
-        XCTAssertEqual(r.achieved, 137.5, accuracy: 0.001)
+        XCTAssertEqual(r.achieved, 140, accuracy: 0.001)
         XCTAssertEqual(r.remainder, 0, accuracy: 0.001)
     }
 
