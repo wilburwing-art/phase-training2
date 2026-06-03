@@ -117,6 +117,10 @@ struct AboutYouEditorSheet: View {
         .onChange(of: ageFocused) { _, isFocused in
             if !isFocused { commitAge() }
         }
+        // BodyMetricsEditor writes `weightKg` directly; record that edit into
+        // the body-weight log on the way out so the trend + scalar stay in
+        // sync (no-op when the value is unchanged).
+        .onDisappear { store.update { $0.reconcileScalarIntoLog() } }
     }
 
     private var ageTextField: some View {

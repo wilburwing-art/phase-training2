@@ -11,6 +11,28 @@ import Foundation
 
 enum BodyMetrics {
 
+    // MARK: - Decimal input parsing
+
+    /// Parse a user-typed decimal that may carry a comma decimal separator
+    /// (European keypads) or thousands grouping. Mirrors
+    /// `LoggedSet.leadingNumber`'s comma policy so every numeric field in the
+    /// app agrees: with BOTH separators present, "," is thousands grouping
+    /// ("1,250.5" → 1250.5); a lone "," is the decimal mark ("60,5" → 60.5).
+    /// Returns nil for empty / non-numeric input. Shared by the body-weight,
+    /// body-composition, and plate-calculator fields (previously three
+    /// slightly-divergent copies — the plate/comp copies turned "1,250" into
+    /// 1.25).
+    static func parseDecimalInput(_ raw: String) -> Double? {
+        var s = raw.trimmingCharacters(in: .whitespaces)
+        guard !s.isEmpty else { return nil }
+        if s.contains(",") {
+            s = s.contains(".")
+                ? s.replacingOccurrences(of: ",", with: "")
+                : s.replacingOccurrences(of: ",", with: ".")
+        }
+        return Double(s)
+    }
+
     // MARK: - Weight
 
     /// 1 kg ≈ 2.20462262 lb. Source: NIST.

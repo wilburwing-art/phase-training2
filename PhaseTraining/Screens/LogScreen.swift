@@ -437,6 +437,14 @@ struct LogScreen: View {
                 coachingHintsRow(rpe: ex.rpe, tempo: ex.tempo)
             }
 
+            // Build 103: deterministic progression suggestion. Reads the
+            // prev-session top set already on `ex.prevSets`, applies the
+            // ProgressionSuggestion rule, renders "SUGGESTED · 190 lb (+5)"
+            // so the user knows the target for today before logging set 1.
+            // Hidden when there's no prior signal — no nag on first-time
+            // exercises.
+            progressionPill(for: ex)
+
             // Column headers
             columnHeaders(unit: ex.unit)
 
@@ -540,6 +548,66 @@ struct LogScreen: View {
         }
         .padding(.top, 4)
         .padding(.bottom, 6)
+    }
+
+    /// Tiny progression hint just under the coaching-hints row. Reads the
+    /// heaviest done working set in `ex.prevSets` and applies the
+    /// deterministic ProgressionSuggestion rule. nil when there's no prior
+    /// signal so first-time-exercise rows stay clean.
+    @ViewBuilder
+    private func progressionPill(for ex: LoggedExercise) -> some View {
+        if let suggestion = computeProgressionSuggestion(for: ex) {
+            HStack(spacing: 6) {
+                Image(systemName: "arrow.up.right.circle")
+                    .font(.system(size: 11, weight: .medium))
+                Text(suggestion.text)
+                    .font(.monoXS)
+                Spacer(minLength: 0)
+            }
+            .foregroundStyle(suggestion.tint)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color.accentWash)
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(Color.accentBorder, lineWidth: 0.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .padding(.top, 4)
+            .padding(.bottom, 4)
+            .accessibilityIdentifier("log-progression-pill")
+        }
+    }
+
+    private struct ProgressionPillModel {
+        let text: String
+        let tint: Color
+    }
+
+    private func computeProgressionSuggestion(for ex: LoggedExercise) -> ProgressionPillModel? {
+        // Shared extraction: the heaviest set that MET target reps (so a
+        // pyramid's heavy top single doesn't read as a missed target).
+        guard let r = ProgressionSuggestion.suggest(
+            prevSets: ex.prevSets,
+            targetReps: ex.targetReps,
+            exerciseName: ex.name,
+            unit: ex.unit
+        ) else { return nil }
+        let weightStr = r.suggestedWeightString
+        let label: String
+        let tint: Color
+        switch r.delta {
+        case let d where d > 0:
+            label = "SUGGESTED · \(weightStr) \(ex.unit) · \(r.label)"
+            tint = .accent
+        case let d where d < 0:
+            label = "BACK OFF · \(weightStr) \(ex.unit) · \(r.label)"
+            tint = .danger
+        default:
+            label = "HOLD · \(weightStr) \(ex.unit) — earn the reps"
+            tint = .ink2
+        }
+        return ProgressionPillModel(text: label, tint: tint)
     }
 
     private func columnHeaders(unit: String) -> some View {
@@ -684,6 +752,15 @@ struct LogScreen: View {
                 } label: {
                     Label("Edit set", systemImage: "pencil")
                 }
+            }
+            Menu {
+                ForEach(Self.rirOptions, id: \.self) { v in
+                    Button(v) { setRIR(exIdx: exIdx, setIdx: setIdx, value: v) }
+                }
+                Button("Clear") { setRIR(exIdx: exIdx, setIdx: setIdx, value: "") }
+            } label: {
+                Label(set.rir.isEmpty ? "Set RIR…" : "RIR · \(set.rir)",
+                      systemImage: "gauge.with.dots.needle.bottom.50percent")
             }
             Button {
                 toggleWarmup(exIdx: exIdx, setIdx: setIdx)
@@ -889,6 +966,18 @@ struct LogScreen: View {
         guard session.exercises.indices.contains(exIdx),
               session.exercises[exIdx].sets.indices.contains(setIdx) else { return }
         session.exercises[exIdx].sets[setIdx].isWarmup.toggle()
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    /// Reps-in-reserve (build 103). Wired to the per-set contextMenu Menu.
+    /// Stored as a free-text String to match RPE; "0" through "5+" are the
+    /// canonical options but the field accepts whatever the user picks.
+    private static let rirOptions = ["0", "1", "2", "3", "4", "5+"]
+
+    private func setRIR(exIdx: Int, setIdx: Int, value: String) {
+        guard session.exercises.indices.contains(exIdx),
+              session.exercises[exIdx].sets.indices.contains(setIdx) else { return }
+        session.exercises[exIdx].sets[setIdx].rir = value
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 

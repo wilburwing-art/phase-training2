@@ -70,6 +70,28 @@ final class ProfileFieldCoverageTests: XCTestCase {
               snapshotMarker: nil,
               skipReason: "Display preference; planner+coach use metric internally."),
 
+        // Build 103 phase counter — stamped when the user re-picks a season.
+        // Drives ONLY the SeasonPhaseBadge "Week N of {phase}" + MesocycleProgression
+        // display (SeasonPhaseBadge is its sole consumer). Not in planInputsHash:
+        // the season change that stamps it already drifts the hash via
+        // seasonsBySport/defaultSeason, so the timestamp itself doesn't need to
+        // retrigger regen. Not in the coach snapshot (no phase-week line there).
+        Probe(name: "phaseStartedAt", mutateForHash: nil, mutateForSnapshot: nil,
+              snapshotMarker: nil,
+              skipReason: "Display-only phase-week counter (SeasonPhaseBadge); the season change that stamps it already drives plan regen, and the coach snapshot has no phase-week line."),
+
+        // Build 103 append-only body-metric series. The newest entry is mirrored
+        // onto weightKg, which IS surfaced to the coach (bodySection) and is
+        // itself intentionally excluded from the plan hash (a weight log must not
+        // retrigger a week-wide regen — see WeekPlan.planInputsHash). The raw logs
+        // are surfaced only on Profile + Progress, not in plan inputs or the snapshot.
+        Probe(name: "bodyWeightLog", mutateForHash: nil, mutateForSnapshot: nil,
+              snapshotMarker: nil,
+              skipReason: "Append-only body-weight series; coach reads the mirrored weightKg via bodySection, planner intentionally excludes body metrics from the hash."),
+        Probe(name: "bodyCompositionLog", mutateForHash: nil, mutateForSnapshot: nil,
+              snapshotMarker: nil,
+              skipReason: "Append-only body-composition series; not read by planner or coach yet (Profile + Progress surfaces only)."),
+
         // Body metrics — see WeekPlan.planInputsHash comment. Intentionally
         // excluded from hash to avoid weight-log retriggering plan regen; ARE
         // surfaced to coach via bodySection.

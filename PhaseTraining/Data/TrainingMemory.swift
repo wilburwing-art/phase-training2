@@ -14,7 +14,7 @@ import Foundation
 // MARK: - Top-level
 
 struct TrainingMemory: Codable {
-    var schemaVersion: Int = 6
+    var schemaVersion: Int = 7
 
     // Identity / intent
     var sports: [Sport] = []
@@ -30,6 +30,12 @@ struct TrainingMemory: Codable {
     /// with no actual peak/taper behavior. When set, the planner applies a hard-race
     /// style taper to the week containing this date.
     var peakDate: Date? = nil
+    /// Stamped when the user changes their planner season (default or per-sport).
+    /// Powers the "Week N of {phase}" subtext on the SeasonPhaseBadge so the
+    /// user can see how deep they are into the current block at a glance.
+    /// Nil for installs that pre-date the badge — the badge falls back to
+    /// just the phase label without a week counter.
+    var phaseStartedAt: Date? = nil
 
     // Schedule / capacity
     //
@@ -70,8 +76,22 @@ struct TrainingMemory: Codable {
     /// user's preferred unit system (see `usesImperial`). Nil = skipped.
     var heightCm: Int? = nil
     /// Body weight in kilograms with one-decimal precision. Stored metric;
-    /// rendered per `usesImperial`. Nil = skipped.
+    /// rendered per `usesImperial`. Nil = skipped. Mirrors the most recent
+    /// entry in `bodyWeightLog` when the log is non-empty — every existing
+    /// consumer (strength ratios, generator) keeps reading this single
+    /// scalar.
     var weightKg: Double? = nil
+    /// Append-only body-weight time series (build 103). The most recent entry
+    /// is mirrored onto `weightKg` so existing reads keep working. Empty for
+    /// installs that haven't logged a weight; the Profile + Progress UI
+    /// surfaces an empty state until the first entry lands.
+    var bodyWeightLog: [BodyWeightEntry] = []
+    /// Append-only body-composition time series (build 103). Separate from
+    /// `bodyWeightLog` because BF% + lean mass are reported by a different
+    /// instrument cadence (monthly DEXA, weekly InBody) than a daily home
+    /// scale weight. The planner doesn't read this yet — surfaces are
+    /// Profile + Progress for now.
+    var bodyCompositionLog: [BodyCompositionEntry] = []
     /// Display preference for height + weight. Defaults true (US default);
     /// users elsewhere can flip on the Profile screen.
     var usesImperial: Bool = true
@@ -116,12 +136,14 @@ struct TrainingMemory: Codable {
         case focuses, seasonsBySport, defaultSeason, peakDate
         case primaryFocus, season                 // legacy (build 20-23) — read for migration
         case availableDays, fixedSportDays        // legacy (build 20-24) — read but dropped on encode
+        case phaseStartedAt
         case sessionMinutes, liftDaysPerWeek
         case equipment, experience
         case startingState
         case age, gender
         case eraOverride
         case heightCm, weightKg, usesImperial
+        case bodyWeightLog, bodyCompositionLog
         case dislikes, constraints
         case exerciseAffinities
         case userInjuries
@@ -165,6 +187,7 @@ struct TrainingMemory: Codable {
             self.defaultSeason = .maintenance
         }
         self.peakDate = try? c.decodeIfPresent(Date.self, forKey: .peakDate)
+        self.phaseStartedAt = try? c.decodeIfPresent(Date.self, forKey: .phaseStartedAt)
 
         // availableDays + fixedSportDays are intentionally not stored anymore;
         // we don't read them on decode because the runtime no longer has slots
@@ -184,6 +207,8 @@ struct TrainingMemory: Codable {
         self.heightCm        =  try? c.decodeIfPresent(Int.self,    forKey: .heightCm)
         self.weightKg        =  try? c.decodeIfPresent(Double.self, forKey: .weightKg)
         self.usesImperial    = (try? c.decode(Bool.self,            forKey: .usesImperial)) ?? true
+        self.bodyWeightLog   = (try? c.decode([BodyWeightEntry].self, forKey: .bodyWeightLog)) ?? []
+        self.bodyCompositionLog = (try? c.decode([BodyCompositionEntry].self, forKey: .bodyCompositionLog)) ?? []
         self.dislikes        = (try? c.decode([String].self,       forKey: .dislikes))        ?? []
         self.constraints     = (try? c.decode([String].self,       forKey: .constraints))     ?? []
         self.exerciseAffinities = (try? c.decode([String: Int].self, forKey: .exerciseAffinities)) ?? [:]
@@ -221,6 +246,7 @@ struct TrainingMemory: Codable {
         try c.encode(seasonsBySport,  forKey: .seasonsBySport)
         try c.encode(defaultSeason,   forKey: .defaultSeason)
         try c.encodeIfPresent(peakDate, forKey: .peakDate)
+        try c.encodeIfPresent(phaseStartedAt, forKey: .phaseStartedAt)
         try c.encode(sessionMinutes,  forKey: .sessionMinutes)
         try c.encode(liftDaysPerWeek, forKey: .liftDaysPerWeek)
         try c.encode(equipment,       forKey: .equipment)
@@ -232,6 +258,8 @@ struct TrainingMemory: Codable {
         try c.encodeIfPresent(heightCm, forKey: .heightCm)
         try c.encodeIfPresent(weightKg, forKey: .weightKg)
         try c.encode(usesImperial, forKey: .usesImperial)
+        try c.encode(bodyWeightLog, forKey: .bodyWeightLog)
+        try c.encode(bodyCompositionLog, forKey: .bodyCompositionLog)
         try c.encode(dislikes,        forKey: .dislikes)
         try c.encode(constraints,     forKey: .constraints)
         try c.encode(exerciseAffinities, forKey: .exerciseAffinities)
@@ -259,6 +287,91 @@ extension TrainingMemory {
             return season
         }
         return defaultSeason
+    }
+
+    /// Weeks elapsed since `phaseStartedAt`, rounded to a 1-indexed week
+    /// counter (week 1 = first 7 days). When `phaseStartedAt` is nil (the
+    /// user hasn't re-picked their phase since the build-103 stamp landed),
+    /// we fall back to `onboardedAt` so existing installs still see a
+    /// meaningful counter from the moment they updated. Returns nil only
+    /// when neither timestamp is available — pre-onboarding state.
+    var weeksInCurrentPhase: Int? {
+        let start = phaseStartedAt ?? onboardedAt
+        guard let start else { return nil }
+        let cal = Calendar.current
+        let days = cal.dateComponents([.day], from: start, to: Date()).day ?? 0
+        // 1-indexed: days 0-6 → "Week 1", 7-13 → "Week 2", ...
+        return max(1, (days / 7) + 1)
+    }
+
+    /// Days until the configured peak date (.eventPrep). Negative when the
+    /// peak has passed; nil when no peak is set. The badge uses this to
+    /// render "T-21d to peak" instead of just the phase label.
+    var daysUntilPeak: Int? {
+        guard let peak = peakDate else { return nil }
+        return Calendar.current.dateComponents([.day], from: Date(), to: peak).day
+    }
+}
+
+// MARK: - Body-weight log ↔ scalar reconciliation (build 103)
+//
+// `weightKg` is the scalar every consumer reads (strength ratios, generator,
+// 1RM math). `bodyWeightLog` is the time series that drives the trend. They
+// must not drift, but there are three writers (onboarding/About-You set the
+// scalar directly; the log sheet appends; HealthKit imports merge). These
+// helpers are the single funnel that keeps the pair consistent so no caller
+// can null out a legitimately-set weight or mirror a stale value.
+
+extension TrainingMemory {
+    /// Most-recent entry by date. The log isn't kept sorted at rest (callers
+    /// append without re-sorting), so resolve the newest explicitly rather
+    /// than trusting `.last`.
+    var latestBodyWeightEntry: BodyWeightEntry? {
+        bodyWeightLog.max { $0.date < $1.date }
+    }
+
+    /// Append a logged weight and mirror the scalar to whatever is newest.
+    /// Single writer for the append+mirror pair so a back-dated entry can't
+    /// clobber a newer scalar.
+    mutating func recordBodyWeight(_ kg: Double, on date: Date = Date(), note: String? = nil) {
+        bodyWeightLog.append(BodyWeightEntry(date: date, weightKg: kg, note: note))
+        weightKg = latestBodyWeightEntry?.weightKg
+    }
+
+    /// Re-mirror the scalar to the log's newest entry. Crucially does NOT
+    /// null the scalar when the log is empty — a weight set via onboarding /
+    /// About You (which never created a log entry) must survive deleting the
+    /// last logged entry. Without this guard, deleting your one logged weight
+    /// silently wipes the onboarded bodyweight and the strength-ratios card
+    /// disappears.
+    mutating func remirrorWeightFromLog() {
+        if let newest = latestBodyWeightEntry { weightKg = newest.weightKg }
+    }
+
+    /// Seed the log from a scalar set outside it (onboarding / About You, or
+    /// any pre–build-103 save). Idempotent: no-op once the log has entries or
+    /// when there's no scalar. Anchored to `onboardedAt` so a later HealthKit
+    /// import with real sample dates compares correctly against it instead of
+    /// blindly overwriting it.
+    mutating func backfillBodyWeightLogFromScalar() {
+        guard bodyWeightLog.isEmpty, let kg = weightKg else { return }
+        bodyWeightLog = [BodyWeightEntry(date: onboardedAt ?? Date(), weightKg: kg, note: nil)]
+    }
+
+    /// Reconcile after an external scalar edit (About You writes `weightKg`
+    /// directly): if the scalar no longer matches the newest log entry, record
+    /// a fresh "today" entry so the trend and the scalar agree. Seeds an empty
+    /// log first so the very first edit lands as one point rather than a
+    /// divergence. `< 0.05 kg` tolerance treats a re-open with no change as a
+    /// no-op (the stored value round-trips through one-decimal display).
+    mutating func reconcileScalarIntoLog(on date: Date = Date()) {
+        guard let kg = weightKg else { return }
+        if bodyWeightLog.isEmpty {
+            backfillBodyWeightLogFromScalar()
+            return
+        }
+        if let newest = latestBodyWeightEntry, abs(newest.weightKg - kg) < 0.05 { return }
+        bodyWeightLog.append(BodyWeightEntry(date: date, weightKg: kg, note: nil))
     }
 }
 

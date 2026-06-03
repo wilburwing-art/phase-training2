@@ -184,8 +184,13 @@ enum EraAffinity {
                 splitPreference: [.push, .pull, .legs, .upper, .lower],
                 repRangeBias: (compound: .mid, isolation: .mid),
                 aestheticTags: [.machineFavor, .dbFavor],
+                // "drop set" was removed in build 103 — we don't model
+                // drop sets anywhere (no set-grouping, no descending-load
+                // logger), so coaching with the term would write checks
+                // the app can't cash. Re-add once the logger gains a
+                // drop-set primitive.
                 terminologyHints: ["pump", "burn", "feel the squeeze", "mind-muscle connection",
-                                   "stretch under load", "bro split", "drop set"],
+                                   "stretch under load", "bro split"],
                 archetypalPrograms: ["arnold-split", "bro-split", "hit-heavy-duty"]
             )
 

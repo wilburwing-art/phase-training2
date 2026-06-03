@@ -75,7 +75,10 @@ struct ProgressScreen: View {
                     subtitle: nil
                 )
                 .padding(.horizontal, -20)
+                SeasonPhaseBadge(style: .full, surface: "progress")
                 statStrip
+                bodyWeightTrendCard
+                bodyCompositionTrendCard
                 sessionsCard
                 volumeCard
                 strengthRatiosCard
@@ -188,6 +191,199 @@ struct ProgressScreen: View {
                     .offset(y: -(h - targetY))
             }
         }
+    }
+
+    // MARK: - Body-weight trend (build 103)
+    //
+    // The TrainingMemory.bodyWeightLog series surfaces here as a compact
+    // sparkline + delta read-out. Tapping the card opens
+    // BodyWeightLogSheet for a richer log + chart. Hidden entirely when
+    // the user has never logged a weight — empty state would just be
+    // noise on Progress. Mirrors the volume card's hand-drawn LineSpark
+    // for consistency with the rest of the screen.
+
+    @State private var presentingBodyWeightSheet = false
+
+    private var bodyWeightTrendCard: some View {
+        let log = memoryStore.memory.bodyWeightLog.sorted { $0.date < $1.date }
+        return Group {
+            if log.isEmpty {
+                EmptyView()
+            } else {
+                Button { presentingBodyWeightSheet = true } label: {
+                    bodyWeightCardBody(log: log)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("progress-body-weight-card")
+                .sheet(isPresented: $presentingBodyWeightSheet) {
+                    BodyWeightLogSheet().environmentObject(memoryStore)
+                }
+            }
+        }
+    }
+
+    private func bodyWeightCardBody(log: [BodyWeightEntry]) -> some View {
+        let imperial = memoryStore.memory.usesImperial
+        let displaySeries = log.map { imperial ? BodyMetrics.kgToLb($0.weightKg) : $0.weightKg }
+        let latest = log.last?.weightKg ?? 0
+        let latestDisplay = BodyMetrics.formatWeight(kg: latest, imperial: imperial)
+        let deltaStr: String? = {
+            guard let first = log.first?.weightKg, log.count >= 2 else { return nil }
+            let dKg = latest - first
+            let absDisplay = abs(imperial ? BodyMetrics.kgToLb(dKg) : dKg)
+            let sign = dKg >= 0 ? "+" : "−"
+            return String(format: "%@%.1f", sign, absDisplay)
+        }()
+        // Pass the true min/max; the spark centers a flat series itself
+        // (no dimMax-1 hack that pinned an all-equal line to the top edge).
+        let dimMax = displaySeries.max() ?? 1
+        let dimMin = displaySeries.min() ?? 0
+        return card(title: "BODY WEIGHT") {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(latestDisplay)
+                        .font(.custom("JetBrainsMono-SemiBold", size: 22))
+                        .foregroundStyle(Color.ink)
+                    if let deltaStr {
+                        Text(deltaStr)
+                            .font(.monoXS)
+                            .foregroundStyle(deltaColor(log: log))
+                    }
+                    Spacer()
+                    Text("\(log.count) entr\(log.count == 1 ? "y" : "ies")")
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                }
+                BodyWeightSpark(points: displaySeries, minValue: dimMin, maxValue: dimMax)
+                    .frame(height: 50)
+                Text("Tap to add a new weight.")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+            }
+        }
+    }
+
+    private func deltaColor(log: [BodyWeightEntry]) -> Color {
+        guard let first = log.first?.weightKg, let last = log.last?.weightKg else { return .ink3 }
+        return last >= first ? .accent : .ok
+    }
+
+    // MARK: - Body-composition trend (build 103)
+    //
+    // Symmetric with bodyWeightTrendCard but for BF% + lean mass. Each
+    // series is optional per entry — DEXA users log both, scale users
+    // log just BF% — so the card renders whichever sparklines have data.
+    // Hidden entirely when the user has never logged a composition reading.
+
+    @State private var presentingBodyCompositionSheet = false
+
+    private var bodyCompositionTrendCard: some View {
+        let log = memoryStore.memory.bodyCompositionLog.sorted { $0.date < $1.date }
+        return Group {
+            if log.isEmpty {
+                EmptyView()
+            } else {
+                Button { presentingBodyCompositionSheet = true } label: {
+                    bodyCompositionCardBody(log: log)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("progress-body-composition-card")
+                .sheet(isPresented: $presentingBodyCompositionSheet) {
+                    BodyCompositionLogSheet().environmentObject(memoryStore)
+                }
+            }
+        }
+    }
+
+    private func bodyCompositionCardBody(log: [BodyCompositionEntry]) -> some View {
+        let imperial = memoryStore.memory.usesImperial
+        let bfSeries = log.compactMap(\.bodyFatPercent)
+        let leanSeries: [Double] = log.compactMap { e in
+            guard let l = e.leanMassKg else { return nil }
+            return imperial ? BodyMetrics.kgToLb(l) : l
+        }
+        // Most-recent NON-NIL value per metric — a newest entry that carries
+        // only lean (or only BF) must not blank out the other stat while its
+        // sparkline still renders from the full series.
+        let latestBF = log.last(where: { $0.bodyFatPercent != nil })?.bodyFatPercent
+        let latestLean = log.last(where: { $0.leanMassKg != nil })?.leanMassKg
+        let bfDelta = trendDelta(values: bfSeries)
+        let leanDelta = trendDelta(values: leanSeries)
+
+        return card(title: "BODY COMPOSITION") {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .firstTextBaseline, spacing: 14) {
+                    if let bf = latestBF {
+                        statBlock(
+                            label: "BF",
+                            value: String(format: "%.1f%%", bf),
+                            delta: bfDelta.map { String(format: "%@%.1f", $0 >= 0 ? "+" : "−", abs($0)) },
+                            tint: bfDelta.map { $0 < 0 ? Color.ok : Color.accent } ?? .ink3
+                        )
+                    }
+                    if let lean = latestLean {
+                        let displayLean = imperial ? BodyMetrics.kgToLb(lean) : lean
+                        statBlock(
+                            label: "LEAN",
+                            value: String(format: "%.0f %@", displayLean, imperial ? "lb" : "kg"),
+                            delta: leanDelta.map { String(format: "%@%.1f", $0 >= 0 ? "+" : "−", abs($0)) },
+                            tint: leanDelta.map { $0 >= 0 ? Color.ok : Color.danger } ?? .ink3
+                        )
+                    }
+                    Spacer()
+                    Text("\(log.count) reading\(log.count == 1 ? "" : "s")")
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                }
+                if bfSeries.count >= 2 {
+                    miniSeries(label: "BF %", values: bfSeries)
+                }
+                if leanSeries.count >= 2 {
+                    miniSeries(label: imperial ? "LEAN LB" : "LEAN KG", values: leanSeries)
+                }
+                Text("Tap to log a new reading.")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+            }
+        }
+    }
+
+    private func statBlock(label: String, value: String, delta: String?, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(value)
+                    .font(.custom("JetBrainsMono-SemiBold", size: 18))
+                    .foregroundStyle(Color.ink)
+                if let delta {
+                    Text(delta)
+                        .font(.monoXS)
+                        .foregroundStyle(tint)
+                }
+            }
+        }
+    }
+
+    private func miniSeries(label: String, values: [Double]) -> some View {
+        let maxV = values.max() ?? 1
+        let minV = values.min() ?? 0
+        return HStack(spacing: 8) {
+            Text(label)
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+                .frame(width: 56, alignment: .leading)
+            BodyWeightSpark(points: values, minValue: minV, maxValue: maxV)
+                .frame(height: 24)
+        }
+    }
+
+    /// Net change from first → last value in a series. nil for series with
+    /// fewer than 2 points (no delta to compute).
+    private func trendDelta(values: [Double]) -> Double? {
+        guard let first = values.first, let last = values.last, values.count >= 2 else { return nil }
+        return last - first
     }
 
     // MARK: - Volume trend
@@ -816,6 +1012,60 @@ private struct LineSpark: View {
                     Circle()
                         .fill(Color.accent)
                         .frame(width: i == points.count - 1 ? 6 : 3, height: i == points.count - 1 ? 6 : 3)
+                        .position(x: x, y: y)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - BodyWeightSpark (hand-drawn — used by body-weight card)
+//
+// Unlike LineSpark, this one normalizes against (min, max) instead of 0 so
+// small absolute weight changes stay visible — a 2-lb swing on a 175-lb
+// baseline shouldn't render as a flatline.
+
+private struct BodyWeightSpark: View {
+    let points: [Double]
+    let minValue: Double
+    let maxValue: Double
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            let count = max(points.count, 1)
+            let stepX = count > 1 ? w / CGFloat(count - 1) : w / 2
+            let span = maxValue - minValue
+            // Flat series (all weights equal) → render centered, not pinned to
+            // an edge. `frac(_:)` returns 0.5 when there's no spread.
+            let frac: (Double) -> CGFloat = { value in
+                span < 0.0001 ? 0.5 : CGFloat((value - minValue) / span)
+            }
+
+            ZStack {
+                Path { p in
+                    p.move(to: CGPoint(x: 0, y: h))
+                    p.addLine(to: CGPoint(x: w, y: h))
+                }
+                .stroke(Color.line, lineWidth: 0.5)
+
+                Path { p in
+                    for (i, value) in points.enumerated() {
+                        let x = CGFloat(i) * stepX
+                        let y = h - (h * frac(value))
+                        if i == 0 { p.move(to: CGPoint(x: x, y: y)) }
+                        else { p.addLine(to: CGPoint(x: x, y: y)) }
+                    }
+                }
+                .stroke(Color.accent, style: StrokeStyle(lineWidth: 2, lineJoin: .round))
+
+                if let last = points.last {
+                    let x = CGFloat(points.count - 1) * stepX
+                    let y = h - (h * frac(last))
+                    Circle()
+                        .fill(Color.accent)
+                        .frame(width: 6, height: 6)
                         .position(x: x, y: y)
                 }
             }

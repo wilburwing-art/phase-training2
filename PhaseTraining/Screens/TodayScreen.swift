@@ -229,9 +229,12 @@ struct TodayScreen: View {
                             .accessibilityIdentifier("missed-workout-banner")
                         }
 
-                        sorenessCheckInPill
+                        SeasonPhaseBadge(style: .full, surface: "today")
                             .padding(.horizontal, 20)
                             .padding(.top, 14)
+                        sorenessCheckInPill
+                            .padding(.horizontal, 20)
+                            .padding(.top, 10)
                         TodayRecoveryCard()
                             .padding(.horizontal, 20)
                             .padding(.top, 10)
@@ -658,7 +661,12 @@ struct TodayScreen: View {
     private func todayExerciseTile(_ ex: ExerciseTemplate, position: Int) -> some View {
         let prevEx = previous?.exercises.first(where: { $0.id == ex.id })
         let prevWeightText = prevEx?.sets.first?.weight ?? ""
-        let weightSegment = prevWeightText.isEmpty ? "—" : "\(prevWeightText) \(ex.unit)"
+        // Build 103 — deterministic progression suggestion. Show the next
+        // bump alongside the prior weight so the user sees the progression
+        // story without depending on the LLM coach. Falls back to the bare
+        // prev-weight when we don't have enough signal (no prior set, no
+        // reps logged).
+        let weightSegment = progressionSegment(ex: ex, prevEx: prevEx, prevWeightText: prevWeightText)
         let bucket = bucketForExercise(named: ex.name) ?? .chest
         let photoURL = thumbnailURLForExercise(named: ex.name)
         let exerciseID = ExerciseLookupCache.shared.exerciseID(forName: ex.name)
@@ -674,6 +682,29 @@ struct TodayScreen: View {
             density: .presentation
         )
         .accessibilityIdentifier("today-edit-\(position)")
+    }
+
+    /// Compose the rightmost segment of the tile meta line. Showing both
+    /// the previous and the suggested weight lets the user see "+5" as
+    /// progression in motion, not just a fresh number.
+    private func progressionSegment(ex: ExerciseTemplate, prevEx: LoggedExercise?, prevWeightText: String) -> String {
+        guard !prevWeightText.isEmpty else { return "—" }
+        let unit = ex.unit
+        // Shared extraction (heaviest set that met target reps) so the Today
+        // tile and the Log pill never disagree on the suggested number.
+        guard let prevEx,
+              let s = ProgressionSuggestion.suggest(
+                prevSets: prevEx.sets,
+                targetReps: ex.targetReps,
+                exerciseName: ex.name,
+                unit: unit
+              ) else {
+            return "\(prevWeightText) \(unit)"
+        }
+        if s.delta == 0 {
+            return "\(s.suggestedWeightString) \(unit) · hold"
+        }
+        return "\(s.suggestedWeightString) \(unit) · \(s.label)"
     }
 
     /// Resolve the primary muscle bucket for an exercise by name. Routes

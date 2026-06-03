@@ -168,9 +168,13 @@ struct WeekScreen: View {
 
     private func header(plan: WeekPlan) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("THIS WEEK")
-                .styled(.micro)
-                .foregroundStyle(Color.accent)
+            HStack(spacing: 6) {
+                Text("THIS WEEK")
+                    .styled(.micro)
+                    .foregroundStyle(Color.accent)
+                Spacer(minLength: 4)
+                SeasonPhaseBadge(style: .compact, surface: "week")
+            }
             Text(plan.rangeLabel)
                 .font(.custom("SpaceGrotesk-SemiBold", size: 26))
                 .tracking(-0.025 * 26)
