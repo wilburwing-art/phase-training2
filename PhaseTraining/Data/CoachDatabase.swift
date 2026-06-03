@@ -894,6 +894,52 @@ final class CoachDatabase {
         return result
     } }
 
+    /// Equipment category per exercise id — composes the modality / rep
+    /// metadata with the required-equipment slugs and runs the shared
+    /// `EquipmentCategory.classify` rules. The template builders use this to
+    /// pick the LogScreen weight unit (`.repsOnly` → bodyweight, hides the
+    /// weight input). Unmapped ids fall through to `.repsOnly`, matching the
+    /// classifier's "no equipment = bodyweight" default.
+    func equipmentCategory(forExerciseIds ids: Set<Int>) -> [Int: EquipmentCategory] {
+        guard !ids.isEmpty else { return [:] }
+        // Two separately-locked reads, then classify outside the lock so we
+        // never re-enter `withLock`.
+        let meta = exerciseLoggingMeta(forExerciseIds: ids)
+        let equip = requiredEquipmentSlugs(forExerciseIds: ids)
+        var out: [Int: EquipmentCategory] = [:]
+        for id in ids {
+            let m = meta[id]
+            out[id] = EquipmentCategory.classify(
+                modality: m?.modality,
+                defaultReps: m?.defaultReps,
+                defaultDuration: m?.defaultDuration,
+                equipmentSlugs: Array(equip[id] ?? [])
+            )
+        }
+        return out
+    }
+
+    /// Batched modality / rep / duration lookup feeding `equipmentCategory`.
+    private func exerciseLoggingMeta(
+        forExerciseIds ids: Set<Int>
+    ) -> [Int: (modality: String?, defaultReps: String?, defaultDuration: String?)] { withLock {
+        guard !ids.isEmpty, let db else { return [:] }
+        let placeholders = ids.map { _ in "?" }.joined(separator: ",")
+        let sql = "SELECT id, modality, default_reps, default_duration FROM exercises WHERE id IN (\(placeholders))"
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [:] }
+        defer { sqlite3_finalize(stmt) }
+        for (i, id) in ids.enumerated() {
+            sqlite3_bind_int64(stmt, Int32(i + 1), Int64(id))
+        }
+        var out: [Int: (modality: String?, defaultReps: String?, defaultDuration: String?)] = [:]
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            let exId = Int(sqlite3_column_int64(stmt, 0))
+            out[exId] = (text(stmt, 1), text(stmt, 2), text(stmt, 3))
+        }
+        return out
+    } }
+
     /// Union of required equipment slugs across every exercise in a bundled
     /// routine. Used to vet a routine before recommending it to a user with
     /// a constrained equipment set.
