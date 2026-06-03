@@ -104,6 +104,15 @@ final class SessionStore: ObservableObject {
         InactivityReminderScheduler.cancel()
     }
 
+    /// Drop the live @Published state after a full data wipe. The on-disk rows
+    /// are removed by `MemoryStore.wipeAllUserData()` → `UserDatabase.wipeAll()`;
+    /// this just clears the in-memory cache so the UI doesn't flash stale
+    /// sessions before the app drops back to onboarding.
+    func clearInMemoryState() {
+        savedSessions = []
+        active = nil
+    }
+
     // MARK: - Saved sessions (SQLite via UserDatabase)
 
     /// Replaces the entire saved-history list. Used by Backup restore.

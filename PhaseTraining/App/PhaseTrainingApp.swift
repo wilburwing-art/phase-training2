@@ -27,19 +27,16 @@ struct PhaseTrainingApp: App {
     @State private var autoRegenerateChips: Bool = ProcessInfo.processInfo.arguments.contains("--regenerate-muscle-chips")
     #endif
 
-    /// UI tests pass `--ui-test-reset` to start from a clean slate (wipes
-    /// session + memory + plan + overrides UserDefaults keys on launch).
+    /// UI tests pass `--ui-test-reset` to start from a clean slate. Routes
+    /// through `MemoryStore.wipeAllUserData()` (UserDefaults + SQLite) on launch
+    /// so it matches the production "Erase all my data" path exactly.
     init() {
         if ProcessInfo.processInfo.arguments.contains("--ui-test-reset") {
-            for key in ["pt_active_session", "pt_sessions",
-                        "pt_training_memory",
-                        "pt_week_plan", "pt_week_overrides",
-                        "pt_weekly_reminder_enabled",
-                        "pt_custom_routines",
-                        "pt_recent_exercise_picks",
-                        "pt_sport_logs"] {
-                UserDefaults.standard.removeObject(forKey: key)
-            }
+            // Same canonical wipe the production "Erase all my data" action
+            // uses, so the two can't drift. Unlike the old inline key list,
+            // this also clears the SQLite store — a hand-kept list missed it,
+            // so UI tests could inherit saved sessions/routines from a prior run.
+            MemoryStore.wipeAllUserData()
         }
         // Debug-only screenshot seed: drop a 5-exercise active session with two
         // supersets (A1/A2, B1/B2) plus a solo so the live LogScreen shows the

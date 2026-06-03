@@ -61,6 +61,9 @@ struct ProfileScreen: View {
     @State private var editingField: EditingField? = nil
     @State private var editingText: String = ""
 
+    // Danger zone: confirm before the irreversible full data wipe.
+    @State private var showEraseConfirm = false
+
     enum EditingField: String, Identifiable {
         case sessionMinutes, liftDays
         var id: String { rawValue }
@@ -185,6 +188,8 @@ struct ProfileScreen: View {
                                     action: { exportEvalRigJSON() })
                         #endif
                     }
+
+                    dangerZoneSection
 
                     Spacer().frame(height: 40)
                 }
@@ -572,6 +577,64 @@ struct ProfileScreen: View {
             case .liftDays:       mem.liftDaysPerWeek = clamped
             }
         }
+    }
+
+    // MARK: - Danger zone
+
+    private var dangerZoneSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionLabel("DANGER ZONE")
+            Button(role: .destructive) {
+                showEraseConfirm = true
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(Color.red)
+                        .frame(width: 24)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Erase all my data")
+                            .styled(.body)
+                            .foregroundStyle(Color.ink)
+                        Text("Removes everything stored on this device. Cannot be undone.")
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
+                    }
+                    Spacer(minLength: 8)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.surface)
+                .overlay(RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.line, lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("profile-erase-all-data")
+            .confirmationDialog(
+                "Erase all data?",
+                isPresented: $showEraseConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("Erase everything", role: .destructive) { eraseAllData() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This deletes your profile, weekly plan, saved sessions, custom routines, imported history, and reminder. You'll be returned to onboarding.")
+            }
+        }
+    }
+
+    /// Full local wipe. `MemoryStore.wipeAllUserData()` clears both storage
+    /// layers (UserDefaults + the SQLite store) and cancels the pending
+    /// reminder; the per-store resets drop the live @Published caches so the
+    /// app falls back to the onboarding cover immediately (driven by
+    /// `MemoryStore.isOnboarded`).
+    private func eraseAllData() {
+        MemoryStore.wipeAllUserData()
+        store.reset()
+        sessionStore.clearInMemoryState()
+        customStore.reload()
+        planStore.clear()
     }
 
     // MARK: - Backup / restore

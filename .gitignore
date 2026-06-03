@@ -65,3 +65,6 @@ coach.db.backup-*
 gap_classification.csv
 proposed_new_exercises.csv
 proposed_aliases.json
+
+# XcodeGen/xcodebuild local derived data
+.derived/

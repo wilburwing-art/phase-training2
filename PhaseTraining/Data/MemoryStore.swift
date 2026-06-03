@@ -5,9 +5,30 @@
 // API mirrors the rest of the data layer: explicit save() + a convenience
 // update(_:) closure that mutates and persists in one call. Onboarding uses
 // completeOnboarding() to stamp the gate.
+//
+// ---------------------------------------------------------------------------
+// Privacy posture
+// ---------------------------------------------------------------------------
+// - All user data lives on-device: profile in `UserDefaults.standard`, and
+//   saved sessions / custom routines / imported history in the on-disk SQLite
+//   `UserDatabase`. No backend, no analytics fan-out.
+// - Health-adjacent fields (age, gender, height, weight, body-composition)
+//   carry an inline `/// SENSITIVE.` marker in TrainingMemory.swift. Treat it
+//   as a hard signal: do not log, do not include in crash reports, do not send
+//   to any third-party SDK without an explicit privacy review.
+// - Data minimization: don't add a health-adjacent field unless a feature
+//   actually consumes it — each one grows the App Store privacy disclosure and
+//   the GDPR special-category surface.
+// - Deletion: `wipeAllUserData(...)` is the single canonical "erase
+//   everything" path, used by BOTH the production "Erase all my data" action
+//   in ProfileScreen and the `--ui-test-reset` launch hook so the two can't
+//   drift. It sweeps the UserDefaults keyspace by prefix AND clears the SQLite
+//   store, so new persistent state is covered automatically — no hand-kept key
+//   list to fall out of date.
 
 import Foundation
 import Combine
+import UserNotifications
 
 final class MemoryStore: ObservableObject {
     private static let key = "pt_training_memory"
@@ -75,6 +96,33 @@ final class MemoryStore: ObservableObject {
     func reset() {
         memory = TrainingMemory()
         defaults.removeObject(forKey: Self.key)
+    }
+
+    // MARK: - Full wipe
+
+    /// Erase everything this app has persisted on the device, across BOTH
+    /// storage layers:
+    ///   - UserDefaults: every key this app owns. They're all `pt_`-prefixed,
+    ///     so we sweep the prefix rather than maintain a hand-written list (the
+    ///     list approach silently drifted as new stores were added — coach
+    ///     archives, sport logs, plan overrides, etc. went unwiped). Anything
+    ///     non-`pt_` (system/SDK state) is left untouched.
+    ///   - SQLite (`UserDatabase`): saved sessions, custom routines, imported
+    ///     history (these migrated out of UserDefaults; a defaults-only wipe
+    ///     would leave all workout history on disk).
+    /// Plus any pending local notification.
+    ///
+    /// Callers holding live @Published stores must reset those separately
+    /// (ProfileScreen.eraseAllData does; `--ui-test-reset` runs at launch
+    /// before the stores are built, so disk state is all that matters there).
+    static func wipeAllUserData(defaults: UserDefaults = .standard,
+                                userDB: UserDatabase? = nil) {
+        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix("pt_") {
+            defaults.removeObject(forKey: key)
+        }
+        (userDB ?? UserDatabase.defaultStore()).wipeAll()
+        UNUserNotificationCenter.current()
+            .removePendingNotificationRequests(withIdentifiers: ["pt.weekly_reminder"])
     }
 
     // MARK: - JSON
