@@ -56,8 +56,17 @@ struct TrainingMemory: Codable {
     /// preset / time window; the coach just reads the signal and reasons.
     var startingState: StartingState = .freshStart
 
-    // About you (optional)
+    // MARK: - Sensitive (health-adjacent)
+    //
+    // Fields tagged `SENSITIVE` below are health-adjacent: do not log, do not
+    // include in crash reports, and do not send to any third-party SDK without
+    // an explicit privacy review. See MemoryStore.swift for the full privacy
+    // posture. Data-minimization rule: only add one here if a feature actually
+    // consumes it (each grows the App Store + GDPR special-category surface).
+
+    /// SENSITIVE. Optional. Onboarding "About" step + generator age clamps.
     var age: Int? = nil
+    /// SENSITIVE. Optional. Onboarding "About" step + coach body section.
     var gender: Gender? = nil
     /// Phase 1 era-affinity: user's training-culture cohort preference.
     /// Stored as the `EraCohort` rawValue ("magazine_bodybuilding" etc.)
@@ -72,21 +81,21 @@ struct TrainingMemory: Codable {
     /// `PlanStore.recentPlanOverrides`. Era affinity is a stable trait of
     /// how the user thinks about training, so it belongs here.
     var eraOverride: String? = nil
-    /// Body height in whole centimetres. Stored metric; rendered in the
+    /// SENSITIVE. Body height in whole centimetres. Stored metric; rendered in the
     /// user's preferred unit system (see `usesImperial`). Nil = skipped.
     var heightCm: Int? = nil
-    /// Body weight in kilograms with one-decimal precision. Stored metric;
+    /// SENSITIVE. Body weight in kilograms with one-decimal precision. Stored metric;
     /// rendered per `usesImperial`. Nil = skipped. Mirrors the most recent
     /// entry in `bodyWeightLog` when the log is non-empty — every existing
     /// consumer (strength ratios, generator) keeps reading this single
     /// scalar.
     var weightKg: Double? = nil
-    /// Append-only body-weight time series (build 103). The most recent entry
+    /// SENSITIVE. Append-only body-weight time series (build 103). The most recent entry
     /// is mirrored onto `weightKg` so existing reads keep working. Empty for
     /// installs that haven't logged a weight; the Profile + Progress UI
     /// surfaces an empty state until the first entry lands.
     var bodyWeightLog: [BodyWeightEntry] = []
-    /// Append-only body-composition time series (build 103). Separate from
+    /// SENSITIVE. Append-only body-composition time series (build 103). Separate from
     /// `bodyWeightLog` because BF% + lean mass are reported by a different
     /// instrument cadence (monthly DEXA, weekly InBody) than a daily home
     /// scale weight. The planner doesn't read this yet — surfaces are
