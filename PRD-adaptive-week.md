@@ -159,6 +159,18 @@ accessory volume before compound volume. Consolidation has its **own
 weekly cap (1/week)**, separate from the 2-reshuffle budget, since it's
 a bigger structural change.
 
+Status (2026-06-04): the **decision core shipped** —
+`WeekConsolidator.consolidate(_:to:)` maps a week's lift-day focuses down
+to a smaller day count with best-practice merges (opposite-region pairing
+so a merged day balances upper+lower; 4-day U/L collapses by dropping
+repeats), preserving every focus's coverage and clamping to the ceil(N/2)
+floor (a merged day holds ≤2 focuses). Covered by 7 unit tests.
+**Integration remains:** generating the merged-focus workout in
+`WorkoutGenerator` (primary recipe + the secondary's key compound), the
+1/week cap + apply path on `PlanStore`, hooking
+`MissedWorkoutAutopilot`'s empty-reshuffle return (week-full / no-rest
+case only — not budget), and the D2 consultative-miss UI.
+
 ### D4 — "Workouts need to be better"
 
 **Decided (Q1): "better workouts" = better session structure.**
