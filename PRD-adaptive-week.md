@@ -189,11 +189,18 @@ for templates / legacy plans), so the apply path reads each live lift day's
 actual focus instead of re-deriving it (no era-`splitPreference` drift —
 see `phase-training-dayplan-focus-not-persisted`).
 
-**Integration remains:** the 1/week consolidation cap + apply path on
-`PlanStore` (turn a `ConsolidatedDay[]` into `PlanEdit`s, gated by a
-counter that mirrors the 2/week reshuffle cap), and the D2
-consultative-miss UI (offer reshuffle-vs-consolidate, wired to
-`shouldOfferConsolidation`).
+The **apply path + 1/week cap shipped**: `PlanStore.consolidateWeek(...)`
+re-plans the today-onward lift days to N-1 (drop one future lift day, graft
+its focus onto a survivor), regenerates survivors via `generateConsolidated`,
+drops the surplus day to rest, and persists — direct mutation mirroring
+`regenerateToday` (the `PlanEdit` seam has no set-workout op). Gated by
+`midWeekConsolidationCount` / `weeklyConsolidationCap = 1`, reset on weekly
+rollover like the reshuffle counter. 3 tests.
+
+**Integration remains:** only the **D2 consultative-miss UI** — surface a
+reshuffle-vs-consolidate choice when `shouldOfferConsolidation` is true, and
+call `consolidateWeek` on the consolidate choice. All the non-UI plumbing
+(decision, eligibility, generation, apply, cap) is done.
 
 ### D4 — "Workouts need to be better"
 

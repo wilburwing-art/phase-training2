@@ -173,4 +173,72 @@ final class PlanStoreMissedWorkoutTests: XCTestCase {
         XCTAssertEqual(store.missedWorkouts.count, 0)
         XCTAssertEqual(store.midWeekReshuffleCount, 0)
     }
+
+    // MARK: - Consolidation apply (D3)
+
+    /// A lift day carrying an explicit persisted focus (makePlan leaves focus
+    /// nil, which consolidateWeek can't recover).
+    private func focusedLiftDay(_ offset: Int, _ focus: WorkoutFocus) -> DayPlan {
+        let cal = Calendar.current
+        return DayPlan(
+            date: cal.date(byAdding: .day, value: offset, to: monday())!,
+            kind: .lift, title: focus.title, routineId: nil,
+            generatedWorkout: GeneratedWorkout(
+                title: focus.title, summary: "", exercises: [],
+                estimatedMinutes: 60, provenance: "", focus: focus))
+    }
+
+    private func restDay(_ offset: Int) -> DayPlan {
+        let cal = Calendar.current
+        return DayPlan(date: cal.date(byAdding: .day, value: offset, to: monday())!,
+                       kind: .rest, title: "Rest", routineId: nil, generatedWorkout: nil)
+    }
+
+    private func hypertrophyMemory() -> TrainingMemory {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.focuses = [.hypertrophy]
+        m.sessionMinutes = 60
+        return m
+    }
+
+    func test_consolidateWeek_dropsOneLiftDayAndMerges() {
+        let mon = monday()
+        let store = freshStore(today: mon)
+        store.sessionStore = SessionStore(defaults: UserDefaults(suiteName: "consol-stub-\(UUID())")!)
+        let days = [focusedLiftDay(0, .push), restDay(1), focusedLiftDay(2, .pull),
+                    restDay(3), focusedLiftDay(4, .legs), restDay(5), restDay(6)]
+        store.setPlan(WeekPlan(days: days, generatedAt: Date(), inputsHash: "test"))
+
+        let applied = store.consolidateWeek(memory: hypertrophyMemory(), today: mon)
+        XCTAssertTrue(applied, "3 future lift days → consolidation applies")
+        XCTAssertEqual(store.plan?.days.filter { $0.kind == .lift }.count, 2,
+                       "one future lift day drops to rest")
+        XCTAssertEqual(store.midWeekConsolidationCount, 1)
+    }
+
+    func test_consolidateWeek_respectsOneWeekCap() {
+        let mon = monday()
+        let store = freshStore(today: mon)
+        store.sessionStore = SessionStore(defaults: UserDefaults(suiteName: "consol-stub-\(UUID())")!)
+        let days = [focusedLiftDay(0, .push), restDay(1), focusedLiftDay(2, .pull),
+                    restDay(3), focusedLiftDay(4, .legs), restDay(5), restDay(6)]
+        store.setPlan(WeekPlan(days: days, generatedAt: Date(), inputsHash: "test"))
+
+        XCTAssertTrue(store.consolidateWeek(memory: hypertrophyMemory(), today: mon))
+        XCTAssertFalse(store.consolidateWeek(memory: hypertrophyMemory(), today: mon),
+                       "1/week cap blocks a second consolidation")
+    }
+
+    func test_consolidateWeek_noopWithFewerThanTwoFutureLifts() {
+        let mon = monday()
+        let store = freshStore(today: mon)
+        store.sessionStore = SessionStore(defaults: UserDefaults(suiteName: "consol-stub-\(UUID())")!)
+        let days = [focusedLiftDay(0, .push), restDay(1), restDay(2),
+                    restDay(3), restDay(4), restDay(5), restDay(6)]
+        store.setPlan(WeekPlan(days: days, generatedAt: Date(), inputsHash: "test"))
+        XCTAssertFalse(store.consolidateWeek(memory: hypertrophyMemory(), today: mon),
+                       "need ≥2 future lift days to consolidate")
+    }
 }

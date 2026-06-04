@@ -40,6 +40,10 @@ final class PlanStore: ObservableObject {
     /// PR 8 — weekStart we last computed reshuffleCount against.
     /// When the active week changes, counter resets to 0.
     private static let reshuffleWeekKey = "pt_reshuffle_week"
+    /// D3 — week-consolidation counter + the weekStart it's tagged against
+    /// (resets on rollover, same as the reshuffle counter). Capped at 1/week.
+    private static let consolidationCountKey = "pt_consolidation_count"
+    private static let consolidationWeekKey = "pt_consolidation_week"
 
     /// How many weeks of history we retain. Anything older rolls off on
     /// the next snapshot. Twelve weeks matches the coach's longest-window
@@ -73,6 +77,10 @@ final class PlanStore: ObservableObject {
     /// applied in the current week. Resets on weekly rollover.
     /// Spec §3 rule 5 caps at 2/week.
     @Published var midWeekReshuffleCount: Int
+    /// D3 — count of week consolidations applied in the current week.
+    /// Resets on weekly rollover. Capped at 1/week (its own budget, separate
+    /// from the 2/week reshuffle cap — consolidation is a bigger change).
+    @Published var midWeekConsolidationCount: Int
 
     /// Variety memory. Wired up post-init by the App so PlanStore can stay
     /// instantiable with a single defaults param (tests, previews) while
@@ -183,6 +191,12 @@ final class PlanStore: ObservableObject {
             self.midWeekReshuffleCount = defaults.integer(forKey: Self.reshuffleCountKey)
         } else {
             self.midWeekReshuffleCount = 0
+        }
+        if let savedWeek = defaults.object(forKey: Self.consolidationWeekKey) as? Date,
+           Calendar.current.isDate(savedWeek, inSameDayAs: thisWeekStart) {
+            self.midWeekConsolidationCount = defaults.integer(forKey: Self.consolidationCountKey)
+        } else {
+            self.midWeekConsolidationCount = 0
         }
 
         // Weekly-rollover detection: if we have an active plan that
@@ -488,6 +502,10 @@ final class PlanStore: ObservableObject {
     /// missed + abandoned events combined.
     static let weeklyReshuffleCap = 2
 
+    /// D3 — cap week consolidations at 1/week. Own budget, separate from the
+    /// reshuffle cap, since collapsing the week is a bigger structural change.
+    static let weeklyConsolidationCap = 1
+
     /// All planned-but-not-completed days in the current plan that
     /// haven't already been logged into `missedWorkouts`. The caller
     /// (typically the Today screen) shows a banner per result; once
@@ -623,6 +641,7 @@ final class PlanStore: ObservableObject {
         recentPlanOverrides = []
         missedWorkouts = []
         midWeekReshuffleCount = 0
+        midWeekConsolidationCount = 0
         defaults.removeObject(forKey: Self.planKey)
         defaults.removeObject(forKey: Self.overridesKey)
         defaults.removeObject(forKey: Self.pastPlansKey)
@@ -630,6 +649,8 @@ final class PlanStore: ObservableObject {
         defaults.removeObject(forKey: Self.missedWorkoutsKey)
         defaults.removeObject(forKey: Self.reshuffleCountKey)
         defaults.removeObject(forKey: Self.reshuffleWeekKey)
+        defaults.removeObject(forKey: Self.consolidationCountKey)
+        defaults.removeObject(forKey: Self.consolidationWeekKey)
     }
 
     // MARK: - Per-week overrides
@@ -940,6 +961,78 @@ final class PlanStore: ObservableObject {
         generate(from: memory, today: today)
     }
 
+    /// D3 — consolidate the remaining week onto fewer lift days after a missed
+    /// workout the reshuffle engine couldn't place (gated upstream by
+    /// `MissedWorkoutAutopilot.shouldOfferConsolidation`). Drops one future
+    /// lift day and grafts its focus onto a survivor: the today-onward lift
+    /// days are re-planned to N-1 via `WeekConsolidator`, each survivor is
+    /// regenerated as a (possibly merged) workout via
+    /// `WorkoutGenerator.generateConsolidated`, and the surplus day drops to
+    /// rest. Direct-mutation + savePlan, mirroring `regenerateToday` (the
+    /// `PlanEdit` seam has no set-workout op). Gated by the 1/week cap.
+    /// Returns true when it applied.
+    @discardableResult
+    func consolidateWeek(memory: TrainingMemory,
+                         today: Date = Date(),
+                         calendar: Calendar = .current) -> Bool {
+        guard midWeekConsolidationCount < Self.weeklyConsolidationCap else { return false }
+        guard var plan = plan else { return false }
+        let todayStart = calendar.startOfDay(for: today)
+
+        // Future lift days (today onward, unprotected), in date order.
+        let futureLiftIdx = plan.days.indices
+            .filter { plan.days[$0].kind == .lift
+                && calendar.startOfDay(for: plan.days[$0].date) >= todayStart
+                && !plan.days[$0].protected }
+            .sorted { plan.days[$0].date < plan.days[$1].date }
+        guard futureLiftIdx.count >= 2 else { return false }   // need ≥2 to drop one
+
+        // Recover each day's actual focus (persisted on the workout). Bail if
+        // any is missing — re-deriving would risk era-splitPreference drift.
+        let focuses = futureLiftIdx.compactMap { plan.days[$0].generatedWorkout?.focus }
+        guard focuses.count == futureLiftIdx.count else { return false }
+
+        let target = futureLiftIdx.count - 1
+        let consolidated = WeekConsolidator.consolidate(focuses, to: target)
+        guard consolidated.count == target else { return false }
+
+        let profile = DemographicProfile.from(memory)
+        let recentIds = recentPicks?.recentlyPickedIds() ?? []
+        let context = buildGeneratorContext(memory: memory, today: today)
+        var pickedIds: [Int] = []
+
+        // First `target` future lift days take the (merged) consolidated workouts.
+        for (i, cday) in consolidated.enumerated() {
+            let dayIdx = futureLiftIdx[i]
+            let seed = "\(memory.planInputsHash)-consolidate-\(i)"
+            let workout = WorkoutGenerator.generateConsolidated(
+                cday, liftIndex: i, totalLifts: target, memory: memory,
+                profile: profile, hashSeed: seed, recentlyPicked: recentIds,
+                context: context)
+            plan.days[dayIdx].generatedWorkout = workout
+            plan.days[dayIdx].title = workout.title
+            plan.days[dayIdx].routineId = nil
+            plan.days[dayIdx].generatedReason = workout.provenance
+            pickedIds.append(contentsOf: workout.exercises.map(\.exerciseId))
+        }
+        // Surplus future lift day(s) → rest.
+        for j in target..<futureLiftIdx.count {
+            let dayIdx = futureLiftIdx[j]
+            plan.days[dayIdx].kind = .rest
+            plan.days[dayIdx].generatedWorkout = nil
+            plan.days[dayIdx].title = "Rest"
+            plan.days[dayIdx].routineId = nil
+            plan.days[dayIdx].generatedReason = nil
+        }
+
+        self.plan = plan
+        savePlan()
+        if !pickedIds.isEmpty { recentPicks?.record(exerciseIds: pickedIds) }
+        midWeekConsolidationCount += 1
+        saveConsolidationCount(now: today)
+        return true
+    }
+
     /// One-shot schema migration for users upgrading from build ≤35 whose
     /// saved plan was composed by the old routine-picker (DayPlan has
     /// `routineId` set but no `generatedWorkout`). The new planner generates
@@ -1020,6 +1113,13 @@ final class PlanStore: ObservableObject {
     private func saveReshuffleCount(now: Date = Date()) {
         defaults.set(midWeekReshuffleCount, forKey: Self.reshuffleCountKey)
         defaults.set(now.startOfTrainingWeek(), forKey: Self.reshuffleWeekKey)
+    }
+
+    /// D3 — persist the per-week consolidation counter, tagged with the
+    /// training-week Monday so it resets on rollover (same as reshuffle).
+    private func saveConsolidationCount(now: Date = Date()) {
+        defaults.set(midWeekConsolidationCount, forKey: Self.consolidationCountKey)
+        defaults.set(now.startOfTrainingWeek(), forKey: Self.consolidationWeekKey)
     }
 
     private static func encoder() -> JSONEncoder {
