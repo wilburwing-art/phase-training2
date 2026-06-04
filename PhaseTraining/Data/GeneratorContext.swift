@@ -24,11 +24,6 @@ struct GeneratorContext: Equatable {
     /// `GeneratedExercise.notes`.
     var priorBest: [String: PriorBest]
 
-    /// movement_patterns.slug → number of distinct days hit in the lookback
-    /// window. Patterns with zero count are absent. The generator uses this
-    /// to boost under-trained patterns when picking accessory slots.
-    var patternFrequency: [String: Int]
-
     /// Lowercased body areas the user has reported sore or painful in the
     /// last 7 days. Slot pick excludes exercises whose primary muscle group
     /// label overlaps with this set.
@@ -66,7 +61,7 @@ struct GeneratorContext: Equatable {
     var hasReadinessData: Bool = false
 
     static let empty = GeneratorContext(
-        priorBest: [:], patternFrequency: [:], recentSoreAreas: [],
+        priorBest: [:], recentSoreAreas: [],
         stagnantExercises: [],
         recentHardSportDays: 0,
         readinessScore: 0.5,
@@ -75,7 +70,7 @@ struct GeneratorContext: Equatable {
     )
 
     var isEmpty: Bool {
-        priorBest.isEmpty && patternFrequency.isEmpty &&
+        priorBest.isEmpty &&
         recentSoreAreas.isEmpty && stagnantExercises.isEmpty &&
         recentHardSportDays == 0 &&
         !hasReadinessData
@@ -130,7 +125,6 @@ extension GeneratorContext {
         now: Date = Date()
     ) -> GeneratorContext {
         let cal = Calendar.current
-        let weekCutoff = cal.date(byAdding: .weekOfYear, value: -4, to: now) ?? now
         let weekSoreCutoff = cal.date(byAdding: .day, value: -7, to: now) ?? now
 
         // Readiness inputs — union native sessions + imports + hard sport
@@ -152,7 +146,6 @@ extension GeneratorContext {
 
         return GeneratorContext(
             priorBest: buildPriorBest(sessions: sessions, importedPeaks: importedPeaks),
-            patternFrequency: buildPatternFrequency(sessions: sessions, cutoff: weekCutoff),
             recentSoreAreas: buildRecentSoreAreas(soreness: soreness,
                                                   feedback: feedback,
                                                   cutoff: weekSoreCutoff),
@@ -298,40 +291,6 @@ extension GeneratorContext {
                     date: peak.performedAt
                 )
             }
-        }
-        return out
-    }
-
-    // MARK: - patternFrequency
-
-    /// Count distinct sessions in the window hitting each movement pattern.
-    /// Resolves exercise names through CoachDatabase once per unique name.
-    private static func buildPatternFrequency(
-        sessions: [SavedSession],
-        cutoff: Date
-    ) -> [String: Int] {
-        let recent = sessions.filter { $0.startTime >= cutoff }
-        guard !recent.isEmpty else { return [:] }
-        let db = CoachDatabase.shared
-        var resolved: [String: [String]] = [:]
-        var out: [String: Int] = [:]
-        for session in recent {
-            var sessionPatterns: Set<String> = []
-            for ex in session.exercises {
-                let key = ex.name.lowercased()
-                let patterns: [String]
-                if let cached = resolved[key] {
-                    patterns = cached
-                } else {
-                    let exact = db.listExercises(search: ex.name).first {
-                        $0.name.caseInsensitiveCompare(ex.name) == .orderedSame
-                    }
-                    patterns = exact.map { db.patternsForExercise($0.id) } ?? []
-                    resolved[key] = patterns
-                }
-                sessionPatterns.formUnion(patterns)
-            }
-            for p in sessionPatterns { out[p, default: 0] += 1 }
         }
         return out
     }

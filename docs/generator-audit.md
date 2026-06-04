@@ -120,6 +120,8 @@ Only `Resources/coach.db` is git-tracked (`git ls-files`); last commit "coach.db
 | N5 | `planInputsHash` excludes context/recentlyPicked/strategy → drift banner never fires on PR/soreness/readiness change though plan changes | BUG (UX) | `WeekPlan.swift:305`; detector `PlanStore.swift:852` |
 | N6 | 45s/set is fixed regardless of reps; warmups uncounted → endurance days under-budgeted | DESIGN gap | `WG:171,213` |
 | N7 | `generate()` rebuilds full `GeneratorContext` synchronously (walks all sessions: priorBest, stagnation, volume) on the calling thread | perf | `GeneratorContext.from` `:112`; `PlanStore.swift:221` |
+| N9 | `strategy.emphasizePatterns` is **inert** under current recipes — same structural cause as N8: focus slots are almost all single-alternative, so reordering them does nothing. (`deprioritizePatterns` still works — it REMOVES, which can empty a slot.) **Documented, not deleted (2026-06-04)**: it's part of the LLM `build_workout` tool surface, and deprioritize shares the struct; retain pending multi-alternative recipe slots. | DESIGN (inert) | sweep `strategy pattern steering`: `emphasize` variant byte-identical to baseline while `deprioritize` collapses Push 5→2 ex |
+| N8 | `patternFrequency` computed every regen (per-session pattern walk + per-name coach.db resolves) but its only consumer `reorderByPatternFrequency` is **inert**: the focus recipes are almost entirely single-alternative slots (`["squat"]`, `["horizontal-push"]`…), so there is nothing to reorder; the 2 multi-alt slots are `optional` tail slots the duration budget drops first. **RESOLVED 2026-06-04: deleted field + `buildPatternFrequency` + `reorderByPatternFrequency`.** | BUG (dead) → fixed | sweep diff (`GeneratorSweepReportTest`): reorder = DEAD while `strategy.deprioritizePatterns` on the *same* pattern set = live, proving removal (not reorder) is what moves output |
 
 ---
 
@@ -148,6 +150,7 @@ Misleading tests: `test_nonHypertrophyDoesNotAppendAccessoryLayer` only asserts 
 | **High** | S | Progression sub-100-lb no-op: round to 2.5 lb (or enforce a min +2.5/+5 step) so light/DB/beginner loads actually progress | `WorkoutGenerator.swift:591` |
 | **High** | S+test | Pin progression target + sore-exclusion + build-97 budget in unit tests | `PhaseTrainingTests/` |
 | Med | S | `muscleVolume`: wire into accessory targeting or delete the build (stop paying the 4-wk walk for nothing) | `GeneratorContext.swift:411-417` |
+| ✅ Done (2026-06-04) | S | `patternFrequency` (N8): **deleted** — inert by recipe structure (single-alternative slots leave the reorder nothing to do). Removed field + `buildPatternFrequency` + `reorderByPatternFrequency`; `CoachContext.patternFrequencySection` (the live coach-prompt one) untouched | `GeneratorContext.swift`, `WorkoutGenerator.swift` |
 | Med | S | Reconcile hard-sport double-signing (N4): pick fatigue **or** training, not both | `Planner.swift`, `GeneratorContext.swift` |
 | Med | M | coach.db provenance (N1): confirm canonical, delete/regen the stale copy, add a logical-content (row-count) test to catch artifact drift | `db/`, `Resources/`, tests |
 | Low | S | H2 rep mismatch: target hint should use the prescribed rep band (or vice versa) | `WorkoutGenerator.swift:593` |

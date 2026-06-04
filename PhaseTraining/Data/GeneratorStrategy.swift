@@ -32,7 +32,14 @@ struct GeneratorStrategy: Codable, Equatable, Hashable {
 
     /// movement_patterns.slug values to prioritize when picking exercises.
     /// Boosts the alternative-ordering inside each slot — a pattern in this
-    /// list comes BEFORE others, regardless of frequency-based reordering.
+    /// list comes BEFORE others.
+    ///
+    /// NOTE (2026-06-04, audit N9): currently INERT — the focus-slot recipes are
+    /// almost all single-alternative, so reordering them changes nothing. Proven
+    /// by GeneratorSweepReportTest (the emphasize variant is byte-identical to
+    /// baseline). Retained as part of the LLM build_workout tool surface;
+    /// `deprioritizePatterns` (which removes) still works. Revisit when recipes
+    /// gain multi-alternative slots.
     var emphasizePatterns: [String]
 
     /// movement_patterns.slug values to SKIP when picking. Slots whose

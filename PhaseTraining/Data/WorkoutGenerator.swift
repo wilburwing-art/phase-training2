@@ -467,14 +467,10 @@ enum WorkoutGenerator {
             return preferred + rest
         }
 
-        // Reorder slot.alternatives. Two layers:
-        //   1. LLM strategy (emphasize / deprioritize) — definitive: an
-        //      emphasized pattern jumps to the front; a deprioritized one
-        //      is dropped from consideration (the slot can fall through if
-        //      ALL its alternatives are deprioritized — fine, the LLM can
-        //      do that on purpose).
-        //   2. Context-derived frequency boost — under-trained patterns
-        //      lift higher within whatever survives layer 1.
+        // Reorder slot.alternatives by LLM strategy: an emphasized pattern
+        // jumps to the front; a deprioritized one is dropped from
+        // consideration (the slot can fall through if ALL its alternatives
+        // are deprioritized — fine, the LLM can do that on purpose).
         var alternatives = slot.alternatives
         if !strategy.deprioritizePatterns.isEmpty {
             alternatives.removeAll(where: { strategy.deprioritizePatterns.contains($0) })
@@ -486,7 +482,6 @@ enum WorkoutGenerator {
             let rest = alternatives.filter { !strategy.emphasizePatterns.contains($0) }
             alternatives = emphasized + rest
         }
-        alternatives = reorderByPatternFrequency(alternatives, context: context)
 
         for pattern in alternatives {
             // Staples-across-all-allowed-difficulties pre-pass — a canonical
@@ -549,28 +544,6 @@ enum WorkoutGenerator {
             }
         }
         return nil
-    }
-
-    /// Boost under-trained patterns by sorting `slot.alternatives` so the
-    /// pattern with the lowest count in `context.patternFrequency` (or absent
-    /// from it entirely) comes first. Stable for an empty context (returns
-    /// original order). Does NOT add new patterns — only reorders what the
-    /// slot already declares.
-    private static func reorderByPatternFrequency(
-        _ alternatives: [String],
-        context: GeneratorContext
-    ) -> [String] {
-        guard !context.patternFrequency.isEmpty, alternatives.count > 1 else {
-            return alternatives
-        }
-        return alternatives.enumerated()
-            .sorted { lhs, rhs in
-                let leftCount = context.patternFrequency[lhs.element] ?? 0
-                let rightCount = context.patternFrequency[rhs.element] ?? 0
-                if leftCount != rightCount { return leftCount < rightCount }
-                return lhs.offset < rhs.offset   // stable tiebreaker
-            }
-            .map(\.element)
     }
 
     /// If the initial pick is flagged stagnant (no PR in 4w), try to swap

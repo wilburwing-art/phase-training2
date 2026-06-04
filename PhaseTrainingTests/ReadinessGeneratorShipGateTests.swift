@@ -169,7 +169,7 @@ final class ReadinessGeneratorShipGateTests: XCTestCase {
         memory.liftDaysPerWeek = 5
 
         let detrainedCtx = GeneratorContext(
-            priorBest: [:], patternFrequency: [:], recentSoreAreas: [],
+            priorBest: [:], recentSoreAreas: [],
             stagnantExercises: [], recentHardSportDays: 0,
             readinessScore: 0.15,
             readinessBreakdown: ReadinessBreakdown(density: 0.1, recency: 0.05, trend: 0.3),
@@ -186,7 +186,7 @@ final class ReadinessGeneratorShipGateTests: XCTestCase {
         memory.liftDaysPerWeek = 5
 
         let activeCtx = GeneratorContext(
-            priorBest: [:], patternFrequency: [:], recentSoreAreas: [],
+            priorBest: [:], recentSoreAreas: [],
             stagnantExercises: [], recentHardSportDays: 0,
             readinessScore: 0.85,
             readinessBreakdown: ReadinessBreakdown(density: 0.9, recency: 1.0, trend: 0.8),
