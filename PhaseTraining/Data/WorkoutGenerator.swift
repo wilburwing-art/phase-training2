@@ -910,6 +910,19 @@ enum WorkoutGenerator {
             // disliked 'cable' / 'machine' keyword, so honor it here too.
             let lowerName = ex.name.lowercased()
             if excludeKws.contains(where: { lowerName.contains($0) }) { continue }
+            // Equipment-tag dislike (T1.7): match the dislike against required
+            // equipment slug + name too — the canonical picks hide it (Rope
+            // Pushdown needs a cable, Lying Leg Curl needs leg-curl-machine),
+            // mirroring CoachDatabase.exercises. Guarded so the table read only
+            // runs when there are dislikes.
+            if !excludeKws.isEmpty {
+                let required = CoachDatabase.shared.requiredEquipmentSlugs(forExerciseIds: [ex.id])[ex.id] ?? []
+                let equipNames = CoachDatabase.shared.equipmentNameBySlug()
+                if required.contains(where: { slug in
+                    let hay = slug + " " + (equipNames[slug] ?? "")
+                    return excludeKws.contains(where: { hay.contains($0) })
+                }) { continue }
+            }
             // Sore-area exclude — same slug→bucket bridge as applySoreFilter
             // (WG:392). Don't append isolation onto a muscle the user flagged sore.
             if !soreAreas.isEmpty, !soreBuckets(forExerciseId: ex.id).isDisjoint(with: soreAreas) { continue }

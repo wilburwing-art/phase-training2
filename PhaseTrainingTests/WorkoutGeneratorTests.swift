@@ -801,6 +801,42 @@ final class WorkoutGeneratorTests: XCTestCase {
             "intermediate RPE should retain 8+ work; got '\(rpeInt)'")
     }
 
+    // MARK: - T1.7 dislike by equipment tag, not just name
+
+    /// Disliking "machine" must drop machine-required exercises even when the
+    /// exercise NAME is clean (Lying Leg Curl needs leg-curl-machine). Covers
+    /// both the main slot picker and the accessory layer.
+    func test_dislikeMachine_filtersByEquipmentTagNotJustName() throws {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.sessionMinutes = 90
+        m.focuses = [.hypertrophy]
+
+        let equipNames = CoachDatabase.shared.equipmentNameBySlug()
+        func requiresMachine(_ exId: Int) -> Bool {
+            let slugs = CoachDatabase.shared.requiredEquipmentSlugs(forExerciseIds: [exId])[exId] ?? []
+            return slugs.contains { ($0 + " " + (equipNames[$0] ?? "")).contains("machine") }
+        }
+
+        let baseline = WorkoutGenerator.generateLift(
+            liftIndex: 2, totalLifts: 3, memory: m, profile: .from(m), hashSeed: m.planInputsHash)
+        // A machine-required pick whose NAME is clean — proves the name-only
+        // filter would have missed it.
+        let cleanMachinePick = baseline.exercises.first {
+            requiresMachine($0.exerciseId) && !$0.name.lowercased().contains("machine")
+        }
+        try XCTSkipIf(cleanMachinePick == nil,
+            "Baseline legs day had no name-clean machine exercise to test")
+
+        var disliked = m
+        disliked.dislikes = ["machine"]
+        let dW = WorkoutGenerator.generateLift(
+            liftIndex: 2, totalLifts: 3, memory: disliked, profile: .from(disliked), hashSeed: disliked.planInputsHash)
+        XCTAssertFalse(dW.exercises.contains { requiresMachine($0.exerciseId) },
+            "Disliking 'machine' must drop machine-required exercises despite clean names; got: \(dW.exercises.map { $0.name })")
+    }
+
     // MARK: - Stagnation swap
 
     /// When `context.stagnantExercises` includes an exercise the generator

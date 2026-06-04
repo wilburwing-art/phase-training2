@@ -579,10 +579,13 @@ final class CoachDatabase {
         // batch so we don't paginate the catalog per-row. Empty allow-list =
         // no filter, preserving the pre-build-103 behaviour for full-gym
         // callers and for code paths that don't pass equipment.
+        // Equipment slugs feed BOTH the allow-list filter and the equipment-
+        // dislike match (T1.7), so fetch when either is active.
+        let needsEquip = !allowedEquipmentSlugs.isEmpty || !lowerExcludes.isEmpty
         let requiredByExId: [Int: Set<String>] =
-            allowedEquipmentSlugs.isEmpty
-                ? [:]
-                : requiredEquipmentSlugs(forExerciseIds: Set(raw.map(\.id)))
+            needsEquip ? requiredEquipmentSlugs(forExerciseIds: Set(raw.map(\.id))) : [:]
+        // slug → equipment display-name, only when there are dislikes to match.
+        let equipNameBySlug: [String: String] = lowerExcludes.isEmpty ? [:] : equipmentNameBySlug()
         return raw.filter { ex in
             if excludeIds.contains(ex.id) { return false }
             if !difficulties.isEmpty {
@@ -600,6 +603,16 @@ final class CoachDatabase {
                 let lowerName = ex.name.lowercased()
                 if lowerExcludes.contains(where: { lowerName.contains($0) }) {
                     return false
+                }
+                // Equipment-tag dislike (T1.7): "machine" / "cable" / "barbell"
+                // rarely appear in the exercise NAME (Lying Leg Curl requires
+                // leg-curl-machine), so match the dislike against each required
+                // equipment's slug AND display name too.
+                for slug in requiredByExId[ex.id] ?? [] {
+                    let hay = slug + " " + (equipNameBySlug[slug] ?? "")
+                    if lowerExcludes.contains(where: { hay.contains($0) }) {
+                        return false
+                    }
                 }
             }
             if !allowedEquipmentSlugs.isEmpty {
@@ -892,6 +905,25 @@ final class CoachDatabase {
             result[exId, default: []].insert(slug)
         }
         return result
+    } }
+
+    /// slug → lowercased display name for every equipment row (~97). Lets the
+    /// exclude filter match an equipment dislike ("machine", "cable") against
+    /// the equipment NAME too, not just the slug — "Lying Leg Curl" requires
+    /// `leg-curl-machine` (caught by slug), while "Pec Deck Machine" hides
+    /// "machine" only in its display name (caught by name). (T1.7)
+    func equipmentNameBySlug() -> [String: String] { withLock {
+        guard let db else { return [:] }
+        var out: [String: String] = [:]
+        let sql = "SELECT slug, name FROM equipment"
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [:] }
+        defer { sqlite3_finalize(stmt) }
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            guard let slug = text(stmt, 0) else { continue }
+            out[slug] = (text(stmt, 1) ?? "").lowercased()
+        }
+        return out
     } }
 
     /// Equipment category per exercise id — composes the modality / rep
