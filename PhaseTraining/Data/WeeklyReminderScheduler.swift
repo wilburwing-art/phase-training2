@@ -23,6 +23,12 @@ import UIKit
 enum WeeklyReminderScheduler {
     private static let identifier = "pt.weekly_reminder"
     private static let enabledKey = "pt_weekly_reminder_enabled"
+    /// D1 — quick-action category for the Sunday push. Day-count buttons set
+    /// memory.liftDaysPerWeek + regenerate via the `set-lift-days` deep link;
+    /// "Open to edit" falls back to the full planning flow.
+    static let categoryId = "pt.weekly_reminder.actions"
+    private static let actionPrefix = "pt.lift_days."
+    private static let liftDayChoices = [2, 3, 4]
 
     static var isEnabled: Bool {
         UserDefaults.standard.bool(forKey: enabledKey)
@@ -45,9 +51,10 @@ enum WeeklyReminderScheduler {
 
         let content = UNMutableNotificationContent()
         content.title = "Plan your week"
-        content.body = "Mark unavailable days and add events for the week ahead."
+        content.body = "How many days can you train this week?"
         content.sound = .default
         content.userInfo = ["deepLink": "phasetraining://plan-week"]
+        content.categoryIdentifier = categoryId
 
         // weekday: 1 == Sunday in Apple's Gregorian Calendar. Repeats weekly.
         var when = DateComponents()
@@ -79,6 +86,40 @@ enum WeeklyReminderScheduler {
     /// taps that launch the app cold still route through .onOpenURL.
     static func registerDelegate() {
         UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
+        UNUserNotificationCenter.current().setNotificationCategories([makeCategory()])
+    }
+
+    /// D1 — day-count quick actions ("2 days" … "4 days" + "Open to edit").
+    private static func makeCategory() -> UNNotificationCategory {
+        var actions = liftDayChoices.map { n in
+            UNNotificationAction(identifier: "\(actionPrefix)\(n)",
+                                 title: "\(n) days", options: [.foreground])
+        }
+        actions.append(UNNotificationAction(identifier: "\(actionPrefix)open",
+                                            title: "Open to edit", options: [.foreground]))
+        return UNNotificationCategory(identifier: categoryId, actions: actions,
+                                      intentIdentifiers: [], options: [])
+    }
+
+    /// Map a quick-action identifier to its deep link. Day-count actions →
+    /// `set-lift-days?n=N`; "open" → the full planning flow. nil for anything
+    /// not one of our actions (caller falls back to the notification's
+    /// userInfo deepLink). Pure + static for unit testing.
+    static func deepLink(forAction actionId: String) -> String? {
+        guard actionId.hasPrefix(actionPrefix) else { return nil }
+        let suffix = String(actionId.dropFirst(actionPrefix.count))
+        if let n = Int(suffix) { return "phasetraining://set-lift-days?n=\(n)" }
+        return "phasetraining://plan-week"   // "open"
+    }
+
+    /// Parse the lift-day count out of a `set-lift-days?n=N` deep link. nil if
+    /// the URL isn't that link or has no integer `n`. Pure + static for tests
+    /// and the .onOpenURL handler.
+    static func liftDays(fromDeepLink url: URL) -> Int? {
+        guard url.scheme == "phasetraining", url.host == "set-lift-days",
+              let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
+              let raw = items.first(where: { $0.name == "n" })?.value else { return nil }
+        return Int(raw)
     }
 }
 
@@ -102,8 +143,12 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
-        if let raw = response.notification.request.content.userInfo["deepLink"] as? String,
-           let url = URL(string: raw) {
+        // D1 — a day-count quick action maps to its own deep link; a plain tap
+        // (UNNotificationDefaultActionIdentifier) falls back to the
+        // notification's userInfo deepLink.
+        let raw = WeeklyReminderScheduler.deepLink(forAction: response.actionIdentifier)
+            ?? (response.notification.request.content.userInfo["deepLink"] as? String)
+        if let raw, let url = URL(string: raw) {
             DispatchQueue.main.async {
                 UIApplication.shared.open(url)
             }

@@ -333,6 +333,15 @@ struct PhaseTrainingApp: App {
                         // interactive planning flow on top.
                         tabSelection.selected = .today
                         tabSelection.showWeeklyCheckIn = true
+                    case "set-lift-days":
+                        // D1 — Sunday-push day-count quick action. Set the
+                        // weekly lift-day count (PlanStore auto-regenerates off
+                        // the memory change) and show the result on the Week tab.
+                        if let n = WeeklyReminderScheduler.liftDays(fromDeepLink: url) {
+                            let clamped = max(1, min(7, n))
+                            memory.update { $0.liftDaysPerWeek = clamped }
+                            tabSelection.selected = .week
+                        }
                     default: break
                     }
                 }
