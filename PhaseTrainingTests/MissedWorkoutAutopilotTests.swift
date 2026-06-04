@@ -220,4 +220,58 @@ final class MissedWorkoutAutopilotTests: XCTestCase {
         // Suppress unused-variable warning for p1 (kept for documentation)
         _ = p
     }
+
+    // MARK: - Consolidation eligibility (D3 / Q4)
+
+    func test_offerConsolidation_whenWeekFull() {
+        // 4 lift days → drop rule fires (proposeReshuffle []), budget > 0,
+        // missed day exists → consolidation eligible.
+        let p = plan([.lift, .lift, .lift, .lift, .rest, .rest, .rest])
+        let mon = monday()
+        let wed = Calendar.current.date(byAdding: .day, value: 2, to: mon)!
+        XCTAssertTrue(MissedWorkoutAutopilot.shouldOfferConsolidation(
+            missedDate: mon, plan: p, overrides: WeekOverrides(weekStart: mon),
+            remainingBudget: 2, now: wed))
+    }
+
+    func test_offerConsolidation_whenNoRestDay() {
+        // <4 lifts but no rest day to host the missed workout.
+        let p = plan([.lift, .sport, .sport, .sport, .sport, .sport, .sport])
+        let mon = monday()
+        let wed = Calendar.current.date(byAdding: .day, value: 2, to: mon)!
+        XCTAssertTrue(MissedWorkoutAutopilot.shouldOfferConsolidation(
+            missedDate: mon, plan: p, overrides: WeekOverrides(weekStart: mon),
+            remainingBudget: 2, now: wed))
+    }
+
+    func test_noConsolidation_whenBudgetExhausted() {
+        // Week-full would otherwise qualify, but the reshuffle budget is spent.
+        let p = plan([.lift, .lift, .lift, .lift, .rest, .rest, .rest])
+        let mon = monday()
+        let wed = Calendar.current.date(byAdding: .day, value: 2, to: mon)!
+        XCTAssertFalse(MissedWorkoutAutopilot.shouldOfferConsolidation(
+            missedDate: mon, plan: p, overrides: WeekOverrides(weekStart: mon),
+            remainingBudget: 0, now: wed))
+    }
+
+    func test_noConsolidation_whenCleanReshuffleSlotExists() {
+        // Missed Tue with future rest days available → reshuffle handles it.
+        let p = plan([.rest, .lift, .rest, .rest, .rest, .rest, .rest])
+        let mon = monday()
+        let tue = Calendar.current.date(byAdding: .day, value: 1, to: mon)!
+        let wed = Calendar.current.date(byAdding: .day, value: 2, to: mon)!
+        XCTAssertFalse(MissedWorkoutAutopilot.shouldOfferConsolidation(
+            missedDate: tue, plan: p, overrides: WeekOverrides(weekStart: mon),
+            remainingBudget: 2, now: wed))
+    }
+
+    func test_noConsolidation_whenMissedDayNotInPlan() {
+        let p = plan([.rest, .lift, .rest, .rest, .rest, .rest, .rest])
+        let mon = monday()
+        let wed = Calendar.current.date(byAdding: .day, value: 2, to: mon)!
+        let farFuture = Calendar.current.date(byAdding: .day, value: 30, to: mon)!
+        XCTAssertFalse(MissedWorkoutAutopilot.shouldOfferConsolidation(
+            missedDate: farFuture, plan: p, overrides: WeekOverrides(weekStart: mon),
+            remainingBudget: 2, now: wed))
+    }
 }

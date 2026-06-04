@@ -142,4 +142,45 @@ enum MissedWorkoutAutopilot {
 
         return [.move(dayId: missedDay.id, toDate: pick.1.date)]
     }
+
+    // MARK: - Consolidation eligibility (D3 / PRD §6 Q4)
+
+    /// Whether a missed workout should escalate to a CONSOLIDATION offer
+    /// (re-plan the rest of the week at fewer lift days) rather than a
+    /// reshuffle. Consolidation is the escalation path used only when reshuffle
+    /// can't find a clean slot for a *non-budget* reason:
+    ///
+    ///   - the week is full (≥4 lift days), or
+    ///   - there's no valid future rest day to host the workout.
+    ///
+    /// It is NOT offered when the reshuffle budget is exhausted (the user
+    /// already reshuffled their 2/week cap — consolidation has its own 1/week
+    /// cap, but offering it on top of an exhausted reshuffle budget is the
+    /// decision-fatigue case Q4 rejects), nor when the missed date isn't in the
+    /// plan. Pure; composes `proposeReshuffle` so the "is there a clean slot?"
+    /// logic stays in one place.
+    static func shouldOfferConsolidation(
+        missedDate: Date,
+        plan: WeekPlan,
+        overrides: WeekOverrides,
+        remainingBudget: Int,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> Bool {
+        // Budget exhaustion is not a consolidation trigger.
+        guard remainingBudget > 0 else { return false }
+        // The missed day must actually be in the plan (guards the data-error
+        // branch of proposeReshuffle, which also returns []).
+        guard plan.days.contains(where: { calendar.isDate($0.date, inSameDayAs: missedDate) })
+        else { return false }
+        // A clean reshuffle slot exists → reshuffle handles it; don't escalate.
+        let reshuffle = proposeReshuffle(
+            missedDate: missedDate, plan: plan, overrides: overrides,
+            remainingBudget: remainingBudget, now: now, calendar: calendar
+        )
+        guard reshuffle.isEmpty else { return false }
+        // proposeReshuffle returned [] for a non-budget, non-data reason —
+        // week-full or no-valid-rest-day. Both warrant a consolidation offer.
+        return true
+    }
 }

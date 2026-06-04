@@ -165,11 +165,18 @@ to a smaller day count with best-practice merges (opposite-region pairing
 so a merged day balances upper+lower; 4-day U/L collapses by dropping
 repeats), preserving every focus's coverage and clamping to the ceil(N/2)
 floor (a merged day holds ≤2 focuses). Covered by 7 unit tests.
+
+The **eligibility trigger** also shipped:
+`MissedWorkoutAutopilot.shouldOfferConsolidation` returns true only when a
+reshuffle finds no clean slot for a *non-budget* reason (week-full ≥4 lifts,
+or no valid rest day) — budget-exhausted and missing-day cases return false
+(PRD §6 Q4). It composes `proposeReshuffle` so the "is there a slot?" logic
+stays in one place. 5 unit tests. With `WeekConsolidator`, D3's **decision
+layer is now complete** (when to consolidate + how).
+
 **Integration remains:** generating the merged-focus workout in
 `WorkoutGenerator` (primary recipe + the secondary's key compound), the
-1/week cap + apply path on `PlanStore`, hooking
-`MissedWorkoutAutopilot`'s empty-reshuffle return (week-full / no-rest
-case only — not budget), and the D2 consultative-miss UI.
+1/week cap + apply path on `PlanStore`, and the D2 consultative-miss UI.
 
 ### D4 — "Workouts need to be better"
 
