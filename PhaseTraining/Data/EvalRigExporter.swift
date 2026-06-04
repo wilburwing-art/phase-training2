@@ -121,6 +121,11 @@ enum EvalRigExporter {
 
     private struct SwapPayload: Encodable {
         let name: String
+        // prime_mover + movement_pattern let the grader evaluate Q8's
+        // "preserves prime mover AND movement pattern AND implement" — without
+        // them the swap could only be checked on implement.
+        let prime_mover: String
+        let movement_pattern: String
         let implement: String
     }
 
@@ -186,8 +191,16 @@ enum EvalRigExporter {
         // equipment).
         let subs = catalog.substitutes(forExerciseId: ex.exerciseId).prefix(3)
         let swaps: [SwapPayload] = subs.map { sub in
-            SwapPayload(
+            let subMuscles = catalog.musclesForExercise(sub.exercise.id)
+            let subPrime = subMuscles.first(where: { $0.role == "primary" })?.slug
+                ?? subMuscles.first?.slug
+                ?? "unknown"
+            return SwapPayload(
                 name: sub.exercise.name,
+                prime_mover: subPrime,
+                movement_pattern: normalizePattern(
+                    nil, primeMover: subPrime,
+                    role: sub.exercise.isCompound ? "compound" : "isolation"),
                 implement: inferImplement(exerciseId: sub.exercise.id, catalog: catalog)
             )
         }
