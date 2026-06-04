@@ -228,7 +228,12 @@ struct TodayScreen: View {
                             )
                             .padding(.horizontal, 20)
                             .padding(.top, 14)
-                            .accessibilityIdentifier("missed-workout-banner")
+                            // No wrapper accessibilityIdentifier here: a parent
+                            // id leaks to every child Button (XCUITest then sees
+                            // Skip/Consolidate both reporting the wrapper id, not
+                            // their own). The banner's own buttons carry
+                            // missed-banner-* ids; use missed-banner-header for
+                            // presence. (xcuitest-swiftui-gotchas #1.)
                         }
 
                         SeasonPhaseBadge(style: .full, surface: "today")

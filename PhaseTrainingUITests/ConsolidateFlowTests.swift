@@ -25,12 +25,10 @@ final class ConsolidateFlowTests: XCTestCase {
             NSPredicate(format: "label CONTAINS %@", "\(n) lift")).firstMatch
     }
 
-    // Query by label, not identifier: TodayScreen sets
-    // .accessibilityIdentifier("missed-workout-banner") on the whole banner,
-    // which clobbers the child buttons' own ids (both Skip + Consolidate report
-    // "missed-workout-banner"), so the per-button ids aren't queryable.
+    // Per-button id now surfaces (the wrapper accessibilityIdentifier that used
+    // to clobber it was removed from TodayScreen — xcuitest-swiftui-gotchas #1).
     private func consolidateButton(_ app: XCUIApplication) -> XCUIElement {
-        app.buttons.matching(NSPredicate(format: "label == %@", "Consolidate")).firstMatch
+        app.buttons["missed-banner-consolidate"]
     }
 
     func test_missedBanner_offersConsolidate_andConsolidatesWeek() {
