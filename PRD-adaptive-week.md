@@ -194,6 +194,16 @@ lower + pull from 7→8/9, anchor maintained. The export harness also had to
 be corrected: the age-derived era `splitPreference` was hijacking the
 `liftIndex`→focus mapping, so non-anchor exports were mislabeled.
 
+Update: Part B/C **shipped (scoped)**. The auto-appended hypertrophy
+isolation now carries a high-rep finisher band (`finisherRepBand` = 15-20),
+so a day with an isolation append descends compound (low) → accessory
+(mid 8-15) → finisher (high). Validated by a `WorkoutGeneratorTests` unit
+test rather than an eval-rig question — the rig's scorer hardcodes exactly
+9 questions, so a 10th would be invasive harness surgery for a soft signal.
+Scope limit: the finisher only appears when an isolation append fires (a
+hypertrophy day whose recipe doesn't already cover that muscle). A true
+all-days rep-band curve is left for later.
+
 Scope (measurable per G6):
 
 - **Supersets/pairing** — ✅ done (see status above). `WorkoutGenerator`

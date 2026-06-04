@@ -863,10 +863,19 @@ enum WorkoutGenerator {
         return nil
     }
 
+    /// Rep band for the auto-appended isolation FINISHER (D4 part B/C —
+    /// session structure). Higher than the accessory band (8-15) so the day
+    /// descends compound (low) → accessory (mid) → finisher (high). High-rep
+    /// isolation finishers are standard hypertrophy practice (metabolic stress
+    /// on small muscles). Internal for the rep-band-curve test.
+    static let finisherRepBand = "15-20"
+
     /// Convert a picked accessory Exercise into a GeneratedExercise row using
     /// the same prescription/rpe/tempo helpers the main loop uses. Returns
     /// the row plus its expected duration in seconds so elapsedSec can stay
-    /// honest in the workout's estimatedMinutes calculation.
+    /// honest in the workout's estimatedMinutes calculation. The accessory is
+    /// the session's finisher, so it carries `finisherRepBand`, not the
+    /// prescription's mid accessory reps.
     private static func makeAccessoryRow(
         ex: Exercise,
         slotIdx: Int,
@@ -876,14 +885,18 @@ enum WorkoutGenerator {
         strategy: GeneratorStrategy
     ) -> (GeneratedExercise, Int) {
         // slotIdx is past primary-compound territory, so prescription will
-        // hand us an accessory scheme (lower sets, mid reps, shorter rest).
-        let (sets, reps, restSec) = prescription(
+        // hand us an accessory scheme (lower sets, shorter rest). We keep its
+        // sets + rest but override reps: this appended isolation is the day's
+        // FINISHER, so it takes the high-rep finisher band (part B/C — the day
+        // descends compound → accessory → finisher).
+        let (sets, _, restSec) = prescription(
             for: ex,
             slotIdx: slotIdx,
             focus: .push,   // any non-mobility focus works — the prescription doesn't branch on push vs upper here
             memory: memory,
             profile: profile
         )
+        let reps = finisherRepBand
         let durSec = sets * (45 + restSec) + 30
         let (rpe, tempo) = rpeTempoHints(
             for: ex,

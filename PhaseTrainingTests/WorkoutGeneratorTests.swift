@@ -192,6 +192,38 @@ final class WorkoutGeneratorTests: XCTestCase {
         }
     }
 
+    // MARK: - Rep-band curve / finisher (D4 part B/C)
+
+    func test_hypertrophyFinisher_isHighRep_descendingCurve() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.focuses = [.hypertrophy]
+        m.sessionMinutes = 60
+        let p = DemographicProfile.from(m)
+        // Lower day reliably appends a hamstring isolation finisher (Lying Leg
+        // Curl) — the recipe's hip-hinge is a compound, so no hamstring
+        // isolation exists until the append fires.
+        var strat = GeneratorStrategy.auto
+        strat.focus = .lower
+        let w = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 4, memory: m, profile: p,
+            hashSeed: "finisher-curve", strategy: strat)
+
+        let finishers = w.exercises.filter { $0.reps == WorkoutGenerator.finisherRepBand }
+        XCTAssertFalse(finishers.isEmpty,
+            "hypertrophy lower day should append a high-rep isolation finisher")
+
+        // Descending curve: the finisher's rep midpoint sits above the primary
+        // compound's. ("6-12"→9 / "3-6"→4 vs "15-20"→18.)
+        guard let primaryMid = WorkoutGenerator.repBandMidpoint(w.exercises[0].reps),
+              let finisherMid = WorkoutGenerator.repBandMidpoint(finishers[0].reps) else {
+            return XCTFail("rep bands should parse to midpoints")
+        }
+        XCTAssertGreaterThan(finisherMid, primaryMid,
+            "finisher (\(finishers[0].reps)) should be higher-rep than the primary compound (\(w.exercises[0].reps))")
+    }
+
     // MARK: - Profile-driven prescription
 
     func test_beginnerGetsAtMost3Sets() {
