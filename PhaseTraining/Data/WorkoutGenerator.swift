@@ -901,7 +901,7 @@ enum WorkoutGenerator {
             sets: sets,
             reps: reps,
             restSeconds: restSec,
-            notes: "Hypertrophy accessory — auto-added for upper-push day",
+            notes: "Hypertrophy accessory — auto-added for isolation coverage",
             rpe: rpe,
             tempo: tempo
         )
