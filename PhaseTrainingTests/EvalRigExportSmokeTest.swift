@@ -89,12 +89,21 @@ final class EvalRigExportSmokeTest: XCTestCase {
         m.age = 32
 
         let profile = DemographicProfile.from(m)
+        // Force the labeled focus. Without this, the age-derived era cohort
+        // (DemographicProfile.from → derivedCohort(forAge:)) gives a non-empty
+        // splitPreference, and generateLift picks focus from
+        // splitPreference[liftIndex % count] for totalLifts >= 3 — so
+        // (liftIndex 1, totalLifts 4) silently resolved to PULL, not lower,
+        // and the export was graded against the wrong rubric.
+        var strategy = GeneratorStrategy.auto
+        strategy.focus = .lower
         let workout = WorkoutGenerator.generateLift(
             liftIndex: 1,
             totalLifts: 4,
             memory: m,
             profile: profile,
-            hashSeed: "eval-rig-smoke-lower"
+            hashSeed: "eval-rig-smoke-lower",
+            strategy: strategy
         )
 
         let outDir = URL(fileURLWithPath: "/tmp/eval-rig-export-lower")
@@ -125,12 +134,17 @@ final class EvalRigExportSmokeTest: XCTestCase {
         m.age = 32
 
         let profile = DemographicProfile.from(m)
+        // Force the labeled focus — see test_export_lower_body_emits for why
+        // the era splitPreference otherwise hijacks (liftIndex, totalLifts).
+        var strategy = GeneratorStrategy.auto
+        strategy.focus = .pull
         let workout = WorkoutGenerator.generateLift(
             liftIndex: 1,
             totalLifts: 3,
             memory: m,
             profile: profile,
-            hashSeed: "eval-rig-smoke-pull"
+            hashSeed: "eval-rig-smoke-pull",
+            strategy: strategy
         )
 
         let outDir = URL(fileURLWithPath: "/tmp/eval-rig-export-pull")
