@@ -1195,8 +1195,17 @@ enum WorkoutGenerator {
         // high. Primary compound uses .compound band, accessories use
         // .isolation band. Sets + rest stay as focusBias computed them —
         // only the rep STRING is replaced.
+        // Time / distance / hold prescriptions (coach.db stores Wall Sit as
+        // "30-60 sec", a loaded carry as "40-60 ft", a hang as "5-10 sec hold")
+        // are NOT rep counts, so the focus-bias and era numeric bands must not
+        // overwrite them — preserve the native prescription. Without this a
+        // hypertrophy user saw Wall Sit / Battle Ropes / Reverse Plank as
+        // "8-15" reps. 71 catalog exercises are affected. (T1.2)
+        let exerciseReps = exercise.defaultReps?.trimmingCharacters(in: .whitespaces).nilIfEmpty
         let finalReps: String
-        if let eraStyle = profile.eraStyle, memory.primaryFocus == .hypertrophy {
+        if let exerciseReps, !isNumericRepBand(exerciseReps) {
+            finalReps = exerciseReps
+        } else if let eraStyle = profile.eraStyle, memory.primaryFocus == .hypertrophy {
             let band = (isPrimary && isCompound)
                 ? eraStyle.repRangeBias.compound
                 : eraStyle.repRangeBias.isolation
@@ -1262,6 +1271,14 @@ enum WorkoutGenerator {
                     reps: isPrimary ? "5-8" : "8-10",
                     restSec: 90)
         }
+    }
+
+    /// A plain rep prescription — a count ("5") or numeric range ("6-12").
+    /// Everything else coach.db stores (time "30-60 sec", distance "40-60 ft",
+    /// holds "5-10 sec hold", "AMRAP") is a non-rep prescription the focus-bias
+    /// / era numeric band must NOT overwrite. (T1.2)
+    static func isNumericRepBand(_ s: String) -> Bool {
+        s.range(of: #"^\d+(\s*-\s*\d+)?$"#, options: .regularExpression) != nil
     }
 
     private static func defaultSetsFromFormula(isPrimary: Bool, isCompound: Bool) -> Int {

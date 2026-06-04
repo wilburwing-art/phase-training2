@@ -734,6 +734,34 @@ final class WorkoutGeneratorTests: XCTestCase {
             "20-min day must drop accessories the 120-min day keeps (budget gate)")
     }
 
+    // MARK: - T1.2 time/distance prescriptions survive the focus-bias band
+
+    /// Wall Sit is stored as "30-60 sec" in coach.db. A hypertrophy user's
+    /// 8-15 accessory band (and the era nudge) must NOT overwrite it — an
+    /// isometric prescribed in reps is the global "isometrics in reps" smell.
+    func test_prescription_preservesTimeBasedRepsOverFocusBias() throws {
+        let wallSit = CoachDatabase.shared.listExercises(search: "Wall Sit").first { $0.name == "Wall Sit" }
+        try XCTSkipIf(wallSit == nil, "Wall Sit not in coach.db")
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.focuses = [.hypertrophy]
+        let p = DemographicProfile.from(m)
+        let rx = WorkoutGenerator.prescription(for: wallSit!, slotIdx: 2, focus: .legs, memory: m, profile: p)
+        XCTAssertTrue(rx.reps.lowercased().contains("sec"),
+            "Time-based Wall Sit should keep its duration prescription; got reps='\(rx.reps)'")
+    }
+
+    /// The classifier separating numeric rep bands (overwritable by focus bias)
+    /// from time/distance/hold prescriptions (preserved).
+    func test_isNumericRepBand_classification() {
+        for numeric in ["5", "12", "6-12", "8-15", "3 - 5"] {
+            XCTAssertTrue(WorkoutGenerator.isNumericRepBand(numeric), "'\(numeric)' is a numeric band")
+        }
+        for nonNumeric in ["30-60 sec", "30s", "20-45 sec", "5-10 sec hold", "40-60 ft", "40 m", "AMRAP"] {
+            XCTAssertFalse(WorkoutGenerator.isNumericRepBand(nonNumeric), "'\(nonNumeric)' is NOT a numeric band")
+        }
+    }
+
     // MARK: - Stagnation swap
 
     /// When `context.stagnantExercises` includes an exercise the generator
