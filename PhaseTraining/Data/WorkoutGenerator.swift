@@ -758,7 +758,13 @@ enum WorkoutGenerator {
             return (rpe: "7", tempo: tempo)
         }
 
-        return (rpe, tempo)
+        // Beginner intensity guardrail (T1.5): a novice grooving technique
+        // shouldn't be sent into RPE 8-9 grinders. Cap RPE to ≤7 (≥3 RIR)
+        // across all lifts. Composes with the readiness compound cap applied
+        // downstream in the main loop. (LLM rpeOverrides return early above,
+        // so they keep last say; they're still readiness-capped downstream.)
+        let cappedRpe = memory.experience == .beginner ? capRPE(rpe, to: 7.0) : rpe
+        return (cappedRpe, tempo)
     }
 
     /// Pick canonical side-delt + tricep isolation exercises and turn them
@@ -1214,7 +1220,13 @@ enum WorkoutGenerator {
             finalReps = reps
         }
 
-        return (sets, finalReps, restSec)
+        // Beginner rep floor (T1.5): keep novices out of sub-6-rep near-max
+        // work. Only numeric bands are floored — time/distance prescriptions
+        // (T1.2) pass through untouched. NOTE: this also raises a 5-rep scheme
+        // to 6-8, so canonical novice 5×5 linear progression is nudged toward
+        // a hypertrophy range — revisit if you want to special-case 5×5.
+        let outReps = memory.experience == .beginner ? beginnerRepFloor(finalReps) : finalReps
+        return (sets, outReps, restSec)
     }
 
     /// Map the user's stated goal to a coherent sets × reps × rest scheme.
@@ -1279,6 +1291,17 @@ enum WorkoutGenerator {
     /// / era numeric band must NOT overwrite. (T1.2)
     static func isNumericRepBand(_ s: String) -> Bool {
         s.range(of: #"^\d+(\s*-\s*\d+)?$"#, options: .regularExpression) != nil
+    }
+
+    /// Raise a numeric rep band whose low end is below 6 to "6-8" so beginners
+    /// groove technique in moderate ranges rather than near-max triples.
+    /// Non-numeric prescriptions (time/distance/hold) and bands already ≥6
+    /// pass through unchanged. (T1.5)
+    static func beginnerRepFloor(_ reps: String) -> String {
+        guard isNumericRepBand(reps) else { return reps }
+        let lows = reps.split(whereSeparator: { !$0.isNumber }).compactMap { Int($0) }
+        guard let low = lows.first else { return reps }
+        return low < 6 ? "6-8" : reps
     }
 
     private static func defaultSetsFromFormula(isPrimary: Bool, isCompound: Bool) -> Int {
@@ -1482,7 +1505,13 @@ func lerp(_ lo: Double, _ hi: Double, _ t: Double) -> Double {
 /// the parser doesn't understand pass through unchanged — the cap is a
 /// safety floor, not a coercion.
 func capCompoundRPE(_ rpeRaw: String, readinessScore: Double) -> String {
-    let capValue = lerp(7.0, 9.0, readinessScore)
+    return capRPE(rpeRaw, to: lerp(7.0, 9.0, readinessScore))
+}
+
+/// Cap an RPE string ("7", "8-9", "RPE 7-8") so its max value ≤ `capValue`.
+/// Parser failures pass through unchanged — the cap is a safety floor, not a
+/// coercion. Shared by the readiness compound cap and the beginner cap (T1.5).
+func capRPE(_ rpeRaw: String, to capValue: Double) -> String {
     let trimmed = rpeRaw.trimmingCharacters(in: .whitespaces)
     guard !trimmed.isEmpty else { return rpeRaw }
 

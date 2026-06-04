@@ -762,6 +762,45 @@ final class WorkoutGeneratorTests: XCTestCase {
         }
     }
 
+    // MARK: - T1.5 beginner intensity guardrail
+
+    /// Sub-6 numeric bands floor to 6-8; bands already ≥6 and non-numeric
+    /// prescriptions pass through.
+    func test_beginnerRepFloor_raisesSubSixBandsOnly() {
+        XCTAssertEqual(WorkoutGenerator.beginnerRepFloor("5"), "6-8")
+        XCTAssertEqual(WorkoutGenerator.beginnerRepFloor("3-5"), "6-8")
+        XCTAssertEqual(WorkoutGenerator.beginnerRepFloor("6-12"), "6-12")
+        XCTAssertEqual(WorkoutGenerator.beginnerRepFloor("8-15"), "8-15")
+        XCTAssertEqual(WorkoutGenerator.beginnerRepFloor("30-60 sec"), "30-60 sec")
+        XCTAssertEqual(WorkoutGenerator.beginnerRepFloor("40-60 ft"), "40-60 ft")
+    }
+
+    /// A beginner's primary prescription must be RPE-capped (≤7) and rep-
+    /// floored (≥6); an intermediate keeps the heavier scheme.
+    func test_prescription_beginnerCapsRpeAndFloorsReps() throws {
+        let bench = CoachDatabase.shared.listExercises(search: "Bench Press").first { $0.isCompound }
+        try XCTSkipIf(bench == nil, "No compound Bench Press in coach.db")
+
+        var beginner = TrainingMemory()
+        beginner.experience = .beginner
+        beginner.focuses = [.generalStrength]    // primary band "5", RPE "8"
+        let rx = WorkoutGenerator.prescription(
+            for: bench!, slotIdx: 0, focus: .push, memory: beginner, profile: .from(beginner))
+        XCTAssertEqual(rx.reps, "6-8", "beginner primary reps should floor to 6-8; got '\(rx.reps)'")
+
+        let rpeBeg = WorkoutGenerator.rpeTempoHints(
+            for: bench!, slotIdx: 0, focus: .push, memory: beginner).rpe ?? ""
+        XCTAssertFalse(rpeBeg.contains("8") || rpeBeg.contains("9"),
+            "beginner RPE should cap ≤7; got '\(rpeBeg)'")
+
+        var inter = beginner
+        inter.experience = .intermediate
+        let rpeInt = WorkoutGenerator.rpeTempoHints(
+            for: bench!, slotIdx: 0, focus: .push, memory: inter).rpe ?? ""
+        XCTAssertTrue(rpeInt.contains("8"),
+            "intermediate RPE should retain 8+ work; got '\(rpeInt)'")
+    }
+
     // MARK: - Stagnation swap
 
     /// When `context.stagnantExercises` includes an exercise the generator
