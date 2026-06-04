@@ -192,6 +192,32 @@ struct WeekScreen: View {
                 )
                 .accessibilityIdentifier("week-tone-chip")
             }
+            // PR 6 — "typical week" fast path: copy last week's shape onto this
+            // week in one tap. Only shown when a prior week exists to copy.
+            if planStore.hasPriorWeekShape {
+                Button {
+                    planStore.adoptLastWeekShape(memory: memory.memory)
+                } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "arrow.uturn.backward")
+                            .font(.system(size: 10, weight: .semibold))
+                        Text("Same as last week")
+                            .styled(.monoXS)
+                    }
+                    .foregroundStyle(Color.ink2)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.surface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .strokeBorder(Color.line, lineWidth: 0.5)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("week-same-as-last")
+                .padding(.top, 2)
+            }
         }
     }
 

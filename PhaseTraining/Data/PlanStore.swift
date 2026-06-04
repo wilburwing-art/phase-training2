@@ -473,6 +473,60 @@ final class PlanStore: ObservableObject {
         return WeekShape(snapshot: snap, sessions: sessions)
     }
 
+    // MARK: - PR 6 — "typical week" fast path
+
+    /// True when a PRIOR week's snapshot exists to copy a shape from.
+    var hasPriorWeekShape: Bool {
+        let thisWeek = Date().startOfTrainingWeek()
+        return pastPlans.contains { $0.weekStart < thisWeek }
+    }
+
+    /// Copy last week's day-by-day shape (per-day kind + each lift's focus)
+    /// onto the current week's overrides, then regenerate — the "typical week"
+    /// fast path. Maps day i → day i (both weeks are Mon–Sun, 7 days). Event
+    /// days copy as rest (events are date-anchored, not reproducible). Returns
+    /// false when there's no prior week to copy.
+    @discardableResult
+    func adoptLastWeekShape(memory: TrainingMemory,
+                            today: Date = Date(),
+                            calendar: Calendar = .current) -> Bool {
+        let thisWeekStart = today.startOfTrainingWeek(calendar: calendar)
+        guard let snap = pastPlans.first(where: { $0.weekStart < thisWeekStart })
+        else { return false }
+        updateOverrides(memory: memory, today: today) { o in
+            for (i, day) in snap.plan.days.enumerated() where i < 7 {
+                guard let target = calendar.date(byAdding: .day, value: i, to: thisWeekStart)
+                else { continue }
+                let key = calendar.startOfDay(for: target)
+                switch day.kind {
+                case .lift:
+                    o.dayOverrides[key] = .lift(
+                        routineId: day.routineId,
+                        focus: Self.liftFocus(from: day.generatedWorkout?.focus))
+                case .sport:
+                    o.dayOverrides[key] = .sport(sportSlug: day.sport?.slug)
+                case .rest, .event:
+                    o.dayOverrides[key] = .rest
+                }
+            }
+        }
+        return true
+    }
+
+    /// Map the generator's WorkoutFocus back to the override LiftFocus (the two
+    /// full-body variants collapse to .fullBody).
+    private static func liftFocus(from wf: WorkoutFocus?) -> LiftFocus? {
+        switch wf {
+        case .push: return .push
+        case .pull: return .pull
+        case .legs: return .legs
+        case .upper: return .upper
+        case .lower: return .lower
+        case .fullBodyA, .fullBodyB: return .fullBody
+        case nil: return nil
+        }
+    }
+
     // MARK: - PR 7 — Plan validation
 
     /// Set of `"rule:pattern"` keys the user has dismissed enough times

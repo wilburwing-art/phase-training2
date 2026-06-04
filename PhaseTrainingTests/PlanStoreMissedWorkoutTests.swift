@@ -241,4 +241,45 @@ final class PlanStoreMissedWorkoutTests: XCTestCase {
         XCTAssertFalse(store.consolidateWeek(memory: hypertrophyMemory(), today: mon),
                        "need ≥2 future lift days to consolidate")
     }
+
+    // MARK: - Typical-week prefill (PR 6 gap)
+
+    func test_adoptLastWeekShape_copiesKindsAndFocus() {
+        let mon = monday()
+        let cal = Calendar.current
+        let store = freshStore(today: mon)
+        store.sessionStore = SessionStore(defaults: UserDefaults(suiteName: "shape-stub-\(UUID())")!)
+
+        // Last week (Mon-7): push Mon, pull Wed, rest otherwise.
+        let lw = cal.date(byAdding: .day, value: -7, to: mon)!
+        func ld(_ off: Int, _ f: WorkoutFocus) -> DayPlan {
+            DayPlan(date: cal.date(byAdding: .day, value: off, to: lw)!, kind: .lift,
+                    title: f.title, routineId: nil,
+                    generatedWorkout: GeneratedWorkout(title: f.title, summary: "",
+                        exercises: [], estimatedMinutes: 60, provenance: "", focus: f))
+        }
+        func rd(_ off: Int) -> DayPlan {
+            DayPlan(date: cal.date(byAdding: .day, value: off, to: lw)!, kind: .rest, title: "Rest")
+        }
+        let lastWeek = WeekPlan(days: [ld(0, .push), rd(1), ld(2, .pull), rd(3), rd(4), rd(5), rd(6)],
+                                generatedAt: Date(), inputsHash: "lw")
+        store.pastPlans = [WeekPlanSnapshot(weekStart: lw, plan: lastWeek,
+                                            actualSessionIDs: [], capturedAt: Date())]
+
+        XCTAssertTrue(store.hasPriorWeekShape)
+        XCTAssertTrue(store.adoptLastWeekShape(memory: hypertrophyMemory(), today: mon))
+
+        XCTAssertEqual(store.overrides.override(on: mon)?.liftFocus, .push,
+                       "this week's Mon should adopt last week's push focus")
+        let wed = cal.date(byAdding: .day, value: 2, to: mon)!
+        XCTAssertEqual(store.overrides.override(on: wed)?.liftFocus, .pull)
+        let tue = cal.date(byAdding: .day, value: 1, to: mon)!
+        XCTAssertEqual(store.overrides.override(on: tue)?.asKind, .rest)
+    }
+
+    func test_adoptLastWeekShape_falseWithNoPriorWeek() {
+        let store = freshStore(today: monday())
+        XCTAssertFalse(store.hasPriorWeekShape)
+        XCTAssertFalse(store.adoptLastWeekShape(memory: hypertrophyMemory(), today: monday()))
+    }
 }
