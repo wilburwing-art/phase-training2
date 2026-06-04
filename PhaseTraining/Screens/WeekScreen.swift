@@ -151,13 +151,14 @@ struct WeekScreen: View {
                 let spacing: CGFloat = 6
                 let rowH = max(48, (geo.size.height - spacing * 6) / 7)
                 VStack(spacing: spacing) {
-                    ForEach(plan.days) { day in
+                    ForEach(Array(plan.days.enumerated()), id: \.element.id) { idx, day in
                         DraggableDayRow(
                             day: day,
                             isToday: isToday(day.date),
                             onTap: { editingDate = day.date }
                         )
                         .frame(height: rowH)
+                        .accessibilityIdentifier("week-day-row-\(idx)")
                     }
                 }
             }

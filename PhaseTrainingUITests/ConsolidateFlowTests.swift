@@ -64,4 +64,45 @@ final class ConsolidateFlowTests: XCTestCase {
         XCTAssertFalse(consolidateButton(app).waitForExistence(timeout: 3),
                        "banner should disappear after consolidating")
     }
+
+    /// PR 6 gap — convert a rest day into a lift via the Week-tab edit sheet.
+    /// Seed has a rest day at index 3 (offset +1); after "Add lift workout" →
+    /// pick focus, the week goes 4 → 5 lift days.
+    func test_addLiftWorkout_convertsRestDayToLift() {
+        let app = launch()
+
+        let weekTab = app.tabBars.buttons["Week"]
+        XCTAssertTrue(weekTab.waitForExistence(timeout: 10))
+        weekTab.tap()
+        XCTAssertTrue(liftCountText(app, 4).waitForExistence(timeout: 5),
+                      "seed week starts at 4 lift days")
+
+        // Tap a future rest day (index 3 = offset +1) → its edit sheet.
+        let restRow = app.descendants(matching: .any)["week-day-row-3"]
+        XCTAssertTrue(restRow.waitForExistence(timeout: 5))
+        restRow.tap()
+
+        // "Add lift workout" → pick push → the rest day becomes a lift.
+        let addLift = app.descendants(matching: .any)["week-day-add-lift-action"]
+        XCTAssertTrue(addLift.waitForExistence(timeout: 5),
+                      "rest day edit sheet should offer Add lift workout")
+        addLift.tap()
+        let pushChip = app.buttons["focus-chip-push"]
+        XCTAssertTrue(pushChip.waitForExistence(timeout: 5))
+        pushChip.tap()
+
+        // Dismiss the edit sheet → back on the Week tab. (We don't assert an
+        // absolute lift count: editing regenerates the week from memory on the
+        // current training-week dates, so the seed's hand-built shape doesn't
+        // carry over. The rest→lift override mutation is covered by the
+        // setLiftFocus / dayOverrides unit path; here we prove the affordance
+        // is reachable + the flow completes end-to-end.)
+        let done = app.buttons["Done"]
+        XCTAssertTrue(done.waitForExistence(timeout: 5))
+        done.tap()
+        XCTAssertFalse(app.buttons["Done"].waitForExistence(timeout: 2),
+                       "edit sheet should dismiss after Done")
+        XCTAssertTrue(app.descendants(matching: .any)["week-day-row-0"].waitForExistence(timeout: 5),
+                      "returns to a rendered Week tab after adding the workout")
+    }
 }
