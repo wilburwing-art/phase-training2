@@ -64,6 +64,13 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-sport-demo") {
             Self.seedSportDemo()
         }
+        //   --seed-missed-consolidation-demo → a PAST missed push day in a
+        //     week-full plan (4 lifts → reshuffle drop-rule fires), with
+        //     focus-tagged future lifts, so TodayScreen's missed-workout banner
+        //     offers "Consolidate" (D3). Drives the consolidate flow.
+        if ProcessInfo.processInfo.arguments.contains("--seed-missed-consolidation-demo") {
+            Self.seedMissedConsolidationDemo()
+        }
         #endif
         // Upsize URLCache so coach.db image bytes survive across app launches.
         // The catalog serves ~555 images from raw.githubusercontent.com; the
@@ -223,6 +230,36 @@ struct PhaseTrainingApp: App {
         seedWeekPlan { date in
             DayPlan(date: date, kind: .sport, title: sport.name,
                     sport: sport, generatedReason: "UITest seed")
+        }
+    }
+
+    /// --seed-missed-consolidation-demo: a week with a PAST missed push day
+    /// (no logged session) and 4 total lift days, so the missed-workout
+    /// reshuffle drop-rule fires (≥4 lifts → no clean slot) and the banner
+    /// offers "Consolidate" instead. The 3 future lift days carry a persisted
+    /// `focus` so `consolidateWeek` can recover them and merge down to 2.
+    private static func seedMissedConsolidationDemo() {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        func date(_ o: Int) -> Date { cal.date(byAdding: .day, value: o, to: today) ?? today }
+        func lift(_ o: Int, _ focus: WorkoutFocus) -> DayPlan {
+            DayPlan(date: date(o), kind: .lift, title: focus.title,
+                    generatedWorkout: GeneratedWorkout(
+                        title: focus.title, summary: "", exercises: [],
+                        estimatedMinutes: 60, provenance: "seed", focus: focus),
+                    generatedReason: "seed")
+        }
+        func rest(_ o: Int) -> DayPlan {
+            DayPlan(date: date(o), kind: .rest, title: "Rest")
+        }
+        // 4 lift days (week-full) incl a past missed push; 3 future lifts w/ focus.
+        let days = [lift(-2, .push), rest(-1), lift(0, .pull), rest(1),
+                    lift(2, .legs), lift(3, .upper), rest(4)]
+        let plan = WeekPlan(days: days, generatedAt: Date(), inputsHash: "ui-test-seed")
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .secondsSince1970
+        if let data = try? encoder.encode(plan) {
+            UserDefaults.standard.set(data, forKey: "pt_week_plan")
         }
     }
     #endif
