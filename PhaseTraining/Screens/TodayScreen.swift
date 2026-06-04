@@ -222,7 +222,9 @@ struct TodayScreen: View {
                                 missedDay: pending,
                                 proposedDiff: planStore.proposeMissedReshuffle(missedDate: pending.date),
                                 onAccept: { acceptMissedReshuffle(for: pending) },
-                                onDismiss: { dismissMissed(for: pending) }
+                                onDismiss: { dismissMissed(for: pending) },
+                                onConsolidate: planStore.shouldOfferConsolidation(missedDate: pending.date)
+                                    ? { consolidateForMiss(for: pending) } : nil
                             )
                             .padding(.horizontal, 20)
                             .padding(.top, 14)
@@ -411,6 +413,14 @@ struct TodayScreen: View {
 
     private func dismissMissed(for day: DayPlan) {
         planStore.dismissMissed(date: day.date, asDropped: false)
+    }
+
+    /// D3 — consolidate the remaining week onto fewer lift days (offered when
+    /// reshuffle found no clean slot), then clear the miss so it stops
+    /// bannering.
+    private func consolidateForMiss(for day: DayPlan) {
+        planStore.consolidateWeek(memory: memoryStore.memory)
+        planStore.dismissMissed(date: day.date, asDropped: true)
     }
 
     /// Discoverable affordance for the pre-workout body check. Always visible

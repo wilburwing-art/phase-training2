@@ -21,6 +21,10 @@ struct MissedWorkoutBanner: View {
     let proposedDiff: PlanDiff?
     let onAccept: () -> Void
     let onDismiss: () -> Void
+    /// D3 — present when the week can't cleanly absorb the missed workout but
+    /// CAN be consolidated onto fewer lift days (PRD §6 Q4). When set, the
+    /// primary button offers "Consolidate" instead of "Got it".
+    var onConsolidate: (() -> Void)? = nil
 
     @State private var expanded = false
 
@@ -84,8 +88,8 @@ struct MissedWorkoutBanner: View {
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("missed-banner-skip")
 
-                Button(action: onAccept) {
-                    Text(proposedDiff != nil ? "Accept" : "Got it")
+                Button(action: primaryAction) {
+                    Text(primaryLabel)
                         .styled(.monoXS)
                         .foregroundStyle(Color.accentInk)
                         .padding(.horizontal, 10)
@@ -94,7 +98,7 @@ struct MissedWorkoutBanner: View {
                         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 }
                 .buttonStyle(.plain)
-                .accessibilityIdentifier("missed-banner-accept")
+                .accessibilityIdentifier(offersConsolidation ? "missed-banner-consolidate" : "missed-banner-accept")
             }
             .padding(.top, 4)
         }
@@ -107,20 +111,38 @@ struct MissedWorkoutBanner: View {
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
-    /// Short summary line — either where it moved to, or that we dropped.
+    /// True when no clean reshuffle exists but consolidation is on offer.
+    private var offersConsolidation: Bool { proposedDiff == nil && onConsolidate != nil }
+
+    private var primaryLabel: String {
+        if proposedDiff != nil { return "Accept" }
+        if offersConsolidation { return "Consolidate" }
+        return "Got it"
+    }
+
+    private var primaryAction: () -> Void {
+        if offersConsolidation, let onConsolidate { return onConsolidate }
+        return onAccept
+    }
+
+    /// Short summary line — where it moved to, that we'll consolidate, or that
+    /// we dropped.
     private var actionSummary: String {
-        guard let diff = proposedDiff else {
-            return "Already a full week — leaving it skipped"
-        }
-        // First .move edit's target date drives the summary.
-        for edit in diff.edits {
-            if case .move(_, let toDate) = edit {
-                let f = DateFormatter()
-                f.dateFormat = "EEEE"
-                return "Moving to \(f.string(from: toDate))"
+        if let diff = proposedDiff {
+            // First .move edit's target date drives the summary.
+            for edit in diff.edits {
+                if case .move(_, let toDate) = edit {
+                    let f = DateFormatter()
+                    f.dateFormat = "EEEE"
+                    return "Moving to \(f.string(from: toDate))"
+                }
             }
+            return "Plan updated"
         }
-        return "Plan updated"
+        if offersConsolidation {
+            return "No room to move it — consolidate the week instead?"
+        }
+        return "Already a full week — leaving it skipped"
     }
 
     private var weekdayLabel: String {

@@ -547,6 +547,27 @@ final class PlanStore: ObservableObject {
         return propose(edits, reasoning: "Missed workout — moved to keep coverage")
     }
 
+    /// D3 — whether the missed-workout banner should offer a CONSOLIDATE option
+    /// (vs the reshuffle / drop affordance). True only when the autopilot says
+    /// reshuffle found no clean slot for a non-budget reason, the 1/week
+    /// consolidation cap has room, AND there are ≥2 future lift days with a
+    /// recoverable focus to actually reduce (so `consolidateWeek` would apply).
+    func shouldOfferConsolidation(missedDate: Date, now: Date = Date()) -> Bool {
+        guard let plan else { return false }
+        guard midWeekConsolidationCount < Self.weeklyConsolidationCap else { return false }
+        let remainingReshuffleBudget = max(0, Self.weeklyReshuffleCap - midWeekReshuffleCount)
+        guard MissedWorkoutAutopilot.shouldOfferConsolidation(
+            missedDate: missedDate, plan: plan, overrides: overrides,
+            remainingBudget: remainingReshuffleBudget, now: now) else { return false }
+        let cal = Calendar.current
+        let todayStart = cal.startOfDay(for: now)
+        let futureLifts = plan.days.filter {
+            $0.kind == .lift && cal.startOfDay(for: $0.date) >= todayStart
+                && !$0.protected && $0.generatedWorkout?.focus != nil
+        }
+        return futureLifts.count >= 2
+    }
+
     /// Apply the autopilot's proposed reshuffle, log the resolution,
     /// and bump the per-week counter.
     func applyMissedReshuffle(_ diff: PlanDiff,

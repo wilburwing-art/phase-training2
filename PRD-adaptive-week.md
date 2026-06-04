@@ -197,10 +197,17 @@ drops the surplus day to rest, and persists — direct mutation mirroring
 `midWeekConsolidationCount` / `weeklyConsolidationCap = 1`, reset on weekly
 rollover like the reshuffle counter. 3 tests.
 
-**Integration remains:** only the **D2 consultative-miss UI** — surface a
-reshuffle-vs-consolidate choice when `shouldOfferConsolidation` is true, and
-call `consolidateWeek` on the consolidate choice. All the non-UI plumbing
-(decision, eligibility, generation, apply, cap) is done.
+The **D2 consultative-miss UI shipped**: `MissedWorkoutBanner` takes an
+`onConsolidate` callback and shows a "Consolidate" primary button (summary
+"No room to move it — consolidate the week instead?") when
+`PlanStore.shouldOfferConsolidation` is true; `TodayScreen` wires it to
+`consolidateWeek` and then clears the miss.
+
+**D3 is complete end-to-end**: decision (`WeekConsolidator`) → eligibility
+(`shouldOfferConsolidation`) → merged generation (`generateConsolidated`) →
+focus persistence (`GeneratedWorkout.focus`) → apply + 1/week cap
+(`consolidateWeek`) → UI. The non-UI stack is unit-tested; the UI compiles
+but its interaction wants a manual run / XCUITest to confirm visually.
 
 ### D4 — "Workouts need to be better"
 
