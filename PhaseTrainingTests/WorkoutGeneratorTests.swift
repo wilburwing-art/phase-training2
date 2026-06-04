@@ -67,6 +67,104 @@ final class WorkoutGeneratorTests: XCTestCase {
                       "Push day should include a vertical push movement")
     }
 
+    // MARK: - Superset structure (D4)
+
+    func test_upperDay_supersetsAntagonistPair() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.sessionMinutes = 60
+        let p = DemographicProfile.from(m)
+
+        // totalLifts 4, liftIndex 0 → upper day: has both a vertical push and
+        // a vertical pull, an antagonist pair the generator should superset.
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 4,
+            memory: m, profile: p, hashSeed: m.planInputsHash
+        )
+        let groups = workout.exercises.compactMap(\.supersetGroup)
+        XCTAssertFalse(groups.isEmpty,
+                       "Upper day should produce at least one antagonist superset")
+        // Every assigned group must have exactly two members sharing the int.
+        let counts = Dictionary(grouping: groups, by: { $0 }).mapValues(\.count)
+        for (g, c) in counts {
+            XCTAssertEqual(c, 2, "Superset group \(g) should have exactly 2 members, got \(c)")
+        }
+        // ...and those two members must be antagonist patterns.
+        for g in Set(groups) {
+            let patterns = workout.exercises
+                .filter { $0.supersetGroup == g }
+                .compactMap(\.pattern)
+            XCTAssertEqual(patterns.count, 2)
+            XCTAssertEqual(WorkoutGenerator.antagonistPatterns[patterns[0]], patterns[1],
+                           "Superset members \(patterns) should be antagonists")
+        }
+    }
+
+    func test_pushDay_noSupersets_whenNoAntagonistPresent() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.sessionMinutes = 60
+        let p = DemographicProfile.from(m)
+
+        // Push day is all push / triceps / core — no antagonist pull to pair
+        // with, so it should stay flat. "≥1 superset WHERE APPROPRIATE."
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: p, hashSeed: m.planInputsHash
+        )
+        XCTAssertTrue(workout.exercises.allSatisfy { $0.supersetGroup == nil },
+                      "Push day has no antagonist pair to superset")
+    }
+
+    func test_primaryCompound_staysSolo() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.sessionMinutes = 60
+        let p = DemographicProfile.from(m)
+
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 4,
+            memory: m, profile: p, hashSeed: m.planInputsHash
+        )
+        XCTAssertNil(workout.exercises.first?.supersetGroup,
+                     "The top heavy compound should never be supersetted")
+    }
+
+    func test_assignAntagonistSupersets_pairsPushAndPull() {
+        // Direct unit test of the pairing rule, independent of coach.db.
+        func gex(_ id: Int, _ pattern: String) -> GeneratedExercise {
+            GeneratedExercise(id: "x-\(id)", exerciseId: id, name: "ex\(id)",
+                              pattern: pattern, isCompound: false,
+                              sets: 3, reps: "8-12", restSeconds: 60)
+        }
+        // index 0 is the protected primary; 1+2 are an antagonist pair.
+        let input = [gex(0, "horizontal-push"),
+                     gex(1, "vertical-push"),
+                     gex(2, "vertical-pull"),
+                     gex(3, "anti-extension")]
+        let out = WorkoutGenerator.assignAntagonistSupersets(input)
+        XCTAssertNil(out[0].supersetGroup, "primary stays solo")
+        XCTAssertNotNil(out[1].supersetGroup)
+        XCTAssertEqual(out[1].supersetGroup, out[2].supersetGroup,
+                       "antagonist push/pull should share a group")
+        XCTAssertNil(out[3].supersetGroup, "core has no antagonist present")
+    }
+
+    func test_supersetGroup_propagatesToTemplate() {
+        let gex = GeneratedExercise(
+            id: "t-1", exerciseId: 1, name: "Test", isCompound: false,
+            sets: 3, reps: "8-12", restSeconds: 60, supersetGroup: 7)
+        let workout = GeneratedWorkout(
+            title: "T", summary: "", exercises: [gex],
+            estimatedMinutes: 10, provenance: "")
+        let template = workout.toWorkoutTemplate(id: "t")
+        XCTAssertEqual(template.exercises.first?.supersetGroup, 7,
+                       "supersetGroup must survive the GeneratedWorkout → WorkoutTemplate bridge")
+    }
+
     // MARK: - Profile-driven prescription
 
     func test_beginnerGetsAtMost3Sets() {

@@ -171,23 +171,32 @@ struct GeneratedExercise: Codable, Hashable, Identifiable {
     /// (eval-rig rubric Q1 — "first compound press has a ramp set listed
     /// below working weight"). Empty / nil = no ramp prescribed.
     var warmUpSets: [WarmUpSet]? = nil
+    /// Superset grouping (D4 — session structure). The same positive
+    /// integer across two exercises means "alternate sets between these,
+    /// then rest." Assigned by the generator to antagonist movement pairs
+    /// (push↔pull, extension↔flexion); nil = straight sets. Propagates
+    /// through `toWorkoutTemplate` → ExerciseTemplate → LoggedExercise so
+    /// the LogScreen renders the superset visually.
+    var supersetGroup: Int? = nil
 
     enum CodingKeys: String, CodingKey {
         case id, exerciseId, name, pattern, isCompound, sets, reps
-        case restSeconds, notes, rpe, tempo, source, warmUpSets
+        case restSeconds, notes, rpe, tempo, source, warmUpSets, supersetGroup
     }
 
     init(id: String, exerciseId: Int, name: String, pattern: String? = nil,
          isCompound: Bool, sets: Int, reps: String, restSeconds: Int,
          notes: String? = nil, rpe: String? = nil, tempo: String? = nil,
          source: ExercisePickSource = .recipe,
-         warmUpSets: [WarmUpSet]? = nil) {
+         warmUpSets: [WarmUpSet]? = nil,
+         supersetGroup: Int? = nil) {
         self.id = id; self.exerciseId = exerciseId; self.name = name
         self.pattern = pattern; self.isCompound = isCompound
         self.sets = sets; self.reps = reps; self.restSeconds = restSeconds
         self.notes = notes; self.rpe = rpe; self.tempo = tempo
         self.source = source
         self.warmUpSets = warmUpSets
+        self.supersetGroup = supersetGroup
     }
 
     init(from decoder: Decoder) throws {
@@ -205,6 +214,7 @@ struct GeneratedExercise: Codable, Hashable, Identifiable {
         self.tempo = (try? c.decodeIfPresent(String.self, forKey: .tempo)) ?? nil
         self.source = (try? c.decode(ExercisePickSource.self, forKey: .source)) ?? .recipe
         self.warmUpSets = (try? c.decodeIfPresent([WarmUpSet].self, forKey: .warmUpSets)) ?? nil
+        self.supersetGroup = (try? c.decodeIfPresent(Int.self, forKey: .supersetGroup)) ?? nil
     }
 }
 
@@ -242,7 +252,8 @@ extension GeneratedWorkout {
                     targetReps: Self.parseRepsLeading(gex.reps) ?? 8,
                     rest: gex.restSeconds,
                     rpe: gex.rpe,
-                    tempo: gex.tempo
+                    tempo: gex.tempo,
+                    supersetGroup: gex.supersetGroup
                 )
             }
         )

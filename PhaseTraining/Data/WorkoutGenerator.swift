@@ -287,6 +287,11 @@ enum WorkoutGenerator {
             }
         }
 
+        // D4 session structure — pair antagonist movements into supersets.
+        // Additive: sets / reps / rest are untouched; only `supersetGroup`
+        // is populated, and only where an antagonist pair actually co-occurs.
+        picks = assignAntagonistSupersets(picks)
+
         let estMin = max(1, Int((Double(elapsedSec) / 60.0).rounded()))
         let summary = "\(picks.count) movements · ~\(estMin) min"
         let prov = provenanceLine(
@@ -941,6 +946,54 @@ enum WorkoutGenerator {
         for byte in hashSeed.utf8 { folded = (folded &* 33) &+ UInt64(byte) }
         folded = (folded &* 33) &+ UInt64(slotIdx)
         return arr[Int(folded % UInt64(arr.count))]
+    }
+
+    // MARK: - Superset structure (D4)
+
+    /// Antagonist movement-pattern pairs that make natural supersets — push
+    /// against pull, extension against flexion. Alternating sets between two
+    /// non-competing muscle groups is the standard time-saver the bundled
+    /// routines already use. Symmetric (both directions present).
+    static let antagonistPatterns: [String: String] = [
+        "horizontal-push": "horizontal-pull",
+        "horizontal-pull": "horizontal-push",
+        "vertical-push": "vertical-pull",
+        "vertical-pull": "vertical-push",
+        "elbow-extension": "elbow-flexion",
+        "elbow-flexion": "elbow-extension",
+        "scapular-protraction": "scapular-retraction",
+        "scapular-retraction": "scapular-protraction",
+    ]
+
+    /// Pair antagonist movements into supersets. The top heavy compound
+    /// (index 0) is left solo — a max-effort primary lift gets straight sets
+    /// with full rest, not a superset. Walks the remaining picks in order;
+    /// each unpaired exercise whose pattern has an antagonist is grouped with
+    /// the next unpaired pick carrying that antagonist pattern.
+    ///
+    /// Deterministic (order-driven), additive (sets / reps / rest untouched),
+    /// and a no-op for single-emphasis days — a push day has no pulls to pair
+    /// with, so it stays flat. This is exactly the G6 target: "≥1 superset
+    /// where appropriate" (upper / full-body days get a pair; push / pull /
+    /// leg days don't). Internal for direct unit testing.
+    static func assignAntagonistSupersets(_ picks: [GeneratedExercise]) -> [GeneratedExercise] {
+        guard picks.count > 2 else { return picks }
+        var out = picks
+        var nextGroup = 1
+        var paired = Set<Int>()
+        for i in 1..<out.count where !paired.contains(i) {
+            guard let pattern = out[i].pattern,
+                  let want = antagonistPatterns[pattern] else { continue }
+            guard let j = (i + 1 ..< out.count).first(where: { k in
+                !paired.contains(k) && out[k].pattern == want
+            }) else { continue }
+            out[i].supersetGroup = nextGroup
+            out[j].supersetGroup = nextGroup
+            paired.insert(i)
+            paired.insert(j)
+            nextGroup += 1
+        }
+        return out
     }
 
     // MARK: - Prescription
