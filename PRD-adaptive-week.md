@@ -174,9 +174,20 @@ or no valid rest day) — budget-exhausted and missing-day cases return false
 stays in one place. 5 unit tests. With `WeekConsolidator`, D3's **decision
 layer is now complete** (when to consolidate + how).
 
-**Integration remains:** generating the merged-focus workout in
-`WorkoutGenerator` (primary recipe + the secondary's key compound), the
-1/week cap + apply path on `PlanStore`, and the D2 consultative-miss UI.
+The **merged-focus generator** also shipped:
+`WorkoutGenerator.generateConsolidated(_:…)` turns a `ConsolidatedDay` into
+a workout — a solo day is an ordinary forced-focus lift; a merged day
+generates the primary recipe plus the secondary focus's lead compound,
+grafted as an extra slot (the core loop's `extraSlots` param). The budget
+drop trims the primary's optional accessories first, so both focuses'
+compounds survive. 2 tests; ordinary generation is byte-identical
+(extraSlots defaults to empty).
+
+**Integration remains:** the 1/week consolidation cap + apply path on
+`PlanStore` (turn a `ConsolidatedDay[]` into `PlanEdit`s, gated by a
+counter that mirrors the 2/week reshuffle cap), and the D2
+consultative-miss UI (offer reshuffle-vs-consolidate, wired to
+`shouldOfferConsolidation`).
 
 ### D4 — "Workouts need to be better"
 

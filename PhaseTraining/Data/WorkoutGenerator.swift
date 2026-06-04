@@ -82,6 +82,43 @@ enum WorkoutGenerator {
                         context: context, strategy: strategy)
     }
 
+    /// Generate a workout for a consolidated (merged) day — the D3 layer over
+    /// `WeekConsolidator`. A solo day (`secondary == nil`) is an ordinary
+    /// forced-focus lift. A merged day generates the primary focus's recipe
+    /// PLUS the secondary focus's lead (first required) compound, grafted as an
+    /// extra slot. The core loop's time-budget drop trims the primary's
+    /// optional accessories first, so the merged day keeps both focuses'
+    /// compounds and stays within the session budget.
+    static func generateConsolidated(
+        _ day: WeekConsolidator.ConsolidatedDay,
+        liftIndex: Int = 0,
+        totalLifts: Int,
+        memory: TrainingMemory,
+        profile: DemographicProfile,
+        hashSeed: String,
+        recentlyPicked: Set<Int> = [],
+        context: GeneratorContext = .empty,
+        strategy: GeneratorStrategy = .auto
+    ) -> GeneratedWorkout {
+        guard let secondary = day.secondary else {
+            // Solo day — force the focus through the normal path.
+            var strat = strategy
+            strat.focus = day.primary
+            return generateLift(
+                liftIndex: liftIndex, totalLifts: totalLifts, memory: memory,
+                profile: profile, hashSeed: hashSeed, recentlyPicked: recentlyPicked,
+                context: context, strategy: strat)
+        }
+        // Merged day — primary recipe + the secondary focus's lead compound.
+        let extra = secondary.slots.first(where: { !$0.optional }).map { [$0] } ?? []
+        var workout = generate(
+            focus: day.primary, memory: memory, profile: profile, hashSeed: hashSeed,
+            liftIndex: liftIndex, totalLifts: totalLifts, recentlyPicked: recentlyPicked,
+            context: context, strategy: strategy, extraSlots: extra)
+        workout.title = "\(day.primary.title) + \(secondary.title)"
+        return workout
+    }
+
     // MARK: - Core loop
 
     private static func generate(
@@ -93,7 +130,8 @@ enum WorkoutGenerator {
         totalLifts: Int,
         recentlyPicked: Set<Int>,
         context: GeneratorContext = .empty,
-        strategy: GeneratorStrategy = .auto
+        strategy: GeneratorStrategy = .auto,
+        extraSlots: [PatternSlot] = []
     ) -> GeneratedWorkout {
         // Strategy's duration override beats memory's default. Clamped to
         // [15, 180] so a hallucinated 9999 doesn't produce a 10-hour workout.
@@ -112,7 +150,13 @@ enum WorkoutGenerator {
         let envs = profile.allowedEnvironments
         let excludeKws = profile.excludedNameKeywords + memory.dislikes.map { $0.lowercased() }
 
-        for (slotIdx, slot) in focus.slots.enumerated() {
+        // `extraSlots` are appended after the focus's own recipe (D3 — a
+        // consolidated/merged day grafts the secondary focus's lead compound).
+        // They take later slotIdx values, so the budget loop below trims the
+        // primary's optional accessories before them (trim accessory before
+        // compound). Empty for every ordinary single-focus generation, so that
+        // output is byte-identical to before.
+        for (slotIdx, slot) in (focus.slots + extraSlots).enumerated() {
             guard let initial = pickForSlot(
                 slot: slot,
                 slotIdx: slotIdx,

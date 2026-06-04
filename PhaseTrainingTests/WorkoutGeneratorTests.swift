@@ -224,6 +224,45 @@ final class WorkoutGeneratorTests: XCTestCase {
             "finisher (\(finishers[0].reps)) should be higher-rep than the primary compound (\(w.exercises[0].reps))")
     }
 
+    // MARK: - Consolidated (merged) day generation (D3)
+
+    func test_generateConsolidated_mergedDay_includesBothFocuses() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.focuses = [.hypertrophy]
+        m.sessionMinutes = 75   // room for both focuses' compounds
+        let p = DemographicProfile.from(m)
+        let day = WeekConsolidator.ConsolidatedDay(primary: .legs, secondary: .push)
+        let w = WorkoutGenerator.generateConsolidated(
+            day, totalLifts: 2, memory: m, profile: p, hashSeed: "merged-legs-push")
+
+        let patterns = Set(w.exercises.compactMap(\.pattern))
+        XCTAssertTrue(patterns.contains("squat") || patterns.contains("hip-hinge"),
+                      "merged day should keep a primary leg compound; got \(patterns)")
+        XCTAssertTrue(patterns.contains("horizontal-push"),
+                      "merged day should graft the secondary push compound; got \(patterns)")
+        XCTAssertTrue(w.title.contains("+"), "merged day title should name both focuses")
+    }
+
+    func test_generateConsolidated_soloDay_isNormalWorkout() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.focuses = [.hypertrophy]
+        m.sessionMinutes = 60
+        let p = DemographicProfile.from(m)
+        let day = WeekConsolidator.ConsolidatedDay(primary: .push, secondary: nil)
+        let w = WorkoutGenerator.generateConsolidated(
+            day, totalLifts: 3, memory: m, profile: p, hashSeed: "solo-push")
+
+        XCTAssertFalse(w.exercises.isEmpty)
+        let patterns = Set(w.exercises.compactMap(\.pattern))
+        XCTAssertTrue(patterns.contains("horizontal-push"),
+                      "solo push day should include a horizontal push; got \(patterns)")
+        XCTAssertFalse(w.title.contains("+"), "solo day title is single-focus")
+    }
+
     // MARK: - Profile-driven prescription
 
     func test_beginnerGetsAtMost3Sets() {
