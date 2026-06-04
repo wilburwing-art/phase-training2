@@ -1077,6 +1077,20 @@ enum WorkoutGenerator {
             restSec = max(restSec, 120)
         }
 
+        // Rest differentiates COMPOUNDS from ISOLATIONS by movement type, not
+        // just by slot position. The primary bumps above cover slot 0; a
+        // SECONDARY compound (RDL, row, lunge) otherwise inherits the accessory
+        // rest floor — the same as an isolation — which eval-rig Q7 (rest
+        // differentiation, graded on every multi-archetype rubric) flags. Lift
+        // secondary compounds to the focus's primary-rest tier so every
+        // compound rests longer than every isolation. Isolations are untouched;
+        // the extra per-set time still flows through the loop's time-budget
+        // check, which drops optional slots to keep the session in budget.
+        if isCompound, !isPrimary,
+           let primaryRest = focusBias(memory.primaryFocus, isPrimary: true)?.restSec {
+            restSec = max(restSec, primaryRest)
+        }
+
         // Phase-1 era-affinity rep-range nudge.
         //
         // Only applies when memory.primaryFocus is .hypertrophy — that's

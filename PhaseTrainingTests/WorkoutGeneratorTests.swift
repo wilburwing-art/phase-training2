@@ -165,6 +165,33 @@ final class WorkoutGeneratorTests: XCTestCase {
                        "supersetGroup must survive the GeneratedWorkout → WorkoutTemplate bridge")
     }
 
+    // MARK: - Rest differentiation (eval-rig Q7)
+
+    func test_secondaryCompound_restsLongerThanIsolation() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.focuses = [.hypertrophy]
+        m.sessionMinutes = 60
+        let p = DemographicProfile.from(m)
+        // Force a lower day (squat + RDL + lunge + calf/leg-curl isolation) so
+        // there are both secondary compounds and isolations to compare.
+        var strat = GeneratorStrategy.auto
+        strat.focus = .lower
+        let w = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 4, memory: m, profile: p,
+            hashSeed: "rest-diff-q7", strategy: strat)
+
+        let isoRests = w.exercises.filter { !$0.isCompound }.map(\.restSeconds)
+        let secondaryCompounds = Array(w.exercises.dropFirst()).filter { $0.isCompound }
+        XCTAssertFalse(secondaryCompounds.isEmpty, "lower day should have secondary compounds")
+        let maxIso = isoRests.max() ?? 0
+        for ex in secondaryCompounds {
+            XCTAssertGreaterThan(ex.restSeconds, maxIso,
+                "secondary compound \(ex.name) (\(ex.restSeconds)s) must rest longer than isolations (\(maxIso)s) — Q7 differentiation")
+        }
+    }
+
     // MARK: - Profile-driven prescription
 
     func test_beginnerGetsAtMost3Sets() {

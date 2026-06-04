@@ -181,7 +181,18 @@ Status (2026-06-04): **supersets shipped.**
 compound stays solo; single-emphasis days correctly get none.
 `GeneratedExercise.supersetGroup` now propagates through
 `toWorkoutTemplate` → `ExerciseTemplate` → `LoggedExercise`. Covered by 5
-tests in `WorkoutGeneratorTests`. Rep-band curve + finisher still pending.
+tests in `WorkoutGeneratorTests`.
+
+Rep-band curve + finisher: **deprioritized** after an eval-rig baseline of
+the non-anchor archetypes (lower/pull). Coverage (Q2) + order (Q4) already
+pass, and no rubric question grades a rep-band curve — so Part B isn't
+measurable without authoring one (`eval-rig-author-new-archetype-rubric`).
+The baseline's *actual* finding was **Q7 (rest differentiation)**: secondary
+compounds rested like isolations (60s). Fixed in `WorkoutGenerator` —
+non-primary compounds are lifted to the focus's primary-rest tier — taking
+lower + pull from 7→8/9, anchor maintained. The export harness also had to
+be corrected: the age-derived era `splitPreference` was hijacking the
+`liftIndex`→focus mapping, so non-anchor exports were mislabeled.
 
 Scope (measurable per G6):
 
