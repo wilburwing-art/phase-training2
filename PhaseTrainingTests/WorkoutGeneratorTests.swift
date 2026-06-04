@@ -626,6 +626,114 @@ final class WorkoutGeneratorTests: XCTestCase {
             "Accessory layer is additive; hypertrophy push must not have fewer exercises than general-strength push")
     }
 
+    // MARK: - T0.1 accessory layer honors context-driven regulators
+
+    /// Intermediate hypertrophy user on a push day — the upper-push accessory
+    /// layer fires Cable Lateral Raise (side delt) + Rope Pushdown (triceps).
+    private func hypertrophyPushMemory(sessionMinutes: Int = 90) -> TrainingMemory {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.sessionMinutes = sessionMinutes
+        m.focuses = [.hypertrophy]
+        return m
+    }
+
+    /// Appended accessory rows are tagged with a "hypaccess" id prefix
+    /// (makeAccessoryRow), which isolates them from normal slot picks.
+    private func accessoryRows(_ w: GeneratedWorkout) -> [GeneratedExercise] {
+        w.exercises.filter { $0.id.contains("hypaccess") }
+    }
+
+    /// Sore-area exclusion must reach the accessory layer. With both shoulders
+    /// and triceps flagged sore, neither canonical upper-push accessory (side
+    /// delt → shoulders, pushdown → triceps) may append.
+    func test_accessoryLayer_respectsSoreExclusion() throws {
+        let m = hypertrophyPushMemory()
+        let p = DemographicProfile.from(m)
+        let baseline = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: p, hashSeed: m.planInputsHash, context: .empty)
+        try XCTSkipIf(accessoryRows(baseline).isEmpty,
+            "Baseline push day appended no accessories; nothing to exclude")
+
+        var sore = GeneratorContext.empty
+        sore.recentSoreAreas = ["shoulders", "triceps"]
+        let soreW = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: p, hashSeed: m.planInputsHash, context: sore)
+        XCTAssertTrue(accessoryRows(soreW).isEmpty,
+            "Sore shoulders+triceps must suppress the upper-push accessory layer; got: \(accessoryRows(soreW).map { $0.name })")
+    }
+
+    /// Readiness × deload set scaling must reach the accessory layer. A
+    /// detrained user (readinessScore 0.0 → 0.6× sets) gets fewer accessory
+    /// sets than a full-readiness baseline, same as the main slot loop.
+    func test_accessoryLayer_respectsReadinessSetScaling() throws {
+        let m = hypertrophyPushMemory()
+        let p = DemographicProfile.from(m)
+        let baseAcc = accessoryRows(WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: p, hashSeed: m.planInputsHash, context: .empty))
+        try XCTSkipIf(baseAcc.isEmpty, "No accessory to scale")
+
+        var low = GeneratorContext.empty
+        low.hasReadinessData = true
+        low.readinessScore = 0.0
+        let lowAcc = accessoryRows(WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: p, hashSeed: m.planInputsHash, context: low))
+
+        // Readiness changes set count, not selection — same exercises, in order.
+        XCTAssertEqual(lowAcc.count, baseAcc.count, "selection should be unchanged")
+        var anyDropped = false
+        for (base, scaled) in zip(baseAcc, lowAcc) {
+            XCTAssertEqual(scaled.exerciseId, base.exerciseId)
+            XCTAssertLessThanOrEqual(scaled.sets, base.sets,
+                "Accessory \(base.name) sets must not grow at readiness 0.0")
+            if scaled.sets < base.sets { anyDropped = true }
+        }
+        XCTAssertTrue(anyDropped,
+            "readiness 0.0 should reduce at least one accessory's set count")
+    }
+
+    /// Dislike keywords must reach the accessory layer. Whatever the baseline
+    /// accessory layer appended (a hypaccess-tagged row, so ONLY the accessory
+    /// layer could have produced it), disliking its name must drop that exact
+    /// exercise — pre-fix the layer ignored excludeKws and kept it.
+    func test_accessoryLayer_respectsDislikeKeywords() throws {
+        let m = hypertrophyPushMemory()
+        let baseAcc = accessoryRows(WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: .from(m), hashSeed: m.planInputsHash, context: .empty))
+        let target = baseAcc.first
+        try XCTSkipIf(target == nil, "No accessory appended; nothing to dislike")
+
+        var disliked = m
+        disliked.dislikes = [target!.name.lowercased()]
+        let dW = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: disliked, profile: .from(disliked), hashSeed: disliked.planInputsHash, context: .empty)
+        XCTAssertFalse(dW.exercises.contains { $0.exerciseId == target!.exerciseId },
+            "Disliking '\(target!.name)' must drop it from the accessory layer; got: \(dW.exercises.map { $0.name })")
+    }
+
+    /// The duration budget must gate the accessory append. A 20-minute push
+    /// day can't fit the appended isolation that a 120-minute day does.
+    func test_accessoryLayer_respectsDurationBudget() throws {
+        let big = hypertrophyPushMemory(sessionMinutes: 120)
+        let small = hypertrophyPushMemory(sessionMinutes: 20)
+        let bigAcc = accessoryRows(WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: big, profile: .from(big), hashSeed: big.planInputsHash, context: .empty))
+        let smallAcc = accessoryRows(WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: small, profile: .from(small), hashSeed: small.planInputsHash, context: .empty))
+        try XCTSkipIf(bigAcc.isEmpty, "120-min push day appended no accessories; budget test is moot")
+        XCTAssertLessThan(smallAcc.count, bigAcc.count,
+            "20-min day must drop accessories the 120-min day keeps (budget gate)")
+    }
+
     // MARK: - Stagnation swap
 
     /// When `context.stagnantExercises` includes an exercise the generator

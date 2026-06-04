@@ -300,35 +300,52 @@ enum WorkoutGenerator {
             }
         }()
         let isLowerBody: Bool = (focus == .legs || focus == .lower)
-        if memory.primaryFocus == .hypertrophy && isUpperPush {
-            let appended = appendHypertrophyUpperPushAccessories(
-                memory: memory,
-                profile: profile,
-                hashSeed: hashSeed,
-                existingPicks: picks,
-                excludedIds: pickedIds,
-                strategy: strategy
-            )
+        // The accessory layer is a parallel pick/prescribe path, so it must
+        // honor the SAME context-driven regulators the main slot loop applies,
+        // or appended isolation work punches through every safeguard (T0.1):
+        //  - readiness × deload set multiplier (same formula as WG:200-208)
+        //  - sore-area exclusion (context.recentSoreAreas)
+        //  - dislike keywords (excludeKws)
+        //  - the duration budget
+        // Injury + env/equipment are already respected via `pickedIds`.
+        let accessorySetsMul = (context.hasReadinessData
+            ? lerp(0.6, 1.0, context.readinessScore)
+            : 1.0) * strategy.intensityBias.setsMultiplier
+        let appendAccessories: ([(generated: GeneratedExercise, durSec: Int)]) -> Void = { appended in
             for ex in appended {
+                // Accessories are inherently optional — drop any that bust the
+                // budget rather than overrun (mirrors the main-loop gate, WG:220).
+                if elapsedSec + ex.durSec > budgetSec, !picks.isEmpty { continue }
                 picks.append(ex.generated)
                 pickedIds.insert(ex.generated.exerciseId)
                 elapsedSec += ex.durSec
             }
         }
-        if memory.primaryFocus == .hypertrophy && isLowerBody {
-            let appended = appendHypertrophyLowerBodyAccessories(
+        if memory.primaryFocus == .hypertrophy && isUpperPush {
+            appendAccessories(appendHypertrophyUpperPushAccessories(
                 memory: memory,
                 profile: profile,
                 hashSeed: hashSeed,
                 existingPicks: picks,
                 excludedIds: pickedIds,
+                excludeKws: excludeKws,
+                soreAreas: context.recentSoreAreas,
+                setsMultiplier: accessorySetsMul,
                 strategy: strategy
-            )
-            for ex in appended {
-                picks.append(ex.generated)
-                pickedIds.insert(ex.generated.exerciseId)
-                elapsedSec += ex.durSec
-            }
+            ))
+        }
+        if memory.primaryFocus == .hypertrophy && isLowerBody {
+            appendAccessories(appendHypertrophyLowerBodyAccessories(
+                memory: memory,
+                profile: profile,
+                hashSeed: hashSeed,
+                existingPicks: picks,
+                excludedIds: pickedIds,
+                excludeKws: excludeKws,
+                soreAreas: context.recentSoreAreas,
+                setsMultiplier: accessorySetsMul,
+                strategy: strategy
+            ))
         }
 
         // D4 session structure — pair antagonist movements into supersets.
@@ -757,6 +774,9 @@ enum WorkoutGenerator {
         hashSeed: String,
         existingPicks: [GeneratedExercise],
         excludedIds: Set<Int>,
+        excludeKws: [String],
+        soreAreas: Set<String>,
+        setsMultiplier: Double,
         strategy: GeneratorStrategy
     ) -> [(generated: GeneratedExercise, durSec: Int)] {
         var out: [(GeneratedExercise, Int)] = []
@@ -772,20 +792,24 @@ enum WorkoutGenerator {
         // and matches the eval-rig accessory layer's stock entry.
         if !existingMuscles.contains("delt-lateral") && !existingMuscles.contains("delt-posterior") {
             if let ex = pickAccessoryByName(["Cable Lateral Raise", "Dumbbell Lateral Raise", "Bodybuilder Lateral Raise (Myo-Reps)"],
-                                            profile: profile, excludedIds: excludedIds) {
+                                            profile: profile, excludedIds: excludedIds,
+                                            excludeKws: excludeKws, soreAreas: soreAreas) {
                 out.append(makeAccessoryRow(ex: ex, slotIdx: existingPicks.count + out.count,
                                             memory: memory, profile: profile,
-                                            hashSeed: hashSeed, strategy: strategy))
+                                            hashSeed: hashSeed, setsMultiplier: setsMultiplier,
+                                            strategy: strategy))
             }
         }
 
         // Tricep isolation accessory — Rope Pushdown.
         if !existingMuscles.contains("triceps") {
             if let ex = pickAccessoryByName(["Rope Pushdown", "Overhead Cable Triceps Extension", "Skull Crusher"],
-                                            profile: profile, excludedIds: excludedIds) {
+                                            profile: profile, excludedIds: excludedIds,
+                                            excludeKws: excludeKws, soreAreas: soreAreas) {
                 out.append(makeAccessoryRow(ex: ex, slotIdx: existingPicks.count + out.count,
                                             memory: memory, profile: profile,
-                                            hashSeed: hashSeed, strategy: strategy))
+                                            hashSeed: hashSeed, setsMultiplier: setsMultiplier,
+                                            strategy: strategy))
             }
         }
 
@@ -805,6 +829,9 @@ enum WorkoutGenerator {
         hashSeed: String,
         existingPicks: [GeneratedExercise],
         excludedIds: Set<Int>,
+        excludeKws: [String],
+        soreAreas: Set<String>,
+        setsMultiplier: Double,
         strategy: GeneratorStrategy
     ) -> [(generated: GeneratedExercise, durSec: Int)] {
         var out: [(GeneratedExercise, Int)] = []
@@ -814,10 +841,12 @@ enum WorkoutGenerator {
         // is a near-twin fallback when the gym only has the seated machine.
         if !existingMuscles.contains("hamstrings") {
             if let ex = pickAccessoryByName(["Lying Leg Curl", "Seated Leg Curl"],
-                                            profile: profile, excludedIds: excludedIds) {
+                                            profile: profile, excludedIds: excludedIds,
+                                            excludeKws: excludeKws, soreAreas: soreAreas) {
                 out.append(makeAccessoryRow(ex: ex, slotIdx: existingPicks.count + out.count,
                                             memory: memory, profile: profile,
-                                            hashSeed: hashSeed, strategy: strategy))
+                                            hashSeed: hashSeed, setsMultiplier: setsMultiplier,
+                                            strategy: strategy))
             }
         }
 
@@ -828,10 +857,12 @@ enum WorkoutGenerator {
         // misses an already-present calf isolation slot and double-appends.
         if existingMuscles.isDisjoint(with: ["calves", "gastrocnemius", "soleus"]) {
             if let ex = pickAccessoryByName(["Standing Calf Raise", "Seated Calf Raise"],
-                                            profile: profile, excludedIds: excludedIds) {
+                                            profile: profile, excludedIds: excludedIds,
+                                            excludeKws: excludeKws, soreAreas: soreAreas) {
                 out.append(makeAccessoryRow(ex: ex, slotIdx: existingPicks.count + out.count,
                                             memory: memory, profile: profile,
-                                            hashSeed: hashSeed, strategy: strategy))
+                                            hashSeed: hashSeed, setsMultiplier: setsMultiplier,
+                                            strategy: strategy))
             }
         }
 
@@ -858,7 +889,9 @@ enum WorkoutGenerator {
     private static func pickAccessoryByName(
         _ names: [String],
         profile: DemographicProfile,
-        excludedIds: Set<Int>
+        excludedIds: Set<Int>,
+        excludeKws: [String],
+        soreAreas: Set<String>
     ) -> Exercise? {
         for name in names {
             // listExercises does a LIKE name search; filter to exact match
@@ -866,6 +899,14 @@ enum WorkoutGenerator {
             let candidates = CoachDatabase.shared.listExercises(search: name)
             guard let ex = candidates.first(where: { $0.name == name }) else { continue }
             if excludedIds.contains(ex.id) { continue }
+            // Dislike-keyword filter — mirror the main slot loop (WG:606): the
+            // canonical names ("Cable Lateral Raise", "Rope Pushdown") match a
+            // disliked 'cable' / 'machine' keyword, so honor it here too.
+            let lowerName = ex.name.lowercased()
+            if excludeKws.contains(where: { lowerName.contains($0) }) { continue }
+            // Sore-area exclude — same slug→bucket bridge as applySoreFilter
+            // (WG:392). Don't append isolation onto a muscle the user flagged sore.
+            if !soreAreas.isEmpty, !soreBuckets(forExerciseId: ex.id).isDisjoint(with: soreAreas) { continue }
             // Env filter: empty envs = no restriction.
             if !profile.allowedEnvironments.isEmpty,
                let env = ex.environment, !env.isEmpty,
@@ -879,6 +920,17 @@ enum WorkoutGenerator {
             return ex
         }
         return nil
+    }
+
+    /// MuscleBucket rawValues an exercise's primary muscles map to — the same
+    /// slug→bucket bridge `applySoreFilter` (WG:392) uses, factored out so the
+    /// accessory layer can reuse it. Primary role preferred; falls back to all
+    /// tagged muscles when none is marked primary.
+    private static func soreBuckets(forExerciseId id: Int) -> Set<String> {
+        let muscles = CoachDatabase.shared.musclesForExercise(id)
+        let primary = muscles.filter { $0.role == "primary" }
+        let slugs = primary.isEmpty ? muscles.map(\.slug) : primary.map(\.slug)
+        return Set(slugs.compactMap { MuscleBucket.bucket(forSlug: $0)?.rawValue })
     }
 
     /// Rep band for the auto-appended isolation FINISHER (D4 part B/C —
@@ -900,6 +952,7 @@ enum WorkoutGenerator {
         memory: TrainingMemory,
         profile: DemographicProfile,
         hashSeed: String,
+        setsMultiplier: Double,
         strategy: GeneratorStrategy
     ) -> (GeneratedExercise, Int) {
         // slotIdx is past primary-compound territory, so prescription will
@@ -907,15 +960,21 @@ enum WorkoutGenerator {
         // sets + rest but override reps: this appended isolation is the day's
         // FINISHER, so it takes the high-rep finisher band (part B/C — the day
         // descends compound → accessory → finisher).
-        let (sets, _, restSec) = prescription(
+        let (baseSets, _, restSec) = prescription(
             for: ex,
             slotIdx: slotIdx,
             focus: .push,   // any non-mobility focus works — the prescription doesn't branch on push vs upper here
             memory: memory,
             profile: profile
         )
+        // Scale by the readiness × deload multiplier, same clamp as the main
+        // slot loop (WG:209), so a low-readiness or deload day cuts accessory
+        // volume too instead of leaving it at full sets (T0.1).
+        let sets = max(1, min(8, Int((Double(baseSets) * setsMultiplier).rounded())))
         let reps = finisherRepBand
-        let durSec = sets * (45 + restSec) + 30
+        // Budget cost uses PRE-multiplier sets so a deload doesn't free up time
+        // for more accessories — mirrors the main loop's baseDurSec (WG:215).
+        let durSec = baseSets * (45 + restSec) + 30
         let (rpe, tempo) = rpeTempoHints(
             for: ex,
             slotIdx: slotIdx,
