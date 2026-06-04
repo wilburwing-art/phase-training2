@@ -183,6 +183,12 @@ drop trims the primary's optional accessories first, so both focuses'
 compounds survive. 2 tests; ordinary generation is byte-identical
 (extraSlots defaults to empty).
 
+The **focus-recovery blocker is resolved**: `GeneratedWorkout.focus` is now
+persisted (set wherever `WorkoutGenerator.generate` produces a lift day; nil
+for templates / legacy plans), so the apply path reads each live lift day's
+actual focus instead of re-deriving it (no era-`splitPreference` drift —
+see `phase-training-dayplan-focus-not-persisted`).
+
 **Integration remains:** the 1/week consolidation cap + apply path on
 `PlanStore` (turn a `ConsolidatedDay[]` into `PlanEdit`s, gated by a
 counter that mirrors the 2/week reshuffle cap), and the D2

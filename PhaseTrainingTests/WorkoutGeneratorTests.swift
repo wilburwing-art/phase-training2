@@ -263,6 +263,27 @@ final class WorkoutGeneratorTests: XCTestCase {
         XCTAssertFalse(w.title.contains("+"), "solo day title is single-focus")
     }
 
+    func test_generatedWorkout_persistsFocus() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.focuses = [.hypertrophy]
+        m.sessionMinutes = 60
+        let p = DemographicProfile.from(m)
+        var strat = GeneratorStrategy.auto
+        strat.focus = .pull
+        let solo = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3, memory: m, profile: p,
+            hashSeed: "persist-focus", strategy: strat)
+        XCTAssertEqual(solo.focus, .pull,
+                       "generated workout should persist its WorkoutFocus, not just a title")
+
+        let merged = WorkoutGenerator.generateConsolidated(
+            .init(primary: .legs, secondary: .push), totalLifts: 2,
+            memory: m, profile: p, hashSeed: "persist-focus-merged")
+        XCTAssertEqual(merged.focus, .legs, "a merged day's focus is its primary")
+    }
+
     // MARK: - Profile-driven prescription
 
     func test_beginnerGetsAtMost3Sets() {

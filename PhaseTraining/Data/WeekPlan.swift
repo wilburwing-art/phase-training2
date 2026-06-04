@@ -107,6 +107,13 @@ struct GeneratedWorkout: Codable, Hashable {
     /// Used to skip re-refining + surface "your coach personalized this"
     /// hints in future UI passes.
     var refinedByLLMAt: Date? = nil
+    /// The WorkoutFocus this day was generated as (push / pull / legs / upper /
+    /// lower / fullBody). Persisted so focus-aware features (D3 consolidation,
+    /// split analytics) read the day's ACTUAL focus instead of re-deriving it —
+    /// derivation drifts from the era `splitPreference` override. nil for
+    /// non-lift generations (bodyweight/outOfTown templates, hardcoded
+    /// templates) and for plans saved before this field existed.
+    var focus: WorkoutFocus? = nil
 }
 
 /// Why this exercise ended up in the workout. Default is `.recipe` — the

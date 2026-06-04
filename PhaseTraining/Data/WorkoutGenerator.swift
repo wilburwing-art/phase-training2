@@ -350,7 +350,8 @@ enum WorkoutGenerator {
             summary: summary,
             exercises: picks,
             estimatedMinutes: estMin,
-            provenance: prov
+            provenance: prov,
+            focus: focus
         )
     }
 
