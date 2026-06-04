@@ -226,6 +226,21 @@ struct WeekDayEditSheet: View {
                 .accessibilityIdentifier("week-day-focus-action")
             }
 
+            // PR 6 gap — turn a rest day into a training day. (The roadmap
+            // proposed a long-press, but long-press is taken by drag-to-swap on
+            // the Week tab, so this is a sheet action instead.) Reuses the
+            // LiftFocus picker; picking a focus calls setLiftFocus which writes
+            // a .lift override, converting the rest day to a lift.
+            if dayPlan?.kind == .rest {
+                ActionRow(
+                    title: "Add lift workout",
+                    subtitle: "Turn this rest day into a training day",
+                    icon: "plus.circle",
+                    action: { pickingLiftFocus = true }
+                )
+                .accessibilityIdentifier("week-day-add-lift-action")
+            }
+
             // PR 6 — out-of-town option. Available on any non-rest day
             // since the user might want to mark even a planned rest day
             // as travel (to hide it from "missed workout" tracking later).
