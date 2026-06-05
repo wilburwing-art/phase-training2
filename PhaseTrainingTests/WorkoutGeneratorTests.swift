@@ -870,37 +870,66 @@ final class WorkoutGeneratorTests: XCTestCase {
     /// substitutes in coach.db; mark that one stagnant and assert it's
     /// replaced. Only ~55% of catalog exercises have substitutes — if the
     /// baseline happens to pick none of them, skip rather than fail.
-    func test_stagnationSwapReplacesFlaggedExerciseWhenSubstituteExists() throws {
+    /// The stagnation swap still FIRES for a same-pattern substitute (proves
+    /// the T2.5 gate didn't break the feature), and the result stays in pattern.
+    /// Direct unit test of applyStagnationSwap for determinism.
+    func test_stagnationSwap_firesForSamePatternSub() throws {
+        // Find a catalog exercise with a substitute sharing the SAME specific
+        // movement pattern (what the post-T2.5 swap requires).
+        var target: Exercise?
+        var pattern = ""
+        for p in ["horizontal-push", "squat", "horizontal-pull", "hip-hinge", "vertical-push", "vertical-pull"] {
+            for e in CoachDatabase.shared.exercises(matchingPattern: p) {
+                let hasSamePatternSub = CoachDatabase.shared.substitutes(forExerciseId: e.id).contains { s in
+                    s.exercise.id != e.id
+                        && Set(CoachDatabase.shared.patternsForExercise(s.exercise.id)).contains(p)
+                }
+                if hasSamePatternSub { target = e; pattern = p; break }
+            }
+            if target != nil { break }
+        }
+        let orig = try XCTUnwrap(target, "no catalog exercise has a same-pattern substitute")
+
+        var ctx = GeneratorContext.empty
+        ctx.stagnantExercises = [orig.name.lowercased()]
+        let slot = PatternSlot(alternatives: [pattern], optional: false)
+        let result = WorkoutGenerator.applyStagnationSwap(
+            original: orig, context: ctx, envs: [], allowedEquipmentSlugs: [],
+            excludeKws: [], excludeIds: [], slot: slot)
+
+        XCTAssertNotEqual(result.id, orig.id,
+            "swap should fire for a same-pattern substitute (\(orig.name), pattern \(pattern))")
+        XCTAssertTrue(Set(CoachDatabase.shared.patternsForExercise(result.id)).contains(pattern),
+            "swap '\(orig.name)' → '\(result.name)' must stay in pattern '\(pattern)'")
+    }
+
+    /// A stagnation swap must stay within the slot's movement pattern (T2.5) —
+    /// no trading a pull for a push or a carry for a quad isometric. Flag every
+    /// pick stagnant, then assert any swap on a required (single-pattern) slot
+    /// shares a movement pattern with the original.
+    func test_stagnationSwap_staysInMovementPattern() {
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
         m.sessionMinutes = 60
         let p = DemographicProfile.from(m)
-
         let baseline = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: m, profile: p, hashSeed: m.planInputsHash,
-            context: .empty
-        )
-        let candidate = baseline.exercises.first { ex in
-            !CoachDatabase.shared.substitutes(forExerciseId: ex.exerciseId).isEmpty
-        }
-        try XCTSkipIf(candidate == nil,
-            "No picked baseline exercise has substitutes in coach.db; swap is a no-op")
-        let target = candidate!
-
+            liftIndex: 0, totalLifts: 3, memory: m, profile: p,
+            hashSeed: m.planInputsHash, context: .empty)
         var ctx = GeneratorContext.empty
-        ctx.stagnantExercises = [target.name.lowercased()]
+        ctx.stagnantExercises = Set(baseline.exercises.map { $0.name.lowercased() })
         let swapped = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: m, profile: p, hashSeed: m.planInputsHash,
-            context: ctx
-        )
-        // The flagged exercise should NOT appear in the swapped output at
-        // the slot it occupied; assert by id so a same-named variant is
-        // still considered a "swap to a different exercise".
-        XCTAssertFalse(swapped.exercises.contains { $0.exerciseId == target.exerciseId },
-            "Stagnation swap should have replaced '\(target.name)' (id \(target.exerciseId)) with a substitute; got: \(swapped.exercises.map { $0.name })")
+            liftIndex: 0, totalLifts: 3, memory: m, profile: p,
+            hashSeed: m.planInputsHash, context: ctx)
+        // First two slots are the required single-alternative compounds, so the
+        // original's pattern IS the slot's pattern — any swap there must overlap.
+        for (orig, now) in zip(baseline.exercises.prefix(2), swapped.exercises.prefix(2))
+        where orig.exerciseId != now.exerciseId {
+            let op = Set(CoachDatabase.shared.patternsForExercise(orig.exerciseId))
+            let np = Set(CoachDatabase.shared.patternsForExercise(now.exerciseId))
+            XCTAssertFalse(op.isDisjoint(with: np),
+                "swap '\(orig.name)' → '\(now.name)' crossed movement pattern (\(op) vs \(np))")
+        }
     }
 
     // MARK: - Duration budget

@@ -589,7 +589,7 @@ enum WorkoutGenerator {
     /// it for the highest-scoring substitute that still passes the same
     /// constraints. Returns the original pick when no acceptable swap
     /// exists. Conservative — won't bust env / dislike / injury filters.
-    private static func applyStagnationSwap(
+    static func applyStagnationSwap(
         original: Exercise,
         context: GeneratorContext,
         envs: Set<String>,
@@ -622,6 +622,13 @@ enum WorkoutGenerator {
                !slot.requiredModalities.contains(mod) {
                 continue
             }
+            // Same-movement-pattern gate (T2.5): a stagnation swap must stay
+            // within the slot's pattern. 56% of coach.db substitutions cross
+            // movement patterns (e.g. a loaded-carry → a quad isometric, a
+            // vertical-pull → a push), which would break the day's structure.
+            // Require the candidate to share a pattern with the slot.
+            let candidatePatterns = Set(CoachDatabase.shared.patternsForExercise(candidate.id))
+            if candidatePatterns.isDisjoint(with: Set(slot.alternatives)) { continue }
             return candidate
         }
         return original
