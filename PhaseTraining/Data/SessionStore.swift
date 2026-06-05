@@ -172,21 +172,32 @@ final class SessionStore: ObservableObject {
     func applyWorkoutDiffToActiveSession(_ diff: WorkoutDiff) -> Bool {
         guard var current = active else { return false }
 
-        var existing: [String: LoggedExercise] = [:]
+        // Match by stable slot id FIRST. A coach swap keeps the slot id (see
+        // WorkoutDiff.apply: "keep slot id so SessionStore session id mapping
+        // holds") precisely so the logged sets survive the swap — matching by
+        // name instead dropped + re-added the row, losing the user's work. The
+        // session's LoggedExercise.id is either the generator id (real sessions)
+        // or "gex-<id>" (rows this method added), so try both. Fall back to
+        // case-insensitive name for any row whose id doesn't line up.
+        var byId: [String: LoggedExercise] = [:]
+        var byName: [String: LoggedExercise] = [:]
         for ex in current.exercises {
-            existing[ex.name.lowercased()] = ex
+            byId[ex.id] = ex
+            byName[ex.name.lowercased()] = ex
+        }
+        func match(_ gex: GeneratedExercise) -> LoggedExercise? {
+            byId[gex.id] ?? byId["gex-\(gex.id)"] ?? byName[gex.name.lowercased()]
         }
 
         var rebuilt: [LoggedExercise] = []
-        var consumedNames = Set<String>()
+        var consumedIds = Set<String>()
 
         for gex in diff.after.exercises {
-            let key = gex.name.lowercased()
-            consumedNames.insert(key)
-
-            if let prior = existing[key] {
+            if let prior = match(gex), !consumedIds.contains(prior.id) {
+                consumedIds.insert(prior.id)
                 let reps = Int(gex.reps.prefix(while: { $0.isNumber })) ?? prior.targetReps
                 var updated = prior
+                updated.name = gex.name        // a swap changes the name; keep the logged sets
                 updated.targetSets = max(1, gex.sets)
                 updated.targetReps = reps
                 updated.rest = gex.restSeconds
@@ -214,7 +225,7 @@ final class SessionStore: ObservableObject {
             }
         }
 
-        for (key, ex) in existing where !consumedNames.contains(key) {
+        for ex in current.exercises where !consumedIds.contains(ex.id) {
             let hadWork = ex.sets.contains(where: { $0.done })
             if hadWork { rebuilt.append(ex) }
         }

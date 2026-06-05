@@ -194,4 +194,82 @@ final class SessionStoreActiveSessionApplyTests: XCTestCase {
         let diff = WorkoutDiff(before: w, after: w, changes: [], reasoning: nil)
         XCTAssertFalse(store.applyWorkoutDiffToActiveSession(diff))
     }
+
+    // MARK: - Match by id, not name (the #11 fix)
+
+    /// A swap keeps the slot id but changes the name. Matching by id preserves
+    /// the logged sets; the old name-match dropped + re-added the row, losing them.
+    func testSwapByIdPreservesLoggedSets() {
+        let store = SessionStore(defaults: defaults())
+        store.saveActive(ActiveSession(
+            templateId: "gen-test", name: "Push Day", category: "Generated", startTime: Date(),
+            exercises: [loggedExercise("gex-ex-0", "Bench Press", target: 5, doneCount: 3)],
+            feel: nil, note: nil
+        ))
+
+        let before = workout([gex("ex-0", 11, "Bench Press", sets: 5, reps: "5", rest: 180)])
+        var after = before
+        after.exercises[0] = gex("ex-0", 0, "Floor Press", sets: 5, reps: "5", rest: 180) // same id, new name
+        let diff = WorkoutDiff(before: before, after: after, changes: [], reasoning: nil)
+
+        store.applyWorkoutDiffToActiveSession(diff)
+        let exs = store.active!.exercises
+        XCTAssertEqual(exs.count, 1, "Swap updates in place — no orphaned Bench row")
+        XCTAssertEqual(exs[0].name, "Floor Press", "Name reflects the swap")
+        XCTAssertEqual(exs[0].sets.filter(\.done).count, 3, "The 3 logged sets survive the swap")
+        XCTAssertEqual(exs[0].sets.first?.weight, "135")
+    }
+
+    /// Two exercises share a name but have distinct ids — the name-keyed map
+    /// collapsed them; id-keying keeps both and preserves the worked one's sets.
+    func testDuplicateNamesNotCollapsedByIdMatch() {
+        let store = SessionStore(defaults: defaults())
+        store.saveActive(ActiveSession(
+            templateId: "gen-test", name: "Arms", category: "Generated", startTime: Date(),
+            exercises: [
+                loggedExercise("gex-ex-0", "Dumbbell Press", target: 3, doneCount: 2),  // worked
+                loggedExercise("gex-ex-1", "Dumbbell Press", target: 3, doneCount: 0),
+            ],
+            feel: nil, note: nil
+        ))
+
+        let before = workout([
+            gex("ex-0", 11, "Dumbbell Press", sets: 3, reps: "8", rest: 120),
+            gex("ex-1", 11, "Dumbbell Press", sets: 3, reps: "8", rest: 120),
+        ])
+        let diff = WorkoutDiff(before: before, after: before, changes: [], reasoning: nil)
+
+        store.applyWorkoutDiffToActiveSession(diff)
+        let exs = store.active!.exercises
+        XCTAssertEqual(exs.count, 2, "Duplicate-named rows stay separate by id")
+        XCTAssertEqual(exs.first(where: { $0.id == "gex-ex-0" })?.sets.filter(\.done).count, 2,
+                       "The worked row keeps its logged sets")
+    }
+
+    /// A genuinely new exercise (id matches nothing) is still added fresh.
+    func testGenuineAddStillAddsFreshExercise() {
+        let store = SessionStore(defaults: defaults())
+        store.saveActive(ActiveSession(
+            templateId: "gen-test", name: "Push Day", category: "Generated", startTime: Date(),
+            exercises: [loggedExercise("gex-ex-0", "Bench Press", target: 5, doneCount: 2)],
+            feel: nil, note: nil
+        ))
+
+        let before = workout([gex("ex-0", 11, "Bench Press", sets: 5, reps: "5", rest: 180)])
+        let after = workout([
+            gex("ex-0", 11, "Bench Press", sets: 5, reps: "5", rest: 180),
+            gex("ex-9", 99, "Cable Fly", sets: 3, reps: "12", rest: 90), // unmatched id → fresh add
+        ])
+        let diff = WorkoutDiff(before: before, after: after, changes: [], reasoning: nil)
+
+        store.applyWorkoutDiffToActiveSession(diff)
+        let exs = store.active!.exercises
+        XCTAssertEqual(exs.count, 2)
+        XCTAssertEqual(exs.first(where: { $0.name == "Bench Press" })?.sets.filter(\.done).count, 2,
+                       "Existing Bench keeps its logged sets")
+        let added = exs.first(where: { $0.name == "Cable Fly" })
+        XCTAssertNotNil(added, "New exercise is added")
+        XCTAssertEqual(added?.sets.count, 3)
+        XCTAssertTrue(added?.sets.allSatisfy { !$0.done } ?? false, "New exercise starts empty")
+    }
 }
