@@ -20,6 +20,11 @@ import Foundation
 enum InsightGenerator {
     private static let client = CoachClient()
 
+    /// True while a generation round-trip is in flight. Rapid foreground/
+    /// background cycles would otherwise race hasInsightForToday (the insight
+    /// is only appended once the request returns) and double-generate.
+    private static var inFlight = false
+
     /// Top-level entry. Safe to call repeatedly — internal guards make it idempotent
     /// across multiple foreground events on the same day.
     static func runIfDue(
@@ -30,6 +35,7 @@ enum InsightGenerator {
         now: Date = Date()
     ) {
         guard consentGranted else { return }
+        guard !inFlight else { return }
         guard !hasInsightForToday(memory: memoryStore.memory, now: now) else { return }
         guard hasSignal(memory: memoryStore.memory, sessions: sessionStore.savedSessions, now: now) else { return }
 
@@ -43,7 +49,9 @@ enum InsightGenerator {
             recentSoreness: memoryStore.memory.soreness
         )
 
+        inFlight = true
         Task {
+            defer { inFlight = false }
             do {
                 let result = try await client.send(
                     userMessage: insightUserPrompt,
