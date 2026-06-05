@@ -602,6 +602,7 @@ struct EventEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var title = ""
+    @State private var kind: WeekEventKind = .race
     @State private var sport: Sport? = nil
     @State private var intensity: EventIntensity = .moderate
     @State private var pickingSport = false
@@ -622,6 +623,17 @@ struct EventEditorSheet: View {
                             .background(Color.surface)
                             .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
                             .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                        section("TYPE")
+                        WrappingFlow(spacing: 8) {
+                            ForEach(WeekEventKind.allCases, id: \.self) { k in
+                                OnboardingChip(
+                                    label: k.label,
+                                    selected: kind == k,
+                                    action: { kind = k }
+                                )
+                            }
+                        }
 
                         section("SPORT (OPTIONAL)")
                         Button { pickingSport = true } label: {
@@ -705,7 +717,7 @@ struct EventEditorSheet: View {
         onSave(WeekEvent(
             date: date,
             title: title.trimmingCharacters(in: .whitespaces),
-            kind: .race,
+            kind: kind,
             sport: sport,
             intensity: intensity
         ))

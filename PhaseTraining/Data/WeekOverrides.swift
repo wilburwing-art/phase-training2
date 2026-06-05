@@ -31,6 +31,14 @@ enum WeekEventKind: String, Codable, CaseIterable {
     /// renders a bodyweight-only `.lift` DayPlan so the user still has a
     /// workout to follow without needing equipment.
     case outOfTown = "out_of_town"
+
+    var label: String {
+        switch self {
+        case .sportSession: return "Sport session"
+        case .race:         return "Race / event"
+        case .outOfTown:    return "Travel"
+        }
+    }
 }
 
 enum EventIntensity: String, Codable, CaseIterable {
