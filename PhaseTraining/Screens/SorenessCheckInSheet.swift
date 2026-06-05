@@ -27,6 +27,8 @@ struct SorenessCheckInSheet: View {
     @State private var energy: String? = nil
     @State private var severity: String? = nil
     @State private var areas: Set<String> = []
+    @State private var timeBudget: Int? = nil
+    @State private var equipmentChanged: Bool = false
     @State private var existingEntryIndex: Int? = nil
 
     // MARK: - Catalogs
@@ -41,6 +43,10 @@ struct SorenessCheckInSheet: View {
         ("none", "None"),
         ("mild", "Mild"),
         ("high", "High"),
+    ]
+
+    private static let timeBudgetOptions: [(value: Int, label: String)] = [
+        (30, "30m"), (45, "45m"), (60, "60m"), (90, "90m"),
     ]
 
     /// Muscle groups the user can flag as sore — all 11 buckets, including the
@@ -61,6 +67,8 @@ struct SorenessCheckInSheet: View {
                         energySection
                         severitySection
                         areasSection
+                        timeBudgetSection
+                        equipmentSection
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 18)
@@ -147,6 +155,41 @@ struct SorenessCheckInSheet: View {
         }
     }
 
+    private var timeBudgetSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("TIME TODAY")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                Text("(optional)")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3.opacity(0.6))
+            }
+            HStack(spacing: 6) {
+                ForEach(Self.timeBudgetOptions, id: \.value) { opt in
+                    chip(label: opt.label, active: timeBudget == opt.value) {
+                        timeBudget = (timeBudget == opt.value) ? nil : opt.value
+                    }
+                    .frame(maxWidth: .infinity)
+                    .accessibilityIdentifier("soreness-time-\(opt.value)")
+                }
+            }
+        }
+    }
+
+    private var equipmentSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("EQUIPMENT")
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            chip(label: "Different equipment today", active: equipmentChanged) {
+                equipmentChanged.toggle()
+            }
+            .frame(maxWidth: .infinity)
+            .accessibilityIdentifier("soreness-equipment-changed")
+        }
+    }
+
     // MARK: - Actions
 
     /// Energy is the only required field — areas + severity are optional.
@@ -167,8 +210,8 @@ struct SorenessCheckInSheet: View {
             soreness: severity,
             pain: false,
             areas: Array(areas).sorted(),
-            timeBudget: nil,
-            equipmentChanged: false
+            timeBudget: timeBudget,
+            equipmentChanged: equipmentChanged
         )
         memoryStore.update { mem in
             // Replace today's existing entry if we rehydrated from one, so
@@ -204,6 +247,8 @@ struct SorenessCheckInSheet: View {
         energy = entry.energy
         severity = entry.soreness
         areas = Set(entry.areas)
+        timeBudget = entry.timeBudget
+        equipmentChanged = entry.equipmentChanged
     }
 
     // MARK: - Chip primitive
