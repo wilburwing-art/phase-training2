@@ -25,6 +25,12 @@ struct SportLogSheet: View {
     @State private var intensity: EventIntensity
     @State private var note: String
 
+    // Custom duration entry — tapping the minutes value opens an alert
+    // TextField for sessions the ±5 stepper can't reach quickly. The valid
+    // range lives in the alert message so clamping isn't a silent rewrite.
+    @State private var editingDuration = false
+    @State private var durationText = ""
+
     init(date: Date,
          sport: Sport,
          existing: SportLogEntry? = nil,
@@ -71,6 +77,17 @@ struct SportLogSheet: View {
                         .foregroundStyle(Color.ink2)
                 }
             }
+            .alert("Duration", isPresented: $editingDuration) {
+                TextField("minutes", text: $durationText)
+                    .keyboardType(.numberPad)
+                Button("Cancel", role: .cancel) {}
+                Button("Save") {
+                    guard let raw = Int(durationText.trimmingCharacters(in: .whitespaces)) else { return }
+                    durationMinutes = min(600, max(5, raw))
+                }
+            } message: {
+                Text("Enter 5–600 minutes.")
+            }
         }
         .presentationBackground(Color.bg)
         .presentationDetents([.medium, .large])
@@ -107,11 +124,18 @@ struct SportLogSheet: View {
                 .buttonStyle(.plain)
                 .disabled(durationMinutes <= 5)
 
-                Text("\(durationMinutes) min")
-                    .font(.custom("SpaceGrotesk-SemiBold", size: 22))
-                    .foregroundStyle(Color.ink)
-                    .frame(minWidth: 110)
-                    .multilineTextAlignment(.center)
+                Button {
+                    durationText = String(durationMinutes)
+                    editingDuration = true
+                } label: {
+                    Text("\(durationMinutes) min")
+                        .font(.custom("SpaceGrotesk-SemiBold", size: 22))
+                        .foregroundStyle(Color.ink)
+                        .frame(minWidth: 110)
+                        .multilineTextAlignment(.center)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("sport-duration-value")
 
                 Button {
                     if durationMinutes < 600 { durationMinutes += 5 }
