@@ -33,6 +33,7 @@ enum BackupError: Error, LocalizedError {
     case write(Error)
     case read(Error)
     case schemaUnsupported(Int)
+    case restoreIncomplete
 
     var errorDescription: String? {
         switch self {
@@ -41,6 +42,7 @@ enum BackupError: Error, LocalizedError {
         case .write(let e):            return "Couldn't write the file: \(e.localizedDescription)"
         case .read(let e):             return "Couldn't read the file: \(e.localizedDescription)"
         case .schemaUnsupported(let v): return "Backup is from a newer version (schema \(v)). Update the app and try again."
+        case .restoreIncomplete:       return "Restore couldn't save everything, so your previous data was kept."
         }
     }
 }
@@ -116,17 +118,37 @@ enum BackupManager {
     static func restore(_ envelope: BackupEnvelope,
                         into defaults: UserDefaults,
                         userDB: UserDatabase = .shared) throws {
+        // Customs + saved sessions live in user.db. Restore is destructive,
+        // but must never be partial: UserDatabase writes swallow SQLite
+        // errors, so a failed insert mid-populate would silently leave the
+        // store cleared. Capture the prior rows, repopulate, verify every
+        // row landed, and put the prior rows back if any didn't — all
+        // before a single UserDefaults key is touched, so a failed restore
+        // changes nothing.
+        let priorRoutines = userDB.listRoutines()
+        let priorSessions = userDB.listSavedSessions()
+        userDB.clearAll()
+        for routine in envelope.customRoutines { userDB.save(routine) }
+        userDB.clearAllSessions()
+        for session in envelope.savedSessions { userDB.saveSession(session) }
+        if userDB.listRoutines().count != envelope.customRoutines.count
+            || userDB.listSavedSessions().count != envelope.savedSessions.count {
+            // Rollback uses the same write path as the populate, so a
+            // genuinely failing disk can defeat it too — but envelope rows
+            // that can't all land (e.g. colliding primary keys) leave the
+            // prior data intact.
+            userDB.clearAll()
+            for routine in priorRoutines { userDB.save(routine) }
+            userDB.clearAllSessions()
+            for session in priorSessions { userDB.saveSession(session) }
+            throw BackupError.restoreIncomplete
+        }
+
         try encodeAndWrite(envelope.memory, defaults: defaults, key: "pt_training_memory")
         try encodeAndWrite(envelope.activeSession, defaults: defaults, key: "pt_active_session")
         try encodeAndWrite(envelope.plan, defaults: defaults, key: "pt_week_plan")
         try encodeAndWrite(envelope.overrides, defaults: defaults, key: "pt_week_overrides")
         defaults.set(envelope.reminderEnabled, forKey: "pt_weekly_reminder_enabled")
-
-        // Customs + saved sessions live in user.db. Restore is destructive.
-        userDB.clearAll()
-        for routine in envelope.customRoutines { userDB.save(routine) }
-        userDB.clearAllSessions()
-        for session in envelope.savedSessions { userDB.saveSession(session) }
         // Wipe legacy UserDefaults keys so a stale post-migration import path
         // can never resurrect them. Idempotent.
         defaults.removeObject(forKey: "pt_sessions")

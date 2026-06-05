@@ -146,4 +146,56 @@ final class BackupManagerTests: XCTestCase {
         XCTAssertEqual(restored.memory.age, 25,
                        "Restore should overwrite the pre-existing age")
     }
+
+    // MARK: - Restore is atomic
+
+    func test_restore_failingMidway_keepsPriorData() throws {
+        let defaults = freshDefaults()
+        let userDB = UserDatabase(path: ":memory:")
+
+        // Seed prior data the failed restore must not destroy.
+        let memoryStore = MemoryStore(defaults: defaults)
+        memoryStore.update { $0.age = 50 }
+        userDB.save(CustomRoutine(
+            id: "keep", name: "Old push", exercises: [], createdAt: Date()
+        ))
+        userDB.saveSession(SavedSession(
+            templateId: "t1", name: "Push", category: "cat",
+            startTime: Date(timeIntervalSince1970: 1_000),
+            exercises: [], feel: nil, note: nil,
+            endTime: Date(timeIntervalSince1970: 4_000), duration: 3_000
+        ))
+
+        // Two sessions colliding on the start_time primary key can't both
+        // land, so the repopulate comes up short mid-way.
+        let clash = Date(timeIntervalSince1970: 9_000)
+        let dup = SavedSession(
+            templateId: "a", name: "A", category: "c",
+            startTime: clash, exercises: [], feel: nil, note: nil,
+            endTime: clash, duration: 0
+        )
+        var fresh = TrainingMemory()
+        fresh.age = 25
+        let envelope = BackupEnvelope(
+            schemaVersion: BackupEnvelope.currentSchemaVersion,
+            exportedAt: Date(),
+            memory: fresh,
+            savedSessions: [dup, dup], activeSession: nil,
+            customRoutines: [], plan: nil, overrides: nil,
+            reminderEnabled: false
+        )
+
+        XCTAssertThrowsError(try BackupManager.restore(envelope, into: defaults, userDB: userDB)) { err in
+            guard case BackupError.restoreIncomplete = err else {
+                return XCTFail("Expected restoreIncomplete, got \(err)")
+            }
+        }
+
+        // Prior rows survived the failed restore, and defaults were never
+        // touched — the DB stage aborts before any UserDefaults write.
+        XCTAssertEqual(userDB.listRoutines().map(\.id), ["keep"])
+        XCTAssertEqual(userDB.listSavedSessions().map(\.templateId), ["t1"])
+        XCTAssertEqual(MemoryStore(defaults: defaults).memory.age, 50,
+                       "A failed restore must not overwrite UserDefaults")
+    }
 }
