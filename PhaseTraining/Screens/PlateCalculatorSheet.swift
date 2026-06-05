@@ -2,15 +2,15 @@
 //
 // Build 103. Standalone utility — the user enters a target weight, picks a
 // bar weight, and the sheet shows the greedy plate stack per side plus the
-// number of plates of each denomination needed. Pure math; no persistence.
+// number of plates of each denomination needed. Pure math.
 //
 // Defaults to imperial because the imperial plate set (45/35/25/10/5/2.5) is
 // what almost every US gym ships with, but flips to metric (25/20/15/10/5/
 // 2.5/1.25) when the user's `usesImperial` is false. Bar weight defaults to
 // 45 lb / 20 kg respectively.
 //
-// Storage: none — the sheet's a leaf utility. Future "save last used" can
-// land on TrainingMemory if we get the request.
+// Storage: the last-used bar weight persists via @AppStorage so a specialty
+// bar (e.g. 55 lb) survives re-opens. Target resets every open.
 
 import SwiftUI
 
@@ -22,6 +22,10 @@ struct PlateCalculatorSheet: View {
     @State private var barText: String = ""
     @State private var imperial: Bool = true
     @FocusState private var targetFocused: Bool
+
+    /// Last-used bar weight text, persisted across opens so a non-standard
+    /// bar doesn't need re-entering every time.
+    @AppStorage("plateCalculator.barText") private var savedBarText: String = ""
 
     var body: some View {
         NavigationStack {
@@ -60,9 +64,18 @@ struct PlateCalculatorSheet: View {
         .onAppear {
             imperial = memory.memory.usesImperial
             if barText.isEmpty {
-                barText = String(format: "%g", defaultBarWeight)
+                barText = savedBarText.isEmpty
+                    ? String(format: "%g", defaultBarWeight)
+                    : savedBarText
             }
             targetFocused = true
+        }
+        .onChange(of: barText) { _, newValue in
+            // Persist only parseable values so a half-typed entry doesn't
+            // come back on the next open.
+            if BodyMetrics.parseDecimalInput(newValue) != nil {
+                savedBarText = newValue
+            }
         }
     }
 
