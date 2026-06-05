@@ -737,10 +737,12 @@ struct LogScreen: View {
             }
         }
         .padding(.vertical, 6)
-        // Warmup sets render smaller + dimmed so the working sets read as
-        // the primary content. Toggle via the contextMenu below.
+        // Warmup sets dim slightly so the working sets read as the primary
+        // content — the "W" pill carries the distinction, so keep the dim
+        // light enough that weight/reps stay readable mid-workout.
+        // Toggle via the contextMenu below.
         .font(.callout)
-        .opacity(set.isWarmup ? 0.6 : 1.0)
+        .opacity(set.isWarmup ? 0.85 : 1.0)
         .contentShape(Rectangle())
         // Tap a logged set to re-open it for editing (e.g. adding an RPE the
         // user forgot). Only fires when set.done — un-done rows already
