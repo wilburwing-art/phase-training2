@@ -201,8 +201,11 @@ struct ProgressRecoverySection: View {
 
     private func daysSinceLastWorkout() -> Int? {
         guard let last = store.savedSessions.map(\.startTime).max() else { return nil }
-        let seconds = Date().timeIntervalSince(last)
-        return max(0, Int((seconds / 86_400).rounded(.down)))
+        let cal = Calendar.current
+        let days = cal.dateComponents([.day],
+                                      from: cal.startOfDay(for: last),
+                                      to: cal.startOfDay(for: Date())).day ?? 0
+        return max(0, days)
     }
 
     static let mainSlugs: Set<String> = [
