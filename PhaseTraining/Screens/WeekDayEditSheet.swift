@@ -33,6 +33,13 @@ struct WeekDayEditSheet: View {
     /// without scrolling, especially on iPhone SE.
     @State private var pickingLiftFocus = false
     @State private var showingClearConfirm = false
+    /// One-per-day event rule: tapping an add action while the day already
+    /// holds an event routes through a replace confirmation instead of
+    /// silently clobbering it on save. Tracks which add flow to resume.
+    @State private var pendingEventReplace: PendingEventReplace? = nil
+    @State private var confirmingEventReplace = false
+
+    private enum PendingEventReplace { case sport, event }
 
     var body: some View {
         NavigationStack {
@@ -123,6 +130,15 @@ struct WeekDayEditSheet: View {
         } message: {
             Text("This removes sport sessions, events, and the unavailable mark for this day. It can't be undone.")
         }
+        .alert("Replace existing event?", isPresented: $confirmingEventReplace) {
+            Button("Replace", role: .destructive) {
+                if let pending = pendingEventReplace { proceedWithAdd(pending) }
+                pendingEventReplace = nil
+            }
+            Button("Keep", role: .cancel) { pendingEventReplace = nil }
+        } message: {
+            Text("\(currentEvent?.title ?? "An event") is already on this day. Days hold one event, so adding another replaces it.")
+        }
     }
 
     // MARK: - Header
@@ -186,14 +202,14 @@ struct WeekDayEditSheet: View {
                 title: "Add sport session",
                 subtitle: "Climb, ski, run — slot a sport on this day",
                 icon: "figure.outdoor.cycle",
-                action: { pickingSport = true }
+                action: { requestAdd(.sport) }
             )
 
             ActionRow(
                 title: "Add event or race",
                 subtitle: "Hard events trigger a taper the day before",
                 icon: "flag.checkered",
-                action: { addingEvent = true }
+                action: { requestAdd(.event) }
             )
 
             if dayPlan?.kind == .lift || dayPlan?.kind == .sport {
@@ -305,6 +321,25 @@ struct WeekDayEditSheet: View {
             } else {
                 o.unavailableDays.insert(weekday)
             }
+        }
+    }
+
+    /// Gate for the two add-event actions. If the date already holds an
+    /// event, confirm the replacement before opening the picker/editor —
+    /// addSportSession/addEvent clear the day's events on save.
+    private func requestAdd(_ pending: PendingEventReplace) {
+        if currentEvent != nil {
+            pendingEventReplace = pending
+            confirmingEventReplace = true
+        } else {
+            proceedWithAdd(pending)
+        }
+    }
+
+    private func proceedWithAdd(_ pending: PendingEventReplace) {
+        switch pending {
+        case .sport: pickingSport = true
+        case .event: addingEvent = true
         }
     }
 
