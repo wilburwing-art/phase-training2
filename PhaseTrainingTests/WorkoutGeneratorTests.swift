@@ -1008,6 +1008,27 @@ final class WorkoutGeneratorTests: XCTestCase {
             "15-min budget (\(shortW.exercises.count) ex) should drop optional slots vs 90-min (\(longW.exercises.count) ex)")
     }
 
+    /// T1.4 — a 120-min session should produce strictly more total work than
+    /// a 60-min session for identical inputs. Pre-fix the budget was dead upward:
+    /// 45 = 60 = 90 = 120 all produced the same content.
+    func test_highMinuteBudget_addsVolumeOver60min() {
+        func gen(_ mins: Int) -> GeneratedWorkout {
+            var m = TrainingMemory()
+            m.experience = .intermediate
+            m.equipment = [.fullGym]
+            m.sessionMinutes = mins
+            m.focuses = [.generalStrength]
+            return WorkoutGenerator.generateLift(
+                liftIndex: 0, totalLifts: 3, memory: m, profile: .from(m), hashSeed: "highvol")
+        }
+        let w60  = gen(60)
+        let w120 = gen(120)
+        let sets60  = w60.exercises.reduce(0)  { $0 + $1.sets }
+        let sets120 = w120.exercises.reduce(0) { $0 + $1.sets }
+        XCTAssertGreaterThan(sets120, sets60,
+            "120-min day should have strictly more total sets than 60-min (got \(sets120) vs \(sets60)); 120-min exercises: \(w120.exercises.map { "\($0.name) \($0.sets)×" })")
+    }
+
     // MARK: - Progressive overload step-up
 
     /// Pins steppedTargetLb: 2.5% snapped to the nearest 2.5 lb, floored at

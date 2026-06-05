@@ -297,6 +297,38 @@ enum WorkoutGenerator {
             }
         }
 
+        // High-minute volume tier (T1.4): the budget only *drops* optional slots
+        // when minutes are low. Mirror that upward: a generous budget earns extra
+        // work. Two tiers, both budget-gated.
+        //  ≥90 min → one additional focus-appropriate accessory slot
+        // ≥120 min → +1 set on every compound already in the workout (cap 6),
+        //             with elapsedSec updated so estimatedMinutes stays accurate.
+        if effectiveMinutes >= 90 {
+            for pattern in highMinuteAccessoryPatterns(for: focus) {
+                let slot = PatternSlot(alternatives: [pattern], optional: true)
+                guard let pick = pickForSlot(
+                    slot: slot, slotIdx: picks.count, profile: profile, envs: envs,
+                    excludeKws: excludeKws, excludeIds: pickedIds,
+                    recentlyPicked: recentlyPicked, hashSeed: hashSeed,
+                    context: context, strategy: strategy) else { continue }
+                let (row, durSec) = makePickedRow(
+                    picked: pick, slot: slot, slotIdx: picks.count, focus: focus,
+                    memory: memory, profile: profile, context: context,
+                    strategy: strategy, hashSeed: hashSeed)
+                guard elapsedSec + durSec <= budgetSec else { break }
+                picks.append(row)
+                pickedIds.insert(pick.id)
+                elapsedSec += durSec
+                break
+            }
+        }
+        if effectiveMinutes >= 120 {
+            for i in picks.indices where picks[i].isCompound {
+                picks[i].sets = min(6, picks[i].sets + 1)
+                elapsedSec += 45 + picks[i].restSeconds
+            }
+        }
+
         // D4 session structure — pair antagonist movements into supersets.
         // Additive: sets / reps / rest are untouched; only `supersetGroup`
         // is populated, and only where an antagonist pair actually co-occurs.
@@ -404,6 +436,24 @@ enum WorkoutGenerator {
             return ["scapular-protraction", "anti-extension", "elbow-extension"]
         case .legs, .lower:
             return ["anti-extension", "anti-rotation", "hip-hinge"]
+        }
+    }
+
+    /// Extra patterns the high-minute volume tier (T1.4) adds at ≥90-min
+    /// sessions — one slot beyond the focus recipe's own optional slots. Chosen
+    /// to complement each focus without duplicating what the recipe already
+    /// prescribes (the dedup is enforced by `pickedIds`, but distinct patterns
+    /// also give variety rather than a second hit of the same movement family).
+    private static func highMinuteAccessoryPatterns(for focus: WorkoutFocus) -> [String] {
+        switch focus {
+        case .push:
+            return ["elbow-flexion", "anti-rotation"]
+        case .pull:
+            return ["anti-extension", "anti-rotation"]
+        case .legs, .lower:
+            return ["hip-abduction", "anti-extension"]
+        case .upper, .fullBodyA, .fullBodyB:
+            return ["elbow-extension", "elbow-flexion", "loaded-carry"]
         }
     }
 
