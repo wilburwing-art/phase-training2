@@ -33,10 +33,11 @@ import Foundation
 
 // MARK: - EraCohort
 
-/// The five training-culture cohorts. Case order is also display order
+/// The six training-culture cohorts. Case order is also display order
 /// in any picker UI (oldest → newest).
 enum EraCohort: String, CaseIterable, Identifiable, Hashable {
-    case magazineBodybuilding = "magazine_bodybuilding"
+    case veteranStrength      = "veteran_strength"     // 70+
+    case magazineBodybuilding = "magazine_bodybuilding" // 55-69
     case tNationForum         = "t_nation_forum"
     case redditFitness        = "reddit_fitness"
     case scienceBased         = "science_based"
@@ -166,13 +167,31 @@ enum EraAffinity {
         case 20...27:  return .scienceBased
         case 28...39:  return .redditFitness
         case 40...54:  return .tNationForum
-        default:       return .magazineBodybuilding   // 55+
+        case 55...69:  return .magazineBodybuilding
+        default:       return .veteranStrength         // 70+
         }
     }
 
     /// Table lookup. Total over `EraCohort`, so this never returns nil.
     static func style(for cohort: EraCohort) -> EraStyle {
         switch cohort {
+        case .veteranStrength:
+            return EraStyle(
+                cohort: .veteranStrength,
+                displayName: "Veteran strength era",
+                narrativeBlurb: "70+ programming: power-focused low-rep compounds for neural drive, single-leg and balance work, and extra recovery built in.",
+                // Upper-lower keeps volume manageable and co-locates push/pull
+                // pairs for supersets without the fatigue of a full-body day.
+                splitPreference: [.upper, .lower, .upper, .lower],
+                // Low rep band on compounds (3-6) for power/neural drive;
+                // mid on isolations (8-12) for joint-friendly hypertrophy.
+                repRangeBias: (compound: .low, isolation: .mid),
+                aestheticTags: [.barbellFavor, .dbFavor],
+                terminologyHints: ["power", "neural drive", "movement quality",
+                                   "balance", "compound first", "controlled tempo"],
+                archetypalPrograms: ["greyskull-lp", "531-perennial", "basic-strength"]
+            )
+
         case .magazineBodybuilding:
             return EraStyle(
                 cohort: .magazineBodybuilding,

@@ -1247,6 +1247,12 @@ enum WorkoutGenerator {
         if let age = memory.age, age >= 55 {
             sets = max(1, sets - 1)
         }
+        // 70+ earns an additional set reduction on top of the 55+ one (T2.2):
+        // cumulative effect is -2 from the base, reflecting the tighter
+        // recovery window and power-over-volume programming intent.
+        if let age = memory.age, age >= 70 {
+            sets = max(1, sets - 1)
+        }
 
         // Reps + rest. Focus bias wins over per-exercise coach.db values —
         // a hypertrophy lifter should see 8-12 on every lift even if coach.db
