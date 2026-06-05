@@ -652,7 +652,7 @@ enum WorkoutGenerator {
     ///   1. LLM strategy targetWeightOverrides — explicit prescriptions ("bench at 90%").
     ///   2. priorBest → e1RM → load for the prescribed rep band, +2.5% step.
     ///   3. Nothing — no signal, no note.
-    private static func progressiveOverloadHint(
+    static func progressiveOverloadHint(
         for exercise: Exercise,
         context: GeneratorContext,
         memory: TrainingMemory,
@@ -666,6 +666,11 @@ enum WorkoutGenerator {
         }
         // Layer 2: priorBest mapped to the prescribed rep range, then stepped.
         guard let prior = context.priorBest[key] else { return nil }
+        // Bodyweight movement (weight 0): a load target is meaningless, so
+        // progress by REPS — beat the best set by one rep. (T2.1)
+        if prior.weight == 0 {
+            return prior.reps > 0 ? "target: \(prior.reps + 1) reps" : nil
+        }
         let target = progressiveTargetLb(
             priorWeight: prior.weight,
             priorReps: prior.reps,

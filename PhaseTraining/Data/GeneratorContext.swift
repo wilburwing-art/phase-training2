@@ -257,19 +257,32 @@ extension GeneratorContext {
                 // Heaviest completed set in this session.
                 // Warmup sets excluded — progressive-overload signal needs the
                 // working top set, not a warmup ramp weight.
+                let isBodyweight = ex.isBodyweight
                 var bestWeight = 0.0
                 var bestReps = 0
+                var bestBodyweightReps = 0   // best reps on a loadless bodyweight set
                 for set in ex.sets where set.done && !set.isWarmup {
                     let w = set.weightValue ?? 0
                     let r = set.repsValue ?? 0
-                    guard w > 0, r > 0 else { continue }
-                    if w > bestWeight {
-                        bestWeight = w
-                        bestReps = r
+                    guard r > 0 else { continue }
+                    if w > 0 {
+                        if w > bestWeight { bestWeight = w; bestReps = r }
+                    } else if isBodyweight {
+                        // Only a true bodyweight movement (unit == "bw") reads a
+                        // loadless set as a rep-progression signal. A 0 logged on
+                        // a loaded lift is missing data, not a bodyweight PR — so
+                        // it stays ignored, preserving the old skip-zero behavior.
+                        bestBodyweightReps = max(bestBodyweightReps, r)
                     }
                 }
                 if bestWeight > 0 {
                     out[key] = PriorBest(weight: bestWeight, reps: bestReps,
+                                         date: session.startTime)
+                } else if bestBodyweightReps > 0 {
+                    // Bodyweight movement (push-up, inverted row): no external
+                    // load to progress, so track best reps — weight 0 signals the
+                    // reps-based progression path in progressiveOverloadHint. (T2.1)
+                    out[key] = PriorBest(weight: 0, reps: bestBodyweightReps,
                                          date: session.startTime)
                 }
             }

@@ -1002,6 +1002,21 @@ final class WorkoutGeneratorTests: XCTestCase {
         XCTAssertEqual(WorkoutGenerator.steppedTargetLb(priorWeightLb: 30), 30, accuracy: 0.001)
     }
 
+    /// T2.1 — bodyweight movements (priorBest.weight == 0) progress by REPS, not
+    /// load: the hint reads "target: N+1 reps", never a pound figure. (Pre-fix
+    /// the load path ran off a 0 prior weight and produced no useful target.)
+    func test_progressiveOverloadHint_bodyweightProgressesByReps() throws {
+        let ex = try XCTUnwrap(
+            CoachDatabase.shared.exercises(matchingPattern: "horizontal-push").first,
+            "need any catalog exercise to key the hint")
+        var ctx = GeneratorContext.empty
+        ctx.priorBest[ex.name.lowercased()] = PriorBest(weight: 0, reps: 12, date: Date())
+        let hint = WorkoutGenerator.progressiveOverloadHint(
+            for: ex, context: ctx, memory: TrainingMemory(), prescribedReps: "8-12")
+        XCTAssertEqual(hint, "target: 13 reps",
+            "bodyweight prior (0 lb × 12) should target one more rep, got \(String(describing: hint))")
+    }
+
     // MARK: - Sore-area exclusion
 
     /// With quads flagged sore, no generated exercise should have a

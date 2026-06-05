@@ -41,6 +41,32 @@ final class GeneratorContextTests: XCTestCase {
         XCTAssertNil(ctx.priorBest["squat"], "no completed weighted set → no priorBest entry")
     }
 
+    /// T2.1 — a true bodyweight movement (unit "bw") logs reps with no external
+    /// load. The builder captures the best reps as a PriorBest(weight: 0) so the
+    /// generator can progress by reps. (The old path skipped weight==0 outright,
+    /// leaving every bodyweight movement with no progression signal at all.)
+    func test_priorBest_bodyweightTracksRepsNotWeight() {
+        let bw = LoggedExercise(
+            id: "Push-Up", name: "Push-Up", type: nil,
+            unit: LoggedExercise.bodyweightUnit,
+            targetSets: 3, targetReps: 12, rest: 60,
+            sets: [
+                LoggedSet(num: 1, weight: "BW", reps: "15", rpe: "", done: true),
+                LoggedSet(num: 2, weight: "BW", reps: "12", rpe: "", done: true),
+            ],
+            prevSets: [])
+        let start = Date().addingTimeInterval(-3600)
+        let session = SavedSession(
+            templateId: "t", name: "Push-Up", category: "",
+            startTime: start, exercises: [bw], feel: nil, note: nil,
+            endTime: start.addingTimeInterval(3600), duration: 3600)
+        let ctx = GeneratorContext.from(sessions: [session], soreness: [], feedback: [])
+        let pb = ctx.priorBest["push-up"]
+        XCTAssertNotNil(pb, "bodyweight movement should produce a reps-based priorBest")
+        XCTAssertEqual(pb?.weight, 0, "bodyweight priorBest carries weight 0 as the reps-mode signal")
+        XCTAssertEqual(pb?.reps, 15, "best (max) reps across done working sets")
+    }
+
     // MARK: - Builder: recentSoreAreas
 
     func test_recentSoreAreas_unionsSorenessAndFeedback() {
