@@ -350,7 +350,7 @@ struct CoachDrawer: View {
                 let stream = client.stream(
                     cachedSystem: CoachSystemPrompt.cachedHeader,
                     perTurnContext: CoachSystemPrompt.contextBlock(snapshot: snapshot),
-                    history: Array(history.dropLast()),
+                    history: Array(history),
                     userMessage: wireText,
                     tools: CoachTools.chat
                 )
