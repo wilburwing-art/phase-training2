@@ -17,9 +17,6 @@ struct CoachInsight: Codable, Identifiable, Hashable {
     var body: String
     /// "today" only in v1. Future surfaces: "week", "post-workout".
     var surface: String = "today"
-    /// Reserved for a future "review in coach" tap-through to a specific
-    /// archived conversation. Phase 13e doesn't populate it.
-    var sourceConversationId: UUID? = nil
 }
 
 extension CoachInsight {
