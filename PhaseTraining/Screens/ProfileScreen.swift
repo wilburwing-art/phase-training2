@@ -60,6 +60,9 @@ struct ProfileScreen: View {
     // by tapping the SettingsRow value cell.
     @State private var editingField: EditingField? = nil
     @State private var editingText: String = ""
+    // Transient notice shown under the edited rows when an out-of-range
+    // value gets clamped, so 999 → 120 isn't a silent rewrite.
+    @State private var clampNotice: String? = nil
 
     // Danger zone: confirm before the irreversible full data wipe.
     @State private var showEraseConfirm = false
@@ -116,6 +119,13 @@ struct ProfileScreen: View {
                                     value: liftDaysSummary,
                                     icon: "dumbbell",
                                     action: { beginEditing(.liftDays) })
+                        if let notice = clampNotice {
+                            Text(notice)
+                                .font(.monoXS)
+                                .foregroundStyle(Color.danger)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 4)
+                        }
                         SettingsRow(label: "Equipment",
                                     value: equipmentSummary,
                                     icon: "wrench.and.screwdriver",
@@ -571,6 +581,9 @@ struct ProfileScreen: View {
         defer { editingField = nil }
         guard let raw = Int(editingText.trimmingCharacters(in: .whitespaces)) else { return }
         let clamped = max(field.clamp.lowerBound, min(field.clamp.upperBound, raw))
+        clampNotice = clamped == raw
+            ? nil
+            : "\(field.title) adjusted to \(clamped) — valid range is \(field.clamp.lowerBound)–\(field.clamp.upperBound) \(field.unit)."
         store.update { mem in
             switch field {
             case .sessionMinutes: mem.sessionMinutes = clamped
@@ -735,10 +748,14 @@ struct ProfileScreen: View {
         }
     }
 
-    private func formattedShort(_ d: Date) -> String {
+    private static let shortDateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "MMM d, yyyy"
-        return f.string(from: d)
+        return f
+    }()
+
+    private func formattedShort(_ d: Date) -> String {
+        Self.shortDateFormatter.string(from: d)
     }
 }
 
