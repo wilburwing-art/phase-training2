@@ -5,7 +5,7 @@
 // as iOS Settings rows, themed with phase-training tokens.
 //
 // One row per section. Caller supplies the label + a concise value summary
-// + an action. Disabled state is for sections with no editable value (rare).
+// + an action.
 
 import SwiftUI
 
