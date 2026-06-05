@@ -58,6 +58,12 @@ struct LogScreen: View {
     /// the weight column by default so reps-only sets need zero weight taps.
     @State private var weightEntryExercises: Set<Int> = []
 
+    /// Debounce for downstream weight propagation, keyed by "exIdx-setIdx".
+    /// Without it propagateWeight fired on every keystroke, briefly pushing
+    /// partial values (1, 13, 135) into later sets while the user was still typing.
+    @State private var weightPropagateTasks: [String: Task<Void, Never>] = [:]
+    @State private var weightPropagateOld: [String: String] = [:]
+
     var body: some View {
         ZStack {
             Color.bg.ignoresSafeArea()
@@ -788,7 +794,21 @@ struct LogScreen: View {
             )
             .accessibilityIdentifier("log-set-weight-\(exIdx)-\(setIdx)")
             .onChange(of: session.exercises[exIdx].sets[setIdx].weight) { oldValue, newValue in
-                propagateWeight(exIdx: exIdx, fromSetIdx: setIdx, oldValue: oldValue, newValue: newValue)
+                // Debounce per cell: fill downstream sets only once typing
+                // pauses, so partial values (1, 13, 135) don't briefly land in
+                // later sets. Capture the pre-burst oldValue on the first change.
+                let key = "\(exIdx)-\(setIdx)"
+                if weightPropagateTasks[key] == nil { weightPropagateOld[key] = oldValue }
+                weightPropagateTasks[key]?.cancel()
+                weightPropagateTasks[key] = Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(400))
+                    if Task.isCancelled { return }
+                    propagateWeight(exIdx: exIdx, fromSetIdx: setIdx,
+                                    oldValue: weightPropagateOld[key] ?? oldValue,
+                                    newValue: newValue)
+                    weightPropagateTasks[key] = nil
+                    weightPropagateOld[key] = nil
+                }
             }
         } else {
             bodyweightCell(exIdx: exIdx, setIdx: setIdx, done: done)
@@ -1182,6 +1202,9 @@ struct LogScreen: View {
     /// into it (their edit propagates forward from there, or stops if the
     /// downstream sets have already been customized).
     private func propagateWeight(exIdx: Int, fromSetIdx: Int, oldValue: String, newValue: String) {
+        // The debounced caller can fire after an index change (delete/reorder),
+        // so guard the exercise index before touching it.
+        guard session.exercises.indices.contains(exIdx) else { return }
         let count = session.exercises[exIdx].sets.count
         guard fromSetIdx + 1 < count else { return }
         for i in (fromSetIdx + 1)..<count {
