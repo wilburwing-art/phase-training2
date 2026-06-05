@@ -421,6 +421,15 @@ final class PlanStore: ObservableObject {
         )
     }
 
+    /// Public seam: build the same GeneratorContext the auto-regen path uses,
+    /// for flows that generate a CANDIDATE plan against local overrides and
+    /// call `Planner.generate` directly (WeeklyCheckInFlow). Without it the
+    /// check-in regen ran with `context: .empty`, silently skipping the
+    /// Phase-2 readiness lift-day floor that every other regen path honors.
+    func makeGeneratorContext(memory: TrainingMemory, today: Date = Date()) -> GeneratorContext {
+        buildGeneratorContext(memory: memory, today: today)
+    }
+
     /// Stamp every exercise the generator just picked into the variety
     /// memory so the next regen avoids them.
     private func recordPickedExercises(in plan: WeekPlan) {

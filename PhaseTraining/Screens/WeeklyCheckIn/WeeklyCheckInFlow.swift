@@ -158,7 +158,11 @@ struct WeeklyCheckInFlow: View {
             overrides: candidateOverrides,
             routines: routines,
             previousFeedback: Array(memoryStore.memory.feedback.suffix(20)),
-            recentSportLogs: sportLogStore.entries
+            recentSportLogs: sportLogStore.entries,
+            // Without context the readiness lift-day floor defaults to neutral,
+            // so the check-in regen silently ignored detrained-state capping
+            // that every PlanStore regen path applies. Thread the real context.
+            context: planStore.makeGeneratorContext(memory: memoryStore.memory)
         )
         advance()
     }
