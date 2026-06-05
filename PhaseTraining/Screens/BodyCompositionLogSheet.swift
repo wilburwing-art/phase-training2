@@ -358,6 +358,9 @@ struct BodyCompositionLogSheet: View {
         store.update { mem in
             mem.bodyCompositionLog.append(entry)
         }
+        bfText = ""
+        leanText = ""
+        methodText = ""
         noteText = ""
     }
 
