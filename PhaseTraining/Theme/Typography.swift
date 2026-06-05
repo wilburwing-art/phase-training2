@@ -79,14 +79,20 @@ enum TypeStyle {
     }
 
     /// Whether the style is upper-cased in the spec (Micro labels).
+    ///
+    /// Spec metadata only — `styled(_:)` cannot apply it: it returns `Text`,
+    /// and `textCase(_:)` is a View-only modifier. Uppercasing is the
+    /// CALLER's job (hand-`.uppercased()` strings or a view-level
+    /// `.textCase(.uppercase)`); StyleGuidePreview reads this flag to
+    /// uppercase its samples the same way.
     var isUppercase: Bool { self == .micro }
 }
 
 extension Text {
-    /// Apply a Phase Training type style: font + tracking + (uppercase, if applicable).
+    /// Apply a Phase Training type style: font + tracking. Casing is NOT
+    /// applied here (see `isUppercase`) — `.micro` callers own it.
     func styled(_ style: TypeStyle) -> Text {
-        let base = self.font(style.font).tracking(style.tracking)
-        return style.isUppercase ? base : base
+        self.font(style.font).tracking(style.tracking)
     }
 }
 
