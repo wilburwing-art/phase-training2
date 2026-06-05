@@ -15,6 +15,10 @@ struct WeekScreen: View {
     @State private var editingDate: Date? = nil
     /// PR 6 (weekly-coach roadmap) — opens the WeekTone picker sheet.
     @State private var pickingWeekTone = false
+    /// Date of the day row currently being dragged. Shared across rows so
+    /// each row can tell a self-drop hover (no-op) apart from a valid swap
+    /// target and render the disabled cue instead of the accent drop ring.
+    @State private var draggingDate: Date? = nil
 
     var body: some View {
         ZStack {
@@ -155,7 +159,8 @@ struct WeekScreen: View {
                         DraggableDayRow(
                             day: day,
                             isToday: isToday(day.date),
-                            onTap: { editingDate = day.date }
+                            onTap: { editingDate = day.date },
+                            draggingDate: $draggingDate
                         )
                         .frame(height: rowH)
                         .accessibilityIdentifier("week-day-row-\(idx)")
@@ -260,23 +265,36 @@ private struct DraggableDayRow: View {
     let day: DayPlan
     let isToday: Bool
     let onTap: () -> Void
+    /// Date of the row being dragged, owned by WeekScreen — see note there.
+    @Binding var draggingDate: Date?
 
     @EnvironmentObject private var planStore: PlanStore
     @EnvironmentObject private var memory: MemoryStore
     @State private var isTargeted = false
 
+    /// True while the drag hovering this row started from this same day.
+    /// Dropping here is a no-op, so the row renders the disabled cue.
+    private var isSelfTarget: Bool {
+        guard isTargeted, let dragging = draggingDate else { return false }
+        return Calendar.current.isDate(dragging, inSameDayAs: day.date)
+    }
+
     var body: some View {
         Button(action: onTap) {
-            DayRow(day: day, isToday: isToday, isTargeted: isTargeted)
+            DayRow(day: day, isToday: isToday, isTargeted: isTargeted, isSelfTarget: isSelfTarget)
         }
         .buttonStyle(.plain)
         .draggable(MovableDay(date: day.date)) {
-            // Lightweight drag preview — same row but de-saturated.
+            // Lightweight drag preview — same row but de-saturated. onAppear
+            // doubles as the drag-start hook (SwiftUI exposes no other one)
+            // to record which day is in flight.
             DayRow(day: day, isToday: false, isTargeted: false)
                 .frame(maxWidth: 340)
                 .opacity(0.92)
+                .onAppear { draggingDate = day.date }
         }
         .dropDestination(for: MovableDay.self) { items, _ in
+            draggingDate = nil
             // Abort if the payload date can't be parsed — a silent fallback to
             // "today" would move the wrong day and corrupt the plan.
             guard let source = items.first, let sourceDate = source.date else { return false }
@@ -333,6 +351,9 @@ private struct DayRow: View {
     /// True while a drag hovers over this row — render an accent ring so the
     /// user knows where the drop will land.
     var isTargeted: Bool = false
+    /// True while the row is hovered by its own drag — dropping is a no-op,
+    /// so render a dimmed dashed treatment instead of the accent drop ring.
+    var isSelfTarget: Bool = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -365,7 +386,7 @@ private struct DayRow: View {
         }
         .padding(.horizontal, 12)
         .frame(maxHeight: .infinity)
-        .background(isTargeted ? Color.accentWash : (isToday ? Color.accentWash : Color.surface))
+        .background(background)
         .overlay(alignment: .leading) {
             if isToday {
                 Rectangle()
@@ -375,13 +396,27 @@ private struct DayRow: View {
         }
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(borderColor, lineWidth: isToday ? 1.5 : (isTargeted ? 1.5 : 0.5))
+                .stroke(borderColor, style: StrokeStyle(
+                    lineWidth: (isToday || isTargeted) ? 1.5 : 0.5,
+                    dash: isSelfTarget ? [4, 3] : []
+                ))
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .opacity(isSelfTarget ? 0.55 : 1.0)
         .animation(.easeOut(duration: 0.12), value: isTargeted)
+        .animation(.easeOut(duration: 0.12), value: isSelfTarget)
+    }
+
+    private var background: Color {
+        // Self-drop is a no-op — stay flat instead of lighting the accent
+        // wash so the user can tell nothing will happen on this drop.
+        if isSelfTarget { return Color.surface }
+        if isTargeted || isToday { return Color.accentWash }
+        return Color.surface
     }
 
     private var borderColor: Color {
+        if isSelfTarget { return Color.ink3 }
         if isTargeted { return Color.accent }
         return isToday ? Color.accent : Color.line
     }
