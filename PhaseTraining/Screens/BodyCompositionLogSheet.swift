@@ -20,6 +20,7 @@ struct BodyCompositionLogSheet: View {
     @State private var leanText: String = ""
     @State private var methodText: String = ""
     @State private var noteText: String = ""
+    @State private var pendingDelete: BodyCompositionEntry?
 
     var body: some View {
         NavigationStack {
@@ -53,6 +54,17 @@ struct BodyCompositionLogSheet: View {
         .presentationDetents([.large])
         .presentationBackground(Color.bg)
         .preferredColorScheme(.dark)
+        .confirmationDialog(
+            "Delete this entry?",
+            isPresented: Binding(get: { pendingDelete != nil },
+                                 set: { if !$0 { pendingDelete = nil } }),
+            presenting: pendingDelete
+        ) { entry in
+            Button("Delete", role: .destructive) { deleteEntry(entry); pendingDelete = nil }
+            Button("Cancel", role: .cancel) { pendingDelete = nil }
+        } message: { _ in
+            Text("This removes the logged measurement. Your history can't recover it.")
+        }
         .onAppear {
             if let latest = sortedEntries.first {
                 if let bf = latest.bodyFatPercent { bfText = String(format: "%.1f", bf) }
@@ -277,7 +289,7 @@ struct BodyCompositionLogSheet: View {
                 }
             }
             Spacer(minLength: 8)
-            Button(role: .destructive) { deleteEntry(entry) } label: {
+            Button(role: .destructive) { pendingDelete = entry } label: {
                 Image(systemName: "trash")
                     .font(.system(size: 12))
                     .foregroundStyle(Color.ink3)
