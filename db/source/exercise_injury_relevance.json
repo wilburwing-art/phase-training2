@@ -78,150 +78,6 @@
     "notes": "Gold-standard prehab."
   },
   {
-    "exercise_id": 25,
-    "injury_id": 50,
-    "role": "prehab",
-    "notes": "Top prehab for climber elbow."
-  },
-  {
-    "exercise_id": 25,
-    "injury_id": 51,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 26,
-    "injury_id": 10,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 26,
-    "injury_id": 11,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 27,
-    "injury_id": 11,
-    "role": "rehab_early",
-    "notes": "Scap control foundation."
-  },
-  {
-    "exercise_id": 28,
-    "injury_id": 11,
-    "role": "rehab_early",
-    "notes": null
-  },
-  {
-    "exercise_id": 29,
-    "injury_id": 50,
-    "role": "rehab_early",
-    "notes": null
-  },
-  {
-    "exercise_id": 29,
-    "injury_id": 55,
-    "role": "rehab_early",
-    "notes": null
-  },
-  {
-    "exercise_id": 30,
-    "injury_id": 50,
-    "role": "rehab_early",
-    "notes": null
-  },
-  {
-    "exercise_id": 31,
-    "injury_id": 10,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 31,
-    "injury_id": 11,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 32,
-    "injury_id": 54,
-    "role": "rehab_late",
-    "notes": "Open hand is safer during pulley rehab than full crimp."
-  },
-  {
-    "exercise_id": 33,
-    "injury_id": 50,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 33,
-    "injury_id": 51,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 34,
-    "injury_id": 10,
-    "role": "rehab_early",
-    "notes": "First-line cuff rehab."
-  },
-  {
-    "exercise_id": 35,
-    "injury_id": 11,
-    "role": "rehab_early",
-    "notes": null
-  },
-  {
-    "exercise_id": 36,
-    "injury_id": 54,
-    "role": "rehab_early",
-    "notes": "Primary pulley rehab."
-  },
-  {
-    "exercise_id": 36,
-    "injury_id": 57,
-    "role": "rehab_early",
-    "notes": null
-  },
-  {
-    "exercise_id": 37,
-    "injury_id": 25,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 38,
-    "injury_id": 20,
-    "role": "rehab_late",
-    "notes": "Counteracts hip flexor tightness contributing to low back pain."
-  },
-  {
-    "exercise_id": 38,
-    "injury_id": 22,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 39,
-    "injury_id": 11,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 42,
-    "injury_id": 25,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 43,
-    "injury_id": 31,
-    "role": "rehab_late",
-    "notes": "Late-stage hip labral rehab."
-  },
-  {
     "exercise_id": 47,
     "injury_id": 10,
     "role": "contraindicated",
@@ -282,24 +138,6 @@
     "notes": null
   },
   {
-    "exercise_id": 65,
-    "injury_id": 50,
-    "role": "rehab_early",
-    "notes": "Soft-tissue adjunct for lateral elbow."
-  },
-  {
-    "exercise_id": 66,
-    "injury_id": 54,
-    "role": "rehab_early",
-    "notes": "Tendon gliding for pulley rehab."
-  },
-  {
-    "exercise_id": 68,
-    "injury_id": 11,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
     "exercise_id": 102,
     "injury_id": 65,
     "role": "prehab",
@@ -312,92 +150,20 @@
     "notes": "PFPS rehab."
   },
   {
-    "exercise_id": 104,
-    "injury_id": 5,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 104,
-    "injury_id": 34,
-    "role": "prehab",
-    "notes": "Glute med for trochanteric bursitis."
-  },
-  {
-    "exercise_id": 105,
-    "injury_id": 5,
-    "role": "prehab",
-    "notes": "IT band syndrome prevention."
-  },
-  {
-    "exercise_id": 105,
-    "injury_id": 6,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 106,
-    "injury_id": 69,
-    "role": "prehab",
-    "notes": "Adductor strain prevention."
-  },
-  {
-    "exercise_id": 107,
-    "injury_id": 75,
-    "role": "prehab",
-    "notes": "Shin splints prevention."
-  },
-  {
     "exercise_id": 108,
     "injury_id": 65,
     "role": "rehab_late",
     "notes": null
   },
   {
-    "exercise_id": 109,
-    "injury_id": 20,
-    "role": "rehab_late",
-    "notes": "Lumbar spine rehab."
-  },
-  {
-    "exercise_id": 109,
-    "injury_id": 21,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 110,
-    "injury_id": 20,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 110,
-    "injury_id": 22,
-    "role": "rehab_late",
-    "notes": "SI joint dysfunction rehab."
-  },
-  {
     "exercise_id": 111,
     "injury_id": 41,
     "role": "rehab_early",
-    "notes": "Achilles tendinopathy \u2014 Alfredson protocol."
+    "notes": "Achilles tendinopathy — Alfredson protocol."
   },
   {
     "exercise_id": 111,
     "injury_id": 75,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 116,
-    "injury_id": 10,
-    "role": "prehab",
-    "notes": "Subscapularis prehab for overhead athletes."
-  },
-  {
-    "exercise_id": 116,
-    "injury_id": 12,
     "role": "rehab_late",
     "notes": null
   },
@@ -456,18 +222,6 @@
     "notes": null
   },
   {
-    "exercise_id": 133,
-    "injury_id": 42,
-    "role": "rehab_early",
-    "notes": "Plantar fasciitis rehab."
-  },
-  {
-    "exercise_id": 222,
-    "injury_id": 11,
-    "role": "rehab_late",
-    "notes": "Shoulder mobility for late-stage impingement rehab."
-  },
-  {
     "exercise_id": 226,
     "injury_id": 34,
     "role": "rehab_late",
@@ -522,18 +276,6 @@
     "notes": "Achilles loading progression."
   },
   {
-    "exercise_id": 300,
-    "injury_id": 25,
-    "role": "prehab",
-    "notes": "Cervical strain prevention."
-  },
-  {
-    "exercise_id": 300,
-    "injury_id": 60,
-    "role": "prehab",
-    "notes": "Neck flexor iso for whiplash prevention."
-  },
-  {
     "exercise_id": 301,
     "injury_id": 25,
     "role": "rehab_late",
@@ -546,82 +288,10 @@
     "notes": null
   },
   {
-    "exercise_id": 315,
-    "injury_id": 50,
-    "role": "prehab",
-    "notes": "Golfer's elbow prep with balanced flexor/extensor training."
-  },
-  {
-    "exercise_id": 315,
-    "injury_id": 51,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 315,
-    "injury_id": 56,
-    "role": "prehab",
-    "notes": "UCL resilience via gradual wrist + elbow loading."
-  },
-  {
-    "exercise_id": 316,
-    "injury_id": 10,
-    "role": "prehab",
-    "notes": "Rotator cuff balance."
-  },
-  {
-    "exercise_id": 316,
-    "injury_id": 11,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 317,
-    "injury_id": 25,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 317,
-    "injury_id": 60,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 318,
-    "injury_id": 30,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 318,
-    "injury_id": 32,
-    "role": "prehab",
-    "notes": "FAI-friendly deep hip mobility."
-  },
-  {
-    "exercise_id": 320,
-    "injury_id": 30,
-    "role": "rehab_late",
-    "notes": "Hip flexor strain late-stage mobility."
-  },
-  {
-    "exercise_id": 320,
-    "injury_id": 31,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 321,
-    "injury_id": 11,
-    "role": "rehab_late",
-    "notes": "Shoulder impingement post-rehab thoracic work."
-  },
-  {
     "exercise_id": 323,
     "injury_id": 50,
     "role": "contraindicated",
-    "notes": "Acute tennis elbow \u2014 cease bag work."
+    "notes": "Acute tennis elbow — cease bag work."
   },
   {
     "exercise_id": 323,
@@ -648,98 +318,8 @@
     "notes": "Lateral ankle stability."
   },
   {
-    "exercise_id": 334,
-    "injury_id": 77,
-    "role": "rehab_early",
-    "notes": "Breathing reset for overtraining."
-  },
-  {
-    "exercise_id": 335,
-    "injury_id": 50,
-    "role": "prehab",
-    "notes": "Tennis-elbow prevention."
-  },
-  {
-    "exercise_id": 336,
-    "injury_id": 51,
-    "role": "rehab_late",
-    "notes": "Medial epicondylitis eccentric rehab."
-  },
-  {
-    "exercise_id": 337,
-    "injury_id": 50,
-    "role": "rehab_early",
-    "notes": "Isometric pain-modulation in acute stage."
-  },
-  {
-    "exercise_id": 338,
-    "injury_id": 50,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 338,
-    "injury_id": 51,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 339,
-    "injury_id": 50,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 339,
-    "injury_id": 55,
-    "role": "prehab",
-    "notes": "De Quervain's prevention via controlled rotation."
-  },
-  {
-    "exercise_id": 340,
-    "injury_id": 55,
-    "role": "prehab",
-    "notes": "Radial-side wrist resilience."
-  },
-  {
-    "exercise_id": 341,
-    "injury_id": 50,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 342,
-    "injury_id": 11,
-    "role": "prehab",
-    "notes": "Scapular control reduces impingement."
-  },
-  {
-    "exercise_id": 343,
-    "injury_id": 10,
-    "role": "prehab",
-    "notes": null
-  },
-  {
     "exercise_id": 344,
     "injury_id": 10,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 345,
-    "injury_id": 11,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 346,
-    "injury_id": 11,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 347,
-    "injury_id": 11,
     "role": "prehab",
     "notes": null
   },
@@ -780,124 +360,10 @@
     "notes": "Isometric knee pain modulation."
   },
   {
-    "exercise_id": 363,
-    "injury_id": 21,
-    "role": "prehab",
-    "notes": "Low-back anti-rotation control."
-  },
-  {
-    "exercise_id": 364,
-    "injury_id": 10,
-    "role": "rehab_late",
-    "notes": "GIRD management after rotator-cuff rehab."
-  },
-  {
-    "exercise_id": 364,
-    "injury_id": 11,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 365,
-    "injury_id": 30,
-    "role": "prehab",
-    "notes": "Hip mobility for hip-flexor strain prevention."
-  },
-  {
-    "exercise_id": 367,
-    "injury_id": 50,
-    "role": "rehab_late",
-    "notes": "Soft-tissue adjunct."
-  },
-  {
-    "exercise_id": 367,
-    "injury_id": 51,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
     "exercise_id": 377,
     "injury_id": 20,
     "role": "contraindicated",
     "notes": "Avoid during acute disc herniation."
-  },
-  {
-    "exercise_id": 390,
-    "injury_id": 20,
-    "role": "contraindicated",
-    "notes": "Avoid during acute disc herniation or radicular pain."
-  },
-  {
-    "exercise_id": 397,
-    "injury_id": 10,
-    "role": "prehab",
-    "notes": "Rotator cuff adjunct."
-  },
-  {
-    "exercise_id": 397,
-    "injury_id": 11,
-    "role": "prehab",
-    "notes": "Lower trap activation for paddlers/surfers at risk for impingement."
-  },
-  {
-    "exercise_id": 398,
-    "injury_id": 11,
-    "role": "rehab_late",
-    "notes": "Shoulder mobility for late-stage impingement rehab."
-  },
-  {
-    "exercise_id": 399,
-    "injury_id": 11,
-    "role": "prehab",
-    "notes": "Serratus for shoulder health."
-  },
-  {
-    "exercise_id": 400,
-    "injury_id": 10,
-    "role": "prehab",
-    "notes": "Primary rotator-cuff strengthening."
-  },
-  {
-    "exercise_id": 400,
-    "injury_id": 11,
-    "role": "prehab",
-    "notes": "Impingement prevention."
-  },
-  {
-    "exercise_id": 401,
-    "injury_id": 11,
-    "role": "rehab_late",
-    "notes": "Shoulder distraction for impingement recovery."
-  },
-  {
-    "exercise_id": 406,
-    "injury_id": 30,
-    "role": "prehab",
-    "notes": "Hip flexor opener."
-  },
-  {
-    "exercise_id": 417,
-    "injury_id": 21,
-    "role": "rehab_late",
-    "notes": "Hip-flexor release reduces lumbar extensor tension."
-  },
-  {
-    "exercise_id": 417,
-    "injury_id": 30,
-    "role": "prehab",
-    "notes": "Hip flexor strain prevention \u2014 key for seated paddlers."
-  },
-  {
-    "exercise_id": 419,
-    "injury_id": 10,
-    "role": "rehab_late",
-    "notes": "Posterior capsule mobility post rotator-cuff rehab."
-  },
-  {
-    "exercise_id": 419,
-    "injury_id": 11,
-    "role": "rehab_late",
-    "notes": "Late-stage impingement mobility."
   },
   {
     "exercise_id": 420,
@@ -909,13 +375,7 @@
     "exercise_id": 420,
     "injury_id": 66,
     "role": "prehab",
-    "notes": "Reverse nordic lengthens rectus femoris and builds eccentric control \u2014 quad strain prevention."
-  },
-  {
-    "exercise_id": 421,
-    "injury_id": 69,
-    "role": "prehab",
-    "notes": "Adductor/groin strain prevention."
+    "notes": "Reverse nordic lengthens rectus femoris and builds eccentric control — quad strain prevention."
   },
   {
     "exercise_id": 422,
@@ -930,166 +390,10 @@
     "notes": null
   },
   {
-    "exercise_id": 423,
-    "injury_id": 2,
-    "role": "prehab",
-    "notes": "Single-leg land mechanics reduce non-contact ACL injury risk."
-  },
-  {
-    "exercise_id": 423,
-    "injury_id": 6,
-    "role": "rehab_late",
-    "notes": "Good PFPS late-stage milestone."
-  },
-  {
-    "exercise_id": 425,
-    "injury_id": 2,
-    "role": "prehab",
-    "notes": "TKE and VMO emphasis support ACL rehab progression."
-  },
-  {
-    "exercise_id": 425,
-    "injury_id": 6,
-    "role": "rehab_early",
-    "notes": "Low-load quad work appropriate in early PFPS rehab."
-  },
-  {
-    "exercise_id": 426,
-    "injury_id": 40,
-    "role": "prehab",
-    "notes": "Active ankle mobility prevents re-sprain."
-  },
-  {
-    "exercise_id": 427,
-    "injury_id": 10,
-    "role": "prehab",
-    "notes": "Lower trap / rotator cuff mobility prevents impingement."
-  },
-  {
-    "exercise_id": 427,
-    "injury_id": 11,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 428,
-    "injury_id": 10,
-    "role": "prehab",
-    "notes": "Isometric rotator cuff loading."
-  },
-  {
-    "exercise_id": 428,
-    "injury_id": 12,
-    "role": "rehab_early",
-    "notes": "Safe early-stage SLAP rehab option."
-  },
-  {
-    "exercise_id": 433,
-    "injury_id": 31,
-    "role": "rehab_late",
-    "notes": "Hip airplane is a labral rehab milestone."
-  },
-  {
-    "exercise_id": 434,
-    "injury_id": 65,
-    "role": "prehab",
-    "notes": "Assisted Nordic is the early-stage hamstring strain prevention option."
-  },
-  {
-    "exercise_id": 435,
-    "injury_id": 10,
-    "role": "prehab",
-    "notes": "Long-toss progression is the arm-care warmup for throwers."
-  },
-  {
-    "exercise_id": 442,
-    "injury_id": 5,
-    "role": "rehab_early",
-    "notes": "IT band syndrome soft-tissue work."
-  },
-  {
-    "exercise_id": 443,
-    "injury_id": 69,
-    "role": "rehab_early",
-    "notes": "Adductor strain soft-tissue recovery."
-  },
-  {
-    "exercise_id": 446,
-    "injury_id": 40,
-    "role": "rehab_late",
-    "notes": "Ankle dorsiflexion restoration post-sprain."
-  },
-  {
-    "exercise_id": 446,
-    "injury_id": 41,
-    "role": "rehab_early",
-    "notes": "Achilles mobility work."
-  },
-  {
-    "exercise_id": 447,
-    "injury_id": 33,
-    "role": "rehab_late",
-    "notes": "Piriformis syndrome stretch."
-  },
-  {
-    "exercise_id": 448,
-    "injury_id": 30,
-    "role": "rehab_late",
-    "notes": "Hip flexor strain late-stage mobility."
-  },
-  {
-    "exercise_id": 454,
-    "injury_id": 60,
-    "role": "prehab",
-    "notes": "Neck iso work for whiplash prevention in contact sports."
-  },
-  {
-    "exercise_id": 454,
-    "injury_id": 61,
-    "role": "prehab",
-    "notes": "Stinger prevention."
-  },
-  {
-    "exercise_id": 455,
-    "injury_id": 60,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 456,
-    "injury_id": 10,
-    "role": "rehab_late",
-    "notes": "Rotator cuff rehab at 90\u00b0 position."
-  },
-  {
-    "exercise_id": 459,
-    "injury_id": 5,
-    "role": "prehab",
-    "notes": "Side plank clam addresses glute med weakness linked to ITBS."
-  },
-  {
-    "exercise_id": 460,
-    "injury_id": 69,
-    "role": "prehab",
-    "notes": "Copenhagen progression for adductor strain prevention."
-  },
-  {
-    "exercise_id": 461,
-    "injury_id": 34,
-    "role": "rehab_late",
-    "notes": "Trochanteric bursitis glute med rehab."
-  },
-  {
     "exercise_id": 469,
     "injury_id": 2,
     "role": "contraindicated",
     "notes": "Full depth-drop-to-vertical contraindicated in acute ACL rehab."
-  },
-  {
-    "exercise_id": 471,
-    "injury_id": 40,
-    "role": "prehab",
-    "notes": "Peroneal strengthening \u2014 direct ankle-sprain prevention."
   },
   {
     "exercise_id": 477,
@@ -1102,42 +406,6 @@
     "injury_id": 52,
     "role": "contraindicated",
     "notes": "Avoid plyo push-ups with an acute wrist sprain."
-  },
-  {
-    "exercise_id": 479,
-    "injury_id": 52,
-    "role": "prehab",
-    "notes": "Progressive wrist loading for fall tolerance."
-  },
-  {
-    "exercise_id": 479,
-    "injury_id": 53,
-    "role": "rehab_late",
-    "notes": "Late-stage carpal tunnel loading progression."
-  },
-  {
-    "exercise_id": 480,
-    "injury_id": 22,
-    "role": "rehab_late",
-    "notes": "Hip-rotator mobility for SI-joint rehab."
-  },
-  {
-    "exercise_id": 481,
-    "injury_id": 5,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 483,
-    "injury_id": 42,
-    "role": "prehab",
-    "notes": "Tibialis + foot loading to offload plantar fascia."
-  },
-  {
-    "exercise_id": 483,
-    "injury_id": 46,
-    "role": "prehab",
-    "notes": null
   },
   {
     "exercise_id": 486,
@@ -1200,24 +468,6 @@
     "notes": "High-velocity battement not appropriate with acute hip flexor strain."
   },
   {
-    "exercise_id": 525,
-    "injury_id": 5,
-    "role": "prehab",
-    "notes": "External rotator strength for IT-band prevention."
-  },
-  {
-    "exercise_id": 528,
-    "injury_id": 30,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
-    "exercise_id": 529,
-    "injury_id": 4,
-    "role": "rehab_late",
-    "notes": "Slow weight transfer for meniscus late-stage rehab."
-  },
-  {
     "exercise_id": 531,
     "injury_id": 20,
     "role": "contraindicated",
@@ -1242,24 +492,6 @@
     "notes": "SSB lets athletes with shoulder impingement squat without overhead shoulder ROM."
   },
   {
-    "exercise_id": 541,
-    "injury_id": 52,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 541,
-    "injury_id": 56,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 542,
-    "injury_id": 11,
-    "role": "rehab_late",
-    "notes": null
-  },
-  {
     "exercise_id": 548,
     "injury_id": 20,
     "role": "contraindicated",
@@ -1278,24 +510,6 @@
     "notes": "Adductor strain prevention."
   },
   {
-    "exercise_id": 554,
-    "injury_id": 30,
-    "role": "rehab_late",
-    "notes": "Hip-flexor strain late rehab."
-  },
-  {
-    "exercise_id": 558,
-    "injury_id": 60,
-    "role": "prehab",
-    "notes": "Whiplash prevention."
-  },
-  {
-    "exercise_id": 558,
-    "injury_id": 61,
-    "role": "prehab",
-    "notes": "Stinger prevention."
-  },
-  {
     "exercise_id": 562,
     "injury_id": 10,
     "role": "prehab",
@@ -1304,42 +518,6 @@
   {
     "exercise_id": 562,
     "injury_id": 11,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 563,
-    "injury_id": 50,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 563,
-    "injury_id": 51,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 563,
-    "injury_id": 52,
-    "role": "prehab",
-    "notes": null
-  },
-  {
-    "exercise_id": 574,
-    "injury_id": 40,
-    "role": "rehab_late",
-    "notes": "Ankle-sprain late-stage balance progression."
-  },
-  {
-    "exercise_id": 575,
-    "injury_id": 42,
-    "role": "prehab",
-    "notes": "Plantar fascia prevention."
-  },
-  {
-    "exercise_id": 576,
-    "injury_id": 42,
     "role": "prehab",
     "notes": null
   }

@@ -155,36 +155,11 @@
     "is_required": 1
   },
   {
-    "exercise_id": 25,
-    "equipment_id": 27,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 26,
-    "equipment_id": 20,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 27,
-    "equipment_id": 2,
-    "is_required": 1
-  },
-  {
     "exercise_id": 28,
     "equipment_id": 1,
     "is_required": 1
   },
   {
-    "exercise_id": 29,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 30,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 31,
     "equipment_id": 1,
     "is_required": 1
@@ -193,116 +168,11 @@
     "exercise_id": 31,
     "equipment_id": 43,
     "is_required": 0
-  },
-  {
-    "exercise_id": 32,
-    "equipment_id": 2,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 33,
-    "equipment_id": 63,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 34,
-    "equipment_id": 11,
-    "is_required": 1
   },
   {
     "exercise_id": 35,
     "equipment_id": 1,
     "is_required": 1
-  },
-  {
-    "exercise_id": 36,
-    "equipment_id": 63,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 37,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 37,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 38,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 38,
-    "equipment_id": 99,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 39,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 40,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 41,
-    "equipment_id": 99,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 42,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 42,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 43,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 43,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 44,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 44,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 45,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 45,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 46,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 46,
-    "equipment_id": 43,
-    "is_required": 0
   },
   {
     "exercise_id": 47,
@@ -410,76 +280,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 65,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 65,
-    "equipment_id": 41,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 66,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 67,
-    "equipment_id": 43,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 68,
-    "equipment_id": 2,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 69,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 70,
-    "equipment_id": 40,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 71,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 72,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 72,
-    "equipment_id": 99,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 73,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 74,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 75,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 75,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
     "exercise_id": 101,
     "equipment_id": 10,
     "is_required": 1
@@ -505,31 +305,6 @@
     "is_required": 0
   },
   {
-    "exercise_id": 104,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 104,
-    "equipment_id": 23,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 105,
-    "equipment_id": 23,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 106,
-    "equipment_id": 95,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 107,
-    "equipment_id": 99,
-    "is_required": 1
-  },
-  {
     "exercise_id": 108,
     "equipment_id": 1,
     "is_required": 1
@@ -538,16 +313,6 @@
     "exercise_id": 108,
     "equipment_id": 11,
     "is_required": 0
-  },
-  {
-    "exercise_id": 109,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 110,
-    "equipment_id": 1,
-    "is_required": 1
   },
   {
     "exercise_id": 111,
@@ -577,11 +342,6 @@
   {
     "exercise_id": 115,
     "equipment_id": 24,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 116,
-    "equipment_id": 20,
     "is_required": 1
   },
   {
@@ -625,18 +385,8 @@
     "is_required": 1
   },
   {
-    "exercise_id": 124,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 125,
     "equipment_id": 99,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 126,
-    "equipment_id": 1,
     "is_required": 1
   },
   {
@@ -690,16 +440,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 133,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 134,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 135,
     "equipment_id": 10,
     "is_required": 1
@@ -718,16 +458,6 @@
     "exercise_id": 200,
     "equipment_id": 24,
     "is_required": 1
-  },
-  {
-    "exercise_id": 202,
-    "equipment_id": 11,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 202,
-    "equipment_id": 96,
-    "is_required": 0
   },
   {
     "exercise_id": 204,
@@ -781,31 +511,6 @@
   },
   {
     "exercise_id": 221,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 222,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 222,
-    "equipment_id": 20,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 222,
-    "equipment_id": 45,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 224,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 224,
     "equipment_id": 43,
     "is_required": 0
   },
@@ -900,11 +605,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 300,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 301,
     "equipment_id": 1,
     "is_required": 1
@@ -923,16 +623,6 @@
     "exercise_id": 303,
     "equipment_id": 2,
     "is_required": 1
-  },
-  {
-    "exercise_id": 304,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 304,
-    "equipment_id": 20,
-    "is_required": 0
   },
   {
     "exercise_id": 305,
@@ -1000,56 +690,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 314,
-    "equipment_id": 21,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 315,
-    "equipment_id": 11,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 316,
-    "equipment_id": 20,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 317,
-    "equipment_id": 20,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 318,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 320,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 320,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 321,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 321,
-    "equipment_id": 40,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 321,
-    "equipment_id": 95,
-    "is_required": 0
-  },
-  {
     "exercise_id": 323,
     "equipment_id": 75,
     "is_required": 1
@@ -1075,86 +715,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 331,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 332,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 332,
-    "equipment_id": 99,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 333,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 333,
-    "equipment_id": 41,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 334,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 334,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 335,
-    "equipment_id": 11,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 336,
-    "equipment_id": 11,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 337,
-    "equipment_id": 11,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 338,
-    "equipment_id": 20,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 339,
-    "equipment_id": 11,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 340,
-    "equipment_id": 11,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 341,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 341,
-    "equipment_id": 17,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 342,
-    "equipment_id": 99,
-    "is_required": 1
-  },
-  {
     "exercise_id": 343,
     "equipment_id": 1,
     "is_required": 1
@@ -1167,21 +727,6 @@
   {
     "exercise_id": 344,
     "equipment_id": 11,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 345,
-    "equipment_id": 20,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 346,
-    "equipment_id": 99,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 347,
-    "equipment_id": 1,
     "is_required": 1
   },
   {
@@ -1210,11 +755,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 357,
-    "equipment_id": 56,
-    "is_required": 1
-  },
-  {
     "exercise_id": 358,
     "equipment_id": 51,
     "is_required": 1
@@ -1238,51 +778,6 @@
     "exercise_id": 362,
     "equipment_id": 99,
     "is_required": 0
-  },
-  {
-    "exercise_id": 363,
-    "equipment_id": 20,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 364,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 364,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 365,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 365,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 366,
-    "equipment_id": 40,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 367,
-    "equipment_id": 41,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 367,
-    "equipment_id": 42,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 368,
-    "equipment_id": 1,
-    "is_required": 1
   },
   {
     "exercise_id": 370,
@@ -1350,36 +845,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 387,
-    "equipment_id": 31,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 388,
-    "equipment_id": 35,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 390,
-    "equipment_id": 11,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 390,
-    "equipment_id": 50,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 391,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 391,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
     "exercise_id": 392,
     "equipment_id": 11,
     "is_required": 1
@@ -1395,16 +860,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 397,
-    "equipment_id": 11,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 397,
-    "equipment_id": 96,
-    "is_required": 1
-  },
-  {
     "exercise_id": 398,
     "equipment_id": 1,
     "is_required": 1
@@ -1413,46 +868,6 @@
     "exercise_id": 398,
     "equipment_id": 99,
     "is_required": 1
-  },
-  {
-    "exercise_id": 399,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 399,
-    "equipment_id": 99,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 400,
-    "equipment_id": 20,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 401,
-    "equipment_id": 2,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 406,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 406,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 407,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 407,
-    "equipment_id": 43,
-    "is_required": 0
   },
   {
     "exercise_id": 408,
@@ -1465,11 +880,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 414,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 415,
     "equipment_id": 11,
     "is_required": 0
@@ -1478,31 +888,6 @@
     "exercise_id": 415,
     "equipment_id": 95,
     "is_required": 1
-  },
-  {
-    "exercise_id": 417,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 417,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 418,
-    "equipment_id": 40,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 419,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 419,
-    "equipment_id": 43,
-    "is_required": 0
   },
   {
     "exercise_id": 420,
@@ -1510,38 +895,8 @@
     "is_required": 1
   },
   {
-    "exercise_id": 421,
-    "equipment_id": 20,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 421,
-    "equipment_id": 99,
-    "is_required": 0
-  },
-  {
     "exercise_id": 422,
     "equipment_id": 52,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 423,
-    "equipment_id": 50,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 425,
-    "equipment_id": 20,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 425,
-    "equipment_id": 99,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 426,
-    "equipment_id": 1,
     "is_required": 1
   },
   {
@@ -1557,16 +912,6 @@
   {
     "exercise_id": 427,
     "equipment_id": 95,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 428,
-    "equipment_id": 20,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 428,
-    "equipment_id": 99,
     "is_required": 0
   },
   {
@@ -1583,71 +928,6 @@
     "exercise_id": 431,
     "equipment_id": 99,
     "is_required": 1
-  },
-  {
-    "exercise_id": 433,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 434,
-    "equipment_id": 22,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 435,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 435,
-    "equipment_id": 13,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 441,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 442,
-    "equipment_id": 40,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 443,
-    "equipment_id": 40,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 445,
-    "equipment_id": 40,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 446,
-    "equipment_id": 22,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 446,
-    "equipment_id": 99,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 447,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 448,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 448,
-    "equipment_id": 98,
-    "is_required": 0
   },
   {
     "exercise_id": 450,
@@ -1670,51 +950,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 453,
-    "equipment_id": 20,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 453,
-    "equipment_id": 24,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 454,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 455,
-    "equipment_id": 20,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 455,
-    "equipment_id": 99,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 456,
-    "equipment_id": 20,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 456,
-    "equipment_id": 24,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 457,
-    "equipment_id": 20,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 457,
-    "equipment_id": 99,
-    "is_required": 0
-  },
-  {
     "exercise_id": 458,
     "equipment_id": 10,
     "is_required": 1
@@ -1722,36 +957,6 @@
   {
     "exercise_id": 458,
     "equipment_id": 16,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 459,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 459,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 460,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 460,
-    "equipment_id": 95,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 461,
-    "equipment_id": 23,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 462,
-    "equipment_id": 56,
     "is_required": 1
   },
   {
@@ -1780,16 +985,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 471,
-    "equipment_id": 23,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 476,
-    "equipment_id": 34,
-    "is_required": 1
-  },
-  {
     "exercise_id": 477,
     "equipment_id": 1,
     "is_required": 1
@@ -1801,36 +996,6 @@
   },
   {
     "exercise_id": 478,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 479,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 479,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 480,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 480,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 481,
-    "equipment_id": 23,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 483,
     "equipment_id": 1,
     "is_required": 1
   },
@@ -1900,21 +1065,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 497,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 497,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 498,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 499,
     "equipment_id": 2,
     "is_required": 0
@@ -1935,16 +1085,6 @@
     "is_required": 0
   },
   {
-    "exercise_id": 501,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 501,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
     "exercise_id": 503,
     "equipment_id": 1,
     "is_required": 1
@@ -1962,21 +1102,6 @@
   {
     "exercise_id": 504,
     "equipment_id": 99,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 506,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 506,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 509,
-    "equipment_id": 20,
     "is_required": 1
   },
   {
@@ -1995,11 +1120,6 @@
     "is_required": 0
   },
   {
-    "exercise_id": 512,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 514,
     "equipment_id": 1,
     "is_required": 1
@@ -2008,16 +1128,6 @@
     "exercise_id": 514,
     "equipment_id": 43,
     "is_required": 0
-  },
-  {
-    "exercise_id": 518,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 519,
-    "equipment_id": 1,
-    "is_required": 1
   },
   {
     "exercise_id": 520,
@@ -2030,47 +1140,7 @@
     "is_required": 0
   },
   {
-    "exercise_id": 521,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 521,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 523,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 525,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 525,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
     "exercise_id": 526,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 528,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 528,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 529,
     "equipment_id": 1,
     "is_required": 1
   },
@@ -2127,16 +1197,6 @@
   {
     "exercise_id": 540,
     "equipment_id": 10,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 541,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 542,
-    "equipment_id": 40,
     "is_required": 1
   },
   {
@@ -2220,21 +1280,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 554,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 554,
-    "equipment_id": 43,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 558,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 559,
     "equipment_id": 50,
     "is_required": 1
@@ -2255,43 +1300,8 @@
     "is_required": 0
   },
   {
-    "exercise_id": 563,
-    "equipment_id": 11,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 564,
-    "equipment_id": 45,
-    "is_required": 1
-  },
-  {
     "exercise_id": 571,
     "equipment_id": 14,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 573,
-    "equipment_id": 34,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 574,
-    "equipment_id": 31,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 574,
-    "equipment_id": 33,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 575,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 576,
-    "equipment_id": 1,
     "is_required": 1
   },
   {
@@ -2345,11 +1355,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 606,
-    "equipment_id": 99,
-    "is_required": 1
-  },
-  {
     "exercise_id": 607,
     "equipment_id": 1,
     "is_required": 1
@@ -2357,11 +1362,6 @@
   {
     "exercise_id": 609,
     "equipment_id": 54,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 610,
-    "equipment_id": 1,
     "is_required": 1
   },
   {
@@ -2381,21 +1381,6 @@
   },
   {
     "exercise_id": 613,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 614,
-    "equipment_id": 21,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 614,
-    "equipment_id": 22,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 615,
     "equipment_id": 1,
     "is_required": 1
   },
@@ -2447,11 +1432,6 @@
   {
     "exercise_id": 623,
     "equipment_id": 50,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 627,
-    "equipment_id": 1,
     "is_required": 1
   },
   {
@@ -2550,21 +1530,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 656,
-    "equipment_id": 30,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 656,
-    "equipment_id": 35,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 657,
-    "equipment_id": 31,
-    "is_required": 1
-  },
-  {
     "exercise_id": 659,
     "equipment_id": 24,
     "is_required": 1
@@ -2575,23 +1540,8 @@
     "is_required": 1
   },
   {
-    "exercise_id": 661,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 661,
-    "equipment_id": 11,
-    "is_required": 0
-  },
-  {
     "exercise_id": 666,
     "equipment_id": 22,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 667,
-    "equipment_id": 1,
     "is_required": 1
   },
   {
@@ -2625,32 +1575,7 @@
     "is_required": 1
   },
   {
-    "exercise_id": 681,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 681,
-    "equipment_id": 52,
-    "is_required": 1
-  },
-  {
     "exercise_id": 682,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 683,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 685,
-    "equipment_id": 95,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 686,
     "equipment_id": 1,
     "is_required": 1
   },
@@ -2750,11 +1675,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 735,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 736,
     "equipment_id": 45,
     "is_required": 1
@@ -2765,51 +1685,11 @@
     "is_required": 1
   },
   {
-    "exercise_id": 740,
-    "equipment_id": 11,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 740,
-    "equipment_id": 95,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 744,
-    "equipment_id": 30,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 744,
-    "equipment_id": 35,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 745,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 747,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 749,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 753,
     "equipment_id": 45,
     "is_required": 1
   },
   {
-    "exercise_id": 755,
-    "equipment_id": 20,
-    "is_required": 1
-  },
-  {
     "exercise_id": 756,
     "equipment_id": 1,
     "is_required": 1
@@ -2820,23 +1700,8 @@
     "is_required": 0
   },
   {
-    "exercise_id": 760,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 761,
     "equipment_id": 12,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 762,
-    "equipment_id": 23,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 763,
-    "equipment_id": 1,
     "is_required": 1
   },
   {
@@ -2855,33 +1720,13 @@
     "is_required": 1
   },
   {
-    "exercise_id": 767,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 768,
-    "equipment_id": 45,
-    "is_required": 1
-  },
-  {
     "exercise_id": 770,
     "equipment_id": 45,
     "is_required": 1
   },
   {
-    "exercise_id": 773,
-    "equipment_id": 20,
-    "is_required": 1
-  },
-  {
     "exercise_id": 774,
     "equipment_id": 45,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 775,
-    "equipment_id": 43,
     "is_required": 1
   },
   {
@@ -2898,11 +1743,6 @@
     "exercise_id": 779,
     "equipment_id": 55,
     "is_required": 0
-  },
-  {
-    "exercise_id": 780,
-    "equipment_id": 34,
-    "is_required": 1
   },
   {
     "exercise_id": 784,
@@ -2935,16 +1775,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 791,
-    "equipment_id": 34,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 796,
-    "equipment_id": 30,
-    "is_required": 1
-  },
-  {
     "exercise_id": 798,
     "equipment_id": 1,
     "is_required": 1
@@ -2972,16 +1802,6 @@
   {
     "exercise_id": 809,
     "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 811,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 811,
-    "equipment_id": 50,
     "is_required": 1
   },
   {
@@ -3030,17 +1850,7 @@
     "is_required": 0
   },
   {
-    "exercise_id": 829,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 830,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 831,
     "equipment_id": 1,
     "is_required": 1
   },
@@ -3075,21 +1885,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 849,
-    "equipment_id": 30,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 849,
-    "equipment_id": 35,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 851,
-    "equipment_id": 13,
-    "is_required": 1
-  },
-  {
     "exercise_id": 854,
     "equipment_id": 1,
     "is_required": 1
@@ -3097,31 +1892,6 @@
   {
     "exercise_id": 856,
     "equipment_id": 43,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 858,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 859,
-    "equipment_id": 30,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 859,
-    "equipment_id": 35,
-    "is_required": 0
-  },
-  {
-    "exercise_id": 865,
-    "equipment_id": 34,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 869,
-    "equipment_id": 1,
     "is_required": 1
   },
   {
@@ -3155,11 +1925,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 877,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 878,
     "equipment_id": 1,
     "is_required": 1
@@ -3185,18 +1950,8 @@
     "is_required": 1
   },
   {
-    "exercise_id": 890,
-    "equipment_id": 32,
-    "is_required": 1
-  },
-  {
     "exercise_id": 891,
     "equipment_id": 45,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 894,
-    "equipment_id": 1,
     "is_required": 1
   },
   {
@@ -3816,12 +2571,12 @@
   },
   {
     "exercise_id": 989,
-    "equipment_id": 101,
+    "equipment_id": 95,
     "is_required": 1
   },
   {
     "exercise_id": 989,
-    "equipment_id": 95,
+    "equipment_id": 101,
     "is_required": 1
   },
   {
@@ -3961,12 +2716,12 @@
   },
   {
     "exercise_id": 1012,
-    "equipment_id": 101,
+    "equipment_id": 96,
     "is_required": 1
   },
   {
     "exercise_id": 1012,
-    "equipment_id": 96,
+    "equipment_id": 101,
     "is_required": 1
   },
   {
@@ -4111,12 +2866,12 @@
   },
   {
     "exercise_id": 1039,
-    "equipment_id": 21,
+    "equipment_id": 2,
     "is_required": 1
   },
   {
     "exercise_id": 1039,
-    "equipment_id": 2,
+    "equipment_id": 21,
     "is_required": 1
   },
   {
@@ -4181,12 +2936,12 @@
   },
   {
     "exercise_id": 1048,
-    "equipment_id": 22,
+    "equipment_id": 2,
     "is_required": 1
   },
   {
     "exercise_id": 1048,
-    "equipment_id": 2,
+    "equipment_id": 22,
     "is_required": 1
   },
   {
@@ -4470,11 +3225,6 @@
     "is_required": 1
   },
   {
-    "exercise_id": 1094,
-    "equipment_id": 1,
-    "is_required": 1
-  },
-  {
     "exercise_id": 1095,
     "equipment_id": 10,
     "is_required": 1
@@ -4566,11 +3316,6 @@
   },
   {
     "exercise_id": 1112,
-    "equipment_id": 101,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 1112,
     "equipment_id": 95,
     "is_required": 1
   },
@@ -4580,13 +3325,13 @@
     "is_required": 1
   },
   {
-    "exercise_id": 1113,
-    "equipment_id": 102,
+    "exercise_id": 1112,
+    "equipment_id": 101,
     "is_required": 1
   },
   {
-    "exercise_id": 1114,
-    "equipment_id": 101,
+    "exercise_id": 1113,
+    "equipment_id": 102,
     "is_required": 1
   },
   {
@@ -4597,6 +3342,11 @@
   {
     "exercise_id": 1114,
     "equipment_id": 97,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1114,
+    "equipment_id": 101,
     "is_required": 1
   },
   {
@@ -4616,11 +3366,6 @@
   },
   {
     "exercise_id": 1116,
-    "equipment_id": 101,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 1116,
     "equipment_id": 95,
     "is_required": 1
   },
@@ -4630,13 +3375,18 @@
     "is_required": 1
   },
   {
-    "exercise_id": 1117,
+    "exercise_id": 1116,
     "equipment_id": 101,
     "is_required": 1
   },
   {
     "exercise_id": 1117,
     "equipment_id": 96,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1117,
+    "equipment_id": 101,
     "is_required": 1
   },
   {
@@ -4751,22 +3501,22 @@
   },
   {
     "exercise_id": 1135,
-    "equipment_id": 119,
+    "equipment_id": 96,
     "is_required": 1
   },
   {
     "exercise_id": 1135,
+    "equipment_id": 119,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1136,
     "equipment_id": 96,
     "is_required": 1
   },
   {
     "exercise_id": 1136,
     "equipment_id": 116,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 1136,
-    "equipment_id": 96,
     "is_required": 1
   },
   {
@@ -4821,12 +3571,12 @@
   },
   {
     "exercise_id": 1145,
-    "equipment_id": 119,
+    "equipment_id": 95,
     "is_required": 1
   },
   {
     "exercise_id": 1145,
-    "equipment_id": 95,
+    "equipment_id": 119,
     "is_required": 1
   },
   {
@@ -4891,12 +3641,12 @@
   },
   {
     "exercise_id": 1156,
-    "equipment_id": 101,
+    "equipment_id": 97,
     "is_required": 1
   },
   {
     "exercise_id": 1156,
-    "equipment_id": 97,
+    "equipment_id": 101,
     "is_required": 1
   },
   {
@@ -4906,12 +3656,12 @@
   },
   {
     "exercise_id": 1158,
-    "equipment_id": 101,
+    "equipment_id": 97,
     "is_required": 1
   },
   {
     "exercise_id": 1158,
-    "equipment_id": 97,
+    "equipment_id": 101,
     "is_required": 1
   },
   {
@@ -4961,12 +3711,12 @@
   },
   {
     "exercise_id": 1166,
-    "equipment_id": 101,
+    "equipment_id": 97,
     "is_required": 1
   },
   {
     "exercise_id": 1166,
-    "equipment_id": 97,
+    "equipment_id": 101,
     "is_required": 1
   },
   {
@@ -5031,22 +3781,22 @@
   },
   {
     "exercise_id": 1175,
-    "equipment_id": 104,
+    "equipment_id": 95,
     "is_required": 1
   },
   {
     "exercise_id": 1175,
+    "equipment_id": 104,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1176,
     "equipment_id": 95,
     "is_required": 1
   },
   {
     "exercise_id": 1176,
     "equipment_id": 101,
-    "is_required": 1
-  },
-  {
-    "exercise_id": 1176,
-    "equipment_id": 95,
     "is_required": 1
   },
   {
@@ -5061,12 +3811,12 @@
   },
   {
     "exercise_id": 1179,
-    "equipment_id": 101,
+    "equipment_id": 97,
     "is_required": 1
   },
   {
     "exercise_id": 1179,
-    "equipment_id": 97,
+    "equipment_id": 101,
     "is_required": 1
   },
   {

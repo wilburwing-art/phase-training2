@@ -1,434 +1,866 @@
 [
   {
+    "id": 1,
     "exercise_id": 909,
-    "alias": "Arnold Press (Dumbbell)"
+    "alias": "Arnold Press (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 2,
     "exercise_id": 900,
-    "alias": "Bench Press (Barbell)"
+    "alias": "Bench Press (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 3,
     "exercise_id": 14,
-    "alias": "Bench Press (Dumbbell)"
+    "alias": "Bench Press (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 4,
     "exercise_id": 902,
-    "alias": "Bench Press - Close Grip (Barbell)"
+    "alias": "Bench Press - Close Grip (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 5,
     "exercise_id": 8,
-    "alias": "Bent Over Row (Band)"
+    "alias": "Bent Over Row (Band)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 6,
     "exercise_id": 8,
-    "alias": "Bent Over Row (Barbell)"
+    "alias": "Bent Over Row (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 7,
     "exercise_id": 8,
-    "alias": "Bent Over Row (Dumbbell)"
+    "alias": "Bent Over Row (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 8,
     "exercise_id": 946,
-    "alias": "Bicep Curl (Barbell)"
+    "alias": "Bicep Curl (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 9,
     "exercise_id": 952,
-    "alias": "Bicep Curl (Cable)"
+    "alias": "Bicep Curl (Cable)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 10,
     "exercise_id": 948,
-    "alias": "Bicep Curl (Dumbbell)"
+    "alias": "Bicep Curl (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 11,
     "exercise_id": 920,
-    "alias": "Box Squat (Barbell)"
+    "alias": "Box Squat (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 12,
     "exercise_id": 956,
-    "alias": "Cable Kickback"
+    "alias": "Cable Kickback",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 13,
     "exercise_id": 923,
-    "alias": "Chin Up (Assisted)"
+    "alias": "Chin Up (Assisted)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 14,
     "exercise_id": 951,
-    "alias": "Concentration Curl (Dumbbell)"
+    "alias": "Concentration Curl (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 15,
     "exercise_id": 968,
-    "alias": "Crunch (Machine)"
+    "alias": "Crunch (Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 16,
     "exercise_id": 968,
-    "alias": "Crunch (Stability Ball)"
+    "alias": "Crunch (Stability Ball)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 17,
     "exercise_id": 451,
-    "alias": "Deadlift (Band)"
+    "alias": "Deadlift (Band)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 18,
     "exercise_id": 451,
-    "alias": "Deadlift (Barbell)"
+    "alias": "Deadlift (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 19,
     "exercise_id": 451,
-    "alias": "Deadlift (Dumbbell)"
+    "alias": "Deadlift (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 20,
     "exercise_id": 451,
-    "alias": "Deadlift (Smith Machine)"
+    "alias": "Deadlift (Smith Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 21,
     "exercise_id": 918,
-    "alias": "Deficit Deadlift (Barbell)"
+    "alias": "Deficit Deadlift (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 22,
     "exercise_id": 915,
-    "alias": "Dumbbell Snatch"
+    "alias": "Dumbbell Snatch",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 23,
     "exercise_id": 956,
-    "alias": "Dumbbell Tricep Kickback"
+    "alias": "Dumbbell Tricep Kickback",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 24,
     "exercise_id": 24,
-    "alias": "Face Pull (Cable)"
+    "alias": "Face Pull (Cable)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 25,
     "exercise_id": 64,
-    "alias": "Farmers Carry"
+    "alias": "Farmers Carry",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 26,
     "exercise_id": 959,
-    "alias": "Front Raise (Band)"
+    "alias": "Front Raise (Band)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 27,
     "exercise_id": 959,
-    "alias": "Front Raise (Barbell)"
+    "alias": "Front Raise (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 28,
     "exercise_id": 959,
-    "alias": "Front Raise (Cable)"
+    "alias": "Front Raise (Cable)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 29,
     "exercise_id": 959,
-    "alias": "Front Raise (Dumbbell)"
+    "alias": "Front Raise (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 30,
     "exercise_id": 959,
-    "alias": "Front Raise (Plate)"
+    "alias": "Front Raise (Plate)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 31,
     "exercise_id": 941,
-    "alias": "Glute Ham Raise"
+    "alias": "Glute Ham Raise",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 32,
     "exercise_id": 60,
-    "alias": "Goblet Squat (Kettlebell)"
+    "alias": "Goblet Squat (Kettlebell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 33,
     "exercise_id": 921,
-    "alias": "Good Morning (Barbell)"
+    "alias": "Good Morning (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 34,
     "exercise_id": 932,
-    "alias": "Hack Squat"
+    "alias": "Hack Squat",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 35,
     "exercise_id": 932,
-    "alias": "Hack Squat (Barbell)"
+    "alias": "Hack Squat (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 36,
     "exercise_id": 950,
-    "alias": "Hammer Curl (Band)"
+    "alias": "Hammer Curl (Band)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 37,
     "exercise_id": 950,
-    "alias": "Hammer Curl (Cable)"
+    "alias": "Hammer Curl (Cable)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 38,
     "exercise_id": 950,
-    "alias": "Hammer Curl (Dumbbell)"
+    "alias": "Hammer Curl (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 39,
     "exercise_id": 910,
-    "alias": "Hang Clean (Barbell)"
+    "alias": "Hang Clean (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 40,
     "exercise_id": 936,
-    "alias": "Hip Abductor (Machine)"
+    "alias": "Hip Abductor (Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 41,
     "exercise_id": 101,
-    "alias": "Hip Thrust (Barbell)"
+    "alias": "Hip Thrust (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 42,
     "exercise_id": 101,
-    "alias": "Hip Thrust (Bodyweight)"
+    "alias": "Hip Thrust (Bodyweight)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 43,
     "exercise_id": 901,
-    "alias": "Incline Bench Press (Barbell)"
+    "alias": "Incline Bench Press (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 44,
     "exercise_id": 901,
-    "alias": "Incline Bench Press (Cable)"
+    "alias": "Incline Bench Press (Cable)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 45,
     "exercise_id": 907,
-    "alias": "Incline Bench Press (Dumbbell)"
+    "alias": "Incline Bench Press (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 46,
     "exercise_id": 901,
-    "alias": "Incline Bench Press (Smith Machine)"
+    "alias": "Incline Bench Press (Smith Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 47,
     "exercise_id": 949,
-    "alias": "Incline Curl (Dumbbell)"
+    "alias": "Incline Curl (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 48,
     "exercise_id": 135,
-    "alias": "Inverted Row (Bodyweight)"
+    "alias": "Inverted Row (Bodyweight)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 49,
     "exercise_id": 915,
-    "alias": "Kettlebell Snatch"
+    "alias": "Kettlebell Snatch",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 50,
     "exercise_id": 119,
-    "alias": "Kettlebell Turkish Get Up"
+    "alias": "Kettlebell Turkish Get Up",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 51,
     "exercise_id": 925,
-    "alias": "Lat Pulldown - Wide Grip (Cable)"
+    "alias": "Lat Pulldown - Wide Grip (Cable)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 52,
     "exercise_id": 602,
-    "alias": "Lateral Box Jump"
+    "alias": "Lateral Box Jump",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 53,
     "exercise_id": 546,
-    "alias": "Lateral Raise (Band)"
+    "alias": "Lateral Raise (Band)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 54,
     "exercise_id": 958,
-    "alias": "Lateral Raise (Cable)"
+    "alias": "Lateral Raise (Cable)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 55,
     "exercise_id": 546,
-    "alias": "Lateral Raise (Dumbbell)"
+    "alias": "Lateral Raise (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 56,
     "exercise_id": 546,
-    "alias": "Lateral Raise (Machine)"
+    "alias": "Lateral Raise (Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 57,
     "exercise_id": 933,
-    "alias": "Leg Extension (Machine)"
+    "alias": "Leg Extension (Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 58,
     "exercise_id": 934,
-    "alias": "Lying Leg Curl (Machine)"
+    "alias": "Lying Leg Curl (Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 59,
     "exercise_id": 955,
-    "alias": "Overhead Cable Tricep Extension"
+    "alias": "Overhead Cable Tricep Extension",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 60,
     "exercise_id": 15,
-    "alias": "Overhead Press (Barbell)"
+    "alias": "Overhead Press (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 61,
     "exercise_id": 15,
-    "alias": "Overhead Press (Cable)"
+    "alias": "Overhead Press (Cable)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 62,
     "exercise_id": 15,
-    "alias": "Overhead Press (Dumbbell)"
+    "alias": "Overhead Press (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 63,
     "exercise_id": 15,
-    "alias": "Overhead Press (Smith Machine)"
+    "alias": "Overhead Press (Smith Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 64,
     "exercise_id": 967,
-    "alias": "Pec Deck (Machine)"
+    "alias": "Pec Deck (Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 65,
     "exercise_id": 927,
-    "alias": "Pendlay Row (Barbell)"
+    "alias": "Pendlay Row (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 66,
     "exercise_id": 912,
-    "alias": "Power Snatch (Barbell)"
+    "alias": "Power Snatch (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 67,
     "exercise_id": 543,
-    "alias": "Preacher Curl (Barbell)"
+    "alias": "Preacher Curl (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 68,
     "exercise_id": 543,
-    "alias": "Preacher Curl (Dumbbell)"
+    "alias": "Preacher Curl (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 69,
     "exercise_id": 543,
-    "alias": "Preacher Curl (Machine)"
+    "alias": "Preacher Curl (Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 70,
     "exercise_id": 922,
-    "alias": "Pull Up (Assisted)"
+    "alias": "Pull Up (Assisted)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 71,
     "exercise_id": 922,
-    "alias": "Pull Up (Band)"
+    "alias": "Pull Up (Band)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 72,
     "exercise_id": 312,
-    "alias": "Pullover (Dumbbell)"
+    "alias": "Pullover (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 73,
     "exercise_id": 312,
-    "alias": "Pullover (Machine)"
+    "alias": "Pullover (Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 74,
     "exercise_id": 13,
-    "alias": "Push Up (Band)"
+    "alias": "Push Up (Band)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 75,
     "exercise_id": 960,
-    "alias": "Reverse Fly (Cable)"
+    "alias": "Reverse Fly (Cable)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 76,
     "exercise_id": 452,
-    "alias": "Reverse Fly (Dumbbell)"
+    "alias": "Reverse Fly (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 77,
     "exercise_id": 452,
-    "alias": "Reverse Fly (Machine)"
+    "alias": "Reverse Fly (Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 78,
     "exercise_id": 944,
-    "alias": "Reverse Lunge"
+    "alias": "Reverse Lunge",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 79,
     "exercise_id": 58,
-    "alias": "Romanian Deadlift (Dumbbell)"
+    "alias": "Romanian Deadlift (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 80,
     "exercise_id": 942,
-    "alias": "Seated Calf Raise (Machine)"
+    "alias": "Seated Calf Raise (Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 81,
     "exercise_id": 942,
-    "alias": "Seated Calf Raise (Plate Loaded)"
+    "alias": "Seated Calf Raise (Plate Loaded)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 82,
     "exercise_id": 935,
-    "alias": "Seated Leg Curl (Machine)"
+    "alias": "Seated Leg Curl (Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 83,
     "exercise_id": 9,
-    "alias": "Seated Row (Cable)"
+    "alias": "Seated Row (Cable)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 84,
     "exercise_id": 9,
-    "alias": "Seated Row (Machine)"
+    "alias": "Seated Row (Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 85,
     "exercise_id": 963,
-    "alias": "Shrug (Barbell)"
+    "alias": "Shrug (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 86,
     "exercise_id": 964,
-    "alias": "Shrug (Dumbbell)"
+    "alias": "Shrug (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 87,
     "exercise_id": 963,
-    "alias": "Shrug (Machine)"
+    "alias": "Shrug (Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 88,
     "exercise_id": 963,
-    "alias": "Shrug (Smith Machine)"
+    "alias": "Shrug (Smith Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 89,
     "exercise_id": 533,
-    "alias": "Sled Push"
+    "alias": "Sled Push",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 90,
     "exercise_id": 915,
-    "alias": "Snatch (Barbell)"
+    "alias": "Snatch (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 91,
     "exercise_id": 913,
-    "alias": "Snatch Pull (Barbell)"
+    "alias": "Snatch Pull (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 92,
     "exercise_id": 112,
-    "alias": "Standing Calf Raise (Barbell)"
+    "alias": "Standing Calf Raise (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 93,
     "exercise_id": 112,
-    "alias": "Standing Calf Raise (Bodyweight)"
+    "alias": "Standing Calf Raise (Bodyweight)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 94,
     "exercise_id": 112,
-    "alias": "Standing Calf Raise (Dumbbell)"
+    "alias": "Standing Calf Raise (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 95,
     "exercise_id": 112,
-    "alias": "Standing Calf Raise (Machine)"
+    "alias": "Standing Calf Raise (Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 96,
     "exercise_id": 112,
-    "alias": "Standing Calf Raise (Smith Machine)"
+    "alias": "Standing Calf Raise (Smith Machine)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 97,
     "exercise_id": 238,
-    "alias": "Step-up"
+    "alias": "Step-up",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 98,
     "exercise_id": 917,
-    "alias": "Stiff Leg Deadlift (Barbell)"
+    "alias": "Stiff Leg Deadlift (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 99,
     "exercise_id": 917,
-    "alias": "Stiff Leg Deadlift (Dumbbell)"
+    "alias": "Stiff Leg Deadlift (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 100,
     "exercise_id": 916,
-    "alias": "Sumo Deadlift (Barbell)"
+    "alias": "Sumo Deadlift (Barbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 101,
     "exercise_id": 220,
-    "alias": "Superman"
+    "alias": "Superman",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 102,
     "exercise_id": 953,
-    "alias": "Tricep Rope Pushdown"
+    "alias": "Tricep Rope Pushdown",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 103,
     "exercise_id": 962,
-    "alias": "Upright Row (Cable)"
+    "alias": "Upright Row (Cable)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 104,
     "exercise_id": 962,
-    "alias": "Upright Row (Dumbbell)"
+    "alias": "Upright Row (Dumbbell)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 105,
     "exercise_id": 504,
-    "alias": "Wall Walk"
+    "alias": "Wall Walk",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 106,
     "exercise_id": 922,
-    "alias": "Wide Pull Up"
+    "alias": "Wide Pull Up",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 107,
     "exercise_id": 115,
-    "alias": "Wood Chop (Cable)"
+    "alias": "Wood Chop (Cable)",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   },
   {
+    "id": 108,
     "exercise_id": 200,
-    "alias": "Straight-Arm Pulldown"
+    "alias": "Straight-Arm Pulldown",
+    "source": null,
+    "notes": null,
+    "created_at": "2026-06-01 13:29:33"
   }
 ]

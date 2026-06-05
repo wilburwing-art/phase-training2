@@ -400,36 +400,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 25,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 25,
-    "muscle_group_id": 46,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 26,
-    "muscle_group_id": 18,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 26,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 27,
-    "muscle_group_id": 26,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 27,
-    "muscle_group_id": 30,
-    "role": "primary"
-  },
-  {
     "exercise_id": 28,
     "muscle_group_id": 14,
     "role": "primary"
@@ -440,16 +410,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 29,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 30,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
     "exercise_id": 31,
     "muscle_group_id": 18,
     "role": "secondary"
@@ -470,46 +430,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 32,
-    "muscle_group_id": 26,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 32,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 32,
-    "muscle_group_id": 45,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 33,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 33,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 33,
-    "muscle_group_id": 42,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 34,
-    "muscle_group_id": 18,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 34,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
     "exercise_id": 35,
     "muscle_group_id": 18,
     "role": "primary"
@@ -523,116 +443,6 @@
     "exercise_id": 35,
     "muscle_group_id": 31,
     "role": "primary"
-  },
-  {
-    "exercise_id": 36,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 36,
-    "muscle_group_id": 42,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 36,
-    "muscle_group_id": 45,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 37,
-    "muscle_group_id": 32,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 38,
-    "muscle_group_id": 65,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 38,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 39,
-    "muscle_group_id": 15,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 39,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 40,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 40,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 41,
-    "muscle_group_id": 83,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 41,
-    "muscle_group_id": 86,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 42,
-    "muscle_group_id": 32,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 43,
-    "muscle_group_id": 59,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 43,
-    "muscle_group_id": 74,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 44,
-    "muscle_group_id": 26,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 44,
-    "muscle_group_id": 70,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 44,
-    "muscle_group_id": 83,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 45,
-    "muscle_group_id": 32,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 45,
-    "muscle_group_id": 54,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 46,
-    "muscle_group_id": 54,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 46,
-    "muscle_group_id": 74,
-    "role": "secondary"
   },
   {
     "exercise_id": 47,
@@ -865,106 +675,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 65,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 65,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 66,
-    "muscle_group_id": 45,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 67,
-    "muscle_group_id": 26,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 67,
-    "muscle_group_id": 70,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 68,
-    "muscle_group_id": 26,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 68,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 68,
-    "muscle_group_id": 45,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 69,
-    "muscle_group_id": 74,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 70,
-    "muscle_group_id": 65,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 70,
-    "muscle_group_id": 70,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 71,
-    "muscle_group_id": 15,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 72,
-    "muscle_group_id": 70,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 72,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 73,
-    "muscle_group_id": 32,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 73,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 74,
-    "muscle_group_id": 74,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 74,
-    "muscle_group_id": 83,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 75,
-    "muscle_group_id": 32,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 75,
-    "muscle_group_id": 54,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 101,
     "muscle_group_id": 70,
     "role": "secondary"
@@ -1005,36 +715,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 104,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 105,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 105,
-    "muscle_group_id": 77,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 106,
-    "muscle_group_id": 51,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 106,
-    "muscle_group_id": 82,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 107,
-    "muscle_group_id": 86,
-    "role": "primary"
-  },
-  {
     "exercise_id": 108,
     "muscle_group_id": 70,
     "role": "primary"
@@ -1045,26 +725,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 109,
-    "muscle_group_id": 50,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 109,
-    "muscle_group_id": 53,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 110,
-    "muscle_group_id": 50,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 110,
-    "muscle_group_id": 54,
-    "role": "primary"
-  },
-  {
     "exercise_id": 111,
     "muscle_group_id": 84,
     "role": "secondary"
@@ -1107,16 +767,6 @@
   {
     "exercise_id": 115,
     "muscle_group_id": 52,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 116,
-    "muscle_group_id": 19,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 116,
-    "muscle_group_id": 23,
     "role": "primary"
   },
   {
@@ -1176,7 +826,17 @@
   },
   {
     "exercise_id": 123,
+    "muscle_group_id": 3,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 123,
     "muscle_group_id": 78,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 123,
+    "muscle_group_id": 83,
     "role": "primary"
   },
   {
@@ -1185,23 +845,8 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 124,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 124,
-    "muscle_group_id": 88,
-    "role": "stabilizer"
-  },
-  {
     "exercise_id": 125,
     "muscle_group_id": 65,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 126,
-    "muscle_group_id": 32,
     "role": "primary"
   },
   {
@@ -1270,21 +915,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 133,
-    "muscle_group_id": 88,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 134,
-    "muscle_group_id": 32,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 134,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
     "exercise_id": 135,
     "muscle_group_id": 26,
     "role": "primary"
@@ -1302,21 +932,6 @@
   {
     "exercise_id": 200,
     "muscle_group_id": 26,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 202,
-    "muscle_group_id": 18,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 202,
-    "muscle_group_id": 19,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 202,
-    "muscle_group_id": 30,
     "role": "primary"
   },
   {
@@ -1430,21 +1045,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 222,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 222,
-    "muscle_group_id": 32,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 224,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
     "exercise_id": 225,
     "muscle_group_id": 16,
     "role": "primary"
@@ -1627,16 +1227,6 @@
   {
     "exercise_id": 242,
     "muscle_group_id": 85,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 300,
-    "muscle_group_id": 90,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 300,
-    "muscle_group_id": 91,
     "role": "primary"
   },
   {
@@ -1685,16 +1275,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 304,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 304,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
     "exercise_id": 305,
     "muscle_group_id": 50,
     "role": "stabilizer"
@@ -1792,106 +1372,6 @@
   {
     "exercise_id": 313,
     "muscle_group_id": 39,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 314,
-    "muscle_group_id": 29,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 314,
-    "muscle_group_id": 31,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 314,
-    "muscle_group_id": 51,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 315,
-    "muscle_group_id": 36,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 315,
-    "muscle_group_id": 38,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 315,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 316,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 316,
-    "muscle_group_id": 21,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 316,
-    "muscle_group_id": 23,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 317,
-    "muscle_group_id": 90,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 317,
-    "muscle_group_id": 93,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 317,
-    "muscle_group_id": 94,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 318,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 318,
-    "muscle_group_id": 82,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 318,
-    "muscle_group_id": 83,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 320,
-    "muscle_group_id": 59,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 320,
-    "muscle_group_id": 74,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 320,
-    "muscle_group_id": 82,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 321,
-    "muscle_group_id": 26,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 321,
-    "muscle_group_id": 32,
     "role": "primary"
   },
   {
@@ -1961,6 +1441,11 @@
   },
   {
     "exercise_id": 329,
+    "muscle_group_id": 65,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 329,
     "muscle_group_id": 70,
     "role": "primary"
   },
@@ -1971,127 +1456,12 @@
   },
   {
     "exercise_id": 329,
+    "muscle_group_id": 76,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 329,
     "muscle_group_id": 83,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 331,
-    "muscle_group_id": 5,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 332,
-    "muscle_group_id": 59,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 332,
-    "muscle_group_id": 74,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 333,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 333,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 334,
-    "muscle_group_id": 50,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 334,
-    "muscle_group_id": 57,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 335,
-    "muscle_group_id": 37,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 335,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 336,
-    "muscle_group_id": 37,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 336,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 337,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 338,
-    "muscle_group_id": 41,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 338,
-    "muscle_group_id": 46,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 339,
-    "muscle_group_id": 38,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 339,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 339,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 340,
-    "muscle_group_id": 38,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 340,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 341,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 341,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 341,
-    "muscle_group_id": 44,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 342,
-    "muscle_group_id": 14,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 342,
-    "muscle_group_id": 30,
     "role": "secondary"
   },
   {
@@ -2117,36 +1487,6 @@
   {
     "exercise_id": 344,
     "muscle_group_id": 31,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 345,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 345,
-    "muscle_group_id": 30,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 346,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 346,
-    "muscle_group_id": 30,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 347,
-    "muscle_group_id": 19,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 347,
-    "muscle_group_id": 32,
     "role": "primary"
   },
   {
@@ -2210,16 +1550,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 357,
-    "muscle_group_id": 15,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 357,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
     "exercise_id": 358,
     "muscle_group_id": 78,
     "role": "secondary"
@@ -2268,66 +1598,6 @@
     "exercise_id": 362,
     "muscle_group_id": 74,
     "role": "secondary"
-  },
-  {
-    "exercise_id": 363,
-    "muscle_group_id": 50,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 363,
-    "muscle_group_id": 51,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 364,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 365,
-    "muscle_group_id": 59,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 365,
-    "muscle_group_id": 74,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 365,
-    "muscle_group_id": 82,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 366,
-    "muscle_group_id": 13,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 366,
-    "muscle_group_id": 32,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 367,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 367,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 368,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 368,
-    "muscle_group_id": 41,
-    "role": "primary"
   },
   {
     "exercise_id": 370,
@@ -2470,61 +1740,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 387,
-    "muscle_group_id": 50,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 387,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 387,
-    "muscle_group_id": 88,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 388,
-    "muscle_group_id": 50,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 388,
-    "muscle_group_id": 76,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 388,
-    "muscle_group_id": 88,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 390,
-    "muscle_group_id": 54,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 390,
-    "muscle_group_id": 70,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 391,
-    "muscle_group_id": 30,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 391,
-    "muscle_group_id": 54,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 391,
-    "muscle_group_id": 74,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 392,
     "muscle_group_id": 51,
     "role": "secondary"
@@ -2555,16 +1770,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 397,
-    "muscle_group_id": 18,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 397,
-    "muscle_group_id": 30,
-    "role": "primary"
-  },
-  {
     "exercise_id": 398,
     "muscle_group_id": 14,
     "role": "secondary"
@@ -2572,71 +1777,6 @@
   {
     "exercise_id": 398,
     "muscle_group_id": 30,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 399,
-    "muscle_group_id": 14,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 400,
-    "muscle_group_id": 18,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 400,
-    "muscle_group_id": 21,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 400,
-    "muscle_group_id": 22,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 401,
-    "muscle_group_id": 19,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 401,
-    "muscle_group_id": 26,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 401,
-    "muscle_group_id": 44,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 347,
-    "muscle_group_id": 51,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 406,
-    "muscle_group_id": 32,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 406,
-    "muscle_group_id": 66,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 406,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 407,
-    "muscle_group_id": 32,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 407,
-    "muscle_group_id": 54,
     "role": "primary"
   },
   {
@@ -2670,21 +1810,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 414,
-    "muscle_group_id": 32,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 414,
-    "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 414,
-    "muscle_group_id": 82,
-    "role": "primary"
-  },
-  {
     "exercise_id": 415,
     "muscle_group_id": 70,
     "role": "primary"
@@ -2695,31 +1820,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 417,
-    "muscle_group_id": 66,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 417,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 418,
-    "muscle_group_id": 26,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 419,
-    "muscle_group_id": 18,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 419,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
     "exercise_id": 420,
     "muscle_group_id": 65,
     "role": "primary"
@@ -2728,11 +1828,6 @@
     "exercise_id": 420,
     "muscle_group_id": 78,
     "role": "secondary"
-  },
-  {
-    "exercise_id": 421,
-    "muscle_group_id": 82,
-    "role": "primary"
   },
   {
     "exercise_id": 422,
@@ -2747,41 +1842,6 @@
   {
     "exercise_id": 422,
     "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 423,
-    "muscle_group_id": 65,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 423,
-    "muscle_group_id": 74,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 423,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 425,
-    "muscle_group_id": 65,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 425,
-    "muscle_group_id": 68,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 426,
-    "muscle_group_id": 86,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 426,
-    "muscle_group_id": 87,
     "role": "primary"
   },
   {
@@ -2797,16 +1857,6 @@
   {
     "exercise_id": 427,
     "muscle_group_id": 30,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 428,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 428,
-    "muscle_group_id": 21,
     "role": "primary"
   },
   {
@@ -2840,111 +1890,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 433,
-    "muscle_group_id": 59,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 433,
-    "muscle_group_id": 75,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 433,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 434,
-    "muscle_group_id": 70,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 434,
-    "muscle_group_id": 71,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 435,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 435,
-    "muscle_group_id": 50,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 441,
-    "muscle_group_id": 32,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 441,
-    "muscle_group_id": 74,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 441,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 442,
-    "muscle_group_id": 67,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 442,
-    "muscle_group_id": 80,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 443,
-    "muscle_group_id": 82,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 445,
-    "muscle_group_id": 32,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 446,
-    "muscle_group_id": 85,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 446,
-    "muscle_group_id": 86,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 447,
-    "muscle_group_id": 59,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 447,
-    "muscle_group_id": 60,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 447,
-    "muscle_group_id": 75,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 448,
-    "muscle_group_id": 66,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 448,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
     "exercise_id": 450,
     "muscle_group_id": 50,
     "role": "secondary"
@@ -2990,61 +1935,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 453,
-    "muscle_group_id": 18,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 453,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 453,
-    "muscle_group_id": 30,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 454,
-    "muscle_group_id": 90,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 454,
-    "muscle_group_id": 92,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 455,
-    "muscle_group_id": 90,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 455,
-    "muscle_group_id": 93,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 456,
-    "muscle_group_id": 21,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 456,
-    "muscle_group_id": 22,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 457,
-    "muscle_group_id": 50,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 457,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
     "exercise_id": 458,
     "muscle_group_id": 26,
     "role": "primary"
@@ -3057,51 +1947,6 @@
   {
     "exercise_id": 458,
     "muscle_group_id": 51,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 459,
-    "muscle_group_id": 51,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 459,
-    "muscle_group_id": 56,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 459,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 460,
-    "muscle_group_id": 51,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 460,
-    "muscle_group_id": 82,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 461,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 461,
-    "muscle_group_id": 77,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 462,
-    "muscle_group_id": 16,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 462,
-    "muscle_group_id": 36,
     "role": "secondary"
   },
   {
@@ -3160,41 +2005,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 471,
-    "muscle_group_id": 83,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 471,
-    "muscle_group_id": 87,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 329,
-    "muscle_group_id": 65,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 329,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 476,
-    "muscle_group_id": 3,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 476,
-    "muscle_group_id": 87,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 476,
-    "muscle_group_id": 88,
-    "role": "primary"
-  },
-  {
     "exercise_id": 477,
     "muscle_group_id": 65,
     "role": "primary"
@@ -3217,46 +2027,6 @@
   {
     "exercise_id": 478,
     "muscle_group_id": 40,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 479,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 479,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 480,
-    "muscle_group_id": 59,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 480,
-    "muscle_group_id": 82,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 481,
-    "muscle_group_id": 59,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 481,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 483,
-    "muscle_group_id": 86,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 483,
-    "muscle_group_id": 88,
     "role": "secondary"
   },
   {
@@ -3375,31 +2145,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 497,
-    "muscle_group_id": 3,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 497,
-    "muscle_group_id": 32,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 497,
-    "muscle_group_id": 74,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 498,
-    "muscle_group_id": 54,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 498,
-    "muscle_group_id": 70,
-    "role": "primary"
-  },
-  {
     "exercise_id": 499,
     "muscle_group_id": 26,
     "role": "primary"
@@ -3427,21 +2172,6 @@
   {
     "exercise_id": 500,
     "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 501,
-    "muscle_group_id": 19,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 501,
-    "muscle_group_id": 26,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 501,
-    "muscle_group_id": 32,
     "role": "primary"
   },
   {
@@ -3475,26 +2205,6 @@
     "role": "stabilizer"
   },
   {
-    "exercise_id": 506,
-    "muscle_group_id": 3,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 506,
-    "muscle_group_id": 32,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 509,
-    "muscle_group_id": 15,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 509,
-    "muscle_group_id": 32,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 510,
     "muscle_group_id": 84,
     "role": "primary"
@@ -3525,21 +2235,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 512,
-    "muscle_group_id": 65,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 512,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 512,
-    "muscle_group_id": 84,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 514,
     "muscle_group_id": 70,
     "role": "secondary"
@@ -3548,36 +2243,6 @@
     "exercise_id": 514,
     "muscle_group_id": 75,
     "role": "primary"
-  },
-  {
-    "exercise_id": 518,
-    "muscle_group_id": 76,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 518,
-    "muscle_group_id": 82,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 518,
-    "muscle_group_id": 83,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 519,
-    "muscle_group_id": 51,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 519,
-    "muscle_group_id": 59,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 519,
-    "muscle_group_id": 82,
-    "role": "secondary"
   },
   {
     "exercise_id": 520,
@@ -3595,46 +2260,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 521,
-    "muscle_group_id": 3,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 521,
-    "muscle_group_id": 15,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 521,
-    "muscle_group_id": 51,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 523,
-    "muscle_group_id": 3,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 523,
-    "muscle_group_id": 76,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 523,
-    "muscle_group_id": 83,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 525,
-    "muscle_group_id": 59,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 525,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
     "exercise_id": 526,
     "muscle_group_id": 65,
     "role": "primary"
@@ -3648,31 +2273,6 @@
     "exercise_id": 526,
     "muscle_group_id": 88,
     "role": "secondary"
-  },
-  {
-    "exercise_id": 528,
-    "muscle_group_id": 59,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 528,
-    "muscle_group_id": 82,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 529,
-    "muscle_group_id": 65,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 529,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 529,
-    "muscle_group_id": 87,
-    "role": "stabilizer"
   },
   {
     "exercise_id": 531,
@@ -3822,21 +2422,6 @@
   {
     "exercise_id": 540,
     "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 541,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 541,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 542,
-    "muscle_group_id": 32,
     "role": "primary"
   },
   {
@@ -3940,31 +2525,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 554,
-    "muscle_group_id": 65,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 554,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 554,
-    "muscle_group_id": 79,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 558,
-    "muscle_group_id": 90,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 558,
-    "muscle_group_id": 92,
-    "role": "primary"
-  },
-  {
     "exercise_id": 559,
     "muscle_group_id": 65,
     "role": "primary"
@@ -4010,31 +2570,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 563,
-    "muscle_group_id": 40,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 563,
-    "muscle_group_id": 41,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 564,
-    "muscle_group_id": 15,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 564,
-    "muscle_group_id": 50,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 564,
-    "muscle_group_id": 76,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 571,
     "muscle_group_id": 15,
     "role": "secondary"
@@ -4053,51 +2588,6 @@
     "exercise_id": 571,
     "muscle_group_id": 74,
     "role": "secondary"
-  },
-  {
-    "exercise_id": 573,
-    "muscle_group_id": 76,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 573,
-    "muscle_group_id": 83,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 573,
-    "muscle_group_id": 88,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 574,
-    "muscle_group_id": 76,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 574,
-    "muscle_group_id": 83,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 574,
-    "muscle_group_id": 88,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 575,
-    "muscle_group_id": 86,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 575,
-    "muscle_group_id": 88,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 576,
-    "muscle_group_id": 88,
-    "role": "primary"
   },
   {
     "exercise_id": 577,
@@ -4220,21 +2710,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 606,
-    "muscle_group_id": 84,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 606,
-    "muscle_group_id": 85,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 606,
-    "muscle_group_id": 86,
-    "role": "primary"
-  },
-  {
     "exercise_id": 607,
     "muscle_group_id": 3,
     "role": "stabilizer"
@@ -4270,26 +2745,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 610,
-    "muscle_group_id": 18,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 610,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 610,
-    "muscle_group_id": 29,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 610,
-    "muscle_group_id": 30,
-    "role": "primary"
-  },
-  {
     "exercise_id": 612,
     "muscle_group_id": 3,
     "role": "secondary"
@@ -4323,41 +2778,6 @@
     "exercise_id": 613,
     "muscle_group_id": 88,
     "role": "secondary"
-  },
-  {
-    "exercise_id": 614,
-    "muscle_group_id": 3,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 614,
-    "muscle_group_id": 51,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 614,
-    "muscle_group_id": 52,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 615,
-    "muscle_group_id": 3,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 615,
-    "muscle_group_id": 59,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 615,
-    "muscle_group_id": 75,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 615,
-    "muscle_group_id": 76,
-    "role": "primary"
   },
   {
     "exercise_id": 616,
@@ -4458,11 +2878,6 @@
     "exercise_id": 623,
     "muscle_group_id": 83,
     "role": "secondary"
-  },
-  {
-    "exercise_id": 627,
-    "muscle_group_id": 1,
-    "role": "primary"
   },
   {
     "exercise_id": 629,
@@ -4675,41 +3090,6 @@
     "role": "stabilizer"
   },
   {
-    "exercise_id": 656,
-    "muscle_group_id": 3,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 656,
-    "muscle_group_id": 87,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 656,
-    "muscle_group_id": 88,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 657,
-    "muscle_group_id": 3,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 657,
-    "muscle_group_id": 51,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 657,
-    "muscle_group_id": 65,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 657,
-    "muscle_group_id": 76,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 659,
     "muscle_group_id": 3,
     "role": "stabilizer"
@@ -4745,21 +3125,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 661,
-    "muscle_group_id": 3,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 661,
-    "muscle_group_id": 19,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 661,
-    "muscle_group_id": 51,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 666,
     "muscle_group_id": 15,
     "role": "secondary"
@@ -4772,21 +3137,6 @@
   {
     "exercise_id": 666,
     "muscle_group_id": 51,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 667,
-    "muscle_group_id": 76,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 667,
-    "muscle_group_id": 87,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 667,
-    "muscle_group_id": 88,
     "role": "primary"
   },
   {
@@ -4865,16 +3215,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 681,
-    "muscle_group_id": 3,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 681,
-    "muscle_group_id": 88,
-    "role": "primary"
-  },
-  {
     "exercise_id": 682,
     "muscle_group_id": 65,
     "role": "primary"
@@ -4887,46 +3227,6 @@
   {
     "exercise_id": 682,
     "muscle_group_id": 83,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 683,
-    "muscle_group_id": 3,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 683,
-    "muscle_group_id": 70,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 683,
-    "muscle_group_id": 75,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 685,
-    "muscle_group_id": 28,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 685,
-    "muscle_group_id": 92,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 686,
-    "muscle_group_id": 3,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 686,
-    "muscle_group_id": 15,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 686,
-    "muscle_group_id": 51,
     "role": "secondary"
   },
   {
@@ -4978,16 +3278,6 @@
     "exercise_id": 692,
     "muscle_group_id": 83,
     "role": "secondary"
-  },
-  {
-    "exercise_id": 123,
-    "muscle_group_id": 3,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 123,
-    "muscle_group_id": 83,
-    "role": "primary"
   },
   {
     "exercise_id": 694,
@@ -5195,16 +3485,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 735,
-    "muscle_group_id": 28,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 735,
-    "muscle_group_id": 92,
-    "role": "primary"
-  },
-  {
     "exercise_id": 736,
     "muscle_group_id": 3,
     "role": "secondary"
@@ -5235,66 +3515,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 740,
-    "muscle_group_id": 19,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 740,
-    "muscle_group_id": 29,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 740,
-    "muscle_group_id": 30,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 744,
-    "muscle_group_id": 65,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 744,
-    "muscle_group_id": 87,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 744,
-    "muscle_group_id": 88,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 745,
-    "muscle_group_id": 58,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 745,
-    "muscle_group_id": 82,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 747,
-    "muscle_group_id": 3,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 747,
-    "muscle_group_id": 15,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 747,
-    "muscle_group_id": 51,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 749,
-    "muscle_group_id": 1,
-    "role": "primary"
-  },
-  {
     "exercise_id": 753,
     "muscle_group_id": 16,
     "role": "stabilizer"
@@ -5310,21 +3530,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 755,
-    "muscle_group_id": 19,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 755,
-    "muscle_group_id": 21,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 755,
-    "muscle_group_id": 22,
-    "role": "primary"
-  },
-  {
     "exercise_id": 756,
     "muscle_group_id": 3,
     "role": "stabilizer"
@@ -5337,16 +3542,6 @@
   {
     "exercise_id": 756,
     "muscle_group_id": 16,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 760,
-    "muscle_group_id": 19,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 760,
-    "muscle_group_id": 32,
     "role": "primary"
   },
   {
@@ -5365,21 +3560,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 762,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 762,
-    "muscle_group_id": 77,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 763,
-    "muscle_group_id": 1,
-    "role": "primary"
-  },
-  {
     "exercise_id": 764,
     "muscle_group_id": 26,
     "role": "primary"
@@ -5405,36 +3585,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 767,
-    "muscle_group_id": 32,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 767,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 767,
-    "muscle_group_id": 82,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 768,
-    "muscle_group_id": 3,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 768,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 768,
-    "muscle_group_id": 88,
-    "role": "primary"
-  },
-  {
     "exercise_id": 770,
     "muscle_group_id": 15,
     "role": "primary"
@@ -5450,21 +3600,6 @@
     "role": "stabilizer"
   },
   {
-    "exercise_id": 773,
-    "muscle_group_id": 26,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 773,
-    "muscle_group_id": 29,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 773,
-    "muscle_group_id": 31,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 774,
     "muscle_group_id": 3,
     "role": "primary"
@@ -5478,11 +3613,6 @@
     "exercise_id": 774,
     "muscle_group_id": 88,
     "role": "stabilizer"
-  },
-  {
-    "exercise_id": 775,
-    "muscle_group_id": 1,
-    "role": "primary"
   },
   {
     "exercise_id": 778,
@@ -5512,21 +3642,6 @@
   {
     "exercise_id": 779,
     "muscle_group_id": 82,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 780,
-    "muscle_group_id": 3,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 780,
-    "muscle_group_id": 87,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 780,
-    "muscle_group_id": 88,
     "role": "primary"
   },
   {
@@ -5615,36 +3730,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 791,
-    "muscle_group_id": 3,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 791,
-    "muscle_group_id": 87,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 791,
-    "muscle_group_id": 88,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 796,
-    "muscle_group_id": 83,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 796,
-    "muscle_group_id": 87,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 796,
-    "muscle_group_id": 88,
-    "role": "primary"
-  },
-  {
     "exercise_id": 798,
     "muscle_group_id": 51,
     "role": "secondary"
@@ -5733,21 +3818,6 @@
     "exercise_id": 809,
     "muscle_group_id": 88,
     "role": "secondary"
-  },
-  {
-    "exercise_id": 811,
-    "muscle_group_id": 59,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 811,
-    "muscle_group_id": 65,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 811,
-    "muscle_group_id": 76,
-    "role": "primary"
   },
   {
     "exercise_id": 813,
@@ -5855,21 +3925,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 829,
-    "muscle_group_id": 51,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 829,
-    "muscle_group_id": 59,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 829,
-    "muscle_group_id": 83,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 830,
     "muscle_group_id": 3,
     "role": "secondary"
@@ -5883,21 +3938,6 @@
     "exercise_id": 830,
     "muscle_group_id": 82,
     "role": "primary"
-  },
-  {
-    "exercise_id": 831,
-    "muscle_group_id": 51,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 831,
-    "muscle_group_id": 65,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 831,
-    "muscle_group_id": 74,
-    "role": "secondary"
   },
   {
     "exercise_id": 833,
@@ -5990,31 +4030,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 849,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 849,
-    "muscle_group_id": 83,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 849,
-    "muscle_group_id": 88,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 851,
-    "muscle_group_id": 15,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 851,
-    "muscle_group_id": 51,
-    "role": "primary"
-  },
-  {
     "exercise_id": 854,
     "muscle_group_id": 3,
     "role": "primary"
@@ -6042,61 +4057,6 @@
   {
     "exercise_id": 856,
     "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 858,
-    "muscle_group_id": 15,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 858,
-    "muscle_group_id": 51,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 858,
-    "muscle_group_id": 59,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 859,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 859,
-    "muscle_group_id": 83,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 859,
-    "muscle_group_id": 88,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 865,
-    "muscle_group_id": 59,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 865,
-    "muscle_group_id": 87,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 865,
-    "muscle_group_id": 88,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 869,
-    "muscle_group_id": 74,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 869,
-    "muscle_group_id": 83,
     "role": "primary"
   },
   {
@@ -6170,21 +4130,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 877,
-    "muscle_group_id": 3,
-    "role": "stabilizer"
-  },
-  {
-    "exercise_id": 877,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 877,
-    "muscle_group_id": 88,
-    "role": "primary"
-  },
-  {
     "exercise_id": 878,
     "muscle_group_id": 26,
     "role": "secondary"
@@ -6245,21 +4190,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 890,
-    "muscle_group_id": 3,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 890,
-    "muscle_group_id": 59,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 890,
-    "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
     "exercise_id": 891,
     "muscle_group_id": 18,
     "role": "primary"
@@ -6272,21 +4202,6 @@
   {
     "exercise_id": 891,
     "muscle_group_id": 51,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 894,
-    "muscle_group_id": 3,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 894,
-    "muscle_group_id": 76,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 894,
-    "muscle_group_id": 82,
     "role": "primary"
   },
   {
@@ -7276,17 +5191,17 @@
   },
   {
     "exercise_id": 980,
+    "muscle_group_id": 26,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 980,
     "muscle_group_id": 50,
     "role": "primary"
   },
   {
     "exercise_id": 980,
     "muscle_group_id": 51,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 980,
-    "muscle_group_id": 26,
     "role": "secondary"
   },
   {
@@ -7311,13 +5226,13 @@
   },
   {
     "exercise_id": 983,
-    "muscle_group_id": 74,
-    "role": "primary"
+    "muscle_group_id": 70,
+    "role": "secondary"
   },
   {
     "exercise_id": 983,
-    "muscle_group_id": 70,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 984,
@@ -7326,12 +5241,22 @@
   },
   {
     "exercise_id": 984,
+    "muscle_group_id": 70,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 984,
     "muscle_group_id": 74,
     "role": "primary"
   },
   {
-    "exercise_id": 984,
-    "muscle_group_id": 70,
+    "exercise_id": 985,
+    "muscle_group_id": 3,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 985,
+    "muscle_group_id": 15,
     "role": "secondary"
   },
   {
@@ -7341,27 +5266,17 @@
   },
   {
     "exercise_id": 985,
-    "muscle_group_id": 3,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 985,
     "muscle_group_id": 74,
     "role": "primary"
   },
   {
-    "exercise_id": 985,
-    "muscle_group_id": 15,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 986,
-    "muscle_group_id": 15,
+    "muscle_group_id": 3,
     "role": "primary"
   },
   {
     "exercise_id": 986,
-    "muscle_group_id": 3,
+    "muscle_group_id": 15,
     "role": "primary"
   },
   {
@@ -7376,11 +5291,6 @@
   },
   {
     "exercise_id": 987,
-    "muscle_group_id": 39,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 987,
     "muscle_group_id": 12,
     "role": "primary"
   },
@@ -7390,14 +5300,14 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 988,
-    "muscle_group_id": 12,
+    "exercise_id": 987,
+    "muscle_group_id": 39,
     "role": "primary"
   },
   {
     "exercise_id": 988,
-    "muscle_group_id": 39,
-    "role": "secondary"
+    "muscle_group_id": 12,
+    "role": "primary"
   },
   {
     "exercise_id": 988,
@@ -7405,14 +5315,14 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 989,
-    "muscle_group_id": 12,
-    "role": "primary"
+    "exercise_id": 988,
+    "muscle_group_id": 39,
+    "role": "secondary"
   },
   {
     "exercise_id": 989,
-    "muscle_group_id": 39,
-    "role": "secondary"
+    "muscle_group_id": 12,
+    "role": "primary"
   },
   {
     "exercise_id": 989,
@@ -7420,9 +5330,19 @@
     "role": "secondary"
   },
   {
+    "exercise_id": 989,
+    "muscle_group_id": 39,
+    "role": "secondary"
+  },
+  {
     "exercise_id": 990,
     "muscle_group_id": 12,
     "role": "primary"
+  },
+  {
+    "exercise_id": 990,
+    "muscle_group_id": 16,
+    "role": "secondary"
   },
   {
     "exercise_id": 990,
@@ -7430,8 +5350,8 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 990,
-    "muscle_group_id": 16,
+    "exercise_id": 991,
+    "muscle_group_id": 18,
     "role": "secondary"
   },
   {
@@ -7455,7 +5375,7 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 991,
+    "exercise_id": 992,
     "muscle_group_id": 18,
     "role": "secondary"
   },
@@ -7477,11 +5397,6 @@
   {
     "exercise_id": 992,
     "muscle_group_id": 36,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 992,
-    "muscle_group_id": 18,
     "role": "secondary"
   },
   {
@@ -7501,6 +5416,11 @@
   },
   {
     "exercise_id": 994,
+    "muscle_group_id": 18,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 994,
     "muscle_group_id": 26,
     "role": "primary"
   },
@@ -7515,8 +5435,8 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 994,
-    "muscle_group_id": 18,
+    "exercise_id": 995,
+    "muscle_group_id": 50,
     "role": "secondary"
   },
   {
@@ -7530,11 +5450,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 995,
-    "muscle_group_id": 50,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 996,
     "muscle_group_id": 84,
     "role": "primary"
@@ -7561,13 +5476,13 @@
   },
   {
     "exercise_id": 998,
-    "muscle_group_id": 39,
-    "role": "primary"
+    "muscle_group_id": 16,
+    "role": "secondary"
   },
   {
     "exercise_id": 998,
-    "muscle_group_id": 16,
-    "role": "secondary"
+    "muscle_group_id": 39,
+    "role": "primary"
   },
   {
     "exercise_id": 999,
@@ -7576,13 +5491,13 @@
   },
   {
     "exercise_id": 999,
-    "muscle_group_id": 39,
-    "role": "primary"
+    "muscle_group_id": 16,
+    "role": "secondary"
   },
   {
     "exercise_id": 999,
-    "muscle_group_id": 16,
-    "role": "secondary"
+    "muscle_group_id": 39,
+    "role": "primary"
   },
   {
     "exercise_id": 1000,
@@ -7621,12 +5536,12 @@
   },
   {
     "exercise_id": 1003,
-    "muscle_group_id": 39,
+    "muscle_group_id": 16,
     "role": "secondary"
   },
   {
     "exercise_id": 1003,
-    "muscle_group_id": 16,
+    "muscle_group_id": 39,
     "role": "secondary"
   },
   {
@@ -7636,23 +5551,18 @@
   },
   {
     "exercise_id": 1004,
-    "muscle_group_id": 39,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1004,
     "muscle_group_id": 16,
     "role": "secondary"
   },
   {
-    "exercise_id": 1005,
-    "muscle_group_id": 74,
-    "role": "primary"
+    "exercise_id": 1004,
+    "muscle_group_id": 39,
+    "role": "secondary"
   },
   {
     "exercise_id": 1005,
-    "muscle_group_id": 70,
-    "role": "primary"
+    "muscle_group_id": 16,
+    "role": "secondary"
   },
   {
     "exercise_id": 1005,
@@ -7661,18 +5571,23 @@
   },
   {
     "exercise_id": 1005,
+    "muscle_group_id": 40,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1005,
     "muscle_group_id": 65,
     "role": "secondary"
   },
   {
     "exercise_id": 1005,
-    "muscle_group_id": 16,
-    "role": "secondary"
+    "muscle_group_id": 70,
+    "role": "primary"
   },
   {
     "exercise_id": 1005,
-    "muscle_group_id": 40,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1006,
@@ -7696,6 +5611,11 @@
   },
   {
     "exercise_id": 1007,
+    "muscle_group_id": 50,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1007,
     "muscle_group_id": 51,
     "role": "primary"
   },
@@ -7705,8 +5625,8 @@
     "role": "primary"
   },
   {
-    "exercise_id": 1007,
-    "muscle_group_id": 50,
+    "exercise_id": 1008,
+    "muscle_group_id": 16,
     "role": "secondary"
   },
   {
@@ -7721,18 +5641,8 @@
   },
   {
     "exercise_id": 1008,
-    "muscle_group_id": 16,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1008,
     "muscle_group_id": 28,
     "role": "secondary"
-  },
-  {
-    "exercise_id": 1009,
-    "muscle_group_id": 28,
-    "role": "primary"
   },
   {
     "exercise_id": 1009,
@@ -7741,8 +5651,13 @@
   },
   {
     "exercise_id": 1009,
-    "muscle_group_id": 74,
+    "muscle_group_id": 28,
     "role": "primary"
+  },
+  {
+    "exercise_id": 1009,
+    "muscle_group_id": 36,
+    "role": "secondary"
   },
   {
     "exercise_id": 1009,
@@ -7751,8 +5666,8 @@
   },
   {
     "exercise_id": 1009,
-    "muscle_group_id": 36,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1010,
@@ -7761,12 +5676,12 @@
   },
   {
     "exercise_id": 1010,
-    "muscle_group_id": 39,
+    "muscle_group_id": 16,
     "role": "secondary"
   },
   {
     "exercise_id": 1010,
-    "muscle_group_id": 16,
+    "muscle_group_id": 39,
     "role": "secondary"
   },
   {
@@ -7776,12 +5691,12 @@
   },
   {
     "exercise_id": 1011,
-    "muscle_group_id": 39,
+    "muscle_group_id": 16,
     "role": "secondary"
   },
   {
     "exercise_id": 1011,
-    "muscle_group_id": 16,
+    "muscle_group_id": 39,
     "role": "secondary"
   },
   {
@@ -7791,12 +5706,12 @@
   },
   {
     "exercise_id": 1012,
-    "muscle_group_id": 39,
+    "muscle_group_id": 16,
     "role": "secondary"
   },
   {
     "exercise_id": 1012,
-    "muscle_group_id": 16,
+    "muscle_group_id": 39,
     "role": "secondary"
   },
   {
@@ -7846,6 +5761,11 @@
   },
   {
     "exercise_id": 1017,
+    "muscle_group_id": 18,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1017,
     "muscle_group_id": 19,
     "role": "primary"
   },
@@ -7860,8 +5780,8 @@
     "role": "primary"
   },
   {
-    "exercise_id": 1017,
-    "muscle_group_id": 18,
+    "exercise_id": 1018,
+    "muscle_group_id": 42,
     "role": "secondary"
   },
   {
@@ -7871,16 +5791,16 @@
   },
   {
     "exercise_id": 1018,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1018,
     "muscle_group_id": 51,
     "role": "secondary"
   },
   {
     "exercise_id": 1018,
+    "muscle_group_id": 78,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1019,
     "muscle_group_id": 42,
     "role": "secondary"
   },
@@ -7891,28 +5811,13 @@
   },
   {
     "exercise_id": 1019,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1019,
     "muscle_group_id": 51,
     "role": "secondary"
   },
   {
     "exercise_id": 1019,
-    "muscle_group_id": 42,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1020,
-    "muscle_group_id": 75,
+    "muscle_group_id": 78,
     "role": "primary"
-  },
-  {
-    "exercise_id": 1020,
-    "muscle_group_id": 70,
-    "role": "secondary"
   },
   {
     "exercise_id": 1020,
@@ -7920,13 +5825,28 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1021,
+    "exercise_id": 1020,
+    "muscle_group_id": 70,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1020,
     "muscle_group_id": 75,
     "role": "primary"
   },
   {
     "exercise_id": 1021,
     "muscle_group_id": 70,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1021,
+    "muscle_group_id": 75,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1022,
+    "muscle_group_id": 3,
     "role": "secondary"
   },
   {
@@ -7941,18 +5861,13 @@
   },
   {
     "exercise_id": 1022,
-    "muscle_group_id": 39,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1022,
     "muscle_group_id": 28,
     "role": "secondary"
   },
   {
     "exercise_id": 1022,
-    "muscle_group_id": 3,
-    "role": "secondary"
+    "muscle_group_id": 39,
+    "role": "primary"
   },
   {
     "exercise_id": 1023,
@@ -7961,7 +5876,7 @@
   },
   {
     "exercise_id": 1023,
-    "muscle_group_id": 74,
+    "muscle_group_id": 28,
     "role": "secondary"
   },
   {
@@ -7971,7 +5886,7 @@
   },
   {
     "exercise_id": 1023,
-    "muscle_group_id": 28,
+    "muscle_group_id": 74,
     "role": "secondary"
   },
   {
@@ -7981,13 +5896,13 @@
   },
   {
     "exercise_id": 1025,
-    "muscle_group_id": 82,
-    "role": "primary"
+    "muscle_group_id": 74,
+    "role": "secondary"
   },
   {
     "exercise_id": 1025,
-    "muscle_group_id": 74,
-    "role": "secondary"
+    "muscle_group_id": 82,
+    "role": "primary"
   },
   {
     "exercise_id": 1026,
@@ -8016,6 +5931,11 @@
   },
   {
     "exercise_id": 1028,
+    "muscle_group_id": 18,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1028,
     "muscle_group_id": 26,
     "role": "primary"
   },
@@ -8032,11 +5952,6 @@
   {
     "exercise_id": 1028,
     "muscle_group_id": 36,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1028,
-    "muscle_group_id": 18,
     "role": "secondary"
   },
   {
@@ -8046,12 +5961,17 @@
   },
   {
     "exercise_id": 1029,
-    "muscle_group_id": 39,
+    "muscle_group_id": 16,
     "role": "secondary"
   },
   {
     "exercise_id": 1029,
-    "muscle_group_id": 16,
+    "muscle_group_id": 39,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1030,
+    "muscle_group_id": 18,
     "role": "secondary"
   },
   {
@@ -8075,24 +5995,19 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1030,
-    "muscle_group_id": 18,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 1031,
     "muscle_group_id": 50,
     "role": "primary"
   },
   {
     "exercise_id": 1031,
-    "muscle_group_id": 78,
-    "role": "primary"
+    "muscle_group_id": 51,
+    "role": "secondary"
   },
   {
     "exercise_id": 1031,
-    "muscle_group_id": 51,
-    "role": "secondary"
+    "muscle_group_id": 78,
+    "role": "primary"
   },
   {
     "exercise_id": 1032,
@@ -8106,17 +6021,22 @@
   },
   {
     "exercise_id": 1033,
-    "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1033,
     "muscle_group_id": 70,
     "role": "secondary"
   },
   {
     "exercise_id": 1033,
+    "muscle_group_id": 74,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1033,
     "muscle_group_id": 83,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1034,
+    "muscle_group_id": 3,
     "role": "secondary"
   },
   {
@@ -8126,6 +6046,11 @@
   },
   {
     "exercise_id": 1034,
+    "muscle_group_id": 70,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1034,
     "muscle_group_id": 74,
     "role": "primary"
   },
@@ -8133,16 +6058,6 @@
     "exercise_id": 1034,
     "muscle_group_id": 83,
     "role": "primary"
-  },
-  {
-    "exercise_id": 1034,
-    "muscle_group_id": 70,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1034,
-    "muscle_group_id": 3,
-    "role": "secondary"
   },
   {
     "exercise_id": 1035,
@@ -8151,13 +6066,8 @@
   },
   {
     "exercise_id": 1036,
-    "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1036,
-    "muscle_group_id": 70,
-    "role": "primary"
+    "muscle_group_id": 16,
+    "role": "secondary"
   },
   {
     "exercise_id": 1036,
@@ -8166,18 +6076,23 @@
   },
   {
     "exercise_id": 1036,
+    "muscle_group_id": 40,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1036,
     "muscle_group_id": 65,
     "role": "secondary"
   },
   {
     "exercise_id": 1036,
-    "muscle_group_id": 16,
-    "role": "secondary"
+    "muscle_group_id": 70,
+    "role": "primary"
   },
   {
     "exercise_id": 1036,
-    "muscle_group_id": 40,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1037,
@@ -8186,16 +6101,21 @@
   },
   {
     "exercise_id": 1037,
-    "muscle_group_id": 36,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1037,
     "muscle_group_id": 29,
     "role": "secondary"
   },
   {
     "exercise_id": 1037,
+    "muscle_group_id": 36,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1037,
+    "muscle_group_id": 42,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1038,
     "muscle_group_id": 42,
     "role": "secondary"
   },
@@ -8206,28 +6126,18 @@
   },
   {
     "exercise_id": 1038,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1038,
     "muscle_group_id": 51,
     "role": "secondary"
   },
   {
     "exercise_id": 1038,
-    "muscle_group_id": 42,
-    "role": "secondary"
+    "muscle_group_id": 78,
+    "role": "primary"
   },
   {
     "exercise_id": 1039,
     "muscle_group_id": 26,
     "role": "primary"
-  },
-  {
-    "exercise_id": 1039,
-    "muscle_group_id": 36,
-    "role": "secondary"
   },
   {
     "exercise_id": 1039,
@@ -8240,13 +6150,18 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1040,
-    "muscle_group_id": 50,
-    "role": "primary"
+    "exercise_id": 1039,
+    "muscle_group_id": 36,
+    "role": "secondary"
   },
   {
     "exercise_id": 1040,
-    "muscle_group_id": 78,
+    "muscle_group_id": 42,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1040,
+    "muscle_group_id": 50,
     "role": "primary"
   },
   {
@@ -8256,7 +6171,17 @@
   },
   {
     "exercise_id": 1040,
-    "muscle_group_id": 42,
+    "muscle_group_id": 78,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1041,
+    "muscle_group_id": 16,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1041,
+    "muscle_group_id": 39,
     "role": "secondary"
   },
   {
@@ -8266,32 +6191,12 @@
   },
   {
     "exercise_id": 1041,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1041,
-    "muscle_group_id": 39,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1041,
-    "muscle_group_id": 16,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1041,
     "muscle_group_id": 65,
     "role": "secondary"
   },
   {
-    "exercise_id": 1042,
-    "muscle_group_id": 70,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1042,
-    "muscle_group_id": 74,
+    "exercise_id": 1041,
+    "muscle_group_id": 78,
     "role": "primary"
   },
   {
@@ -8300,6 +6205,21 @@
     "role": "secondary"
   },
   {
+    "exercise_id": 1042,
+    "muscle_group_id": 70,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1042,
+    "muscle_group_id": 74,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1043,
+    "muscle_group_id": 18,
+    "role": "secondary"
+  },
+  {
     "exercise_id": 1043,
     "muscle_group_id": 26,
     "role": "primary"
@@ -8317,31 +6237,6 @@
   {
     "exercise_id": 1043,
     "muscle_group_id": 36,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1043,
-    "muscle_group_id": 18,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1044,
-    "muscle_group_id": 65,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1044,
-    "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1044,
-    "muscle_group_id": 70,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1044,
-    "muscle_group_id": 82,
     "role": "secondary"
   },
   {
@@ -8350,14 +6245,29 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1045,
-    "muscle_group_id": 26,
+    "exercise_id": 1044,
+    "muscle_group_id": 65,
     "role": "primary"
   },
   {
-    "exercise_id": 1045,
-    "muscle_group_id": 36,
+    "exercise_id": 1044,
+    "muscle_group_id": 70,
     "role": "secondary"
+  },
+  {
+    "exercise_id": 1044,
+    "muscle_group_id": 74,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1044,
+    "muscle_group_id": 82,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1045,
+    "muscle_group_id": 26,
+    "role": "primary"
   },
   {
     "exercise_id": 1045,
@@ -8367,6 +6277,11 @@
   {
     "exercise_id": 1045,
     "muscle_group_id": 31,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1045,
+    "muscle_group_id": 36,
     "role": "secondary"
   },
   {
@@ -8376,11 +6291,6 @@
   },
   {
     "exercise_id": 1046,
-    "muscle_group_id": 36,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1046,
     "muscle_group_id": 29,
     "role": "secondary"
   },
@@ -8390,14 +6300,14 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1047,
-    "muscle_group_id": 26,
-    "role": "primary"
+    "exercise_id": 1046,
+    "muscle_group_id": 36,
+    "role": "secondary"
   },
   {
     "exercise_id": 1047,
-    "muscle_group_id": 36,
-    "role": "secondary"
+    "muscle_group_id": 26,
+    "role": "primary"
   },
   {
     "exercise_id": 1047,
@@ -8410,14 +6320,14 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1048,
-    "muscle_group_id": 26,
-    "role": "primary"
+    "exercise_id": 1047,
+    "muscle_group_id": 36,
+    "role": "secondary"
   },
   {
     "exercise_id": 1048,
-    "muscle_group_id": 36,
-    "role": "secondary"
+    "muscle_group_id": 26,
+    "role": "primary"
   },
   {
     "exercise_id": 1048,
@@ -8430,14 +6340,14 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1049,
-    "muscle_group_id": 26,
-    "role": "primary"
+    "exercise_id": 1048,
+    "muscle_group_id": 36,
+    "role": "secondary"
   },
   {
     "exercise_id": 1049,
-    "muscle_group_id": 36,
-    "role": "secondary"
+    "muscle_group_id": 26,
+    "role": "primary"
   },
   {
     "exercise_id": 1049,
@@ -8447,6 +6357,11 @@
   {
     "exercise_id": 1049,
     "muscle_group_id": 31,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1049,
+    "muscle_group_id": 36,
     "role": "secondary"
   },
   {
@@ -8456,13 +6371,13 @@
   },
   {
     "exercise_id": 1050,
-    "muscle_group_id": 74,
-    "role": "primary"
+    "muscle_group_id": 70,
+    "role": "secondary"
   },
   {
     "exercise_id": 1050,
-    "muscle_group_id": 70,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1050,
@@ -8476,13 +6391,13 @@
   },
   {
     "exercise_id": 1051,
-    "muscle_group_id": 74,
-    "role": "primary"
+    "muscle_group_id": 70,
+    "role": "secondary"
   },
   {
     "exercise_id": 1051,
-    "muscle_group_id": 70,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1051,
@@ -8496,13 +6411,13 @@
   },
   {
     "exercise_id": 1052,
-    "muscle_group_id": 74,
-    "role": "primary"
+    "muscle_group_id": 70,
+    "role": "secondary"
   },
   {
     "exercise_id": 1052,
-    "muscle_group_id": 70,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1052,
@@ -8511,8 +6426,8 @@
   },
   {
     "exercise_id": 1053,
-    "muscle_group_id": 78,
-    "role": "primary"
+    "muscle_group_id": 16,
+    "role": "secondary"
   },
   {
     "exercise_id": 1053,
@@ -8521,12 +6436,27 @@
   },
   {
     "exercise_id": 1053,
-    "muscle_group_id": 16,
+    "muscle_group_id": 65,
     "role": "secondary"
   },
   {
     "exercise_id": 1053,
-    "muscle_group_id": 65,
+    "muscle_group_id": 78,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1054,
+    "muscle_group_id": 3,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1054,
+    "muscle_group_id": 12,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1054,
+    "muscle_group_id": 16,
     "role": "secondary"
   },
   {
@@ -8536,8 +6466,8 @@
   },
   {
     "exercise_id": 1054,
-    "muscle_group_id": 12,
-    "role": "primary"
+    "muscle_group_id": 36,
+    "role": "secondary"
   },
   {
     "exercise_id": 1054,
@@ -8545,18 +6475,8 @@
     "role": "primary"
   },
   {
-    "exercise_id": 1054,
-    "muscle_group_id": 36,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1054,
-    "muscle_group_id": 16,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1054,
-    "muscle_group_id": 3,
+    "exercise_id": 1055,
+    "muscle_group_id": 50,
     "role": "secondary"
   },
   {
@@ -8570,19 +6490,9 @@
     "role": "primary"
   },
   {
-    "exercise_id": 1055,
-    "muscle_group_id": 50,
+    "exercise_id": 1056,
+    "muscle_group_id": 3,
     "role": "secondary"
-  },
-  {
-    "exercise_id": 1056,
-    "muscle_group_id": 65,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1056,
-    "muscle_group_id": 74,
-    "role": "primary"
   },
   {
     "exercise_id": 1056,
@@ -8591,27 +6501,27 @@
   },
   {
     "exercise_id": 1056,
+    "muscle_group_id": 26,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1056,
     "muscle_group_id": 28,
     "role": "secondary"
   },
   {
     "exercise_id": 1056,
-    "muscle_group_id": 3,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1056,
-    "muscle_group_id": 26,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1057,
     "muscle_group_id": 65,
     "role": "primary"
   },
   {
-    "exercise_id": 1057,
+    "exercise_id": 1056,
     "muscle_group_id": 74,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1057,
+    "muscle_group_id": 65,
     "role": "primary"
   },
   {
@@ -8621,8 +6531,8 @@
   },
   {
     "exercise_id": 1057,
-    "muscle_group_id": 82,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1057,
@@ -8630,13 +6540,18 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1058,
-    "muscle_group_id": 50,
-    "role": "primary"
+    "exercise_id": 1057,
+    "muscle_group_id": 82,
+    "role": "secondary"
   },
   {
     "exercise_id": 1058,
-    "muscle_group_id": 53,
+    "muscle_group_id": 16,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1058,
+    "muscle_group_id": 50,
     "role": "primary"
   },
   {
@@ -8646,12 +6561,17 @@
   },
   {
     "exercise_id": 1058,
+    "muscle_group_id": 53,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1058,
     "muscle_group_id": 74,
     "role": "secondary"
   },
   {
-    "exercise_id": 1058,
-    "muscle_group_id": 16,
+    "exercise_id": 1059,
+    "muscle_group_id": 3,
     "role": "secondary"
   },
   {
@@ -8661,27 +6581,22 @@
   },
   {
     "exercise_id": 1059,
-    "muscle_group_id": 39,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1059,
     "muscle_group_id": 16,
     "role": "primary"
   },
   {
     "exercise_id": 1059,
+    "muscle_group_id": 39,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1060,
     "muscle_group_id": 3,
     "role": "secondary"
   },
   {
     "exercise_id": 1060,
     "muscle_group_id": 16,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1060,
-    "muscle_group_id": 39,
     "role": "primary"
   },
   {
@@ -8691,6 +6606,11 @@
   },
   {
     "exercise_id": 1060,
+    "muscle_group_id": 39,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1061,
     "muscle_group_id": 3,
     "role": "secondary"
   },
@@ -8701,32 +6621,12 @@
   },
   {
     "exercise_id": 1061,
-    "muscle_group_id": 39,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1061,
     "muscle_group_id": 16,
     "role": "primary"
   },
   {
     "exercise_id": 1061,
-    "muscle_group_id": 3,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1062,
-    "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1062,
-    "muscle_group_id": 70,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1062,
-    "muscle_group_id": 54,
+    "muscle_group_id": 39,
     "role": "primary"
   },
   {
@@ -8745,14 +6645,29 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1063,
-    "muscle_group_id": 38,
+    "exercise_id": 1062,
+    "muscle_group_id": 54,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1062,
+    "muscle_group_id": 70,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1062,
+    "muscle_group_id": 74,
     "role": "primary"
   },
   {
     "exercise_id": 1063,
     "muscle_group_id": 36,
     "role": "secondary"
+  },
+  {
+    "exercise_id": 1063,
+    "muscle_group_id": 38,
+    "role": "primary"
   },
   {
     "exercise_id": 1063,
@@ -8761,13 +6676,13 @@
   },
   {
     "exercise_id": 1064,
-    "muscle_group_id": 38,
-    "role": "primary"
+    "muscle_group_id": 36,
+    "role": "secondary"
   },
   {
     "exercise_id": 1064,
-    "muscle_group_id": 36,
-    "role": "secondary"
+    "muscle_group_id": 38,
+    "role": "primary"
   },
   {
     "exercise_id": 1064,
@@ -8776,13 +6691,13 @@
   },
   {
     "exercise_id": 1065,
-    "muscle_group_id": 38,
-    "role": "primary"
+    "muscle_group_id": 36,
+    "role": "secondary"
   },
   {
     "exercise_id": 1065,
-    "muscle_group_id": 36,
-    "role": "secondary"
+    "muscle_group_id": 38,
+    "role": "primary"
   },
   {
     "exercise_id": 1065,
@@ -8791,13 +6706,13 @@
   },
   {
     "exercise_id": 1066,
-    "muscle_group_id": 38,
-    "role": "primary"
+    "muscle_group_id": 36,
+    "role": "secondary"
   },
   {
     "exercise_id": 1066,
-    "muscle_group_id": 36,
-    "role": "secondary"
+    "muscle_group_id": 38,
+    "role": "primary"
   },
   {
     "exercise_id": 1066,
@@ -8806,7 +6721,7 @@
   },
   {
     "exercise_id": 1067,
-    "muscle_group_id": 74,
+    "muscle_group_id": 18,
     "role": "primary"
   },
   {
@@ -8816,8 +6731,8 @@
   },
   {
     "exercise_id": 1067,
-    "muscle_group_id": 18,
-    "role": "primary"
+    "muscle_group_id": 39,
+    "role": "secondary"
   },
   {
     "exercise_id": 1067,
@@ -8826,28 +6741,13 @@
   },
   {
     "exercise_id": 1067,
-    "muscle_group_id": 39,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1068,
-    "muscle_group_id": 26,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1068,
     "muscle_group_id": 74,
     "role": "primary"
   },
   {
     "exercise_id": 1068,
-    "muscle_group_id": 65,
+    "muscle_group_id": 26,
     "role": "primary"
-  },
-  {
-    "exercise_id": 1068,
-    "muscle_group_id": 70,
-    "role": "secondary"
   },
   {
     "exercise_id": 1068,
@@ -8860,8 +6760,38 @@
     "role": "secondary"
   },
   {
+    "exercise_id": 1068,
+    "muscle_group_id": 65,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1068,
+    "muscle_group_id": 70,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1068,
+    "muscle_group_id": 74,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1069,
+    "muscle_group_id": 3,
+    "role": "secondary"
+  },
+  {
     "exercise_id": 1069,
     "muscle_group_id": 65,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1069,
+    "muscle_group_id": 70,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1069,
+    "muscle_group_id": 74,
     "role": "primary"
   },
   {
@@ -8870,34 +6800,19 @@
     "role": "primary"
   },
   {
-    "exercise_id": 1069,
-    "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1069,
-    "muscle_group_id": 70,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1069,
-    "muscle_group_id": 3,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 1070,
     "muscle_group_id": 65,
     "role": "primary"
   },
   {
     "exercise_id": 1070,
-    "muscle_group_id": 74,
-    "role": "primary"
+    "muscle_group_id": 70,
+    "role": "secondary"
   },
   {
     "exercise_id": 1070,
-    "muscle_group_id": 70,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1070,
@@ -8916,12 +6831,12 @@
   },
   {
     "exercise_id": 1071,
-    "muscle_group_id": 39,
+    "muscle_group_id": 28,
     "role": "secondary"
   },
   {
     "exercise_id": 1071,
-    "muscle_group_id": 28,
+    "muscle_group_id": 39,
     "role": "secondary"
   },
   {
@@ -8936,12 +6851,12 @@
   },
   {
     "exercise_id": 1072,
-    "muscle_group_id": 39,
+    "muscle_group_id": 28,
     "role": "secondary"
   },
   {
     "exercise_id": 1072,
-    "muscle_group_id": 28,
+    "muscle_group_id": 39,
     "role": "secondary"
   },
   {
@@ -8956,16 +6871,6 @@
   },
   {
     "exercise_id": 1074,
-    "muscle_group_id": 29,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1074,
-    "muscle_group_id": 31,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1074,
     "muscle_group_id": 18,
     "role": "primary"
   },
@@ -8973,6 +6878,16 @@
     "exercise_id": 1074,
     "muscle_group_id": 26,
     "role": "secondary"
+  },
+  {
+    "exercise_id": 1074,
+    "muscle_group_id": 29,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1074,
+    "muscle_group_id": 31,
+    "role": "primary"
   },
   {
     "exercise_id": 1074,
@@ -8991,12 +6906,12 @@
   },
   {
     "exercise_id": 1075,
-    "muscle_group_id": 39,
+    "muscle_group_id": 28,
     "role": "secondary"
   },
   {
     "exercise_id": 1075,
-    "muscle_group_id": 28,
+    "muscle_group_id": 39,
     "role": "secondary"
   },
   {
@@ -9011,15 +6926,15 @@
   },
   {
     "exercise_id": 1076,
-    "muscle_group_id": 39,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1076,
     "muscle_group_id": 28,
     "role": "secondary"
   },
   {
+    "exercise_id": 1076,
+    "muscle_group_id": 39,
+    "role": "secondary"
+  },
+  {
     "exercise_id": 1077,
     "muscle_group_id": 51,
     "role": "primary"
@@ -9062,16 +6977,6 @@
   {
     "exercise_id": 1079,
     "muscle_group_id": 56,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1080,
-    "muscle_group_id": 75,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1080,
-    "muscle_group_id": 70,
     "role": "secondary"
   },
   {
@@ -9080,8 +6985,13 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1081,
-    "muscle_group_id": 26,
+    "exercise_id": 1080,
+    "muscle_group_id": 70,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1080,
+    "muscle_group_id": 75,
     "role": "primary"
   },
   {
@@ -9092,6 +7002,11 @@
   {
     "exercise_id": 1081,
     "muscle_group_id": 18,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1081,
+    "muscle_group_id": 26,
     "role": "primary"
   },
   {
@@ -9131,6 +7046,11 @@
   },
   {
     "exercise_id": 1085,
+    "muscle_group_id": 3,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1085,
     "muscle_group_id": 16,
     "role": "primary"
   },
@@ -9141,16 +7061,16 @@
   },
   {
     "exercise_id": 1085,
-    "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1085,
     "muscle_group_id": 65,
     "role": "secondary"
   },
   {
     "exercise_id": 1085,
+    "muscle_group_id": 74,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1086,
     "muscle_group_id": 3,
     "role": "secondary"
   },
@@ -9161,21 +7081,21 @@
   },
   {
     "exercise_id": 1086,
-    "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1086,
     "muscle_group_id": 70,
     "role": "secondary"
   },
   {
     "exercise_id": 1086,
-    "muscle_group_id": 82,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1086,
+    "muscle_group_id": 82,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1087,
     "muscle_group_id": 3,
     "role": "secondary"
   },
@@ -9186,21 +7106,21 @@
   },
   {
     "exercise_id": 1087,
-    "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1087,
     "muscle_group_id": 70,
     "role": "secondary"
   },
   {
     "exercise_id": 1087,
-    "muscle_group_id": 82,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1087,
+    "muscle_group_id": 82,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1088,
     "muscle_group_id": 3,
     "role": "secondary"
   },
@@ -9211,13 +7131,13 @@
   },
   {
     "exercise_id": 1088,
-    "muscle_group_id": 74,
-    "role": "primary"
+    "muscle_group_id": 70,
+    "role": "secondary"
   },
   {
     "exercise_id": 1088,
-    "muscle_group_id": 70,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1088,
@@ -9225,7 +7145,7 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1088,
+    "exercise_id": 1089,
     "muscle_group_id": 3,
     "role": "secondary"
   },
@@ -9236,13 +7156,13 @@
   },
   {
     "exercise_id": 1089,
-    "muscle_group_id": 74,
-    "role": "primary"
+    "muscle_group_id": 70,
+    "role": "secondary"
   },
   {
     "exercise_id": 1089,
-    "muscle_group_id": 70,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1089,
@@ -9250,7 +7170,7 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1089,
+    "exercise_id": 1090,
     "muscle_group_id": 3,
     "role": "secondary"
   },
@@ -9261,13 +7181,13 @@
   },
   {
     "exercise_id": 1090,
-    "muscle_group_id": 74,
-    "role": "primary"
+    "muscle_group_id": 70,
+    "role": "secondary"
   },
   {
     "exercise_id": 1090,
-    "muscle_group_id": 70,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1090,
@@ -9275,7 +7195,7 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1090,
+    "exercise_id": 1091,
     "muscle_group_id": 3,
     "role": "secondary"
   },
@@ -9286,13 +7206,13 @@
   },
   {
     "exercise_id": 1091,
-    "muscle_group_id": 74,
-    "role": "primary"
+    "muscle_group_id": 70,
+    "role": "secondary"
   },
   {
     "exercise_id": 1091,
-    "muscle_group_id": 70,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1091,
@@ -9300,18 +7220,23 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1091,
+    "exercise_id": 1092,
     "muscle_group_id": 3,
     "role": "secondary"
   },
   {
     "exercise_id": 1092,
-    "muscle_group_id": 74,
+    "muscle_group_id": 65,
     "role": "primary"
   },
   {
     "exercise_id": 1092,
-    "muscle_group_id": 65,
+    "muscle_group_id": 70,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1092,
+    "muscle_group_id": 74,
     "role": "primary"
   },
   {
@@ -9320,24 +7245,9 @@
     "role": "primary"
   },
   {
-    "exercise_id": 1092,
-    "muscle_group_id": 70,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1092,
-    "muscle_group_id": 3,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 1093,
-    "muscle_group_id": 70,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1093,
-    "muscle_group_id": 74,
-    "role": "primary"
+    "muscle_group_id": 26,
+    "role": "secondary"
   },
   {
     "exercise_id": 1093,
@@ -9346,12 +7256,12 @@
   },
   {
     "exercise_id": 1093,
-    "muscle_group_id": 26,
-    "role": "secondary"
+    "muscle_group_id": 70,
+    "role": "primary"
   },
   {
-    "exercise_id": 1094,
-    "muscle_group_id": 1,
+    "exercise_id": 1093,
+    "muscle_group_id": 74,
     "role": "primary"
   },
   {
@@ -9366,27 +7276,37 @@
   },
   {
     "exercise_id": 1095,
-    "muscle_group_id": 39,
+    "muscle_group_id": 28,
     "role": "secondary"
   },
   {
     "exercise_id": 1095,
-    "muscle_group_id": 28,
+    "muscle_group_id": 39,
     "role": "secondary"
   },
   {
     "exercise_id": 1096,
+    "muscle_group_id": 17,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1096,
     "muscle_group_id": 28,
     "role": "primary"
   },
   {
     "exercise_id": 1096,
-    "muscle_group_id": 74,
-    "role": "primary"
+    "muscle_group_id": 36,
+    "role": "secondary"
   },
   {
     "exercise_id": 1096,
-    "muscle_group_id": 17,
+    "muscle_group_id": 65,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1096,
+    "muscle_group_id": 74,
     "role": "primary"
   },
   {
@@ -9395,24 +7315,9 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1096,
-    "muscle_group_id": 65,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1096,
-    "muscle_group_id": 36,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 1097,
-    "muscle_group_id": 65,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1097,
-    "muscle_group_id": 74,
-    "role": "primary"
+    "muscle_group_id": 3,
+    "role": "secondary"
   },
   {
     "exercise_id": 1097,
@@ -9431,18 +7336,18 @@
   },
   {
     "exercise_id": 1097,
-    "muscle_group_id": 3,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1098,
     "muscle_group_id": 65,
     "role": "primary"
   },
   {
-    "exercise_id": 1098,
+    "exercise_id": 1097,
     "muscle_group_id": 74,
     "role": "primary"
+  },
+  {
+    "exercise_id": 1098,
+    "muscle_group_id": 3,
+    "role": "secondary"
   },
   {
     "exercise_id": 1098,
@@ -9461,7 +7366,17 @@
   },
   {
     "exercise_id": 1098,
-    "muscle_group_id": 3,
+    "muscle_group_id": 65,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1098,
+    "muscle_group_id": 74,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1099,
+    "muscle_group_id": 42,
     "role": "secondary"
   },
   {
@@ -9471,17 +7386,17 @@
   },
   {
     "exercise_id": 1099,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1099,
     "muscle_group_id": 51,
     "role": "secondary"
   },
   {
     "exercise_id": 1099,
-    "muscle_group_id": 42,
+    "muscle_group_id": 78,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1100,
+    "muscle_group_id": 50,
     "role": "secondary"
   },
   {
@@ -9495,16 +7410,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 1100,
-    "muscle_group_id": 50,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1101,
-    "muscle_group_id": 39,
-    "role": "primary"
-  },
-  {
     "exercise_id": 1101,
     "muscle_group_id": 12,
     "role": "primary"
@@ -9515,7 +7420,7 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1102,
+    "exercise_id": 1101,
     "muscle_group_id": 39,
     "role": "primary"
   },
@@ -9528,6 +7433,11 @@
     "exercise_id": 1102,
     "muscle_group_id": 16,
     "role": "secondary"
+  },
+  {
+    "exercise_id": 1102,
+    "muscle_group_id": 39,
+    "role": "primary"
   },
   {
     "exercise_id": 1103,
@@ -9566,27 +7476,17 @@
   },
   {
     "exercise_id": 1109,
-    "muscle_group_id": 78,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1109,
     "muscle_group_id": 51,
     "role": "secondary"
   },
   {
-    "exercise_id": 1110,
-    "muscle_group_id": 83,
+    "exercise_id": 1109,
+    "muscle_group_id": 78,
     "role": "primary"
   },
   {
     "exercise_id": 1110,
     "muscle_group_id": 65,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1110,
-    "muscle_group_id": 74,
     "role": "primary"
   },
   {
@@ -9595,6 +7495,31 @@
     "role": "secondary"
   },
   {
+    "exercise_id": 1110,
+    "muscle_group_id": 74,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1110,
+    "muscle_group_id": 83,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1111,
+    "muscle_group_id": 3,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1111,
+    "muscle_group_id": 28,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1111,
+    "muscle_group_id": 36,
+    "role": "primary"
+  },
+  {
     "exercise_id": 1111,
     "muscle_group_id": 65,
     "role": "primary"
@@ -9605,21 +7530,6 @@
     "role": "primary"
   },
   {
-    "exercise_id": 1111,
-    "muscle_group_id": 36,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1111,
-    "muscle_group_id": 28,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1111,
-    "muscle_group_id": 3,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 1112,
     "muscle_group_id": 12,
     "role": "primary"
@@ -9641,12 +7551,12 @@
   },
   {
     "exercise_id": 1113,
-    "muscle_group_id": 39,
+    "muscle_group_id": 16,
     "role": "secondary"
   },
   {
     "exercise_id": 1113,
-    "muscle_group_id": 16,
+    "muscle_group_id": 39,
     "role": "secondary"
   },
   {
@@ -9666,11 +7576,6 @@
   },
   {
     "exercise_id": 1115,
-    "muscle_group_id": 39,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1115,
     "muscle_group_id": 10,
     "role": "secondary"
   },
@@ -9680,7 +7585,7 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1116,
+    "exercise_id": 1115,
     "muscle_group_id": 39,
     "role": "primary"
   },
@@ -9695,6 +7600,11 @@
     "role": "secondary"
   },
   {
+    "exercise_id": 1116,
+    "muscle_group_id": 39,
+    "role": "primary"
+  },
+  {
     "exercise_id": 1117,
     "muscle_group_id": 16,
     "role": "primary"
@@ -9706,12 +7616,12 @@
   },
   {
     "exercise_id": 1117,
-    "muscle_group_id": 39,
+    "muscle_group_id": 28,
     "role": "secondary"
   },
   {
     "exercise_id": 1117,
-    "muscle_group_id": 28,
+    "muscle_group_id": 39,
     "role": "secondary"
   },
   {
@@ -9726,12 +7636,12 @@
   },
   {
     "exercise_id": 1118,
-    "muscle_group_id": 39,
+    "muscle_group_id": 28,
     "role": "secondary"
   },
   {
     "exercise_id": 1118,
-    "muscle_group_id": 28,
+    "muscle_group_id": 39,
     "role": "secondary"
   },
   {
@@ -9771,6 +7681,11 @@
   },
   {
     "exercise_id": 1122,
+    "muscle_group_id": 18,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1122,
     "muscle_group_id": 26,
     "role": "primary"
   },
@@ -9790,7 +7705,7 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1122,
+    "exercise_id": 1123,
     "muscle_group_id": 18,
     "role": "secondary"
   },
@@ -9815,8 +7730,13 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1123,
+    "exercise_id": 1124,
     "muscle_group_id": 18,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1124,
+    "muscle_group_id": 26,
     "role": "secondary"
   },
   {
@@ -9831,17 +7751,12 @@
   },
   {
     "exercise_id": 1124,
-    "muscle_group_id": 18,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1124,
-    "muscle_group_id": 26,
+    "muscle_group_id": 36,
     "role": "secondary"
   },
   {
-    "exercise_id": 1124,
-    "muscle_group_id": 36,
+    "exercise_id": 1125,
+    "muscle_group_id": 18,
     "role": "secondary"
   },
   {
@@ -9862,11 +7777,6 @@
   {
     "exercise_id": 1125,
     "muscle_group_id": 36,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1125,
-    "muscle_group_id": 18,
     "role": "secondary"
   },
   {
@@ -9891,38 +7801,33 @@
   },
   {
     "exercise_id": 1127,
-    "muscle_group_id": 26,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1127,
-    "muscle_group_id": 29,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1127,
-    "muscle_group_id": 31,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1127,
-    "muscle_group_id": 36,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1127,
     "muscle_group_id": 18,
     "role": "secondary"
   },
   {
-    "exercise_id": 1128,
+    "exercise_id": 1127,
     "muscle_group_id": 26,
     "role": "primary"
   },
   {
-    "exercise_id": 1128,
+    "exercise_id": 1127,
+    "muscle_group_id": 29,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1127,
+    "muscle_group_id": 31,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1127,
     "muscle_group_id": 36,
     "role": "secondary"
+  },
+  {
+    "exercise_id": 1128,
+    "muscle_group_id": 26,
+    "role": "primary"
   },
   {
     "exercise_id": 1128,
@@ -9932,6 +7837,11 @@
   {
     "exercise_id": 1128,
     "muscle_group_id": 31,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1128,
+    "muscle_group_id": 36,
     "role": "secondary"
   },
   {
@@ -9956,6 +7866,11 @@
   },
   {
     "exercise_id": 1133,
+    "muscle_group_id": 36,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1133,
     "muscle_group_id": 37,
     "role": "primary"
   },
@@ -9963,11 +7878,6 @@
     "exercise_id": 1133,
     "muscle_group_id": 38,
     "role": "primary"
-  },
-  {
-    "exercise_id": 1133,
-    "muscle_group_id": 36,
-    "role": "secondary"
   },
   {
     "exercise_id": 1134,
@@ -10016,13 +7926,13 @@
   },
   {
     "exercise_id": 1139,
-    "muscle_group_id": 38,
-    "role": "primary"
+    "muscle_group_id": 36,
+    "role": "secondary"
   },
   {
     "exercise_id": 1139,
-    "muscle_group_id": 36,
-    "role": "secondary"
+    "muscle_group_id": 38,
+    "role": "primary"
   },
   {
     "exercise_id": 1139,
@@ -10031,13 +7941,13 @@
   },
   {
     "exercise_id": 1140,
-    "muscle_group_id": 38,
-    "role": "primary"
+    "muscle_group_id": 36,
+    "role": "secondary"
   },
   {
     "exercise_id": 1140,
-    "muscle_group_id": 36,
-    "role": "secondary"
+    "muscle_group_id": 38,
+    "role": "primary"
   },
   {
     "exercise_id": 1140,
@@ -10106,16 +8016,11 @@
   },
   {
     "exercise_id": 1152,
-    "muscle_group_id": 28,
-    "role": "primary"
+    "muscle_group_id": 17,
+    "role": "secondary"
   },
   {
     "exercise_id": 1152,
-    "muscle_group_id": 17,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1153,
     "muscle_group_id": 28,
     "role": "primary"
   },
@@ -10125,7 +8030,7 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1154,
+    "exercise_id": 1153,
     "muscle_group_id": 28,
     "role": "primary"
   },
@@ -10135,7 +8040,7 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1155,
+    "exercise_id": 1154,
     "muscle_group_id": 28,
     "role": "primary"
   },
@@ -10145,24 +8050,9 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1156,
-    "muscle_group_id": 65,
+    "exercise_id": 1155,
+    "muscle_group_id": 28,
     "role": "primary"
-  },
-  {
-    "exercise_id": 1156,
-    "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1156,
-    "muscle_group_id": 70,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1156,
-    "muscle_group_id": 82,
-    "role": "secondary"
   },
   {
     "exercise_id": 1156,
@@ -10170,6 +8060,26 @@
     "role": "secondary"
   },
   {
+    "exercise_id": 1156,
+    "muscle_group_id": 65,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1156,
+    "muscle_group_id": 70,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1156,
+    "muscle_group_id": 74,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1156,
+    "muscle_group_id": 82,
+    "role": "secondary"
+  },
+  {
     "exercise_id": 1157,
     "muscle_group_id": 65,
     "role": "primary"
@@ -10177,6 +8087,11 @@
   {
     "exercise_id": 1157,
     "muscle_group_id": 74,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1158,
+    "muscle_group_id": 50,
     "role": "secondary"
   },
   {
@@ -10190,7 +8105,7 @@
     "role": "primary"
   },
   {
-    "exercise_id": 1158,
+    "exercise_id": 1159,
     "muscle_group_id": 50,
     "role": "secondary"
   },
@@ -10203,11 +8118,6 @@
     "exercise_id": 1159,
     "muscle_group_id": 74,
     "role": "primary"
-  },
-  {
-    "exercise_id": 1159,
-    "muscle_group_id": 50,
-    "role": "secondary"
   },
   {
     "exercise_id": 1160,
@@ -10242,17 +8152,17 @@
   {
     "exercise_id": 1163,
     "muscle_group_id": 65,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1163,
-    "muscle_group_id": 74,
     "role": "primary"
   },
   {
     "exercise_id": 1163,
     "muscle_group_id": 70,
     "role": "secondary"
+  },
+  {
+    "exercise_id": 1163,
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1163,
@@ -10266,13 +8176,13 @@
   },
   {
     "exercise_id": 1164,
-    "muscle_group_id": 74,
-    "role": "primary"
+    "muscle_group_id": 70,
+    "role": "secondary"
   },
   {
     "exercise_id": 1164,
-    "muscle_group_id": 70,
-    "role": "secondary"
+    "muscle_group_id": 74,
+    "role": "primary"
   },
   {
     "exercise_id": 1164,
@@ -10338,21 +8248,6 @@
     "exercise_id": 1169,
     "muscle_group_id": 83,
     "role": "secondary"
-  },
-  {
-    "exercise_id": 1170,
-    "muscle_group_id": 54,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1170,
-    "muscle_group_id": 70,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1170,
-    "muscle_group_id": 74,
-    "role": "primary"
   },
   {
     "exercise_id": 1170,
@@ -10360,6 +8255,26 @@
     "role": "secondary"
   },
   {
+    "exercise_id": 1170,
+    "muscle_group_id": 54,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1170,
+    "muscle_group_id": 70,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1170,
+    "muscle_group_id": 74,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1171,
+    "muscle_group_id": 54,
+    "role": "secondary"
+  },
+  {
     "exercise_id": 1171,
     "muscle_group_id": 70,
     "role": "primary"
@@ -10370,7 +8285,7 @@
     "role": "primary"
   },
   {
-    "exercise_id": 1171,
+    "exercise_id": 1172,
     "muscle_group_id": 54,
     "role": "secondary"
   },
@@ -10385,26 +8300,26 @@
     "role": "primary"
   },
   {
-    "exercise_id": 1172,
-    "muscle_group_id": 54,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1173,
-    "muscle_group_id": 70,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1173,
-    "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
     "exercise_id": 1173,
     "muscle_group_id": 54,
     "role": "secondary"
   },
   {
+    "exercise_id": 1173,
+    "muscle_group_id": 70,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1173,
+    "muscle_group_id": 74,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1174,
+    "muscle_group_id": 70,
+    "role": "secondary"
+  },
+  {
     "exercise_id": 1174,
     "muscle_group_id": 74,
     "role": "primary"
@@ -10415,7 +8330,7 @@
     "role": "primary"
   },
   {
-    "exercise_id": 1174,
+    "exercise_id": 1175,
     "muscle_group_id": 70,
     "role": "secondary"
   },
@@ -10430,7 +8345,7 @@
     "role": "primary"
   },
   {
-    "exercise_id": 1175,
+    "exercise_id": 1176,
     "muscle_group_id": 70,
     "role": "secondary"
   },
@@ -10443,21 +8358,6 @@
     "exercise_id": 1176,
     "muscle_group_id": 75,
     "role": "primary"
-  },
-  {
-    "exercise_id": 1176,
-    "muscle_group_id": 70,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1177,
-    "muscle_group_id": 75,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1177,
-    "muscle_group_id": 70,
-    "role": "secondary"
   },
   {
     "exercise_id": 1177,
@@ -10465,9 +8365,19 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1178,
+    "exercise_id": 1177,
+    "muscle_group_id": 70,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1177,
     "muscle_group_id": 75,
     "role": "primary"
+  },
+  {
+    "exercise_id": 1178,
+    "muscle_group_id": 3,
+    "role": "secondary"
   },
   {
     "exercise_id": 1178,
@@ -10476,8 +8386,8 @@
   },
   {
     "exercise_id": 1178,
-    "muscle_group_id": 3,
-    "role": "secondary"
+    "muscle_group_id": 75,
+    "role": "primary"
   },
   {
     "exercise_id": 1179,
@@ -10521,17 +8431,22 @@
   },
   {
     "exercise_id": 1182,
-    "muscle_group_id": 85,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1183,
     "muscle_group_id": 85,
     "role": "primary"
   },
   {
     "exercise_id": 1183,
     "muscle_group_id": 83,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1183,
+    "muscle_group_id": 85,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1184,
+    "muscle_group_id": 18,
     "role": "secondary"
   },
   {
@@ -10541,12 +8456,12 @@
   },
   {
     "exercise_id": 1184,
-    "muscle_group_id": 31,
+    "muscle_group_id": 29,
     "role": "primary"
   },
   {
     "exercise_id": 1184,
-    "muscle_group_id": 29,
+    "muscle_group_id": 31,
     "role": "primary"
   },
   {
@@ -10555,23 +8470,18 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1184,
-    "muscle_group_id": 18,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 1185,
     "muscle_group_id": 26,
     "role": "primary"
   },
   {
     "exercise_id": 1185,
-    "muscle_group_id": 31,
+    "muscle_group_id": 29,
     "role": "primary"
   },
   {
     "exercise_id": 1185,
-    "muscle_group_id": 29,
+    "muscle_group_id": 31,
     "role": "primary"
   },
   {

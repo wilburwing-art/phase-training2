@@ -771,8 +771,8 @@
   },
   {
     "id": 101,
-    "slug": "smith-machine",
     "name": "Smith Machine",
+    "slug": "smith-machine",
     "category": "gym",
     "portability": "any",
     "estimated_cost": "high",
@@ -781,8 +781,8 @@
   },
   {
     "id": 102,
-    "slug": "chest-press-machine",
     "name": "Chest Press Machine",
+    "slug": "chest-press-machine",
     "category": "gym",
     "portability": "any",
     "estimated_cost": "high",
@@ -791,8 +791,8 @@
   },
   {
     "id": 103,
-    "slug": "shoulder-press-machine",
     "name": "Shoulder Press Machine",
+    "slug": "shoulder-press-machine",
     "category": "gym",
     "portability": "any",
     "estimated_cost": "high",
@@ -801,8 +801,8 @@
   },
   {
     "id": 104,
-    "slug": "iso-lateral-machine",
     "name": "Iso-Lateral Plate Loaded Machine",
+    "slug": "iso-lateral-machine",
     "category": "gym",
     "portability": "any",
     "estimated_cost": "high",
@@ -811,8 +811,8 @@
   },
   {
     "id": 105,
-    "slug": "preacher-bench",
     "name": "Preacher Bench",
+    "slug": "preacher-bench",
     "category": "gym",
     "portability": "any",
     "estimated_cost": "medium",
@@ -821,8 +821,8 @@
   },
   {
     "id": 106,
-    "slug": "captains-chair",
     "name": "Captain's Chair",
+    "slug": "captains-chair",
     "category": "gym",
     "portability": "any",
     "estimated_cost": "medium",
@@ -831,8 +831,8 @@
   },
   {
     "id": 107,
-    "slug": "stair-climber",
     "name": "Stair Climber",
+    "slug": "stair-climber",
     "category": "cardio",
     "portability": "any",
     "estimated_cost": "high",
@@ -841,8 +841,8 @@
   },
   {
     "id": 108,
-    "slug": "elliptical",
     "name": "Elliptical",
+    "slug": "elliptical",
     "category": "cardio",
     "portability": "any",
     "estimated_cost": "high",
@@ -851,8 +851,8 @@
   },
   {
     "id": 109,
-    "slug": "assault-bike",
     "name": "Assault Bike / Air Bike",
+    "slug": "assault-bike",
     "category": "cardio",
     "portability": "any",
     "estimated_cost": "high",
@@ -861,8 +861,8 @@
   },
   {
     "id": 110,
-    "slug": "treadmill",
     "name": "Treadmill",
+    "slug": "treadmill",
     "category": "cardio",
     "portability": "any",
     "estimated_cost": "high",
@@ -871,8 +871,8 @@
   },
   {
     "id": 111,
-    "slug": "ab-wheel",
     "name": "Ab Wheel",
+    "slug": "ab-wheel",
     "category": "minimal",
     "portability": "any",
     "estimated_cost": "low",
@@ -881,8 +881,8 @@
   },
   {
     "id": 112,
-    "slug": "torso-rotation-machine",
     "name": "Torso Rotation Machine",
+    "slug": "torso-rotation-machine",
     "category": "gym",
     "portability": "any",
     "estimated_cost": "high",
@@ -891,8 +891,8 @@
   },
   {
     "id": 113,
-    "slug": "shrug-machine",
     "name": "Shrug Machine",
+    "slug": "shrug-machine",
     "category": "gym",
     "portability": "any",
     "estimated_cost": "high",
@@ -901,8 +901,8 @@
   },
   {
     "id": 114,
-    "slug": "glute-kickback-machine",
     "name": "Glute Kickback Machine",
+    "slug": "glute-kickback-machine",
     "category": "gym",
     "portability": "any",
     "estimated_cost": "high",
@@ -911,8 +911,8 @@
   },
   {
     "id": 115,
-    "slug": "back-extension-machine",
     "name": "Back Extension Machine",
+    "slug": "back-extension-machine",
     "category": "gym",
     "portability": "any",
     "estimated_cost": "high",
@@ -921,8 +921,8 @@
   },
   {
     "id": 116,
-    "slug": "bicep-curl-machine",
     "name": "Bicep Curl Machine",
+    "slug": "bicep-curl-machine",
     "category": "gym",
     "portability": "any",
     "estimated_cost": "high",
@@ -931,8 +931,8 @@
   },
   {
     "id": 117,
-    "slug": "tricep-extension-machine",
     "name": "Triceps Extension Machine",
+    "slug": "tricep-extension-machine",
     "category": "gym",
     "portability": "any",
     "estimated_cost": "high",
@@ -941,8 +941,8 @@
   },
   {
     "id": 118,
-    "slug": "pec-deck",
     "name": "Pec Deck Machine",
+    "slug": "pec-deck",
     "category": "gym",
     "portability": "any",
     "estimated_cost": "high",
@@ -951,8 +951,8 @@
   },
   {
     "id": 119,
-    "slug": "ez-bar",
     "name": "EZ-Bar",
+    "slug": "ez-bar",
     "category": "free_weight",
     "portability": "gym_only",
     "estimated_cost": "medium",
@@ -961,8 +961,8 @@
   },
   {
     "id": 120,
-    "slug": "trap-bar",
     "name": "Trap Bar",
+    "slug": "trap-bar",
     "category": "free_weight",
     "portability": "gym_only",
     "estimated_cost": "medium",
