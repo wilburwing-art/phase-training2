@@ -193,7 +193,7 @@ struct ExercisePickerSheet: View {
                         .foregroundStyle(Color.ink)
                         .multilineTextAlignment(.leading)
                         .accessibilityIdentifier("picker-row-name-\(ex.name)")
-                    Text(metaLine(ex))
+                    Text(ex.metaLabel(includeCompound: false))
                         .font(.monoXS)
                         .foregroundStyle(Color.ink3)
                 }
@@ -227,12 +227,5 @@ struct ExercisePickerSheet: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Show details for \(ex.name)")
         }
-    }
-
-    private func metaLine(_ ex: Exercise) -> String {
-        var parts: [String] = []
-        if ex.modalityLabel != "—" { parts.append(ex.modalityLabel) }
-        if ex.difficultyLabel != "—" { parts.append(ex.difficultyLabel) }
-        return parts.joined(separator: " · ")
     }
 }

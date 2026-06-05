@@ -40,6 +40,17 @@ extension Exercise {
     }
 
     var difficultyLabel: String { (difficulty ?? "—").capitalized }
+
+    /// Shared catalog meta line: "Modality · Difficulty[ · Compound]".
+    /// Pass `includeCompound: false` for dense surfaces (the exercise
+    /// picker) that drop the compound tag to keep the line short.
+    func metaLabel(includeCompound: Bool = true) -> String {
+        var parts: [String] = []
+        if modalityLabel != "—" { parts.append(modalityLabel) }
+        if difficultyLabel != "—" { parts.append(difficultyLabel) }
+        if includeCompound && isCompound { parts.append("Compound") }
+        return parts.joined(separator: " · ")
+    }
 }
 
 /// A single alternative exercise sourced from `exercise_substitutions`.

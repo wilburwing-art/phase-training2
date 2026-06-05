@@ -39,6 +39,11 @@ struct LibraryScreen: View {
     /// expects when fired on every render. Tap a row → read-only preview.
     @State private var stockRoutines: [BundledRoutineRow] = []
     @State private var previewingStock: BundledRoutineRow? = nil
+    /// Unfiltered catalog exercise count for the eyebrow trailing slot.
+    /// Cached once on appear like `stockRoutines` — the count is a full
+    /// 551-row catalog query and the bundled catalog never changes
+    /// mid-session.
+    @State private var exerciseCount: Int = 0
 
     /// Search field only appears once the user has accumulated enough custom
     /// routines to make filtering useful.
@@ -85,27 +90,30 @@ struct LibraryScreen: View {
                 if stockRoutines.isEmpty {
                     stockRoutines = CoachDatabase.shared.listRoutines()
                 }
+                if exerciseCount == 0 {
+                    exerciseCount = CoachDatabase.shared.listExercises(
+                        search: nil,
+                        muscleSlugs: [],
+                        patternSlugs: [],
+                        modality: nil,
+                        difficulty: nil,
+                        environment: nil,
+                        compoundOnly: false,
+                        userSportSlugs: []
+                    ).count
+                }
             }
         }
         .preferredColorScheme(.dark)
     }
 
     /// Counts for the eyebrow trailing slot — exercise total comes from the
-    /// catalog, workout count comes from CustomRoutineStore. Format:
-    /// "<n> EX · <n> WORKOUTS" (UI glossary uses "Workouts" not "Routines").
+    /// catalog (cached in `exerciseCount` on appear), workout count comes
+    /// from CustomRoutineStore. Format: "<n> EX · <n> WORKOUTS" (UI glossary
+    /// uses "Workouts" not "Routines").
     private var libraryEyebrowTrailing: String {
-        let exCount = CoachDatabase.shared.listExercises(
-            search: nil,
-            muscleSlugs: [],
-            patternSlugs: [],
-            modality: nil,
-            difficulty: nil,
-            environment: nil,
-            compoundOnly: false,
-            userSportSlugs: []
-        ).count
         let routineCount = customStore.routines.count + stockRoutines.count
-        return "\(exCount) EX · \(routineCount) WORKOUTS"
+        return "\(exerciseCount) EX · \(routineCount) WORKOUTS"
     }
 
     /// Search appears in Workouts once there's enough to filter — the bundled
@@ -377,14 +385,6 @@ struct LibraryScreen: View {
                 .foregroundStyle(Color.ink2)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    private func metaLine(_ ex: Exercise) -> String {
-        var parts: [String] = []
-        if ex.modalityLabel != "—" { parts.append(ex.modalityLabel) }
-        if ex.difficultyLabel != "—" { parts.append(ex.difficultyLabel) }
-        if ex.isCompound { parts.append("Compound") }
-        return parts.joined(separator: " · ")
     }
 
     private func customSubtitle(_ c: CustomRoutine) -> String {

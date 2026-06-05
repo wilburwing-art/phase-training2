@@ -190,7 +190,7 @@ struct LibraryMuscleScreen: View {
                         ExerciseTile(vm: .init(
                             leading: .thumb(exerciseID: ex.id, urlString: ex.thumbnailURL ?? ex.imageURL),
                             title: ex.name,
-                            meta: metaLine(ex),
+                            meta: ex.metaLabel(),
                             trailing: .chevron,
                             onTap: { detailExercise = ex }
                         ))
@@ -225,13 +225,5 @@ struct LibraryMuscleScreen: View {
                 ? memoryStore.memory.sports.map(\.slug)
                 : []
         )
-    }
-
-    private func metaLine(_ ex: Exercise) -> String {
-        var parts: [String] = []
-        if ex.modalityLabel != "—" { parts.append(ex.modalityLabel) }
-        if ex.difficultyLabel != "—" { parts.append(ex.difficultyLabel) }
-        if ex.isCompound { parts.append("Compound") }
-        return parts.joined(separator: " · ")
     }
 }
