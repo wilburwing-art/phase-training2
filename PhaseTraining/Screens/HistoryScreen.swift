@@ -213,7 +213,7 @@ struct HistoryScreen: View {
                                 .styled(.body)
                                 .foregroundColor(.ink3)
                             dot
-                            Text(durationLabel(session.duration))
+                            Text(SessionRowMeta.durationLabel(session.duration, style: .compact))
                                 .styled(.monoS)
                                 .foregroundColor(.ink3)
                             dot
@@ -364,17 +364,7 @@ struct HistoryScreen: View {
             f.dateTimeStyle = .named  // produces "Today", "Yesterday", "3 days ago"
             return f.localizedString(for: date, relativeTo: Date())
         }
-        let f = DateFormatter()
-        f.dateFormat = "MMM d"
-        return f.string(from: date)
-    }
-
-    private func durationLabel(_ seconds: Int) -> String {
-        let minutes = max(0, seconds / 60)
-        if minutes >= 60 {
-            return "\(minutes / 60)h \(minutes % 60)m"
-        }
-        return "\(minutes)m"
+        return SessionRowMeta.monthDayLabel(date)
     }
 }
 

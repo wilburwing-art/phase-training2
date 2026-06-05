@@ -779,10 +779,8 @@ struct ProgressScreen: View {
     }
 
     private func sessionRow(_ session: SavedSession) -> some View {
-        let f = DateFormatter()
-        f.dateFormat = "MMM d"
-        return HStack(spacing: 10) {
-            Text(f.string(from: session.endTime).uppercased())
+        HStack(spacing: 10) {
+            Text(SessionRowMeta.monthDayLabel(session.endTime).uppercased())
                 .font(.monoXS)
                 .foregroundStyle(Color.ink3)
                 .frame(width: 56, alignment: .leading)
@@ -791,17 +789,11 @@ struct ProgressScreen: View {
                 .foregroundStyle(Color.ink)
                 .lineLimit(1)
             Spacer(minLength: 6)
-            Text(formatSessionDuration(session.duration))
+            Text(SessionRowMeta.durationLabel(session.duration, style: .spelled))
                 .font(.monoXS)
                 .foregroundStyle(Color.ink3)
         }
         .padding(.vertical, 10)
-    }
-
-    private func formatSessionDuration(_ seconds: Int) -> String {
-        let h = seconds / 3600
-        let m = (seconds % 3600) / 60
-        return h > 0 ? "\(h)h \(m)m" : "\(m) min"
     }
 
     private func card<C: View>(title: String, @ViewBuilder content: () -> C) -> some View {
