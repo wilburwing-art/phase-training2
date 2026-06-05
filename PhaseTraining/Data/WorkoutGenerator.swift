@@ -183,15 +183,18 @@ enum WorkoutGenerator {
                 slot: slot
             )
 
+            // Required slots TRIM their set count to fit the remaining budget
+            // (T2.4) rather than overrun a short session; optional slots pass
+            // nil and are dropped below if they don't fit.
             let (row, baseDurSec) = makePickedRow(
                 picked: picked, slot: slot, slotIdx: slotIdx, focus: focus,
                 memory: memory, profile: profile, context: context,
-                strategy: strategy, hashSeed: hashSeed)
+                strategy: strategy, hashSeed: hashSeed,
+                budgetRemainingSec: slot.optional ? nil : max(0, budgetSec - elapsedSec))
 
             // Optional slots that bust the budget get dropped; required slots
-            // override (we'd rather give a slightly-over workout than skip a
-            // primary compound). Budget uses the PRE-multiplier duration so a
-            // deload day doesn't "free up" time for extra accessories (build 97).
+            // were trimmed to fit above. Budget uses the PRE-multiplier duration
+            // so a deload day doesn't "free up" time for extra accessories (build 97).
             if elapsedSec + baseDurSec > budgetSec, slot.optional, !picks.isEmpty {
                 continue
             }
@@ -333,10 +336,20 @@ enum WorkoutGenerator {
         profile: DemographicProfile,
         context: GeneratorContext,
         strategy: GeneratorStrategy,
-        hashSeed: String
+        hashSeed: String,
+        budgetRemainingSec: Int? = nil
     ) -> (row: GeneratedExercise, baseDurSec: Int) {
-        let (baseSets, reps, restSec) = prescription(
+        let (rawBaseSets, reps, restSec) = prescription(
             for: picked, slotIdx: slotIdx, focus: focus, memory: memory, profile: profile)
+        // Tight-budget set trim (T2.4): a required slot on a very short session
+        // shrinks its set count to fit the remaining budget rather than overrun
+        // (e.g. a 20-min day used to ship a 33-min leg day). Floor at 1 set;
+        // optional slots pass nil and are dropped by the caller instead.
+        let baseSets: Int = {
+            guard let rem = budgetRemainingSec else { return rawBaseSets }
+            let maxFit = max(1, (rem - 30) / (45 + restSec))
+            return min(rawBaseSets, maxFit)
+        }()
         // Readiness × deload set multiplier (no effect when no readiness data).
         let readinessSetsMultiplier: Double = context.hasReadinessData
             ? lerp(0.6, 1.0, context.readinessScore) : 1.0

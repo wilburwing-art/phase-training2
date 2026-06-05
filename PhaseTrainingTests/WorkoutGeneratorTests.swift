@@ -934,6 +934,27 @@ final class WorkoutGeneratorTests: XCTestCase {
 
     // MARK: - Duration budget
 
+    /// T2.4 — a very short session trims required-slot sets to fit rather than
+    /// shipping a grossly over-budget day (a 20-min request used to yield a
+    /// ~33-min leg day because required compounds had no per-slot floor).
+    func test_tightBudget_trimsRequiredSetsNotOverrun() {
+        func gen(_ mins: Int) -> GeneratedWorkout {
+            var m = TrainingMemory()
+            m.experience = .intermediate
+            m.equipment = [.fullGym]
+            m.sessionMinutes = mins
+            m.focuses = [.generalStrength]
+            return WorkoutGenerator.generateLift(
+                liftIndex: 2, totalLifts: 3, memory: m, profile: .from(m), hashSeed: "budget")
+        }
+        let tight = gen(20)
+        let roomy = gen(90)
+        XCTAssertLessThan(tight.estimatedMinutes, roomy.estimatedMinutes,
+            "a tight budget should produce a shorter day than a roomy one")
+        XCTAssertLessThanOrEqual(tight.estimatedMinutes, 24,
+            "20-min day should trim near budget; got \(tight.estimatedMinutes)m: \(tight.exercises.map { "\($0.name) \($0.sets)x" })")
+    }
+
     /// Optional slots that bust the cumulative budget are dropped; required
     /// (first) slot always lands so the user never sees an empty workout.
     /// 15-min budget vs 90-min budget on the same focus should produce
