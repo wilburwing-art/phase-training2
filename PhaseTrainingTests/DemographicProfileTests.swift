@@ -58,9 +58,17 @@ final class DemographicProfileTests: XCTestCase {
     func test_age_55plus_caps_session_at_60() {
         var m = TrainingMemory()
         m.experience = .advanced
-        m.age = 70
+        m.age = 60
         let p = DemographicProfile.from(m)
         XCTAssertEqual(p.recommendedSessionMinutes.upperBound, 60)
+    }
+
+    func test_age_70plus_caps_session_at_45() {
+        var m = TrainingMemory()
+        m.experience = .advanced
+        m.age = 70
+        let p = DemographicProfile.from(m)
+        XCTAssertEqual(p.recommendedSessionMinutes.upperBound, 45)
     }
 
     // MARK: - Recovery

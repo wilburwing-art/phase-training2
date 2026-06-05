@@ -17,7 +17,8 @@
 //     beginner     → 30-45     (avoid early burnout; technique-limited)
 //     intermediate → 45-60
 //     advanced     → 60-90
-//     age >= 55    → cap upper at 60
+//     age 55-69    → cap upper at 60
+//     age >= 70    → cap upper at 45 (recovery-limited; T2.2)
 //
 //   Recovery days between consecutive lifts (planner spacing nudge)
 //     beginner            → 1   (skill-acquisition needs nervous-system recovery)
