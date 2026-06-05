@@ -5,47 +5,47 @@ high-severity claims grep-verified). Flat findings are tiered here for an
 overnight loop. **Read top-down. Tier 0 first. Tier 2 items begin with a verify
 step. Do not start Tier 3 without the test gate (§9).**
 
-Two findings are already fixed on branch `fix/checkin-readiness-context-and-event-kind`
-(see Tier 1). One high-severity finding was a **false positive** — see §8.
+**Reconciled 2026-06-05 PM** after the implementation run (verify-first → implement →
+adversarial review per file-disjoint group). 12 items fixed, 5 closed as
+false-positive/already-fixed with evidence, plus the morning loop's 12. Remaining
+open items are marked `[ ]` below. One stale test fixed in passing (`aa6f67a`:
+`test_age_55plus_caps_session_at_60` used age 70, stale since 4919f23's 70+ tier).
 
 ---
 
 ## Tier 0 — Ship blockers / correctness blast radius
 
-- [ ] **Paywall gates not wired.** `SubscriptionStore` product IDs are placeholders and `isPro` is checked in `PaywallView` but NOT at the Coach entitlement gates — Coach is effectively free. Decide: ship Coach free, or wire the gate before charging. `PhaseTraining/Data/SubscriptionStore.swift:17,25`, `PhaseTraining/Coach/CoachSettingsRow.swift:20`
-- [ ] **Exercise match-by-name can mutate the wrong row.** `SessionStore.applyWorkoutDiffToActiveSession()` rebuilds exercises by case-insensitive name match; a coach-proposed exercise differing only in case updates an existing one instead of adding. No dedup by ID post-apply. `PhaseTraining/Data/SessionStore.swift:172,184`
-- [ ] **Possible PlanStore→SessionStore retain cycle.** The memory-subscription sink captures `sessionStore` (not weak); `weak self` guards the PlanStore→MemoryStore edge but not PlanStore→SessionStore. Confirm with a leak instrument. `PhaseTraining/Data/PlanStore.swift:390`
-- [ ] **LLM strategy overrides lack semantic validation.** `targetWeightOverrides/rpeOverrides/tempoOverrides` are type-checked (weight 0–1000) but not plausibility-checked — "RPE 15" / "tempo 99-99-99-99" pass through. `PhaseTraining/Data/WorkoutGenerator.swift:1636`
-- [ ] **Backup restore is non-atomic.** `BackupManager.restore()` clears then repopulates in two steps; an error mid-populate leaves the DB partially cleared. `PhaseTraining/Data/BackupManager.swift:126`
+- [ ] **Paywall gates not wired.** `SubscriptionStore` product IDs are placeholders and `isPro` is checked in `PaywallView` but NOT at the Coach entitlement gates — Coach is effectively free. **Decision needed: ship Coach free, or wire the gate before charging.** `PhaseTraining/Data/SubscriptionStore.swift:17,25`, `PhaseTraining/Coach/CoachSettingsRow.swift:20`
+- [x] **Exercise match-by-name can mutate the wrong row.** Fixed `298284a`: diff exercises match by id so swaps keep logged sets.
+- [x] ~~Possible PlanStore→SessionStore retain cycle.~~ **False positive.** The sink captures `[weak self]` only and reaches sessionStore via `self.sessionStore?.active`; `memorySubscription` is the file's sole stored closure. No strong cross-store edge exists (verified via git log -L: shipped with `[weak self]` in 49dc999).
+- [x] **LLM strategy overrides lack semantic validation.** Fixed `22a7591`: RPE caps at 10 via shared `capRPE`, tempo components cap at 10 s; unparseable strings pass through (clamp, don't reject).
+- [x] **Backup restore is non-atomic.** Fixed `f6e0326`: capture prior rows → repopulate → verify counts → rollback + `restoreIncomplete` on shortfall, all before any UserDefaults write. Known limit (documented in-code): rollback shares the populate's write path, so a genuinely failing disk can defeat it.
 
 ---
 
 ## Tier 1 — User-facing bugs (one-screen fixes)
 
-- [x] **Event kind hardcoded to `.race`.** `EventEditorSheet.save()` forced every event to `.race`, mislabeling sport sessions and travel. Fixed: added a TYPE picker (`WeekEventKind`); reused by `CheckInEventsScreen` so the check-in surface is fixed too. `PhaseTraining/Screens/WeekDayEditSheet.swift:708`
-- [x] **Check-in regen ran with neutral readiness.** `WeeklyCheckInFlow.regenerateAndAdvance()` called `Planner.generate` without a `GeneratorContext`, silently skipping the Phase-2 readiness lift-day floor. Fixed: added `PlanStore.makeGeneratorContext` seam and threaded it. `PhaseTraining/Screens/WeeklyCheckIn/WeeklyCheckInFlow.swift:156`
-- [ ] **Body-weight delete has no confirmation.** Swipe-delete wipes a tracking entry immediately. Add a confirm or undo. `PhaseTraining/Screens/BodyWeightLogSheet.swift:222`
-- [ ] **Body-composition delete has no confirmation.** Same pattern. `PhaseTraining/Screens/BodyCompositionLogSheet.swift:280`
-- [ ] **Coach chat drops one conversation turn.** `wireHistory()` drops the just-appended user message, then `history.dropLast()` drops another — one too many turns leave the LLM context. `PhaseTraining/Coach/CoachDrawer.swift:353`
-- [ ] **Body-composition fields don't reset after logging.** Only `noteText` is cleared; `bfText/leanText/methodText` persist into the next entry. `PhaseTraining/Screens/BodyCompositionLogSheet.swift:349`
-- [ ] **Weight propagation fires per-keystroke.** `LogScreen` `onChange` runs `propagateWeight` on every character, filling downstream sets with partial values. Debounce / fire on commit. `PhaseTraining/Screens/LogScreen.swift:790`
-- [ ] **`editableTemplate` can silently discard edits.** If `onChange(of: template)` fires after the user starts editing, prior-version edits are dropped. `PhaseTraining/Screens/TodayScreen.swift:390`
+- [x] **Event kind hardcoded to `.race`.** Fixed `b6b3d6c` (TYPE picker, reused by CheckInEventsScreen).
+- [x] **Check-in regen ran with neutral readiness.** Fixed `29b430c` (`PlanStore.makeGeneratorContext` seam).
+- [x] **Body-weight delete has no confirmation.** Fixed `b05782b`.
+- [x] **Body-composition delete has no confirmation.** Fixed `98802ec`.
+- [x] **Coach chat drops one conversation turn.** Fixed `3d50437`.
+- [x] **Body-composition fields don't reset after logging.** Fixed `d2bd3ff`.
+- [x] **Weight propagation fires per-keystroke.** Fixed `594cb6b` (debounced).
+- [x] ~~`editableTemplate` can silently discard edits.~~ **False positive.** The handler has carried `if !didModify { editableTemplate = newTemplate }` since it was introduced (17f5955, "Keeps user edits."); every edit path sets `didModify`. Matches the `phase-training-llm-refinement-clobbers-edits` skill's "NOT a trap — don't fix it" note.
 
 ---
 
 ## Tier 2 — Half-finished / dead scaffolding (VERIFY, then act)
 
-Each item: re-grep first. Absence claims were grep-verified once in the audit but
-verify again at action time — the codebase moves.
-
-- [ ] **Verify** `TabPlaceholder` has zero call sites (`grep -rn "TabPlaceholder(" PhaseTraining`), **then** delete or wire it. `PhaseTraining/Components/TabPlaceholder.swift:3`
-- [ ] **Verify** `CoachWorkoutProposal.sourceConversationId` has no reader (`grep -rn "sourceConversationId"`), **then** implement "review in coach" or remove the field. `PhaseTraining/Coach/MiniWorkoutDiffCard.swift`
-- [ ] **Verify** `GeneratorStrategy.emphasizePatterns` is still inert (audit N9, 2026-06-04 — recipes are single-alternative so reordering is a no-op), **then** remove it from the LLM tool surface so the model stops emitting a dead field. `PhaseTraining/Data/GeneratorStrategy.swift:37`
-- [ ] **Verify** `SorenessCheckInSheet` still hardcodes `timeBudget=nil`/`equipmentChanged=false` with no UI, **then** add inputs or drop the fields from `SorenessEntry`. `PhaseTraining/Screens/SorenessCheckInSheet.swift:170`
-- [ ] **Verify** `buildWorkout` tool callers all handle it despite exclusion from `CoachTools.chat`, **then** document or pass it explicitly. `PhaseTraining/Coach/CoachTools.swift:204`
-- [ ] **Verify** `SettingsRow` callers want a disabled state (docstring claims one, initializer omits it), **then** add the param or fix the docstring. `PhaseTraining/Components/SettingsRow.swift:18`
-- [ ] **Verify** the high-minute accessory layer only adds one accessory (the `break` at `:322`) despite "T1.4 two tiers", **then** implement tier-2 or fix the label. `PhaseTraining/Data/WorkoutGenerator.swift:306`
-- [ ] **Verify** `OnboardingFlow` reaches `planPreview` without a `draft.sports` guard, **then** add the gate (Sports is a required step). `PhaseTraining/Screens/Onboarding/OnboardingFlow.swift:56`
+- [x] **TabPlaceholder** deleted `7277b1d`.
+- [x] **`CoachWorkoutProposal.sourceConversationId`** removed `01ce1b5`.
+- [x] ~~`GeneratorStrategy.emphasizePatterns` is inert~~ **False positive — it is NOT inert.** fullBodyA (loaded-carry/single-leg-squat) and fullBodyB (calf-raise/single-leg-squat) are two-alternative slots where the emphasize reorder flips the pick. The sweep-test "byte-identical" proof used patterns that only occur in single-alternative slots. Stale INERT note corrected `f892a80`; field stays on the tool surface.
+- [x] **SorenessCheckInSheet timeBudget/equipmentChanged** wired `d67fe28`.
+- [x] **`buildWorkout` exclusion from `CoachTools.chat`** — already fixed `17f5955`: 8-line doc comment explains it (chat drawer can't render a built workout); CoachRequestScreen + LLMRefinement pass it explicitly.
+- [x] **SettingsRow stale docstring** fixed `6ae180a`.
+- [x] **High-minute accessory layer "two tiers"** — already fixed `5080094`: tier 1 (≥90 min) adds ONE accessory by design; tier 2 (≥120 min) is the +1-set compound bump. Covered by `test_highMinuteBudget_addsVolumeOver60min`.
+- [x] ~~`OnboardingFlow` reaches `planPreview` without a sports guard~~ **False positive.** `step` only moves ±1, so every path passes `.sports`, whose Continue is disabled while `draft.sports.isEmpty`; no mid-flow jump exists. The sports-empty branch in OnboardingSportSeasonsScreen is defensive UI for sports added later via Profile.
 
 ---
 
@@ -62,14 +62,14 @@ verify again at action time — the codebase moves.
 - [ ] `ProfileScreen.swift` (795) — 27 `@State` presentation flags; extract editor-sheet coordination. `PhaseTraining/Screens/ProfileScreen.swift:20`
 
 **Duplication** (extract shared helpers):
-- [ ] `metaLine` formatting duplicated across ExerciseTile / LibraryScreen / LibraryMuscleScreen / ExercisePickerSheet → `Exercise.metaLabel`. `PhaseTraining/Screens/LibraryScreen.swift:382`
+- [x] `metaLine` formatting dedup → `Exercise.metaLabel(includeCompound:)` `7400290`. Audit was partially off: ExerciseTile takes pre-formatted meta, LibraryScreen's copy was dead (deleted). Follow-up candidates outside the run's scope: SubstituteExerciseSheet + ExerciseDetailSheet carry the same pattern.
 - [ ] Three identical `Binding` wrappers (swapping/editing/actionSheet) across TodayScreen / DayWorkoutPreviewSheet / LogScreen. `PhaseTraining/Screens/TodayScreen.swift:770`
 - [ ] `similarFiltersForExercise` duplicated (DayWorkoutPreviewSheet vs TodayScreen). `PhaseTraining/Screens/DayWorkoutPreviewSheet.swift:439`
-- [ ] `sessionRow` date/duration formatting duplicated (HistoryScreen vs ProgressScreen). `PhaseTraining/Screens/ProgressScreen.swift:781`
-- [ ] Per-call `DateFormatter` allocations (ProfileScreen `:738`, CoachSettingsRow `:124`) → cached statics.
+- [x] `sessionRow` date/duration formatting dedup → `Components/SessionRowMeta` `8909b1d` (compact/spelled knob keeps each screen's exact output).
+- [x] Per-call `DateFormatter` (ProfileScreen `:738`) → cached static `1527f33`. ~~CoachSettingsRow `:124`~~ **false positive** — that file has never contained a DateFormatter. Real remaining per-call allocations: `WeekScreen.swift`, `MissedWorkoutBanner.swift`, `BodyWeightLogSheet.swift`.
 
 **Hot-path queries:**
-- [ ] `LibraryScreen.libraryEyebrowTrailing` runs the full 551-row query every render — cache it like `stockRoutines`. `PhaseTraining/Screens/LibraryScreen.swift:96`
+- [x] `LibraryScreen.libraryEyebrowTrailing` full-catalog query per render → cached like `stockRoutines` `7400290`.
 - [ ] `WorkoutGenerator.pickForSlot` makes up to 9 uncached `CoachDatabase.shared` queries per slot. `PhaseTraining/Data/WorkoutGenerator.swift:596`
 
 **Shared-mutable-state:**
@@ -80,22 +80,22 @@ verify again at action time — the codebase moves.
 ## Tier 4 — UX polish (separate sitting, batch together)
 
 - [ ] Stale onboarding step comments ("step N of 8" → 12). `OnboardingFlow.swift:1`, `OnboardingWelcomeScreen.swift:1`, `OnboardingSportsScreen.swift:1`
-- [ ] Self-drop on Week returns false silently — add a disabled drop-zone cue. `PhaseTraining/Screens/WeekScreen.swift:284`
-- [ ] "Add sport session"/"Add event" silently clobber an existing event — surface the one-per-day rule. `PhaseTraining/Screens/WeekDayEditSheet.swift:314`
-- [ ] Warmup rows at 0.6 opacity are hard to read mid-workout. `PhaseTraining/Screens/LogScreen.swift:737`
-- [ ] Plate-calculator custom bar weight not persisted across opens. `PhaseTraining/Screens/PlateCalculatorSheet.swift:62`
-- [ ] Duration buttons clamp 5–600 silently with no custom entry. `PhaseTraining/Screens/SportLogSheet.swift:100`
-- [ ] Profile numeric fields clamp on commit with no live feedback (type 999 → 120). `PhaseTraining/Screens/ProfileScreen.swift:289`
-- [ ] Consolidation modal closes whether or not it did anything. `PhaseTraining/Data/PlanStore.swift:1049`
+- [x] Self-drop on Week silent no-op → disabled drop-zone cue `95027c4`.
+- [x] "Add sport session"/"Add event" silent clobber → Replace/Keep alert naming the incumbent `5124380`.
+- [x] Warmup rows 0.6 opacity → 0.85, W pill stays primary cue `2bcea8b`.
+- [x] Plate-calculator custom bar weight persisted via `@AppStorage` `a7c3ad9`.
+- [x] Sport-log duration: tappable value opens numberPad alert stating the 5–600 range `a7794ce`.
+- [x] Profile numeric clamp now surfaces the valid range inline `1527f33`.
+- [ ] Consolidation modal closes whether or not it did anything. `PhaseTraining/Data/PlanStore.swift:1049` (deferred from the run: fix spans PlanStore + the consolidation UI.)
 
 ---
 
 ## Cross-cutting
 
-- [ ] **Typography system bypassed.** `styled()` uppercase branch is dead (`base : base`) so `.micro` never uppercases via the system; callers hand-`.uppercased()` or hardcode `Font.custom`. Fix `styled()` to apply `.textCase(.uppercase)`, then drop the workarounds. `PhaseTraining/Theme/Typography.swift:89,86`; `TabPlaceholder.swift:14`; `SeasonPhaseBadge.swift:85`
+- [x] **Typography `styled()` dead uppercase branch** resolved `b6998b9` — option B: branch removed, caller-owned casing documented. Rationale: `styled()` returns `Text`, `textCase` is View-only (system uppercasing would force `some View` across 300+ sites), and ~15 deliberately mixed-case `.micro` labels (Apply/Reject/Regenerate/…) plus coach-generated text depend on no-uppercasing. Idiom-unification follow-ups listed in the run output (CompleteScreen:429, LogScreen:647, ExerciseTile:346, RestTimer:63, et al.).
 - [ ] **No localization** — `PlanEdit.label`, event/intensity labels are hardcoded English enums. `PhaseTraining/Data/PlanEdit.swift:31`
-- [ ] **DST off-by-one** in `daysSinceLastWorkout` (uses raw `startTime` deltas). `PhaseTraining/Screens/ProgressRecoverySection.swift:202`
-- [ ] **InsightGenerator** has no debounce on foreground — rapid fg/bg cycles can race the `hasInsightForToday` guard. `PhaseTraining/Coach/InsightGenerator.swift:24`
+- [x] **DST off-by-one** in `daysSinceLastWorkout` → Calendar day-boundary diff `6896717`.
+- [x] **InsightGenerator foreground race** → in-flight flag `89714a9`.
 
 ---
 
@@ -107,6 +107,7 @@ verify again at action time — the codebase moves.
 - **`PlanStore.apply` persist-before-set ordering** — deliberate watchdog-timeout defense. Don't reorder. `PlanStore.swift:804`
 - **The "PURE" check-in regen** (no mutation until `accept()`) — don't add side effects to `regenerateAndAdvance`. `WeeklyCheckInFlow.swift:146`
 - **`readinessScore` clamp / "cap is a safety floor, not coercion"** — intentional; don't turn clamps into rejections. `WorkoutGenerator.swift:1617`
+- **TodayScreen `didModify` guard** on `onChange(of: template)` — this IS the edit-protection; don't "simplify" it away. `TodayScreen.swift:390`
 
 ---
 
@@ -117,6 +118,10 @@ verify again at action time — the codebase moves.
 - `PlanStoreRegenTests` + `PlanStoreValidationOverrideTests` — guard PlanStore splits.
 - `SessionStoreActiveSessionApplyTests` — guard the apply/dedup path (Tier-0 name-match bug).
 - `WeekConsolidatorTests` — guard consolidation.
+
+Gate status 2026-06-05 PM: full unit suite green (647 passed; 8 CoachDatabase
+0-results flakes pass on serial rerun per `ios-coachdb-mass-fail-rerun-first`;
+1 stale test fixed in `aa6f67a`).
 
 ---
 
