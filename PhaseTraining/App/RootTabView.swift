@@ -80,6 +80,14 @@ struct RootTabView: View {
             planStore.memoryStore = memoryStore
             planStore.sportLogStore = sportLogStore
             planStore.customStore = customStore
+            // These injected stores feed derived view state — e.g. the Today
+            // missed-workout banner reads `sessionStore` via
+            // `pendingMissedWorkouts()` — but none is individually @Published, so
+            // wiring them here (in `.task`, AFTER first render) doesn't refresh
+            // observers. Without this nudge the cold-launch missed banner never
+            // appears until some unrelated @Published change forces a re-render
+            // (caught by ConsolidateFlowTests). Notify once, deps now wired.
+            planStore.objectWillChange.send()
             // One-shot migration for users whose saved plan was composed by
             // the pre-build-36 routine picker. Detects the stale schema and
             // regenerates so they stop seeing bundled sport-themed routines

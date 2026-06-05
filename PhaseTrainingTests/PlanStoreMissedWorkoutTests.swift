@@ -218,6 +218,27 @@ final class PlanStoreMissedWorkoutTests: XCTestCase {
         XCTAssertEqual(store.midWeekConsolidationCount, 1)
     }
 
+    /// Reproduces the ConsolidateFlowTests XCUITest seed at the PlanStore level
+    /// (fast): 4 lifts incl a PAST missed push → the banner should offer
+    /// Consolidate. Splits "does the logic offer it" from "does the UI render it".
+    func test_seedScenario_offersConsolidate() {
+        let mon = monday()
+        let store = freshStore(today: mon)
+        store.sessionStore = SessionStore(defaults: UserDefaults(suiteName: "seed-stub-\(UUID())")!)
+        let days = [focusedLiftDay(-2, .push), restDay(-1), focusedLiftDay(0, .pull),
+                    restDay(1), focusedLiftDay(2, .legs), focusedLiftDay(3, .upper), restDay(4)]
+        store.setPlan(WeekPlan(days: days, generatedAt: Date(), inputsHash: "seed"))
+
+        let pending = store.pendingMissedWorkouts(now: mon)
+        XCTAssertEqual(pending.count, 1, "GATE 1 — the past push is the only pending miss")
+        guard let miss = pending.last else { return XCTFail("no pending miss detected") }
+
+        XCTAssertNil(store.proposeMissedReshuffle(missedDate: miss.date, now: mon),
+                     "GATE 2 — 4-lift week trips the drop rule → reshuffle [] → nil")
+        XCTAssertTrue(store.shouldOfferConsolidation(missedDate: miss.date, now: mon),
+                      "GATE 3 — no clean slot + 3 future focus-tagged lifts → offer consolidate")
+    }
+
     func test_consolidateWeek_respectsOneWeekCap() {
         let mon = monday()
         let store = freshStore(today: mon)
