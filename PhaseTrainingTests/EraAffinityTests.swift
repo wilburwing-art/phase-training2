@@ -35,10 +35,16 @@ final class EraAffinityTests: XCTestCase {
         XCTAssertEqual(EraAffinity.derivedCohort(forAge: 54), .tNationForum)
     }
 
-    func testMagazineBodybuilding55Plus() {
+    func testMagazineBodybuilding55Through69() {
         XCTAssertEqual(EraAffinity.derivedCohort(forAge: 55), .magazineBodybuilding)
-        XCTAssertEqual(EraAffinity.derivedCohort(forAge: 70), .magazineBodybuilding)
-        XCTAssertEqual(EraAffinity.derivedCohort(forAge: 99), .magazineBodybuilding)
+        XCTAssertEqual(EraAffinity.derivedCohort(forAge: 62), .magazineBodybuilding)
+        XCTAssertEqual(EraAffinity.derivedCohort(forAge: 69), .magazineBodybuilding)
+    }
+
+    func testVeteranStrength70Plus() {
+        XCTAssertEqual(EraAffinity.derivedCohort(forAge: 70), .veteranStrength)
+        XCTAssertEqual(EraAffinity.derivedCohort(forAge: 80), .veteranStrength)
+        XCTAssertEqual(EraAffinity.derivedCohort(forAge: 99), .veteranStrength)
     }
 
     // Spot-check the exact boundaries called out in the plan.
@@ -51,6 +57,11 @@ final class EraAffinityTests: XCTestCase {
     func testBoundary54To55() {
         XCTAssertEqual(EraAffinity.derivedCohort(forAge: 54), .tNationForum)
         XCTAssertEqual(EraAffinity.derivedCohort(forAge: 55), .magazineBodybuilding)
+    }
+
+    func testBoundary69To70() {
+        XCTAssertEqual(EraAffinity.derivedCohort(forAge: 69), .magazineBodybuilding)
+        XCTAssertEqual(EraAffinity.derivedCohort(forAge: 70), .veteranStrength)
     }
 
     func testBoundary19To20() {
@@ -82,8 +93,8 @@ final class EraAffinityTests: XCTestCase {
         }
     }
 
-    func testAllFiveCohortsExist() {
-        XCTAssertEqual(EraCohort.allCases.count, 5)
+    func testAllSixCohortsExist() {
+        XCTAssertEqual(EraCohort.allCases.count, 6)
     }
 
     // MARK: - Override resolution sanity check

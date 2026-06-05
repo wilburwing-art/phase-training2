@@ -329,6 +329,28 @@ final class WorkoutGeneratorTests: XCTestCase {
             "55+ user should get a lower total set count (got \(totalO) vs \(totalY))")
     }
 
+    /// T2.2 — 70+ programming is differentiated from 55+: lower max session
+    /// minutes and more recovery days between lifts. Pre-fix both age bands
+    /// resolved to the same magazineBodybuilding era with identical volume caps.
+    func test_age70_differentiatesFrom55() {
+        func profile(age: Int) -> DemographicProfile {
+            var m = TrainingMemory()
+            m.experience = .intermediate
+            m.equipment = [.fullGym]
+            m.age = age
+            return DemographicProfile.from(m)
+        }
+        let p55 = profile(age: 55)
+        let p70 = profile(age: 70)
+
+        XCTAssertLessThan(p70.recommendedSessionMinutes.upperBound,
+                          p55.recommendedSessionMinutes.upperBound,
+            "70+ max session minutes (\(p70.recommendedSessionMinutes.upperBound)) should be below 55+ (\(p55.recommendedSessionMinutes.upperBound))")
+        XCTAssertGreaterThan(p70.minRecoveryDaysBetweenLifts,
+                             p55.minRecoveryDaysBetweenLifts,
+            "70+ recovery days (\(p70.minRecoveryDaysBetweenLifts)) should exceed 55+ (\(p55.minRecoveryDaysBetweenLifts))")
+    }
+
     /// T1.6 — advanced earns +1 work set on a COMPOUND over intermediate.
     /// Before, both clamped to the same focus-bias cap, so "advanced" produced
     /// a prescription identical to "intermediate". The bump is built on the

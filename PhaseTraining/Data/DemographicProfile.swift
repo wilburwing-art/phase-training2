@@ -141,7 +141,9 @@ extension DemographicProfile {
         case .intermediate: baseLifts = (3, 4)
         case .advanced:     baseLifts = (4, 5)
         }
-        let ageDelta = (m.age ?? 0) >= 55 ? -1 : 0
+        // 70+ gets a larger reduction (-2) than 55-69 (-1): recovery is the
+        // binding constraint at that age, not stimulus.
+        let ageDelta = (m.age ?? 0) >= 70 ? -2 : (m.age ?? 0) >= 55 ? -1 : 0
         let liftLow  = max(1, baseLifts.0 + min(0, ageDelta))
         let liftHigh = max(liftLow, baseLifts.1 + ageDelta)
         let liftRange = liftLow...liftHigh
@@ -153,7 +155,10 @@ extension DemographicProfile {
         case .intermediate: baseSess = (45, 60)
         case .advanced:     baseSess = (60, 90)
         }
-        let sessHigh = (m.age ?? 0) >= 55 ? min(60, baseSess.1) : baseSess.1
+        // 70+ caps at 45 min (recovery-limited); 55-69 caps at 60 min.
+        let sessHigh = (m.age ?? 0) >= 70 ? min(45, baseSess.1)
+                     : (m.age ?? 0) >= 55 ? min(60, baseSess.1)
+                     : baseSess.1
         let sessLow  = min(baseSess.0, sessHigh)
         let sessRange = sessLow...sessHigh
 
@@ -161,6 +166,7 @@ extension DemographicProfile {
         var recovery = 0
         if m.experience == .beginner { recovery = 1 }
         if (m.age ?? 0) >= 55 { recovery = max(recovery, 1) }
+        if (m.age ?? 0) >= 70 { recovery = max(recovery, 2) }
 
         // --- Difficulty bias ---
         let difficulties: [String]
@@ -232,7 +238,9 @@ extension DemographicProfile {
         // --- Rationale ---
         var why: [String] = []
         why.append("\(m.experience.label) lifters do best with \(liftLow)-\(liftHigh) lift days at \(sessLow)-\(sessHigh) min per session.")
-        if let age = m.age, age >= 55 {
+        if let age = m.age, age >= 70 {
+            why.append("Age \(age) — power/balance bias, shorter sessions, and extended recovery between lifts.")
+        } else if let age = m.age, age >= 55 {
             why.append("Age \(age) — capping volume and adding recovery between hard days.")
         }
         if !envs.isEmpty {

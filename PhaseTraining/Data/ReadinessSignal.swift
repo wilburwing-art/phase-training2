@@ -120,6 +120,7 @@ extension ReadinessSignal {
 
     private static func cohortNorm(_ cohort: EraCohort?) -> Double {
         switch cohort {
+        case .veteranStrength:      return 2.5   // 70+, lower training frequency
         case .magazineBodybuilding: return 3.0   // bro split, body-part 3-4x/wk
         case .tNationForum:         return 3.5   // 5x5 / WS-inspired upper-lower
         case .redditFitness:        return 4.0   // PPL/531 BBB norm
