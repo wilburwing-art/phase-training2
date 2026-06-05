@@ -183,104 +183,21 @@ enum WorkoutGenerator {
                 slot: slot
             )
 
-            let (baseSets, reps, restSec) = prescription(
-                for: picked,
-                slotIdx: slotIdx,
-                focus: focus,
-                memory: memory,
-                profile: profile
-            )
-            // Phase 2 — readiness silent volume scaling. Only applied when
-            // `context.hasReadinessData == true`; when the user has skipped
-            // HK auth AND has no native session history, readinessScore is
-            // the 0.5 sentinel and we deliberately scale by 1.0× (no
-            // effect) to preserve pre-Phase-2 generator output. See
-            // `phase-training-personalization-three-axes` skill —
-            // readiness drives volume/intensity ONLY, never competency.
-            let readinessSetsMultiplier: Double = context.hasReadinessData
-                ? lerp(0.6, 1.0, context.readinessScore)
-                : 1.0
-            // Apply LLM-supplied intensity multiplier — guarded so a hostile
-            // strategy can't produce 0 sets or runaway volume. Readiness
-            // composes BEFORE the LLM intensityBias so the LLM still has
-            // last say (a deload week tone shouldn't be amplified by an
-            // already-detrained readiness score).
-            let combinedSetsMul = readinessSetsMultiplier * strategy.intensityBias.setsMultiplier
-            let sets = max(1, min(8, Int((Double(baseSets) * combinedSetsMul).rounded())))
-
-            // Budget check uses the PRE-multiplier duration so a deload day
-            // doesn't "free up" time for additional accessories — deload
-            // means fewer sets across the same exercises, not a longer
-            // workout list. Build 97 fix.
-            let baseDurSec = baseSets * (45 + restSec) + 30
+            let (row, baseDurSec) = makePickedRow(
+                picked: picked, slot: slot, slotIdx: slotIdx, focus: focus,
+                memory: memory, profile: profile, context: context,
+                strategy: strategy, hashSeed: hashSeed)
 
             // Optional slots that bust the budget get dropped; required slots
             // override (we'd rather give a slightly-over workout than skip a
-            // primary compound).
+            // primary compound). Budget uses the PRE-multiplier duration so a
+            // deload day doesn't "free up" time for extra accessories (build 97).
             if elapsedSec + baseDurSec > budgetSec, slot.optional, !picks.isEmpty {
                 continue
             }
 
-            // Progressive-overload target: when the user has a prior best
-            // for this exercise, emit it in notes so the LogScreen can
-            // surface a coaching prompt above the autofill column. LLM
-            // strategy can override the target ("bench at 90% today").
-            let notes = progressiveOverloadHint(for: picked, context: context, memory: memory, prescribedReps: reps, strategy: strategy)
-            // RPE + tempo prescription (build 70). Defaults from focus +
-            // slot position; LLM strategy overrides win per-exercise.
-            let (rpeRaw, tempo) = rpeTempoHints(
-                for: picked,
-                slotIdx: slotIdx,
-                focus: focus,
-                memory: memory,
-                strategy: strategy
-            )
-            // Phase 2 readiness RPE cap — compound lifts only, applied
-            // when the user has real readiness data. Detrained user (0.0)
-            // capped at RPE 7; in-shape user (1.0) capped at RPE 9; mid
-            // (0.5) capped at RPE 8. The `rpeTempoHints` baseline for
-            // compounds is RPE 7-8 already; cap reduces it further on
-            // low-readiness days without affecting non-compound work.
-            let rpe: String? = {
-                guard let raw = rpeRaw,
-                      picked.isCompound,
-                      context.hasReadinessData else { return rpeRaw }
-                return capCompoundRPE(raw, readinessScore: context.readinessScore)
-            }()
-
-            // Warm-up ramp synthesis: only for the FIRST compound primary
-            // lift (slotIdx == 0 + isCompound) AND only when the prime mover
-            // isn't sore (don't ramp into a capped top set on sore work).
-            // Three sets at 40/60/80% of working weight — matches eval-rig's
-            // synthesizeWarmups recipe so canon-vs-generator comparisons stay
-            // apples-to-apples.
-            let warmUps: [WarmUpSet]? = (slotIdx == 0 && picked.isCompound && !isMuscleSoreForExercise(picked, memory: memory))
-                ? [
-                    WarmUpSet(reps: 5, loadPctOfWorking: 40, restSeconds: 60),
-                    WarmUpSet(reps: 5, loadPctOfWorking: 60, restSeconds: 60),
-                    WarmUpSet(reps: 3, loadPctOfWorking: 80, restSeconds: 90),
-                  ]
-                : nil
-
-            picks.append(GeneratedExercise(
-                id: "\(hashSeed)-\(slotIdx)-\(picked.id)",
-                exerciseId: picked.id,
-                name: picked.name,
-                pattern: slot.satisfiedBy,
-                isCompound: picked.isCompound,
-                sets: sets,
-                reps: reps,
-                restSeconds: restSec,
-                notes: notes,
-                rpe: rpe,
-                tempo: tempo,
-                warmUpSets: warmUps
-            ))
+            picks.append(row)
             pickedIds.insert(picked.id)
-            // Accumulate using baseDurSec so the running total reflects a
-            // normal-intensity day's pace — deload doesn't free up time for
-            // additional accessories (build 97 fix). Estimated minutes
-            // below uses the same total since it's also "as if normal."
             elapsedSec += baseDurSec
         }
 
@@ -348,6 +265,35 @@ enum WorkoutGenerator {
             ))
         }
 
+        // Graceful-degradation floor (T1.1b / T1.3): when equipment-starved
+        // required slots drop out — e.g. a bodyweight pull day, where no
+        // apparatus-free vertical pull exists — the day can collapse to one or
+        // two movements. Backfill from focus-appropriate fallback patterns
+        // through the SAME pickForSlot + makePickedRow pipeline, so every
+        // filter and scaler still applies, until a minimum movement count or
+        // the fallbacks run dry. Budget-gated, so a legitimately short day
+        // (tight session minutes) is never padded past its budget.
+        let minMovements = 3
+        if picks.count < minMovements {
+            for pattern in degradationFallbackPatterns(for: focus) {
+                if picks.count >= minMovements { break }
+                let slot = PatternSlot(alternatives: [pattern], optional: true)
+                guard let pick = pickForSlot(
+                    slot: slot, slotIdx: picks.count, profile: profile, envs: envs,
+                    excludeKws: excludeKws, excludeIds: pickedIds,
+                    recentlyPicked: recentlyPicked, hashSeed: hashSeed,
+                    context: context, strategy: strategy) else { continue }
+                let (row, durSec) = makePickedRow(
+                    picked: pick, slot: slot, slotIdx: picks.count, focus: focus,
+                    memory: memory, profile: profile, context: context,
+                    strategy: strategy, hashSeed: hashSeed)
+                if elapsedSec + durSec > budgetSec, !picks.isEmpty { continue }
+                picks.append(row)
+                pickedIds.insert(pick.id)
+                elapsedSec += durSec
+            }
+        }
+
         // D4 session structure — pair antagonist movements into supersets.
         // Additive: sets / reps / rest are untouched; only `supersetGroup`
         // is populated, and only where an antagonist pair actually co-occurs.
@@ -370,6 +316,82 @@ enum WorkoutGenerator {
             provenance: prov,
             focus: focus
         )
+    }
+
+    /// Build a `GeneratedExercise` row for a picked exercise, applying the
+    /// same prescription, readiness/deload set-scaling, progressive-overload
+    /// note, compound RPE cap, and warm-up rules the main slot loop uses.
+    /// Returns the row plus its PRE-multiplier duration (the budget-accounting
+    /// cost). Shared by the main loop AND the degradation floor so the two
+    /// never drift apart (the dual-path trap — see the prescription skill).
+    private static func makePickedRow(
+        picked: Exercise,
+        slot: PatternSlot,
+        slotIdx: Int,
+        focus: WorkoutFocus,
+        memory: TrainingMemory,
+        profile: DemographicProfile,
+        context: GeneratorContext,
+        strategy: GeneratorStrategy,
+        hashSeed: String
+    ) -> (row: GeneratedExercise, baseDurSec: Int) {
+        let (baseSets, reps, restSec) = prescription(
+            for: picked, slotIdx: slotIdx, focus: focus, memory: memory, profile: profile)
+        // Readiness × deload set multiplier (no effect when no readiness data).
+        let readinessSetsMultiplier: Double = context.hasReadinessData
+            ? lerp(0.6, 1.0, context.readinessScore) : 1.0
+        let combinedSetsMul = readinessSetsMultiplier * strategy.intensityBias.setsMultiplier
+        let sets = max(1, min(8, Int((Double(baseSets) * combinedSetsMul).rounded())))
+        // Budget accounting uses pre-multiplier duration (build 97).
+        let baseDurSec = baseSets * (45 + restSec) + 30
+        let notes = progressiveOverloadHint(
+            for: picked, context: context, memory: memory, prescribedReps: reps, strategy: strategy)
+        let (rpeRaw, tempo) = rpeTempoHints(
+            for: picked, slotIdx: slotIdx, focus: focus, memory: memory, strategy: strategy)
+        // Phase 2 readiness RPE cap — compound lifts only, when readiness data exists.
+        let rpe: String? = {
+            guard let raw = rpeRaw, picked.isCompound, context.hasReadinessData else { return rpeRaw }
+            return capCompoundRPE(raw, readinessScore: context.readinessScore)
+        }()
+        // Warm-up ramp only for the first compound primary, and not when sore.
+        let warmUps: [WarmUpSet]? = (slotIdx == 0 && picked.isCompound && !isMuscleSoreForExercise(picked, memory: memory))
+            ? [
+                WarmUpSet(reps: 5, loadPctOfWorking: 40, restSeconds: 60),
+                WarmUpSet(reps: 5, loadPctOfWorking: 60, restSeconds: 60),
+                WarmUpSet(reps: 3, loadPctOfWorking: 80, restSeconds: 90),
+              ]
+            : nil
+        let row = GeneratedExercise(
+            id: "\(hashSeed)-\(slotIdx)-\(picked.id)",
+            exerciseId: picked.id,
+            name: picked.name,
+            pattern: slot.satisfiedBy,
+            isCompound: picked.isCompound,
+            sets: sets,
+            reps: reps,
+            restSeconds: restSec,
+            notes: notes,
+            rpe: rpe,
+            tempo: tempo,
+            warmUpSets: warmUps
+        )
+        return (row, baseDurSec)
+    }
+
+    /// Focus-appropriate patterns the degradation floor backfills from when the
+    /// recipe's own slots can't fill (equipment-starved). Curated so the
+    /// fallback stays on-theme — a pull day degrades to scapular/back-isometric
+    /// work (which has bodyweight options post-resync), a push day to core /
+    /// extension, a leg day to core / hinge. Ordered by preference. (T1.1b/T1.3)
+    private static func degradationFallbackPatterns(for focus: WorkoutFocus) -> [String] {
+        switch focus {
+        case .pull:
+            return ["scapular-retraction", "scapular-protraction", "elbow-flexion"]
+        case .push, .upper, .fullBodyA, .fullBodyB:
+            return ["scapular-protraction", "anti-extension", "elbow-extension"]
+        case .legs, .lower:
+            return ["anti-extension", "anti-rotation", "hip-hinge"]
+        }
     }
 
     // MARK: - Slot fulfillment

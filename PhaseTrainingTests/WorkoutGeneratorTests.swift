@@ -837,6 +837,30 @@ final class WorkoutGeneratorTests: XCTestCase {
             "Disliking 'machine' must drop machine-required exercises despite clean names; got: \(dW.exercises.map { $0.name })")
     }
 
+    // MARK: - T1.1 bodyweight degradation floor
+
+    /// A bodyweight-only user's pull day must not collapse. The catalog has no
+    /// apparatus-free vertical pull, so that required slot drops; the
+    /// degradation floor backfills from scapular/back work (supplied by the
+    /// source resync) to a minimum of 3 movements.
+    func test_bodyweightPullDay_doesNotCollapse() {
+        var m = TrainingMemory()
+        m.experience = .beginner
+        m.equipment = [.bodyweight]
+        m.sessionMinutes = 60
+        let p = DemographicProfile.from(m)
+        var strat = GeneratorStrategy.auto
+        strat.focus = .pull
+        let w = WorkoutGenerator.generateLift(
+            liftIndex: 1, totalLifts: 3, memory: m, profile: p,
+            hashSeed: "bw-pull", strategy: strat)
+        XCTAssertEqual(w.focus, .pull)
+        XCTAssertGreaterThanOrEqual(w.exercises.count, 3,
+            "bodyweight pull day must reach the degradation floor (>=3); got \(w.exercises.map { $0.name })")
+        let ids = w.exercises.map { $0.exerciseId }
+        XCTAssertEqual(ids.count, Set(ids).count, "no duplicate exercises in the degraded day")
+    }
+
     // MARK: - Stagnation swap
 
     /// When `context.stagnantExercises` includes an exercise the generator
