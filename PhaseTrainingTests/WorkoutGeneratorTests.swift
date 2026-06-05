@@ -329,6 +329,29 @@ final class WorkoutGeneratorTests: XCTestCase {
             "55+ user should get a lower total set count (got \(totalO) vs \(totalY))")
     }
 
+    /// T1.6 — advanced earns +1 work set on a COMPOUND over intermediate.
+    /// Before, both clamped to the same focus-bias cap, so "advanced" produced
+    /// a prescription identical to "intermediate". The bump is built on the
+    /// intermediate clamp, so it tops out at 5 (preserving the canonical 5×5).
+    func test_prescription_advancedAddsCompoundSetOverIntermediate() throws {
+        let compound = try XCTUnwrap(
+            CoachDatabase.shared.exercises(matchingPattern: "squat").first { $0.isCompound },
+            "need a compound for the prescription comparison")
+        func sets(_ configure: (inout TrainingMemory) -> Void) -> Int {
+            var m = TrainingMemory()
+            m.equipment = [.fullGym]
+            configure(&m)
+            return WorkoutGenerator.prescription(
+                for: compound, slotIdx: 0, focus: .legs,
+                memory: m, profile: .from(m)).sets
+        }
+        let inter = sets { $0.experience = .intermediate }
+        let adv = sets { $0.experience = .advanced }
+        XCTAssertEqual(adv, inter + 1,
+            "advanced should program exactly one more set than intermediate on a compound (T1.6)")
+        XCTAssertLessThanOrEqual(adv, 5, "advanced compound sets top out at 5 (5×5 preserved)")
+    }
+
     // MARK: - Equipment + constraint filters
 
     func test_bodyweightUser_neverGetsGymOnlyExercise() {

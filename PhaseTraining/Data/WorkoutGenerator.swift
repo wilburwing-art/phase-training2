@@ -1186,7 +1186,13 @@ enum WorkoutGenerator {
         switch memory.experience {
         case .beginner:     sets = min(sets, 3)
         case .intermediate: sets = min(sets, 4)
-        case .advanced:     break
+        // Advanced earns +1 work set on COMPOUNDS over the intermediate clamp
+        // (T1.6) — the old `break` left advanced ≡ intermediate whenever the raw
+        // bias was already ≤4. Built on the intermediate clamp so it tops out at
+        // 5: the canonical 5×5 stays 5 (general-strength raw 5 → min(5,4)+1 = 5),
+        // while a raw-4 hypertrophy compound steps 4 → 5. Isolations keep the raw
+        // bias (unchanged from the prior `break`).
+        case .advanced:     if isCompound { sets = min(sets, 4) + 1 }
         }
         if let age = memory.age, age >= 55 {
             sets = max(1, sets - 1)
