@@ -19,6 +19,9 @@ jobs:
       - name: Show Xcode version
         run: xcodebuild -version
 
+      - name: coach.db in sync with db/source (N1 drift guard)
+        run: bash scripts/db/verify_coachdb_sync.sh
+
       - name: Install xcodegen + xcbeautify
         run: brew install xcodegen xcbeautify
 
