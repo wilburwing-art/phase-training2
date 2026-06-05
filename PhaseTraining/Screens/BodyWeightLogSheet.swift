@@ -21,6 +21,7 @@ struct BodyWeightLogSheet: View {
 
     @State private var weightText: String = ""
     @State private var noteText: String = ""
+    @State private var pendingDelete: BodyWeightEntry?
     @FocusState private var weightFocused: Bool
 
     var body: some View {
@@ -54,6 +55,17 @@ struct BodyWeightLogSheet: View {
         .presentationDetents([.large])
         .presentationBackground(Color.bg)
         .preferredColorScheme(.dark)
+        .confirmationDialog(
+            "Delete this entry?",
+            isPresented: Binding(get: { pendingDelete != nil },
+                                 set: { if !$0 { pendingDelete = nil } }),
+            presenting: pendingDelete
+        ) { entry in
+            Button("Delete", role: .destructive) { deleteEntry(entry); pendingDelete = nil }
+            Button("Cancel", role: .cancel) { pendingDelete = nil }
+        } message: { _ in
+            Text("This removes the logged weight. Your history can't recover it.")
+        }
         .onAppear {
             // Seed the log from a scalar weight set during onboarding / About
             // You so it shows in the trend + history (idempotent — only fires
@@ -219,7 +231,7 @@ struct BodyWeightLogSheet: View {
                     .foregroundStyle(Color.ink3)
                     .lineLimit(1)
             }
-            Button(role: .destructive) { deleteEntry(entry) } label: {
+            Button(role: .destructive) { pendingDelete = entry } label: {
                 Image(systemName: "trash")
                     .font(.system(size: 12))
                     .foregroundStyle(Color.ink3)
