@@ -186,6 +186,35 @@ final class GeneratorStrategyTests: XCTestCase {
         XCTAssertNil(proposal.strategy.targetWeightOverrides["squat"], "weight > 1000 rejected")
     }
 
+    func test_decoder_clampsImplausiblePrescriptions() {
+        // Type-valid but semantically implausible RPE / tempo: clamp into
+        // the sane range, don't drop the prescription or the payload.
+        let json = """
+        {
+          "focus": "push",
+          "exercisePrescriptions": [
+            {"exerciseName": "Bench Press", "rpe": "15", "tempo": "99-99-99-99"},
+            {"exerciseName": "Squat", "rpe": "8-12"},
+            {"exerciseName": "Pull-Up", "rpe": "AMRAP", "tempo": "2-0-X-0"}
+          ],
+          "reasoning": "overcooked llm output."
+        }
+        """.data(using: .utf8)!
+        guard let proposal = CoachToolDecoder.decodeBuildWorkout(from: json) else {
+            return XCTFail()
+        }
+        XCTAssertEqual(proposal.strategy.rpeOverrides["bench press"], "10",
+                       "RPE 15 capped to the scale's ceiling")
+        XCTAssertEqual(proposal.strategy.tempoOverrides["bench press"], "10-10-10-10",
+                       "tempo components capped at 10 s")
+        XCTAssertEqual(proposal.strategy.rpeOverrides["squat"], "8-10",
+                       "range max capped, min preserved")
+        XCTAssertEqual(proposal.strategy.rpeOverrides["pull-up"], "AMRAP",
+                       "unparseable RPE passes through unchanged")
+        XCTAssertEqual(proposal.strategy.tempoOverrides["pull-up"], "2-0-X-0",
+                       "explosive 'X' tempo passes through unchanged")
+    }
+
     func test_decoder_returnsNilForGarbage() {
         let json = "{ not even json".data(using: .utf8)!
         XCTAssertNil(CoachToolDecoder.decodeBuildWorkout(from: json))

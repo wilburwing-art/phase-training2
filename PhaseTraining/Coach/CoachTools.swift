@@ -382,16 +382,17 @@ enum CoachToolDecoder {
                 .filter { $0.weightLb > 0 && $0.weightLb <= 1000 }
                 .map { ($0.exerciseName.lowercased(), $0.weightLb) }
         )
-        // Pull RPE + tempo prescriptions into the two override maps. Bad
-        // values pass through — the user sees the LLM's exact string. We
-        // don't try to validate "3-1-1-0" vs "3-X-1-0"; the model knows
-        // better than a regex.
+        // Pull RPE + tempo prescriptions into the two override maps,
+        // clamped to plausible ranges — RPE caps at 10 (the scale's true
+        // ceiling, via the generator's shared capRPE) and tempo components
+        // at 10 s. Strings the parsers don't understand pass through
+        // unchanged: clamp to safe ranges, don't reject the payload.
         var rpeOverrides: [String: String] = [:]
         var tempoOverrides: [String: String] = [:]
         for item in payload.exercisePrescriptions ?? [] {
             let key = item.exerciseName.lowercased()
-            if let r = item.rpe, !r.isEmpty { rpeOverrides[key] = r }
-            if let t = item.tempo, !t.isEmpty { tempoOverrides[key] = t }
+            if let r = item.rpe, !r.isEmpty { rpeOverrides[key] = capRPE(r, to: 10) }
+            if let t = item.tempo, !t.isEmpty { tempoOverrides[key] = clampTempo(t) }
         }
         let strategy = GeneratorStrategy(
             focus: focus,
@@ -404,6 +405,19 @@ enum CoachToolDecoder {
             intensityBias: intensity
         )
         return CoachBuildWorkoutProposal(strategy: strategy, reasoning: payload.reasoning)
+    }
+
+    /// Clamp an LLM tempo string's numeric components to sane seconds (≤ 10).
+    /// "99-99-99-99" becomes "10-10-10-10"; "2-0-X-0" passes through ('X' =
+    /// explosive). Anything that isn't a 4-part dash string passes through
+    /// unchanged — same philosophy as capRPE: clamp, don't reject.
+    private static func clampTempo(_ raw: String) -> String {
+        let parts = raw.split(separator: "-", omittingEmptySubsequences: false)
+        guard parts.count == 4 else { return raw }
+        return parts.map { part -> String in
+            guard let seconds = Double(String(part)), seconds > 10 else { return String(part) }
+            return "10"
+        }.joined(separator: "-")
     }
 
     /// Decode a propose_workout_changes payload. Caller passes today's

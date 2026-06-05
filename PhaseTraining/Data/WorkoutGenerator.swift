@@ -1632,7 +1632,8 @@ func capCompoundRPE(_ rpeRaw: String, readinessScore: Double) -> String {
 
 /// Cap an RPE string ("7", "8-9", "RPE 7-8") so its max value ≤ `capValue`.
 /// Parser failures pass through unchanged — the cap is a safety floor, not a
-/// coercion. Shared by the readiness compound cap and the beginner cap (T1.5).
+/// coercion. Shared by the readiness compound cap, the beginner cap (T1.5),
+/// and the build_workout decoder's RPE plausibility clamp.
 func capRPE(_ rpeRaw: String, to capValue: Double) -> String {
     let trimmed = rpeRaw.trimmingCharacters(in: .whitespaces)
     guard !trimmed.isEmpty else { return rpeRaw }
