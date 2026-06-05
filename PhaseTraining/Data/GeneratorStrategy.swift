@@ -34,12 +34,14 @@ struct GeneratorStrategy: Codable, Equatable, Hashable {
     /// Boosts the alternative-ordering inside each slot — a pattern in this
     /// list comes BEFORE others.
     ///
-    /// NOTE (2026-06-04, audit N9): currently INERT — the focus-slot recipes are
-    /// almost all single-alternative, so reordering them changes nothing. Proven
-    /// by GeneratorSweepReportTest (the emphasize variant is byte-identical to
-    /// baseline). Retained as part of the LLM build_workout tool surface;
-    /// `deprioritizePatterns` (which removes) still works. Revisit when recipes
-    /// gain multi-alternative slots.
+    /// NOTE (2026-06-04, audit N9; re-traced 2026-06-05): NEARLY inert — most
+    /// focus-slot recipes are single-alternative, where reordering changes
+    /// nothing (GeneratorSweepReportTest's emphasize variant is byte-identical
+    /// to baseline). It IS live for the two-alternative optional slots:
+    /// fullBodyA's loaded-carry/single-leg-squat and fullBodyB's
+    /// calf-raise/single-leg-squat, where emphasizing "single-leg-squat"
+    /// flips the pick. Retained on the LLM build_workout tool surface;
+    /// `deprioritizePatterns` (which removes) always works.
     var emphasizePatterns: [String]
 
     /// movement_patterns.slug values to SKIP when picking. Slots whose
