@@ -248,125 +248,7 @@ final class PlanStore: ObservableObject {
         }
     }
 
-    // MARK: - Generation
-
-    /// Generate a fresh plan from memory + the current overrides; persist both.
-    @discardableResult
-    func generate(from memory: TrainingMemory, today: Date = Date()) -> WeekPlan {
-        let routines = CoachDatabase.shared.listRoutines()
-        let context = buildGeneratorContext(memory: memory, today: today)
-        let p = Planner.generate(
-            memory: memory,
-            overrides: overrides,
-            routines: routines,
-            // Build 99: auto-regen paths used to drop feedback bias on the
-            // floor — only WeeklyCheckInFlow passed it. So "marked 3
-            // workouts too hard, planner kept handing me the same volume"
-            // was a real complaint. Surfacing it here means every regen
-            // (profile drift, overrides change, sport-log change) honors
-            // the same ±1 lift-day nudge that the check-in flow already
-            // honored.
-            previousFeedback: memory.feedback,
-            recentSportLogs: sportLogStore?.entries ?? [],
-            recentlyPicked: recentPicks?.recentlyPickedIds() ?? [],
-            today: today,
-            context: context
-        )
-        // Build 105: apply CustomRoutine overrides AFTER Planner.generate()
-        // so the user's "use my saved leg workout for Thursday" pick
-        // survives plan regens. Done as post-processing because the
-        // Planner is stateless and doesn't know about CustomRoutineStore.
-        let pWithCustoms = applyCustomRoutineOverrides(to: p)
-        self.plan = pWithCustoms
-        savePlan()
-        recordPickedExercises(in: pWithCustoms)
-        // PR 4: snapshot every generated plan into history (idempotent by
-        // weekStart — a same-week regen replaces the prior entry).
-        snapshotCurrentPlan(now: today)
-        // Build 98: kick off background LLM refinement for consent-on
-        // users. Deterministic plan above renders immediately; the
-        // refinement task progressively replaces each lift/mobility day
-        // with an LLM-personalized version. No-op without consent.
-        kickOffLLMRefinementIfConsented(memory: memory)
-        return pWithCustoms
-    }
-
-    // MARK: - Custom-routine override post-processing (build 105)
-
-    /// Walk the plan and replace any day's generatedWorkout with one
-    /// composed from a CustomRoutine when `overrides.customRoutineByDate`
-    /// has an entry for that date. No-op if customStore isn't wired or
-    /// the referenced routine has been deleted.
-    private func applyCustomRoutineOverrides(to plan: WeekPlan) -> WeekPlan {
-        guard let customStore else { return plan }
-        guard !overrides.customRoutineByDate.isEmpty else { return plan }
-        var updated = plan
-        for idx in updated.days.indices {
-            let day = updated.days[idx]
-            guard let customId = overrides.customRoutineId(for: day.date) else { continue }
-            guard let custom = customStore.routines.first(where: { $0.id == customId }) else { continue }
-            // Build a workout shape from the custom routine. Mark it as
-            // lift kind if it isn't already (rest days could also carry an
-            // override if the user manually scheduled a custom workout on
-            // a planned rest day from the Week tab).
-            updated.days[idx].generatedWorkout = composeWorkout(fromCustom: custom)
-            updated.days[idx].title = custom.name.isEmpty ? "Custom workout" : custom.name
-            updated.days[idx].routineId = nil
-            if day.kind == .rest || day.kind == .sport || day.kind == .event {
-                updated.days[idx].kind = .lift
-            }
-            updated.days[idx].generatedReason = "Your saved workout"
-        }
-        return updated
-    }
-
-    /// Convert a CustomRoutine's exercise list into a GeneratedWorkout so
-    /// the Today / Week surfaces can render it the same way they render
-    /// planner output. Uses sensible fallback prescriptions when the
-    /// routine doesn't carry them (older saves predate the per-exercise
-    /// sets/reps/rest fields).
-    private func composeWorkout(fromCustom custom: CustomRoutine) -> GeneratedWorkout {
-        let exercises = custom.exercises.enumerated().map { idx, ex in
-            GeneratedExercise(
-                id: "custom-\(custom.id)-\(idx)",
-                exerciseId: ex.exerciseId,
-                name: ex.name,
-                pattern: nil,
-                isCompound: false,
-                sets: ex.sets ?? 3,
-                reps: ex.reps ?? "8-12",
-                restSeconds: parseRest(ex.rest) ?? 90,
-                notes: ex.notes,
-                rpe: nil,
-                tempo: nil,
-                source: .recipe
-            )
-        }
-        let movements = exercises.count == 1 ? "1 movement" : "\(exercises.count) movements"
-        let estMin = max(15, exercises.reduce(0) { $0 + $1.sets * 90 } / 60)
-        return GeneratedWorkout(
-            title: custom.name.isEmpty ? "Custom workout" : custom.name,
-            summary: "\(movements) · ~\(estMin) min",
-            exercises: exercises,
-            estimatedMinutes: estMin,
-            provenance: "From your saved workouts",
-            refinedByLLMAt: nil
-        )
-    }
-
-    /// Parse a free-form rest string ("90s", "1 min", "2:00") to seconds.
-    private func parseRest(_ s: String?) -> Int? {
-        guard let s else { return nil }
-        let lower = s.lowercased().trimmingCharacters(in: .whitespaces)
-        if lower.contains(":") {
-            let parts = lower.split(separator: ":").compactMap { Int($0) }
-            if parts.count == 2 { return parts[0] * 60 + parts[1] }
-        }
-        let digits = lower.prefix(while: { $0.isNumber || $0 == "." })
-        guard let n = Double(digits) else { return nil }
-        if lower.contains("min") { return Int(n * 60) }
-        return Int(n)
-    }
+    // MARK: - Memory-drift auto-regen
 
     /// Subscribe to memoryStore.$memory and silently regenerate the plan
     /// whenever the user's profile changes enough to drift `planInputsHash`.
@@ -393,172 +275,6 @@ final class PlanStore: ObservableObject {
             }
     }
 
-    /// Derive the runtime-history context for the planner. Returns `.empty`
-    /// when sessionStore isn't wired (tests / previews) — same shape as
-    /// pre-build-66 so the planner output stays unchanged in those paths.
-    ///
-    /// Phase 2: also unions HealthKit-imported workouts (read via
-    /// `UserDatabase.shared.recentImportedWorkouts`) and resolves the
-    /// user's era cohort for readiness-norm computation. When no HK auth
-    /// has been granted, the imported list is empty and the readiness
-    /// signal still works off native sessions + sport logs alone.
-    private func buildGeneratorContext(memory: TrainingMemory, today: Date) -> GeneratorContext {
-        guard let sessionStore else { return .empty }
-        let profile = DemographicProfile.from(memory)
-        let imported = UserDatabase.shared.recentImportedWorkouts(within: 28)
-        // Phase 3: lifetime peaks from CSV imports warm-start priorBest
-        // for exercises the user has imported but never logged natively.
-        let peaks = UserDatabase.shared.importedSetsLifetimePeaks()
-        return GeneratorContext.from(
-            sessions: sessionStore.savedSessions,
-            soreness: memory.soreness,
-            feedback: memory.feedback,
-            sportLogs: sportLogStore?.entries ?? [],
-            importedWorkouts: imported,
-            importedPeaks: peaks,
-            cohort: profile.eraCohort,
-            now: today
-        )
-    }
-
-    /// Public seam: build the same GeneratorContext the auto-regen path uses,
-    /// for flows that generate a CANDIDATE plan against local overrides and
-    /// call `Planner.generate` directly (WeeklyCheckInFlow). Without it the
-    /// check-in regen ran with `context: .empty`, silently skipping the
-    /// Phase-2 readiness lift-day floor that every other regen path honors.
-    func makeGeneratorContext(memory: TrainingMemory, today: Date = Date()) -> GeneratorContext {
-        buildGeneratorContext(memory: memory, today: today)
-    }
-
-    /// Stamp every exercise the generator just picked into the variety
-    /// memory so the next regen avoids them.
-    private func recordPickedExercises(in plan: WeekPlan) {
-        guard let recentPicks else { return }
-        let ids = plan.days
-            .compactMap(\.generatedWorkout)
-            .flatMap(\.exercises)
-            .map(\.exerciseId)
-        recentPicks.record(exerciseIds: ids)
-    }
-
-    /// Replace the current plan wholesale (used when the user accepts a
-    /// preview during onboarding).
-    func setPlan(_ p: WeekPlan) {
-        self.plan = p
-        savePlan()
-        // PR 4: snapshot the plan we just installed. Idempotent — repeated
-        // setPlan calls for the same week replace rather than append.
-        snapshotCurrentPlan()
-    }
-
-    // MARK: - PR 4 — Plan history
-
-    /// Capture a snapshot of the active plan into `pastPlans`. Idempotent
-    /// by `weekStart`: re-snapshotting the same week replaces the prior
-    /// entry, preserving the latest captured shape (so a Wednesday edit
-    /// is what history records, not the empty-Monday baseline). Trimmed
-    /// to the rolling 12-week cap after each insert.
-    func snapshotCurrentPlan(now: Date = Date()) {
-        guard let plan else { return }
-        let sessions = sessionStore?.savedSessions ?? []
-        let snap = WeekPlanSnapshot.capture(plan, sessions: sessions, now: now)
-        var next = pastPlans.filter { !Calendar.current.isDate($0.weekStart, inSameDayAs: snap.weekStart) }
-        next.insert(snap, at: 0)
-        pastPlans = WeekPlanSnapshot.trim(next, limit: Self.pastPlansLimit)
-        savePastPlans()
-    }
-
-    /// Derive the "actual shape" for a given week's start date. Combines
-    /// the persisted snapshot (the planned shape) with current
-    /// `SessionStore.savedSessions` (the actual sessions). Returns nil
-    /// when no snapshot exists for that week — caller can decide whether
-    /// to render a "no data" state or fall back to live data.
-    func shape(forWeek weekStart: Date) -> WeekShape? {
-        let normalized = weekStart.startOfTrainingWeek()
-        guard let snap = pastPlans.first(where: {
-            Calendar.current.isDate($0.weekStart, inSameDayAs: normalized)
-        }) else { return nil }
-        let sessions = sessionStore?.savedSessions ?? []
-        return WeekShape(snapshot: snap, sessions: sessions)
-    }
-
-    // MARK: - PR 6 — "typical week" fast path
-
-    /// True when a PRIOR week's snapshot exists to copy a shape from.
-    var hasPriorWeekShape: Bool {
-        let thisWeek = Date().startOfTrainingWeek()
-        return pastPlans.contains { $0.weekStart < thisWeek }
-    }
-
-    /// Copy last week's day-by-day shape (per-day kind + each lift's focus)
-    /// onto the current week's overrides, then regenerate — the "typical week"
-    /// fast path. Maps day i → day i (both weeks are Mon–Sun, 7 days). Event
-    /// days copy as rest (events are date-anchored, not reproducible). Returns
-    /// false when there's no prior week to copy.
-    @discardableResult
-    func adoptLastWeekShape(memory: TrainingMemory,
-                            today: Date = Date(),
-                            calendar: Calendar = .current) -> Bool {
-        let thisWeekStart = today.startOfTrainingWeek(calendar: calendar)
-        guard let snap = pastPlans.first(where: { $0.weekStart < thisWeekStart })
-        else { return false }
-        updateOverrides(memory: memory, today: today) { o in
-            for (i, day) in snap.plan.days.enumerated() where i < 7 {
-                guard let target = calendar.date(byAdding: .day, value: i, to: thisWeekStart)
-                else { continue }
-                let key = calendar.startOfDay(for: target)
-                switch day.kind {
-                case .lift:
-                    o.dayOverrides[key] = .lift(
-                        routineId: day.routineId,
-                        focus: Self.liftFocus(from: day.generatedWorkout?.focus))
-                case .sport:
-                    o.dayOverrides[key] = .sport(sportSlug: day.sport?.slug)
-                case .rest, .event:
-                    o.dayOverrides[key] = .rest
-                }
-            }
-        }
-        return true
-    }
-
-    /// Map the generator's WorkoutFocus back to the override LiftFocus (the two
-    /// full-body variants collapse to .fullBody).
-    private static func liftFocus(from wf: WorkoutFocus?) -> LiftFocus? {
-        switch wf {
-        case .push: return .push
-        case .pull: return .pull
-        case .legs: return .legs
-        case .upper: return .upper
-        case .lower: return .lower
-        case .fullBodyA, .fullBodyB: return .fullBody
-        case nil: return nil
-        }
-    }
-
-    // MARK: - PR 7 — Plan validation
-
-    /// Set of `"rule:pattern"` keys the user has dismissed enough times
-    /// (≥3 distinct weekStarts) that the rules engine should stop
-    /// surfacing them.
-    var suppressedRulePatterns: Set<String> {
-        PlanOverrideSuppression.suppressedKeys(from: recentPlanOverrides)
-    }
-
-    /// Run the rules engine against the current plan + overrides +
-    /// memory. Returns the visible issues — already filtered through
-    /// `suppressedRulePatterns`. Pure computation; safe to call on
-    /// every render. Returns empty when no plan exists.
-    func currentValidationIssues(memory: TrainingMemory) -> [PlanValidationIssue] {
-        guard let plan else { return [] }
-        return PlanValidator.validate(
-            plan: plan,
-            memory: memory,
-            overrides: overrides,
-            suppressedRulePatterns: suppressedRulePatterns
-        )
-    }
-
     // MARK: - PR 8 — Missed-workout autopilot
 
     /// Spec §3 rule 5: cap mid-week reshuffles at 2 per week across
@@ -568,154 +284,6 @@ final class PlanStore: ObservableObject {
     /// D3 — cap week consolidations at 1/week. Own budget, separate from the
     /// reshuffle cap, since collapsing the week is a bigger structural change.
     static let weeklyConsolidationCap = 1
-
-    /// All planned-but-not-completed days in the current plan that
-    /// haven't already been logged into `missedWorkouts`. The caller
-    /// (typically the Today screen) shows a banner per result; once
-    /// the user acts, `applyMissedReshuffle` / `dismissMissed`
-    /// records the entry so we don't re-banner the same date.
-    func pendingMissedWorkouts(now: Date = Date()) -> [DayPlan] {
-        guard let plan, let sessions = sessionStore?.savedSessions else { return [] }
-        let detected = MissedWorkoutAutopilot.detect(
-            plan: plan,
-            sessions: sessions,
-            overrides: overrides,
-            now: now
-        )
-        let calendar = Calendar.current
-        // Skip days we've already logged a MissedWorkoutEntry for.
-        let loggedDates = Set(missedWorkouts.map { calendar.startOfDay(for: $0.date) })
-        return detected.filter { day in
-            !loggedDates.contains(calendar.startOfDay(for: day.date))
-        }
-    }
-
-    /// Propose a reshuffle for the given missed date using the
-    /// autopilot rules. Returns nil when budget is exhausted, the
-    /// drop-rule fires, or no valid target exists — caller in that
-    /// case should call `dismissMissed(_:asDropped:)` to log the
-    /// outcome.
-    func proposeMissedReshuffle(missedDate: Date,
-                                now: Date = Date()) -> PlanDiff? {
-        guard plan != nil else { return nil }
-        let remainingBudget = max(0, Self.weeklyReshuffleCap - midWeekReshuffleCount)
-        let edits = MissedWorkoutAutopilot.proposeReshuffle(
-            missedDate: missedDate,
-            plan: plan!,
-            overrides: overrides,
-            remainingBudget: remainingBudget,
-            now: now
-        )
-        guard !edits.isEmpty else { return nil }
-        return propose(edits, reasoning: "Missed workout — moved to keep coverage")
-    }
-
-    /// D3 — whether the missed-workout banner should offer a CONSOLIDATE option
-    /// (vs the reshuffle / drop affordance). True only when the autopilot says
-    /// reshuffle found no clean slot for a non-budget reason, the 1/week
-    /// consolidation cap has room, AND there are ≥2 future lift days with a
-    /// recoverable focus to actually reduce (so `consolidateWeek` would apply).
-    func shouldOfferConsolidation(missedDate: Date, now: Date = Date()) -> Bool {
-        guard let plan else { return false }
-        guard midWeekConsolidationCount < Self.weeklyConsolidationCap else { return false }
-        let remainingReshuffleBudget = max(0, Self.weeklyReshuffleCap - midWeekReshuffleCount)
-        guard MissedWorkoutAutopilot.shouldOfferConsolidation(
-            missedDate: missedDate, plan: plan, overrides: overrides,
-            remainingBudget: remainingReshuffleBudget, now: now) else { return false }
-        let cal = Calendar.current
-        let todayStart = cal.startOfDay(for: now)
-        let futureLifts = plan.days.filter {
-            $0.kind == .lift && cal.startOfDay(for: $0.date) >= todayStart
-                && !$0.protected && $0.generatedWorkout?.focus != nil
-        }
-        return futureLifts.count >= 2
-    }
-
-    /// Apply the autopilot's proposed reshuffle, log the resolution,
-    /// and bump the per-week counter.
-    func applyMissedReshuffle(_ diff: PlanDiff,
-                              missedDate: Date,
-                              now: Date = Date()) {
-        guard let day = plan?.days.first(where: {
-            Calendar.current.isDate($0.date, inSameDayAs: missedDate)
-        }) else { return }
-        // The move targets the date that day-id now lives at, which is
-        // the "to" date of the .move edit in the diff. Pull it out so
-        // we can record the resolution.
-        let newDate: Date? = diff.edits.compactMap { edit -> Date? in
-            if case .move(_, let toDate) = edit { return toDate }
-            return nil
-        }.first
-
-        apply(diff)
-        let resolution: MissResolution = newDate.map { .reshuffledTo($0) } ?? .dropped
-        recordMiss(date: day.date, kind: day.kind, title: day.title,
-                   resolution: resolution, now: now)
-        midWeekReshuffleCount += 1
-        saveReshuffleCount(now: now)
-    }
-
-    /// Log a miss without applying any plan changes. Used for the
-    /// drop-rule fire and the user-dismissed paths. `asDropped`
-    /// distinguishes the two — autopilot-dropped vs user-dismissed —
-    /// so the coach can tell the difference.
-    func dismissMissed(date: Date, asDropped: Bool, now: Date = Date()) {
-        guard let day = plan?.days.first(where: {
-            Calendar.current.isDate($0.date, inSameDayAs: date)
-        }) else { return }
-        recordMiss(date: day.date, kind: day.kind, title: day.title,
-                   resolution: asDropped ? .dropped : .userDismissed, now: now)
-    }
-
-    /// Persist a MissedWorkoutEntry. Removes any existing entry for
-    /// the same date (idempotent on re-detection).
-    private func recordMiss(date: Date,
-                            kind: DayKind,
-                            title: String,
-                            resolution: MissResolution,
-                            now: Date = Date()) {
-        var next = missedWorkouts.filter {
-            !Calendar.current.isDate($0.date, inSameDayAs: date)
-        }
-        next.append(MissedWorkoutEntry(
-            date: Calendar.current.startOfDay(for: date),
-            plannedKind: kind,
-            plannedTitle: title,
-            resolution: resolution,
-            loggedAt: now
-        ))
-        // Trim 90-day window
-        let cutoff = now.addingTimeInterval(-Double(Self.planOverridesRetentionDays) * 86_400)
-        missedWorkouts = next
-            .filter { $0.loggedAt >= cutoff }
-            .sorted { $0.date > $1.date }
-        saveMissedWorkouts()
-    }
-
-    /// User tapped "Got it" / dismissed a validation issue. Logs a
-    /// `WeeklyPlanOverride`, prunes anything outside the 90-day window,
-    /// and persists. Same-week dupes for the same (rule, pattern) are
-    /// dropped so a double-tap doesn't double-count toward suppression.
-    func recordPlanOverride(_ issue: PlanValidationIssue, now: Date = Date()) {
-        let weekStart = now.startOfTrainingWeek()
-        // Drop any existing entry for this (week, rule, pattern) — same
-        // week shouldn't tick the suppression counter twice.
-        var next = recentPlanOverrides.filter { o in
-            !(o.rule == issue.ruleKey
-              && o.pattern == issue.patternKey
-              && Calendar.current.isDate(o.weekStart, inSameDayAs: weekStart))
-        }
-        next.append(WeeklyPlanOverride(
-            weekStart: weekStart,
-            rule: issue.ruleKey,
-            pattern: issue.patternKey,
-            loggedAt: now
-        ))
-        // Trim past 90 days
-        let cutoff = now.addingTimeInterval(-Double(Self.planOverridesRetentionDays) * 86_400)
-        recentPlanOverrides = next.filter { $0.loggedAt >= cutoff }
-        savePlanOverrides()
-    }
 
     /// Wipe everything — dev / "Start over" flows.
     func clear() {
@@ -735,19 +303,6 @@ final class PlanStore: ObservableObject {
         defaults.removeObject(forKey: Self.reshuffleWeekKey)
         defaults.removeObject(forKey: Self.consolidationCountKey)
         defaults.removeObject(forKey: Self.consolidationWeekKey)
-    }
-
-    // MARK: - Per-week overrides
-
-    /// Mutate + persist overrides; auto-regenerate the plan when memory is provided.
-    func updateOverrides(memory: TrainingMemory? = nil,
-                         today: Date = Date(),
-                         _ block: (inout WeekOverrides) -> Void) {
-        block(&overrides)
-        saveOverrides()
-        if let memory {
-            generate(from: memory, today: today)
-        }
     }
 
     // MARK: - PlanEdit pipeline (Wilbur's phase 11)
@@ -822,36 +377,6 @@ final class PlanStore: ObservableObject {
         // are no candidate days.
         if let memory = memoryStore?.memory {
             kickOffLLMRefinementIfConsented(memory: memory)
-        }
-    }
-
-    /// Build a `GeneratedWorkout` for a single day from its kind, anchored in
-    /// the surrounding `plan` (lift index needs the other lift days to pick
-    /// push/pull/legs rotation). Returns nil for non-workout kinds.
-    private func composeWorkout(for day: DayPlan,
-                                in plan: WeekPlan,
-                                memory: TrainingMemory) -> GeneratedWorkout? {
-        let profile = DemographicProfile.from(memory)
-        let salt = String(Int(Date().timeIntervalSince1970))
-        let seed = "\(memory.planInputsHash)-regen-\(salt)"
-        let recentIds = recentPicks?.recentlyPickedIds() ?? []
-        let context = buildGeneratorContext(memory: memory, today: day.date)
-        let cal = Calendar.current
-        switch day.kind {
-        case .lift:
-            let liftDays = plan.days.filter { $0.kind == .lift }
-            let liftIndex = liftDays.firstIndex(where: { cal.isDate($0.date, inSameDayAs: day.date) }) ?? 0
-            return WorkoutGenerator.generateLift(
-                liftIndex: liftIndex,
-                totalLifts: liftDays.count,
-                memory: memory,
-                profile: profile,
-                hashSeed: seed,
-                recentlyPicked: recentIds,
-                context: context
-            )
-        case .rest, .sport, .event:
-            return nil
         }
     }
 
@@ -1162,7 +687,7 @@ final class PlanStore: ObservableObject {
         }
     }
 
-    private func saveOverrides() {
+    func saveOverrides() {
         if let data = try? Self.encoder().encode(overrides) {
             defaults.set(data, forKey: Self.overridesKey)
         }
@@ -1171,21 +696,21 @@ final class PlanStore: ObservableObject {
     /// PR 4 — persist the rolling history. Empty list still writes (vs
     /// removeObject) so the load path can distinguish "no history yet"
     /// from "history was cleared by Start Over".
-    private func savePastPlans() {
+    func savePastPlans() {
         if let data = try? Self.encoder().encode(pastPlans) {
             defaults.set(data, forKey: Self.pastPlansKey)
         }
     }
 
     /// PR 7 — persist the rolling validation-override log.
-    private func savePlanOverrides() {
+    func savePlanOverrides() {
         if let data = try? Self.encoder().encode(recentPlanOverrides) {
             defaults.set(data, forKey: Self.planOverridesKey)
         }
     }
 
     /// PR 8 — persist the rolling missed-workout log.
-    private func saveMissedWorkouts() {
+    func saveMissedWorkouts() {
         if let data = try? Self.encoder().encode(missedWorkouts) {
             defaults.set(data, forKey: Self.missedWorkoutsKey)
         }
@@ -1194,7 +719,7 @@ final class PlanStore: ObservableObject {
     /// PR 8 — persist the per-week reshuffle counter. Tagged with
     /// the current training-week Monday so we know to reset when
     /// the week rolls over.
-    private func saveReshuffleCount(now: Date = Date()) {
+    func saveReshuffleCount(now: Date = Date()) {
         defaults.set(midWeekReshuffleCount, forKey: Self.reshuffleCountKey)
         defaults.set(now.startOfTrainingWeek(), forKey: Self.reshuffleWeekKey)
     }
