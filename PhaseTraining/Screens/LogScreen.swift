@@ -1059,14 +1059,14 @@ struct LogScreen: View {
                 // Clear any pending rest from a prior round so the active band
                 // moves cleanly to the next group member.
                 clearRest()
-            } else if hasMoreSets {
+            } else if !Self.uiTestSuppressAutoRest, hasMoreSets {
                 restExIdx = exIdx
                 restSetIdx = setIdx
                 restStartedAt = Date()
                 restDuration = ex.rest
                 restAlertFiredFor = nil
                 restExpiredFlashUntil = nil
-            } else if hasFollowingWork(afterExIdx: exIdx) {
+            } else if !Self.uiTestSuppressAutoRest, hasFollowingWork(afterExIdx: exIdx) {
                 // Last set of this exercise, but the session has more work
                 // ahead — auto-start the rest so the user gets the same
                 // countdown + expiry alert between exercises.
@@ -1300,6 +1300,16 @@ struct LogScreen: View {
         }) else { return nil }
         return Int(arg.dropFirst(prefix.count))
     }()
+
+    // UI-test hook: --ui-test-suppress-auto-rest disables the auto-started rest
+    // card after a set is marked done. The per-set TapBudget flow taps each
+    // undone set's check one by one; an inline rest card overlays the next row
+    // and drops its controls from the a11y tree faster than the 1s rest clamp
+    // clears them, undercounting taps. Suppressing auto-rest makes that flow
+    // deterministic. No effect outside test runs; rest-behavior tests don't
+    // pass this flag.
+    private static let uiTestSuppressAutoRest =
+        ProcessInfo.processInfo.arguments.contains("--ui-test-suppress-auto-rest")
 
     // MARK: - Formatters
 
