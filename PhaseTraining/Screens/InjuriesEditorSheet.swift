@@ -122,9 +122,9 @@ struct InjuriesEditorSheet: View {
     }
 
     /// Card per active injury — title + remove button + inline severity / side
-    /// chips + optional onset date row. Tapping severity/side cycles through
-    /// (unset → Mild → Moderate → Severe → unset). Cycling is simpler than a
-    /// menu for 3-state pickers.
+    /// chip rows + optional onset date row. Each row shows every option as its
+    /// own chip (plus "—" for unset); one tap selects, tapping the selected
+    /// chip clears. See `metaPicker`.
     private func injuryCard(_ injury: UserInjury) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
