@@ -570,22 +570,43 @@ final class PlanStore: ObservableObject {
         generate(from: memory, today: today)
     }
 
+    /// Which constraint blocked `consolidateWeek` from applying. Threaded to
+    /// the Today no-op alert so the user sees why the week couldn't absorb
+    /// the missed work.
+    enum ConsolidationDecline {
+        /// The 1/week consolidation budget is already spent.
+        case weeklyCapMet
+        /// Fewer than 2 future unprotected lift days — nothing to merge down.
+        case notEnoughLiftDays
+        /// A remaining day's focus couldn't be recovered, so merging would
+        /// risk dropping coverage.
+        case unrecoverableFocus
+    }
+
     /// D3 — consolidate the remaining week onto fewer lift days after a missed
     /// workout the reshuffle engine couldn't place (gated upstream by
-    /// `MissedWorkoutAutopilot.shouldOfferConsolidation`). Drops one future
-    /// lift day and grafts its focus onto a survivor: the today-onward lift
-    /// days are re-planned to N-1 via `WeekConsolidator`, each survivor is
-    /// regenerated as a (possibly merged) workout via
-    /// `WorkoutGenerator.generateConsolidated`, and the surplus day drops to
-    /// rest. Direct-mutation + savePlan, mirroring `regenerateToday` (the
-    /// `PlanEdit` seam has no set-workout op). Gated by the 1/week cap.
-    /// Returns true when it applied.
+    /// `MissedWorkoutAutopilot.shouldOfferConsolidation`). Returns true when
+    /// it applied. Thin wrapper over `consolidateWeekDetailed` for callers
+    /// that don't need the no-op reason.
     @discardableResult
     func consolidateWeek(memory: TrainingMemory,
                          today: Date = Date(),
                          calendar: Calendar = .current) -> Bool {
-        guard midWeekConsolidationCount < Self.weeklyConsolidationCap else { return false }
-        guard var plan = plan else { return false }
+        consolidateWeekDetailed(memory: memory, today: today, calendar: calendar) == nil
+    }
+
+    /// Drops one future lift day and grafts its focus onto a survivor: the
+    /// today-onward lift days are re-planned to N-1 via `WeekConsolidator`,
+    /// each survivor is regenerated as a (possibly merged) workout via
+    /// `WorkoutGenerator.generateConsolidated`, and the surplus day drops to
+    /// rest. Direct-mutation + savePlan, mirroring `regenerateToday` (the
+    /// `PlanEdit` seam has no set-workout op). Gated by the 1/week cap.
+    /// Returns nil when it applied, else the constraint that blocked it.
+    func consolidateWeekDetailed(memory: TrainingMemory,
+                                 today: Date = Date(),
+                                 calendar: Calendar = .current) -> ConsolidationDecline? {
+        guard midWeekConsolidationCount < Self.weeklyConsolidationCap else { return .weeklyCapMet }
+        guard var plan = plan else { return .notEnoughLiftDays }
         let todayStart = calendar.startOfDay(for: today)
 
         // Future lift days (today onward, unprotected), in date order.
@@ -594,16 +615,16 @@ final class PlanStore: ObservableObject {
                 && calendar.startOfDay(for: plan.days[$0].date) >= todayStart
                 && !plan.days[$0].protected }
             .sorted { plan.days[$0].date < plan.days[$1].date }
-        guard futureLiftIdx.count >= 2 else { return false }   // need ≥2 to drop one
+        guard futureLiftIdx.count >= 2 else { return .notEnoughLiftDays }   // need ≥2 to drop one
 
         // Recover each day's actual focus (persisted on the workout). Bail if
         // any is missing — re-deriving would risk era-splitPreference drift.
         let focuses = futureLiftIdx.compactMap { plan.days[$0].generatedWorkout?.focus }
-        guard focuses.count == futureLiftIdx.count else { return false }
+        guard focuses.count == futureLiftIdx.count else { return .unrecoverableFocus }
 
         let target = futureLiftIdx.count - 1
         let consolidated = WeekConsolidator.consolidate(focuses, to: target)
-        guard consolidated.count == target else { return false }
+        guard consolidated.count == target else { return .unrecoverableFocus }
 
         let profile = DemographicProfile.from(memory)
         let recentIds = recentPicks?.recentlyPickedIds() ?? []
@@ -639,7 +660,7 @@ final class PlanStore: ObservableObject {
         if !pickedIds.isEmpty { recentPicks?.record(exerciseIds: pickedIds) }
         midWeekConsolidationCount += 1
         saveConsolidationCount(now: today)
-        return true
+        return nil
     }
 
     /// One-shot schema migration for users upgrading from build ≤35 whose

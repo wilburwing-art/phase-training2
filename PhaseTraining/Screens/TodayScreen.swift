@@ -66,6 +66,9 @@ struct TodayScreen: View {
     /// already applied; this is pure transparency.
     @State private var showCoachPolishedSheet: Bool = false
     @State private var showConsolidationNoop: Bool = false
+    /// Which constraint blocked the consolidation — appended to the no-op
+    /// alert so the user sees why the week couldn't absorb the miss.
+    @State private var consolidationDecline: PlanStore.ConsolidationDecline?
 
     // MARK: - Derived state
 
@@ -365,7 +368,7 @@ struct TodayScreen: View {
         .alert("Nothing to consolidate", isPresented: $showConsolidationNoop) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("The week couldn't absorb the missed work — the workout was skipped instead.")
+            Text(consolidationNoopMessage)
         }
         .sheet(isPresented: $showCoachPolishedSheet) {
             CoachPolishedExplanationSheet(
@@ -443,12 +446,32 @@ struct TodayScreen: View {
     /// reshuffle found no clean slot), then clear the miss so it stops
     /// bannering.
     private func consolidateForMiss(for day: DayPlan) {
-        // consolidateWeek returns false on every no-op path (weekly cap,
-        // <2 future lift days, unrecoverable focus). Don't pretend it
-        // worked — tell the user the miss was just dropped.
-        let applied = planStore.consolidateWeek(memory: memoryStore.memory)
+        // consolidateWeekDetailed reports which constraint blocked a no-op
+        // (weekly cap, <2 future lift days, unrecoverable focus). Don't
+        // pretend it worked — tell the user the miss was just dropped and why.
+        let decline = planStore.consolidateWeekDetailed(memory: memoryStore.memory)
         planStore.dismissMissed(date: day.date, asDropped: true)
-        if !applied { showConsolidationNoop = true }
+        if let decline {
+            consolidationDecline = decline
+            showConsolidationNoop = true
+        }
+    }
+
+    /// No-op alert body: the base sentence plus the constraint that blocked
+    /// consolidation, so "couldn't absorb" isn't left unexplained.
+    private var consolidationNoopMessage: String {
+        let reason: String
+        switch consolidationDecline {
+        case .weeklyCapMet:
+            reason = "the weekly cap is already met"
+        case .notEnoughLiftDays:
+            reason = "not enough lift days left this week"
+        case .unrecoverableFocus:
+            reason = "the remaining workouts couldn't be merged"
+        case nil:
+            return "The week couldn't absorb the missed work — the workout was skipped instead."
+        }
+        return "The week couldn't absorb the missed work — \(reason). The workout was skipped instead."
     }
 
     /// Discoverable affordance for the pre-workout body check. Always visible
