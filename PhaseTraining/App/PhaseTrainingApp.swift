@@ -313,12 +313,20 @@ struct PhaseTrainingApp: App {
                 #endif
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active {
-                        InsightGenerator.runIfDue(
-                            memoryStore: memory,
-                            planStore: plan,
-                            sessionStore: session,
-                            consentGranted: coachConsentGranted
-                        )
+                        Task {
+                            // Entitlement mirror first: runIfDue's pro gate
+                            // reads the proKey default that refresh() writes,
+                            // so a stale mirror would race the launch .task
+                            // refresh. Latent while CoachEntitlement
+                            // .proRequired is false; real once it flips.
+                            await subscriptions.refresh()
+                            InsightGenerator.runIfDue(
+                                memoryStore: memory,
+                                planStore: plan,
+                                sessionStore: session,
+                                consentGranted: coachConsentGranted
+                            )
+                        }
                     }
                 }
                 .onOpenURL { url in
