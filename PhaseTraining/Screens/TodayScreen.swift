@@ -27,6 +27,12 @@ struct TodayScreen: View {
     @EnvironmentObject var tabSelection: TabSelectionStore
     @EnvironmentObject var customStore: CustomRoutineStore
     @EnvironmentObject var sportLogStore: SportLogStore
+    // Coach gate — same pair CoachBubble reads. The "personalized by coach"
+    // badge must not render for users without consent/Pro, even when a stale
+    // refinedByLLMAt stamp survives in the plan from before consent was
+    // revoked (nothing clears the stamp on revocation).
+    @AppStorage(CoachConsent.storageKey) private var consentGranted: Bool = false
+    @AppStorage(CoachEntitlement.proKey) private var proEntitled: Bool = false
 
     let onStart: () -> Void
 
@@ -264,7 +270,11 @@ struct TodayScreen: View {
                                 inlineExerciseCard(tmpl)
                                     .padding(.horizontal, 20)
                                     .padding(.top, 14)
-                                if didModify {
+                                // didModify = unsaved edits ("Save changes"),
+                                // didSaveToLibrary = just saved ("Saved" tick).
+                                // Save success clears didModify, so the pill
+                                // needs both to keep showing the confirmation.
+                                if didModify || didSaveToLibrary {
                                     saveToLibraryPill
                                         .padding(.horizontal, 20)
                                         .padding(.top, 10)
@@ -554,8 +564,12 @@ struct TodayScreen: View {
     /// by the build-98 refinement pass. Drives the "personalized by coach"
     /// pill — purely informational; the change is already applied (refinement
     /// is the visible default for consented users, not a coach proposal).
+    /// Entitlement-gated: a stamp left over from a consented refinement (or a
+    /// pre-revocation manual swap via applyWorkoutDiff) must not surface coach
+    /// UI once the coach is off.
     private var isCoachPolished: Bool {
-        todayPlan?.generatedWorkout?.refinedByLLMAt != nil
+        CoachEntitlement.unlocked(consent: consentGranted, pro: proEntitled)
+            && todayPlan?.generatedWorkout?.refinedByLLMAt != nil
     }
 
     /// Non-blocking transparency pill: signals that the background LLM
@@ -904,7 +918,12 @@ struct TodayScreen: View {
             createdAt: Date()
         )
         customStore.save(routine)
+        // Save success: the edits are persisted, so clear the dirty flag —
+        // the template onChange guard protects *unsaved* edits only, and the
+        // next mutation re-arms both flags. didSaveToLibrary keeps the pill
+        // on-screen in its "Saved to library" confirmation state.
         didSaveToLibrary = true
+        didModify = false
     }
 
     private func parseRepsLeading(_ s: String?) -> Int? {
