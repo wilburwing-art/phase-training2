@@ -213,11 +213,17 @@ struct BodyWeightLogSheet: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    private func historyRow(_ entry: BodyWeightEntry) -> some View {
+    /// Cached — historyRow runs per entry per render; allocating a
+    /// DateFormatter each call is needless churn.
+    private static let historyDateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "MMM d"
-        return HStack(spacing: 10) {
-            Text(f.string(from: entry.date).uppercased())
+        return f
+    }()
+
+    private func historyRow(_ entry: BodyWeightEntry) -> some View {
+        HStack(spacing: 10) {
+            Text(Self.historyDateFormatter.string(from: entry.date).uppercased())
                 .font(.monoXS)
                 .foregroundStyle(Color.ink3)
                 .frame(width: 56, alignment: .leading)

@@ -125,6 +125,18 @@ struct MissedWorkoutBanner: View {
         return onAccept
     }
 
+    private static let weekdayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEEE"
+        return f
+    }()
+
+    private static let shortWeekdayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEE"
+        return f
+    }()
+
     /// Short summary line — where it moved to, that we'll consolidate, or that
     /// we dropped.
     private var actionSummary: String {
@@ -132,9 +144,7 @@ struct MissedWorkoutBanner: View {
             // First .move edit's target date drives the summary.
             for edit in diff.edits {
                 if case .move(_, let toDate) = edit {
-                    let f = DateFormatter()
-                    f.dateFormat = "EEEE"
-                    return "Moving to \(f.string(from: toDate))"
+                    return "Moving to \(Self.weekdayFormatter.string(from: toDate))"
                 }
             }
             return "Plan updated"
@@ -146,17 +156,13 @@ struct MissedWorkoutBanner: View {
     }
 
     private var weekdayLabel: String {
-        let f = DateFormatter()
-        f.dateFormat = "EEEE"
-        return f.string(from: missedDay.date)
+        Self.weekdayFormatter.string(from: missedDay.date)
     }
 
     private func editDescription(_ edit: PlanEdit) -> String {
         switch edit {
         case .move(_, let toDate):
-            let f = DateFormatter()
-            f.dateFormat = "EEE"
-            return "  → moves to \(f.string(from: toDate))"
+            return "  → moves to \(Self.shortWeekdayFormatter.string(from: toDate))"
         case .swapKind(_, let to, let title, _):
             return "  → \(title) (\(to.label.lowercased()))"
         case .protectDay(_, let title):
@@ -164,9 +170,7 @@ struct MissedWorkoutBanner: View {
         case .shorten(_, let mins):
             return "  → shorten to \(mins) min"
         case .addSession(let date, _, let title, _):
-            let f = DateFormatter()
-            f.dateFormat = "EEE"
-            return "  → \(title) on \(f.string(from: date))"
+            return "  → \(title) on \(Self.shortWeekdayFormatter.string(from: date))"
         case .removeSession:
             return "  → remove"
         }

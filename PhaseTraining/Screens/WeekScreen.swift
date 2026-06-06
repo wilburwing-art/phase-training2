@@ -243,14 +243,38 @@ struct WeekScreen: View {
     }
 }
 
+// MARK: - Cached formatters
+
+/// DateFormatter is expensive to allocate; these run per row render and per
+/// drag payload, so cache one instance per distinct format.
+private enum WeekDateFormatters {
+    /// ISO yyyy-MM-dd — sheet identity + drag payload encoding.
+    static let isoDay: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        f.timeZone = .current
+        return f
+    }()
+
+    static let weekdayShort: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEE"
+        return f
+    }()
+
+    static let dayNumber: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "d"
+        return f
+    }()
+}
+
 // MARK: - Identifiable wrapper for `.sheet(item:)`
 
 private struct EditingDate: Identifiable {
     let date: Date
     var id: String {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        return f.string(from: date)
+        WeekDateFormatters.isoDay.string(from: date)
     }
 }
 
@@ -323,19 +347,13 @@ struct MovableDay: Codable, Transferable {
     let dateISO: String
 
     init(date: Date) {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        f.timeZone = .current
-        self.dateISO = f.string(from: date)
+        self.dateISO = WeekDateFormatters.isoDay.string(from: date)
     }
 
     /// nil when the payload string can't be parsed — callers must abort the
     /// drop rather than silently fall back to "today" and move the wrong day.
     var date: Date? {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        f.timeZone = .current
-        return f.date(from: dateISO)
+        WeekDateFormatters.isoDay.date(from: dateISO)
     }
 
     static var transferRepresentation: some TransferRepresentation {
@@ -422,15 +440,11 @@ private struct DayRow: View {
     }
 
     private var weekdayShort: String {
-        let f = DateFormatter()
-        f.dateFormat = "EEE"
-        return f.string(from: day.date).uppercased()
+        WeekDateFormatters.weekdayShort.string(from: day.date).uppercased()
     }
 
     private var dayNumber: String {
-        let f = DateFormatter()
-        f.dateFormat = "d"
-        return f.string(from: day.date)
+        WeekDateFormatters.dayNumber.string(from: day.date)
     }
 }
 
