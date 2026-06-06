@@ -46,12 +46,21 @@ struct BackupEnvelope: Codable {
 }
 
 enum BackupError: Error, LocalizedError {
+    /// Which slice of the restore failed to land. Raw value is the
+    /// user-facing name, matching the export copy ("profile, plan, sessions,
+    /// and custom workouts").
+    enum RestorePhase: String {
+        case routines = "custom workouts"
+        case sessions = "workout history"
+        case settingsAndMemory = "profile and plan"
+    }
+
     case encode(Error)
     case decode(Error)
     case write(Error)
     case read(Error)
     case schemaUnsupported(Int)
-    case restoreIncomplete
+    case restoreIncomplete(RestorePhase)
 
     var errorDescription: String? {
         switch self {
@@ -60,7 +69,8 @@ enum BackupError: Error, LocalizedError {
         case .write(let e):            return "Couldn't write the file: \(e.localizedDescription)"
         case .read(let e):             return "Couldn't read the file: \(e.localizedDescription)"
         case .schemaUnsupported(let v): return "Backup is from a newer version (schema \(v)). Update the app and try again."
-        case .restoreIncomplete:       return "Restore couldn't save everything, so your previous data was kept."
+        case .restoreIncomplete(let phase):
+            return "Restore couldn't save your \(phase.rawValue), so your previous data was kept."
         }
     }
 }
@@ -167,10 +177,13 @@ enum BackupManager {
         for routine in envelope.customRoutines { userDB.save(routine) }
         userDB.clearAllSessions()
         for session in envelope.savedSessions { userDB.saveSession(session) }
-        if userDB.routineCount() != envelope.customRoutines.count
-            || userDB.savedSessionCount() != envelope.savedSessions.count {
+        if userDB.routineCount() != envelope.customRoutines.count {
             rollBack(userDB, routines: priorRoutines, sessions: priorSessions)
-            throw BackupError.restoreIncomplete
+            throw BackupError.restoreIncomplete(.routines)
+        }
+        if userDB.savedSessionCount() != envelope.savedSessions.count {
+            rollBack(userDB, routines: priorRoutines, sessions: priorSessions)
+            throw BackupError.restoreIncomplete(.sessions)
         }
 
         // UserDefaults half gets the same all-or-nothing contract: capture
@@ -203,7 +216,7 @@ enum BackupManager {
                 }
             }
             rollBack(userDB, routines: priorRoutines, sessions: priorSessions)
-            throw BackupError.restoreIncomplete
+            throw BackupError.restoreIncomplete(.settingsAndMemory)
         }
     }
 
