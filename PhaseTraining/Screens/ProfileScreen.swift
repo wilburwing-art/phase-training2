@@ -84,8 +84,8 @@ struct ProfileScreen: View {
         }
         var clamp: ClosedRange<Int> {
             switch self {
-            case .sessionMinutes: return 15...120
-            case .liftDays:       return 0...7
+            case .sessionMinutes: return TrainingConstraints.sessionMinutesUIRange
+            case .liftDays:       return TrainingConstraints.liftDaysRange
             }
         }
     }

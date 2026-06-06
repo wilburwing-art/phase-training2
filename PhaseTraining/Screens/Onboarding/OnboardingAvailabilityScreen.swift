@@ -10,7 +10,8 @@ struct OnboardingAvailabilityScreen: View {
     let onNext: () -> Void
     let onBack: () -> Void
 
-    private let stepperBounds = 15...120
+    private let stepperBounds = TrainingConstraints.sessionMinutesUIRange
+    private let liftDayBounds = TrainingConstraints.liftDaysRange
     private let stepSize = 15
 
     var body: some View {
@@ -87,7 +88,7 @@ struct OnboardingAvailabilityScreen: View {
 
     private func adjustLifts(_ delta: Int) {
         let next = draft.liftDaysPerWeek + delta
-        draft.liftDaysPerWeek = min(max(next, 0), 7)
+        draft.liftDaysPerWeek = min(max(next, liftDayBounds.lowerBound), liftDayBounds.upperBound)
     }
 }
 

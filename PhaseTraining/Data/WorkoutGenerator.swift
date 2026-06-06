@@ -133,10 +133,13 @@ enum WorkoutGenerator {
         strategy: GeneratorStrategy = .auto,
         extraSlots: [PatternSlot] = []
     ) -> GeneratedWorkout {
-        // Strategy's duration override beats memory's default. Clamped to
-        // [15, 180] so a hallucinated 9999 doesn't produce a 10-hour workout.
+        // Strategy's duration override beats memory's default. Clamped to the
+        // hard range so a hallucinated 9999 doesn't produce a 10-hour workout.
         let effectiveMinutes: Int = {
-            if let m = strategy.durationMinutes { return min(180, max(15, m)) }
+            if let m = strategy.durationMinutes {
+                let hard = TrainingConstraints.sessionMinutesHardRange
+                return min(hard.upperBound, max(hard.lowerBound, m))
+            }
             return memory.sessionMinutes
         }()
         let budgetSec = max(15 * 60, effectiveMinutes * 60 - warmupBufferSec)

@@ -376,7 +376,8 @@ enum CoachToolDecoder {
             payload.intensityBias.flatMap { GeneratorStrategy.IntensityBias(rawValue: $0) } ?? .normal
         // Clamp + sanitize. Bad values from the LLM should degrade
         // gracefully, not corrupt downstream prescriptions.
-        let duration = payload.durationMinutes.map { min(180, max(15, $0)) }
+        let hard = TrainingConstraints.sessionMinutesHardRange
+        let duration = payload.durationMinutes.map { min(hard.upperBound, max(hard.lowerBound, $0)) }
         let overrides: [String: Double] = Dictionary(
             uniqueKeysWithValues: (payload.targetWeightOverrides ?? [])
                 .filter { $0.weightLb > 0 && $0.weightLb <= 1000 }
@@ -471,7 +472,8 @@ enum CoachToolDecoder {
             case "shorten":
                 guard let target = day(for: op.date),
                       let mins = op.toMinutes else { continue }
-                let clamped = max(15, min(180, mins))
+                let hard = TrainingConstraints.sessionMinutesHardRange
+                let clamped = max(hard.lowerBound, min(hard.upperBound, mins))
                 out.append(.shorten(dayId: target.id, toMinutes: clamped))
 
             case "add_session":

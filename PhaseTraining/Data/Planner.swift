@@ -146,10 +146,11 @@ enum Planner {
         }
         // durationMinutes: only `.busy` actively compresses sessions, and
         // only when the caller didn't already set a duration. Clamp to
-        // the same [15, 180] bound the rest of the pipeline respects.
+        // the same hard bound the rest of the pipeline respects.
         if out.durationMinutes == nil && tone.durationMultiplier != 1.0 {
             let compressed = Int(Double(sessionMinutes) * tone.durationMultiplier)
-            out.durationMinutes = max(15, min(180, compressed))
+            let hard = TrainingConstraints.sessionMinutesHardRange
+            out.durationMinutes = max(hard.lowerBound, min(hard.upperBound, compressed))
         }
         return out
     }

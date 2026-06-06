@@ -346,7 +346,11 @@ struct PhaseTrainingApp: App {
                         // weekly lift-day count (PlanStore auto-regenerates off
                         // the memory change) and show the result on the Week tab.
                         if let n = WeeklyReminderScheduler.liftDays(fromDeepLink: url) {
-                            let clamped = max(1, min(7, n))
+                            // Floor is 1, not liftDaysRange's 0, on purpose: a
+                            // day-count quick action ("2 days"…"4 days") always
+                            // implies at least one lift day — "no lifting this
+                            // week" goes through "Open to edit" instead.
+                            let clamped = max(1, min(TrainingConstraints.liftDaysRange.upperBound, n))
                             memory.update { $0.liftDaysPerWeek = clamped }
                             tabSelection.selected = .week
                         }
