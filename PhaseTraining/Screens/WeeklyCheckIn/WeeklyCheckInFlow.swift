@@ -1,6 +1,6 @@
-// WeeklyCheckInFlow.swift — Phase 12 retention loop coordinator.
+// WeeklyCheckInFlow.swift — Phase 12 retention loop coordinator
+// (see WeeklyCheckInStep for the current step list).
 //
-// 4 steps: Intent → Constraints → Feedback → Preview.
 // Captures a Draft, mutates TrainingMemory on accept, runs Planner with
 // previousFeedback to regenerate the plan for the upcoming week, presents
 // the regenerated plan, commits to PlanStore on Accept.
