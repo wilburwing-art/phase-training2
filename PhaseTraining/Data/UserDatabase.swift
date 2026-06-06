@@ -303,6 +303,11 @@ final class UserDatabase {
         }
     } }
 
+    /// COUNT(*) over user_routines. The restore verify in BackupManager only
+    /// needs row counts; `listRoutines()` would materialize every routine's
+    /// exercise list just to be counted.
+    func routineCount() -> Int { withLock { countLocked(table: "user_routines") } }
+
     func routine(id: String) -> CustomRoutine? { withLock {
         guard let db else { return nil }
         let sql = "SELECT id, name, created_at FROM user_routines WHERE id = ?"
@@ -466,6 +471,10 @@ final class UserDatabase {
             )
         }
     } }
+
+    /// COUNT(*) over sessions. Same rationale as `routineCount()` — the full
+    /// sessions → exercises → sets tree is wasted work for a count.
+    func savedSessionCount() -> Int { withLock { countLocked(table: "sessions") } }
 
     /// Newest session matching `templateId`. Indexed by (template_id, start_time DESC).
     /// Replaces the O(N) scan in SessionStore.getPreviousSession.
@@ -842,6 +851,17 @@ final class UserDatabase {
     } }
 
     // MARK: - Helpers
+
+    /// Caller holds the lock. Bare COUNT(*) over `table` — table names come
+    /// from our own string literals, never user input.
+    private func countLocked(table: String) -> Int {
+        guard let db else { return 0 }
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, "SELECT COUNT(*) FROM \(table)", -1, &stmt, nil) == SQLITE_OK else { return 0 }
+        defer { sqlite3_finalize(stmt) }
+        guard sqlite3_step(stmt) == SQLITE_ROW else { return 0 }
+        return Int(sqlite3_column_int64(stmt, 0))
+    }
 
     private func text(_ stmt: OpaquePointer?, _ idx: Int32) -> String? {
         guard let c = sqlite3_column_text(stmt, idx) else { return nil }

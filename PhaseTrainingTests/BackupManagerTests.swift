@@ -198,4 +198,109 @@ final class BackupManagerTests: XCTestCase {
         XCTAssertEqual(MemoryStore(defaults: defaults).memory.age, 50,
                        "A failed restore must not overwrite UserDefaults")
     }
+
+    func test_restore_failingUserDefaultsWrite_rollsBackBothStores() throws {
+        let defaults = freshDefaults()
+        let userDB = UserDatabase(path: ":memory:")
+
+        // Seed prior state in BOTH stores, plus a legacy key the restore
+        // would otherwise wipe at the end of the sequence.
+        let memoryStore = MemoryStore(defaults: defaults)
+        memoryStore.update { $0.age = 50 }
+        defaults.set(true, forKey: "pt_weekly_reminder_enabled")
+        defaults.set(Data("legacy".utf8), forKey: "pt_sessions")
+        userDB.save(CustomRoutine(
+            id: "keep", name: "Old push", exercises: [], createdAt: Date()
+        ))
+
+        // An ActiveSession whose startTime encodes to a non-finite Double:
+        // jsonEncoder() (default .throw non-conforming-float strategy)
+        // rejects it. The memory write (first in the sequence) has already
+        // landed by then, so this exercises the mid-sequence rollback.
+        let poisoned = ActiveSession(
+            templateId: "t", name: "T", category: "c",
+            startTime: Date(timeIntervalSince1970: .infinity),
+            exercises: [], feel: nil, note: nil
+        )
+        var fresh = TrainingMemory()
+        fresh.age = 25
+        let envelope = BackupEnvelope(
+            schemaVersion: BackupEnvelope.currentSchemaVersion,
+            exportedAt: Date(),
+            memory: fresh,
+            savedSessions: [], activeSession: poisoned,
+            customRoutines: [CustomRoutine(
+                id: "new", name: "New", exercises: [], createdAt: Date()
+            )],
+            plan: nil, overrides: nil,
+            reminderEnabled: false
+        )
+
+        XCTAssertThrowsError(try BackupManager.restore(envelope, into: defaults, userDB: userDB)) { err in
+            guard case BackupError.restoreIncomplete = err else {
+                return XCTFail("Expected restoreIncomplete, got \(err)")
+            }
+        }
+
+        // pt_training_memory was already overwritten (age 25) before the
+        // active-session encode threw — the rollback must put age 50 back,
+        // restore every other touched key, and undo the SQLite populate.
+        XCTAssertEqual(MemoryStore(defaults: defaults).memory.age, 50,
+                       "Memory written before the failure must be rolled back")
+        XCTAssertNil(defaults.data(forKey: "pt_active_session"))
+        XCTAssertTrue(defaults.bool(forKey: "pt_weekly_reminder_enabled"))
+        XCTAssertEqual(defaults.data(forKey: "pt_sessions"), Data("legacy".utf8),
+                       "Legacy keys must survive a failed restore")
+        XCTAssertEqual(userDB.listRoutines().map(\.id), ["keep"],
+                       "The already-populated SQLite half must be rolled back too")
+    }
+
+    // MARK: - Memory schema fingerprint
+
+    func test_snapshot_pinsMemorySchemaVersion() throws {
+        let defaults = freshDefaults()
+        let memoryStore = MemoryStore(defaults: defaults)
+        memoryStore.update { $0.age = 30 }
+
+        let envelope = BackupManager.snapshot(defaults: defaults)
+        XCTAssertEqual(envelope.memorySchemaVersion, BackupEnvelope.currentMemorySchemaVersion)
+
+        let decoded = try BackupManager.decode(try BackupManager.encode(envelope))
+        XCTAssertEqual(decoded.memorySchemaVersion, BackupEnvelope.currentMemorySchemaVersion)
+        XCTAssertFalse(decoded.isMemorySchemaStale)
+    }
+
+    func test_decode_oldBackupWithoutFingerprint_isStaleButAccepted() throws {
+        // A backup written before memorySchemaVersion existed: the field is
+        // absent from the JSON and the embedded memory carries an old schema
+        // version. It must decode fine — old backups are never rejected —
+        // and read as stale via the payload-version fallback.
+        var old = TrainingMemory()
+        old.schemaVersion = 2
+        old.age = 40
+        let envelope = BackupEnvelope(
+            schemaVersion: BackupEnvelope.currentSchemaVersion,
+            exportedAt: Date(),
+            memory: old,
+            savedSessions: [], activeSession: nil,
+            customRoutines: [], plan: nil, overrides: nil,
+            reminderEnabled: false
+        )
+        let decoded = try BackupManager.decode(try BackupManager.encode(envelope))
+        XCTAssertNil(decoded.memorySchemaVersion)
+        XCTAssertTrue(decoded.isMemorySchemaStale)
+        XCTAssertEqual(decoded.memory?.age, 40)
+    }
+
+    func test_envelopeWithoutMemory_isNeverStale() {
+        let envelope = BackupEnvelope(
+            schemaVersion: BackupEnvelope.currentSchemaVersion,
+            exportedAt: Date(),
+            memory: nil, savedSessions: [], activeSession: nil,
+            customRoutines: [], plan: nil, overrides: nil,
+            reminderEnabled: false
+        )
+        XCTAssertFalse(envelope.isMemorySchemaStale,
+                       "No memory payload means nothing can be stale")
+    }
 }

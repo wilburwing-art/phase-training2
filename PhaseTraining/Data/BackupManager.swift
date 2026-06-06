@@ -14,8 +14,16 @@ import Foundation
 
 struct BackupEnvelope: Codable {
     static let currentSchemaVersion = 1
+    /// TrainingMemory's schema version in the running app. Pinned into each
+    /// export (`memorySchemaVersion`) so a later restore can tell when a
+    /// backup predates fields the current memory schema carries.
+    static let currentMemorySchemaVersion = TrainingMemory().schemaVersion
 
     var schemaVersion: Int = BackupEnvelope.currentSchemaVersion
+    /// `TrainingMemory.schemaVersion` of the embedded memory at export time.
+    /// Optional so backups written before this field existed still decode;
+    /// `isMemorySchemaStale` falls back to the payload's own version.
+    var memorySchemaVersion: Int? = nil
     var exportedAt: Date
 
     var memory: TrainingMemory?
@@ -25,6 +33,16 @@ struct BackupEnvelope: Codable {
     var plan: WeekPlan?
     var overrides: WeekOverrides?
     var reminderEnabled: Bool
+
+    /// True when the embedded memory predates the app's current
+    /// TrainingMemory schema — fields added since were decoded as defaults,
+    /// not real values. Informational only: stale backups still restore
+    /// (TrainingMemory's tolerant decoder guarantees that); callers can
+    /// surface a "backup is from an older version" notice off this.
+    var isMemorySchemaStale: Bool {
+        guard let memory else { return false }
+        return (memorySchemaVersion ?? memory.schemaVersion) < Self.currentMemorySchemaVersion
+    }
 }
 
 enum BackupError: Error, LocalizedError {
@@ -74,6 +92,7 @@ enum BackupManager {
         let overrides: WeekOverrides? = decodeIfPresent(defaults: defaults, key: "pt_week_overrides")
         let reminderEnabled = defaults.bool(forKey: "pt_weekly_reminder_enabled")
         return BackupEnvelope(
+            memorySchemaVersion: memory?.schemaVersion,
             exportedAt: exportedAt,
             memory: memory,
             savedSessions: savedSessions,
@@ -148,28 +167,57 @@ enum BackupManager {
         for routine in envelope.customRoutines { userDB.save(routine) }
         userDB.clearAllSessions()
         for session in envelope.savedSessions { userDB.saveSession(session) }
-        if userDB.listRoutines().count != envelope.customRoutines.count
-            || userDB.listSavedSessions().count != envelope.savedSessions.count {
-            // Rollback uses the same write path as the populate, so a
-            // genuinely failing disk can defeat it too — but envelope rows
-            // that can't all land (e.g. colliding primary keys) leave the
-            // prior data intact.
-            userDB.clearAll()
-            for routine in priorRoutines { userDB.save(routine) }
-            userDB.clearAllSessions()
-            for session in priorSessions { userDB.saveSession(session) }
+        if userDB.routineCount() != envelope.customRoutines.count
+            || userDB.savedSessionCount() != envelope.savedSessions.count {
+            rollBack(userDB, routines: priorRoutines, sessions: priorSessions)
             throw BackupError.restoreIncomplete
         }
 
-        try encodeAndWrite(envelope.memory, defaults: defaults, key: "pt_training_memory")
-        try encodeAndWrite(envelope.activeSession, defaults: defaults, key: "pt_active_session")
-        try encodeAndWrite(envelope.plan, defaults: defaults, key: "pt_week_plan")
-        try encodeAndWrite(envelope.overrides, defaults: defaults, key: "pt_week_overrides")
-        defaults.set(envelope.reminderEnabled, forKey: "pt_weekly_reminder_enabled")
-        // Wipe legacy UserDefaults keys so a stale post-migration import path
-        // can never resurrect them. Idempotent.
-        defaults.removeObject(forKey: "pt_sessions")
-        defaults.removeObject(forKey: "pt_custom_routines")
+        // UserDefaults half gets the same all-or-nothing contract: capture
+        // every key the restore touches before the first write; if any
+        // encode throws mid-sequence, put the captured values back (and undo
+        // the already-populated SQLite half) so a failed restore changes
+        // nothing.
+        let touchedKeys = ["pt_training_memory", "pt_active_session",
+                           "pt_week_plan", "pt_week_overrides",
+                           "pt_weekly_reminder_enabled",
+                           "pt_sessions", "pt_custom_routines"]
+        var priorValues: [String: Any] = [:]
+        for key in touchedKeys { priorValues[key] = defaults.object(forKey: key) }
+        do {
+            try encodeAndWrite(envelope.memory, defaults: defaults, key: "pt_training_memory")
+            try encodeAndWrite(envelope.activeSession, defaults: defaults, key: "pt_active_session")
+            try encodeAndWrite(envelope.plan, defaults: defaults, key: "pt_week_plan")
+            try encodeAndWrite(envelope.overrides, defaults: defaults, key: "pt_week_overrides")
+            defaults.set(envelope.reminderEnabled, forKey: "pt_weekly_reminder_enabled")
+            // Wipe legacy UserDefaults keys so a stale post-migration import
+            // path can never resurrect them. Idempotent.
+            defaults.removeObject(forKey: "pt_sessions")
+            defaults.removeObject(forKey: "pt_custom_routines")
+        } catch {
+            for key in touchedKeys {
+                if let prior = priorValues[key] {
+                    defaults.set(prior, forKey: key)
+                } else {
+                    defaults.removeObject(forKey: key)
+                }
+            }
+            rollBack(userDB, routines: priorRoutines, sessions: priorSessions)
+            throw BackupError.restoreIncomplete
+        }
+    }
+
+    /// Put the prior SQLite rows back after a failed restore. Rollback uses
+    /// the same write path as the populate, so a genuinely failing disk can
+    /// defeat it too — but envelope rows that can't all land (e.g. colliding
+    /// primary keys) leave the prior data intact.
+    private static func rollBack(_ userDB: UserDatabase,
+                                 routines: [CustomRoutine],
+                                 sessions: [SavedSession]) {
+        userDB.clearAll()
+        for routine in routines { userDB.save(routine) }
+        userDB.clearAllSessions()
+        for session in sessions { userDB.saveSession(session) }
     }
 
     // MARK: - Helpers
