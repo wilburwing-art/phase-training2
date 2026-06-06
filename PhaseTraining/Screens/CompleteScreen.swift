@@ -28,6 +28,11 @@ import SwiftUI
 struct CompleteScreen: View {
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject var memoryStore: MemoryStore
+    /// Coach gate — drives the feedback button's LABEL only (the button and
+    /// sheet stay available to everyone; FeedbackEntry feeds the planner
+    /// regardless). Same @AppStorage pairing as CoachBubble.
+    @AppStorage(CoachConsent.storageKey) private var consentGranted: Bool = false
+    @AppStorage(CoachEntitlement.proKey) private var proEntitled: Bool = false
 
     let session: ActiveSession
     let onSave: () -> Void
@@ -405,11 +410,15 @@ struct CompleteScreen: View {
 
     /// Optional, opt-in: open the structured-feedback sheet (difficulty + hurt
     /// areas → coach). Tertiary styling — secondary to Done, not a forced step.
+    /// Always shown — feedback is free (the planner reads FeedbackEntry with
+    /// or without the coach) — but "for your coach" is only honest when the
+    /// coach is actually unlocked, so locked users get neutral copy.
     private var feedbackButton: some View {
-        Button {
+        let coachUnlocked = CoachEntitlement.unlocked(consent: consentGranted, pro: proEntitled)
+        return Button {
             showFeedbackSheet = true
         } label: {
-            Text("Add details for your coach")
+            Text(coachUnlocked ? "Add details for your coach" : "Log how this felt")
                 .font(.custom("Inter-Regular", size: 13).weight(.medium))
                 .foregroundStyle(Color.accent)
                 .frame(maxWidth: .infinity)
