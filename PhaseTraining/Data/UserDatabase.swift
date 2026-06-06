@@ -61,8 +61,17 @@ final class UserDatabase {
 
     // MARK: - Migrations
 
-    private func runMigrations() {
-        let stmts = [
+    /// Schema migrations, applied in order. Each entry is (target_version,
+    /// statements). The DB's `PRAGMA user_version` tracks the highest applied
+    /// version; on open we run any migration whose version exceeds current.
+    /// Existing pre-versioning installs (user_version = 0) re-run v1 — all v1
+    /// statements use `IF NOT EXISTS`, so the migration is a no-op on top of
+    /// the live schema and just stamps user_version = 1.
+    ///
+    /// To add a column or table, append a new entry. Never edit or reorder
+    /// past entries — that would skip the change on installed users.
+    private static let migrations: [(version: Int32, statements: [String])] = [
+        (1, [
             """
             CREATE TABLE IF NOT EXISTS user_routines (
               id          TEXT PRIMARY KEY,
@@ -187,22 +196,79 @@ final class UserDatabase {
             """,
             "CREATE INDEX IF NOT EXISTS idx_imported_sets_exercise ON imported_sets(exercise_id, performed_at DESC)",
             "CREATE INDEX IF NOT EXISTS idx_imported_sets_perf     ON imported_sets(performed_at DESC)",
-            "CREATE INDEX IF NOT EXISTS idx_imported_sets_source   ON imported_sets(source)",
-            "PRAGMA foreign_keys = ON"
-        ]
-        for sql in stmts {
+            "CREATE INDEX IF NOT EXISTS idx_imported_sets_source   ON imported_sets(source)"
+        ])
+    ]
+
+    private func runMigrations() {
+        guard let db else { return }
+        // Per-connection pragma, not a migration — must run on every open.
+        sqlite3_exec(db, "PRAGMA foreign_keys = ON", nil, nil, nil)
+        let current = currentUserVersion()
+        // Legacy shim, pre-versioning installs only: builds before is_warmup
+        // created session_sets without it, and v1's IF NOT EXISTS won't touch
+        // the existing table. Explicit column-existence check, run once on the
+        // 0 → 1 transition — replaces the old run-ALTER-every-launch-and-
+        // swallow-the-duplicate-error pattern.
+        if current == 0 { addWarmupColumnIfMissing() }
+        for migration in Self.migrations where migration.version > current {
+            if !apply(migration: migration) { return }
+        }
+    }
+
+    /// Run one migration inside a transaction; roll back on the first failed
+    /// statement so user_version never advances past a half-applied schema.
+    private func apply(migration: (version: Int32, statements: [String])) -> Bool {
+        guard let db else { return false }
+        sqlite3_exec(db, "BEGIN", nil, nil, nil)
+        for sql in migration.statements {
             var err: UnsafeMutablePointer<CChar>?
             if sqlite3_exec(db, sql, nil, nil, &err) != SQLITE_OK {
                 if let err { sqlite3_free(err) }
+                sqlite3_exec(db, "ROLLBACK", nil, nil, nil)
+                return false
             }
         }
-        // Idempotent ALTER for pre-existing session_sets rows from earlier
-        // builds where the table existed without is_warmup. The DEFAULT 0
-        // in the CREATE handles fresh installs; this handles upgrades.
-        // Errors are expected + ignored on subsequent runs (duplicate column).
-        var alterErr: UnsafeMutablePointer<CChar>?
-        sqlite3_exec(db, "ALTER TABLE session_sets ADD COLUMN is_warmup INTEGER NOT NULL DEFAULT 0", nil, nil, &alterErr)
-        if let alterErr { sqlite3_free(alterErr) }
+        // PRAGMA user_version doesn't accept bound params; interpolation is
+        // safe — version is a compile-time Int32 from our own array.
+        if sqlite3_exec(db, "PRAGMA user_version = \(migration.version)", nil, nil, nil) != SQLITE_OK {
+            sqlite3_exec(db, "ROLLBACK", nil, nil, nil)
+            return false
+        }
+        sqlite3_exec(db, "COMMIT", nil, nil, nil)
+        return true
+    }
+
+    private func currentUserVersion() -> Int32 {
+        guard let db else { return 0 }
+        var stmt: OpaquePointer?
+        defer { sqlite3_finalize(stmt) }
+        guard sqlite3_prepare_v2(db, "PRAGMA user_version", -1, &stmt, nil) == SQLITE_OK else { return 0 }
+        if sqlite3_step(stmt) == SQLITE_ROW {
+            return sqlite3_column_int(stmt, 0)
+        }
+        return 0
+    }
+
+    /// Add is_warmup to a pre-versioning session_sets that lacks it. A fresh
+    /// install never reaches the ALTER (the table is absent here; v1's CREATE
+    /// includes the column).
+    private func addWarmupColumnIfMissing() {
+        guard let db else { return }
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, "PRAGMA table_info(session_sets)", -1, &stmt, nil) == SQLITE_OK else { return }
+        var hasTable = false, hasColumn = false
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            hasTable = true
+            if let c = sqlite3_column_text(stmt, 1), String(cString: c) == "is_warmup" {
+                hasColumn = true
+                break
+            }
+        }
+        sqlite3_finalize(stmt)
+        if hasTable && !hasColumn {
+            sqlite3_exec(db, "ALTER TABLE session_sets ADD COLUMN is_warmup INTEGER NOT NULL DEFAULT 0", nil, nil, nil)
+        }
     }
 
     // MARK: - Reads

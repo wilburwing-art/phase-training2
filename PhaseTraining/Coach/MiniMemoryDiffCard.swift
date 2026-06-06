@@ -15,6 +15,13 @@ struct MiniMemoryDiffCard: View {
     @EnvironmentObject private var memoryStore: MemoryStore
     @EnvironmentObject private var conv: CoachConversationStore
 
+    // Guards against a back-to-back double-tap on Apply firing the
+    // mutation + haptic twice before SwiftUI re-renders the button as
+    // disabled. The local `proposal` is a snapshot captured at render
+    // time, so the second tap's handler would still see status==.pending
+    // without this flag.
+    @State private var isApplying = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             header
@@ -137,10 +144,12 @@ struct MiniMemoryDiffCard: View {
     // MARK: - Logic
 
     private var canApply: Bool {
-        proposal.status == .pending && !proposal.ops.isEmpty
+        proposal.status == .pending && !proposal.ops.isEmpty && !isApplying
     }
 
     private func apply() {
+        guard canApply else { return }
+        isApplying = true
         memoryStore.update { mem in
             for op in proposal.ops {
                 let trimmed = op.value.trimmingCharacters(in: .whitespacesAndNewlines)

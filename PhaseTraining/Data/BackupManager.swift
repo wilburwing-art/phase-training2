@@ -54,17 +54,34 @@ enum BackupManager {
     /// Build an envelope. Memory / active session / plan / overrides /
     /// reminder live in UserDefaults; saved sessions + custom routines live
     /// in `user.db` (UserDatabase) since the SQLite migration.
+    ///
+    /// Read order matters: SQLite reads happen first (each is internally
+    /// locked by UserDatabase), then UserDefaults reads happen in a tight
+    /// block at the end. This minimizes the window where a concurrent write
+    /// to one store could tear the snapshot across the two. There's no
+    /// cross-store transaction available on iOS, so this is the best we can
+    /// do without taking an app-wide write-pause lock.
     static func snapshot(defaults: UserDefaults = .standard,
                          userDB: UserDatabase = .defaultStore()) -> BackupEnvelope {
-        BackupEnvelope(
-            exportedAt: Date(),
-            memory: decodeIfPresent(defaults: defaults, key: "pt_training_memory"),
-            savedSessions: userDB.listSavedSessions(),
-            activeSession: decodeIfPresent(defaults: defaults, key: "pt_active_session"),
-            customRoutines: userDB.listRoutines(),
-            plan: decodeIfPresent(defaults: defaults, key: "pt_week_plan"),
-            overrides: decodeIfPresent(defaults: defaults, key: "pt_week_overrides"),
-            reminderEnabled: defaults.bool(forKey: "pt_weekly_reminder_enabled")
+        let exportedAt = Date()
+        // 1. SQLite first (bigger, slower, internally locked).
+        let savedSessions = userDB.listSavedSessions()
+        let customRoutines = userDB.listRoutines()
+        // 2. UserDefaults last, back-to-back.
+        let memory: TrainingMemory? = decodeIfPresent(defaults: defaults, key: "pt_training_memory")
+        let activeSession: ActiveSession? = decodeIfPresent(defaults: defaults, key: "pt_active_session")
+        let plan: WeekPlan? = decodeIfPresent(defaults: defaults, key: "pt_week_plan")
+        let overrides: WeekOverrides? = decodeIfPresent(defaults: defaults, key: "pt_week_overrides")
+        let reminderEnabled = defaults.bool(forKey: "pt_weekly_reminder_enabled")
+        return BackupEnvelope(
+            exportedAt: exportedAt,
+            memory: memory,
+            savedSessions: savedSessions,
+            activeSession: activeSession,
+            customRoutines: customRoutines,
+            plan: plan,
+            overrides: overrides,
+            reminderEnabled: reminderEnabled
         )
     }
 

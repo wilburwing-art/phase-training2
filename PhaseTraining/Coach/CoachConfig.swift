@@ -38,4 +38,11 @@ enum CoachConfig {
 
     /// Max tokens to request from the model per turn.
     static let maxOutputTokens = 1024
+
+    /// Time-to-first-byte cap on Coach requests. URLSession's default is 60s
+    /// which feels broken at a gym with flaky signal; this fails fast and
+    /// surfaces a transport error the caller can show as "try again."
+    /// For streaming, this only applies until the first byte arrives — once
+    /// data starts flowing, URLSession keeps the connection open.
+    static let requestTimeoutSeconds: TimeInterval = 20
 }

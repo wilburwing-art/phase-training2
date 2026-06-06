@@ -69,6 +69,9 @@ actor CoachClient {
 
         var req = URLRequest(url: CoachConfig.baseURL.appendingPathComponent("v1/messages"))
         req.httpMethod = "POST"
+        // Cap the wait so a flaky gym signal can't hang the call indefinitely.
+        // Default URLSession is 60s — too long for mid-workout UX.
+        req.timeoutInterval = CoachConfig.requestTimeoutSeconds
         req.setValue("application/json", forHTTPHeaderField: "content-type")
         req.setValue(CoachConfig.anthropicVersion, forHTTPHeaderField: "anthropic-version")
         req.setValue("Bearer \(CoachSecrets.gatewayToken)", forHTTPHeaderField: "cf-aig-authorization")
@@ -145,6 +148,10 @@ actor CoachClient {
 
                 var req = URLRequest(url: CoachConfig.baseURL.appendingPathComponent("v1/messages"))
                 req.httpMethod = "POST"
+                // Time-to-first-byte cap. Once streaming begins, URLSession keeps
+                // the connection open — this only fires if the gateway never
+                // responds at all (typical at a gym with flaky signal).
+                req.timeoutInterval = CoachConfig.requestTimeoutSeconds
                 req.setValue("application/json", forHTTPHeaderField: "content-type")
                 req.setValue(CoachConfig.anthropicVersion, forHTTPHeaderField: "anthropic-version")
                 req.setValue("Bearer \(CoachSecrets.gatewayToken)", forHTTPHeaderField: "cf-aig-authorization")
