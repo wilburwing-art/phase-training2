@@ -30,9 +30,21 @@ struct CoachBubble: View {
     }
 
     private var shouldShow: Bool {
-        CoachEntitlement.unlocked(consent: consentGranted, pro: proEntitled)
-            && tabSelection.selected != .profile
-            && sessionStore.active == nil
+        Self.shouldShow(consent: consentGranted,
+                        pro: proEntitled,
+                        onProfileTab: tabSelection.selected == .profile,
+                        sessionActive: sessionStore.active != nil)
+    }
+
+    /// Pure form of the hidden conditions so tests can exercise the consent
+    /// x pro matrix (including the lapsed state) without a view hierarchy.
+    /// requirePro is parameterized like CoachEntitlement.unlocked so both
+    /// sides of the monetization switch stay testable.
+    static func shouldShow(consent: Bool, pro: Bool, onProfileTab: Bool, sessionActive: Bool,
+                           requirePro: Bool = CoachEntitlement.proRequired) -> Bool {
+        CoachEntitlement.unlocked(consent: consent, pro: pro, requirePro: requirePro)
+            && !onProfileTab
+            && !sessionActive
     }
 
     private var bubble: some View {

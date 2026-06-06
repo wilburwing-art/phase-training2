@@ -37,7 +37,7 @@ struct CoachSettingsRow: View {
             }
             .tint(Color.accent)
 
-            if consentGranted && !proSatisfied {
+            if Self.showsLapsedNotice(consent: consentGranted, pro: proEntitled) {
                 proLapsedNotice
             }
 
@@ -57,6 +57,14 @@ struct CoachSettingsRow: View {
     /// CoachEntitlement.proRequired is false — coach ships free).
     private var proSatisfied: Bool {
         proEntitled || !CoachEntitlement.proRequired
+    }
+
+    /// Pure form of the lapsed-notice condition (consent on, gate closed,
+    /// no subscription) so tests can exercise it with requirePro pinned
+    /// rather than flipping the shipped global.
+    static func showsLapsedNotice(consent: Bool, pro: Bool,
+                                  requirePro: Bool = CoachEntitlement.proRequired) -> Bool {
+        consent && !(pro || !requirePro)
     }
 
     private var subtitle: String {
