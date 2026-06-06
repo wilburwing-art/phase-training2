@@ -53,7 +53,7 @@ localization.** One stale test fixed in passing (`aa6f67a`).
 ## Tier 3 — Architecture debt (GATED on §9 tests — one PR per file)
 
 **God-object splits** (sizes verified):
-- [ ] `WorkoutGenerator.swift` (1679) — extract accessory layer + prescription/RPE math into focused files. `PhaseTraining/Data/WorkoutGenerator.swift:1`
+- [x] `WorkoutGenerator.swift` (1679→1041) — accessory layer extracted to `WorkoutGenerator+Accessories.swift`, prescription/RPE/progressive-overload math to `WorkoutGenerator+Prescription.swift`. Pure `extension WorkoutGenerator` seams (enum-namespace statics, same module). Only access change: `isMuscleSoreForExercise` + the 3 accessory entry points relaxed `private`→internal for cross-file calls; all other moved helpers stay `private` (same-file). No behavior change. **Not yet CI-verified** — needs a PR to compile (test workflow runs on `pull_request`/`main` only).
 - [ ] `LogScreen.swift` (1438) — 15 `@State` fields; collapse the 6 rest-timer fields into one struct, extract row/edit subviews. `PhaseTraining/Screens/LogScreen.swift:25,35`
 - [ ] `PlanStore.swift` (1211) — separate generation / history / overrides / missed-workout autopilot / LLM refinement. `PhaseTraining/Data/PlanStore.swift:19`
 - [ ] `TodayScreen.swift` (1177) — 18 `@State` fields; extract template editor + sheet coordination. `PhaseTraining/Screens/TodayScreen.swift:23`
