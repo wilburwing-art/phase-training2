@@ -133,6 +133,7 @@ extension PlanStore {
                         memory: memory,
                         profile: profile,
                         sessions: sessions,
+                        sportLogs: sportLogs,
                         snapshot: snapshot
                     )
                     return (idx, refined)
@@ -157,6 +158,7 @@ extension PlanStore {
         memory: TrainingMemory,
         profile: DemographicProfile,
         sessions: [SavedSession],
+        sportLogs: [SportLogEntry],
         snapshot: String
     ) async -> GeneratedWorkout? {
         guard let existing = day.generatedWorkout else { return nil }
@@ -215,6 +217,7 @@ extension PlanStore {
             sessions: sessions,
             soreness: memory.soreness,
             feedback: memory.feedback,
+            sportLogs: sportLogs,
             importedWorkouts: imported,
             importedPeaks: peaks,
             cohort: profile.eraCohort,
