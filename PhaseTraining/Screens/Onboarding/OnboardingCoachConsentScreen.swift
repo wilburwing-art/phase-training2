@@ -50,9 +50,10 @@ struct OnboardingCoachConsentScreen: View {
             }
         }
         .onAppear {
-            // Mirror the current AppStorage value so backing into this step
-            // shows the user's prior choice, not an unconditional "ON" reset.
-            localOn = consentGranted || !hasMadeChoice
+            // A stored choice mirrors as-is so backing into this step shows
+            // what the user actually picked; only a fresh install (no stored
+            // choice) defaults ON.
+            localOn = hasMadeChoice ? consentGranted : true
         }
     }
 
