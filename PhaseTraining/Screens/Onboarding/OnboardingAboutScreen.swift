@@ -212,15 +212,30 @@ struct BodyMetricsEditor: View {
         .onAppear(perform: syncMirrors)
         .onChange(of: draft.heightCm) { _, _ in if !isAnyHeightFieldFocused { syncHeightMirrors() } }
         .onChange(of: draft.weightKg) { _, _ in if focus != .weight { syncWeightMirror() } }
-        // When the user toggles imperial/metric mid-edit, refresh the
-        // mirrors so the new field set shows the right value.
-        .onChange(of: draft.usesImperial) { _, _ in syncMirrors() }
+        // When the user toggles imperial/metric mid-edit, first commit the
+        // focused field's pending text — the height TextFields are about to
+        // be swapped (imperial ↔ metric), and resyncing the mirrors below
+        // would silently drop uncommitted typing before the focus-loss
+        // commit ever fires. Weight text is parsed in the OLD units (what
+        // the user was typing in). Focus then clears so it can't point at a
+        // field that no longer exists; refresh the mirrors so the new field
+        // set shows the right value.
+        .onChange(of: draft.usesImperial) { wasImperial, _ in
+            switch focus {
+            case .heightCm:     commitHeightCm()
+            case .heightFeet, .heightInches: commitHeightImperial()
+            case .weight:       commitWeight(asImperial: wasImperial)
+            case nil:           break
+            }
+            focus = nil
+            syncMirrors()
+        }
         .onChange(of: focus) { old, new in
             // Commit whichever field just lost focus.
             switch old {
             case .heightCm:     commitHeightCm()
             case .heightFeet, .heightInches: commitHeightImperial()
-            case .weight:       commitWeight()
+            case .weight:       commitWeight(asImperial: draft.usesImperial)
             case nil:           break
             }
             _ = new // touch to satisfy old-warning, focus state is the live tracker
@@ -435,7 +450,10 @@ struct BodyMetricsEditor: View {
         heightInchesText = String(ri)
     }
 
-    private func commitWeight() {
+    /// `asImperial` says which units the typed text is in — callers pass the
+    /// unit system that was active WHILE the user typed, which differs from
+    /// `draft.usesImperial` when committing across a unit toggle.
+    private func commitWeight(asImperial: Bool) {
         let trimmed = weightText
             .trimmingCharacters(in: .whitespaces)
             .replacingOccurrences(of: ",", with: ".") // accept European-decimal commas
@@ -444,7 +462,7 @@ struct BodyMetricsEditor: View {
             weightText = ""
             return
         }
-        let kg = draft.usesImperial ? BodyMetrics.lbToKg(parsed) : parsed
+        let kg = asImperial ? BodyMetrics.lbToKg(parsed) : parsed
         // One-decimal precision keeps the JSON tidy.
         let rounded = (kg * 10).rounded() / 10
         let clamped = min(max(rounded, minWeightKg), maxWeightKg)
