@@ -15,6 +15,7 @@ struct CoachBubble: View {
     @EnvironmentObject private var tabSelection: TabSelectionStore
     @EnvironmentObject private var sessionStore: SessionStore
     @AppStorage(CoachConsent.storageKey) private var consentGranted: Bool = false
+    @AppStorage(CoachEntitlement.proKey) private var proEntitled: Bool = false
 
     var body: some View {
         if shouldShow {
@@ -29,7 +30,7 @@ struct CoachBubble: View {
     }
 
     private var shouldShow: Bool {
-        consentGranted
+        CoachEntitlement.unlocked(consent: consentGranted, pro: proEntitled)
             && tabSelection.selected != .profile
             && sessionStore.active == nil
     }

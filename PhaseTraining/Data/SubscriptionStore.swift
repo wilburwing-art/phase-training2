@@ -1,21 +1,24 @@
 // SubscriptionStore.swift — StoreKit 2 wrapper for the Pro subscription
 // that gates the AI coach.
 //
-// Status: SCAFFOLD. Product IDs below are placeholders. Until they're
-// created in App Store Connect (Subscriptions → Auto-Renewable group) and
-// a matching `.storekit` configuration file is added to the Xcode scheme,
-// `Product.products(for:)` returns an empty array, `isPro` stays false,
-// and PaywallView renders its "not configured" state. The scaffold ships
-// intentionally non-functional so a forgetting-to-configure release can't
+// Product IDs below are placeholders. Until they're created in App Store
+// Connect (Subscriptions → Auto-Renewable group) and a matching `.storekit`
+// configuration file is added to the Xcode scheme, `Product.products(for:)`
+// returns an empty array, `isPro` stays false, and PaywallView renders its
+// "not configured" state — so a forgetting-to-configure release can't
 // accidentally bill anyone.
 //
-// To enable:
-//   1. Create the Pro product in App Store Connect.
-//   2. Update `Self.allProductIDs` if you change the IDs / add tiers.
-//   3. Add a StoreKit Configuration File in Xcode for local previews.
-//   4. Wire the entitlement check (`subStore.isPro`) at the gate sites
-//      (CoachBubble, CoachConsent toggle, etc.). Deliberately NOT wired
-//      yet — that's a product decision the team needs to make explicitly.
+// The entitlement gate IS wired (2026-06-05): every coach surface checks
+// CoachEntitlement, and `isPro` mirrors into UserDefaults under
+// CoachEntitlement.proKey on every refresh. Per the same-day product
+// decision, coach SHIPS FREE — the gate is held open by
+// CoachEntitlement.proRequired = false.
+//
+// To actually charge:
+//   1. Flip CoachEntitlement.proRequired to true.
+//   2. Create the Pro product in App Store Connect.
+//   3. Update `Self.allProductIDs` if you change the IDs / add tiers.
+//   4. Add a StoreKit Configuration File in Xcode for local previews.
 
 import Foundation
 import StoreKit
@@ -102,16 +105,19 @@ final class SubscriptionStore: ObservableObject {
     /// least one transaction matches our product set, is verified, not
     /// revoked, and not expired.
     private func refreshEntitlement() async {
+        var entitled = false
         for await result in Transaction.currentEntitlements {
             if case .verified(let txn) = result,
                Self.allProductIDs.contains(txn.productID),
                txn.revocationDate == nil,
                (txn.expirationDate ?? .distantFuture) > Date() {
-                self.isPro = true
-                return
+                entitled = true
+                break
             }
         }
-        self.isPro = false
+        self.isPro = entitled
+        // Mirror for non-SwiftUI gate sites + @AppStorage observers.
+        UserDefaults.standard.set(entitled, forKey: CoachEntitlement.proKey)
     }
 
     private func handle(transactionResult: VerificationResult<Transaction>) async {

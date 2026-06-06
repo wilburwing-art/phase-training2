@@ -34,7 +34,7 @@ enum InsightGenerator {
         consentGranted: Bool,
         now: Date = Date()
     ) {
-        guard consentGranted else { return }
+        guard consentGranted, CoachEntitlement.proSatisfied() else { return }
         guard !inFlight else { return }
         guard !hasInsightForToday(memory: memoryStore.memory, now: now) else { return }
         guard hasSignal(memory: memoryStore.memory, sessions: sessionStore.savedSessions, now: now) else { return }

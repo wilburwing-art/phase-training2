@@ -27,7 +27,14 @@ struct CoachRequestScreen: View {
     /// When false, the existing deterministic chip-driven path runs and the
     /// LLM never sees the user's data. Consent flow lives in Profile.
     @AppStorage(CoachConsent.storageKey) private var consentGranted: Bool = false
+    @AppStorage(CoachEntitlement.proKey) private var proEntitled: Bool = false
     @Environment(\.dismiss) private var dismiss
+
+    /// Consent AND Pro — a lapsed subscription falls back to the same
+    /// deterministic path as consent-off.
+    private var coachEnabled: Bool {
+        CoachEntitlement.unlocked(consent: consentGranted, pro: proEntitled)
+    }
 
     /// Called when the user taps a save action. `startNow` reflects which
     /// button they tapped — "Save & start" vs "Save". Caller is responsible
@@ -291,8 +298,8 @@ struct CoachRequestScreen: View {
                                 .tint(Color.accentInk)
                         }
                         Text(generating
-                             ? (consentGranted ? "Coach is thinking…" : "Generating…")
-                             : (consentGranted ? "Ask coach to build" : "Generate"))
+                             ? (coachEnabled ? "Coach is thinking…" : "Generating…")
+                             : (coachEnabled ? "Ask coach to build" : "Generate"))
                         .font(.custom("SpaceGrotesk-SemiBold", size: 15))
                         .foregroundStyle(Color.accentInk)
                     }
@@ -390,9 +397,9 @@ struct CoachRequestScreen: View {
             intensityBias: .normal
         )
 
-        // Skip the LLM entirely when consent isn't granted — pure deterministic
-        // path, no token spend, no waiting.
-        guard consentGranted else {
+        // Skip the LLM entirely when consent isn't granted or Pro lapsed —
+        // pure deterministic path, no token spend, no waiting.
+        guard coachEnabled else {
             runGenerator(with: starter, reasoning: nil)
             return
         }

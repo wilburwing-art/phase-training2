@@ -34,18 +34,19 @@ extension PlanStore {
         // the same plan (last write wins on the @Published mutation,
         // but the older task wastes LLM calls).
         currentRefinementTask?.cancel()
-        guard isCoachConsentGranted else { return }
+        guard isCoachEnabled else { return }
         guard plan != nil else { return }
         currentRefinementTask = Task { @MainActor in
             await self.refineCurrentPlanWithLLM(memory: memory)
         }
     }
 
-    private var isCoachConsentGranted: Bool {
-        // CoachConsent stores the flag under its own UserDefaults key.
-        // We read from .standard (where AppStorage writes) — the PlanStore's
-        // own UserDefaults instance may be a different suite (tests/previews).
+    private var isCoachEnabled: Bool {
+        // Consent + Pro entitlement, both read from .standard (where
+        // AppStorage and SubscriptionStore write) — the PlanStore's own
+        // UserDefaults instance may be a different suite (tests/previews).
         UserDefaults.standard.bool(forKey: CoachConsent.storageKey)
+            && CoachEntitlement.proSatisfied()
     }
 
     // MARK: - Candidate selection

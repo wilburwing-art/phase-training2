@@ -9,10 +9,12 @@ import SwiftUI
 
 struct CoachSettingsRow: View {
     @AppStorage(CoachConsent.storageKey) private var consentGranted: Bool = false
+    @AppStorage(CoachEntitlement.proKey) private var proEntitled: Bool = false
 
     /// True between the toggle flick and the alert's Accept tap. Lets us
     /// revert if the user cancels.
     @State private var modalPresented: Bool = false
+    @State private var paywallPresented: Bool = false
     @State private var pendingPing: Bool = false
     @State private var pingResultText: String? = nil
     @State private var pingErrorText: String? = nil
@@ -28,12 +30,16 @@ struct CoachSettingsRow: View {
                     Text("AI Coach")
                         .styled(.body)
                         .foregroundStyle(Color.ink)
-                    Text(consentGranted ? "On — chat reaches Claude via our proxy" : "Off — nothing leaves your phone")
+                    Text(subtitle)
                         .font(.monoXS)
                         .foregroundStyle(Color.ink3)
                 }
             }
             .tint(Color.accent)
+
+            if consentGranted && !proSatisfied {
+                proLapsedNotice
+            }
 
             #if DEBUG
             if consentGranted {
@@ -42,6 +48,35 @@ struct CoachSettingsRow: View {
             #endif
         }
         .modifier(CoachConsentModal(presented: $modalPresented, consentGranted: $consentGranted))
+        .sheet(isPresented: $paywallPresented) {
+            PaywallView()
+        }
+    }
+
+    /// The live Pro check (reactive via @AppStorage; always true while
+    /// CoachEntitlement.proRequired is false — coach ships free).
+    private var proSatisfied: Bool {
+        proEntitled || !CoachEntitlement.proRequired
+    }
+
+    private var subtitle: String {
+        if consentGranted {
+            return "On — chat reaches Claude via our proxy"
+        }
+        return proSatisfied ? "Off — nothing leaves your phone"
+                            : "Off — requires Pro"
+    }
+
+    /// Consent is on but the subscription isn't — coach surfaces are dark
+    /// until the user (re)subscribes.
+    private var proLapsedNotice: some View {
+        Button { paywallPresented = true } label: {
+            Text("Pro required — coach is paused until you subscribe.")
+                .font(.monoXS)
+                .foregroundStyle(Color.danger)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Section header
@@ -54,15 +89,19 @@ struct CoachSettingsRow: View {
 
     // MARK: - Toggle binding
 
-    /// Intercept changes: flipping to true presents the consent modal first.
-    /// Flipping to false (revoking) is immediate.
+    /// Intercept changes: flipping to true routes through the Pro gate, then
+    /// the consent modal. Flipping to false (revoking) is immediate.
     private var toggleBinding: Binding<Bool> {
         Binding(
             get: { consentGranted },
             set: { newValue in
                 if newValue {
-                    // Don't commit consent yet — show the modal.
-                    modalPresented = true
+                    if proSatisfied {
+                        // Don't commit consent yet — show the modal.
+                        modalPresented = true
+                    } else {
+                        paywallPresented = true
+                    }
                 } else {
                     consentGranted = false
                 }
