@@ -1,4 +1,4 @@
-// OnboardingWelcomeScreen.swift — step 1 of 8.
+// OnboardingWelcomeScreen.swift — step 1 of the onboarding flow.
 // Sets the tone: dark + lime, not a sales pitch. Single CTA into the flow.
 
 import SwiftUI

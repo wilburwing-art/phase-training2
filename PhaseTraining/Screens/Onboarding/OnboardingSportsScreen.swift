@@ -1,4 +1,4 @@
-// OnboardingSportsScreen.swift — step 2 of 8.
+// OnboardingSportsScreen.swift — step 2 of the onboarding flow.
 // Multi-select sports + designate one as primary. The primary drives the
 // rules engine's WeeklyShape lookup; the secondary list weights accessory work.
 //

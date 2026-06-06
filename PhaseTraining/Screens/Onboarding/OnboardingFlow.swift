@@ -1,4 +1,5 @@
-// OnboardingFlow.swift — coordinator for the 8-step first-launch onboarding.
+// OnboardingFlow.swift — coordinator for the first-launch onboarding flow
+// (see OnboardingStep for the current step list).
 //
 // Holds a draft TrainingMemory in @State; the user can move forward/backward
 // freely. Only the final step commits via MemoryStore.completeOnboarding(),
@@ -35,7 +36,7 @@ enum OnboardingStep: Int, CaseIterable {
     /// in the questionnaire numerator/denominator since it's not a question.
     case planPreview
 
-    /// Numbered position shown to the user ("Step 2 of 9"). Welcome is step 1.
+    /// Numbered position shown to the user ("Step X of Y"). Welcome is step 1.
     /// planPreview returns 0 — the scaffold hides the counter for it.
     var humanIndex: Int {
         self == .planPreview ? 0 : rawValue + 1
