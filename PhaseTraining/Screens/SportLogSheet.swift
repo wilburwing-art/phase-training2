@@ -80,8 +80,12 @@ struct SportLogSheet: View {
             .alert("Duration", isPresented: $editingDuration) {
                 TextField("minutes", text: $durationText)
                     .keyboardType(.numberPad)
-                Button("Cancel", role: .cancel) {}
+                // hideKeyboard(): the numberPad otherwise lingers after the
+                // alert dismisses. Runs before the parse guard on Save because
+                // the alert closes even when the input doesn't parse.
+                Button("Cancel", role: .cancel) { hideKeyboard() }
                 Button("Save") {
+                    hideKeyboard()
                     guard let raw = Int(durationText.trimmingCharacters(in: .whitespaces)) else { return }
                     durationMinutes = min(600, max(5, raw))
                 }
