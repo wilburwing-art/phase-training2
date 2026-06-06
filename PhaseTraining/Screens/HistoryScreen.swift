@@ -233,6 +233,8 @@ struct HistoryScreen: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(isExpanded ? "Collapse \(session.name)" : "Expand \(session.name)")
+            .accessibilityIdentifier("history-toggle-\(session.id)")
 
             if isExpanded {
                 expandedDetail(session)
@@ -250,6 +252,8 @@ struct HistoryScreen: View {
                         )
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Edit \(session.name)")
+                .accessibilityIdentifier("history-edit-\(session.id)")
                 .padding(.top, 8)
             }
         }

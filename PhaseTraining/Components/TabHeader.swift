@@ -90,6 +90,9 @@ struct TabHeader: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
+        // One logical header for VoiceOver — eyebrow, title, subtitle, and
+        // caption read as a single element instead of four swipe stops.
+        .accessibilityElement(children: .combine)
     }
 }
 

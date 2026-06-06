@@ -48,6 +48,7 @@ struct BodyCompositionLogSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                         .foregroundStyle(Color.accent)
+                        .accessibilityIdentifier("body-composition-log-done")
                 }
             }
         }
@@ -62,6 +63,7 @@ struct BodyCompositionLogSheet: View {
         ) { entry in
             Button("Delete", role: .destructive) { deleteEntry(entry); pendingDelete = nil }
             Button("Cancel", role: .cancel) { pendingDelete = nil }
+                .accessibilityIdentifier("body-composition-log-cancel")
         } message: { _ in
             Text("This removes the logged measurement. Your history can't recover it.")
         }
