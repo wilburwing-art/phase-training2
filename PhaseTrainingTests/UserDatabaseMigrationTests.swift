@@ -129,4 +129,47 @@ final class UserDatabaseMigrationTests: XCTestCase {
         XCTAssertTrue(again.isOpen)
         XCTAssertEqual(userVersion(), 1)
     }
+
+    // MARK: - FK cascade (session_sets follow their exercises)
+
+    /// saveSession pre-clears session_exercises for the start_time before
+    /// re-inserting; the composite FK on session_sets (ON DELETE CASCADE,
+    /// enforced by the per-open PRAGMA foreign_keys) must sweep the old
+    /// sets with them — re-saving a smaller session leaves no orphans.
+    func test_resaveSmallerSession_leavesNoOrphanSets() {
+        let db = UserDatabase(path: path)
+        let start = Date(timeIntervalSince1970: 1_000)
+        let set = LoggedSet(num: 1, weight: "135", reps: "5", rpe: "7", done: true)
+        func exercise(_ name: String, sets: [LoggedSet]) -> LoggedExercise {
+            LoggedExercise(id: name, name: name, type: nil, unit: "lbs",
+                           targetSets: sets.count, targetReps: 5, rest: 90,
+                           sets: sets, prevSets: [])
+        }
+        func session(_ exercises: [LoggedExercise]) -> SavedSession {
+            SavedSession(templateId: "t1", name: "Push", category: "cat",
+                         startTime: start, exercises: exercises,
+                         feel: nil, note: nil,
+                         endTime: start.addingTimeInterval(3_000), duration: 3_000)
+        }
+        func rawSetCount() -> Int32? {
+            withRawDB { db in
+                var stmt: OpaquePointer?
+                defer { sqlite3_finalize(stmt) }
+                guard sqlite3_prepare_v2(db, "SELECT COUNT(*) FROM session_sets", -1, &stmt, nil) == SQLITE_OK,
+                      sqlite3_step(stmt) == SQLITE_ROW else { return Int32(-1) }
+                return sqlite3_column_int(stmt, 0)
+            }
+        }
+
+        // Two exercises x two sets, then resave the same start_time smaller.
+        db.saveSession(session([
+            exercise("Squat", sets: [set, LoggedSet(num: 2, weight: "145", reps: "5", rpe: "8", done: true)]),
+            exercise("Bench", sets: [set, LoggedSet(num: 2, weight: "95", reps: "8", rpe: "7", done: true)])
+        ]))
+        XCTAssertEqual(rawSetCount(), 4)
+
+        db.saveSession(session([exercise("Squat", sets: [set])]))
+        XCTAssertEqual(rawSetCount(), 1,
+                       "re-saving smaller must cascade away the old sets, not orphan them")
+    }
 }
