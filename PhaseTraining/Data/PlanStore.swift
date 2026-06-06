@@ -248,12 +248,7 @@ final class PlanStore: ObservableObject {
         }
     }
 
-    // MARK: - Generation
-
-    /// Generate a fresh plan from memory + the current overrides; persist both.
-    @discardableResult
-
-    // MARK: - Custom-routine override post-processing (build 105)
+    // MARK: - Memory-drift auto-regen
 
     /// Subscribe to memoryStore.$memory and silently regenerate the plan
     /// whenever the user's profile changes enough to drift `planInputsHash`.
@@ -279,15 +274,6 @@ final class PlanStore: ObservableObject {
                 self.generate(from: memory)
             }
     }
-
-    // MARK: - PR 6 — "typical week" fast path
-
-    /// Copy last week's day-by-day shape (per-day kind + each lift's focus)
-    /// onto the current week's overrides, then regenerate — the "typical week"
-    /// fast path. Maps day i → day i (both weeks are Mon–Sun, 7 days). Event
-    /// days copy as rest (events are date-anchored, not reproducible). Returns
-    /// false when there's no prior week to copy.
-    @discardableResult
 
     // MARK: - PR 8 — Missed-workout autopilot
 
