@@ -5,17 +5,18 @@ high-severity claims grep-verified). Flat findings are tiered here for an
 overnight loop. **Read top-down. Tier 0 first. Tier 2 items begin with a verify
 step. Do not start Tier 3 without the test gate (§9).**
 
-**Reconciled 2026-06-05 PM** after the implementation run (verify-first → implement →
-adversarial review per file-disjoint group). 12 items fixed, 5 closed as
-false-positive/already-fixed with evidence, plus the morning loop's 12. Remaining
-open items are marked `[ ]` below. One stale test fixed in passing (`aa6f67a`:
-`test_age_55plus_caps_session_at_60` used age 70, stale since 4919f23's 70+ tier).
+**Reconciled 2026-06-05 PM** after two implementation waves (verify-first →
+implement → adversarial review per file-disjoint group). Wave 1: 12 fixed, 5
+closed as false-positive/already-fixed. Wave 2: 9 fixed (incl. paywall decision +
+gate), 2 more false positives (PatternSlot, the editableTemplate class). Plus the
+morning loop's 12. **Everything is closed except the Tier 3 god-object splits and
+localization.** One stale test fixed in passing (`aa6f67a`).
 
 ---
 
 ## Tier 0 — Ship blockers / correctness blast radius
 
-- [ ] **Paywall gates not wired.** `SubscriptionStore` product IDs are placeholders and `isPro` is checked in `PaywallView` but NOT at the Coach entitlement gates — Coach is effectively free. **Decision needed: ship Coach free, or wire the gate before charging.** `PhaseTraining/Data/SubscriptionStore.swift:17,25`, `PhaseTraining/Coach/CoachSettingsRow.swift:20`
+- [x] **Paywall gates not wired.** Resolved `c50a528`: `CoachEntitlement` wired at every coach surface (bubble, insights, LLM refinement, build-request, consent toggle → paywall). **Product decision 2026-06-05: coach SHIPS FREE** — `proRequired = false` holds the gate open, locked by `test_shippedState_isFree`. To charge: flip the flag + create ASC products.
 - [x] **Exercise match-by-name can mutate the wrong row.** Fixed `298284a`: diff exercises match by id so swaps keep logged sets.
 - [x] ~~Possible PlanStore→SessionStore retain cycle.~~ **False positive.** The sink captures `[weak self]` only and reaches sessionStore via `self.sessionStore?.active`; `memorySubscription` is the file's sole stored closure. No strong cross-store edge exists (verified via git log -L: shipped with `[weak self]` in 49dc999).
 - [x] **LLM strategy overrides lack semantic validation.** Fixed `22a7591`: RPE caps at 10 via shared `capRPE`, tempo components cap at 10 s; unparseable strings pass through (clamp, don't reject).
@@ -63,30 +64,30 @@ open items are marked `[ ]` below. One stale test fixed in passing (`aa6f67a`:
 
 **Duplication** (extract shared helpers):
 - [x] `metaLine` formatting dedup → `Exercise.metaLabel(includeCompound:)` `7400290`. Audit was partially off: ExerciseTile takes pre-formatted meta, LibraryScreen's copy was dead (deleted). Follow-up candidates outside the run's scope: SubstituteExerciseSheet + ExerciseDetailSheet carry the same pattern.
-- [ ] Three identical `Binding` wrappers (swapping/editing/actionSheet) across TodayScreen / DayWorkoutPreviewSheet / LogScreen. `PhaseTraining/Screens/TodayScreen.swift:770`
-- [ ] `similarFiltersForExercise` duplicated (DayWorkoutPreviewSheet vs TodayScreen). `PhaseTraining/Screens/DayWorkoutPreviewSheet.swift:439`
+- [x] Binding wrappers dedup → `Components/ExerciseSheetCoordination` `a256935` (was actually 9 wrappers + 4 duplicate Identifiable structs, not 3). Follow-up candidates: CoachRequestScreen + CustomRoutineEditSheet repeat the pattern.
+- [x] `similarFiltersForExercise` dedup → `ExerciseFilters.similar(toExerciseNamed:)` `a256935`, also adopted by LogScreen's name-based variant.
 - [x] `sessionRow` date/duration formatting dedup → `Components/SessionRowMeta` `8909b1d` (compact/spelled knob keeps each screen's exact output).
-- [x] Per-call `DateFormatter` (ProfileScreen `:738`) → cached static `1527f33`. ~~CoachSettingsRow `:124`~~ **false positive** — that file has never contained a DateFormatter. Real remaining per-call allocations: `WeekScreen.swift`, `MissedWorkoutBanner.swift`, `BodyWeightLogSheet.swift`.
+- [x] Per-call `DateFormatter` → cached statics: ProfileScreen `1527f33`; WeekScreen (5 sites), MissedWorkoutBanner (4 sites), BodyWeightLogSheet `41e6ab0`. ~~CoachSettingsRow `:124`~~ **false positive** — that file has never contained a DateFormatter.
 
 **Hot-path queries:**
 - [x] `LibraryScreen.libraryEyebrowTrailing` full-catalog query per render → cached like `stockRoutines` `7400290`.
-- [ ] `WorkoutGenerator.pickForSlot` makes up to 9 uncached `CoachDatabase.shared` queries per slot. `PhaseTraining/Data/WorkoutGenerator.swift:596`
+- [x] `WorkoutGenerator.pickForSlot` uncached queries → per-generation `ExerciseQueryCache` `fb417d4`, byte-identical output.
 
 **Shared-mutable-state:**
-- [ ] `PatternSlot` is a `final class` with mutable `satisfiedBy` shared across workouts via `WorkoutFocus.slots` → cross-workout drift. Make value-type or copy-on-pick. `PhaseTraining/Data/WorkoutGenerator.swift:1600`
+- [x] ~~`PatternSlot` shared across workouts via `WorkoutFocus.slots`~~ **False positive.** `WorkoutFocus.slots` is a COMPUTED property — fresh instances on every access; `generate()` reads it once per call and `PatternSlot` never escapes the file. Locked in by the new `test_generationIsOrderIndependent` (`fb417d4`).
 
 ---
 
 ## Tier 4 — UX polish (separate sitting, batch together)
 
-- [ ] Stale onboarding step comments ("step N of 8" → 12). `OnboardingFlow.swift:1`, `OnboardingWelcomeScreen.swift:1`, `OnboardingSportsScreen.swift:1`
+- [x] Stale onboarding step comments → un-hardcoded `75b4e85` (count had drifted twice; actual: 12 cases, 11 user-visible).
 - [x] Self-drop on Week silent no-op → disabled drop-zone cue `95027c4`.
 - [x] "Add sport session"/"Add event" silent clobber → Replace/Keep alert naming the incumbent `5124380`.
 - [x] Warmup rows 0.6 opacity → 0.85, W pill stays primary cue `2bcea8b`.
 - [x] Plate-calculator custom bar weight persisted via `@AppStorage` `a7c3ad9`.
 - [x] Sport-log duration: tappable value opens numberPad alert stating the 5–600 range `a7794ce`.
 - [x] Profile numeric clamp now surfaces the valid range inline `1527f33`.
-- [ ] Consolidation modal closes whether or not it did anything. `PhaseTraining/Data/PlanStore.swift:1049` (deferred from the run: fix spans PlanStore + the consolidation UI.)
+- [x] Consolidation no-op now surfaced `447b283` (the PlanStore half already existed since `c000f3c` — `consolidateWeek` returned `Bool`; TodayScreen's banner glue discarded it).
 
 ---
 
