@@ -10,6 +10,7 @@ struct RemindersEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var remindersOn = WeeklyReminderScheduler.isEnabled
     @State private var remindersPending = false
+    @State private var remindersFailed = false
 
     var body: some View {
         NavigationStack {
@@ -48,6 +49,11 @@ struct RemindersEditorSheet: View {
                         }
                         .buttonStyle(.plain)
                         .disabled(remindersPending)
+                        if remindersFailed {
+                            Text("Couldn't enable — notifications are off for this app. Allow them in Settings to get the reminder.")
+                                .font(.monoXS)
+                                .foregroundStyle(Color.danger)
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 18)
@@ -70,6 +76,7 @@ struct RemindersEditorSheet: View {
     }
 
     private func toggleReminders() {
+        remindersFailed = false
         if remindersOn {
             WeeklyReminderScheduler.disable()
             remindersOn = false
@@ -81,6 +88,9 @@ struct RemindersEditorSheet: View {
             await MainActor.run {
                 remindersOn = ok
                 remindersPending = false
+                // Permission denied or scheduling failed — say why the
+                // toggle snapped back instead of failing silently.
+                remindersFailed = !ok
             }
         }
     }
