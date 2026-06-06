@@ -21,6 +21,14 @@ enum CoachEntitlement {
     /// The monetization switch. False = coach ships free (consent is the
     /// only gate). True = coach surfaces additionally require Pro and the
     /// consent toggle routes non-subscribers to PaywallView.
+    ///
+    /// Flip-day checklist (when this goes true):
+    ///   1. Create the products in App Store Connect — SubscriptionStore's
+    ///      product IDs are placeholders until then.
+    ///   2. CoachBubble disappears silently for lapsed users; only
+    ///      CoachSettingsRow shows the lapsed notice. Decide if that's enough.
+    ///   3. InsightGenerator's foreground path awaits refresh() before
+    ///      runIfDue (1e9d8ad), so the proKey mirror race is handled.
     static let proRequired = false
 
     /// Pure gate logic — parameterized so tests can exercise both sides of

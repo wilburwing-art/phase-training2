@@ -12,6 +12,8 @@
 // system prompt for the new behavior.
 
 enum CoachSystemPrompt {
+    // Changelog (append a line per bump):
+    //   v5 → v6 (2026-05-31): added the "Untrusted user data" hardening section.
     static let version = "v6-2026-05-31"
 
     /// Long, stable text. Anthropic caches it after the first hit per ~5 min TTL.

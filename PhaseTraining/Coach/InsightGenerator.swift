@@ -66,8 +66,10 @@ enum InsightGenerator {
                     mem.coachInsights = CoachInsight.prune(mem.coachInsights, now: now)
                 }
             } catch {
-                // Silently skip on failure — this is a background nicety, not
-                // a user-visible operation. Next foreground tries again.
+                // Swallow network/decode failures — this is a background nicety,
+                // not a user-visible operation, so no error UI. runIfDue re-fires
+                // on every app foreground, and hasInsightForToday stays false
+                // until an append succeeds, so failures self-heal on retry.
                 #if DEBUG
                 print("[InsightGenerator] skipped: \(error.localizedDescription)")
                 #endif
