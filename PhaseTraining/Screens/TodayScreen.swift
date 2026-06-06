@@ -59,6 +59,7 @@ struct TodayScreen: View {
     /// (`refinedByLLMAt` stamped). No accept / reject: the refinement is
     /// already applied; this is pure transparency.
     @State private var showCoachPolishedSheet: Bool = false
+    @State private var showConsolidationNoop: Bool = false
 
     // MARK: - Derived state
 
@@ -348,6 +349,14 @@ struct TodayScreen: View {
         .sheet(isPresented: $showSorenessSheet) {
             SorenessCheckInSheet(onDone: {})
         }
+        // Attached at screen level, NOT on the banner — by the time the
+        // no-op flag flips, dismissMissed has already removed the banner
+        // from the hierarchy, and an alert on a removed view never shows.
+        .alert("Nothing to consolidate", isPresented: $showConsolidationNoop) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("The week couldn't absorb the missed work — the workout was skipped instead.")
+        }
         .sheet(isPresented: $showCoachPolishedSheet) {
             CoachPolishedExplanationSheet(
                 refinedAt: todayPlan?.generatedWorkout?.refinedByLLMAt,
@@ -424,8 +433,12 @@ struct TodayScreen: View {
     /// reshuffle found no clean slot), then clear the miss so it stops
     /// bannering.
     private func consolidateForMiss(for day: DayPlan) {
-        planStore.consolidateWeek(memory: memoryStore.memory)
+        // consolidateWeek returns false on every no-op path (weekly cap,
+        // <2 future lift days, unrecoverable focus). Don't pretend it
+        // worked — tell the user the miss was just dropped.
+        let applied = planStore.consolidateWeek(memory: memoryStore.memory)
         planStore.dismissMissed(date: day.date, asDropped: true)
+        if !applied { showConsolidationNoop = true }
     }
 
     /// Discoverable affordance for the pre-workout body check. Always visible
