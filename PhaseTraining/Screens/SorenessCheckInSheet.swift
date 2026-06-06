@@ -223,6 +223,8 @@ struct SorenessCheckInSheet: View {
                 mem.soreness.append(entry)
             }
         }
+        let haptic = UINotificationFeedbackGenerator()
+        haptic.notificationOccurred(.success)
         dismiss()
         onDone()
     }
@@ -235,7 +237,14 @@ struct SorenessCheckInSheet: View {
     /// Pre-fill from today's most recent entry. Lets the sheet act as an
     /// edit-in-place surface within a single calendar day; only one
     /// SorenessEntry per day stays canonical.
+    ///
+    /// Only runs against a fresh sheet — if any state is already touched
+    /// (or we already rehydrated), a re-fired onAppear must not clobber
+    /// in-progress selections.
     private func rehydrateFromMemory() {
+        let untouched = energy == nil && severity == nil && areas.isEmpty
+            && timeBudget == nil && !equipmentChanged && existingEntryIndex == nil
+        guard untouched else { return }
         let cal = Calendar.current
         let today = Date()
         let entries = memoryStore.memory.soreness

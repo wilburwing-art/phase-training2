@@ -91,8 +91,11 @@ struct PostWorkoutFeedbackSheet: View {
                 .foregroundStyle(Color.ink3)
             HStack(spacing: 6) {
                 ForEach(Self.difficultyOptions, id: \.value) { opt in
+                    // Radio behavior — difficulty is required, so re-tapping
+                    // the selected chip keeps it selected instead of silently
+                    // disabling Save.
                     chip(label: opt.label, active: difficulty == opt.value) {
-                        difficulty = (difficulty == opt.value) ? nil : opt.value
+                        difficulty = opt.value
                     }
                     .frame(maxWidth: .infinity)
                     .accessibilityIdentifier("feedback-difficulty-\(opt.value)")
@@ -176,6 +179,8 @@ struct PostWorkoutFeedbackSheet: View {
             notes: trimmedNotes.isEmpty ? nil : trimmedNotes
         )
         memoryStore.update { $0.feedback.append(entry) }
+        let haptic = UINotificationFeedbackGenerator()
+        haptic.notificationOccurred(.success)
         dismiss()
         onDone()
     }
