@@ -154,10 +154,13 @@ final class TapBudgetTests: XCTestCase {
 
     /// From inside LogScreen with the seeded session: instead of the "Log all
     /// sets" shortcut, tap each undone set's check circle one at a time, then
-    /// Finish. The per-set ceiling that bulk-log (flow 1) floors. Rest is
-    /// clamped to 1s so a timer overlay can't intercept a tap.
+    /// Finish. The per-set ceiling that bulk-log (flow 1) floors. Auto-rest is
+    /// suppressed (`--ui-test-suppress-auto-rest`): otherwise the inline rest
+    /// card started by a set toggle overlays the next row and hides its controls
+    /// from the a11y tree before we can query them, undercounting by a tap. Rest
+    /// behavior itself is covered by LogFlowTests, not here.
     func testTapBudget_logWorkout_perSet() throws {
-        let app = launchInLog(fastRest: 1)
+        let app = launchInLog(suppressAutoRest: true)
         var counter = TapCounter(app: app, flow: "log-workout-per-set")
 
         let tapped = perSetLogAllExercises(&counter)
@@ -334,7 +337,8 @@ final class TapBudgetTests: XCTestCase {
 
     /// Launch straight into LogScreen with the deterministic superset demo
     /// session. `fastRest` clamps every exercise's rest interval (seconds).
-    private func launchInLog(fastRest: Int? = nil) -> XCUIApplication {
+    private func launchInLog(fastRest: Int? = nil,
+                             suppressAutoRest: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments += [
             "--ui-test-onboarded",
@@ -342,6 +346,7 @@ final class TapBudgetTests: XCTestCase {
             "--seed-supersets-demo",
         ]
         if let s = fastRest { app.launchArguments.append("--ui-test-rest-seconds=\(s)") }
+        if suppressAutoRest { app.launchArguments.append("--ui-test-suppress-auto-rest") }
         app.launch()
         XCTAssertTrue(app.buttons["log-finish"].waitForExistence(timeout: 8),
                       "should land in LogScreen with seeded session")
