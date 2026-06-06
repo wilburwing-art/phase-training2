@@ -31,9 +31,14 @@ struct ExercisePickerSheet: View {
     @State private var filters = ExerciseFilters()
     @State private var detailExercise: Exercise? = nil
     @State private var showingFilterSheet = false
+    /// Cached catalog query results — refreshed on appear and whenever a
+    /// query input (search / filters) changes, instead of re-running
+    /// listExercises on every render. Same caching pattern as
+    /// LibraryScreen's stockRoutines/exerciseCount.
+    @State private var results: [Exercise] = []
 
-    private var results: [Exercise] {
-        CoachDatabase.shared.listExercises(
+    private func reloadResults() {
+        results = CoachDatabase.shared.listExercises(
             search: query.isEmpty ? nil : query,
             muscleSlugs: filters.bucket?.memberSlugs ?? [],
             patternSlugs: filters.category?.memberPatternSlugs ?? [],
@@ -88,7 +93,12 @@ struct ExercisePickerSheet: View {
             }
         }
         .presentationBackground(Color.bg)
-        .onAppear { filters = initialFilters }
+        .onAppear {
+            filters = initialFilters
+            reloadResults()
+        }
+        .onChange(of: query) { _, _ in reloadResults() }
+        .onChange(of: filters) { _, _ in reloadResults() }
     }
 
     // MARK: - Pieces

@@ -23,6 +23,11 @@ struct LibraryMuscleScreen: View {
     @State private var filters = ExerciseFilters()
     @State private var showingFilterSheet = false
     @State private var detailExercise: Exercise? = nil
+    /// Cached catalog query results — refreshed on appear and whenever a
+    /// query input (search / sub-bucket / filters) changes, instead of
+    /// re-running listExercises on every render. Same caching pattern as
+    /// LibraryScreen's stockRoutines/exerciseCount.
+    @State private var rows: [Exercise] = []
 
     var body: some View {
         ZStack {
@@ -44,6 +49,10 @@ struct LibraryMuscleScreen: View {
         .sheet(isPresented: $showingFilterSheet) {
             ExerciseFilterSheet(filters: $filters)
         }
+        .onAppear { reloadRows() }
+        .onChange(of: query) { _, _ in reloadRows() }
+        .onChange(of: subBucket) { _, _ in reloadRows() }
+        .onChange(of: filters) { _, _ in reloadRows() }
         .preferredColorScheme(.dark)
     }
 
@@ -212,8 +221,8 @@ struct LibraryMuscleScreen: View {
         return tile.memberSlugs
     }
 
-    private var rows: [Exercise] {
-        CoachDatabase.shared.listExercises(
+    private func reloadRows() {
+        rows = CoachDatabase.shared.listExercises(
             search: query.isEmpty ? nil : query,
             muscleSlugs: activeMuscleSlugs,
             patternSlugs: filters.category?.memberPatternSlugs ?? [],
