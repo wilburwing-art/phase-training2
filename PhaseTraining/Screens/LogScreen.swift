@@ -84,7 +84,7 @@ struct LogScreen: View {
         } message: {
             Text("Your in-progress sets won't be saved.")
         }
-        .sheet(item: swappingBinding) { wrapped in
+        .sheet(item: $swappingExIdx.exerciseSheetItem) { wrapped in
             let original = session.exercises[wrapped.index]
             // Build 99 — switched from SubstituteExerciseSheet (sparse
             // curated table — many exercises had zero substitutes, so the
@@ -95,7 +95,7 @@ struct LogScreen: View {
             // either filter to broaden if they want anything in the library.
             ExercisePickerSheet(
                 title: "Replace \(original.name)",
-                initialFilters: similarFiltersForExerciseName(original.name),
+                initialFilters: .similar(toExerciseNamed: original.name),
                 onPick: { picked in
                     swapExercise(at: wrapped.index, with: picked)
                 }
@@ -117,13 +117,6 @@ struct LogScreen: View {
         }
     }
 
-    private var swappingBinding: Binding<LogRowIndex?> {
-        Binding(
-            get: { swappingExIdx.map(LogRowIndex.init) },
-            set: { swappingExIdx = $0?.index }
-        )
-    }
-
     /// Coach.db image lookup by exercise name. Used for the row thumbnail —
     /// LoggedExercise only carries name (not the original exerciseId), so we
     /// resolve via case-insensitive name match. Returns nil for exercises
@@ -133,38 +126,6 @@ struct LogScreen: View {
             .listExercises(search: name)
             .first { $0.name.caseInsensitiveCompare(name) == .orderedSame }
             .flatMap { $0.thumbnailURL ?? $0.imageURL }
-    }
-
-    /// Resolve "similar exercises" filters for the picker — same muscle
-    /// bucket AND same movement category as the source. Mirrors the
-    /// helper on DayWorkoutPreviewSheet + TodayScreen so all three swap
-    /// surfaces filter the same way. Returns empty filters when the
-    /// source exercise can't be resolved in coach.db (custom routines
-    /// without a backing exerciseId).
-    private func similarFiltersForExerciseName(_ name: String) -> ExerciseFilters {
-        var filters = ExerciseFilters()
-        guard let dbEx = CoachDatabase.shared
-                .listExercises(search: name)
-                .first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame })
-        else { return filters }
-
-        let muscles = CoachDatabase.shared.musclesForExercise(dbEx.id).sorted { lhs, rhs in
-            let rank: (String) -> Int = { r in r == "primary" ? 0 : (r == "secondary" ? 1 : 2) }
-            return rank(lhs.role) < rank(rhs.role)
-        }
-        for entry in muscles {
-            if let bucket = MuscleBucket.bucket(forSlug: entry.slug) {
-                filters.bucket = bucket
-                break
-            }
-        }
-        for slug in CoachDatabase.shared.patternsForExercise(dbEx.id) {
-            if let cat = MovementCategory.category(forSlug: slug) {
-                filters.category = cat
-                break
-            }
-        }
-        return filters
     }
 
     /// In-session substitution. Replace the exercise's name + display type
@@ -1366,12 +1327,6 @@ struct LogScreen: View {
         feel: nil,
         note: nil
     )
-}
-
-/// Identifiable wrapper so `.sheet(item:)` can bind to `swappingExIdx`.
-private struct LogRowIndex: Identifiable {
-    let index: Int
-    var id: Int { index }
 }
 
 #Preview {

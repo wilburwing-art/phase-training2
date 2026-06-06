@@ -65,7 +65,7 @@ struct DayWorkoutPreviewSheet: View {
                         .foregroundStyle(Color.accent)
                 }
             }
-            .sheet(item: swappingBinding) { wrapped in
+            .sheet(item: $swappingExIdx.exerciseSheetItem) { wrapped in
                 let originalName = template?.exercises[wrapped.index].name ?? "exercise"
                 // Pre-filter the picker to "similar exercises" — same muscle
                 // bucket AND same movement category as the source. Falls
@@ -80,7 +80,7 @@ struct DayWorkoutPreviewSheet: View {
                     }
                 )
             }
-            .sheet(item: editingBinding) { wrapped in
+            .sheet(item: $editingExIdx.exerciseSheetItem) { wrapped in
                 let ex = template?.exercises[wrapped.index]
                 ExerciseEditorSheet(
                     name: ex?.name ?? "Exercise",
@@ -112,7 +112,7 @@ struct DayWorkoutPreviewSheet: View {
             .sheet(item: $detailExercise) { ex in
                 ExerciseDetailSheet(exercise: ex)
             }
-            .sheet(item: actionSheetBinding) { wrapped in
+            .sheet(item: $actionSheetExIdx.exerciseSheetItem) { wrapped in
                 let exerciseName = template?.exercises[wrapped.index].name ?? "Exercise"
                 ExerciseActionSheet(
                     exerciseName: exerciseName,
@@ -125,7 +125,7 @@ struct DayWorkoutPreviewSheet: View {
                     onDelete: { deleteExercise(at: wrapped.index) }
                 )
             }
-            .sheet(item: filteredHistoryBinding) { wrapped in
+            .sheet(item: $historyFilterExerciseName.exerciseSheetItem) { wrapped in
                 HistoryScreen(initialExerciseFilter: wrapped.name)
                     .environmentObject(sessionStore)
             }
@@ -313,25 +313,6 @@ struct DayWorkoutPreviewSheet: View {
         )
     }
 
-    /// Action sheet item binding — wraps the optional `actionSheetExIdx` Int
-    /// in `PreviewSwapIndex` so `.sheet(item:)` can drive it.
-    private var actionSheetBinding: Binding<PreviewSwapIndex?> {
-        Binding(
-            get: { actionSheetExIdx.map(PreviewSwapIndex.init) },
-            set: { actionSheetExIdx = $0?.index }
-        )
-    }
-
-    /// Filtered-history sheet binding — keyed on the exercise name (rather
-    /// than an Int index) because the user may have already dismissed the
-    /// action sheet by the time history opens.
-    private var filteredHistoryBinding: Binding<NamedExerciseRef?> {
-        Binding(
-            get: { historyFilterExerciseName.map(NamedExerciseRef.init) },
-            set: { historyFilterExerciseName = $0?.name }
-        )
-    }
-
     /// Trailing row inside the exercise card — opens the picker with no
     /// pre-filter and appends the picked exercise to the template.
     private var addExerciseRow: some View {
@@ -412,64 +393,15 @@ struct DayWorkoutPreviewSheet: View {
         .padding(.bottom, 24)
     }
 
-    // MARK: - Swap binding + mutation
-
-    private var swappingBinding: Binding<PreviewSwapIndex?> {
-        Binding(
-            get: { swappingExIdx.map(PreviewSwapIndex.init) },
-            set: { swappingExIdx = $0?.index }
-        )
-    }
-
-    /// Parallel binding for the editor sheet. Wraps Int? in an Identifiable
-    /// so `.sheet(item:)` can detect changes — same shape as swappingBinding.
-    private var editingBinding: Binding<PreviewSwapIndex?> {
-        Binding(
-            get: { editingExIdx.map(PreviewSwapIndex.init) },
-            set: { editingExIdx = $0?.index }
-        )
-    }
+    // MARK: - Swap filters + mutation
 
     /// Resolve "similar exercises" filters for the picker when swapping.
-    /// Returns ExerciseFilters with bucket + category set from the source
-    /// exercise so the picker opens narrowed to true alternatives (same
-    /// body area AND same movement pattern style), not just any exercise
-    /// in the same bucket. Falls back to whatever it can resolve — if the
-    /// exercise isn't in coach.db, returns empty filters.
+    /// Index → name resolution lives here; the bucket + category lookup is
+    /// the shared ExerciseFilters.similar(toExerciseNamed:) all three swap
+    /// surfaces use.
     private func similarFiltersForExercise(at idx: Int) -> ExerciseFilters {
-        var filters = ExerciseFilters()
-        guard let tmpl = template, tmpl.exercises.indices.contains(idx) else { return filters }
-        let name = tmpl.exercises[idx].name
-        guard let dbEx = CoachDatabase.shared
-                .listExercises(search: name)
-                .first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame })
-        else { return filters }
-
-        // Muscle bucket — prefer primary, then secondary. First slug that
-        // maps to a known bucket wins.
-        let muscles = CoachDatabase.shared.musclesForExercise(dbEx.id)
-        let orderedMuscles = muscles.sorted { lhs, rhs in
-            let rank: (String) -> Int = { r in r == "primary" ? 0 : (r == "secondary" ? 1 : 2) }
-            return rank(lhs.role) < rank(rhs.role)
-        }
-        for entry in orderedMuscles {
-            if let bucket = MuscleBucket.bucket(forSlug: entry.slug) {
-                filters.bucket = bucket
-                break
-            }
-        }
-
-        // Movement category — first pattern slug that maps to a known
-        // category wins. Patterns aren't ranked (no role concept) so any
-        // category match is acceptable.
-        let patterns = CoachDatabase.shared.patternsForExercise(dbEx.id)
-        for slug in patterns {
-            if let cat = MovementCategory.category(forSlug: slug) {
-                filters.category = cat
-                break
-            }
-        }
-        return filters
+        guard let tmpl = template, tmpl.exercises.indices.contains(idx) else { return ExerciseFilters() }
+        return .similar(toExerciseNamed: tmpl.exercises[idx].name)
     }
 
     /// Append a new exercise to the end of the in-flight template. Uses
@@ -604,14 +536,6 @@ struct DayWorkoutPreviewSheet: View {
     }
 }
 
-/// Identifiable wrapper so `.sheet(item:)` can bind to swappingExIdx.
-// Reused by TodayScreen for its inline swap/edit sheet bindings. Was
-// private when only this sheet needed it.
-struct PreviewSwapIndex: Identifiable {
-    let index: Int
-    var id: Int { index }
-}
-
 // MARK: - DayPlan → WorkoutTemplate bridge
 
 extension DayPlan {
@@ -629,11 +553,4 @@ extension DayPlan {
         }
         return nil
     }
-}
-
-/// Identifiable wrapper so `.sheet(item:)` can bind to an optional exercise
-/// name string — drives the filtered HistoryScreen presentation.
-private struct NamedExerciseRef: Identifiable {
-    let name: String
-    var id: String { name }
 }
