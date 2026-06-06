@@ -55,7 +55,7 @@ localization.** One stale test fixed in passing (`aa6f67a`).
 **God-object splits** (sizes verified):
 - [ ] `WorkoutGenerator.swift` (1679) — extract accessory layer + prescription/RPE math into focused files. `PhaseTraining/Data/WorkoutGenerator.swift:1`
 - [ ] `LogScreen.swift` (1438) — 15 `@State` fields; collapse the 6 rest-timer fields into one struct, extract row/edit subviews. `PhaseTraining/Screens/LogScreen.swift:25,35`
-- [ ] `PlanStore.swift` (1211) — separate generation / history / overrides / missed-workout autopilot / LLM refinement. `PhaseTraining/Data/PlanStore.swift:19`
+- [x] `PlanStore.swift` (1211→759) — generation, history (PR4/6), validation+overrides (PR7), and missed-workout autopilot (PR8) split into `PlanStore+{Generation,History,Validation,MissedWorkoutAutopilot}.swift` (LLM refinement was already in `+LLMRefinement`). Lifecycle, PlanEdit/regeneration, `consolidateWeek`, `clear`, and persistence stay in main. Relaxed `private`→internal: `buildGeneratorContext`+`composeWorkout(for:)` (called by main's regen/apply) and 5 save methods (called by the extracted buckets); keys/encoder/decoder/`saveConsolidationCount` stay private. No behavior change.
 - [ ] `TodayScreen.swift` (1177) — 18 `@State` fields; extract template editor + sheet coordination. `PhaseTraining/Screens/TodayScreen.swift:23`
 - [ ] `ProgressScreen.swift` (1177) — 12+ card impls; split into card components. `PhaseTraining/Screens/ProgressScreen.swift:1`
 - [ ] `CoachContext.swift` (971) — 30+ section/format helpers → extensions/files. `PhaseTraining/Coach/CoachContext.swift:1`
