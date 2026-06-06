@@ -58,7 +58,7 @@ localization.** One stale test fixed in passing (`aa6f67a`).
 - [ ] `PlanStore.swift` (1211) — separate generation / history / overrides / missed-workout autopilot / LLM refinement. `PhaseTraining/Data/PlanStore.swift:19`
 - [ ] `TodayScreen.swift` (1177) — 18 `@State` fields; extract template editor + sheet coordination. `PhaseTraining/Screens/TodayScreen.swift:23`
 - [ ] `ProgressScreen.swift` (1177) — 12+ card impls; split into card components. `PhaseTraining/Screens/ProgressScreen.swift:1`
-- [ ] `CoachContext.swift` (971) — 30+ section/format helpers → extensions/files. `PhaseTraining/Coach/CoachContext.swift:1`
+- [x] `CoachContext.swift` (971→474) — section builders split into `CoachContext+{ProfileBlocks,InjuryBlocks,MovementBlocks,LoadBlocks}.swift`. `snapshot` + shared helpers (`sanitizeFreeText`, `averageRecentDurationMinutes`, date helpers) stay in main. Only access change: `weekday`/`short` relaxed `private`→internal (called cross-file by LoadBlocks); `longDate` stays private (snapshot-only); per-group private helpers stay with their sole caller. No behavior change.
 - [ ] `WeekDayEditSheet.swift` (875) — extract the inline sub-sheets (SportPicker/EventEditor/IntensityEditor). `PhaseTraining/Screens/WeekDayEditSheet.swift:24`
 - [ ] `ProfileScreen.swift` (795) — 27 `@State` presentation flags; extract editor-sheet coordination. `PhaseTraining/Screens/ProfileScreen.swift:20`
 
