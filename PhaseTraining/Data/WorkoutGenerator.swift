@@ -150,6 +150,10 @@ enum WorkoutGenerator {
         let envs = profile.allowedEnvironments
         let excludeKws = profile.excludedNameKeywords + memory.dislikes.map { $0.lowercased() }
 
+        // Memoizes repeated identical catalog queries for THIS pass only —
+        // user-DB edits between generations are always picked up.
+        let queryCache = ExerciseQueryCache()
+
         // `extraSlots` are appended after the focus's own recipe (D3 — a
         // consolidated/merged day grafts the secondary focus's lead compound).
         // They take later slotIdx values, so the budget loop below trims the
@@ -166,6 +170,7 @@ enum WorkoutGenerator {
                 excludeIds: pickedIds,
                 recentlyPicked: recentlyPicked,
                 hashSeed: hashSeed,
+                cache: queryCache,
                 context: context,
                 strategy: strategy
             ) else { continue }
@@ -285,7 +290,7 @@ enum WorkoutGenerator {
                     slot: slot, slotIdx: picks.count, profile: profile, envs: envs,
                     excludeKws: excludeKws, excludeIds: pickedIds,
                     recentlyPicked: recentlyPicked, hashSeed: hashSeed,
-                    context: context, strategy: strategy) else { continue }
+                    cache: queryCache, context: context, strategy: strategy) else { continue }
                 let (row, durSec) = makePickedRow(
                     picked: pick, slot: slot, slotIdx: picks.count, focus: focus,
                     memory: memory, profile: profile, context: context,
@@ -310,7 +315,7 @@ enum WorkoutGenerator {
                     slot: slot, slotIdx: picks.count, profile: profile, envs: envs,
                     excludeKws: excludeKws, excludeIds: pickedIds,
                     recentlyPicked: recentlyPicked, hashSeed: hashSeed,
-                    context: context, strategy: strategy) else { continue }
+                    cache: queryCache, context: context, strategy: strategy) else { continue }
                 let (row, durSec) = makePickedRow(
                     picked: pick, slot: slot, slotIdx: picks.count, focus: focus,
                     memory: memory, profile: profile, context: context,
@@ -459,6 +464,52 @@ enum WorkoutGenerator {
 
     // MARK: - Slot fulfillment
 
+    /// Memoizes `CoachDatabase.exercises(...)` reads for the duration of ONE
+    /// generate() pass. pickForSlot issues up to ~9 catalog queries per slot
+    /// (staples pool + per-difficulty buckets + the relaxed pass, per
+    /// alternative pattern); identical parameter sets within a pass return the
+    /// cached rows instead of re-hitting SQLite. Deliberately per-generation —
+    /// NOT global — so user-DB changes between generations are always seen.
+    private final class ExerciseQueryCache {
+        private struct Key: Hashable {
+            let pattern: String
+            let difficulties: Set<String>
+            let environments: Set<String>
+            let excludeKeywords: [String]
+            let excludeIds: Set<Int>
+            let modalities: Set<String>
+            let userSportSlugs: [String]
+            let allowedEquipmentSlugs: Set<String>
+        }
+        private var cached: [Key: [Exercise]] = [:]
+
+        func exercises(
+            matchingPattern pattern: String,
+            difficulties: Set<String> = [],
+            environments: Set<String> = [],
+            excludeKeywords: [String] = [],
+            excludeIds: Set<Int> = [],
+            modalities: Set<String> = [],
+            userSportSlugs: [String] = [],
+            allowedEquipmentSlugs: Set<String> = []
+        ) -> [Exercise] {
+            let key = Key(pattern: pattern, difficulties: difficulties,
+                          environments: environments, excludeKeywords: excludeKeywords,
+                          excludeIds: excludeIds, modalities: modalities,
+                          userSportSlugs: userSportSlugs,
+                          allowedEquipmentSlugs: allowedEquipmentSlugs)
+            if let hit = cached[key] { return hit }
+            let rows = CoachDatabase.shared.exercises(
+                matchingPattern: pattern, difficulties: difficulties,
+                environments: environments, excludeKeywords: excludeKeywords,
+                excludeIds: excludeIds, modalities: modalities,
+                userSportSlugs: userSportSlugs,
+                allowedEquipmentSlugs: allowedEquipmentSlugs)
+            cached[key] = rows
+            return rows
+        }
+    }
+
     /// Walk the alternative patterns in a slot, return the first picked
     /// exercise. Variety soft-filter: when the candidate pool has any
     /// not-recently-picked entries, restrict the pick to those. When the
@@ -473,6 +524,7 @@ enum WorkoutGenerator {
         excludeIds: Set<Int>,
         recentlyPicked: Set<Int>,
         hashSeed: String,
+        cache: ExerciseQueryCache,
         context: GeneratorContext = .empty,
         strategy: GeneratorStrategy = .auto
     ) -> Exercise? {
@@ -593,7 +645,7 @@ enum WorkoutGenerator {
             // query still constrains to `profile.preferredDifficulties` —
             // a beginner does NOT get advanced staples (e.g. Explosive
             // Pull-Up). It just removes the per-bucket fallback ordering.
-            let staplesPool = CoachDatabase.shared.exercises(
+            let staplesPool = cache.exercises(
                 matchingPattern: pattern,
                 difficulties: Set(profile.preferredDifficulties),
                 environments: envs,
@@ -613,7 +665,7 @@ enum WorkoutGenerator {
             // whole allowed set (so a beginner-only catalog still returns
             // something for an advanced user).
             for bucket in profile.preferredDifficulties {
-                let raw = CoachDatabase.shared.exercises(
+                let raw = cache.exercises(
                     matchingPattern: pattern,
                     difficulties: [bucket],
                     environments: envs,
@@ -630,7 +682,7 @@ enum WorkoutGenerator {
                 }
             }
             // Difficulty-relaxed pass — env + constraints still hold.
-            let relaxedRaw = CoachDatabase.shared.exercises(
+            let relaxedRaw = cache.exercises(
                 matchingPattern: pattern,
                 environments: envs,
                 excludeKeywords: excludeKws,

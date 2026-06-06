@@ -471,6 +471,31 @@ final class WorkoutGeneratorTests: XCTestCase {
                           pull.exercises.map(\.exerciseId))
     }
 
+    /// Generating workout B right after workout A must equal generating B
+    /// alone — no per-generation state (PatternSlot.satisfiedBy, the
+    /// exercise-query cache) may leak across generate() calls.
+    /// WorkoutFocus.slots builds fresh PatternSlot instances on every access
+    /// and the query cache lives for exactly one pass; this locks both in.
+    func test_generationIsOrderIndependent() {
+        var m = TrainingMemory()
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.sessionMinutes = 60
+        let p = DemographicProfile.from(m)
+        func gen(_ liftIndex: Int) -> GeneratedWorkout {
+            WorkoutGenerator.generateLift(liftIndex: liftIndex, totalLifts: 3,
+                memory: m, profile: p, hashSeed: m.planInputsHash)
+        }
+        let bAlone = gen(1)   // pull day, no prior generation
+        _ = gen(0)            // push day A
+        let bAfterA = gen(1)  // pull day again, after A
+
+        XCTAssertEqual(bAfterA.exercises.map(\.exerciseId), bAlone.exercises.map(\.exerciseId))
+        XCTAssertEqual(bAfterA.exercises.map(\.sets),       bAlone.exercises.map(\.sets))
+        XCTAssertEqual(bAfterA.exercises.map(\.reps),       bAlone.exercises.map(\.reps))
+        XCTAssertEqual(bAfterA.exercises.map(\.pattern),    bAlone.exercises.map(\.pattern))
+    }
+
     // MARK: - Leak #3: primaryFocus shapes the prescription
 
     func test_focusBias_generalStrength_runsLowRepLongRest() {
