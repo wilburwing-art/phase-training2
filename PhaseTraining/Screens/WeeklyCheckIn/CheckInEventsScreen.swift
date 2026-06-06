@@ -142,21 +142,15 @@ struct CheckInEventsScreen: View {
     }
 
     private func weekdayShort(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.dateFormat = "EEE"
-        return f.string(from: date).uppercased()
+        EventDateFormatters.weekdayShort.string(from: date).uppercased()
     }
 
     private func dayNumber(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.dateFormat = "d"
-        return f.string(from: date)
+        EventDateFormatters.dayNumber.string(from: date)
     }
 
     private func formattedDate(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.dateFormat = "EEE, MMM d"
-        return f.string(from: date)
+        EventDateFormatters.eventDate.string(from: date)
     }
 
     /// Bridge pickingDate (Date?) → Identifiable wrapper for `.sheet(item:)`.
@@ -170,9 +164,36 @@ struct CheckInEventsScreen: View {
 
 private struct EventPickDate: Identifiable {
     let date: Date
-    var id: String {
+    var id: String { EventDateFormatters.isoDay.string(from: date) }
+}
+
+// Cached — the date chips + event rows re-render with every draft mutation;
+// allocating a DateFormatter per call is needless churn. (Same pattern as
+// WeekScreen's WeekDateFormatters.)
+private enum EventDateFormatters {
+    static let weekdayShort: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEE"
+        return f
+    }()
+
+    static let dayNumber: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "d"
+        return f
+    }()
+
+    /// "EEE, MMM d" — event-row date line.
+    static let eventDate: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "EEE, MMM d"
+        return f
+    }()
+
+    /// ISO yyyy-MM-dd — sheet identity for EventPickDate.
+    static let isoDay: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "yyyy-MM-dd"
-        return f.string(from: date)
-    }
+        return f
+    }()
 }

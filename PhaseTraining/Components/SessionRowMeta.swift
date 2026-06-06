@@ -9,11 +9,17 @@
 import Foundation
 
 enum SessionRowMeta {
-    /// "MMM d" — e.g. "Jun 5". Progress uppercases at the call site.
-    static func monthDayLabel(_ date: Date) -> String {
+    /// Cached — both screens call this per row per render; allocating a
+    /// DateFormatter each call is needless churn.
+    private static let monthDayFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "MMM d"
-        return f.string(from: date)
+        return f
+    }()
+
+    /// "MMM d" — e.g. "Jun 5". Progress uppercases at the call site.
+    static func monthDayLabel(_ date: Date) -> String {
+        monthDayFormatter.string(from: date)
     }
 
     enum DurationStyle {

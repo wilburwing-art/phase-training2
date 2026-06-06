@@ -23,6 +23,13 @@ struct CoachDrawer: View {
 
     private let client = CoachClient()
 
+    /// Cached — allocating a DateFormatter per tool call is needless churn.
+    private static let isoDayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
+
     var body: some View {
         VStack(spacing: 0) {
             handle
@@ -372,8 +379,7 @@ struct CoachDrawer: View {
                             // in the tool input it wins — chat can now
                             // edit any day in the current plan, not just
                             // today.
-                            let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"
-                            let today = df.string(from: Date())
+                            let today = Self.isoDayFormatter.string(from: Date())
                             if let proposal = CoachToolDecoder.decodeWorkoutProposal(from: inputData, fallbackDate: today) {
                                 await MainActor.run { conv.setWorkoutProposal(on: assistantMsg.id, proposal) }
                             }

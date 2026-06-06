@@ -182,10 +182,16 @@ private struct DiffDayRow: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
-    private var weekdayShort: String {
+    /// Cached — one row per plan day per render; allocating a DateFormatter
+    /// each call is needless churn.
+    private static let weekdayFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "EEE"
-        return f.string(from: day.date).uppercased()
+        return f
+    }()
+
+    private var weekdayShort: String {
+        Self.weekdayFormatter.string(from: day.date).uppercased()
     }
 
     private var kindColor: Color {

@@ -160,6 +160,15 @@ struct MiniWorkoutDiffCard: View {
 
     // MARK: - Logic
 
+    /// DateFormatter is expensive to allocate; resolve() runs on every card
+    /// appearance and apply() on tap, both parsing the proposal's yyyy-MM-dd
+    /// date string, so cache one instance.
+    private static let isoDay: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
+
     private var canApply: Bool {
         guard proposal.status == .pending,
               let diff = diff,
@@ -168,9 +177,8 @@ struct MiniWorkoutDiffCard: View {
     }
 
     private func resolve() {
-        let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"
         guard let plan = planStore.plan,
-              let target = df.date(from: proposal.dateString) else {
+              let target = Self.isoDay.date(from: proposal.dateString) else {
             resolutionNote = "No active plan to edit."
             return
         }
@@ -183,8 +191,7 @@ struct MiniWorkoutDiffCard: View {
     }
 
     private func apply() {
-        let df = DateFormatter(); df.dateFormat = "yyyy-MM-dd"
-        guard let diff = diff, let target = df.date(from: proposal.dateString) else { return }
+        guard let diff = diff, let target = Self.isoDay.date(from: proposal.dateString) else { return }
         let planOk = planStore.applyWorkoutDiff(diff, on: target)
         // If the user has already started the session, mirror the edit into
         // the live ActiveSession so they don't have to restart.

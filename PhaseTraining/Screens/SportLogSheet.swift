@@ -235,9 +235,15 @@ struct SportLogSheet: View {
         .accessibilityIdentifier("sport-log-save")
     }
 
-    private var dateLabel: String {
+    /// Cached — dateLabel re-renders with every field edit; allocating a
+    /// DateFormatter each call is needless churn.
+    private static let dateLabelFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "EEE MMM d"
-        return f.string(from: date)
+        return f
+    }()
+
+    private var dateLabel: String {
+        Self.dateLabelFormatter.string(from: date)
     }
 }
