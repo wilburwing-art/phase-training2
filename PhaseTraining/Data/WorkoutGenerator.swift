@@ -969,7 +969,10 @@ final class PatternSlot {
 
 // MARK: - Small string helper
 
-private extension String {
+// Internal (not fileprivate): `prescription` moved to WorkoutGenerator+Prescription.swift
+// during the Tier-3 split still calls `.nilIfEmpty`, so it must be reachable across
+// the file boundary. Sole definition repo-wide, so widening can't collide.
+extension String {
     var nilIfEmpty: String? { isEmpty ? nil : self }
 }
 
