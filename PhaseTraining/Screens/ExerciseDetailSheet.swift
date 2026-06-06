@@ -48,9 +48,15 @@ private struct ExerciseDetailContent: View {
     /// a recursive lock; per-render evaluation would be wasted churn.
     @State private var substitutes: [ExerciseSubstitute] = []
 
-    private var adjacency: (easier: Exercise?, harder: Exercise?) {
-        CoachDatabase.shared.adjacentByDifficulty(forExerciseId: exercise.id)
-    }
+    /// Adjacent easier/harder peers by movement pattern + difficulty tier
+    /// (CoachDatabase.adjacentByDifficulty). Cached once per pushed instance
+    /// for the same reason as `substitutes` — see comment above.
+    @State private var adjacency: (easier: Exercise?, harder: Exercise?) = (nil, nil)
+
+    /// `(slug, role, label)` muscle relations feeding the anatomy
+    /// silhouettes. Cached once per pushed instance alongside `substitutes`
+    /// and `adjacency` — see comment above.
+    @State private var muscles: [(slug: String, role: String, label: String)] = []
 
     var body: some View {
         let adj = adjacency
@@ -131,6 +137,12 @@ private struct ExerciseDetailContent: View {
             if substitutes.isEmpty {
                 substitutes = CoachDatabase.shared.substitutes(forExerciseId: exercise.id)
             }
+            if adjacency.easier == nil && adjacency.harder == nil {
+                adjacency = CoachDatabase.shared.adjacentByDifficulty(forExerciseId: exercise.id)
+            }
+            if muscles.isEmpty {
+                muscles = CoachDatabase.shared.musclesForExercise(exercise.id)
+            }
         }
     }
 
@@ -143,7 +155,6 @@ private struct ExerciseDetailContent: View {
     /// exercise has no muscle relations on file (mostly cardio / mobility).
     @ViewBuilder
     private var anatomySection: some View {
-        let muscles = CoachDatabase.shared.musclesForExercise(exercise.id)
         if !muscles.isEmpty {
             let highlights = anatomyHighlights(from: muscles)
             VStack(spacing: 8) {
