@@ -111,7 +111,7 @@ struct CoachRequestScreen: View {
         }
         .presentationBackground(Color.bg)
         .preferredColorScheme(.dark)
-        .sheet(item: swappingBinding) { wrapped in
+        .sheet(item: $swappingPreviewIdx.exerciseSheetItem) { wrapped in
             let original = preview?.exercises[wrapped.index]
             SubstituteExerciseSheet(
                 originalName: original?.name ?? "",
@@ -124,7 +124,7 @@ struct CoachRequestScreen: View {
         .sheet(item: $detailExercise) { ex in
             ExerciseDetailSheet(exercise: ex)
         }
-        .sheet(item: actionSheetBinding) { wrapped in
+        .sheet(item: $actionSheetExIdx.exerciseSheetItem) { wrapped in
             let exerciseName = preview?.exercises[wrapped.index].name ?? "Exercise"
             ExerciseActionSheet(
                 exerciseName: exerciseName,
@@ -137,7 +137,7 @@ struct CoachRequestScreen: View {
                 onShowReplace: { swappingPreviewIdx = wrapped.index }
             )
         }
-        .sheet(item: filteredHistoryBinding) { wrapped in
+        .sheet(item: $historyFilterExerciseName.exerciseSheetItem) { wrapped in
             HistoryScreen(initialExerciseFilter: wrapped.name)
                 .environmentObject(sessionStore)
         }
@@ -264,22 +264,6 @@ struct CoachRequestScreen: View {
                 }
             ),
             density: .presentation
-        )
-    }
-
-    /// Action sheet binding — wraps optional `actionSheetExIdx` for `.sheet(item:)`.
-    private var actionSheetBinding: Binding<PreviewRowIndex?> {
-        Binding(
-            get: { actionSheetExIdx.map(PreviewRowIndex.init) },
-            set: { actionSheetExIdx = $0?.index }
-        )
-    }
-
-    /// Filtered-history sheet binding.
-    private var filteredHistoryBinding: Binding<CoachReqNamedExercise?> {
-        Binding(
-            get: { historyFilterExerciseName.map(CoachReqNamedExercise.init) },
-            set: { historyFilterExerciseName = $0?.name }
         )
     }
 
@@ -508,13 +492,6 @@ struct CoachRequestScreen: View {
 
     // MARK: - Pre-workout swap
 
-    private var swappingBinding: Binding<PreviewRowIndex?> {
-        Binding(
-            get: { swappingPreviewIdx.map(PreviewRowIndex.init) },
-            set: { swappingPreviewIdx = $0?.index }
-        )
-    }
-
     /// Apply a substitution to the in-flight preview. Replaces the exercise
     /// name + id and stamps the picked exercise's default sets/reps/rest when
     /// available, falling back to the generated values so the swap doesn't
@@ -572,12 +549,6 @@ struct CoachRequestScreen: View {
             .styled(.micro)
             .foregroundStyle(Color.ink3)
     }
-}
-
-/// Identifiable wrapper so `.sheet(item:)` can bind to `swappingPreviewIdx`.
-private struct PreviewRowIndex: Identifiable {
-    let index: Int
-    var id: Int { index }
 }
 
 // MARK: - RequestFocus
@@ -644,11 +615,4 @@ enum RequestFocus: String, CaseIterable, Hashable {
         .environmentObject(SessionStore(defaults: defaults))
         .environmentObject(PlanStore(defaults: defaults))
         .environmentObject(TabSelectionStore())
-}
-
-/// Identifiable wrapper so `.sheet(item:)` can bind to an optional exercise
-/// name — drives the filtered HistoryScreen from the action sheet.
-private struct CoachReqNamedExercise: Identifiable {
-    let name: String
-    var id: String { name }
 }

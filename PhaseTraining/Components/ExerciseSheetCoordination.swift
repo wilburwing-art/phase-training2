@@ -1,12 +1,14 @@
 // ExerciseSheetCoordination.swift — shared sheet-presentation plumbing for
-// the exercise surfaces (TodayScreen, DayWorkoutPreviewSheet, LogScreen).
+// the exercise surfaces (TodayScreen, DayWorkoutPreviewSheet, LogScreen,
+// CoachRequestScreen, CustomRoutineEditSheet).
 //
-// All three screens drive their swap / edit / action sheets off an optional
+// The screens drive their swap / edit / action sheets off an optional
 // Int index into the exercise array, and the filtered-history sheet off an
-// optional exercise-name String. `.sheet(item:)` needs an Identifiable, so
+// optional exercise-name String (CustomRoutineEditSheet wraps a stable row-id
+// String instead). `.sheet(item:)` needs an Identifiable, so
 // the wrappers + Binding helpers here lift the raw optionals without each
 // screen hand-rolling its own Binding(get:set:). The shared "similar
-// exercises" pre-filter for the swap picker lives here too, so all three
+// exercises" pre-filter for the swap picker lives here too, so all the
 // swap surfaces filter the same way.
 
 import SwiftUI

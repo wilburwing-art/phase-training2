@@ -53,7 +53,9 @@ struct CustomRoutineEditSheet: View {
                     addExercise(ex)
                 }
             }
-            .sheet(item: swappingBinding) { wrapped in
+            // `ExerciseSheetName` here wraps the row's stable id string (not
+            // a display name) — only `wrapped.id` is read, never `.name`.
+            .sheet(item: $swappingExerciseId.exerciseSheetItem) { wrapped in
                 // Look the row up by stable id, not array index — the row can
                 // be deleted between tapping Swap and this sheet rendering.
                 let name = draft.exercises.first(where: { $0.id == wrapped.id })?.name ?? "exercise"
@@ -432,20 +434,5 @@ struct CustomRoutineEditSheet: View {
         renumberPositions()
         store.save(draft)
         dismiss()
-    }
-
-    // MARK: - Swap-index binding helper
-
-    /// Bridges `swappingExerciseId: String?` into a `Binding<SwapWrapper?>`
-    /// so `.sheet(item:)` can drive the swap sheet from a stable-id state.
-    private var swappingBinding: Binding<SwapWrapper?> {
-        Binding(
-            get: { swappingExerciseId.map(SwapWrapper.init) },
-            set: { swappingExerciseId = $0?.id }
-        )
-    }
-
-    private struct SwapWrapper: Identifiable {
-        let id: String
     }
 }
