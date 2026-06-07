@@ -204,11 +204,10 @@ extension ProgressScreen {
     // MARK: - Strength ratios card
 
     var strengthRatiosCard: some View {
-        let rows = StrengthStandards.rows(
-            from: store.savedSessions,
-            bodyweightKg: memoryStore.memory.weightKg,
-            gender: memoryStore.memory.gender
-        )
+        // Memoized (item 8): StrengthStandards.rows is the screen's heaviest
+        // walk. bodyweightKg + gender are part of the aggregates cache key,
+        // so a profile edit recomputes on the next render.
+        let rows = aggregates.strengthRows
         return Group {
             if memoryStore.memory.weightKg == nil {
                 // Don't show the card at all without bodyweight — the entire
@@ -280,7 +279,7 @@ extension ProgressScreen {
     // MARK: - Muscle balance card
 
     var muscleBalanceCard: some View {
-        let rows = MuscleVolume.rows(from: store.savedSessions)
+        let rows = aggregates.muscleRows
         return Group {
             if rows.isEmpty {
                 // Skip entirely — empty card would just be noise.

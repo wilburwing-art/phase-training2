@@ -111,7 +111,7 @@ struct BodyWeightSpark: View {
 // MARK: - ExerciseSparkline (Swift Charts — used by per-exercise card)
 
 struct ExerciseSparkline: View {
-    let points: [ProgressScreen.SparkPoint]
+    let points: [ProgressAggregates.SparkPoint]
 
     var body: some View {
         Chart {

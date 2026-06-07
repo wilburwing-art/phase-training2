@@ -4,6 +4,12 @@
 // stat strip, the two weekly charts, and the bucketing/streak helpers they
 // read. Card-entry vars are internal (referenced from `content` in the main
 // file); everything else stays private to this file.
+//
+// Architecture item 8: the weeklyBuckets walk moved to ProgressAggregates —
+// cards read the memoized buckets via `aggregates`. The this-week / streak /
+// PRs·30d helpers stay render-time (they depend on the current Date and the
+// weekly target, which aren't cache-keyed) but now read the cached byWeek
+// grouping and PR list instead of walking savedSessions.
 
 import SwiftUI
 
@@ -12,11 +18,12 @@ extension ProgressScreen {
     // MARK: - Stat strip
 
     var statStrip: some View {
+        let agg = aggregates
         let target = max(memoryStore.memory.liftDaysPerWeek, 1)
-        let thisWeek = sessionsThisWeekCount()
-        let streak = currentWeeklyTargetStreak(target: target)
-        let prsThisMonth = prsInLastDays(30)
-        let total = store.savedSessions.count
+        let thisWeek = sessionsThisWeekCount(byWeek: agg.sessionCountByWeekStart)
+        let streak = currentWeeklyTargetStreak(target: target, byWeek: agg.sessionCountByWeekStart)
+        let prsThisMonth = prsInLastDays(30, in: agg.personalRecords)
+        let total = agg.totalSessions
         return HStack(spacing: 8) {
             statCell(label: "THIS WEEK", value: "\(thisWeek)", sub: "/ \(target)", emphasised: thisWeek >= target)
             statCell(label: "STREAK", value: "\(streak)", sub: streak == 1 ? "wk" : "wks", emphasised: streak > 0)
@@ -56,7 +63,7 @@ extension ProgressScreen {
     // MARK: - Sessions per week
 
     var sessionsCard: some View {
-        let buckets = weeklyBuckets { _, _ in 1 }
+        let buckets = aggregates.sessionsPerWeek
         let target = max(memoryStore.memory.liftDaysPerWeek, 1)
         let maxVal = max(buckets.max() ?? 0, target + 1)
         return card(title: "SESSIONS / WEEK") {
@@ -107,21 +114,12 @@ extension ProgressScreen {
     // MARK: - Volume trend
 
     var volumeCard: some View {
-        // Warmup sets excluded — VOLUME / WEEK reflects working sets only.
-        let volumes = weeklyBuckets { session, _ in
-            session.exercises.reduce(0.0) { acc, ex in
-                acc + ex.sets.reduce(0.0) { a, set in
-                    guard set.done, !set.isWarmup,
-                          let w = set.weightValue,
-                          let r = set.repsValue else { return a }
-                    return a + (w * Double(r))
-                }
-            }
-        }
+        // Warmup sets excluded — VOLUME / WEEK reflects working sets only
+        // (the walk lives in ProgressAggregates).
+        let agg = aggregates
+        let volumes = agg.weeklyVolume
         let useSetCount = volumes.allSatisfy { $0 == 0 }
-        let series: [Double] = useSetCount
-            ? weeklyBuckets { s, _ in Double(s.exercises.reduce(0) { $0 + $1.sets.filter { $0.done && !$0.isWarmup }.count }) }
-            : volumes
+        let series: [Double] = useSetCount ? agg.weeklySetCounts : volumes
         let maxVal = max(series.max() ?? 0, 1)
         return card(title: useSetCount ? "SETS / WEEK" : "VOLUME / WEEK") {
             VStack(alignment: .leading, spacing: 10) {
@@ -140,54 +138,27 @@ extension ProgressScreen {
         }
     }
 
-    // MARK: - Bucketing
-
-    /// Returns `weeks` values, oldest at index 0. `value(session, weekIndex)`
-    /// returns a per-session contribution; rows are summed.
-    private func weeklyBuckets<T: Numeric>(value: (SavedSession, Int) -> T) -> [T] {
-        let cal = Calendar.current
-        let thisWeekStart = startOfWeek(for: Date(), calendar: cal)
-        var buckets = Array(repeating: T.zero, count: Self.weeks)
-
-        for session in store.savedSessions {
-            let weekStart = startOfWeek(for: session.startTime, calendar: cal)
-            guard let weeksAgo = cal.dateComponents([.weekOfYear], from: weekStart, to: thisWeekStart).weekOfYear else { continue }
-            let idx = Self.weeks - 1 - weeksAgo
-            guard idx >= 0, idx < Self.weeks else { continue }
-            buckets[idx] = buckets[idx] + value(session, idx)
-        }
-
-        return buckets
-    }
-
-    private func startOfWeek(for date: Date, calendar: Calendar) -> Date {
-        var cal = calendar
-        cal.firstWeekday = 2 // Monday
-        let comps = cal.dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
-        return cal.date(from: comps) ?? date
-    }
-
     // MARK: - Stat helpers
+    //
+    // weeklyBuckets / startOfWeek moved to ProgressAggregates (item 8). The
+    // helpers below stay here because they mix cached data with render-time
+    // inputs (current Date, weekly target).
 
-    private func sessionsThisWeekCount() -> Int {
+    /// Was a filter over savedSessions (`startTime >= weekStart`); summing
+    /// the byWeek grouping over keys >= this week's start counts exactly the
+    /// same sessions — `startOfWeek(d) >= thisWeekStart ⟺ d >= thisWeekStart`.
+    private func sessionsThisWeekCount(byWeek: [Date: Int]) -> Int {
         let cal = Calendar.current
-        let weekStart = startOfWeek(for: Date(), calendar: cal)
-        return store.savedSessions.filter { $0.startTime >= weekStart }.count
+        let weekStart = ProgressAggregates.startOfWeek(for: Date(), calendar: cal)
+        return byWeek.reduce(0) { $0 + ($1.key >= weekStart ? $1.value : 0) }
     }
 
     /// Consecutive weeks (ending with the most recent week that has any
     /// session) where session count ≥ target. Returns 0 if the most-recent
     /// session is older than this-week-or-last-week or never met target.
-    private func currentWeeklyTargetStreak(target: Int) -> Int {
+    private func currentWeeklyTargetStreak(target: Int, byWeek: [Date: Int]) -> Int {
         let cal = Calendar.current
-        let thisWeekStart = startOfWeek(for: Date(), calendar: cal)
-
-        // Group sessions by week-start.
-        var byWeek: [Date: Int] = [:]
-        for s in store.savedSessions {
-            let ws = startOfWeek(for: s.startTime, calendar: cal)
-            byWeek[ws, default: 0] += 1
-        }
+        let thisWeekStart = ProgressAggregates.startOfWeek(for: Date(), calendar: cal)
 
         // Walk back from this week (or last week if this week is empty) and
         // count consecutive weeks meeting target.
@@ -205,8 +176,8 @@ extension ProgressScreen {
         return streak
     }
 
-    private func prsInLastDays(_ days: Int) -> Int {
+    private func prsInLastDays(_ days: Int, in records: [PersonalRecord]) -> Int {
         let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-        return store.allPersonalRecords().filter { $0.date >= cutoff }.count
+        return records.filter { $0.date >= cutoff }.count
     }
 }

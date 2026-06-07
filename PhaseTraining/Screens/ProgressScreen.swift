@@ -25,6 +25,10 @@
 //                                        ExerciseSparkline
 // This file keeps the shell: body/content/emptyState, the card() chrome,
 // shared state, and formatBigNum.
+//
+// Session-derived card inputs are memoized through ProgressAggregates
+// (Data/ProgressAggregates.swift, architecture item 8) — cards read
+// `aggregates` instead of walking store.savedSessions per render.
 
 import SwiftUI
 
@@ -45,6 +49,29 @@ struct ProgressScreen: View {
     static let weeks = 8
     static let topExerciseCount = 6
     static let recentSessionsPreview = 5
+
+    // MARK: - Memoized aggregates (architecture item 8)
+
+    /// Plain class in @State — deliberately not observable, so refilling the
+    /// memo during a body evaluation doesn't trigger another render. The card
+    /// extensions read it through `aggregates` below, so it stays private.
+    @State private var aggregatesCache = ProgressAggregatesCache()
+
+    /// One-stop read for every session-derived card input. The memo's key is
+    /// checked on each access (savedSessions content + bodyweight + gender +
+    /// calendar day), so a save / restore / profile edit recomputes on the
+    /// very next render — no view-lifecycle invalidation to go stale.
+    var aggregates: ProgressAggregates {
+        aggregatesCache.aggregates(
+            sessions: store.savedSessions,
+            bodyweightKg: memoryStore.memory.weightKg,
+            gender: memoryStore.memory.gender,
+            weeks: Self.weeks,
+            topExerciseCount: Self.topExerciseCount,
+            recentSessionsCount: Self.recentSessionsPreview,
+            personalRecords: { store.allPersonalRecords() }
+        )
+    }
 
     var body: some View {
         ZStack {

@@ -2,10 +2,14 @@
 //
 // Split out of ProgressScreen.swift (architecture item 9, pure move): the
 // per-exercise sparkline card, PR feed, recent feedback, and recent sessions
-// cards, plus the series aggregation they read. Card-entry vars are internal
-// (referenced from `content` in the main file); everything else stays
-// private to this file. SparkPoint stays internal — ProgressCharts.swift's
-// ExerciseSparkline takes `[ProgressScreen.SparkPoint]`.
+// cards. Card-entry vars are internal (referenced from `content` in the main
+// file); everything else stays private to this file.
+//
+// Architecture item 8: the series aggregation (topExerciseSeries +
+// SparkPoint/ExerciseSeries) moved to Data/ProgressAggregates.swift — cards
+// read the memoized `aggregates` instead of walking savedSessions /
+// replaying allPersonalRecords per render. ProgressCharts.swift's
+// ExerciseSparkline now takes `[ProgressAggregates.SparkPoint]`.
 
 import SwiftUI
 
@@ -17,7 +21,7 @@ extension ProgressScreen {
     /// with TileList + ExerciseTile (.sparkline trailing). Card title moves
     /// to TileList's eyebrow row, dropping the local `card(title:)` wrapper.
     var perExerciseCard: some View {
-        let series = topExerciseSeries(limit: Self.topExerciseCount)
+        let series = aggregates.topExercises
         if series.isEmpty {
             return AnyView(
                 card(title: "TOP EXERCISES") {
@@ -49,7 +53,7 @@ extension ProgressScreen {
 
     /// Convert per-session SparkPoints (date, weight) to a normalized 0..1
     /// series for `ExerciseTile.sparkline`. Flat series → all zeros.
-    private func normalizedPoints(_ pts: [SparkPoint]) -> [Double] {
+    private func normalizedPoints(_ pts: [ProgressAggregates.SparkPoint]) -> [Double] {
         guard let min = pts.map(\.weight).min(),
               let max = pts.map(\.weight).max(),
               max > min else {
@@ -72,7 +76,7 @@ extension ProgressScreen {
     // MARK: - PR feed
 
     var prFeedCard: some View {
-        let prs = store.allPersonalRecords().prefix(10)
+        let prs = aggregates.personalRecords.prefix(10)
         return card(title: "RECENT PRs") {
             if prs.isEmpty {
                 Text("No PRs yet. Beat any prior set to land one.")
@@ -206,11 +210,7 @@ extension ProgressScreen {
     /// HistoryScreen as a sheet. Keeps Progress as the home for past
     /// activity instead of orphaning it on a Today affordance.
     var recentSessionsCard: some View {
-        let recent = Array(
-            store.savedSessions
-                .sorted { $0.endTime > $1.endTime }
-                .prefix(Self.recentSessionsPreview)
-        )
+        let recent = aggregates.recentSessions
         return card(title: "RECENT SESSIONS") {
             if recent.isEmpty {
                 Text("Complete a workout and it'll show up here.")
@@ -263,71 +263,6 @@ extension ProgressScreen {
                 .foregroundStyle(Color.ink3)
         }
         .padding(.vertical, 10)
-    }
-
-    // MARK: - Per-exercise series
-
-    private struct ExerciseSeries {
-        let name: String
-        let unit: String
-        let points: [SparkPoint]
-        let latest: Double
-        let lastPRDate: Date?
-    }
-
-    struct SparkPoint: Identifiable {
-        let id = UUID()
-        let date: Date
-        let weight: Double
-    }
-
-    /// For each exercise in `savedSessions`, compute its per-session best
-    /// completed set weight. Sort by total completed-set count desc, keep
-    /// the top `limit`. Empty if no weighted sets exist.
-    private func topExerciseSeries(limit: Int) -> [ExerciseSeries] {
-        struct Agg {
-            var unit: String
-            var setCount: Int
-            var perSession: [(Date, Double)] // sorted oldest first
-        }
-        var agg: [String: Agg] = [:]
-        let ordered = store.savedSessions.sorted { $0.startTime < $1.startTime }
-        for s in ordered {
-            for ex in s.exercises {
-                var bestThisSession: Double = 0
-                var hasWeightedSet = false
-                // Warmup sets excluded — per-exercise best-weight sparkline
-                // tracks working sets only.
-                for set in ex.sets where set.done && !set.isWarmup {
-                    if let w = set.weightValue, w > 0 {
-                        hasWeightedSet = true
-                        if w > bestThisSession { bestThisSession = w }
-                    }
-                }
-                if !hasWeightedSet { continue }
-                var entry = agg[ex.name] ?? Agg(unit: ex.displayUnit, setCount: 0, perSession: [])
-                entry.setCount += ex.sets.filter { $0.done && !$0.isWarmup }.count
-                entry.perSession.append((s.startTime, bestThisSession))
-                agg[ex.name] = entry
-            }
-        }
-        let prsByExercise: [String: Date] = store.allPersonalRecords()
-            .reduce(into: [:]) { acc, pr in
-                // allPersonalRecords is newest-first, so first hit per name wins.
-                if acc[pr.exerciseName] == nil { acc[pr.exerciseName] = pr.date }
-            }
-        return agg
-            .sorted { $0.value.setCount > $1.value.setCount }
-            .prefix(limit)
-            .map { name, a in
-                ExerciseSeries(
-                    name: name,
-                    unit: a.unit,
-                    points: a.perSession.map { SparkPoint(date: $0.0, weight: $0.1) },
-                    latest: a.perSession.last?.1 ?? 0,
-                    lastPRDate: prsByExercise[name]
-                )
-            }
     }
 
     // MARK: - Helpers
