@@ -12,38 +12,83 @@
 // week's Monday. If the persisted overrides are stale (different weekStart),
 // they're discarded and a fresh empty overrides is returned. This is the
 // "fresh every week" semantics the user asked for.
+//
+// ── File map (Tier-3 god-object split — keep this honest when adding code) ──
+//
+//   PlanStore.swift (this file)            core: persisted keys, @Published
+//                                          state, init/reload, memory-drift
+//                                          subscription, PlanEdit pipeline
+//                                          (propose / apply / applyWorkoutDiff),
+//                                          drag-drop swap, drift detection,
+//                                          targeted regeneration (regenerateToday
+//                                          / regenerateWeek / consolidateWeek* /
+//                                          migrateIfStale)
+//   PlanStore+Generation.swift             weekly generate, custom-routine
+//                                          composition, generator-context build
+//   PlanStore+History.swift                rollover snapshots + "typical week"
+//                                          shape adoption (PR 4 / PR 6)
+//   PlanStore+Validation.swift             rules engine + validation-override
+//                                          log / suppression (PR 7)
+//   PlanStore+MissedWorkoutAutopilot.swift missed-workout detection + reshuffle
+//                                          autopilot (PR 8)
+//   PlanStore+LLMRefinement.swift          build-98 background LLM refinement
+//   PlanStore+Persistence.swift            save* family + shared JSON coder
+//                                          factories (secondsSince1970 dates)
+//
+// ── Load-bearing seams (2026-06-06 architecture audit §7 — do not reorder) ──
+//
+//   1. apply(_:) persists the edited plan to defaults BEFORE setting `plan`.
+//      The @Published setter triggers the SwiftUI layout cascade; if a
+//      watchdog SIGKILL lands mid-cascade (build 60 did), write-first means
+//      the user's edit survives the kill. Never swap that ordering.
+//   2. resubscribeToMemory + planInputsHash + migrateIfStale form the
+//      memory-driven auto-regen loop: dedupe on planInputsHash, debounce
+//      500 ms, skip while a session is active. Breaking any leg either kills
+//      silent regen or causes regen loops.
+//   3. LLMRefinement's candidate filter (refinementCandidates, in
+//      +LLMRefinement) excludes days carrying a custom-routine override or a
+//      refinedByLLMAt stamp. That exclusion is the anti-clobber guard:
+//      removing it resurrects the "my edit silently reverts 5-10 s later"
+//      bug (phase-training-llm-refinement-clobbers-edits).
+//   4. consolidateWeekDetailed returns a ConsolidationDecline (nil = applied);
+//      consolidateWeek wraps it to keep the original Bool contract. Both use
+//      direct mutation + savePlan — the PlanEdit seam has no set-workout op,
+//      so day-content replacement must go through this pattern.
 
 import Foundation
 import Combine
 
 final class PlanStore: ObservableObject {
-    private static let planKey      = "pt_week_plan"
-    private static let overridesKey = "pt_week_overrides"
+    // Access note (Tier-3 split): the key constants below are `internal`, not
+    // `private`, because the save* family in PlanStore+Persistence.swift reads
+    // them cross-file. Do NOT rename the string values — they're persisted.
+    static let planKey      = "pt_week_plan"
+    static let overridesKey = "pt_week_overrides"
     /// PR 4 — historical plan snapshots, rolling 12-week cap.
     /// Foundation for the weekly-coach features in
     /// PLAN-weekly-coach-roadmap.md (painted strip, rules engine,
     /// missed-workout autopilot, progress visualizations).
-    private static let pastPlansKey = "pt_past_plans"
+    static let pastPlansKey = "pt_past_plans"
     /// PR 7 — log of dismissed PlanValidationIssues. Used to derive
     /// `suppressedRulePatterns`: a (rule, pattern) combination
     /// dismissed across ≥3 distinct weekStarts self-suppresses for
     /// the user.
-    private static let planOverridesKey = "pt_plan_overrides"
+    static let planOverridesKey = "pt_plan_overrides"
     /// PR 8 — log of missed workouts. Tracks each detection so we
     /// don't re-banner the same miss twice, and feeds CoachContext
     /// with "the user has missed 3 Tuesday lifts in a row".
-    private static let missedWorkoutsKey = "pt_missed_workouts"
+    static let missedWorkoutsKey = "pt_missed_workouts"
     /// PR 8 — mid-week reshuffle counter. Resets on weekly rollover.
     /// Spec §3 rule 5: cap at 2 per week across missed + abandoned
     /// events combined (PR 9 will hit the same counter).
-    private static let reshuffleCountKey = "pt_reshuffle_count"
+    static let reshuffleCountKey = "pt_reshuffle_count"
     /// PR 8 — weekStart we last computed reshuffleCount against.
     /// When the active week changes, counter resets to 0.
-    private static let reshuffleWeekKey = "pt_reshuffle_week"
+    static let reshuffleWeekKey = "pt_reshuffle_week"
     /// D3 — week-consolidation counter + the weekStart it's tagged against
     /// (resets on rollover, same as the reshuffle counter). Capped at 1/week.
-    private static let consolidationCountKey = "pt_consolidation_count"
-    private static let consolidationWeekKey = "pt_consolidation_week"
+    static let consolidationCountKey = "pt_consolidation_count"
+    static let consolidationWeekKey = "pt_consolidation_week"
 
     /// How many weeks of history we retain. Anything older rolls off on
     /// the next snapshot. Twelve weeks matches the coach's longest-window
@@ -694,73 +739,5 @@ final class PlanStore: ObservableObject {
         }()
         guard needsLegacyRegen || needsCalendarWeekRegen else { return }
         generate(from: memory, today: today)
-    }
-
-    // MARK: - Persistence
-
-    func savePlan() {
-        guard let plan else {
-            defaults.removeObject(forKey: Self.planKey)
-            return
-        }
-        if let data = try? Self.encoder().encode(plan) {
-            defaults.set(data, forKey: Self.planKey)
-        }
-    }
-
-    func saveOverrides() {
-        if let data = try? Self.encoder().encode(overrides) {
-            defaults.set(data, forKey: Self.overridesKey)
-        }
-    }
-
-    /// PR 4 — persist the rolling history. Empty list still writes (vs
-    /// removeObject) so the load path can distinguish "no history yet"
-    /// from "history was cleared by Start Over".
-    func savePastPlans() {
-        if let data = try? Self.encoder().encode(pastPlans) {
-            defaults.set(data, forKey: Self.pastPlansKey)
-        }
-    }
-
-    /// PR 7 — persist the rolling validation-override log.
-    func savePlanOverrides() {
-        if let data = try? Self.encoder().encode(recentPlanOverrides) {
-            defaults.set(data, forKey: Self.planOverridesKey)
-        }
-    }
-
-    /// PR 8 — persist the rolling missed-workout log.
-    func saveMissedWorkouts() {
-        if let data = try? Self.encoder().encode(missedWorkouts) {
-            defaults.set(data, forKey: Self.missedWorkoutsKey)
-        }
-    }
-
-    /// PR 8 — persist the per-week reshuffle counter. Tagged with
-    /// the current training-week Monday so we know to reset when
-    /// the week rolls over.
-    func saveReshuffleCount(now: Date = Date()) {
-        defaults.set(midWeekReshuffleCount, forKey: Self.reshuffleCountKey)
-        defaults.set(now.startOfTrainingWeek(), forKey: Self.reshuffleWeekKey)
-    }
-
-    /// D3 — persist the per-week consolidation counter, tagged with the
-    /// training-week Monday so it resets on rollover (same as reshuffle).
-    private func saveConsolidationCount(now: Date = Date()) {
-        defaults.set(midWeekConsolidationCount, forKey: Self.consolidationCountKey)
-        defaults.set(now.startOfTrainingWeek(), forKey: Self.consolidationWeekKey)
-    }
-
-    private static func encoder() -> JSONEncoder {
-        let e = JSONEncoder()
-        e.dateEncodingStrategy = .secondsSince1970
-        return e
-    }
-
-    private static func decoder() -> JSONDecoder {
-        let d = JSONDecoder()
-        d.dateDecodingStrategy = .secondsSince1970
-        return d
     }
 }
