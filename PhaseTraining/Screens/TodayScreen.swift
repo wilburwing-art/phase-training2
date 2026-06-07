@@ -42,20 +42,24 @@ struct TodayScreen: View {
     // list now. `editableTemplate` is the in-flight, mutation-applied copy
     // of `template`; `didModify` flips true on any edit so the
     // "Save to library" pill knows when to surface.
-    @State private var editableTemplate: WorkoutTemplate?
-    @State private var didModify: Bool = false
+    // editableTemplate / didModify / didSaveToLibrary / addingExercise /
+    // actionSheetExIdx are internal (not private) so the editor extension in
+    // TodayScreen+TemplateEditor.swift can read/write the same state the
+    // body's onChange(of: template) guard protects.
+    @State var editableTemplate: WorkoutTemplate?
+    @State var didModify: Bool = false
     @State private var swappingExIdx: Int?
     @State private var editingExIdx: Int?
-    @State private var addingExercise: Bool = false
+    @State var addingExercise: Bool = false
     @State private var inlineDetailExercise: Exercise?
     /// Build 102 — composite-tile migration. Tap on a Today exercise row now
     /// opens an action sheet instead of going straight to the editor; this
     /// drives that sheet. See ExerciseActionSheet + HANDOFF-tile-system.md §4a.
-    @State private var actionSheetExIdx: Int?
+    @State var actionSheetExIdx: Int?
     /// Build 102 — action sheet's "Exercise history" row presents
     /// HistoryScreen filtered to a single exercise name.
     @State private var historyFilterExerciseName: String?
-    @State private var didSaveToLibrary: Bool = false
+    @State var didSaveToLibrary: Bool = false
     /// Build 99 — pre-workout soreness check-in moved from an inline
     /// expand/collapse card to a header-adjacent pill that opens a modal sheet.
     @State private var showSorenessSheet: Bool = false
@@ -70,142 +74,9 @@ struct TodayScreen: View {
     /// alert so the user sees why the week couldn't absorb the miss.
     @State private var consolidationDecline: PlanStore.ConsolidationDecline?
 
-    // MARK: - Derived state
-
-    private var todayPlan: DayPlan? { planStore.plan?.today() }
-
-    /// Effective DayKind for rendering. Active session forces a workout
-    /// hero. Otherwise, follow today's plan; default to lift if no plan.
-    private var effectiveKind: DayKind {
-        if store.active != nil { return .lift }
-        return todayPlan?.kind ?? .lift
-    }
-
-    /// Template for the workout hero. nil on sport/rest/event days when
-    /// there's no active session.
-    private var template: WorkoutTemplate? {
-        if let active = store.active, !active.exercises.isEmpty {
-            return WorkoutTemplate(
-                id: active.templateId,
-                name: active.name,
-                category: active.category,
-                exercises: active.exercises.map { ex in
-                    ExerciseTemplate(
-                        id: ex.id, name: ex.name, type: ex.type, unit: ex.unit,
-                        targetSets: ex.targetSets, targetReps: ex.targetReps, rest: ex.rest
-                    )
-                }
-            )
-        }
-        // Generated workout (the new default for lift / mobility days).
-        // Uses GeneratedWorkout.stableTemplateId — same exercises → same id,
-        // so SessionStore.getPreviousSession finds last week's same-shape
-        // workout and pulls weight + reps forward into the autofill column.
-        if let _ = todayPlan, let workout = todayPlan?.generatedWorkout {
-            return workout.toWorkoutTemplate(id: workout.stableTemplateId)
-        }
-        // Day-override picked a specific routine (custom workout or library pick).
-        if let routineId = todayPlan?.routineId {
-            return loadTemplate(routineId: routineId)
-        }
-        // No plan yet → upper-1 fallback. Guarantees TodayScreen always has
-        // a usable template before onboarding runs.
-        if planStore.plan == nil {
-            return WorkoutTemplate.upper1
-        }
-        return nil
-    }
-
-    private func loadTemplate(routineId: Int) -> WorkoutTemplate? {
-        let routines = CoachDatabase.shared.listRoutines()
-        guard let r = routines.first(where: { $0.id == routineId }) else { return nil }
-        let exercises = CoachDatabase.shared.exercises(forRoutineId: routineId)
-        return r.toWorkoutTemplate(with: exercises)
-    }
-
-    private var totalSets: Int {
-        template?.exercises.reduce(0) { $0 + $1.targetSets } ?? 0
-    }
-
-    private var previous: SavedSession? {
-        guard let template else { return nil }
-        return store.getPreviousSession(templateId: template.id)
-    }
-
-    private var dateLabel: String {
-        let f = DateFormatter()
-        f.dateFormat = "EEE, MMM d"
-        return f.string(from: Date()).uppercased()
-    }
-
-    private var heroTitle: String {
-        switch effectiveKind {
-        case .lift:
-            return template?.name.replacingOccurrences(of: " Day ", with: "\nDay ")
-                ?? (todayPlan?.title ?? "Train")
-        case .sport:
-            return todayPlan?.sport.map { "\($0.name)\nday" } ?? "Sport day"
-        case .rest:
-            return "Rest day"
-        case .event:
-            return "Event day"
-        }
-    }
-
-    /// True when the current plan's last day is within 2 days (or already past).
-    /// Drives the "Plan next week" pill.
-    private var planEndingSoon: Bool {
-        guard let last = planStore.plan?.days.last?.date else { return false }
-        let cal = Calendar.current
-        let now = cal.startOfDay(for: Date())
-        let lastDay = cal.startOfDay(for: last)
-        let daysLeft = cal.dateComponents([.day], from: now, to: lastDay).day ?? 0
-        return daysLeft <= 2
-    }
-
-    /// Phase 13e: coach-written observation when present, otherwise the static
-    /// Phase-11 rules. Picks first matching source.
-    private var insightCopy: String? {
-        let cal = Calendar.current
-        if let coach = memoryStore.memory.coachInsights.last(where: {
-            $0.surface == "today" && cal.isDate($0.date, inSameDayAs: Date())
-        }) {
-            return coach.body
-        }
-        guard let plan = planStore.plan else { return nil }
-        if let day = plan.today() {
-            if day.protected {
-                return "Today is protected. I won't shuffle it without asking."
-            }
-            if let mins = day.durationMinutes {
-                return "Today's session is shortened to \(mins) min."
-            }
-        }
-        return nil
-    }
-
-    private var heroSubtitle: String {
-        switch effectiveKind {
-        case .lift:
-            return template?.category ?? ""
-        case .sport:
-            if let log = todaySportLog {
-                return "Logged · \(log.durationMinutes) min · \(log.intensity.label.lowercased())"
-            }
-            return todayPlan?.sport != nil ? "Log it when you're done." : "Sport day."
-        case .rest:
-            return "Sleep, food, walk. The work is in recovery."
-        case .event:
-            return todayPlan?.title ?? "Today's event."
-        }
-    }
-
-    /// Today's most recent sport log, if any. Drives the subtitle swap
-    /// and the "edit log" sheet pre-fill. Only meaningful on .sport days
-    /// but read defensively (anyone could tap a stale link).
-    private var todaySportLog: SportLogEntry? {
-        sportLogStore.entry(on: Date())
-    }
+    // Derived read-only state (todayPlan, effectiveKind, template, hero copy,
+    // …) lives in TodayScreen+Derived.swift; the inline editor surface +
+    // template mutations live in TodayScreen+TemplateEditor.swift.
 
     // MARK: - Body
 
@@ -504,12 +375,6 @@ struct TodayScreen: View {
         .accessibilityIdentifier("today-soreness-checkin")
     }
 
-    /// True when memory has a soreness entry stamped today.
-    private var todaysSorenessLogged: Bool {
-        let cal = Calendar.current
-        return memoryStore.memory.soreness.contains { cal.isDate($0.date, inSameDayAs: Date()) }
-    }
-
     private var planNextWeekPill: some View {
         Button { tabSelection.showWeeklyCheckIn = true } label: {
             HStack(spacing: 8) {
@@ -533,54 +398,6 @@ struct TodayScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("today-plan-next-week")
-    }
-
-    /// Trailing eyebrow text — the periodization phase. This is the app's
-    /// namesake context (off-/pre-/in-season, event prep, maintenance), which
-    /// previously surfaced only in Profile and the season editor. Appends
-    /// DELOAD when this week's tone is Recovery — the only honest deload
-    /// signal available (it's user-picked on the Week tab; there's no
-    /// auto-scheduled mesocycle deload to read).
-    private var phaseEyebrow: String {
-        var s = memoryStore.memory.seasonForPlanner.compactLabel.uppercased()
-        if planStore.overrides.weekTone == .recovery { s += " · DELOAD" }
-        return s
-    }
-
-    /// Days until the event-prep peak, when a peak date is set and the
-    /// athlete is in event prep. nil otherwise (nothing to count down to).
-    private var daysToPeak: Int? {
-        guard memoryStore.memory.seasonForPlanner == .eventPrep,
-              let peak = memoryStore.memory.peakDate else { return nil }
-        let cal = Calendar.current
-        let days = cal.dateComponents([.day],
-                                      from: cal.startOfDay(for: Date()),
-                                      to: cal.startOfDay(for: peak)).day ?? 0
-        return days >= 0 ? days : nil
-    }
-
-    /// Subtitle line. The EX·SETS summary moved here from the eyebrow (which
-    /// now carries the phase); non-workout days keep their kind-specific copy.
-    /// An event-prep peak countdown appends on any day kind.
-    private var headerSubtitle: String? {
-        var parts: [String] = []
-        if effectiveKind.isWorkout, let template {
-            parts.append("\(template.exercises.count) ex · \(totalSets) sets")
-        } else if !heroSubtitle.isEmpty {
-            parts.append(heroSubtitle)
-        }
-        if let d = daysToPeak {
-            parts.append(d == 0 ? "peak today" : "peak in \(d)d")
-        }
-        let joined = parts.joined(separator: " · ")
-        return joined.isEmpty ? nil : joined
-    }
-
-    /// Single source of truth for the small caption rendered under the hero
-    /// subtitle. Coach insight wins if present; otherwise we fall back to
-    /// the planner's static generatedReason.
-    private var heroCaption: String? {
-        insightCopy ?? todayPlan?.generatedReason
     }
 
     /// True when today's generated workout was LLM-polished in the background
@@ -653,315 +470,6 @@ struct TodayScreen: View {
                 .stroke(Color.line, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    private var daysAgoShort: String {
-        guard let prev = previous else { return "—" }
-        let days = Calendar.current.dateComponents([.day], from: prev.startTime, to: Date()).day ?? 0
-        return "\(days)d ago"
-    }
-
-    private var lastSessionDetail: String {
-        guard let prev = previous else { return "First time — weights will be empty" }
-        let stats = computeStats(prev)
-        return "\(formatDuration(prev.duration)) · \(stats.doneSets) sets · avg rpe \(stats.avgRpe)"
-    }
-
-    // MARK: - Inline editable exercise card (build 93)
-
-    /// Today's exercise list as a directly-editable card: tap a row to
-    /// open the action sheet (adjust, swap, inspect, remove). The Add
-    /// Exercise row appends to the end. All mutations flow through
-    /// `editableTemplate` so Start consumes the edited shape. The List is
-    /// height-bounded so it doesn't scroll independently inside the page's
-    /// outer ScrollView.
-    private func inlineExerciseCard(_ tmpl: WorkoutTemplate) -> some View {
-        // Height: ~88pt per ExerciseTile (.presentation density min) + ~56pt
-        // add-row + ~8pt list padding. Slight overshoot is fine; rows just
-        // sit at their intrinsic size.
-        let listHeight = CGFloat(tmpl.exercises.count) * 88 + 56 + 8
-
-        return VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text("TODAY'S EXERCISES")
-                    .styled(.micro)
-                    .foregroundStyle(Color.ink3)
-                Spacer()
-                Text("\(tmpl.exercises.count)")
-                    .font(.monoXS)
-                    .foregroundStyle(Color.ink3)
-            }
-            .padding(.horizontal, 14)
-            .padding(.top, 12)
-            .padding(.bottom, 8)
-
-            List {
-                Section {
-                    ForEach(Array(tmpl.exercises.enumerated()), id: \.element.id) { idx, ex in
-                        todayExerciseTile(ex, position: idx + 1)
-                            .listRowBackground(Color.surface)
-                            .listRowSeparatorTint(Color.lineSoft)
-                            .listRowInsets(EdgeInsets())
-                    }
-                    inlineAddExerciseRow
-                        .listRowBackground(Color.surface)
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets())
-                }
-            }
-            .scrollContentBackground(.hidden)
-            .listStyle(.plain)
-            .scrollDisabled(true)
-            .frame(height: listHeight)
-        }
-        .background(Color.surface)
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    /// HANDOFF §4a: presentation-density composite tile. Leading slot is a
-    /// 56pt photo + 28pt muscle chip; trailing collapses to a single ••• that
-    /// (along with whole-row tap) opens ExerciseActionSheet. The inline
-    /// info/swap buttons are gone — those actions live inside the sheet.
-    private func todayExerciseTile(_ ex: ExerciseTemplate, position: Int) -> some View {
-        let prevEx = previous?.exercises.first(where: { $0.id == ex.id })
-        let prevWeightText = prevEx?.sets.first?.weight ?? ""
-        // Build 103 — deterministic progression suggestion. Show the next
-        // bump alongside the prior weight so the user sees the progression
-        // story without depending on the LLM coach. Falls back to the bare
-        // prev-weight when we don't have enough signal (no prior set, no
-        // reps logged).
-        let weightSegment = progressionSegment(ex: ex, prevEx: prevEx, prevWeightText: prevWeightText)
-        let bucket = bucketForExercise(named: ex.name) ?? .chest
-        let photoURL = thumbnailURLForExercise(named: ex.name)
-        let exerciseID = ExerciseLookupCache.shared.exerciseID(forName: ex.name)
-
-        return ExerciseTile(
-            vm: .init(
-                leading: .composite(exerciseID: exerciseID, photoURL: photoURL, group: bucket, side: bucket.naturalSide),
-                title: ex.name,
-                meta: "\(ex.targetSets) sets · \(ex.targetReps) reps · \(weightSegment)",
-                trailing: .overflow(onTap: { actionSheetExIdx = position - 1 }),
-                onTap: { actionSheetExIdx = position - 1 }
-            ),
-            density: .presentation
-        )
-        .accessibilityIdentifier("today-edit-\(position)")
-    }
-
-    /// Compose the rightmost segment of the tile meta line. Showing both
-    /// the previous and the suggested weight lets the user see "+5" as
-    /// progression in motion, not just a fresh number.
-    private func progressionSegment(ex: ExerciseTemplate, prevEx: LoggedExercise?, prevWeightText: String) -> String {
-        guard !prevWeightText.isEmpty else { return "—" }
-        let unit = ex.unit
-        // Shared extraction (heaviest set that met target reps) so the Today
-        // tile and the Log pill never disagree on the suggested number.
-        guard let prevEx,
-              let s = ProgressionSuggestion.suggest(
-                prevSets: prevEx.sets,
-                targetReps: ex.targetReps,
-                exerciseName: ex.name,
-                unit: unit
-              ) else {
-            return "\(prevWeightText) \(unit)"
-        }
-        if s.delta == 0 {
-            return "\(s.suggestedWeightString) \(unit) · hold"
-        }
-        return "\(s.suggestedWeightString) \(unit) · \(s.label)"
-    }
-
-    /// Resolve the primary muscle bucket for an exercise by name. Routes
-    /// through `ExerciseLookupCache` so repeated renders of the same row
-    /// (or a Today list that re-renders on every state change) hit coach.db
-    /// once per unique name per session.
-    private func bucketForExercise(named name: String) -> MuscleBucket? {
-        ExerciseLookupCache.shared.bucket(forName: name)
-    }
-
-    /// Resolve a thumbnail URL for the composite leading slot. Same cache as
-    /// the bucket lookup so both come from a single coach.db roundtrip.
-    private func thumbnailURLForExercise(named name: String) -> String? {
-        ExerciseLookupCache.shared.thumbnailURL(forName: name)
-    }
-
-    /// Move the exercise at `idx` by `offset` (-1 for up, +1 for down) inside
-    /// the editable template. Wired to the action sheet's Move up / Move down
-    /// rows, which the sheet only shows when the index isn't at the boundary.
-    private func moveExercise(at idx: Int, by offset: Int) {
-        guard let tmpl = editableTemplate else { return }
-        let target = idx + offset
-        guard tmpl.exercises.indices.contains(idx),
-              tmpl.exercises.indices.contains(target) else { return }
-        var reordered = tmpl.exercises
-        reordered.swapAt(idx, target)
-        editableTemplate = WorkoutTemplate(
-            id: tmpl.id,
-            name: tmpl.name,
-            category: tmpl.category,
-            exercises: reordered
-        )
-        didModify = true
-        didSaveToLibrary = false
-    }
-
-    /// Remove the exercise at `idx` from the editable template. Wired to the
-    /// action sheet's destructive "Delete from workout" row.
-    private func deleteExercise(at idx: Int) {
-        guard let tmpl = editableTemplate, tmpl.exercises.indices.contains(idx) else { return }
-        var remaining = tmpl.exercises
-        remaining.remove(at: idx)
-        editableTemplate = WorkoutTemplate(id: tmpl.id, name: tmpl.name, category: tmpl.category, exercises: remaining)
-        didModify = true
-        didSaveToLibrary = false
-    }
-
-    private var inlineAddExerciseRow: some View {
-        Button {
-            addingExercise = true
-        } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "plus.circle")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(Color.accent)
-                    .frame(width: 14)
-                Text("Add exercise")
-                    .font(.custom("Inter-Regular", size: 14))
-                    .foregroundStyle(Color.accent)
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 12)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("today-add-exercise")
-    }
-
-    private var saveToLibraryPill: some View {
-        Button(action: saveCurrentTemplateToLibrary) {
-            HStack(spacing: 6) {
-                Image(systemName: didSaveToLibrary ? "checkmark" : "tray.and.arrow.down")
-                    .font(.system(size: 12, weight: .semibold))
-                Text(didSaveToLibrary ? "Saved to library" : "Save changes to library")
-                    .styled(.micro)
-                Spacer(minLength: 0)
-                if !didSaveToLibrary {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 10, weight: .semibold))
-                }
-            }
-            .foregroundStyle(didSaveToLibrary ? Color.ok : Color.accent)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(Color.surface)
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-        }
-        .buttonStyle(.plain)
-        .disabled(didSaveToLibrary)
-        .accessibilityIdentifier("today-save-library")
-    }
-
-    // MARK: - Mutators + helpers
-
-    private func updateExercise(at idx: Int, sets: Int, reps: Int, rest: Int) {
-        guard let tmpl = editableTemplate, tmpl.exercises.indices.contains(idx) else { return }
-        let old = tmpl.exercises[idx]
-        var newExercises = tmpl.exercises
-        newExercises[idx] = ExerciseTemplate(
-            id: old.id, name: old.name, type: old.type, unit: old.unit,
-            targetSets: sets, targetReps: reps, rest: rest,
-            rpe: old.rpe, tempo: old.tempo
-        )
-        editableTemplate = WorkoutTemplate(id: tmpl.id, name: tmpl.name, category: tmpl.category, exercises: newExercises)
-        didModify = true
-        didSaveToLibrary = false
-    }
-
-    private func swapExercise(at idx: Int, with picked: Exercise) {
-        guard let tmpl = editableTemplate, tmpl.exercises.indices.contains(idx) else { return }
-        let old = tmpl.exercises[idx]
-        var newExercises = tmpl.exercises
-        newExercises[idx] = ExerciseTemplate(
-            id: old.id, name: picked.name, type: picked.modality, unit: old.unit,
-            targetSets: picked.defaultSets ?? old.targetSets,
-            targetReps: parseRepsLeading(picked.defaultReps) ?? old.targetReps,
-            rest: parseRestSeconds(picked.defaultRest) ?? old.rest
-        )
-        editableTemplate = WorkoutTemplate(id: tmpl.id, name: tmpl.name, category: tmpl.category, exercises: newExercises)
-        didModify = true
-        didSaveToLibrary = false
-    }
-
-    private func appendExercise(_ picked: Exercise) {
-        guard let tmpl = editableTemplate else { return }
-        let newEx = ExerciseTemplate(
-            id: "added-\(UUID().uuidString)",
-            name: picked.name,
-            type: picked.modality,
-            unit: "lbs",
-            targetSets: picked.defaultSets ?? 3,
-            targetReps: parseRepsLeading(picked.defaultReps) ?? 8,
-            rest: parseRestSeconds(picked.defaultRest) ?? 90
-        )
-        editableTemplate = WorkoutTemplate(id: tmpl.id, name: tmpl.name, category: tmpl.category, exercises: tmpl.exercises + [newEx])
-        didModify = true
-        didSaveToLibrary = false
-    }
-
-    /// Compute "similar exercises" filters for the swap picker. Index → name
-    /// resolution lives here; the bucket + category lookup is the shared
-    /// ExerciseFilters.similar(toExerciseNamed:) all three swap surfaces use.
-    private func similarFiltersForExercise(at idx: Int) -> ExerciseFilters {
-        guard let tmpl = editableTemplate, tmpl.exercises.indices.contains(idx) else { return ExerciseFilters() }
-        return .similar(toExerciseNamed: tmpl.exercises[idx].name)
-    }
-
-    private func saveCurrentTemplateToLibrary() {
-        guard let tmpl = editableTemplate, !tmpl.exercises.isEmpty else { return }
-        let routine = CustomRoutine(
-            id: UUID().uuidString,
-            name: tmpl.name,
-            exercises: tmpl.exercises.enumerated().map { idx, ex in
-                CustomRoutineExercise(
-                    id: UUID().uuidString,
-                    exerciseId: CoachDatabase.shared
-                        .listExercises(search: ex.name)
-                        .first(where: { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame })?.id ?? 0,
-                    name: ex.name,
-                    position: idx + 1,
-                    sets: ex.targetSets,
-                    reps: String(ex.targetReps),
-                    rest: "\(ex.rest)s",
-                    notes: nil
-                )
-            },
-            createdAt: Date()
-        )
-        customStore.save(routine)
-        // Save success: the edits are persisted, so clear the dirty flag —
-        // the template onChange guard protects *unsaved* edits only, and the
-        // next mutation re-arms both flags. didSaveToLibrary keeps the pill
-        // on-screen in its "Saved to library" confirmation state.
-        didSaveToLibrary = true
-        didModify = false
-    }
-
-    private func parseRepsLeading(_ s: String?) -> Int? {
-        guard let s else { return nil }
-        let digits = s.prefix(while: { $0.isNumber })
-        return Int(digits)
-    }
-
-    private func parseRestSeconds(_ s: String?) -> Int? {
-        guard let s else { return nil }
-        let lower = s.lowercased()
-        let digits = lower.prefix(while: { $0.isNumber })
-        guard let n = Int(digits) else { return nil }
-        if lower.contains("min") { return n * 60 }
-        return n
     }
 
     // MARK: - Buttons
@@ -1039,34 +547,6 @@ struct TodayScreen: View {
         }
         onStart()
     }
-
-    // MARK: - Helpers
-
-    private func computeStats(_ session: SavedSession) -> (doneSets: Int, avgRpe: String) {
-        var doneSets = 0
-        var totalRpe: Double = 0
-        var rpeCount = 0
-        for ex in session.exercises {
-            for s in ex.sets where s.done {
-                doneSets += 1
-                if !s.rpe.isEmpty, let v = Double(s.rpe), !v.isNaN {
-                    totalRpe += v
-                    rpeCount += 1
-                }
-            }
-        }
-        let avgRpe = rpeCount > 0 ? String(format: "%.1f", totalRpe / Double(rpeCount)) : "—"
-        return (doneSets, avgRpe)
-    }
-
-    private func formatDuration(_ seconds: Int) -> String {
-        let h = seconds / 3600
-        let m = (seconds % 3600) / 60
-        let s = seconds % 60
-        return h > 0
-            ? String(format: "%d:%02d:%02d", h, m, s)
-            : String(format: "%d:%02d", m, s)
-    }
 }
 
 // MARK: - Preview
@@ -1097,84 +577,4 @@ struct TodayScreen: View {
         .environmentObject(TabSelectionStore())
         .environmentObject(CustomRoutineStore(defaults: defaults))
         .environmentObject(SportLogStore(defaults: defaults))
-}
-
-// MARK: - Coach-polished transparency sheet
-//
-// Read-only explanation for the "personalized by coach" pill on Today (and
-// reusable on any surface that wants to expose the build-98 background
-// refinement). Deliberately not a diff card: refinement is the visible
-// default for consented users (per the build-98 design in
-// `PlanStore+LLMRefinement.swift`), not a proposal awaiting Apply. The audit
-// flagged a lack of transparency, not a missing consent gate — this is the
-// transparency answer without re-introducing a friction prompt.
-private struct CoachPolishedExplanationSheet: View {
-    let refinedAt: Date?
-    let provenance: String?
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack(spacing: 8) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(Color.accent)
-                Text("Personalized by your coach")
-                    .font(.system(size: 18, weight: .bold))
-            }
-
-            Text("Your coach reshaped today's workout based on recent sessions, soreness, and goals. The shape of your week — push / pull / legs and rest days — is unchanged. Only this day's exercise picks, sets, RPE, or weights are different from the deterministic default.")
-                .font(.system(size: 14))
-                .foregroundStyle(Color.ink2)
-                .fixedSize(horizontal: false, vertical: true)
-
-            if let provenance, !provenance.isEmpty {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("REASON")
-                        .styled(.micro)
-                        .foregroundStyle(Color.ink3)
-                    Text(provenance)
-                        .font(.system(size: 14))
-                        .foregroundStyle(Color.ink)
-                }
-            }
-
-            if let refinedAt {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("UPDATED")
-                        .styled(.micro)
-                        .foregroundStyle(Color.ink3)
-                    Text(refinedAt.formatted(date: .abbreviated, time: .shortened))
-                        .font(.system(size: 14))
-                        .foregroundStyle(Color.ink)
-                }
-            }
-
-            Text("To opt out of background polishing, turn the coach off in Profile.")
-                .font(.system(size: 12))
-                .foregroundStyle(Color.ink3)
-                .padding(.top, 4)
-
-            Spacer(minLength: 8)
-
-            Button { dismiss() } label: {
-                Text("Done")
-                    .font(.system(size: 15, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(Color.accent)
-                    .foregroundStyle(Color.accentInk)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("coach-polished-explanation-done")
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.bg.ignoresSafeArea())
-        .foregroundStyle(Color.ink)
-        .preferredColorScheme(.dark)
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
-    }
 }
