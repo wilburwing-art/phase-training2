@@ -12,29 +12,26 @@
 // but render via SettingsRow with a value summary; tapping the row opens
 // the existing alert TextField. The .fileImporter / ShareSheet / backup
 // alerts stay on this screen — DataEditorSheet just toggles the parent
-// flags via closures.
+// flags via closures. The backup/restore/erase state machine itself lives
+// in BackupCoordinator (Data/); row value summaries live in
+// ProfileScreen+RowSummaries.swift.
 
 import SwiftUI
 import UniformTypeIdentifiers
 
 struct ProfileScreen: View {
-    @EnvironmentObject private var store: MemoryStore
+    // `store` + `subStore` are internal (not private) so the RowSummaries
+    // extension file can read them.
+    @EnvironmentObject var store: MemoryStore
     @EnvironmentObject private var planStore: PlanStore
-    @EnvironmentObject private var subStore: SubscriptionStore
+    @EnvironmentObject var subStore: SubscriptionStore
     @EnvironmentObject private var sessionStore: SessionStore
     @EnvironmentObject private var customStore: CustomRoutineStore
 
-    // Backup / restore UI state (the iOS-level presentation surfaces stay on
-    // this screen; DataEditorSheet just fires callbacks).
-    @State private var exportURL: URL? = nil
-    @State private var presentingImporter = false
-    @State private var presentingShare = false
-    @State private var backupError: String? = nil
-    @State private var restoreCompleted = false
-    // Decoded-but-not-yet-applied backup, held while the user confirms the
-    // destructive overwrite. Restore only runs after explicit confirmation.
-    @State private var pendingRestore: BackupEnvelope? = nil
-    @State private var confirmingRestore = false
+    // Backup / restore / erase state machine. The iOS-level presentation
+    // surfaces stay on this screen, bound to the coordinator's published
+    // state; DataEditorSheet just fires callbacks.
+    @StateObject private var backup = BackupCoordinator()
 
     // Editor-sheet presentation flags.
     @State private var presentingSportsEditor = false
@@ -237,8 +234,8 @@ struct ProfileScreen: View {
         }
         .sheet(isPresented: $presentingDataEditor) {
             DataEditorSheet(
-                onExport: exportBackup,
-                onImport: { presentingImporter = true }
+                onExport: backup.exportBackup,
+                onImport: { backup.presentingImporter = true }
             )
         }
         .sheet(isPresented: $presentingHealthImports) {
@@ -265,33 +262,39 @@ struct ProfileScreen: View {
         #endif
         // iOS-level surfaces — owned by the parent screen so they survive
         // child-sheet dismissal.
-        .sheet(isPresented: $presentingShare) {
-            if let url = exportURL {
+        .sheet(isPresented: $backup.presentingShare) {
+            if let url = backup.exportURL {
                 ShareSheet(items: [url])
             }
         }
         .fileImporter(
-            isPresented: $presentingImporter,
+            isPresented: $backup.presentingImporter,
             allowedContentTypes: [.json],
             allowsMultipleSelection: false
         ) { result in
-            handleImport(result)
+            backup.handleImport(result)
         }
         .alert("Backup error", isPresented: Binding(
-            get: { backupError != nil },
-            set: { if !$0 { backupError = nil } }
+            get: { backup.backupError != nil },
+            set: { if !$0 { backup.backupError = nil } }
         )) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text(backupError ?? "")
+            Text(backup.backupError ?? "")
         }
-        .alert("Replace all data?", isPresented: $confirmingRestore, presenting: pendingRestore) { envelope in
-            Button("Replace", role: .destructive) { performRestore(envelope) }
-            Button("Cancel", role: .cancel) { pendingRestore = nil }
+        .alert("Replace all data?", isPresented: $backup.confirmingRestore, presenting: backup.pendingRestore) { envelope in
+            Button("Replace", role: .destructive) {
+                backup.performRestore(envelope,
+                                      store: store,
+                                      planStore: planStore,
+                                      sessionStore: sessionStore,
+                                      customStore: customStore)
+            }
+            Button("Cancel", role: .cancel) { backup.pendingRestore = nil }
         } message: { envelope in
             Text("This replaces your current profile, workouts, history, and plan with the backup from \(formattedShort(envelope.exportedAt)). It can't be undone.")
         }
-        .alert("Restore complete", isPresented: $restoreCompleted) {
+        .alert("Restore complete", isPresented: $backup.restoreCompleted) {
             Button("Done") {}
         } message: {
             Text("Your data was restored.")
@@ -426,139 +429,6 @@ struct ProfileScreen: View {
             .foregroundStyle(Color.ink3)
     }
 
-    // MARK: - Row summaries
-
-    private var sportsSummary: String {
-        let sports = store.memory.sports
-        guard !sports.isEmpty else { return "None" }
-        let primary = store.memory.primarySport ?? sports.first
-        let primaryName = primary?.name ?? sports.first?.name ?? ""
-        let othersCount = max(0, sports.count - 1)
-        if othersCount == 0 { return primaryName }
-        return "\(primaryName) +\(othersCount)"
-    }
-
-    private var seasonsSummary: String {
-        if store.memory.sports.isEmpty {
-            return store.memory.defaultSeason.label
-        }
-        // If every sport's season matches the default, show just the default.
-        // Otherwise show "Mixed".
-        let perSport = store.memory.sports.map { store.memory.seasonsBySport[$0] ?? store.memory.defaultSeason }
-        let unique = Set(perSport)
-        if unique.count == 1, let only = unique.first {
-            return only.label
-        }
-        return "Mixed"
-    }
-
-    private var focusesSummary: String {
-        let focuses = store.memory.focuses
-        guard !focuses.isEmpty else { return "None" }
-        let primary = focuses[0].label
-        if focuses.count == 1 { return primary }
-        return "\(primary) +\(focuses.count - 1)"
-    }
-
-    private var liftDaysSummary: String {
-        let n = store.memory.liftDaysPerWeek
-        return "\(n) " + (n == 1 ? "day" : "days") + " / week"
-    }
-
-    private var equipmentSummary: String {
-        let tier = currentTier
-        if tier == .custom {
-            let count = store.memory.equipment.count
-            return "Custom (\(count))"
-        }
-        return tier.label
-    }
-
-    private var experienceSummary: String {
-        store.memory.experience.label
-    }
-
-    private var aboutSummary: String {
-        var parts: [String] = []
-        if let age = store.memory.age { parts.append("\(age)") }
-        if let gender = store.memory.gender { parts.append(gender.label) }
-        if parts.isEmpty { return "Not set" }
-        return parts.joined(separator: " · ")
-    }
-
-    private var bodyWeightSummary: String {
-        let logCount = store.memory.bodyWeightLog.count
-        let imperial = store.memory.usesImperial
-        // Prefer the log's newest entry, fall back to the scalar — so a
-        // populated log never shows "—" just because the mirror lagged.
-        let kg = store.memory.latestBodyWeightEntry?.weightKg ?? store.memory.weightKg
-        guard let kg else {
-            return logCount == 0 ? "Not set" : "—"
-        }
-        let weight = BodyMetrics.formatWeight(kg: kg, imperial: imperial)
-        if logCount <= 1 { return weight }
-        return "\(weight) · \(logCount) entries"
-    }
-
-    private var bodyCompositionSummary: String {
-        let log = store.memory.bodyCompositionLog.sorted { $0.date > $1.date }
-        guard let latest = log.first else { return "Not set" }
-        var parts: [String] = []
-        if let bf = latest.bodyFatPercent {
-            parts.append(String(format: "%.1f%%", bf))
-        }
-        if let lean = latest.leanMassKg {
-            let imperial = store.memory.usesImperial
-            let display = imperial ? BodyMetrics.kgToLb(lean) : lean
-            parts.append(String(format: "%.0f %@ LBM", display, imperial ? "lb" : "kg"))
-        }
-        if parts.isEmpty { return "Not set" }
-        return parts.joined(separator: " · ")
-    }
-
-    private var dislikesSummary: String {
-        let count = store.memory.dislikes.count
-        if count == 0 { return "None" }
-        if count == 1 { return store.memory.dislikes[0] }
-        return "\(count) items"
-    }
-
-    /// Trailing summary for the Subscription row. Shows "Pro" when the
-    /// entitlement is active, otherwise prompts the user to upgrade.
-    private var subscriptionRowValue: String {
-        subStore.isPro ? "Pro" : "Upgrade"
-    }
-
-    private var injuriesSummary: String {
-        // Build 87: prefer the typed userInjuries store; free-text constraints
-        // that aren't recognised injury slugs still surface (legacy notes).
-        let known = Set(CoachDatabase.shared.listInjuries().map(\.slug))
-        let structuredCount = store.memory.userInjuries.count
-        let legacy = store.memory.constraints.filter { !known.contains($0) }
-        let total = structuredCount + legacy.count
-        if total == 0 { return "None" }
-        if total == 1 {
-            if let only = store.memory.userInjuries.first,
-               let name = CoachDatabase.shared.listInjuries().first(where: { $0.slug == only.slug })?.name {
-                return name
-            }
-            return legacy.first ?? "1 item"
-        }
-        return "\(total) items"
-    }
-
-    private var remindersSummary: String {
-        WeeklyReminderScheduler.isEnabled ? "On" : "Off"
-    }
-
-    private var currentTier: EquipmentTier {
-        let eq = store.memory.equipment
-        if eq == [.bodyweight] { return .bodyweight }
-        if eq == [.dumbbells]  { return .dumbbells  }
-        if eq == [.fullGym]    { return .fullGym    }
-        return .custom
-    }
-
     // MARK: - Tap-to-edit alert plumbing
 
     private var editingFieldBinding: Binding<Bool> {
@@ -629,37 +499,16 @@ struct ProfileScreen: View {
                 isPresented: $showEraseConfirm,
                 titleVisibility: .visible
             ) {
-                Button("Erase everything", role: .destructive) { eraseAllData() }
+                Button("Erase everything", role: .destructive) {
+                    backup.eraseAllData(store: store,
+                                        planStore: planStore,
+                                        sessionStore: sessionStore,
+                                        customStore: customStore)
+                }
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("This deletes your profile, weekly plan, saved sessions, custom routines, imported history, and reminder. You'll be returned to onboarding.")
             }
-        }
-    }
-
-    /// Full local wipe. `MemoryStore.wipeAllUserData()` clears both storage
-    /// layers (UserDefaults + the SQLite store) and cancels the pending
-    /// reminder; the per-store resets drop the live @Published caches so the
-    /// app falls back to the onboarding cover immediately (driven by
-    /// `MemoryStore.isOnboarded`).
-    private func eraseAllData() {
-        MemoryStore.wipeAllUserData()
-        store.reset()
-        sessionStore.clearInMemoryState()
-        customStore.reload()
-        planStore.clear()
-    }
-
-    // MARK: - Backup / restore
-
-    private func exportBackup() {
-        do {
-            let envelope = BackupManager.snapshot()
-            let url = try BackupManager.writeTempFile(envelope)
-            exportURL = url
-            presentingShare = true
-        } catch {
-            backupError = (error as? BackupError)?.errorDescription ?? error.localizedDescription
         }
     }
 
@@ -703,50 +552,13 @@ struct ProfileScreen: View {
                 to: dir
             )
             print("[EvalRigExporter] Wrote \(url.path)")
-            exportURL = url
-            presentingShare = true
+            backup.exportURL = url
+            backup.presentingShare = true
         } catch {
             print("[EvalRigExporter] Export failed: \(error.localizedDescription)")
         }
     }
     #endif
-
-    private func handleImport(_ result: Result<[URL], Error>) {
-        switch result {
-        case .failure(let err):
-            backupError = err.localizedDescription
-        case .success(let urls):
-            guard let url = urls.first else { return }
-            let didStart = url.startAccessingSecurityScopedResource()
-            defer { if didStart { url.stopAccessingSecurityScopedResource() } }
-            do {
-                // Decode + validate now, but defer the destructive write until
-                // the user confirms — restore replaces ALL local data.
-                let data = try Data(contentsOf: url)
-                let envelope = try BackupManager.decode(data)
-                pendingRestore = envelope
-                confirmingRestore = true
-            } catch {
-                backupError = (error as? BackupError)?.errorDescription ?? error.localizedDescription
-            }
-        }
-    }
-
-    /// Apply a confirmed restore, then reload every in-memory store from its
-    /// source so the UI reflects the imported data immediately — no relaunch.
-    private func performRestore(_ envelope: BackupEnvelope) {
-        do {
-            try BackupManager.restore(envelope, into: .standard)
-            store.reload()
-            planStore.reloadFromDefaults()
-            sessionStore.reload()
-            customStore.reload()
-            pendingRestore = nil
-            restoreCompleted = true
-        } catch {
-            backupError = (error as? BackupError)?.errorDescription ?? error.localizedDescription
-        }
-    }
 
     private static let shortDateFormatter: DateFormatter = {
         let f = DateFormatter()
@@ -793,20 +605,4 @@ struct ProfileScreen: View {
         .environmentObject(PlanStore(defaults: defaults))
         .environmentObject(SessionStore(defaults: defaults))
         .environmentObject(CustomRoutineStore(defaults: defaults))
-}
-
-// MARK: - Share sheet bridge
-
-/// Thin UIActivityViewController wrapper so the Profile screen can present
-/// the system share sheet for the export file URL. SwiftUI has ShareLink
-/// but the file-URL ergonomics + iPad popover behavior are still cleaner
-/// via the UIKit bridge.
-struct ShareSheet: UIViewControllerRepresentable {
-    let items: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
-
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
