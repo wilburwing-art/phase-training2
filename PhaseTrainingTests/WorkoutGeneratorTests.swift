@@ -1002,6 +1002,92 @@ final class WorkoutGeneratorTests: XCTestCase {
         }
     }
 
+    /// Find a catalog exercise with NO same-pattern curated substitute (the
+    /// ~70% uncovered case) whose pattern pool still contains another
+    /// exercise sharing a primary muscle — the fixture for the fallback
+    /// tests. Scans for data presence per the test-by-coverage skill.
+    private func fallbackFixture() throws -> (orig: Exercise, pattern: String, pool: [Exercise]) {
+        for p in ["horizontal-push", "squat", "horizontal-pull", "hip-hinge", "vertical-push", "vertical-pull", "elbow-flexion", "elbow-extension"] {
+            let pool = CoachDatabase.shared.exercises(matchingPattern: p)
+            for e in pool {
+                let hasSamePatternSub = CoachDatabase.shared.substitutes(forExerciseId: e.id).contains { s in
+                    s.exercise.id != e.id
+                        && Set(CoachDatabase.shared.patternsForExercise(s.exercise.id)).contains(p)
+                }
+                if hasSamePatternSub { continue }
+                let primaries = Set(CoachDatabase.shared.musclesForExercise(e.id)
+                    .filter { $0.role == "primary" }.map(\.slug))
+                guard !primaries.isEmpty else { continue }
+                let hasOverlapPeer = pool.contains { c in
+                    c.id != e.id && !Set(CoachDatabase.shared.musclesForExercise(c.id)
+                        .filter { $0.role == "primary" }.map(\.slug)).isDisjoint(with: primaries)
+                }
+                if hasOverlapPeer { return (e, p, pool) }
+            }
+        }
+        throw XCTSkip("no catalog exercise without a curated same-pattern substitute has a muscle-overlap peer")
+    }
+
+    /// The pattern-pool fallback: an uncovered stagnant exercise still gets
+    /// swapped — to a same-pattern candidate sharing a primary muscle —
+    /// instead of silently keeping the stagnant pick.
+    func test_stagnationSwap_fallbackFiresWhenNoCuratedSubstitute() throws {
+        let (orig, pattern, pool) = try fallbackFixture()
+        var ctx = GeneratorContext.empty
+        ctx.stagnantExercises = [orig.name.lowercased()]
+        let slot = PatternSlot(alternatives: [pattern], optional: false)
+        let result = WorkoutGenerator.applyStagnationSwap(
+            original: orig, context: ctx, envs: [], allowedEquipmentSlugs: [],
+            excludeKws: [], excludeIds: [], slot: slot,
+            fallbackPool: { pool })
+
+        XCTAssertNotEqual(result.id, orig.id,
+            "fallback should swap uncovered stagnant '\(orig.name)' (pattern \(pattern))")
+        let op = Set(CoachDatabase.shared.musclesForExercise(orig.id)
+            .filter { $0.role == "primary" }.map(\.slug))
+        let np = Set(CoachDatabase.shared.musclesForExercise(result.id)
+            .filter { $0.role == "primary" }.map(\.slug))
+        XCTAssertFalse(op.isDisjoint(with: np),
+            "fallback swap '\(orig.name)' → '\(result.name)' must share a primary muscle")
+    }
+
+    /// Hysteresis: candidates in `recentlyPicked` are hard-excluded from
+    /// BOTH the curated and fallback paths — when everything viable is
+    /// recent, the swap conservatively keeps the original (blocks the
+    /// A↔B oscillation the generator audit flagged).
+    func test_stagnationSwap_hysteresis_skipsRecentlyPicked() throws {
+        let (orig, pattern, pool) = try fallbackFixture()
+        var ctx = GeneratorContext.empty
+        ctx.stagnantExercises = [orig.name.lowercased()]
+        let slot = PatternSlot(alternatives: [pattern], optional: false)
+        // Every possible candidate — curated subs AND the whole fallback
+        // pool — is "recently picked".
+        let allRecent = Set(pool.map(\.id))
+            .union(CoachDatabase.shared.substitutes(forExerciseId: orig.id).map(\.exercise.id))
+        let result = WorkoutGenerator.applyStagnationSwap(
+            original: orig, context: ctx, envs: [], allowedEquipmentSlugs: [],
+            excludeKws: [], excludeIds: [], recentlyPicked: allRecent,
+            slot: slot, fallbackPool: { pool })
+        XCTAssertEqual(result.id, orig.id,
+            "all candidates recent → keep the original rather than oscillate")
+    }
+
+    /// The fallback rank (muscle-overlap desc, id asc) has no RNG — same
+    /// inputs must produce the same swap.
+    func test_stagnationSwap_fallback_deterministic() throws {
+        let (orig, pattern, pool) = try fallbackFixture()
+        var ctx = GeneratorContext.empty
+        ctx.stagnantExercises = [orig.name.lowercased()]
+        let slot = PatternSlot(alternatives: [pattern], optional: false)
+        let run: () -> Exercise = {
+            WorkoutGenerator.applyStagnationSwap(
+                original: orig, context: ctx, envs: [], allowedEquipmentSlugs: [],
+                excludeKws: [], excludeIds: [], slot: slot,
+                fallbackPool: { pool })
+        }
+        XCTAssertEqual(run().id, run().id, "fallback pick must be deterministic")
+    }
+
     // MARK: - Duration budget
 
     /// T2.4 — a very short session trims required-slot sets to fit rather than

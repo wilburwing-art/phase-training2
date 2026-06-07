@@ -181,6 +181,10 @@ enum WorkoutGenerator {
             // Stagnation swap: if the user's pick is on the stagnant list
             // (canonical lift with no PR in 4 weeks) and a substitute is
             // available + still within their constraints, prefer the swap.
+            // recentlyPicked = hysteresis against A↔B swap oscillation; the
+            // lazy fallbackPool (slot's own pattern pool, satisfiedBy is set
+            // by pickForSlot — PatternSlot is a class) covers exercises with
+            // no curated substitution rows.
             let picked = applyStagnationSwap(
                 original: initial,
                 context: context,
@@ -188,7 +192,20 @@ enum WorkoutGenerator {
                 allowedEquipmentSlugs: profile.allowedEquipmentSlugs,
                 excludeKws: excludeKws,
                 excludeIds: pickedIds,
-                slot: slot
+                recentlyPicked: recentlyPicked,
+                slot: slot,
+                fallbackPool: {
+                    guard let pattern = slot.satisfiedBy else { return [] }
+                    return queryCache.exercises(
+                        matchingPattern: pattern,
+                        environments: envs,
+                        excludeKeywords: excludeKws,
+                        excludeIds: pickedIds,
+                        modalities: slot.requiredModalities,
+                        userSportSlugs: profile.userSportSlugs,
+                        allowedEquipmentSlugs: profile.allowedEquipmentSlugs
+                    )
+                }
             )
 
             // Required slots TRIM their set count to fit the remaining budget
@@ -689,6 +706,21 @@ enum WorkoutGenerator {
     /// it for the highest-scoring substitute that still passes the same
     /// constraints. Returns the original pick when no acceptable swap
     /// exists. Conservative — won't bust env / dislike / injury filters.
+    ///
+    /// `recentlyPicked` is the HYSTERESIS guard (generator-audit oscillation
+    /// finding): an exercise swapped away weeks ago is still in the
+    /// cross-week recently-picked set, so excluding recent ids here blocks
+    /// the A → B → A swap-back for the rotation window. Hard exclusion on
+    /// purpose — if every candidate is recent we keep the stagnant original
+    /// for one more week rather than re-open the oscillation.
+    ///
+    /// `fallbackPool` covers the ~70% of the catalog with NO curated
+    /// exercise_substitutions rows: when the curated loop fails, candidates
+    /// from the slot's own pattern pool (already filtered for env /
+    /// equipment / dislikes / modality / excludeIds at the SQL boundary)
+    /// are ranked by primary-muscle overlap with the original — squat →
+    /// leg press, not squat → any same-pattern outlier. Evaluated lazily so
+    /// the query only runs when the curated path comes up empty.
     static func applyStagnationSwap(
         original: Exercise,
         context: GeneratorContext,
@@ -696,7 +728,9 @@ enum WorkoutGenerator {
         allowedEquipmentSlugs: Set<String>,
         excludeKws: [String],
         excludeIds: Set<Int>,
-        slot: PatternSlot
+        recentlyPicked: Set<Int> = [],
+        slot: PatternSlot,
+        fallbackPool: () -> [Exercise] = { [] }
     ) -> Exercise {
         guard context.stagnantExercises.contains(original.name.lowercased()) else {
             return original
@@ -705,6 +739,7 @@ enum WorkoutGenerator {
         for sub in substitutes {
             let candidate = sub.exercise
             if excludeIds.contains(candidate.id) { continue }
+            if recentlyPicked.contains(candidate.id) { continue }   // hysteresis
             // Env filter: empty envs = no restriction (e.g. fullGym user).
             if !envs.isEmpty, let env = candidate.environment, !envs.contains(env) {
                 continue
@@ -731,7 +766,37 @@ enum WorkoutGenerator {
             if candidatePatterns.isDisjoint(with: Set(slot.alternatives)) { continue }
             return candidate
         }
-        return original
+
+        // Curated path exhausted — deterministic pattern-pool fallback.
+        // The pool arrives pre-filtered (env / equipment / dislikes /
+        // modality / excludeIds applied at the cache query); the explicit
+        // re-checks below only guard direct-call test usage. Require a
+        // primary-muscle overlap with the original; rank overlap desc,
+        // then id asc. No RNG.
+        let originalPrimaries = Set(
+            CoachDatabase.shared.musclesForExercise(original.id)
+                .filter { $0.role == "primary" }.map(\.slug))
+        guard !originalPrimaries.isEmpty else { return original }
+        var best: (overlap: Int, exercise: Exercise)?
+        for candidate in fallbackPool() {
+            if candidate.id == original.id { continue }
+            if excludeIds.contains(candidate.id) { continue }
+            if recentlyPicked.contains(candidate.id) { continue }   // hysteresis
+            let candPrimaries = Set(
+                CoachDatabase.shared.musclesForExercise(candidate.id)
+                    .filter { $0.role == "primary" }.map(\.slug))
+            let overlap = candPrimaries.intersection(originalPrimaries).count
+            guard overlap > 0 else { continue }
+            if let current = best {
+                if overlap > current.overlap
+                    || (overlap == current.overlap && candidate.id < current.exercise.id) {
+                    best = (overlap, candidate)
+                }
+            } else {
+                best = (overlap, candidate)
+            }
+        }
+        return best?.exercise ?? original
     }
 
     /// True when the exercise's primary muscle group (resolved via
