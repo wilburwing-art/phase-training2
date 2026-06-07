@@ -212,7 +212,7 @@ enum WorkoutGenerator {
             // (T2.4) rather than overrun a short session; optional slots pass
             // nil and are dropped below if they don't fit.
             let (row, baseDurSec) = makePickedRow(
-                picked: picked, slot: slot, slotIdx: slotIdx, focus: focus,
+                picked: picked, pattern: slot.satisfiedBy, slotIdx: slotIdx, focus: focus,
                 memory: memory, profile: profile, context: context,
                 strategy: strategy, hashSeed: hashSeed,
                 budgetRemainingSec: slot.optional ? nil : max(0, budgetSec - elapsedSec))
@@ -312,7 +312,7 @@ enum WorkoutGenerator {
                     recentlyPicked: recentlyPicked, hashSeed: hashSeed,
                     cache: queryCache, context: context, strategy: strategy) else { continue }
                 let (row, durSec) = makePickedRow(
-                    picked: pick, slot: slot, slotIdx: picks.count, focus: focus,
+                    picked: pick, pattern: slot.satisfiedBy, slotIdx: picks.count, focus: focus,
                     memory: memory, profile: profile, context: context,
                     strategy: strategy, hashSeed: hashSeed)
                 if elapsedSec + durSec > budgetSec, !picks.isEmpty { continue }
@@ -337,7 +337,7 @@ enum WorkoutGenerator {
                     recentlyPicked: recentlyPicked, hashSeed: hashSeed,
                     cache: queryCache, context: context, strategy: strategy) else { continue }
                 let (row, durSec) = makePickedRow(
-                    picked: pick, slot: slot, slotIdx: picks.count, focus: focus,
+                    picked: pick, pattern: slot.satisfiedBy, slotIdx: picks.count, focus: focus,
                     memory: memory, profile: profile, context: context,
                     strategy: strategy, hashSeed: hashSeed)
                 guard elapsedSec + durSec <= budgetSec else { break }
@@ -382,11 +382,13 @@ enum WorkoutGenerator {
     /// same prescription, readiness/deload set-scaling, progressive-overload
     /// note, compound RPE cap, and warm-up rules the main slot loop uses.
     /// Returns the row plus its PRE-multiplier duration (the budget-accounting
-    /// cost). Shared by the main loop AND the degradation floor so the two
-    /// never drift apart (the dual-path trap — see the prescription skill).
-    private static func makePickedRow(
+    /// cost). Shared by the main loop, the degradation floor, AND the
+    /// represcribe path (WorkoutGenerator+Represcribe) so they never drift
+    /// apart (the dual-path trap — see the prescription skill). `pattern` is
+    /// the slot's satisfiedBy at the loop call sites; nil for represcribe.
+    static func makePickedRow(
         picked: Exercise,
-        slot: PatternSlot,
+        pattern: String?,
         slotIdx: Int,
         focus: WorkoutFocus,
         memory: TrainingMemory,
@@ -435,7 +437,7 @@ enum WorkoutGenerator {
             id: "\(hashSeed)-\(slotIdx)-\(picked.id)",
             exerciseId: picked.id,
             name: picked.name,
-            pattern: slot.satisfiedBy,
+            pattern: pattern,
             isCompound: picked.isCompound,
             sets: sets,
             reps: reps,

@@ -31,7 +31,7 @@ extension PlanStore {
         // so the user's "use my saved leg workout for Thursday" pick
         // survives plan regens. Done as post-processing because the
         // Planner is stateless and doesn't know about CustomRoutineStore.
-        let pWithCustoms = applyCustomRoutineOverrides(to: p)
+        let pWithCustoms = applyCustomRoutineOverrides(to: p, memory: memory, context: context)
         self.plan = pWithCustoms
         savePlan()
         recordPickedExercises(in: pWithCustoms)
@@ -50,7 +50,9 @@ extension PlanStore {
     /// composed from a CustomRoutine when `overrides.customRoutineByDate`
     /// has an entry for that date. No-op if customStore isn't wired or
     /// the referenced routine has been deleted.
-    private func applyCustomRoutineOverrides(to plan: WeekPlan) -> WeekPlan {
+    private func applyCustomRoutineOverrides(to plan: WeekPlan,
+                                             memory: TrainingMemory,
+                                             context: GeneratorContext) -> WeekPlan {
         guard let customStore else { return plan }
         guard !overrides.customRoutineByDate.isEmpty else { return plan }
         var updated = plan
@@ -69,6 +71,38 @@ extension PlanStore {
                 updated.days[idx].kind = .lift
             }
             updated.days[idx].generatedReason = "Your saved workout"
+        }
+        // Prescription refresh (shape B of the saved-workout load options):
+        // a SECOND pass, after every kind flip above, so the focus
+        // derivation sees the final lift-day layout. Re-derived from the
+        // persisted intent on every generate() — that's what makes the
+        // refresh survive plan regeneration. refinedByLLMAt stays nil and
+        // the customRoutineId exclusion in refinementCandidates is keyed on
+        // the override dict, so LLM-refinement protection is untouched.
+        if overrides.prescriptionRefreshByDate?.isEmpty == false {
+            let profile = DemographicProfile.from(memory)
+            let cal = Calendar.current
+            let liftDays = updated.days.filter { $0.kind == .lift }
+            for idx in updated.days.indices {
+                let day = updated.days[idx]
+                guard overrides.customRoutineId(for: day.date) != nil,
+                      let mode = overrides.prescriptionRefreshMode(for: day.date),
+                      let workout = day.generatedWorkout else { continue }
+                // Focus: the user's focus chip if they set one, else the
+                // day's position in the week's lift rotation (the same
+                // derivation LLM refinement anchors on), else full body.
+                let focus: WorkoutFocus
+                if let chip = overrides.override(on: day.date)?.liftFocus {
+                    focus = chip.asWorkoutFocus
+                } else if let liftIndex = liftDays.firstIndex(where: { cal.isDate($0.date, inSameDayAs: day.date) }) {
+                    focus = WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: liftDays.count)
+                } else {
+                    focus = .fullBodyA
+                }
+                updated.days[idx].generatedWorkout = WorkoutGenerator.represcribe(
+                    workout: workout, mode: mode, focus: focus,
+                    memory: memory, profile: profile, context: context)
+            }
         }
         return updated
     }

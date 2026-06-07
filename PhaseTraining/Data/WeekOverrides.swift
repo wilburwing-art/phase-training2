@@ -209,6 +209,19 @@ enum DayKindOverride: Codable, Hashable {
     }
 }
 
+// MARK: - Prescription refresh
+
+/// Per-date "refresh prescriptions" pick for a custom-routine override day.
+/// Stored as INTENT — applyCustomRoutineOverrides re-derives the refreshed
+/// workout deterministically on every generate(), so the refresh survives
+/// plan regeneration the same way customRoutineByDate itself does.
+/// Raw-string cases per repo Codable hygiene: never remove a case without
+/// migration (a decode throw resets the whole week's overrides).
+enum PrescriptionRefreshMode: String, Codable, Hashable {
+    case fullRefresh = "full"          // new sets, reps & weights
+    case weightsOnly = "weights_only"  // recompute target notes only
+}
+
 // MARK: - WeekOverrides
 
 struct WeekOverrides: Codable {
@@ -227,6 +240,12 @@ struct WeekOverrides: Codable {
     /// (no adjustment). Optional + decoded with decodeIfPresent so existing
     /// persisted payloads decode unchanged.
     var weekTone: WeekTone?
+    /// Per-date prescription refresh on a custom-routine override day.
+    /// Date (startOfDay) → mode. MUST stay Optional (weekTone pattern):
+    /// synthesized Codable throws keyNotFound for a non-optional field
+    /// missing from an old payload, nuking the whole week's overrides via
+    /// the try? decode in PlanStore.
+    var prescriptionRefreshByDate: [Date: PrescriptionRefreshMode]?
 
     init(weekStart: Date) {
         self.weekStart = weekStart
@@ -259,6 +278,29 @@ extension WeekOverrides {
         return nil
     }
 
+    /// Prescription-refresh mode selected for `date`, if any.
+    func prescriptionRefreshMode(for date: Date, calendar: Calendar = .current) -> PrescriptionRefreshMode? {
+        for (k, v) in prescriptionRefreshByDate ?? [:] where calendar.isDate(k, inSameDayAs: date) {
+            return v
+        }
+        return nil
+    }
+
+    /// Set (or clear, with nil) the prescription-refresh mode for `date`.
+    /// Same-day keys are removed first so time-of-day never duplicates.
+    mutating func setPrescriptionRefresh(_ mode: PrescriptionRefreshMode?,
+                                         for date: Date,
+                                         calendar: Calendar = .current) {
+        var map = prescriptionRefreshByDate ?? [:]
+        for k in map.keys where calendar.isDate(k, inSameDayAs: date) {
+            map.removeValue(forKey: k)
+        }
+        if let mode {
+            map[calendar.startOfDay(for: date)] = mode
+        }
+        prescriptionRefreshByDate = map.isEmpty ? nil : map
+    }
+
     /// All events landing on `date`. Usually 0 or 1; planner defends against >1
     /// by taking the first.
     func events(on date: Date, calendar: Calendar = .current) -> [WeekEvent] {
@@ -282,6 +324,9 @@ extension WeekOverrides {
         for k in stale { dayOverrides.removeValue(forKey: k) }
         let staleCustom = customRoutineByDate.keys.filter { calendar.isDate($0, inSameDayAs: date) }
         for k in staleCustom { customRoutineByDate.removeValue(forKey: k) }
+        // A prescription refresh is meaningless without its custom override —
+        // it clears with the day.
+        setPrescriptionRefresh(nil, for: date, calendar: calendar)
     }
 }
 

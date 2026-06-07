@@ -587,4 +587,201 @@ final class PlanStoreSeamsTests: XCTestCase {
         XCTAssertTrue(store.overrides.unavailableDays.isEmpty,
                       "last week's unavailable days must not leak into this week")
     }
+
+    // MARK: - Prescription refresh (shape B of the saved-workout load options)
+
+    /// Two REAL coach.db exercises from the horizontal-push pool — refresh
+    /// tests must resolve real rows (a fake id hits the dangling-id keep
+    /// path) and priorBest keys on the real lowercased name.
+    private func realPushPair() throws -> (a: Exercise, b: Exercise) {
+        let pool = CoachDatabase.shared.exercises(matchingPattern: "horizontal-push")
+        let a = try XCTUnwrap(pool.first, "coach.db must have horizontal-push exercises")
+        let b = try XCTUnwrap(pool.dropFirst().first)
+        return (a, b)
+    }
+
+    /// Store with a 2-exercise custom routine scheduled on the first lift
+    /// day, plus the given refresh mode. Returns the override date.
+    private func refreshFixture(mode: PrescriptionRefreshMode?,
+                                notes: String? = nil,
+                                today: Date) throws -> (store: PlanStore, memory: TrainingMemory, date: Date) {
+        let (a, b) = try realPushPair()
+        let store = makeStore()
+        let memory = gymMemory()
+        let baseline = store.generate(from: memory, today: today)
+        let liftDay = try XCTUnwrap(baseline.days.first { $0.kind == .lift })
+
+        let routine = CustomRoutine(
+            id: "rid-refresh",
+            name: "Refresh Check",
+            exercises: [
+                CustomRoutineExercise(id: "cex-0", exerciseId: a.id, name: a.name,
+                                      position: 0, sets: 4, reps: "8-12", rest: "90s",
+                                      notes: notes, supersetGroup: nil),
+                CustomRoutineExercise(id: "cex-1", exerciseId: b.id, name: b.name,
+                                      position: 1, sets: 3, reps: "10", rest: "60s",
+                                      notes: nil, supersetGroup: nil),
+            ],
+            createdAt: today)
+        store.customStore = customStore(with: [routine])
+        store.updateOverrides(today: today) {
+            $0.customRoutineByDate[liftDay.date] = routine.id
+            if let mode { $0.setPrescriptionRefresh(mode, for: liftDay.date) }
+        }
+        return (store, memory, liftDay.date)
+    }
+
+    func test_generate_refreshFull_keepsExerciseIdentityAndOrder() throws {
+        let today = monday()
+        let cal = Calendar.current
+        let (a, b) = try realPushPair()
+        let (store, memory, date) = try refreshFixture(mode: .fullRefresh, today: today)
+
+        let regen = store.generate(from: memory, today: today)
+        let day = try XCTUnwrap(regen.days.first { cal.isDate($0.date, inSameDayAs: date) })
+        let workout = try XCTUnwrap(day.generatedWorkout)
+
+        XCTAssertEqual(workout.exercises.map(\.exerciseId), [a.id, b.id],
+                       "fullRefresh must never re-pick or reorder exercises")
+        XCTAssertEqual(workout.exercises.map(\.name), [a.name, b.name])
+        XCTAssertEqual(workout.exercises.map(\.id), ["custom-rid-refresh-0", "custom-rid-refresh-1"],
+                       "stored row ids survive (session pairing depends on them)")
+    }
+
+    func test_generate_refreshFull_appliesGeneratorPrescriptions_andKeepsUserNote() throws {
+        let today = monday()
+        let cal = Calendar.current
+        let (store, memory, date) = try refreshFixture(
+            mode: .fullRefresh, notes: "keep elbows in", today: today)
+
+        let regen = store.generate(from: memory, today: today)
+        let day = try XCTUnwrap(regen.days.first { cal.isDate($0.date, inSameDayAs: date) })
+        let row0 = try XCTUnwrap(day.generatedWorkout?.exercises.first)
+
+        // Generator-grade markers compose never produces: RPE + tempo cues.
+        XCTAssertNotNil(row0.rpe, "fullRefresh rows carry the generator's RPE cue")
+        XCTAssertNotNil(row0.tempo, "fullRefresh rows carry the generator's tempo cue")
+        // The user's own note is merged, not clobbered.
+        XCTAssertTrue(row0.notes?.contains("keep elbows in") == true,
+                      "user note must survive the refresh; got \(row0.notes ?? "nil")")
+        XCTAssertNil(day.generatedWorkout?.refinedByLLMAt,
+                     "refreshed workouts must NOT look LLM-refined")
+    }
+
+    func test_generate_refreshFull_survivesSecondGenerate_andIsDeterministic() throws {
+        let today = monday()
+        let cal = Calendar.current
+        let (store, memory, date) = try refreshFixture(mode: .fullRefresh, today: today)
+
+        let first = store.generate(from: memory, today: today)
+        let second = store.generate(from: memory, today: today)
+        let d1 = try XCTUnwrap(first.days.first { cal.isDate($0.date, inSameDayAs: date) })
+        let d2 = try XCTUnwrap(second.days.first { cal.isDate($0.date, inSameDayAs: date) })
+
+        XCTAssertEqual(d1.generatedWorkout?.exercises, d2.generatedWorkout?.exercises,
+                       "the refresh is re-derived identically on every generate()")
+    }
+
+    func test_generate_refreshWeightsOnly_preservesSetsRepsRest_recomputesTarget() throws {
+        let today = monday()
+        let cal = Calendar.current
+        let (a, _) = try realPushPair()
+        let (store, memory, date) = try refreshFixture(mode: .weightsOnly, today: today)
+        let sessions = emptySessionStore()
+        sessions.savedSessions = [
+            savedSession(name: a.name, weight: "225", reps: "5",
+                         startTime: cal.date(byAdding: .day, value: -3, to: today)!)
+        ]
+        store.sessionStore = sessions
+
+        let regen = store.generate(from: memory, today: today)
+        let day = try XCTUnwrap(regen.days.first { cal.isDate($0.date, inSameDayAs: date) })
+        let row0 = try XCTUnwrap(day.generatedWorkout?.exercises.first)
+
+        XCTAssertEqual(row0.sets, 4, "weightsOnly keeps stored sets")
+        XCTAssertEqual(row0.reps, "8-12", "weightsOnly keeps stored reps")
+        XCTAssertEqual(row0.restSeconds, 90, "weightsOnly keeps stored rest")
+        XCTAssertNil(row0.rpe, "weightsOnly must not add prescription cues")
+        XCTAssertNil(row0.tempo)
+        XCTAssertTrue(row0.notes?.contains("target:") == true,
+                      "weightsOnly recomputes the overload target; got \(row0.notes ?? "nil")")
+    }
+
+    func test_generate_refreshWeightsOnly_noPriorBest_leavesRowUntouched() throws {
+        let today = monday()
+        let cal = Calendar.current
+        let (store, memory, date) = try refreshFixture(mode: .weightsOnly, today: today)
+        // No sessionStore wired → empty context → no priorBest.
+
+        let regen = store.generate(from: memory, today: today)
+        let day = try XCTUnwrap(regen.days.first { cal.isDate($0.date, inSameDayAs: date) })
+        let row0 = try XCTUnwrap(day.generatedWorkout?.exercises.first)
+
+        XCTAssertEqual(row0.sets, 4)
+        XCTAssertEqual(row0.reps, "8-12")
+        XCTAssertEqual(row0.restSeconds, 90)
+        XCTAssertNil(row0.notes, "no priorBest and no user note → row unchanged")
+    }
+
+    func test_generate_refresh_unresolvableExerciseId_keepsStoredRow() throws {
+        let today = monday()
+        let cal = Calendar.current
+        let store = makeStore()
+        let memory = gymMemory()
+        let baseline = store.generate(from: memory, today: today)
+        let liftDay = try XCTUnwrap(baseline.days.first { $0.kind == .lift })
+
+        let routine = CustomRoutine(
+            id: "rid-dangle", name: "Dangling",
+            exercises: [CustomRoutineExercise(id: "cex-0", exerciseId: 999_999,
+                                              name: "Ghost Press", position: 0,
+                                              sets: 5, reps: "6", rest: "120s",
+                                              notes: nil, supersetGroup: nil)],
+            createdAt: today)
+        store.customStore = customStore(with: [routine])
+        store.updateOverrides(today: today) {
+            $0.customRoutineByDate[liftDay.date] = routine.id
+            $0.setPrescriptionRefresh(.fullRefresh, for: liftDay.date)
+        }
+
+        let regen = store.generate(from: memory, today: today)
+        let day = try XCTUnwrap(regen.days.first { cal.isDate($0.date, inSameDayAs: liftDay.date) })
+        let row = try XCTUnwrap(day.generatedWorkout?.exercises.first)
+
+        XCTAssertEqual(row.sets, 5, "unresolvable id keeps the stored prescription")
+        XCTAssertEqual(row.reps, "6")
+        XCTAssertEqual(row.restSeconds, 120)
+        XCTAssertNil(row.rpe)
+    }
+
+    func test_generate_refreshWithoutCustomOverride_isNoop() throws {
+        let today = monday()
+        let cal = Calendar.current
+        let store = makeStore()
+        let memory = gymMemory()
+        let baseline = store.generate(from: memory, today: today)
+        let liftDay = try XCTUnwrap(baseline.days.first { $0.kind == .lift })
+
+        // Refresh intent WITHOUT a custom override on the date.
+        store.updateOverrides(today: today) {
+            $0.setPrescriptionRefresh(.fullRefresh, for: liftDay.date)
+        }
+        let regen = store.generate(from: memory, today: today)
+        let before = try XCTUnwrap(baseline.days.first { cal.isDate($0.date, inSameDayAs: liftDay.date) })
+        let after = try XCTUnwrap(regen.days.first { cal.isDate($0.date, inSameDayAs: liftDay.date) })
+
+        XCTAssertEqual(before.generatedWorkout?.exercises, after.generatedWorkout?.exercises,
+                       "refresh is gated on the custom override existing")
+    }
+
+    func test_refreshedDay_excludedFromRefinementCandidates() throws {
+        let today = monday()
+        let cal = Calendar.current
+        let (store, memory, date) = try refreshFixture(mode: .fullRefresh, today: today)
+
+        let regen = store.generate(from: memory, today: today)
+        let candidates = store.refinementCandidates(in: regen)
+        XCTAssertFalse(candidates.contains { cal.isDate($0.day.date, inSameDayAs: date) },
+                       "a refreshed custom day stays excluded from LLM refinement")
+    }
 }

@@ -33,6 +33,7 @@ struct WeekDayEditSheet: View {
     /// without scrolling, especially on iPhone SE.
     @State private var pickingLiftFocus = false
     @State private var showingClearConfirm = false
+    @State private var showingRefreshOptions = false
     /// One-per-day event rule: tapping an add action while the day already
     /// holds an event routes through a replace confirmation instead of
     /// silently clobbering it on save. Tracks which add flow to resume.
@@ -123,6 +124,16 @@ struct WeekDayEditSheet: View {
                     pickingLiftFocus = false
                 }
             )
+        }
+        .confirmationDialog("Refresh prescriptions", isPresented: $showingRefreshOptions, titleVisibility: .visible) {
+            Button("New sets, reps & weights") { setRefreshMode(.fullRefresh) }
+            Button("New weights only") { setRefreshMode(.weightsOnly) }
+            if planStore.overrides.prescriptionRefreshMode(for: date) != nil {
+                Button("Use saved prescriptions") { setRefreshMode(nil) }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Re-derive this day's prescriptions from your training data. The exercises stay exactly as saved.")
         }
         .alert("Clear overrides for this day?", isPresented: $showingClearConfirm) {
             Button("Clear", role: .destructive) { clearOverrides() }
@@ -229,6 +240,20 @@ struct WeekDayEditSheet: View {
                     action: { overridingWorkout = true }
                 )
 
+                // Shape B of the saved-workout load options: the zero-tap
+                // default (plain load = stored prescriptions) is untouched;
+                // this opt-in row only appears once a custom routine is
+                // scheduled on the day.
+                if planStore.overrides.customRoutineId(for: date) != nil {
+                    ActionRow(
+                        title: "Refresh prescriptions",
+                        subtitle: refreshSubtitle,
+                        icon: "arrow.clockwise",
+                        action: { showingRefreshOptions = true }
+                    )
+                    .accessibilityIdentifier("week-day-refresh-prescriptions-action")
+                }
+
                 // PR 6 — LiftFocus picker. Shows current selection when set
                 // so the user can tell at a glance whether they've already
                 // picked a focus for this day.
@@ -294,6 +319,20 @@ struct WeekDayEditSheet: View {
     private var intensitySubtitle: String {
         guard let event = currentEvent else { return "" }
         return "Currently \(event.intensity.label.lowercased())"
+    }
+
+    private var refreshSubtitle: String {
+        switch planStore.overrides.prescriptionRefreshMode(for: date) {
+        case .fullRefresh: return "Refreshed: sets, reps & weights"
+        case .weightsOnly: return "Refreshed: weights only"
+        case nil:          return "Saved prescriptions"
+        }
+    }
+
+    private func setRefreshMode(_ mode: PrescriptionRefreshMode?) {
+        planStore.updateOverrides(memory: memory.memory) { o in
+            o.setPrescriptionRefresh(mode, for: date)
+        }
     }
 
     private var currentEvent: WeekEvent? {

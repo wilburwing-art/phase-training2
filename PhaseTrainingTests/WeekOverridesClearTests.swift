@@ -242,4 +242,69 @@ final class WeekOverridesClearTests: XCTestCase {
 
         XCTAssertEqual(o.customRoutineId(for: day(1, hour: 21, minute: 45)), "tue-routine")
     }
+
+    // MARK: - Prescription refresh
+
+    func test_prescriptionRefreshMode_matchesAcrossTimeOfDay() {
+        var o = freshOverrides()
+        o.setPrescriptionRefresh(.fullRefresh, for: day(2, hour: 8, minute: 30))
+
+        XCTAssertEqual(o.prescriptionRefreshMode(for: day(2, hour: 22)), .fullRefresh)
+        XCTAssertNil(o.prescriptionRefreshMode(for: day(3)))
+    }
+
+    func test_setPrescriptionRefresh_replacesSameDayKey_andNilClears() {
+        var o = freshOverrides()
+        o.setPrescriptionRefresh(.fullRefresh, for: day(2, hour: 8))
+        o.setPrescriptionRefresh(.weightsOnly, for: day(2, hour: 19))
+
+        XCTAssertEqual(o.prescriptionRefreshByDate?.count, 1,
+                       "same-day set must replace, not duplicate")
+        XCTAssertEqual(o.prescriptionRefreshMode(for: day(2)), .weightsOnly)
+
+        o.setPrescriptionRefresh(nil, for: day(2))
+        XCTAssertNil(o.prescriptionRefreshMode(for: day(2)))
+        XCTAssertNil(o.prescriptionRefreshByDate, "empty map collapses to nil")
+    }
+
+    func test_clearDate_removesPrescriptionRefreshForDate() {
+        var o = freshOverrides()
+        o.customRoutineByDate = [day(2): "wed-push"]
+        o.setPrescriptionRefresh(.weightsOnly, for: day(2))
+        o.setPrescriptionRefresh(.fullRefresh, for: day(4))
+
+        o.clearDate(day(2))
+
+        XCTAssertNil(o.prescriptionRefreshMode(for: day(2)),
+                     "refresh clears with the day's custom override")
+        XCTAssertEqual(o.prescriptionRefreshMode(for: day(4)), .fullRefresh,
+                       "other days' refresh picks survive")
+    }
+
+    /// Legacy persisted payloads predate prescriptionRefreshByDate. The field
+    /// is Optional (weekTone pattern) precisely so the synthesized decoder
+    /// treats a missing key as nil instead of throwing keyNotFound — which
+    /// would nuke the whole week's overrides via PlanStore's try? decode.
+    func test_decodesLegacyPayloadWithoutRefreshKey() throws {
+        var o = freshOverrides()
+        o.customRoutineByDate = [day(1): "tue-routine"]
+        o.setPrescriptionRefresh(.fullRefresh, for: day(1))
+
+        let enc = JSONEncoder()
+        enc.dateEncodingStrategy = .secondsSince1970
+        let data = try enc.encode(o)
+        // Simulate a legacy payload: strip the new key entirely.
+        var json = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: data) as? [String: Any])
+        json.removeValue(forKey: "prescriptionRefreshByDate")
+        let legacy = try JSONSerialization.data(withJSONObject: json)
+
+        let dec = JSONDecoder()
+        dec.dateDecodingStrategy = .secondsSince1970
+        let decoded = try dec.decode(WeekOverrides.self, from: legacy)
+
+        XCTAssertNil(decoded.prescriptionRefreshByDate)
+        XCTAssertEqual(decoded.customRoutineId(for: day(1)), "tue-routine",
+                       "the rest of the payload decodes unchanged")
+    }
 }
