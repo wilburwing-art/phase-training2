@@ -24,21 +24,20 @@ private enum FontName {
     static let monoSemiBold         = "JetBrainsMono-SemiBold"
 }
 
-extension Font {
-    // MARK: Display (Space Grotesk, weight 600)
-    static let displayL = Font.custom(FontName.spaceGroteskSemiBold, size: 34) // tracking -0.03em
-    static let displayM = Font.custom(FontName.spaceGroteskSemiBold, size: 26) // tracking -0.03em
-    static let displayS = Font.custom(FontName.spaceGroteskSemiBold, size: 16) // tracking -0.02em
+// MARK: - Per-style spec
 
-    // MARK: Body (Inter)
-    static let body = Font.custom(FontName.inter, size: 13)
+/// One row per style: font name, size, em-relative tracking. Both `font`
+/// and `tracking` derive from the same row, so a size change can never
+/// leave tracking computed against a stale size.
+private struct TypeSpec {
+    let fontName: String
+    let size: CGFloat
+    let trackingEm: CGFloat
 
-    // MARK: Mono (JetBrains Mono)
-    static let monoL  = Font.custom(FontName.monoSemiBold, size: 22)   // weight 600, tracking -0.02em
-    static let monoM  = Font.custom(FontName.monoMedium,   size: 17)   // weight 500
-    static let monoS  = Font.custom(FontName.monoMedium,   size: 13.5) // weight 500
-    static let monoXS = Font.custom(FontName.monoRegular,  size: 11)   // weight 400
-    static let micro  = Font.custom(FontName.monoMedium,   size: 10)   // weight 500, tracking 0.14em, uppercase
+    var font: Font { Font.custom(fontName, size: size) }
+
+    /// Tracking in points (em ratio × size).
+    var tracking: CGFloat { trackingEm * size }
 }
 
 // MARK: - Type styles with tracking
@@ -52,31 +51,27 @@ enum TypeStyle {
     case monoL, monoM, monoS, monoXS
     case micro
 
-    var font: Font {
+    private var spec: TypeSpec {
         switch self {
-        case .displayL: return .displayL
-        case .displayM: return .displayM
-        case .displayS: return .displayS
-        case .body:     return .body
-        case .monoL:    return .monoL
-        case .monoM:    return .monoM
-        case .monoS:    return .monoS
-        case .monoXS:   return .monoXS
-        case .micro:    return .micro
+        // Display (Space Grotesk, weight 600)
+        case .displayL: return TypeSpec(fontName: FontName.spaceGroteskSemiBold, size: 34,   trackingEm: -0.03)
+        case .displayM: return TypeSpec(fontName: FontName.spaceGroteskSemiBold, size: 26,   trackingEm: -0.03)
+        case .displayS: return TypeSpec(fontName: FontName.spaceGroteskSemiBold, size: 16,   trackingEm: -0.02)
+        // Body (Inter)
+        case .body:     return TypeSpec(fontName: FontName.inter,                size: 13,   trackingEm: 0)
+        // Mono (JetBrains Mono)
+        case .monoL:    return TypeSpec(fontName: FontName.monoSemiBold,         size: 22,   trackingEm: -0.02) // weight 600
+        case .monoM:    return TypeSpec(fontName: FontName.monoMedium,           size: 17,   trackingEm: 0)     // weight 500
+        case .monoS:    return TypeSpec(fontName: FontName.monoMedium,           size: 13.5, trackingEm: 0)     // weight 500
+        case .monoXS:   return TypeSpec(fontName: FontName.monoRegular,          size: 11,   trackingEm: 0)     // weight 400
+        case .micro:    return TypeSpec(fontName: FontName.monoMedium,           size: 10,   trackingEm: 0.14)  // weight 500, uppercase
         }
     }
 
+    var font: Font { spec.font }
+
     /// Tracking in points (em ratio × size).
-    var tracking: CGFloat {
-        switch self {
-        case .displayL: return -0.03 * 34
-        case .displayM: return -0.03 * 26
-        case .displayS: return -0.02 * 16
-        case .monoL:    return -0.02 * 22
-        case .micro:    return  0.14 * 10
-        default:        return 0
-        }
-    }
+    var tracking: CGFloat { spec.tracking }
 
     /// Whether the style is upper-cased in the spec (Micro labels).
     ///
@@ -86,6 +81,24 @@ enum TypeStyle {
     /// `.textCase(.uppercase)`); StyleGuidePreview reads this flag to
     /// uppercase its samples the same way.
     var isUppercase: Bool { self == .micro }
+}
+
+// Font statics derived from the TypeSpec table above (sizes live there only).
+extension Font {
+    // MARK: Display (Space Grotesk, weight 600)
+    static let displayL = TypeStyle.displayL.font
+    static let displayM = TypeStyle.displayM.font
+    static let displayS = TypeStyle.displayS.font
+
+    // MARK: Body (Inter)
+    static let body = TypeStyle.body.font
+
+    // MARK: Mono (JetBrains Mono)
+    static let monoL  = TypeStyle.monoL.font
+    static let monoM  = TypeStyle.monoM.font
+    static let monoS  = TypeStyle.monoS.font
+    static let monoXS = TypeStyle.monoXS.font
+    static let micro  = TypeStyle.micro.font
 }
 
 extension Text {
