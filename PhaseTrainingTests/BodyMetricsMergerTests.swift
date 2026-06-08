@@ -191,4 +191,58 @@ final class BodyMetricsMergerTests: XCTestCase {
         XCTAssertEqual(result.summary.addedCompositionEntries, 2)
         XCTAssertEqual(result.summary.skippedDuplicateSamples, 1)
     }
+
+    // MARK: - Implausible-value rejection (B3)
+
+    func test_impossibleBodyFat_dropped() {
+        // A 0-1→0-100 double-scale (0.85 → 85 → ×100 = 250) or any junk
+        // reading above the physiological ceiling must not enter the log.
+        let bad = bm(.bodyFatPercent, daysAgo: 5, value: 250.0)
+        let good = bm(.bodyFatPercent, daysAgo: 5, value: 18.0)
+        let result = BodyMetricsMerger.merge(weightLog: [], compositionLog: [], samples: [bad, good])
+        XCTAssertEqual(result.composition.count, 1)
+        XCTAssertEqual(result.composition[0].bodyFatPercent, 18.0)
+    }
+
+    func test_zeroOrNegativeWeight_dropped() {
+        let zero = bm(.bodyMass, daysAgo: 3, value: 0)
+        let neg = bm(.bodyMass, daysAgo: 2, value: -5)
+        let real = bm(.bodyMass, daysAgo: 1, value: 79.0)
+        let result = BodyMetricsMerger.merge(weightLog: [], compositionLog: [], samples: [zero, neg, real])
+        XCTAssertEqual(result.weight.count, 1)
+        XCTAssertEqual(result.weight[0].weightKg, 79.0)
+        XCTAssertEqual(result.summary.addedWeightEntries, 1)
+    }
+
+    func test_bodyFatBoundary_keptAt75_droppedAbove() {
+        let edge = bm(.bodyFatPercent, daysAgo: 6, value: 75.0)        // kept
+        let over = bm(.bodyFatPercent, daysAgo: 2, value: 75.1)        // dropped
+        let result = BodyMetricsMerger.merge(weightLog: [], compositionLog: [], samples: [edge, over])
+        XCTAssertEqual(result.composition.count, 1)
+        XCTAssertEqual(result.composition[0].bodyFatPercent, 75.0)
+    }
+
+    // MARK: - Backfill→merge interaction (B6)
+    // BodyMetricsSyncSection seeds the onboarding scalar into the weight log
+    // FIRST, then merges HK samples. These pin that the 60s dedup window then
+    // governs whether an HK sample near the backfilled entry is kept.
+
+    func test_backfilledScalar_thenHKSampleWithinWindow_skipped() {
+        let backfilled = BodyWeightEntry(date: base, weightKg: 80.0, note: "Profile")
+        let hk = HKBodyMetricSample(uuid: UUID(), kind: .bodyMass,
+                                    date: base.addingTimeInterval(30), value: 80.2)
+        let result = BodyMetricsMerger.merge(weightLog: [backfilled], compositionLog: [], samples: [hk])
+        XCTAssertEqual(result.weight.count, 1, "HK sample 30s from the backfilled scalar must dedup")
+        XCTAssertEqual(result.summary.addedWeightEntries, 0)
+        XCTAssertEqual(result.summary.skippedDuplicateSamples, 1)
+    }
+
+    func test_backfilledScalar_thenHKSampleOutsideWindow_appended() {
+        let backfilled = BodyWeightEntry(date: base, weightKg: 80.0, note: "Profile")
+        let hk = HKBodyMetricSample(uuid: UUID(), kind: .bodyMass,
+                                    date: base.addingTimeInterval(120), value: 79.4)
+        let result = BodyMetricsMerger.merge(weightLog: [backfilled], compositionLog: [], samples: [hk])
+        XCTAssertEqual(result.weight.count, 2, "HK sample 120s away is a distinct reading")
+        XCTAssertEqual(result.summary.addedWeightEntries, 1)
+    }
 }

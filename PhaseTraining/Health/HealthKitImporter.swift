@@ -380,8 +380,13 @@ enum BodyMetricsMerger {
     static func merge(
         weightLog: [BodyWeightEntry],
         compositionLog: [BodyCompositionEntry],
-        samples: [HKBodyMetricSample]
+        samples rawSamples: [HKBodyMetricSample]
     ) -> (weight: [BodyWeightEntry], composition: [BodyCompositionEntry], summary: BodyMetricsSyncSummary) {
+        // Drop physiologically impossible readings before anything else. HK
+        // constrains its own writes, but third-party apps can push garbage
+        // (a 0 kg weight, a 250% body-fat) into Health that we'd otherwise
+        // store verbatim.
+        let samples = rawSamples.filter(isPlausible)
         var weight = weightLog
         var composition = compositionLog
         var summary = BodyMetricsSyncSummary(
@@ -477,5 +482,17 @@ enum BodyMetricsMerger {
     /// entry.
     private static func isDuplicate(date: Date, dates: [Date]) -> Bool {
         dates.contains { abs($0.timeIntervalSince(date)) < dedupWindow }
+    }
+
+    /// Reject readings outside plausible human ranges. Body-fat upper bound
+    /// (75%) sits above any real value yet still catches a bad 0-1→0-100
+    /// double-scale or a junk sample; mass lower bound just rejects 0/negative.
+    private static func isPlausible(_ s: HKBodyMetricSample) -> Bool {
+        switch s.kind {
+        case .bodyMass, .leanBodyMass:
+            return s.value > 0
+        case .bodyFatPercent:
+            return s.value > 0 && s.value <= 75
+        }
     }
 }
