@@ -392,7 +392,7 @@ private struct ExerciseDetailContent: View {
     private enum ChainDirection {
         case easier, harder
         var symbol: String { self == .easier ? "arrow.down" : "arrow.up" }
-        var label: String { self == .easier ? "EASIER" : "HARDER" }
+        var label: String { self == .easier ? String(localized: "EASIER", comment: "Substitute difficulty") : String(localized: "HARDER", comment: "Substitute difficulty") }
     }
 
     /// Mirrors `chainLink`'s NavigationLink-into-the-same-content pattern so

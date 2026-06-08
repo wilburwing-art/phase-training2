@@ -23,17 +23,17 @@ enum MuscleBucket: String, CaseIterable, Identifiable, Hashable {
 
     var label: String {
         switch self {
-        case .chest:      return "Chest"
-        case .back:       return "Back"
-        case .shoulders:  return "Shoulders"
-        case .biceps:     return "Biceps"
-        case .triceps:    return "Triceps"
-        case .forearms:   return "Forearms"
-        case .quads:      return "Quads"
-        case .hamstrings: return "Hamstrings"
-        case .glutes:     return "Glutes"
-        case .calves:     return "Calves"
-        case .core:       return "Core"
+        case .chest:      return String(localized: "Chest", comment: "Muscle group")
+        case .back:       return String(localized: "Back", comment: "Muscle group")
+        case .shoulders:  return String(localized: "Shoulders", comment: "Muscle group")
+        case .biceps:     return String(localized: "Biceps", comment: "Muscle group")
+        case .triceps:    return String(localized: "Triceps", comment: "Muscle group")
+        case .forearms:   return String(localized: "Forearms", comment: "Muscle group")
+        case .quads:      return String(localized: "Quads", comment: "Muscle group")
+        case .hamstrings: return String(localized: "Hamstrings", comment: "Muscle group")
+        case .glutes:     return String(localized: "Glutes", comment: "Muscle group")
+        case .calves:     return String(localized: "Calves", comment: "Muscle group")
+        case .core:       return String(localized: "Core", comment: "Muscle group")
         }
     }
 
@@ -148,13 +148,13 @@ enum LibraryTile: String, CaseIterable, Identifiable, Hashable {
 
     var label: String {
         switch self {
-        case .chest:      return "Chest"
-        case .back:       return "Back"
-        case .shoulders:  return "Shoulders"
-        case .arms:       return "Arms"
-        case .quads:      return "Quads"
-        case .hamsGlutes: return "Hams + Glutes"
-        case .core:       return "Core"
+        case .chest:      return String(localized: "Chest", comment: "Muscle group")
+        case .back:       return String(localized: "Back", comment: "Muscle group")
+        case .shoulders:  return String(localized: "Shoulders", comment: "Muscle group")
+        case .arms:       return String(localized: "Arms", comment: "Muscle group")
+        case .quads:      return String(localized: "Quads", comment: "Muscle group")
+        case .hamsGlutes: return String(localized: "Hams + Glutes", comment: "Muscle group")
+        case .core:       return String(localized: "Core", comment: "Muscle group")
         }
     }
 
@@ -208,11 +208,11 @@ enum MovementCategory: String, CaseIterable, Identifiable, Hashable {
 
     var label: String {
         switch self {
-        case .push:         return "Push"
-        case .pull:         return "Pull"
-        case .legs:         return "Legs"
-        case .core:         return "Core"
-        case .conditioning: return "Conditioning"
+        case .push:         return String(localized: "Push", comment: "Movement pattern")
+        case .pull:         return String(localized: "Pull", comment: "Movement pattern")
+        case .legs:         return String(localized: "Legs", comment: "Movement pattern")
+        case .core:         return String(localized: "Core", comment: "Movement pattern")
+        case .conditioning: return String(localized: "Conditioning", comment: "Movement pattern")
         }
     }
 

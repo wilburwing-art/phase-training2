@@ -560,12 +560,12 @@ enum RequestFocus: String, CaseIterable, Hashable {
 
     var label: String {
         switch self {
-        case .fullBody: return "Full body"
-        case .push:     return "Push"
-        case .pull:     return "Pull"
-        case .legs:     return "Legs"
-        case .upper:    return "Upper body"
-        case .lower:    return "Lower body"
+        case .fullBody: return String(localized: "Full body", comment: "Coach focus preset")
+        case .push:     return String(localized: "Push", comment: "Coach focus preset")
+        case .pull:     return String(localized: "Pull", comment: "Coach focus preset")
+        case .legs:     return String(localized: "Legs", comment: "Coach focus preset")
+        case .upper:    return String(localized: "Upper body", comment: "Coach focus preset")
+        case .lower:    return String(localized: "Lower body", comment: "Coach focus preset")
         }
     }
 

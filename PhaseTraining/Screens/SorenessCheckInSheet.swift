@@ -34,15 +34,15 @@ struct SorenessCheckInSheet: View {
     // MARK: - Catalogs
 
     private static let energyOptions: [(value: String, label: String)] = [
-        ("low",    "Low"),
-        ("normal", "Normal"),
-        ("high",   "High"),
+        ("low",    String(localized: "Low", comment: "Energy level")),
+        ("normal", String(localized: "Normal", comment: "Energy level")),
+        ("high",   String(localized: "High", comment: "Energy level")),
     ]
 
     private static let severityOptions: [(value: String, label: String)] = [
-        ("none", "None"),
-        ("mild", "Mild"),
-        ("high", "High"),
+        ("none", String(localized: "None", comment: "Soreness severity")),
+        ("mild", String(localized: "Mild", comment: "Soreness severity")),
+        ("high", String(localized: "High", comment: "Soreness severity")),
     ]
 
     private static let timeBudgetOptions: [(value: Int, label: String)] = [

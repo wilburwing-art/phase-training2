@@ -8,9 +8,9 @@ struct CheckInFeedbackScreen: View {
     let onBack: () -> Void
 
     private static let ratings: [(String, String)] = [
-        ("too_easy", "Too easy"),
-        ("right",    "Right"),
-        ("too_hard", "Too hard"),
+        ("too_easy", String(localized: "Too easy", comment: "Last-week difficulty rating")),
+        ("right",    String(localized: "Right", comment: "Last-week difficulty rating")),
+        ("too_hard", String(localized: "Too hard", comment: "Last-week difficulty rating")),
     ]
 
     var body: some View {

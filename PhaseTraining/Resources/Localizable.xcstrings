@@ -260,6 +260,9 @@
     "Apply" : {
 
     },
+    "Arms" : {
+      "comment" : "Muscle group"
+    },
     "Ask about today's plan." : {
 
     },
@@ -276,13 +279,16 @@
 
     },
     "Back" : {
-
+      "comment" : "Muscle group"
     },
     "Backup error" : {
 
     },
     "BAR" : {
 
+    },
+    "Biceps" : {
+      "comment" : "Muscle group"
     },
     "Body composition" : {
 
@@ -308,6 +314,9 @@
     "BW" : {
 
     },
+    "Calves" : {
+      "comment" : "Muscle group"
+    },
     "CAN'T LOAD THIS" : {
 
     },
@@ -323,6 +332,9 @@
           }
         }
       }
+    },
+    "Chest" : {
+      "comment" : "Muscle group"
     },
     "Clear" : {
 
@@ -359,6 +371,12 @@
     },
     "Complete onboarding to generate your week." : {
 
+    },
+    "Conditioning" : {
+      "comment" : "Movement pattern"
+    },
+    "Core" : {
+      "comment" : "Movement pattern\nMuscle group"
     },
     "Couldn't enable — notifications are off for this app. Allow them in Settings to get the reminder." : {
 
@@ -415,6 +433,9 @@
     "Delete workout?" : {
 
     },
+    "Deload" : {
+      "comment" : "Weekly check-in intent"
+    },
     "Design system" : {
 
     },
@@ -441,6 +462,9 @@
     },
     "e.g. 10K Race" : {
 
+    },
+    "EASIER" : {
+      "comment" : "Substitute difficulty"
     },
     "Edit" : {
 
@@ -528,6 +552,9 @@
     "Exercise history" : {
 
     },
+    "Exercises" : {
+      "comment" : "Library tab"
+    },
     "EXERCISES" : {
 
     },
@@ -567,6 +594,9 @@
     "FOR" : {
 
     },
+    "Forearms" : {
+      "comment" : "Muscle group"
+    },
     "FRESH" : {
 
     },
@@ -575,6 +605,9 @@
     },
     "FT" : {
 
+    },
+    "Full body" : {
+      "comment" : "Coach focus preset"
     },
     "GENDER" : {
 
@@ -591,11 +624,23 @@
     "Generating…" : {
 
     },
+    "Glutes" : {
+      "comment" : "Muscle group"
+    },
     "Got it" : {
 
     },
+    "Hams + Glutes" : {
+      "comment" : "Muscle group"
+    },
+    "Hamstrings" : {
+      "comment" : "Muscle group"
+    },
     "Hard events: the day before will be reset to recover." : {
 
+    },
+    "HARDER" : {
+      "comment" : "Substitute difficulty"
     },
     "Health & Imports" : {
 
@@ -611,6 +656,9 @@
     },
     "Hide changes" : {
 
+    },
+    "High" : {
+      "comment" : "Energy level\nSoreness severity"
     },
     "History" : {
 
@@ -707,6 +755,12 @@
     "LB" : {
 
     },
+    "Legs" : {
+      "comment" : "Coach focus preset\nMovement pattern"
+    },
+    "Less volume" : {
+      "comment" : "Weekly check-in intent"
+    },
     "Library" : {
 
     },
@@ -743,6 +797,12 @@
     "Log weighted sets to see per-exercise trends." : {
 
     },
+    "Low" : {
+      "comment" : "Energy level"
+    },
+    "Lower body" : {
+      "comment" : "Coach focus preset"
+    },
     "Manage subscription" : {
 
     },
@@ -754,6 +814,9 @@
     },
     "Method (DEXA, InBody, calipers…)" : {
 
+    },
+    "Mild" : {
+      "comment" : "Soreness severity"
     },
     "minutes" : {
 
@@ -771,8 +834,17 @@
     "Modern athletic — near-black, electric-lime accent, technical sans." : {
 
     },
+    "More mobility" : {
+      "comment" : "Weekly check-in intent"
+    },
     "More options" : {
 
+    },
+    "More sport" : {
+      "comment" : "Weekly check-in intent"
+    },
+    "More volume" : {
+      "comment" : "Weekly check-in intent"
     },
     "Most users land between 30 and 60 min." : {
 
@@ -850,8 +922,14 @@
     "No workouts came back from Health." : {
 
     },
+    "None" : {
+      "comment" : "Soreness severity"
+    },
     "None yet. Add notes from the Complete screen." : {
 
+    },
+    "Normal" : {
+      "comment" : "Energy level"
     },
     "Note (optional)" : {
 
@@ -976,11 +1054,20 @@
     "PROGRESS" : {
 
     },
+    "Pull" : {
+      "comment" : "Coach focus preset\nMovement pattern"
+    },
     "Pull weight + body-fat % + lean mass from Health." : {
 
     },
     "Pulls your last 28 days of workouts. You'll see Apple's permission prompt the first time." : {
 
+    },
+    "Push" : {
+      "comment" : "Coach focus preset\nMovement pattern"
+    },
+    "Quads" : {
+      "comment" : "Muscle group"
     },
     "RAN LONG" : {
 
@@ -1058,6 +1145,9 @@
     "Review edit" : {
 
     },
+    "Right" : {
+      "comment" : "Last-week difficulty rating"
+    },
     "RIR · %@" : {
 
     },
@@ -1129,6 +1219,9 @@
     },
     "Set up %@" : {
 
+    },
+    "Shoulders" : {
+      "comment" : "Muscle group"
     },
     "Show back view" : {
 
@@ -1314,11 +1407,23 @@
     "TONE" : {
 
     },
+    "Too easy" : {
+      "comment" : "Last-week difficulty rating"
+    },
+    "Too hard" : {
+      "comment" : "Last-week difficulty rating"
+    },
     "TOTAL ACHIEVED" : {
 
     },
     "TRAINING PHASE" : {
 
+    },
+    "Travel week" : {
+      "comment" : "Weekly check-in intent"
+    },
+    "Triceps" : {
+      "comment" : "Muscle group"
     },
     "Try a shorter search or clear the filter." : {
 
@@ -1346,6 +1451,9 @@
     },
     "UPDATED" : {
 
+    },
+    "Upper body" : {
+      "comment" : "Coach focus preset"
     },
     "Use imperial" : {
 
@@ -1397,6 +1505,9 @@
     },
     "Workout name" : {
 
+    },
+    "Workouts" : {
+      "comment" : "Library tab"
     },
     "YEARS" : {
 

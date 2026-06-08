@@ -21,8 +21,8 @@ struct LibraryScreen: View {
 
         var label: String {
             switch self {
-            case .exercises: return "Exercises"
-            case .routines:  return "Workouts"
+            case .exercises: return String(localized: "Exercises", comment: "Library tab")
+            case .routines:  return String(localized: "Workouts", comment: "Library tab")
             }
         }
     }

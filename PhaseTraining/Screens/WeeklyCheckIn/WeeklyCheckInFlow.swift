@@ -38,12 +38,12 @@ struct WeeklyCheckInDraft {
 
     /// Tags shown on the Intent step.
     static let intentChips: [(String, String)] = [
-        ("more_volume",  "More volume"),
-        ("less_volume",  "Less volume"),
-        ("deload",       "Deload"),
-        ("more_sport",   "More sport"),
-        ("more_mobility","More mobility"),
-        ("travel",       "Travel week"),
+        ("more_volume",  String(localized: "More volume", comment: "Weekly check-in intent")),
+        ("less_volume",  String(localized: "Less volume", comment: "Weekly check-in intent")),
+        ("deload",       String(localized: "Deload", comment: "Weekly check-in intent")),
+        ("more_sport",   String(localized: "More sport", comment: "Weekly check-in intent")),
+        ("more_mobility",String(localized: "More mobility", comment: "Weekly check-in intent")),
+        ("travel",       String(localized: "Travel week", comment: "Weekly check-in intent")),
     ]
 }
 
