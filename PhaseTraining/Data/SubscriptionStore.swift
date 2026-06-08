@@ -99,22 +99,53 @@ final class SubscriptionStore: ObservableObject {
         }
     }
 
+    // MARK: - Entitlement decision (pure, testable)
+
+    /// The facts about one entitlement we need to decide Pro, lifted out of
+    /// StoreKit's `Transaction` so the decision is unit-testable without a
+    /// live `SKTestSession`.
+    struct EntitlementCandidate {
+        let productID: String
+        let isVerified: Bool
+        let revocationDate: Date?
+        let expirationDate: Date?
+    }
+
+    /// Pro is on iff at least one candidate matches our product set, is
+    /// verified, not revoked, and not past expiration (a nil expiration =
+    /// non-expiring entitlement). Pure — no StoreKit, no actor state.
+    nonisolated static func isEntitled(
+        by candidates: [EntitlementCandidate],
+        productIDs: Set<String> = SubscriptionStore.allProductIDs,
+        now: Date
+    ) -> Bool {
+        candidates.contains { c in
+            c.isVerified
+                && productIDs.contains(c.productID)
+                && c.revocationDate == nil
+                && (c.expirationDate ?? .distantFuture) > now
+        }
+    }
+
     // MARK: - Internal
 
-    /// Walk the user's currently-entitled transactions. Pro is on iff at
-    /// least one transaction matches our product set, is verified, not
-    /// revoked, and not expired.
+    /// Map the user's currently-entitled transactions onto the pure decision
+    /// above and mirror the result.
     private func refreshEntitlement() async {
-        var entitled = false
+        var candidates: [EntitlementCandidate] = []
         for await result in Transaction.currentEntitlements {
-            if case .verified(let txn) = result,
-               Self.allProductIDs.contains(txn.productID),
-               txn.revocationDate == nil,
-               (txn.expirationDate ?? .distantFuture) > Date() {
-                entitled = true
-                break
+            switch result {
+            case .verified(let txn):
+                candidates.append(EntitlementCandidate(
+                    productID: txn.productID, isVerified: true,
+                    revocationDate: txn.revocationDate, expirationDate: txn.expirationDate))
+            case .unverified(let txn, _):
+                candidates.append(EntitlementCandidate(
+                    productID: txn.productID, isVerified: false,
+                    revocationDate: txn.revocationDate, expirationDate: txn.expirationDate))
             }
         }
+        let entitled = Self.isEntitled(by: candidates, now: Date())
         self.isPro = entitled
         // Mirror for non-SwiftUI gate sites + @AppStorage observers.
         UserDefaults.standard.set(entitled, forKey: CoachEntitlement.proKey)
