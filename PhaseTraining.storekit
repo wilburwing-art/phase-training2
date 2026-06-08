@@ -1,0 +1,48 @@
+{
+  "identifier" : "A38D6CAA-4DF6-4A31-B65A-FF31E6989712",
+  "nonRenewingSubscriptions" : [],
+  "products" : [],
+  "settings" : {
+    "_applicationInternalID" : "",
+    "_developerTeamID" : "A2Z2RXR65P",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : []
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "62E971C1-A861-4E5E-83A4-601F9F271CC5",
+      "localizations" : [],
+      "name" : "Phase Training Pro",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [],
+          "codeOffers" : [],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "ECA35825-C25A-4742-B121-C771D03F2DD4",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "AI coach that personalizes each workout.",
+              "displayName" : "Pro Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.phasetraining.app.pro_monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Pro Monthly",
+          "subscriptionGroupID" : "62E971C1-A861-4E5E-83A4-601F9F271CC5",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

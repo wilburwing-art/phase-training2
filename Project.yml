@@ -18,6 +18,10 @@ schemes:
         PhaseTrainingUITests: [test]
     run:
       config: Debug
+      # Local previews / debug runs resolve the Pro product from this config
+      # instead of an empty App Store Connect response (real product IDs are
+      # still placeholders — see SubscriptionStore.swift).
+      storeKitConfiguration: PhaseTraining.storekit
     test:
       config: Debug
       # Serialize test execution. Parallel test runners showed intermittent
