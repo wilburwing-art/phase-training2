@@ -14,6 +14,7 @@ import StoreKit
 struct PaywallView: View {
     @EnvironmentObject private var subStore: SubscriptionStore
     @Environment(\.dismiss) private var dismiss
+    @State private var managingSubscriptions = false
 
     var body: some View {
         NavigationStack {
@@ -46,6 +47,7 @@ struct PaywallView: View {
         }
         .preferredColorScheme(.dark)
         .task { await subStore.refresh() }
+        .manageSubscriptionsSheet(isPresented: $managingSubscriptions)
     }
 
     // MARK: - Pieces
@@ -152,11 +154,23 @@ struct PaywallView: View {
                     .font(.system(size: 12))
                     .foregroundStyle(.red)
                     .fixedSize(horizontal: false, vertical: true)
+                Button("Try again") {
+                    Task { await subStore.refresh() }
+                }
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color.accent)
+                .accessibilityIdentifier("paywall-retry")
             }
-            Text("Auto-renews until cancelled. Manage in Settings → Apple ID → Subscriptions.")
+            Text("Auto-renews until cancelled.")
                 .font(.system(size: 11))
                 .foregroundStyle(Color.ink3)
                 .fixedSize(horizontal: false, vertical: true)
+            Button("Manage subscription") {
+                managingSubscriptions = true
+            }
+            .font(.system(size: 11, weight: .medium))
+            .foregroundStyle(Color.ink2)
+            .accessibilityIdentifier("paywall-manage")
         }
     }
 }
