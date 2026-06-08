@@ -27,6 +27,10 @@ struct HealthWorkoutSyncSection: View {
     @State private var lastError: String?
     @State private var summary: (count: Int, oldest: Date?, newest: Date?, lastImported: Date?)?
     @State private var debugReadiness: ReadinessSignal?
+    /// Set once a sync completes. Lets the empty state distinguish "you
+    /// haven't synced yet" from "synced, but Health returned nothing" — the
+    /// latter usually means read access is off (HK won't tell us directly).
+    @State private var didAttemptSync = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 28) {
@@ -67,6 +71,16 @@ struct HealthWorkoutSyncSection: View {
                 .foregroundColor(.ink2)
             if let s = summary, s.count > 0 {
                 rangeRow(s: s)
+            } else if didAttemptSync {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("No workouts came back from Health.")
+                        .font(.subheadline)
+                        .foregroundColor(.ink2)
+                    Text("If you expected some, check Settings → Health → Data Access & Devices → Phase Training and turn on Workouts.")
+                        .font(.caption)
+                        .foregroundColor(.ink3)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             } else {
                 Text("No imported workouts yet.")
                     .font(.subheadline)
@@ -163,6 +177,7 @@ struct HealthWorkoutSyncSection: View {
                 _ = try await importer.requestAuthorization()
                 let imported = try await importer.recentWorkouts(days: 28)
                 UserDatabase.shared.insertImportedWorkouts(imported)
+                didAttemptSync = true
                 refreshSummary()
             } catch {
                 lastError = "\(error)"
