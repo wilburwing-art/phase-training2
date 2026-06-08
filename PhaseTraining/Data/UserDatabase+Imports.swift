@@ -21,7 +21,10 @@ extension UserDatabase {
     func insertImportedWorkouts(_ rows: [ImportedWorkout]) { withLock {
         guard let db, !rows.isEmpty else { return }
         sqlite3_exec(db, "BEGIN IMMEDIATE", nil, nil, nil)
-        defer { sqlite3_exec(db, "COMMIT", nil, nil, nil) }
+        // Honor the documented "all rows or none": a mid-batch step failure
+        // ROLLs the whole transaction back rather than committing a partial.
+        var ok = true
+        defer { sqlite3_exec(db, ok ? "COMMIT" : "ROLLBACK", nil, nil, nil) }
 
         let sql = """
         INSERT OR REPLACE INTO imported_workouts(
@@ -54,7 +57,7 @@ extension UserDatabase {
             }
             sqlite3_bind_int64(stmt, 8, now)
 
-            sqlite3_step(stmt)
+            if sqlite3_step(stmt) != SQLITE_DONE { ok = false; break }
             sqlite3_reset(stmt)
         }
     } }
@@ -135,7 +138,10 @@ extension UserDatabase {
     func insertImportedSets(_ rows: [ImportedSet]) { withLock {
         guard let db, !rows.isEmpty else { return }
         sqlite3_exec(db, "BEGIN IMMEDIATE", nil, nil, nil)
-        defer { sqlite3_exec(db, "COMMIT", nil, nil, nil) }
+        // Honor the documented "all rows or none": a mid-batch step failure
+        // ROLLs the whole transaction back rather than committing a partial.
+        var ok = true
+        defer { sqlite3_exec(db, ok ? "COMMIT" : "ROLLBACK", nil, nil, nil) }
 
         let sql = """
         INSERT OR REPLACE INTO imported_sets(
@@ -165,7 +171,7 @@ extension UserDatabase {
             if let rpe = row.rpe { sqlite3_bind_double(stmt, 10, rpe) } else { sqlite3_bind_null(stmt, 10) }
             sqlite3_bind_int64(stmt, 11, now)
 
-            sqlite3_step(stmt)
+            if sqlite3_step(stmt) != SQLITE_DONE { ok = false; break }
             sqlite3_reset(stmt)
         }
     } }
@@ -238,19 +244,22 @@ extension UserDatabase {
     func deleteImports(source: ImportSource) { withLock {
         guard let db else { return }
         sqlite3_exec(db, "BEGIN IMMEDIATE", nil, nil, nil)
-        defer { sqlite3_exec(db, "COMMIT", nil, nil, nil) }
+        // If either DELETE fails, ROLL the pair back so the two tables can't
+        // desync (the whole point of the transaction).
+        var ok = true
+        defer { sqlite3_exec(db, ok ? "COMMIT" : "ROLLBACK", nil, nil, nil) }
 
         var stmt: OpaquePointer?
         if sqlite3_prepare_v2(db, "DELETE FROM imported_sets WHERE source = ?", -1, &stmt, nil) == SQLITE_OK {
             sqlite3_bind_text(stmt, 1, source.rawValue, -1, SQLITE_TRANSIENT_USER)
-            sqlite3_step(stmt)
+            if sqlite3_step(stmt) != SQLITE_DONE { ok = false }
             sqlite3_finalize(stmt)
-        }
+        } else { ok = false }
         var stmt2: OpaquePointer?
         if sqlite3_prepare_v2(db, "DELETE FROM imported_workouts WHERE source = ?", -1, &stmt2, nil) == SQLITE_OK {
             sqlite3_bind_text(stmt2, 1, source.rawValue, -1, SQLITE_TRANSIENT_USER)
-            sqlite3_step(stmt2)
+            if sqlite3_step(stmt2) != SQLITE_DONE { ok = false }
             sqlite3_finalize(stmt2)
-        }
+        } else { ok = false }
     } }
 }
