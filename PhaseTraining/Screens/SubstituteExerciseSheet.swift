@@ -1,9 +1,12 @@
 // SubstituteExerciseSheet.swift — alternative-exercise picker.
 //
-// Reads CoachDatabase.substitutes(forExerciseId:) — 1,730 pre-curated pairs
-// in the bundled coach.db tagged by context (home_friendly, lower_intensity,
-// equipment_swap, etc.). Surfaces them as a ranked list of cards. Tap one →
-// `onPick(Exercise)` → presenter wires it back into the session.
+// Reads CoachDatabase.substitutes(forExerciseId:) — 1,871 curated rows
+// (439/572 exercises covered after the 2026-06-07 backfill) in the bundled
+// coach.db tagged by context (home_friendly, lower_intensity, equipment_swap,
+// etc.). Surfaces them as a ranked list of cards. Tap one →
+// `onPick(Exercise)` → presenter wires it back into the session. When an
+// exercise has zero curated rows, the sheet falls back to deterministic
+// same-bucket + same-movement-category alternatives (see fallbackSimilar).
 //
 // Reached from LogScreen rows (mid-workout swap), via either the visible
 // arrow.left.arrow.right button or the long-press contextMenu. The caller
