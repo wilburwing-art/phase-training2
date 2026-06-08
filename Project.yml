@@ -141,6 +141,12 @@ targets:
         # no clinical-record access, no HK write. Usage description is in
         # PhaseTraining/Info.plist as NSHealthShareUsageDescription.
         CODE_SIGN_ENTITLEMENTS: PhaseTraining/PhaseTraining.entitlements
+        # Localization: emit per-compile .stringsdata so the String Catalog
+        # (PhaseTraining/Resources/Localizable.xcstrings) extracts every
+        # Text("…")/Button/Label literal, and route -export/-importLocalizations
+        # through the catalog instead of legacy .strings. App target only.
+        SWIFT_EMIT_LOC_STRINGS: YES
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES
       configs:
         Release:
           CODE_SIGN_STYLE: Manual

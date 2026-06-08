@@ -1,0 +1,1437 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "—" : {
+
+    },
+    "·" : {
+
+    },
+    "‹ Back" : {
+
+    },
+    "(%@)" : {
+
+    },
+    "(No effective change — proposal resolves to a no-op.)" : {
+
+    },
+    "(No matching exercises in today's workout — nothing to change.)" : {
+
+    },
+    "(optional)" : {
+
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@ → %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ → %2$@"
+          }
+        }
+      }
+    },
+    "%@ +%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ +%2$@ %3$@"
+          }
+        }
+      }
+    },
+    "%@ × %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ × %2$lld"
+          }
+        }
+      }
+    },
+    "%@ is already on this day. Days hold one event, so adding another replaces it." : {
+
+    },
+    "%@ will be removed from today's workout. The bundled workout isn't affected." : {
+
+    },
+    "%lld" : {
+
+    },
+    "%lld %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@"
+          }
+        }
+      }
+    },
+    "%lld entr%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld entr%2$@"
+          }
+        }
+      }
+    },
+    "%lld EX" : {
+
+    },
+    "%lld exercises · %lld/%lld sets logged" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld exercises · %2$lld/%3$lld sets logged"
+          }
+        }
+      }
+    },
+    "%lld min" : {
+
+    },
+    "%lld movements · ~%lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld movements · ~%2$lld min"
+          }
+        }
+      }
+    },
+    "%lld PRS THIS SESSION" : {
+
+    },
+    "%lld reading%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld reading%2$@"
+          }
+        }
+      }
+    },
+    "%lld rows skipped (see Xcode console for details)" : {
+
+    },
+    "%lld sets" : {
+
+    },
+    "%lld sets in your import history" : {
+
+    },
+    "%lld similar" : {
+
+    },
+    "%lld weight · %lld composition entries on file." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld weight · %2$lld composition entries on file."
+          }
+        }
+      }
+    },
+    "%lld workout%@ imported" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld workout%2$@ imported"
+          }
+        }
+      }
+    },
+    "%lld%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld%2$@"
+          }
+        }
+      }
+    },
+    "%lld%%" : {
+
+    },
+    "%lld×%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld×%2$lld"
+          }
+        }
+      }
+    },
+    "%lldm" : {
+
+    },
+    "%lldw ago" : {
+
+    },
+    "+ Add Set (%@)" : {
+
+    },
+    "+%@" : {
+
+    },
+    "+%lld more" : {
+
+    },
+    "× %lld" : {
+
+    },
+    "0" : {
+
+    },
+    "0 = no lift slots. Capped at the days you have free this week." : {
+
+    },
+    "1 PR THIS SESSION" : {
+
+    },
+    "About you" : {
+
+    },
+    "Add details for your coach" : {
+
+    },
+    "Add exercise" : {
+
+    },
+    "Add injuries" : {
+
+    },
+    "Add to superset" : {
+
+    },
+    "Add your gender on Profile to see tier labels." : {
+
+    },
+    "AGE" : {
+
+    },
+    "AI Coach" : {
+
+    },
+    "AI COACH" : {
+
+    },
+    "All filters" : {
+
+    },
+    "All filters (%lld)" : {
+
+    },
+    "ANYTHING ELSE? (OPTIONAL)" : {
+
+    },
+    "ANYTHING HURT?" : {
+
+    },
+    "Anything to remember?" : {
+
+    },
+    "Apply" : {
+
+    },
+    "Ask about today's plan." : {
+
+    },
+    "Ask coach to build" : {
+
+    },
+    "Ask the coach" : {
+
+    },
+    "Ask the coach…" : {
+
+    },
+    "Auto-renews until cancelled." : {
+
+    },
+    "Back" : {
+
+    },
+    "Backup error" : {
+
+    },
+    "BAR" : {
+
+    },
+    "Body composition" : {
+
+    },
+    "BODY METRICS" : {
+
+    },
+    "Body weight" : {
+
+    },
+    "Bodyweight" : {
+
+    },
+    "Bodyweight, tap to add weight" : {
+
+    },
+    "Browse" : {
+
+    },
+    "Build a workout" : {
+
+    },
+    "BW" : {
+
+    },
+    "CAN'T LOAD THIS" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "CHECK-IN %lld OF %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "CHECK-IN %1$lld OF %2$lld"
+          }
+        }
+      }
+    },
+    "Clear" : {
+
+    },
+    "CLEAR" : {
+
+    },
+    "Clear overrides for this day?" : {
+
+    },
+    "Close" : {
+
+    },
+    "Close coach" : {
+
+    },
+    "CM" : {
+
+    },
+    "COACH" : {
+
+    },
+    "Coach is thinking…" : {
+
+    },
+    "Collapse %@" : {
+
+    },
+    "Colors" : {
+
+    },
+    "Complete a workout and it'll show up here." : {
+
+    },
+    "Complete onboarding to generate your week." : {
+
+    },
+    "Couldn't enable — notifications are off for this app. Allow them in Settings to get the reminder." : {
+
+    },
+    "Currently: %@ — %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Currently: %1$@ — %2$@"
+          }
+        }
+      }
+    },
+    "Custom rest" : {
+
+    },
+    "Custom…" : {
+
+    },
+    "Daily coaching limit reached. Pick this up tomorrow — your plan and history stay put." : {
+
+    },
+    "Data" : {
+
+    },
+    "DATA" : {
+
+    },
+    "date" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete entire session" : {
+
+    },
+    "Delete from workout?" : {
+
+    },
+    "Delete set" : {
+
+    },
+    "Delete this entry?" : {
+
+    },
+    "Delete this session?" : {
+
+    },
+    "Delete workout" : {
+
+    },
+    "Delete workout?" : {
+
+    },
+    "Design system" : {
+
+    },
+    "DIFFICULTY" : {
+
+    },
+    "Discard" : {
+
+    },
+    "Discard workout" : {
+
+    },
+    "Discard workout?" : {
+
+    },
+    "Done" : {
+
+    },
+    "DONE" : {
+
+    },
+    "Duration" : {
+
+    },
+    "e.g. 10K Race" : {
+
+    },
+    "Edit" : {
+
+    },
+    "Edit %@" : {
+
+    },
+    "Edit injuries" : {
+
+    },
+    "Edit log" : {
+
+    },
+    "Edit session" : {
+
+    },
+    "Edit set" : {
+
+    },
+    "Edit workout" : {
+
+    },
+    "Edits stay local — tap Save to library to keep them." : {
+
+    },
+    "Eight quick questions. Then a plan that fits your sport, your equipment, and your week." : {
+
+    },
+    "Enable" : {
+
+    },
+    "Enable AI Coach?" : {
+
+    },
+    "ENERGY" : {
+
+    },
+    "Enter %lld–%lld %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Enter %1$lld–%2$lld %3$@."
+          }
+        }
+      }
+    },
+    "Enter 5–600 minutes." : {
+
+    },
+    "Enter rest duration in seconds." : {
+
+    },
+    "Enter your target weight and we'll show the greedy plate stack — biggest plates outside. Using the standard %@ plate set." : {
+
+    },
+    "Equipment" : {
+
+    },
+    "EQUIPMENT" : {
+
+    },
+    "Erase all data?" : {
+
+    },
+    "Erase all my data" : {
+
+    },
+    "Erase everything" : {
+
+    },
+    "est 1RM %@ · from %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "est 1RM %1$@ · from %2$@"
+          }
+        }
+      }
+    },
+    "Exercise" : {
+
+    },
+    "Exercise history" : {
+
+    },
+    "EXERCISES" : {
+
+    },
+    "EXERCISES (%lld)" : {
+
+    },
+    "Exercises to avoid" : {
+
+    },
+    "EXERCISES TO AVOID" : {
+
+    },
+    "Expand %@" : {
+
+    },
+    "Experience" : {
+
+    },
+    "EXPERIENCE" : {
+
+    },
+    "Filters" : {
+
+    },
+    "Finish" : {
+
+    },
+    "first" : {
+
+    },
+    "Focuses" : {
+
+    },
+    "FOCUSES" : {
+
+    },
+    "FOR" : {
+
+    },
+    "FRESH" : {
+
+    },
+    "FROM A CSV" : {
+
+    },
+    "FT" : {
+
+    },
+    "GENDER" : {
+
+    },
+    "Generate" : {
+
+    },
+    "Generate a plan from your profile to get started." : {
+
+    },
+    "Generate plan" : {
+
+    },
+    "Generating…" : {
+
+    },
+    "Got it" : {
+
+    },
+    "Hard events: the day before will be reset to recover." : {
+
+    },
+    "Health & Imports" : {
+
+    },
+    "HEIGHT" : {
+
+    },
+    "HEIGHT & WEIGHT" : {
+
+    },
+    "Hevy and Strava export support arrives in a follow-up. We only read the file — we don't upload anything." : {
+
+    },
+    "Hide changes" : {
+
+    },
+    "History" : {
+
+    },
+    "HOW DID IT FEEL?" : {
+
+    },
+    "How did it go?" : {
+
+    },
+    "HOW SORE ARE YOU TODAY?" : {
+
+    },
+    "How sore are you?" : {
+
+    },
+    "HOW TO USE" : {
+
+    },
+    "How's this week shaping up?" : {
+
+    },
+    "HURT: %@" : {
+
+    },
+    "If you expected some, check Settings → Health → Data Access & Devices → Phase Training and turn on Workouts." : {
+
+    },
+    "Image unavailable" : {
+
+    },
+    "Image: free-exercise-db" : {
+
+    },
+    "Import Fitbod CSV" : {
+
+    },
+    "Imported %lld weight · %lld composition entr%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Imported %1$lld weight · %2$lld composition entr%3$@"
+          }
+        }
+      }
+    },
+    "Importing…" : {
+
+    },
+    "IN" : {
+
+    },
+    "Info" : {
+
+    },
+    "Injuries" : {
+
+    },
+    "INJURIES" : {
+
+    },
+    "INTENSITY" : {
+
+    },
+    "Keep" : {
+
+    },
+    "Keep going" : {
+
+    },
+    "KG" : {
+
+    },
+    "Last 365 days. Existing log entries within a minute of an HK sample are kept — we don't double-log." : {
+
+    },
+    "Last import: read %lld sets · %lld cardio rows" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Last import: read %1$lld sets · %2$lld cardio rows"
+          }
+        }
+      }
+    },
+    "LAST SESSION" : {
+
+    },
+    "Last sync: %@" : {
+
+    },
+    "LB" : {
+
+    },
+    "Library" : {
+
+    },
+    "LIBRARY · %@" : {
+
+    },
+    "Loading…" : {
+
+    },
+    "Log a session and trends show up here." : {
+
+    },
+    "Log all" : {
+
+    },
+    "Log all sets" : {
+
+    },
+    "Log Bench, Squat, Deadlift, OHP, or Pull-Up to see ratios." : {
+
+    },
+    "Log how this felt" : {
+
+    },
+    "Log reading" : {
+
+    },
+    "Log session" : {
+
+    },
+    "Log weight" : {
+
+    },
+    "Log weighted sets to see per-exercise trends." : {
+
+    },
+    "Manage subscription" : {
+
+    },
+    "Mark as warmup" : {
+
+    },
+    "Matched %lld%% of exercise names to the catalog" : {
+
+    },
+    "Method (DEXA, InBody, calipers…)" : {
+
+    },
+    "minutes" : {
+
+    },
+    "Missed %@'s %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Missed %1$@'s %2$@"
+          }
+        }
+      }
+    },
+    "Modern athletic — near-black, electric-lime accent, technical sans." : {
+
+    },
+    "More options" : {
+
+    },
+    "Most users land between 30 and 60 min." : {
+
+    },
+    "MOVE TO" : {
+
+    },
+    "Move to which day?" : {
+
+    },
+    "Muscle recovery — %lld fresh, %lld need rest. Tap for details." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Muscle recovery — %1$lld fresh, %2$lld need rest. Tap for details."
+          }
+        }
+      }
+    },
+    "NAME" : {
+
+    },
+    "NEEDS REST" : {
+
+    },
+    "New event" : {
+
+    },
+    "New sets, reps & weights" : {
+
+    },
+    "New weights only" : {
+
+    },
+    "Newest from Health: %@" : {
+
+    },
+    "No change" : {
+
+    },
+    "No curated matches — similar by muscle & movement pattern:" : {
+
+    },
+    "No exercises match these filters." : {
+
+    },
+    "No imported workouts yet." : {
+
+    },
+    "No matches" : {
+
+    },
+    "No plan yet." : {
+
+    },
+    "No PRs yet. Beat any prior set to land one." : {
+
+    },
+    "No readings logged yet. Log a body-fat % above to start a trend." : {
+
+    },
+    "NO SESSIONS YET" : {
+
+    },
+    "No similar exercises" : {
+
+    },
+    "No weights logged yet. Log one above to start a trend." : {
+
+    },
+    "No workout planned" : {
+
+    },
+    "No workouts came back from Health." : {
+
+    },
+    "None yet. Add notes from the Complete screen." : {
+
+    },
+    "Note (optional)" : {
+
+    },
+    "NOTE (OPTIONAL)" : {
+
+    },
+    "NOTES (OPTIONAL)" : {
+
+    },
+    "Nothing generated yet — go back and tap Generate." : {
+
+    },
+    "Nothing in the library substitutes well for %@." : {
+
+    },
+    "Nothing matches" : {
+
+    },
+    "Nothing to consolidate" : {
+
+    },
+    "Nothing yet." : {
+
+    },
+    "OK" : {
+
+    },
+    "Onset" : {
+
+    },
+    "OTHER NOTES (LEGACY)" : {
+
+    },
+    "OTHERWISE / DEFAULT" : {
+
+    },
+    "OVERALL" : {
+
+    },
+    "OVERALL SORENESS" : {
+
+    },
+    "Override today" : {
+
+    },
+    "Peak date" : {
+
+    },
+    "PER SIDE" : {
+
+    },
+    "PERSONALIZED BY COACH" : {
+
+    },
+    "Personalized by coach. Tap for details." : {
+
+    },
+    "Personalized by your coach" : {
+
+    },
+    "PHASE TRAINING" : {
+
+    },
+    "PHASE TRAINING / STYLE" : {
+
+    },
+    "Phase Training Pro" : {
+
+    },
+    "PICK A DAY" : {
+
+    },
+    "PICK A FOCUS" : {
+
+    },
+    "Pick a sport" : {
+
+    },
+    "Pick exercises yourself" : {
+
+    },
+    "PICK WHAT YOU HAVE" : {
+
+    },
+    "PLAN NEXT WEEK" : {
+
+    },
+    "Plate calculator" : {
+
+    },
+    "PR" : {
+
+    },
+    "Press into bench, ease off squats…" : {
+
+    },
+    "Preview" : {
+
+    },
+    "PREVIEW" : {
+
+    },
+    "PRIMARY" : {
+
+    },
+    "PRO IS NOT YET CONFIGURED" : {
+
+    },
+    "Pro required — coach is paused until you subscribe." : {
+
+    },
+    "Profile" : {
+
+    },
+    "PROFILE" : {
+
+    },
+    "Progress" : {
+
+    },
+    "PROGRESS" : {
+
+    },
+    "Pull weight + body-fat % + lean mass from Health." : {
+
+    },
+    "Pulls your last 28 days of workouts. You'll see Apple's permission prompt the first time." : {
+
+    },
+    "RAN LONG" : {
+
+    },
+    "Range: %@ – %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Range: %1$@ – %2$@"
+          }
+        }
+      }
+    },
+    "Re-derive this day's prescriptions from your training data. The exercises stay exactly as saved." : {
+
+    },
+    "Read recent workouts from the Health app to help us match the workouts we generate to how active you've actually been. Read-only — we never write to Health." : {
+
+    },
+    "REASON" : {
+
+    },
+    "RECOVERY" : {
+
+    },
+    "Refresh prescriptions" : {
+
+    },
+    "Regenerate" : {
+
+    },
+    "Reject" : {
+
+    },
+    "Reminders" : {
+
+    },
+    "REMINDERS" : {
+
+    },
+    "Remove %@" : {
+
+    },
+    "Remove from superset" : {
+
+    },
+    "Removes everything stored on this device. Cannot be undone." : {
+
+    },
+    "Replace" : {
+
+    },
+    "Replace all data?" : {
+
+    },
+    "Replace existing event?" : {
+
+    },
+    "Reset" : {
+
+    },
+    "REST" : {
+
+    },
+    "Restore" : {
+
+    },
+    "Restore complete" : {
+
+    },
+    "Resume workout" : {
+
+    },
+    "Review edit" : {
+
+    },
+    "RIR · %@" : {
+
+    },
+    "Same as last week" : {
+
+    },
+    "Save" : {
+
+    },
+    "Save & start workout" : {
+
+    },
+    "Save changes to library" : {
+
+    },
+    "Save event" : {
+
+    },
+    "Save log" : {
+
+    },
+    "Save to library" : {
+
+    },
+    "Saved" : {
+
+    },
+    "Saved to library" : {
+
+    },
+    "Saved workouts show up here." : {
+
+    },
+    "Saved workouts will show up here once you build one." : {
+
+    },
+    "Search %@" : {
+
+    },
+    "Search exercises" : {
+
+    },
+    "Search injuries…" : {
+
+    },
+    "Seasons" : {
+
+    },
+    "Seconds" : {
+
+    },
+    "See all sessions" : {
+
+    },
+    "See changes" : {
+
+    },
+    "Set" : {
+
+    },
+    "Set intensity" : {
+
+    },
+    "Set onset" : {
+
+    },
+    "Set RIR…" : {
+
+    },
+    "Set up %@" : {
+
+    },
+    "Show back view" : {
+
+    },
+    "Show details" : {
+
+    },
+    "Show details for %@" : {
+
+    },
+    "Show fewer" : {
+
+    },
+    "Show front view" : {
+
+    },
+    "Skip" : {
+
+    },
+    "Skipped %lld already-logged entr%@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Skipped %1$lld already-logged entr%2$@."
+          }
+        }
+      }
+    },
+    "Skipped %lld warmup %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Skipped %1$lld warmup %2$@"
+          }
+        }
+      }
+    },
+    "SORE MUSCLES" : {
+
+    },
+    "SORENESS · LOGGED" : {
+
+    },
+    "Sports" : {
+
+    },
+    "SPORTS" : {
+
+    },
+    "Start workout" : {
+
+    },
+    "STATUS" : {
+
+    },
+    "STEP %lld OF %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "STEP %1$lld OF %2$lld"
+          }
+        }
+      }
+    },
+    "Subscriptions aren't set up for this build. Create the Pro product in App Store Connect, then update `SubscriptionStore.allProductIDs`. For local previews, add a StoreKit Configuration File to the scheme." : {
+
+    },
+    "Sundays at 6:00 PM · walks through next week's plan" : {
+
+    },
+    "Swap" : {
+
+    },
+    "Swap exercise" : {
+
+    },
+    "Swap to this" : {
+
+    },
+    "Swap with similar exercise" : {
+
+    },
+    "Swap with similar…" : {
+
+    },
+    "Sync body metrics from Health" : {
+
+    },
+    "Sync error" : {
+
+    },
+    "Sync from Health" : {
+
+    },
+    "Syncing…" : {
+
+    },
+    "Tap Build a workout to assemble one." : {
+
+    },
+    "Tap to add a new weight." : {
+
+    },
+    "Tap to add a note..." : {
+
+    },
+    "Tap to log a new reading." : {
+
+    },
+    "Target needs to be at least the bar weight. Empty bar is %@ %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Target needs to be at least the bar weight. Empty bar is %1$@ %2$@."
+          }
+        }
+      }
+    },
+    "target: %lld/wk" : {
+
+    },
+    "Tell the coach the focus + duration" : {
+
+    },
+    "The coach can read your week, recent sessions, and feedback. It can't change anything yet — that's coming. Try:" : {
+
+    },
+    "The coach picks exercises that fit your equipment, injuries, and dislikes. Tap Generate to see a workout — you can re-roll if you don't like it." : {
+
+    },
+    "This day doesn't have a lift or mobility session." : {
+
+    },
+    "This deletes your profile, weekly plan, saved sessions, custom routines, imported history, and reminder. You'll be returned to onboarding." : {
+
+    },
+    "This is the one we plan around first." : {
+
+    },
+    "This removes \"%@\" permanently." : {
+
+    },
+    "This removes sport sessions, events, and the unavailable mark for this day. It can't be undone." : {
+
+    },
+    "This removes the logged measurement. Your history can't recover it." : {
+
+    },
+    "This removes the logged weight. Your history can't recover it." : {
+
+    },
+    "This removes the session and its sets from history. PRs that depended on it will recompute." : {
+
+    },
+    "This removes the workout you just logged from your history." : {
+
+    },
+    "This replaces your current profile, workouts, history, and plan with the backup from %@. It can't be undone." : {
+
+    },
+    "this week" : {
+
+    },
+    "THIS WEEK" : {
+
+    },
+    "TIME TODAY" : {
+
+    },
+    "To opt out of background polishing, turn the coach off in Profile." : {
+
+    },
+    "Today" : {
+
+    },
+    "TODAY'S EXERCISES" : {
+
+    },
+    "TONE" : {
+
+    },
+    "TOTAL ACHIEVED" : {
+
+    },
+    "TRAINING PHASE" : {
+
+    },
+    "Try a shorter search or clear the filter." : {
+
+    },
+    "Try again" : {
+
+    },
+    "Tweak any day from the Week tab once accepted." : {
+
+    },
+    "Typography" : {
+
+    },
+    "UNAVAILABLE" : {
+
+    },
+    "Unlock the AI coach that personalizes each workout to your recent sessions, soreness, and sport goals." : {
+
+    },
+    "Unmark warmup" : {
+
+    },
+    "Update log" : {
+
+    },
+    "UPDATED" : {
+
+    },
+    "Use imperial" : {
+
+    },
+    "Use metric" : {
+
+    },
+    "Use saved prescriptions" : {
+
+    },
+    "Used for strength-to-bodyweight ratios on Progress." : {
+
+    },
+    "W" : {
+
+    },
+    "Warmup set" : {
+
+    },
+    "Watch demo" : {
+
+    },
+    "We'll filter out exercises that aren't safe for the injuries you pick." : {
+
+    },
+    "Week" : {
+
+    },
+    "WEEK" : {
+
+    },
+    "WEEK TONE" : {
+
+    },
+    "Weekly plan reminder" : {
+
+    },
+    "weight" : {
+
+    },
+    "WEIGHT" : {
+
+    },
+    "What kind of lift day?" : {
+
+    },
+    "Workout history" : {
+
+    },
+    "Workout name" : {
+
+    },
+    "YEARS" : {
+
+    },
+    "You can change any of this from Profile or the Week tab once you're in." : {
+
+    },
+    "You." : {
+
+    },
+    "You've sent %lld messages today, nearing the daily limit of %lld." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "You've sent %1$lld messages today, nearing the daily limit of %2$lld."
+          }
+        }
+      }
+    },
+    "You've started today's session — applying will update your live exercises and keep any logged sets." : {
+
+    },
+    "Your coach reshaped today's workout based on recent sessions, soreness, and goals. The shape of your week — push / pull / legs and rest days — is unchanged. Only this day's exercise picks, sets, RPE, or weights are different from the deterministic default." : {
+
+    },
+    "Your data was restored." : {
+
+    },
+    "Your in-progress sets won't be saved." : {
+
+    },
+    "Your week,\nplanned around\nwhat you do." : {
+
+    }
+  },
+  "version" : "1.0"
+}
