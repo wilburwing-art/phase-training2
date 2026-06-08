@@ -29,6 +29,15 @@ enum CoachEntitlement {
     ///      CoachSettingsRow shows the lapsed notice. Decide if that's enough.
     ///   3. InsightGenerator's foreground path awaits refresh() before
     ///      runIfDue (1e9d8ad), so the proKey mirror race is handled.
+    ///   4. Offline first launch never populates proKey: refreshEntitlement()
+    ///      needs Transaction.currentEntitlements, which a fresh install can't
+    ///      reach without network. A returning subscriber opening offline reads
+    ///      proKey=false until the next successful refresh. Consider caching a
+    ///      last-known-good entitlement with a grace window before flipping.
+    ///   5. A .storekit config (PhaseTraining.storekit) is wired into the run
+    ///      scheme for previews/tests, but the REAL product IDs still have to
+    ///      be created in App Store Connect (item 1) — the config file is not a
+    ///      substitute.
     static let proRequired = false
 
     /// Pure gate logic — parameterized so tests can exercise both sides of
