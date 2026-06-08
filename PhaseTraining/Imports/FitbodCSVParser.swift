@@ -46,6 +46,11 @@ enum FitbodCSVParser {
         /// coverage at a glance.
         let nameMatchRate: Double
         let totalRows: Int
+        /// Warmup rows dropped from set-level persistence. Counted (not
+        /// silently discarded) so the import UI can say "skipped N warmups"
+        /// — otherwise a column drift that mis-tags real sets as warmups
+        /// would vanish without a trace.
+        let warmupsSkipped: Int
     }
 
     /// Required header row. Exact match — any deviation surfaces a parse
@@ -60,10 +65,10 @@ enum FitbodCSVParser {
         let lines = csv.split(separator: "\n", omittingEmptySubsequences: false)
             .map { String($0) }
         guard let headerLine = lines.first?.trimmingCharacters(in: .whitespaces) else {
-            return ParseResult(sets: [], workouts: [], errors: [(0, "", "empty file")], nameMatchRate: 0, totalRows: 0)
+            return ParseResult(sets: [], workouts: [], errors: [(0, "", "empty file")], nameMatchRate: 0, totalRows: 0, warmupsSkipped: 0)
         }
         guard headerLine == expectedHeader else {
-            return ParseResult(sets: [], workouts: [], errors: [(0, headerLine, "header mismatch — expected \"\(expectedHeader)\"")], nameMatchRate: 0, totalRows: 0)
+            return ParseResult(sets: [], workouts: [], errors: [(0, headerLine, "header mismatch — expected \"\(expectedHeader)\"")], nameMatchRate: 0, totalRows: 0, warmupsSkipped: 0)
         }
 
         // Cluster by (date, exercise) to derive set numbers per group.
@@ -76,6 +81,7 @@ enum FitbodCSVParser {
         var workouts: [ImportedWorkout] = []
         var errors: [(Int, String, String)] = []
         var totalRows = 0
+        var warmupsSkipped = 0
 
         // ISO-with-offset formatter shared across rows.
         let fmt = DateFormatter()
@@ -134,8 +140,9 @@ enum FitbodCSVParser {
                 continue
             }
 
-            // Skip warmup rows for set-level persistence.
-            if isWarmupRaw == "true" { continue }
+            // Skip warmup rows for set-level persistence — but tally them
+            // so the count is observable rather than silently dropped.
+            if isWarmupRaw == "true" { warmupsSkipped += 1; continue }
 
             // Strength row. We accept rows with zero weight (bodyweight)
             // as long as they carry reps.
@@ -191,7 +198,8 @@ enum FitbodCSVParser {
             workouts: workouts,
             errors: errors,
             nameMatchRate: matchRate,
-            totalRows: totalRows
+            totalRows: totalRows,
+            warmupsSkipped: warmupsSkipped
         )
     }
 }

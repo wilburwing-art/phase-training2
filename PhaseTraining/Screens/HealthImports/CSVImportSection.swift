@@ -102,12 +102,20 @@ struct CSVImportSection: View {
 
     private func csvLastImportBlock(result: WorkoutCSVImporter.Result) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("Last import: \(result.setsInserted) sets, \(result.workoutsInserted) cardio rows")
+            // "Read" not "imported": the count is rows parsed, and the table
+            // is INSERT OR REPLACE, so re-importing the same file shows the
+            // same number with zero net-new rows.
+            Text("Last import: read \(result.setsInserted) sets · \(result.workoutsInserted) cardio rows")
                 .font(.caption)
                 .foregroundColor(.ink)
             Text("Matched \(Int(result.nameMatchRate * 100))% of exercise names to the catalog")
                 .font(.caption2)
                 .foregroundColor(.ink2)
+            if result.warmupsSkipped > 0 {
+                Text("Skipped \(result.warmupsSkipped) warmup \(result.warmupsSkipped == 1 ? "row" : "rows")")
+                    .font(.caption2)
+                    .foregroundColor(.ink2)
+            }
             if !result.topExercises.isEmpty {
                 Text("Top: " + result.topExercises.map { "\($0.name) (\($0.sets))" }.joined(separator: ", "))
                     .font(.caption2)

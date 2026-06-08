@@ -26,6 +26,9 @@ enum WorkoutCSVImporter {
         let parseErrors: [(line: Int, raw: String, reason: String)]
         /// Top 3 most-set exercises (resolved name OR raw name fallback).
         let topExercises: [(name: String, sets: Int)]
+        /// Warmup rows the parser dropped — surfaced so the user can tell a
+        /// big "skipped" number (possible column drift) from a clean import.
+        let warmupsSkipped: Int
     }
 
     enum Failure: Error, LocalizedError {
@@ -115,7 +118,8 @@ enum WorkoutCSVImporter {
             nameMatchRate: parsed.nameMatchRate,
             dateRange: dateRange,
             parseErrors: parsed.errors,
-            topExercises: Array(top)
+            topExercises: Array(top),
+            warmupsSkipped: parsed.warmupsSkipped
         )
     }
 }

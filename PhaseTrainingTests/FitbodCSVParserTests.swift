@@ -134,6 +134,14 @@ final class FitbodCSVParserTests: XCTestCase {
         XCTAssertEqual(result.sets.count, 9)
     }
 
+    func testWarmupRowsAreCounted() throws {
+        let csv = try loadFixture()
+        let result = FitbodCSVParser.parse(csv, nameResolver: stubResolver)
+        // Skipped warmups are tallied (not silently dropped) so the import
+        // UI can surface the count — the fixture has exactly 1.
+        XCTAssertEqual(result.warmupsSkipped, 1)
+    }
+
     func testDateParsedAtUTC() throws {
         let csv = try loadFixture()
         let result = FitbodCSVParser.parse(csv, nameResolver: stubResolver)
