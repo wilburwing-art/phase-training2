@@ -47,7 +47,7 @@ settings:
     DEVELOPMENT_TEAM: A2Z2RXR65P
     SWIFT_VERSION: "5.9"
     MARKETING_VERSION: "1.1.0"
-    CURRENT_PROJECT_VERSION: "117"
+    CURRENT_PROJECT_VERSION: "118"
     ENABLE_USER_SCRIPT_SANDBOXING: NO
 
 packages:
@@ -116,6 +116,12 @@ targets:
         # behavior (read workouts → drive readiness signal → match
         # generated workout difficulty to real activity).
         NSHealthShareUsageDescription: "PhaseTraining reads recent workout history to gauge your current training readiness, so generated workouts match how active you've actually been. With your separate permission, it can also import body weight, body-fat %, and lean-mass readings to populate your training log."
+        # Required by App Store validation whenever the HealthKit entitlement is
+        # present, EVEN THOUGH this app is read-only (requestAuthorization passes
+        # toShare: []). Without this key, altool rejects the upload with a 409
+        # "Missing purpose string" (killed builds 116 + 117). The string is
+        # honest: we never write.
+        NSHealthUpdateUsageDescription: "PhaseTraining does not write to Apple Health — it only reads your workout and body-metric data. iOS requires this permission whenever an app includes HealthKit; PhaseTraining never adds, edits, or deletes anything in Health."
         # AI Coach (Phase 13) — third-party AI prompts disclosed per Apple
         # Guideline 5.1.2(i). Privacy nutrition labels should mirror this.
         NSPrivacyCollectedDataTypes:
