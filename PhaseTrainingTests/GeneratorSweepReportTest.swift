@@ -584,6 +584,32 @@ final class GeneratorSweepReportTest: XCTestCase {
             let suffix = anom.isEmpty ? "" : "   ⚠ " + anom.joined(separator: ", ")
             print("[GeneratorSweepReport]   \(live ? "live" : "DEAD") — \(s.name)\(suffix)")
         }
+
+        // Guard against the intermittent empty-catalog flake. Under the
+        // xcodebuild runner the bundled coach.db can transiently serve empty
+        // reads mid-run (CoachDatabase.init documents the same "intermittent 0
+        // exercises" symptom; `catalogCount` can still read healthy when it
+        // happens). Without this, the report writes GREEN and complete-looking
+        // while most variant columns are silently empty — every anomaly flag in
+        // it is then noise. A healthy run has ZERO empty variant-days, so treat
+        // a meaningful fraction of empties as the flake and FAIL LOUDLY: the run
+        // must be re-run, not trusted. See
+        // phase-training-generator-sweep-harness-silent-exhaustion.
+        var variantDays = 0, emptyVariantDays = 0
+        for s in sweeps {
+            for col in s.columns where !col.isBaseline {
+                for day in col.week {
+                    variantDays += 1
+                    if day.lines.isEmpty { emptyVariantDays += 1 }
+                }
+            }
+        }
+        if variantDays > 0 {
+            let emptyFrac = Double(emptyVariantDays) / Double(variantDays)
+            XCTAssertLessThan(
+                emptyFrac, 0.10,
+                "Sweep harness hit the intermittent empty-catalog flake: \(emptyVariantDays)/\(variantDays) variant-days empty. The report at /tmp/generator-sweep is UNRELIABLE — re-run. coach.db serves transient empty reads under the xcodebuild runner (CoachDatabase.init documents the same symptom).")
+        }
     }
 
     // MARK: - Signatures (diff + dead-signal detection)
