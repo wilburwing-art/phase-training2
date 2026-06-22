@@ -80,6 +80,29 @@ final class MemoryStore: ObservableObject {
         }
     }
 
+    /// How many times the user must swap AWAY from an exercise before its
+    /// affinity is nudged down by one. A single swap-away is "not today," not a
+    /// vote against the exercise; repeated swaps-away are the durable negative.
+    static let swapAwayDemoteThreshold = 3
+
+    /// Record an exercise swap (A → B) as a preference signal. The replacement
+    /// gets an immediate +1 affinity so the generator surfaces it more often;
+    /// the original is demoted by one only once the user has swapped away from
+    /// it `swapAwayDemoteThreshold` times. Keyed by exercise name — the same
+    /// vocabulary `bumpAffinity` and the generator's name-match use. No-op when
+    /// the names are equal (a swap to the same exercise carries no signal).
+    func recordSwap(out original: String, in replacement: String) {
+        guard original.caseInsensitiveCompare(replacement) != .orderedSame else { return }
+        update {
+            $0.exerciseAffinities[replacement, default: 0] += 1
+            let count = ($0.swapAwayCounts[original] ?? 0) + 1
+            $0.swapAwayCounts[original] = count
+            if count % Self.swapAwayDemoteThreshold == 0 {
+                $0.exerciseAffinities[original, default: 0] -= 1
+            }
+        }
+    }
+
     /// Re-read memory from UserDefaults, discarding the in-memory copy. Used
     /// after a destructive backup-restore so this already-instantiated store
     /// reflects the imported data without an app relaunch.

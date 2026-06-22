@@ -35,6 +35,14 @@ struct GeneratorContext: Equatable {
     /// prefers a substitute from `exercise_substitutions`.
     var stagnantExercises: Set<String>
 
+    /// Per-exercise affinity score keyed by exercise name (mirrors
+    /// `TrainingMemory.exerciseAffinities`). Positive = the user has asked for /
+    /// swapped toward this exercise; negative = swapped away from / "recommend
+    /// less". The slot picker weights candidates by this score so preferred
+    /// exercises are picked more often and strongly-demoted ones sink. Empty =
+    /// no preference, no effect.
+    var exerciseAffinities: [String: Int] = [:]
+
     /// Distinct calendar days in the last 7 with a HARD sport log. Used by
     /// the planner's recent-signal bias to trim lift volume when the user
     /// is already carrying heavy non-lift load. Moderate / light sport days
@@ -122,6 +130,11 @@ extension GeneratorContext {
         // Phase 2 — cohort for the readiness density norm. nil → default
         // 3 sessions/wk. PlanStore resolves this from DemographicProfile.
         cohort: EraCohort? = nil,
+        // Per-exercise affinity from TrainingMemory. Defaulted so the
+        // test/preview + LLM-refinement surfaces that build their own context
+        // don't have to thread it; PlanStore.buildGeneratorContext passes the
+        // real map so swap-derived preferences reach the slot picker.
+        exerciseAffinities: [String: Int] = [:],
         now: Date = Date()
     ) -> GeneratorContext {
         let cal = Calendar.current
@@ -150,6 +163,7 @@ extension GeneratorContext {
                                                   feedback: feedback,
                                                   cutoff: weekSoreCutoff),
             stagnantExercises: buildStagnantExercises(sessions: sessions, now: now),
+            exerciseAffinities: exerciseAffinities,
             recentHardSportDays: buildRecentHardSportDays(sportLogs: sportLogs,
                                                           cutoff: weekSoreCutoff,
                                                           calendar: cal),

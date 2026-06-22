@@ -114,6 +114,13 @@ struct TrainingMemory: Codable {
     /// until a future ranking pass consumes it — the capture side just needs
     /// somewhere durable to land.
     var exerciseAffinities: [String: Int] = [:]
+    /// Per-exercise count of how many times the user has swapped AWAY from this
+    /// exercise (keyed by name). Internal accumulator for the swap-memory
+    /// feature: every Nth swap-away (`MemoryStore.swapAwayDemoteThreshold`) drops
+    /// the exercise's `exerciseAffinities` score by one. Nothing else reads the
+    /// raw counts — the demotion they produce in `exerciseAffinities` is the
+    /// durable signal the generator consumes.
+    var swapAwayCounts: [String: Int] = [:]
     /// Legacy + free-text injury notes ("bad ankle", or pre-build-87 saves that
     /// wrote injury slugs into this list). New structured injuries live in
     /// `userInjuries`; this stays as a fall-through for the keyword-filter path.
@@ -154,7 +161,7 @@ struct TrainingMemory: Codable {
         case heightCm, weightKg, usesImperial
         case bodyWeightLog, bodyCompositionLog
         case dislikes, constraints
-        case exerciseAffinities
+        case exerciseAffinities, swapAwayCounts
         case userInjuries
         case feedback, soreness, weeklyCheckIns
         case coachInsights
@@ -221,6 +228,7 @@ struct TrainingMemory: Codable {
         self.dislikes        = (try? c.decode([String].self,       forKey: .dislikes))        ?? []
         self.constraints     = (try? c.decode([String].self,       forKey: .constraints))     ?? []
         self.exerciseAffinities = (try? c.decode([String: Int].self, forKey: .exerciseAffinities)) ?? [:]
+        self.swapAwayCounts  = (try? c.decode([String: Int].self, forKey: .swapAwayCounts)) ?? [:]
         // userInjuries decode + one-shot migration. New saves write the typed
         // list directly. Older saves wrote injury slugs into constraints[]; on
         // first decode any constraints entry whose slug matches a coach.db
@@ -272,6 +280,7 @@ struct TrainingMemory: Codable {
         try c.encode(dislikes,        forKey: .dislikes)
         try c.encode(constraints,     forKey: .constraints)
         try c.encode(exerciseAffinities, forKey: .exerciseAffinities)
+        try c.encode(swapAwayCounts,  forKey: .swapAwayCounts)
         try c.encode(userInjuries,    forKey: .userInjuries)
         try c.encode(feedback,        forKey: .feedback)
         try c.encode(soreness,        forKey: .soreness)

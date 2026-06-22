@@ -239,6 +239,9 @@ extension TodayScreen {
         editableTemplate = WorkoutTemplate(id: tmpl.id, name: tmpl.name, category: tmpl.category, exercises: newExercises)
         didModify = true
         didSaveToLibrary = false
+        // Remember the swap so the generator favors the chosen exercise (and,
+        // after repeated swaps-away, demotes the original) in future plans.
+        memoryStore.recordSwap(out: old.name, in: picked.name)
     }
 
     func appendExercise(_ picked: Exercise) {

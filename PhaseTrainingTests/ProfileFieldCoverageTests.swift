@@ -63,7 +63,10 @@ final class ProfileFieldCoverageTests: XCTestCase {
               skipReason: "Coach-written observations; not part of input context."),
         Probe(name: "exerciseAffinities", mutateForHash: nil, mutateForSnapshot: nil,
               snapshotMarker: nil,
-              skipReason: "Captured by post-workout action sheet (MemoryStore.bumpAffinity); planner doesn't yet consume it and the coach context doesn't surface raw scores. Promote to a hash + snapshot probe when a ranking pass starts reading it."),
+              skipReason: "Captured by the post-workout action sheet (bumpAffinity) and by exercise swaps (MemoryStore.recordSwap). The slot picker now consumes it (GeneratorContext.exerciseAffinities → applyAffinityWeighting) as a SOFT, non-regenerating ranking bias — deliberately kept OUT of planInputsHash so a swap biases the next generation without silently rebuilding the current week. Coach context doesn't surface raw scores."),
+        Probe(name: "swapAwayCounts", mutateForHash: nil, mutateForSnapshot: nil,
+              snapshotMarker: nil,
+              skipReason: "Internal accumulator: per-exercise count of swaps-away that, every Nth time, demotes exerciseAffinities. The demotion (in exerciseAffinities) is the durable signal; the raw counts are read by nothing else, so neither the planner nor the coach needs them."),
 
         // Display preference — does not change plan or coach prose.
         Probe(name: "usesImperial", mutateForHash: nil, mutateForSnapshot: nil,

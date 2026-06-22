@@ -275,6 +275,7 @@ enum WorkoutGenerator {
                 excludedIds: pickedIds,
                 excludeKws: excludeKws,
                 soreAreas: context.recentSoreAreas,
+                affinities: context.exerciseAffinities,
                 setsMultiplier: accessorySetsMul,
                 strategy: strategy
             ))
@@ -288,6 +289,7 @@ enum WorkoutGenerator {
                 excludedIds: pickedIds,
                 excludeKws: excludeKws,
                 soreAreas: context.recentSoreAreas,
+                affinities: context.exerciseAffinities,
                 setsMultiplier: accessorySetsMul,
                 strategy: strategy
             ))
@@ -625,6 +627,34 @@ enum WorkoutGenerator {
             return preferred + rest
         }
 
+        // Swap-memory affinity weighting. The user's exercise swaps land in
+        // TrainingMemory.exerciseAffinities (positive = swapped toward / asked
+        // for more; negative = swapped away from). deterministicPick is a
+        // uniform hash-index into the pool, so we bias by MULTIPLICITY: a
+        // preferred exercise appears (1 + affinity) times (capped at 4×) and is
+        // proportionally more likely to win; a strongly-demoted one (≤ -2) is
+        // dropped when alternatives remain. Runs LAST — after applyVariety — so
+        // a just-picked exercise is still rotated out; the bias makes a favorite
+        // frequent, not permanent. Exact case-insensitive name match (not
+        // substring) so "Row" doesn't boost every row variant.
+        let applyAffinityWeighting: ([Exercise]) -> [Exercise] = { candidates in
+            let affinities = context.exerciseAffinities
+            guard !affinities.isEmpty, candidates.count > 1 else { return candidates }
+            let scoreFor: (String) -> Int = { name in
+                for (key, value) in affinities where key.caseInsensitiveCompare(name) == .orderedSame {
+                    return value
+                }
+                return 0
+            }
+            var weighted: [Exercise] = []
+            for ex in candidates {
+                let score = scoreFor(ex.name)
+                if score <= -2 { continue }
+                weighted.append(contentsOf: Array(repeating: ex, count: min(max(1, 1 + score), 4)))
+            }
+            return weighted.isEmpty ? candidates : weighted
+        }
+
         // Reorder slot.alternatives by LLM strategy: an emphasized pattern
         // jumps to the front; a deprioritized one is dropped from
         // consideration (the slot can fall through if ALL its alternatives
@@ -660,7 +690,7 @@ enum WorkoutGenerator {
                 allowedEquipmentSlugs: profile.allowedEquipmentSlugs
             ).filter { ExerciseStaples.isStaple(name: $0.name, forPattern: pattern) }
             if !staplesPool.isEmpty,
-               let pick = deterministicPick(from: applyEraAesthetic(applyVariety(applySoreFilter(staplesPool))), slotIdx: slotIdx, hashSeed: hashSeed) {
+               let pick = deterministicPick(from: applyAffinityWeighting(applyEraAesthetic(applyVariety(applySoreFilter(staplesPool)))), slotIdx: slotIdx, hashSeed: hashSeed) {
                 slot.satisfiedBy = pattern
                 return pick
             }
@@ -680,7 +710,7 @@ enum WorkoutGenerator {
                     allowedEquipmentSlugs: profile.allowedEquipmentSlugs
                 )
                 let candidates = applyStaplePreference(applySoreFilter(raw), pattern)
-                if let pick = deterministicPick(from: applyEraAesthetic(applyVariety(candidates)), slotIdx: slotIdx, hashSeed: hashSeed) {
+                if let pick = deterministicPick(from: applyAffinityWeighting(applyEraAesthetic(applyVariety(candidates))), slotIdx: slotIdx, hashSeed: hashSeed) {
                     slot.satisfiedBy = pattern
                     return pick
                 }
@@ -696,7 +726,7 @@ enum WorkoutGenerator {
                 allowedEquipmentSlugs: profile.allowedEquipmentSlugs
             )
             let relaxed = applyStaplePreference(applySoreFilter(relaxedRaw), pattern)
-            if let pick = deterministicPick(from: applyEraAesthetic(applyVariety(relaxed)), slotIdx: slotIdx, hashSeed: hashSeed) {
+            if let pick = deterministicPick(from: applyAffinityWeighting(applyEraAesthetic(applyVariety(relaxed))), slotIdx: slotIdx, hashSeed: hashSeed) {
                 slot.satisfiedBy = pattern
                 return pick
             }

@@ -27,6 +27,7 @@ import UIKit
 
 struct LogScreen: View {
     @EnvironmentObject private var store: SessionStore
+    @EnvironmentObject private var memoryStore: MemoryStore
     let onFinish: () -> Void
     var onCancel: (() -> Void)? = nil
 
@@ -116,10 +117,14 @@ struct LogScreen: View {
     /// just under a different label).
     private func swapExercise(at idx: Int, with picked: Exercise) {
         guard session.exercises.indices.contains(idx) else { return }
+        let originalName = session.exercises[idx].name
         session.exercises[idx].name = picked.name
         if let modality = picked.modality, !modality.isEmpty {
             session.exercises[idx].type = picked.modalityLabel
         }
+        // Remember the swap so the generator favors the chosen exercise (and,
+        // after repeated swaps-away, demotes the original) in future plans.
+        memoryStore.recordSwap(out: originalName, in: picked.name)
     }
 
     // MARK: - Body content
@@ -536,6 +541,7 @@ struct LogScreen: View {
     }()
     return LogScreen(onFinish: {})
         .environmentObject(store)
+        .environmentObject(MemoryStore(defaults: UserDefaults(suiteName: "preview.log")!))
 }
 
 #Preview("Supersets") {
@@ -615,4 +621,5 @@ struct LogScreen: View {
     store.saveActive(mock)
     return LogScreen(onFinish: {})
         .environmentObject(store)
+        .environmentObject(MemoryStore(defaults: UserDefaults(suiteName: "preview.log")!))
 }

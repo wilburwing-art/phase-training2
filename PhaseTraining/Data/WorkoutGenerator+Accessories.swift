@@ -40,6 +40,7 @@ extension WorkoutGenerator {
         excludedIds: Set<Int>,
         excludeKws: [String],
         soreAreas: Set<String>,
+        affinities: [String: Int],
         setsMultiplier: Double,
         strategy: GeneratorStrategy
     ) -> [(generated: GeneratedExercise, durSec: Int)] {
@@ -57,7 +58,8 @@ extension WorkoutGenerator {
         if !existingMuscles.contains("delt-lateral") && !existingMuscles.contains("delt-posterior") {
             if let ex = pickAccessoryByName(["Cable Lateral Raise", "Dumbbell Lateral Raise", "Bodybuilder Lateral Raise (Myo-Reps)"],
                                             profile: profile, excludedIds: excludedIds,
-                                            excludeKws: excludeKws, soreAreas: soreAreas) {
+                                            excludeKws: excludeKws, soreAreas: soreAreas,
+                                            affinities: affinities) {
                 out.append(makeAccessoryRow(ex: ex, slotIdx: existingPicks.count + out.count,
                                             memory: memory, profile: profile,
                                             hashSeed: hashSeed, setsMultiplier: setsMultiplier,
@@ -69,7 +71,8 @@ extension WorkoutGenerator {
         if !existingMuscles.contains("triceps") {
             if let ex = pickAccessoryByName(["Rope Pushdown", "Overhead Cable Triceps Extension", "Skull Crusher"],
                                             profile: profile, excludedIds: excludedIds,
-                                            excludeKws: excludeKws, soreAreas: soreAreas) {
+                                            excludeKws: excludeKws, soreAreas: soreAreas,
+                                            affinities: affinities) {
                 out.append(makeAccessoryRow(ex: ex, slotIdx: existingPicks.count + out.count,
                                             memory: memory, profile: profile,
                                             hashSeed: hashSeed, setsMultiplier: setsMultiplier,
@@ -95,6 +98,7 @@ extension WorkoutGenerator {
         excludedIds: Set<Int>,
         excludeKws: [String],
         soreAreas: Set<String>,
+        affinities: [String: Int],
         setsMultiplier: Double,
         strategy: GeneratorStrategy
     ) -> [(generated: GeneratedExercise, durSec: Int)] {
@@ -106,7 +110,8 @@ extension WorkoutGenerator {
         if !existingMuscles.contains("hamstrings") {
             if let ex = pickAccessoryByName(["Lying Leg Curl", "Seated Leg Curl"],
                                             profile: profile, excludedIds: excludedIds,
-                                            excludeKws: excludeKws, soreAreas: soreAreas) {
+                                            excludeKws: excludeKws, soreAreas: soreAreas,
+                                            affinities: affinities) {
                 out.append(makeAccessoryRow(ex: ex, slotIdx: existingPicks.count + out.count,
                                             memory: memory, profile: profile,
                                             hashSeed: hashSeed, setsMultiplier: setsMultiplier,
@@ -122,7 +127,8 @@ extension WorkoutGenerator {
         if existingMuscles.isDisjoint(with: ["calves", "gastrocnemius", "soleus"]) {
             if let ex = pickAccessoryByName(["Standing Calf Raise", "Seated Calf Raise"],
                                             profile: profile, excludedIds: excludedIds,
-                                            excludeKws: excludeKws, soreAreas: soreAreas) {
+                                            excludeKws: excludeKws, soreAreas: soreAreas,
+                                            affinities: affinities) {
                 out.append(makeAccessoryRow(ex: ex, slotIdx: existingPicks.count + out.count,
                                             memory: memory, profile: profile,
                                             hashSeed: hashSeed, setsMultiplier: setsMultiplier,
@@ -155,7 +161,8 @@ extension WorkoutGenerator {
         profile: DemographicProfile,
         excludedIds: Set<Int>,
         excludeKws: [String],
-        soreAreas: Set<String>
+        soreAreas: Set<String>,
+        affinities: [String: Int] = [:]
     ) -> Exercise? {
         for name in names {
             // listExercises does a LIKE name search; filter to exact match
@@ -163,6 +170,14 @@ extension WorkoutGenerator {
             let candidates = CoachDatabase.shared.listExercises(search: name)
             guard let ex = candidates.first(where: { $0.name == name }) else { continue }
             if excludedIds.contains(ex.id) { continue }
+            // Swap-memory dual-path: honor a strong negative affinity (≤ -2,
+            // the user has repeatedly swapped away from this) by falling through
+            // to the next canonical name — mirroring the main loop's
+            // applyAffinityWeighting sink. Positive affinity has no effect here:
+            // the candidate names are a fixed canonical fallback list, not a
+            // pool, so there's nothing to up-weight.
+            if let score = affinities.first(where: { $0.key.caseInsensitiveCompare(ex.name) == .orderedSame })?.value,
+               score <= -2 { continue }
             // Dislike-keyword filter — mirror the main slot loop (WG:606): the
             // canonical names ("Cable Lateral Raise", "Rope Pushdown") match a
             // disliked 'cable' / 'machine' keyword, so honor it here too.

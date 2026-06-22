@@ -179,6 +179,7 @@ extension PlanStore {
             importedWorkouts: imported,
             importedPeaks: peaks,
             cohort: profile.eraCohort,
+            exerciseAffinities: memory.exerciseAffinities,
             now: today
         )
     }

@@ -736,6 +736,33 @@ final class WorkoutGeneratorTests: XCTestCase {
             "Sore shoulders+triceps must suppress the upper-push accessory layer; got: \(accessoryRows(soreW).map { $0.name })")
     }
 
+    /// Swap-memory dual-path: a strongly-demoted accessory name (≤ -2, the user
+    /// repeatedly swapped away from it) must fall through to the next canonical
+    /// fallback rather than being appended — mirroring the main loop's
+    /// applyAffinityWeighting sink in the SEPARATE accessory prescribe path.
+    func test_accessoryLayer_skipsStronglyDemotedName() throws {
+        let m = hypertrophyPushMemory()
+        let p = DemographicProfile.from(m)
+        let baseline = accessoryRows(WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: p, hashSeed: m.planInputsHash, context: .empty))
+        // Only meaningful when Cable Lateral Raise (the canonical first choice)
+        // is what baseline appended for the side-delt slot.
+        try XCTSkipIf(!baseline.contains { $0.name == "Cable Lateral Raise" },
+            "Baseline didn't append Cable Lateral Raise; nothing to demote")
+
+        var ctx = GeneratorContext.empty
+        ctx.exerciseAffinities = ["Cable Lateral Raise": -3]
+        let demoted = accessoryRows(WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3,
+            memory: m, profile: p, hashSeed: m.planInputsHash, context: ctx))
+        XCTAssertFalse(demoted.contains { $0.name == "Cable Lateral Raise" },
+            "Strongly-demoted Cable Lateral Raise must be skipped; got: \(demoted.map { $0.name })")
+        // The side-delt slot should fall through to a fallback raise, not vanish.
+        XCTAssertTrue(demoted.contains { $0.name.localizedCaseInsensitiveContains("lateral raise") },
+            "A lateral-raise fallback should fill the side-delt slot; got: \(demoted.map { $0.name })")
+    }
+
     /// Readiness × deload set scaling must reach the accessory layer. A
     /// detrained user (readinessScore 0.0 → 0.6× sets) gets fewer accessory
     /// sets than a full-readiness baseline, same as the main slot loop.
