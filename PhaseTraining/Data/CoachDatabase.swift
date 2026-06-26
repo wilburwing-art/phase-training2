@@ -14,6 +14,138 @@ final class CoachDatabase {
     /// forms, OCR-specific carries) sit at 1-7 tags.
     static let foundationTagThreshold = 10
 
+    // MARK: - Search normalization & fuzzy matching
+
+    /// Separator characters stripped from BOTH the catalog name and the
+    /// user's query before substring matching, so harmless punctuation
+    /// "typos" don't hide results: typing "pull up" (or "pullup") still
+    /// finds "Pull-Up", "farmers walk" finds "Farmer's Walk", etc. Order
+    /// doesn't matter — each is removed independently from both sides.
+    /// Straight + curly apostrophes are both listed because the catalog
+    /// mixes them. Also used as the token boundary for fuzzy matching.
+    static let searchSeparators: [Character] = [" ", "-", "'", "\u{2019}", "."]
+
+    /// Swift-side mirror of `nameNormalizeSQL`: collapse a free-text query to
+    /// its separator-free form so the bound LIKE pattern lines up with the
+    /// normalized column expression. Lowercasing isn't needed — SQLite LIKE
+    /// is ASCII-case-insensitive — but stripping the separators here is.
+    static func normalizeSearchTerm(_ raw: String) -> String {
+        var out = raw
+        for sep in searchSeparators {
+            out = out.replacingOccurrences(of: String(sep), with: "")
+        }
+        return out
+    }
+
+    /// SQL expression that strips `searchSeparators` from a name column so it
+    /// can be LIKE-matched against a `normalizeSearchTerm`-ed query. Nested
+    /// REPLACE() — one layer per separator. Single quotes are escaped by
+    /// doubling per SQL string-literal rules.
+    private static func nameNormalizeSQL(_ column: String) -> String {
+        var expr = column
+        for sep in searchSeparators {
+            let literal = sep == "'" ? "''" : String(sep)
+            expr = "REPLACE(\(expr), '\(literal)', '')"
+        }
+        return expr
+    }
+
+    /// Lowercase + split on `searchSeparators` (and any whitespace), dropping
+    /// empties. Tokenizing on these keeps "Pull-Up", "pull up", and "pull,up"
+    /// all yielding [pull, up], so the fuzzy matcher compares word-by-word.
+    static func searchTokens(_ s: String) -> [String] {
+        s.lowercased()
+            .split(whereSeparator: { searchSeparators.contains($0) || $0.isWhitespace })
+            .map(String.init)
+    }
+
+    /// Per-token edit-distance budget, scaled by how much the user typed.
+    /// Short tokens get zero slack (too ambiguous — "rw" shouldn't match
+    /// "row"); longer tokens absorb one or two typos. OSA counts an adjacent
+    /// transposition as a single edit, so 2 covers most fat-finger cases.
+    private static func fuzzyTolerance(forTokenLength len: Int) -> Int {
+        switch len {
+        case ..<3: return 0
+        case 3...5: return 1
+        default: return 2
+        }
+    }
+
+    /// Optimal String Alignment distance (Damerau-Levenshtein restricted so
+    /// no substring is edited twice). Counts an adjacent transposition as a
+    /// single edit, so "benhc"→"bench" and "deadlfit"→"deadlift" are distance
+    /// 1 — the dominant real-world typo. Takes Character arrays the caller
+    /// already built, to avoid repeatedly re-indexing String.
+    static func osaDistance(_ a: [Character], _ b: [Character]) -> Int {
+        let m = a.count, n = b.count
+        if m == 0 { return n }
+        if n == 0 { return m }
+        var d = [[Int]](repeating: [Int](repeating: 0, count: n + 1), count: m + 1)
+        for i in 0...m { d[i][0] = i }
+        for j in 0...n { d[0][j] = j }
+        for i in 1...m {
+            for j in 1...n {
+                let cost = a[i - 1] == b[j - 1] ? 0 : 1
+                var v = min(d[i - 1][j] + 1,          // deletion
+                            d[i][j - 1] + 1,          // insertion
+                            d[i - 1][j - 1] + cost)   // substitution
+                if i > 1, j > 1, a[i - 1] == b[j - 2], a[i - 2] == b[j - 1] {
+                    v = min(v, d[i - 2][j - 2] + 1)   // adjacent transposition
+                }
+                d[i][j] = v
+            }
+        }
+        return d[m][n]
+    }
+
+    /// Total edit-distance score for matching every token of `query` against
+    /// the closest token of `name`, or nil if any query token has no name
+    /// token within tolerance. Lower = closer. Order-independent (so "press
+    /// bench" still finds "Bench Press"), unlike the contiguous substring
+    /// path. Only meaningful as a zero-result fallback — see `fuzzyMatches`.
+    static func fuzzyNameScore(query: String, name: String) -> Int? {
+        let qTokens = searchTokens(query)
+        guard !qTokens.isEmpty else { return nil }
+        let nTokens = searchTokens(name)
+        guard !nTokens.isEmpty else { return nil }
+        let nChars = nTokens.map(Array.init)
+        var total = 0
+        for q in qTokens {
+            let tol = fuzzyTolerance(forTokenLength: q.count)
+            let qChars = Array(q)
+            var best = Int.max
+            for (k, n) in nTokens.enumerated() {
+                // Length-gate: tokens differing in length by more than the
+                // tolerance can't possibly be within it — skip the DP.
+                if abs(n.count - q.count) > tol { continue }
+                let dist = osaDistance(qChars, nChars[k])
+                if dist < best { best = dist; if best == 0 { break } }
+            }
+            guard best <= tol else { return nil }
+            total += best
+        }
+        return total
+    }
+
+    /// Rank `candidates` by how close their names are to a (possibly typo'd)
+    /// `query`, keeping only those within per-token edit-distance tolerance.
+    /// Best-first; empty if nothing is close enough. Used purely as a fallback
+    /// when the substring search found nothing, so it can only add results a
+    /// literal match missed — never reorder or hide good substring hits.
+    static func fuzzyMatches(in candidates: [Exercise], query: String) -> [Exercise] {
+        candidates
+            .compactMap { ex -> (ex: Exercise, score: Int)? in
+                guard let score = fuzzyNameScore(query: query, name: ex.name) else { return nil }
+                return (ex, score)
+            }
+            .sorted { lhs, rhs in
+                if lhs.score != rhs.score { return lhs.score < rhs.score }
+                if lhs.ex.name.count != rhs.ex.name.count { return lhs.ex.name.count < rhs.ex.name.count }
+                return lhs.ex.name < rhs.ex.name
+            }
+            .map(\.ex)
+    }
+
     private var db: OpaquePointer?
 
     /// Serializes ALL public reads on this singleton. SQLite is opened with
@@ -159,7 +291,8 @@ final class CoachDatabase {
         """
         var clauses: [String] = []
         if let s = search?.trimmingCharacters(in: .whitespaces), !s.isEmpty {
-            clauses.append("name LIKE ?")
+            // Separator-insensitive: see nameNormalizeSQL / normalizeSearchTerm.
+            clauses.append("\(Self.nameNormalizeSQL("name")) LIKE ?")
         }
         if modality != nil { clauses.append("modality = ?") }
         if !clauses.isEmpty { sql += " WHERE " + clauses.joined(separator: " AND ") }
@@ -171,7 +304,7 @@ final class CoachDatabase {
 
         var bindIdx: Int32 = 1
         if let s = search?.trimmingCharacters(in: .whitespaces), !s.isEmpty {
-            sqlite3_bind_text(stmt, bindIdx, "%\(s)%", -1, SQLITE_TRANSIENT)
+            sqlite3_bind_text(stmt, bindIdx, "%\(Self.normalizeSearchTerm(s))%", -1, SQLITE_TRANSIENT)
             bindIdx += 1
         }
         if let m = modality {
@@ -246,8 +379,10 @@ final class CoachDatabase {
         }
 
         if let s = search?.trimmingCharacters(in: .whitespaces), !s.isEmpty {
-            clauses.append("e.name LIKE ?")
-            binds.append(.str("%\(s)%"))
+            // Separator-insensitive: "pull up" / "pullup" both match "Pull-Up".
+            // See nameNormalizeSQL / normalizeSearchTerm.
+            clauses.append("\(Self.nameNormalizeSQL("e.name")) LIKE ?")
+            binds.append(.str("%\(Self.normalizeSearchTerm(s))%"))
         }
         if let m = modality {
             clauses.append("e.modality = ?")
@@ -351,6 +486,28 @@ final class CoachDatabase {
         var out: [Exercise] = []
         while sqlite3_step(stmt) == SQLITE_ROW {
             out.append(decodeExercise(stmt))
+        }
+
+        // Fuzzy fallback: the separator-insensitive substring query found
+        // nothing, but the user may have typo'd a name ("benhc press" →
+        // "Bench Press", "deadlfit" → "Deadlift"). Re-run with the SAME
+        // filters minus the name, then rank survivors by character-level edit
+        // distance. Fires only on an otherwise-empty result, so it can only
+        // rescue a dead-end search — never displace real substring matches.
+        // The self-call passes search:nil (so it can't recurse back into this
+        // branch); NSRecursiveLock makes re-entering withLock safe.
+        if out.isEmpty, let q = search?.trimmingCharacters(in: .whitespaces), !q.isEmpty {
+            let candidates = listExercises(
+                search: nil,
+                muscleSlugs: muscleSlugs,
+                patternSlugs: patternSlugs,
+                modality: modality,
+                difficulty: difficulty,
+                environment: environment,
+                compoundOnly: compoundOnly,
+                userSportSlugs: userSportSlugs
+            )
+            return Self.fuzzyMatches(in: candidates, query: q)
         }
         return out
     } }
