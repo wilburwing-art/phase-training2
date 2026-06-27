@@ -261,10 +261,10 @@ final class TapBudgetTests: XCTestCase {
 
     /// The activation budget: cold launch (no --ui-test-onboarded) → walk the
     /// minimal valid onboarding path → accept the generated plan → land in the
-    /// main tabs. Sports is the only step with no default (must pick one); focus
-    /// and equipment ship pre-selected, so the minimal path advances on their
-    /// defaults. The Accept button is gated on async plan generation, so it's
-    /// tapped once enabled. Reference: 12 advances + 1 sport selection = 13.
+    /// main tabs. Sports is the only step with no default (must pick one);
+    /// equipment ships pre-selected, so the minimal path advances on its
+    /// default. The Accept button is gated on async plan generation, so it's
+    /// tapped once enabled. Reference: 11 advances + 1 sport selection = 12.
     func testTapBudget_onboardingToFirstPlan() throws {
         let app = XCUIApplication()
         app.launchArguments += ["--ui-test-reset"]   // NO --ui-test-onboarded
@@ -276,15 +276,13 @@ final class TapBudgetTests: XCTestCase {
 
         // Each Continue is ided by its step, so every tap waits for the actual
         // step to be on screen (no shared-id race across the transition). Only
-        // SPORTS needs a selection — focus (defaults to generalStrength) and
-        // equipment (defaults to bodyweight) are pre-selected, so tapping an
-        // option there would DESELECT the default; the minimal path just
-        // advances on the defaults.
+        // SPORTS needs a selection — equipment (defaults to bodyweight) is
+        // pre-selected, so tapping an option there would DESELECT the default;
+        // the minimal path just advances on the default.
         counter.tap("onboarding-continue-welcome")
         tapFirstMatching(&counter, prefix: "onboarding-sport-")     // sports (no default)
         counter.tap("onboarding-continue-sports")
         counter.tap("onboarding-continue-sportSeasons")
-        counter.tap("onboarding-continue-focus")
         counter.tap("onboarding-continue-availability")
         counter.tap("onboarding-continue-equipment")
         counter.tap("onboarding-continue-experience")
@@ -297,7 +295,7 @@ final class TapBudgetTests: XCTestCase {
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 10),
                       "accepting the plan should dismiss onboarding into the main tabs")
 
-        recordTapBudget(counter, reference: 13)
+        recordTapBudget(counter, reference: 12)
     }
 
     // MARK: - 11. Weekly check-in → regenerated plan
