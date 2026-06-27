@@ -53,8 +53,24 @@ enum WorkoutGenerator {
         hashSeed: String,
         recentlyPicked: Set<Int> = [],
         context: GeneratorContext = .empty,
-        strategy: GeneratorStrategy = .auto
+        strategy: GeneratorStrategy = .auto,
+        adjacentSportDay: Bool = false
     ) -> GeneratedWorkout {
+        // Season-aware engine for supported sports (ski / climb) — the live
+        // generator. Routing here (not just at the Planner shape-fill) means
+        // EVERY caller — single-day regen, week consolidation, LLM refinement,
+        // profile/coach previews — produces season workouts uniformly. The
+        // legacy demographic path below is the fallback for unsupported sports
+        // (none reach generation: onboarding gates to ski/climb, M2b).
+        if SportSeasonGenerator.supports(memory.primarySport?.slug) {
+            let athlete = AthleteState.from(
+                memory,
+                variant: SportSeasonGenerator.defaultVariant(forSport: memory.primarySport?.slug),
+                weekNumber: memory.weeksInCurrentPhase ?? 1,
+                recentMovementIDs: recentlyPicked)
+            return SportSeasonGenerator.generateSession(
+                athlete, sessionIndex: liftIndex, adjacentSportDay: adjacentSportDay)
+        }
         // Strategy's focus wins over the (liftIndex, totalLifts) derivation
         // when set — the LLM can explicitly ask for "push day" even on what
         // would normally be a leg slot.
@@ -100,6 +116,14 @@ enum WorkoutGenerator {
         context: GeneratorContext = .empty,
         strategy: GeneratorStrategy = .auto
     ) -> GeneratedWorkout {
+        // Season engine has no separate consolidation concept — a consolidated
+        // day is just one season session. Route ski/climb through generateLift.
+        if SportSeasonGenerator.supports(memory.primarySport?.slug) {
+            return generateLift(
+                liftIndex: liftIndex, totalLifts: totalLifts, memory: memory,
+                profile: profile, hashSeed: hashSeed, recentlyPicked: recentlyPicked,
+                context: context, strategy: strategy)
+        }
         guard let secondary = day.secondary else {
             // Solo day — force the focus through the normal path.
             var strat = strategy
