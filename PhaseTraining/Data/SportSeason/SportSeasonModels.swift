@@ -91,9 +91,35 @@ struct SetScheme: Codable, Hashable {
     /// Seconds of the eccentric (lowering) phase, e.g. 4 for a 4s ski-braking
     /// tempo. Flattened to a 4-digit `tempo` string ("4-0-1-0").
     var eccentricTempoSeconds: Int?
+    /// Explosive concentric (power / contact work) — flattens to "2-0-X-0".
+    /// Takes precedence over `eccentricTempoSeconds` in `tempoString`.
+    var explosiveConcentric: Bool
     var restSeconds: Int
     /// 1 (low) … 5 (high). Drives the in-season fatigue ceiling.
     var fatigueCost: Int
+
+    /// Keyword init with sane defaults so a `DemandScheme` row only spells out
+    /// the fields that matter for that demand.
+    init(setsLow: Int, setsHigh: Int,
+         repsLow: Int? = nil, repsHigh: Int? = nil, holdSeconds: Int? = nil,
+         intensityRPELow: Int? = nil, intensityRPEHigh: Int? = nil,
+         pctOneRMLow: Int? = nil, pctOneRMHigh: Int? = nil,
+         eccentricTempoSeconds: Int? = nil, explosiveConcentric: Bool = false,
+         restSeconds: Int, fatigueCost: Int = 2) {
+        self.setsLow = setsLow
+        self.setsHigh = setsHigh
+        self.repsLow = repsLow
+        self.repsHigh = repsHigh
+        self.holdSeconds = holdSeconds
+        self.intensityRPELow = intensityRPELow
+        self.intensityRPEHigh = intensityRPEHigh
+        self.pctOneRMLow = pctOneRMLow
+        self.pctOneRMHigh = pctOneRMHigh
+        self.eccentricTempoSeconds = eccentricTempoSeconds
+        self.explosiveConcentric = explosiveConcentric
+        self.restSeconds = restSeconds
+        self.fatigueCost = fatigueCost
+    }
 
     /// "4-6", "5", or "45-90s hold" — the `GeneratedExercise.reps` string.
     var repsString: String {
@@ -112,14 +138,42 @@ struct SetScheme: Codable, Hashable {
         return "\(lo)"
     }
 
-    /// 4-digit eccentric-emphasis tempo ("4-0-1-0") or nil when unset.
+    /// 4-digit tempo: explosive ("2-0-X-0") wins, then eccentric-emphasis
+    /// ("4-0-1-0"), else nil when unset.
     var tempoString: String? {
+        if explosiveConcentric { return "2-0-X-0" }
         guard let ecc = eccentricTempoSeconds else { return nil }
         return "\(ecc)-0-1-0"
     }
 
     /// Midpoint of the set range, used when a single set count is needed.
     var setsMid: Int { (setsLow + setsHigh) / 2 }
+
+    /// Apply a phase's progression to this base band. Volume + intensity move;
+    /// the demand's rep/tempo character is preserved. Folds in the logic the
+    /// generator used before demand schemes (`progressedSets` + `rpe(for:)`).
+    func modulated(by mode: ProgressionMode) -> SetScheme {
+        var s = self
+        switch mode {
+        case .progressiveOverload, .autoregulateHold:
+            break                                    // full dose / autoregulated hold
+        case .maintainMinimal:
+            s.setsLow = max(1, s.setsLow - 1)
+            s.setsHigh = max(s.setsLow, s.setsHigh - 1)
+            s.shiftRPE(by: -1)
+        case .deload:
+            s.setsHigh = max(1, s.setsLow - 1)
+            s.setsLow = s.setsHigh
+            s.shiftRPE(by: -2)
+        }
+        return s
+    }
+
+    /// Nudge the RPE band by `delta`, floored at 5 (nothing below light-moderate).
+    private mutating func shiftRPE(by delta: Int) {
+        if let lo = intensityRPELow { intensityRPELow = max(5, lo + delta) }
+        if let hi = intensityRPEHigh { intensityRPEHigh = max(intensityRPELow ?? 5, hi + delta) }
+    }
 }
 
 // MARK: - SportMovement
@@ -139,13 +193,10 @@ struct SportMovement: Hashable, Identifiable {
     let fatigueCost: Int
     let minExperienceRank: Int            // 0 novice … 2 advanced
     let injuryCaution: String?
-    // Joined catalog scheme
+    // Joined catalog facts (the prescription itself is demand-driven — see
+    // DemandScheme — so the catalog's generic sets/reps/rest/tempo are not read).
     let isCompound: Bool
     let isUnilateral: Bool
-    let defaultSets: Int
-    let defaultReps: String
-    let defaultRestSeconds: Int
-    let defaultTempo: String?
 
     var primaryDemand: Demand? { demands.first }
     func serves(_ demand: Demand) -> Bool { demands.contains(demand) }
@@ -153,14 +204,5 @@ struct SportMovement: Hashable, Identifiable {
     func allowed(for variant: SportVariant) -> Bool {
         guard let v = allowedVariants else { return true }
         return v.contains(variant)
-    }
-
-    /// Parse a catalog `default_rest` string ("2 min", "90 sec", "2-3 min")
-    /// into seconds. Takes the low end of a range; defaults to 90s.
-    static func parseRestSeconds(_ raw: String?) -> Int {
-        guard let raw = raw?.lowercased() else { return 90 }
-        let firstNum = raw.split(whereSeparator: { !$0.isNumber }).first.flatMap { Int($0) }
-        guard let n = firstNum else { return 90 }
-        return raw.contains("min") ? n * 60 : n
     }
 }

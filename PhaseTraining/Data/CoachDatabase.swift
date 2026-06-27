@@ -1193,8 +1193,7 @@ final class CoachDatabase {
         let sql = """
         SELECT sm.exercise_id, sm.name, sm.demands, sm.allowed_phases,
                sm.allowed_variants, sm.fatigue_cost, sm.min_experience,
-               sm.injury_caution, e.slug, e.is_compound, e.is_unilateral,
-               e.default_sets, e.default_reps, e.default_rest, e.default_tempo
+               sm.injury_caution, e.slug, e.is_compound, e.is_unilateral
         FROM sport_movements sm
         JOIN exercises e ON e.id = sm.exercise_id
         WHERE sm.sport = ?
@@ -1229,11 +1228,7 @@ final class CoachDatabase {
                 minExperienceRank: ExperienceLevel.seasonRank(forSeedToken: text(stmt, 6) ?? "novice"),
                 injuryCaution: text(stmt, 7),
                 isCompound: (intOrNil(stmt, 9) ?? 0) == 1,
-                isUnilateral: (intOrNil(stmt, 10) ?? 0) == 1,
-                defaultSets: intOrNil(stmt, 11) ?? 3,
-                defaultReps: text(stmt, 12) ?? "8-12",
-                defaultRestSeconds: SportMovement.parseRestSeconds(text(stmt, 13)),
-                defaultTempo: text(stmt, 14)))
+                isUnilateral: (intOrNil(stmt, 10) ?? 0) == 1))
         }
         return out
     } }

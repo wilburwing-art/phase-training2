@@ -75,7 +75,7 @@ enum SportSeasonGenerator {
                                   phase: athlete.season, signature: signatureDemand(athlete.sportSlug))
         if rule.deferToSport && adjacentSportDay { picks = lighten(picks) }
 
-        let exercises = picks.map { prescribe($0.movement, rule: rule, phase: athlete.season) }
+        let exercises = picks.map { prescribe($0.movement, demand: $0.demand, rule: rule) }
         return assemble(exercises, picks: picks, athlete: athlete, rule: rule,
                         sessionIndex: sessionIndex, lightened: rule.deferToSport && adjacentSportDay)
     }
@@ -238,38 +238,23 @@ enum SportSeasonGenerator {
 
     // MARK: - Prescription
 
-    private static func prescribe(_ m: SportMovement, rule: PhaseRule, phase: SeasonPhase) -> GeneratedExercise {
-        let sets = progressedSets(base: m.defaultSets, mode: rule.progression)
+    /// Prescription is driven by the DEMAND the slot was allocated to (not the
+    /// movement's generic catalog default), modulated by the phase progression.
+    private static func prescribe(_ m: SportMovement, demand: Demand, rule: PhaseRule) -> GeneratedExercise {
+        let scheme = DemandScheme.scheme(for: demand, progression: rule.progression)
         return GeneratedExercise(
             id: "ss-\(m.exerciseId)",
             exerciseId: m.exerciseId,
             name: m.name,
             pattern: nil,
             isCompound: m.isCompound,
-            sets: sets,
-            reps: m.defaultReps,
-            restSeconds: m.defaultRestSeconds,
+            sets: max(1, scheme.setsMid),
+            reps: scheme.repsString,
+            restSeconds: scheme.restSeconds,
             notes: m.injuryCaution.map { "Caution: \($0)" },
-            rpe: rpe(for: rule.progression),
-            tempo: m.defaultTempo,
+            rpe: scheme.rpeString,
+            tempo: scheme.tempoString,
             source: .recipe)
-    }
-
-    private static func progressedSets(base: Int, mode: ProgressionMode) -> Int {
-        switch mode {
-        case .progressiveOverload, .autoregulateHold: return base
-        case .maintainMinimal:                         return max(2, base - 1)
-        case .deload:                                  return max(1, base - 1)
-        }
-    }
-
-    private static func rpe(for mode: ProgressionMode) -> String {
-        switch mode {
-        case .progressiveOverload: return "7-8"
-        case .autoregulateHold:    return "7"
-        case .maintainMinimal:     return "6-7"
-        case .deload:              return "5-6"
-        }
     }
 
     // MARK: - Assembly

@@ -257,6 +257,71 @@ final class SeasonFidelityTest: XCTestCase {
         XCTAssertNotNil(store.memory.onboardedAt, "supported user must NOT be re-onboarded")
     }
 
+    // MARK: - Prescription tracks the slot demand (not the generic catalog)
+
+    /// (demand, exercise) pairs in selection order — the provenance demand list
+    /// zips with `exercises` because `assemble` preserves pick order.
+    private func demandExercisePairs(_ w: GeneratedWorkout) -> [(Demand, GeneratedExercise)] {
+        guard let r = w.provenance.range(of: "demands: ") else { return [] }
+        let demands = w.provenance[r.upperBound...].split(separator: "/")
+            .compactMap { Demand(rawValue: $0.trimmingCharacters(in: .whitespaces)) }
+        return Array(zip(demands, w.exercises))
+    }
+
+    /// Reps/rest/RPE/tempo must follow the DEMAND the slot was allocated to —
+    /// the whole reason the season engine exists. Before DemandScheme these came
+    /// from each movement's generic catalog default and were demand-blind.
+    func test_check8_prescription_tracks_demand() throws {
+        var pairs: [(Demand, GeneratedExercise)] = []
+        for f in sports {
+            for phase in phases {
+                for wk in 1...3 {
+                    for w in SportSeasonGenerator.generateWeek(athlete(f, season: phase, weekNumber: wk)) {
+                        pairs += demandExercisePairs(w)
+                    }
+                }
+            }
+        }
+        XCTAssertFalse(pairs.isEmpty, "no sessions generated — empty-catalog flake? re-run")
+
+        func repsLow(_ s: String) -> Int? { Int(s.split(whereSeparator: { !$0.isNumber }).first ?? "") }
+
+        for (demand, ex) in pairs {
+            switch demand {
+            case .power, .contactStrength:
+                XCTAssertEqual(ex.tempo, "2-0-X-0",
+                    "\(demand.rawValue) (\(ex.name)) must be explosive, got tempo \(ex.tempo ?? "nil")")
+                if let lo = repsLow(ex.reps) {
+                    XCTAssertLessThanOrEqual(lo, 5, "\(demand.rawValue) reps should be low, got \(ex.reps)")
+                }
+            case .eccentricLeg:
+                XCTAssertEqual(ex.tempo, "4-0-1-0",
+                    "eccentricLeg (\(ex.name)) must carry the 4s eccentric tempo, got \(ex.tempo ?? "nil")")
+            case .legEndurance, .pullEndurance:
+                if let lo = repsLow(ex.reps) {
+                    XCTAssertGreaterThanOrEqual(lo, 10, "\(demand.rawValue) reps should be high, got \(ex.reps)")
+                }
+            case .fingerStrength:
+                XCTAssertTrue(ex.reps.contains("hold"),
+                    "fingerStrength (\(ex.name)) should prescribe a hold, got \(ex.reps)")
+            default:
+                break
+            }
+        }
+    }
+
+    /// Progression shrinks volume + intensity off the demand's base band.
+    func test_modulation_shrinks_under_lower_phases() {
+        let base = DemandScheme.scheme(for: .maxStrength, progression: .progressiveOverload)
+        let maintain = DemandScheme.scheme(for: .maxStrength, progression: .maintainMinimal)
+        let deload = DemandScheme.scheme(for: .maxStrength, progression: .deload)
+        XCTAssertGreaterThan(base.setsMid, deload.setsMid, "deload must cut sets vs overload")
+        XCTAssertGreaterThanOrEqual(base.setsMid, maintain.setsMid)
+        XCTAssertGreaterThanOrEqual(maintain.setsMid, deload.setsMid)
+        XCTAssertGreaterThan(base.intensityRPEHigh ?? 0, deload.intensityRPEHigh ?? 0, "deload must cut RPE")
+        XCTAssertGreaterThanOrEqual(deload.intensityRPELow ?? 0, 5, "RPE floors at 5")
+    }
+
     // MARK: - Report
 
     func test_write_season_fidelity_report() {
