@@ -203,6 +203,27 @@ final class SeasonFidelityTest: XCTestCase {
         XCTAssertEqual(after.values.reduce(0, +), 1.0, accuracy: 0.001, "weights must still sum to 1")
     }
 
+    // MARK: - M2a injection (Planner routes supported sports to the season engine)
+
+    func test_planner_routes_supported_sport_to_season_engine() {
+        for f in sports {
+            let m = mem(f, season: .offSeason, days: 3)
+            let plan = Planner.generate(memory: m, routines: [])
+            let liftDays = plan.days.filter { $0.kind == .lift }
+            XCTAssertFalse(liftDays.isEmpty, "[\(f.slug)] no lift days generated")
+            for d in liftDays {
+                let w = d.generatedWorkout
+                XCTAssertNotNil(w, "[\(f.slug)] lift day missing workout")
+                // Season-engine provenance carries the slot demands; legacy doesn't.
+                XCTAssertTrue(w?.provenance.contains("demands:") ?? false,
+                    "[\(f.slug)] lift day NOT from season engine: \(w?.provenance ?? "nil")")
+                XCTAssertEqual(w?.focus, .fullBodyA, "[\(f.slug)] season day should carry a focus")
+                XCTAssertTrue(w?.exercises.allSatisfy { $0.exerciseId > 0 } ?? false,
+                    "[\(f.slug)] season exercises must have real catalog ids")
+            }
+        }
+    }
+
     // MARK: - Report
 
     func test_write_season_fidelity_report() {

@@ -294,6 +294,11 @@ enum Planner {
             + slots.compactMap { $0 }.filter { $0.kind == .lift }.count
         var liftCursor = 0
         for entry in pendingKinds {
+            // Sport slots are already placed; a lift slot defers to the sport
+            // (lightens) when a sport day sits immediately before or after it.
+            let adjacentSport =
+                (entry.idx > 0 && slots[entry.idx - 1]?.kind == .sport) ||
+                (entry.idx < slots.count - 1 && slots[entry.idx + 1]?.kind == .sport)
             slots[entry.idx] = makeSlot(
                 date: entry.date,
                 kind: entry.kind,
@@ -305,6 +310,7 @@ enum Planner {
                 slotOffset: entry.idx,
                 liftIndex: entry.kind == .lift ? liftCursor : 0,
                 totalLifts: totalLifts,
+                adjacentSportDay: adjacentSport,
                 context: context,
                 strategy: strategy
             )
@@ -376,17 +382,28 @@ enum Planner {
             // specific directive than the week-level tone.
             var liftStrategy = strategy
             if let focus { liftStrategy.focus = focus.asWorkoutFocus }
-            let profile = DemographicProfile.from(memory)
-            let workout = WorkoutGenerator.generateLift(
-                liftIndex: 0,
-                totalLifts: 1,
-                memory: memory,
-                profile: profile,
-                hashSeed: memory.planInputsHash + "-lift-override",
-                recentlyPicked: recentlyPicked,
-                context: context,
-                strategy: liftStrategy
-            )
+            let workout: GeneratedWorkout
+            if SportSeasonGenerator.supports(memory.primarySport?.slug) {
+                let athlete = AthleteState.from(
+                    memory,
+                    variant: SportSeasonGenerator.defaultVariant(forSport: memory.primarySport?.slug),
+                    weekNumber: memory.weeksInCurrentPhase ?? 1,
+                    recentMovementIDs: recentlyPicked)
+                workout = SportSeasonGenerator.generateSession(
+                    athlete, sessionIndex: 0, adjacentSportDay: false)
+            } else {
+                let profile = DemographicProfile.from(memory)
+                workout = WorkoutGenerator.generateLift(
+                    liftIndex: 0,
+                    totalLifts: 1,
+                    memory: memory,
+                    profile: profile,
+                    hashSeed: memory.planInputsHash + "-lift-override",
+                    recentlyPicked: recentlyPicked,
+                    context: context,
+                    strategy: liftStrategy
+                )
+            }
             let reason = focus.map { "You set this day as \($0.label.lowercased())" }
                 ?? "You set this day to lift"
             return DayPlan(date: date, kind: .lift,
@@ -505,21 +522,34 @@ enum Planner {
         slotOffset: Int,
         liftIndex: Int,
         totalLifts: Int,
+        adjacentSportDay: Bool = false,
         context: GeneratorContext = .empty,
         strategy: GeneratorStrategy = .auto
     ) -> DayPlan {
         switch kind {
         case .lift:
-            let workout = WorkoutGenerator.generateLift(
-                liftIndex: liftIndex,
-                totalLifts: totalLifts,
-                memory: memory,
-                profile: profile,
-                hashSeed: memory.planInputsHash,
-                recentlyPicked: recentlyPicked,
-                context: context,
-                strategy: strategy
-            )
+            let workout: GeneratedWorkout
+            if SportSeasonGenerator.supports(memory.primarySport?.slug) {
+                // Season-aware engine for supported sports (ski / climb).
+                let athlete = AthleteState.from(
+                    memory,
+                    variant: SportSeasonGenerator.defaultVariant(forSport: memory.primarySport?.slug),
+                    weekNumber: memory.weeksInCurrentPhase ?? 1,
+                    recentMovementIDs: recentlyPicked)
+                workout = SportSeasonGenerator.generateSession(
+                    athlete, sessionIndex: liftIndex, adjacentSportDay: adjacentSportDay)
+            } else {
+                workout = WorkoutGenerator.generateLift(
+                    liftIndex: liftIndex,
+                    totalLifts: totalLifts,
+                    memory: memory,
+                    profile: profile,
+                    hashSeed: memory.planInputsHash,
+                    recentlyPicked: recentlyPicked,
+                    context: context,
+                    strategy: strategy
+                )
+            }
             return DayPlan(
                 date: date,
                 kind: .lift,

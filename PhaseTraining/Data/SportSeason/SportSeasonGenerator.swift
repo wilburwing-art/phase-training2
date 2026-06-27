@@ -160,6 +160,20 @@ enum SportSeasonGenerator {
         return nil
     }
 
+    /// Sports the season engine generates for. The live Planner routes these to
+    /// `generateSession`; everything else falls through to the legacy generator.
+    static func supports(_ sportSlug: String?) -> Bool {
+        guard let s = sportSlug else { return false }
+        return PhaseRule.skiSlugs.contains(s) || PhaseRule.climbingSlugs.contains(s)
+    }
+
+    /// Default variant until the variant picker lands (M4): ski → inbounds,
+    /// climbing → sportRoute.
+    static func defaultVariant(forSport sportSlug: String?) -> SportVariant {
+        guard let s = sportSlug else { return .inbounds }
+        return PhaseRule.climbingSlugs.contains(s) ? .sportRoute : .inbounds
+    }
+
     private static func targetMovementCount(_ rule: PhaseRule) -> Int {
         // ~11 min per movement; clamp to a sane session shape.
         max(3, min(6, rule.sessionMinutesTarget.upperBound / 11))
@@ -270,8 +284,11 @@ enum SportSeasonGenerator {
         var prov = "\(athlete.sportSlug) · \(athlete.variant.rawValue) · \(rule.objective)"
         if lightened { prov += " · lightened (sport day adjacent)" }
         prov += " · demands: \(demandMix.joined(separator: "/"))"
+        // A real WorkoutFocus (not nil) so downstream consolidation / split
+        // analytics / LLM-refinement anchoring keep working. Season sessions are
+        // whole-body by construction → fullBodyA.
         return GeneratedWorkout(
             title: title, summary: summary, exercises: exercises,
-            estimatedMinutes: minutes, provenance: prov, focus: nil)
+            estimatedMinutes: minutes, provenance: prov, focus: .fullBodyA)
     }
 }
