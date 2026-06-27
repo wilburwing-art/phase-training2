@@ -48,6 +48,8 @@ TABLES = [
     "exercise_substitutions",
     "exercise_injury_relevance",
     "exercise_sport_relevance",
+    # Season-aware generator (curated movement pool over the catalog)
+    "sport_movements",
     # Cross-domain
     "injury_sport_prevalence",
     # Routines
@@ -65,6 +67,9 @@ JSON_ARRAY_COLUMNS = {
     ("sport_recovery_profiles", "muscles_loaded"),
     ("sport_recovery_profiles", "avoid_before_session"),
     ("exercise_sport_relevance", "season_emphasis"),
+    ("sport_movements", "demands"),
+    ("sport_movements", "allowed_phases"),
+    ("sport_movements", "allowed_variants"),
 }
 
 

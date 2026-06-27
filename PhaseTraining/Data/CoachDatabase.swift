@@ -1184,6 +1184,60 @@ final class CoachDatabase {
         return rows
     } }
 
+    /// Season-aware generator pool: every `sport_movements` row for a sport,
+    /// joined with its catalog exercise for name + scheme. The pool is tiny
+    /// (~44 rows), so phase/variant/demand filtering happens in Swift
+    /// (SportSeasonGenerator) rather than via fragile JSON-array SQL.
+    func sportMovements(sport sportSlug: String) -> [SportMovement] { withLock {
+        guard let db else { return [] }
+        let sql = """
+        SELECT sm.exercise_id, sm.name, sm.demands, sm.allowed_phases,
+               sm.allowed_variants, sm.fatigue_cost, sm.min_experience,
+               sm.injury_caution, e.slug, e.is_compound, e.is_unilateral,
+               e.default_sets, e.default_reps, e.default_rest, e.default_tempo
+        FROM sport_movements sm
+        JOIN exercises e ON e.id = sm.exercise_id
+        WHERE sm.sport = ?
+        ORDER BY sm.id ASC
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_text(stmt, 1, sportSlug, -1, SQLITE_TRANSIENT)
+
+        func jsonStrings(_ idx: Int32) -> [String] {
+            guard let raw = text(stmt, idx), let data = raw.data(using: .utf8),
+                  let arr = try? JSONSerialization.jsonObject(with: data) as? [String]
+            else { return [] }
+            return arr
+        }
+
+        var out: [SportMovement] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            let demands = jsonStrings(2).compactMap { Demand(rawValue: $0) }
+            let phases = jsonStrings(3).compactMap { SeasonPhase(rawValue: $0) }
+            let variantStrings = (sqlite3_column_type(stmt, 4) == SQLITE_NULL) ? nil : jsonStrings(4)
+            let variants = variantStrings?.compactMap { SportVariant(rawValue: $0) }
+            out.append(SportMovement(
+                exerciseId: Int(sqlite3_column_int64(stmt, 0)),
+                name: text(stmt, 1) ?? "",
+                catalogSlug: text(stmt, 8) ?? "",
+                demands: demands,
+                allowedPhases: phases,
+                allowedVariants: variants,
+                fatigueCost: intOrNil(stmt, 5) ?? 2,
+                minExperienceRank: ExperienceLevel.seasonRank(forSeedToken: text(stmt, 6) ?? "novice"),
+                injuryCaution: text(stmt, 7),
+                isCompound: (intOrNil(stmt, 9) ?? 0) == 1,
+                isUnilateral: (intOrNil(stmt, 10) ?? 0) == 1,
+                defaultSets: intOrNil(stmt, 11) ?? 3,
+                defaultReps: text(stmt, 12) ?? "8-12",
+                defaultRestSeconds: SportMovement.parseRestSeconds(text(stmt, 13)),
+                defaultTempo: text(stmt, 14)))
+        }
+        return out
+    } }
+
     private func text(_ stmt: OpaquePointer?, _ idx: Int32) -> String? {
         guard let c = sqlite3_column_text(stmt, idx) else { return nil }
         return String(cString: c)

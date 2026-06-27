@@ -311,3 +311,24 @@ CREATE INDEX idx_sport_parent                  ON sport_categories(parent_id);
 CREATE INDEX idx_sub_context                   ON exercise_substitutions(context);
 
 CREATE INDEX idx_sub_substitute                ON exercise_substitutions(substitute_id);
+
+-- Season-aware generator: curated movement pool (SPEC §3.3). A thin
+-- season-tagging layer over `exercises` — name/equipment/scheme are joined
+-- from the catalog at query time; only demand tags + fatigue cost are new.
+CREATE TABLE sport_movements (
+  id                INTEGER PRIMARY KEY,
+  slug              TEXT NOT NULL,
+  name              TEXT NOT NULL,
+  sport             TEXT NOT NULL,            -- sport_categories.slug (e.g. alpine-skiing)
+  exercise_id       INTEGER NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,
+  demands           TEXT NOT NULL,            -- JSON array of Demand rawValues, primary first
+  allowed_phases    TEXT NOT NULL,            -- JSON array of SeasonPhase rawValues
+  allowed_variants  TEXT,                     -- JSON array of SportVariant rawValues; NULL = all
+  fatigue_cost      INTEGER NOT NULL DEFAULT 2 CHECK (fatigue_cost BETWEEN 1 AND 5),
+  min_experience    TEXT,                     -- novice|intermediate|advanced; NULL = no gate
+  injury_caution    TEXT
+);
+
+CREATE INDEX idx_sport_movements_sport         ON sport_movements(sport);
+
+CREATE INDEX idx_sport_movements_exercise      ON sport_movements(exercise_id);

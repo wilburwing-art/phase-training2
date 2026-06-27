@@ -1,0 +1,1350 @@
+[
+  {
+    "id": 1,
+    "slug": "ski-barbell-back-squat",
+    "name": "Barbell Back Squat",
+    "sport": "alpine-skiing",
+    "exercise_id": 57,
+    "demands": [
+      "maxStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 4,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 2,
+    "slug": "ski-front-squat-barbell",
+    "name": "Front Squat (Barbell)",
+    "sport": "alpine-skiing",
+    "exercise_id": 450,
+    "demands": [
+      "maxStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 4,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 3,
+    "slug": "ski-trap-bar-deadlift",
+    "name": "Trap Bar Deadlift",
+    "sport": "alpine-skiing",
+    "exercise_id": 451,
+    "demands": [
+      "maxStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 4,
+    "min_experience": null,
+    "injury_caution": "low back"
+  },
+  {
+    "id": 4,
+    "slug": "ski-romanian-deadlift-barbell",
+    "name": "Romanian Deadlift (Barbell)",
+    "sport": "alpine-skiing",
+    "exercise_id": 58,
+    "demands": [
+      "maxStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": null,
+    "injury_caution": "low back"
+  },
+  {
+    "id": 5,
+    "slug": "ski-bulgarian-split-squat",
+    "name": "Bulgarian Split Squat",
+    "sport": "alpine-skiing",
+    "exercise_id": 62,
+    "demands": [
+      "maxStrength",
+      "kneeStability"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 6,
+    "slug": "ski-leg-press",
+    "name": "Leg Press",
+    "sport": "alpine-skiing",
+    "exercise_id": 931,
+    "demands": [
+      "maxStrength",
+      "eccentricLeg"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 7,
+    "slug": "ski-eccentric-focused-back-squat-skier-prep",
+    "name": "Eccentric-Focused Back Squat (Skier Prep)",
+    "sport": "alpine-skiing",
+    "exercise_id": 129,
+    "demands": [
+      "eccentricLeg",
+      "maxStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 4,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 8,
+    "slug": "ski-eccentric-step-down-ski-descent",
+    "name": "Eccentric Step-Down (Ski Descent)",
+    "sport": "alpine-skiing",
+    "exercise_id": 603,
+    "demands": [
+      "eccentricLeg"
+    ],
+    "allowed_phases": [
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 9,
+    "slug": "ski-box-step-downhill-eccentric",
+    "name": "Box-Step Downhill Eccentric",
+    "sport": "alpine-skiing",
+    "exercise_id": 623,
+    "demands": [
+      "eccentricLeg"
+    ],
+    "allowed_phases": [
+      "pre_season",
+      "in_season",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 10,
+    "slug": "ski-reverse-nordic-curl",
+    "name": "Reverse Nordic Curl",
+    "sport": "alpine-skiing",
+    "exercise_id": 420,
+    "demands": [
+      "eccentricLeg"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": "intermediate",
+    "injury_caution": "quad / knee \u2014 start shallow"
+  },
+  {
+    "id": 11,
+    "slug": "ski-nordic-hamstring-curl",
+    "name": "Nordic Hamstring Curl",
+    "sport": "alpine-skiing",
+    "exercise_id": 102,
+    "demands": [
+      "eccentricLeg"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 4,
+    "min_experience": "intermediate",
+    "injury_caution": "high DOMS \u2014 assist eccentric first"
+  },
+  {
+    "id": 12,
+    "slug": "ski-single-leg-calf-raise-eccentric,-loaded",
+    "name": "Single-Leg Calf Raise (Eccentric, Loaded)",
+    "sport": "alpine-skiing",
+    "exercise_id": 242,
+    "demands": [
+      "eccentricLeg",
+      "prehab"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 13,
+    "slug": "ski-walking-lunge",
+    "name": "Walking Lunge",
+    "sport": "alpine-skiing",
+    "exercise_id": 943,
+    "demands": [
+      "legEndurance"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 4,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 14,
+    "slug": "ski-wall-sit-ski-tuck",
+    "name": "Wall Sit (Ski Tuck)",
+    "sport": "alpine-skiing",
+    "exercise_id": 600,
+    "demands": [
+      "legEndurance"
+    ],
+    "allowed_phases": [
+      "pre_season",
+      "in_season",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 15,
+    "slug": "ski-loaded-step-up",
+    "name": "Loaded Step-Up",
+    "sport": "alpine-skiing",
+    "exercise_id": 238,
+    "demands": [
+      "legEndurance"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 16,
+    "slug": "ski-step-up-with-pack-high-box",
+    "name": "Step-Up with Pack (High Box)",
+    "sport": "alpine-skiing",
+    "exercise_id": 622,
+    "demands": [
+      "legEndurance",
+      "aerobicUphill"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 17,
+    "slug": "ski-calf-raise-endurance-bilateral-high-rep",
+    "name": "Calf Raise Endurance (Bilateral High-Rep)",
+    "sport": "alpine-skiing",
+    "exercise_id": 636,
+    "demands": [
+      "legEndurance"
+    ],
+    "allowed_phases": [
+      "pre_season",
+      "in_season",
+      "maintenance",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 18,
+    "slug": "ski-split-squat-jump",
+    "name": "Split Squat Jump",
+    "sport": "alpine-skiing",
+    "exercise_id": 130,
+    "demands": [
+      "legEndurance",
+      "power"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 4,
+    "min_experience": null,
+    "injury_caution": "never in-season \u2014 high fatigue"
+  },
+  {
+    "id": 19,
+    "slug": "ski-box-jump",
+    "name": "Box Jump",
+    "sport": "alpine-skiing",
+    "exercise_id": 49,
+    "demands": [
+      "power"
+    ],
+    "allowed_phases": [
+      "pre_season",
+      "in_season",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": "land soft \u2014 requires base"
+  },
+  {
+    "id": 20,
+    "slug": "ski-box-jump-to-stick-soft-landing",
+    "name": "Box Jump to Stick (Soft Landing)",
+    "sport": "alpine-skiing",
+    "exercise_id": 616,
+    "demands": [
+      "power"
+    ],
+    "allowed_phases": [
+      "pre_season",
+      "in_season",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 21,
+    "slug": "ski-depth-jump",
+    "name": "Depth Jump",
+    "sport": "alpine-skiing",
+    "exercise_id": 232,
+    "demands": [
+      "power"
+    ],
+    "allowed_phases": [
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": "advanced",
+    "injury_caution": "strength base required"
+  },
+  {
+    "id": 22,
+    "slug": "ski-lateral-bound-to-stick",
+    "name": "Lateral Bound to Stick",
+    "sport": "alpine-skiing",
+    "exercise_id": 329,
+    "demands": [
+      "power",
+      "hipLateral"
+    ],
+    "allowed_phases": [
+      "pre_season",
+      "in_season",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 23,
+    "slug": "ski-broad-jump",
+    "name": "Broad Jump",
+    "sport": "alpine-skiing",
+    "exercise_id": 52,
+    "demands": [
+      "power"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 24,
+    "slug": "ski-lateral-box-jump-over",
+    "name": "Lateral Box Jump (Over)",
+    "sport": "alpine-skiing",
+    "exercise_id": 602,
+    "demands": [
+      "power",
+      "kneeStability"
+    ],
+    "allowed_phases": [
+      "pre_season",
+      "event_prep"
+    ],
+    "allowed_variants": [
+      "park"
+    ],
+    "fatigue_cost": 3,
+    "min_experience": "intermediate",
+    "injury_caution": null
+  },
+  {
+    "id": 25,
+    "slug": "ski-single-leg-romanian-deadlift",
+    "name": "Single-Leg Romanian Deadlift",
+    "sport": "alpine-skiing",
+    "exercise_id": 108,
+    "demands": [
+      "kneeStability"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 26,
+    "slug": "ski-cossack-squat",
+    "name": "Cossack Squat",
+    "sport": "alpine-skiing",
+    "exercise_id": 226,
+    "demands": [
+      "kneeStability",
+      "hipLateral"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": "hip / knee mobility"
+  },
+  {
+    "id": 27,
+    "slug": "ski-lateral-step-down-eccentric",
+    "name": "Lateral Step-Down (Eccentric)",
+    "sport": "alpine-skiing",
+    "exercise_id": 361,
+    "demands": [
+      "kneeStability"
+    ],
+    "allowed_phases": [
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 28,
+    "slug": "ski-skaters-step-down-eccentric",
+    "name": "Skater's Step-Down (Eccentric)",
+    "sport": "alpine-skiing",
+    "exercise_id": 477,
+    "demands": [
+      "kneeStability",
+      "hipLateral"
+    ],
+    "allowed_phases": [
+      "pre_season",
+      "in_season",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 29,
+    "slug": "ski-single-leg-skater-squat",
+    "name": "Single-Leg Skater Squat",
+    "sport": "alpine-skiing",
+    "exercise_id": 601,
+    "demands": [
+      "kneeStability"
+    ],
+    "allowed_phases": [
+      "pre_season",
+      "in_season",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 30,
+    "slug": "ski-copenhagen-adductor-lift-dynamic",
+    "name": "Copenhagen Adductor Lift (Dynamic)",
+    "sport": "alpine-skiing",
+    "exercise_id": 237,
+    "demands": [
+      "kneeStability",
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": "groin \u2014 regress to short lever"
+  },
+  {
+    "id": 31,
+    "slug": "ski-lateral-lunge",
+    "name": "Lateral Lunge",
+    "sport": "alpine-skiing",
+    "exercise_id": 227,
+    "demands": [
+      "hipLateral",
+      "kneeStability"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 32,
+    "slug": "ski-pallof-press",
+    "name": "Pallof Press",
+    "sport": "alpine-skiing",
+    "exercise_id": 63,
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 1,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 33,
+    "slug": "ski-farmers-carry",
+    "name": "Farmer's Carry",
+    "sport": "alpine-skiing",
+    "exercise_id": 64,
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 34,
+    "slug": "ski-overhead-carry-light-pack-overhead",
+    "name": "Overhead Carry (Light Pack Overhead)",
+    "sport": "alpine-skiing",
+    "exercise_id": 630,
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 35,
+    "slug": "ski-side-plank",
+    "name": "Side Plank",
+    "sport": "alpine-skiing",
+    "exercise_id": 132,
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 1,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 36,
+    "slug": "ski-45\u00b0-back-extension",
+    "name": "45\u00b0 Back Extension",
+    "sport": "alpine-skiing",
+    "exercise_id": 939,
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": "low back"
+  },
+  {
+    "id": 37,
+    "slug": "ski-rucking-zone-2-walking-with-pack",
+    "name": "Rucking (Zone-2 Walking with Pack)",
+    "sport": "alpine-skiing",
+    "exercise_id": 241,
+    "demands": [
+      "aerobicUphill"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season"
+    ],
+    "allowed_variants": [
+      "backcountry",
+      "skimo"
+    ],
+    "fatigue_cost": 3,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 38,
+    "slug": "ski-hill-repeats-uphill-running",
+    "name": "Hill Repeats (Uphill Running)",
+    "sport": "alpine-skiing",
+    "exercise_id": 692,
+    "demands": [
+      "aerobicUphill"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": [
+      "backcountry",
+      "skimo"
+    ],
+    "fatigue_cost": 4,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 39,
+    "slug": "ski-stair-climber",
+    "name": "Stair Climber",
+    "sport": "alpine-skiing",
+    "exercise_id": 1092,
+    "demands": [
+      "aerobicUphill"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season"
+    ],
+    "allowed_variants": [
+      "backcountry",
+      "skimo"
+    ],
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 40,
+    "slug": "ski-sled-push-3-min-round",
+    "name": "Sled Push 3-Min Round",
+    "sport": "alpine-skiing",
+    "exercise_id": 325,
+    "demands": [
+      "aerobicUphill",
+      "legEndurance"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": [
+      "backcountry",
+      "skimo"
+    ],
+    "fatigue_cost": 4,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 41,
+    "slug": "ski-pogo-hops-ski-specific-ankle-stiffness",
+    "name": "Pogo Hops (Ski-Specific Ankle Stiffness)",
+    "sport": "alpine-skiing",
+    "exercise_id": 613,
+    "demands": [
+      "prehab"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 1,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 42,
+    "slug": "ski-calf-drop-eccentric",
+    "name": "Calf Drop Eccentric",
+    "sport": "alpine-skiing",
+    "exercise_id": 704,
+    "demands": [
+      "prehab"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 1,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 43,
+    "slug": "ski-single-leg-glute-bridge",
+    "name": "Single-Leg Glute Bridge",
+    "sport": "alpine-skiing",
+    "exercise_id": 103,
+    "demands": [
+      "prehab"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 1,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 44,
+    "slug": "ski-banded-hip-thrust-home",
+    "name": "Banded Hip Thrust (Home)",
+    "sport": "alpine-skiing",
+    "exercise_id": 308,
+    "demands": [
+      "prehab"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 1,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 45,
+    "slug": "climb-hangboard-max-hang-20mm-edge",
+    "name": "Hangboard Max Hang (20mm Edge)",
+    "sport": "climbing",
+    "exercise_id": 2,
+    "demands": [
+      "fingerStrength"
+    ],
+    "allowed_phases": [
+      "pre_season",
+      "in_season",
+      "off_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": "intermediate",
+    "injury_caution": "warm up; no acute finger injury"
+  },
+  {
+    "id": 46,
+    "slug": "climb-hangboard-repeaters-7-3-protocol",
+    "name": "Hangboard Repeaters (7/3 Protocol)",
+    "sport": "climbing",
+    "exercise_id": 3,
+    "demands": [
+      "fingerStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": "intermediate",
+    "injury_caution": null
+  },
+  {
+    "id": 47,
+    "slug": "climb-plate-pinch-hold",
+    "name": "Plate Pinch Hold",
+    "sport": "climbing",
+    "exercise_id": 302,
+    "demands": [
+      "fingerStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 48,
+    "slug": "climb-fat-grip-dead-hang",
+    "name": "Fat-Grip Dead Hang",
+    "sport": "climbing",
+    "exercise_id": 303,
+    "demands": [
+      "fingerStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 49,
+    "slug": "climb-weighted-pull-up",
+    "name": "Weighted Pull-Up",
+    "sport": "climbing",
+    "exercise_id": 1,
+    "demands": [
+      "pullStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 50,
+    "slug": "climb-lock-off-hold-90\u00b0",
+    "name": "Lock-Off Hold (90\u00b0)",
+    "sport": "climbing",
+    "exercise_id": 4,
+    "demands": [
+      "pullStrength"
+    ],
+    "allowed_phases": [
+      "pre_season",
+      "in_season",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 51,
+    "slug": "climb-barbell-bent-over-row",
+    "name": "Barbell Bent-Over Row",
+    "sport": "climbing",
+    "exercise_id": 8,
+    "demands": [
+      "pullStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": "scapular health"
+  },
+  {
+    "id": 52,
+    "slug": "climb-dumbbell-single-arm-row",
+    "name": "Dumbbell Single-Arm Row",
+    "sport": "climbing",
+    "exercise_id": 10,
+    "demands": [
+      "pullStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 53,
+    "slug": "climb-typewriter-pull-up",
+    "name": "Typewriter Pull-Up",
+    "sport": "climbing",
+    "exercise_id": 11,
+    "demands": [
+      "pullStrength"
+    ],
+    "allowed_phases": [
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": "advanced",
+    "injury_caution": null
+  },
+  {
+    "id": 54,
+    "slug": "climb-front-lever-progression-tuck--advanced-tuck",
+    "name": "Front Lever Progression (Tuck / Advanced Tuck)",
+    "sport": "climbing",
+    "exercise_id": 6,
+    "demands": [
+      "bodyTension"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": "intermediate",
+    "injury_caution": "advanced regressions"
+  },
+  {
+    "id": 55,
+    "slug": "climb-toes-to-bar",
+    "name": "Toes To Bar",
+    "sport": "climbing",
+    "exercise_id": 1099,
+    "demands": [
+      "bodyTension"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 56,
+    "slug": "climb-ab-wheel-rollout",
+    "name": "Ab Wheel Rollout",
+    "sport": "climbing",
+    "exercise_id": 7,
+    "demands": [
+      "bodyTension"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": "low back"
+  },
+  {
+    "id": 57,
+    "slug": "climb-hollow-body-hold",
+    "name": "Hollow Body Hold",
+    "sport": "climbing",
+    "exercise_id": 486,
+    "demands": [
+      "bodyTension",
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 58,
+    "slug": "climb-campus-board-ladder-1-3-5",
+    "name": "Campus Board Ladder (1-3-5)",
+    "sport": "climbing",
+    "exercise_id": 47,
+    "demands": [
+      "contactStrength"
+    ],
+    "allowed_phases": [
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 4,
+    "min_experience": "advanced",
+    "injury_caution": "finger/elbow risk; pre-season only"
+  },
+  {
+    "id": 59,
+    "slug": "climb-explosive-pull-up",
+    "name": "Explosive Pull-Up",
+    "sport": "climbing",
+    "exercise_id": 48,
+    "demands": [
+      "contactStrength",
+      "pullStrength"
+    ],
+    "allowed_phases": [
+      "pre_season",
+      "in_season",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": "intermediate",
+    "injury_caution": null
+  },
+  {
+    "id": 60,
+    "slug": "climb-medicine-ball-slam",
+    "name": "Medicine Ball Slam",
+    "sport": "climbing",
+    "exercise_id": 50,
+    "demands": [
+      "contactStrength"
+    ],
+    "allowed_phases": [
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 61,
+    "slug": "climb-dips-parallel-bar",
+    "name": "Dips (Parallel Bar)",
+    "sport": "climbing",
+    "exercise_id": 16,
+    "demands": [
+      "antagonist"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 62,
+    "slug": "climb-ring-dip-false-grip-optional",
+    "name": "Ring Dip (False Grip Optional)",
+    "sport": "climbing",
+    "exercise_id": 491,
+    "demands": [
+      "antagonist"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 63,
+    "slug": "climb-dumbbell-overhead-press",
+    "name": "Dumbbell Overhead Press",
+    "sport": "climbing",
+    "exercise_id": 15,
+    "demands": [
+      "antagonist"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 64,
+    "slug": "climb-push-up",
+    "name": "Push-Up",
+    "sport": "climbing",
+    "exercise_id": 13,
+    "demands": [
+      "antagonist"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 1,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 65,
+    "slug": "climb-prone-y-t-w-l-complex",
+    "name": "Prone Y-T-W-L Complex",
+    "sport": "climbing",
+    "exercise_id": 427,
+    "demands": [
+      "antagonist"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 1,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 66,
+    "slug": "climb-reverse-wrist-curl",
+    "name": "Reverse Wrist Curl",
+    "sport": "climbing",
+    "exercise_id": 17,
+    "demands": [
+      "prehab"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 1,
+    "min_experience": null,
+    "injury_caution": "elbow (epicondylitis)"
+  },
+  {
+    "id": 67,
+    "slug": "climb-face-pull-cable-or-band",
+    "name": "Face Pull (Cable or Band)",
+    "sport": "climbing",
+    "exercise_id": 24,
+    "demands": [
+      "prehab",
+      "antagonist"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 1,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 68,
+    "slug": "climb-pallof-press",
+    "name": "Pallof Press",
+    "sport": "climbing",
+    "exercise_id": 63,
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 1,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 69,
+    "slug": "climb-front-plank",
+    "name": "Front Plank",
+    "sport": "climbing",
+    "exercise_id": 974,
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 1,
+    "min_experience": null,
+    "injury_caution": null
+  }
+]
