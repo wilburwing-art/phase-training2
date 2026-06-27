@@ -63,7 +63,8 @@ struct OnboardingPlanPreviewScreen: View {
         if let sport = memory.primarySport {
             return "Built around \(sport.name.lowercased()), \(memory.seasonForPlanner.label.lowercased())."
         }
-        return "Built around \(memory.primaryFocus.label.lowercased())."
+        // Onboarding requires a supported sport (M2b), so this is just a guard.
+        return "Built around your training week."
     }
 
     private func summaryRow(plan: WeekPlan) -> some View {

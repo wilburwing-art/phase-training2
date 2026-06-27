@@ -337,7 +337,6 @@ extension TrainingMemory {
             "v\(schemaVersion)",
             "ps:\(primarySport?.slug ?? "_")",
             "sp:\(sports.map(\.slug).sorted().joined(separator: ","))",
-            "fc:\(focuses.map(\.rawValue).joined(separator: ","))",
             "ds:\(defaultSeason.rawValue)",
             "ss:\(seasons)",
             "pd:\(peakDate.map { String(Int($0.timeIntervalSince1970)) } ?? "_")",

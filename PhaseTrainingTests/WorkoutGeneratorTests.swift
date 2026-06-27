@@ -171,7 +171,6 @@ final class WorkoutGeneratorTests: XCTestCase {
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
-        m.focuses = [.hypertrophy]
         m.sessionMinutes = 60
         let p = DemographicProfile.from(m)
         // Force a lower day (squat + RDL + lunge + calf/leg-curl isolation) so
@@ -198,7 +197,6 @@ final class WorkoutGeneratorTests: XCTestCase {
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
-        m.focuses = [.hypertrophy]
         m.sessionMinutes = 75   // room for both focuses' compounds
         let p = DemographicProfile.from(m)
         let day = WeekConsolidator.ConsolidatedDay(primary: .legs, secondary: .push)
@@ -217,7 +215,6 @@ final class WorkoutGeneratorTests: XCTestCase {
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
-        m.focuses = [.hypertrophy]
         m.sessionMinutes = 60
         let p = DemographicProfile.from(m)
         let day = WeekConsolidator.ConsolidatedDay(primary: .push, secondary: nil)
@@ -235,7 +232,6 @@ final class WorkoutGeneratorTests: XCTestCase {
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
-        m.focuses = [.hypertrophy]
         m.sessionMinutes = 60
         let p = DemographicProfile.from(m)
         var strat = GeneratorStrategy.auto
@@ -474,7 +470,6 @@ final class WorkoutGeneratorTests: XCTestCase {
         try XCTSkipIf(wallSit == nil, "Wall Sit not in coach.db")
         var m = TrainingMemory()
         m.experience = .intermediate
-        m.focuses = [.hypertrophy]
         let p = DemographicProfile.from(m)
         let rx = WorkoutGenerator.prescription(for: wallSit!, slotIdx: 2, focus: .legs, memory: m, profile: p)
         XCTAssertTrue(rx.reps.lowercased().contains("sec"),
@@ -513,7 +508,6 @@ final class WorkoutGeneratorTests: XCTestCase {
 
         var beginner = TrainingMemory()
         beginner.experience = .beginner
-        beginner.focuses = [.generalStrength]    // primary band "5", RPE "8"
         let rx = WorkoutGenerator.prescription(
             for: bench!, slotIdx: 0, focus: .push, memory: beginner, profile: .from(beginner))
         XCTAssertEqual(rx.reps, "6-8", "beginner primary reps should floor to 6-8; got '\(rx.reps)'")
@@ -541,7 +535,6 @@ final class WorkoutGeneratorTests: XCTestCase {
         m.experience = .intermediate
         m.equipment = [.fullGym]
         m.sessionMinutes = 90
-        m.focuses = [.hypertrophy]
 
         let equipNames = CoachDatabase.shared.equipmentNameBySlug()
         func requiresMachine(_ exId: Int) -> Bool {
@@ -759,7 +752,6 @@ final class WorkoutGeneratorTests: XCTestCase {
             m.experience = .intermediate
             m.equipment = [.fullGym]
             m.sessionMinutes = mins
-            m.focuses = [.generalStrength]
             return WorkoutGenerator.generateLift(
                 liftIndex: 2, totalLifts: 3, memory: m, profile: .from(m), hashSeed: "budget")
         }
@@ -810,7 +802,6 @@ final class WorkoutGeneratorTests: XCTestCase {
             m.experience = .intermediate
             m.equipment = [.fullGym]
             m.sessionMinutes = mins
-            m.focuses = [.generalStrength]
             return WorkoutGenerator.generateLift(
                 liftIndex: 0, totalLifts: 3, memory: m, profile: .from(m), hashSeed: "highvol")
         }

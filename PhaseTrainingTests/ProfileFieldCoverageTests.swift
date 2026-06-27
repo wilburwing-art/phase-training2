@@ -128,11 +128,6 @@ final class ProfileFieldCoverageTests: XCTestCase {
               },
               snapshotMarker: "Running",
               skipReason: nil),
-        Probe(name: "focuses",
-              mutateForHash: { $0.focuses = [.hypertrophy] },
-              mutateForSnapshot: { $0.focuses = [.hypertrophy] },
-              snapshotMarker: "Build muscle",
-              skipReason: nil),
         Probe(name: "seasonsBySport",
               mutateForHash: { m in
                   let c = Sport.catalog.first { $0.slug == "climbing" }!

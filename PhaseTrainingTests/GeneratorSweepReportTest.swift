@@ -116,7 +116,6 @@ final class GeneratorSweepReportTest: XCTestCase {
     private func controlMemory() -> TrainingMemory {
         var m = TrainingMemory()
         m.experience = .intermediate
-        m.focuses = [.hypertrophy]
         m.equipment = [.fullGym]
         m.sessionMinutes = 60
         m.liftDaysPerWeek = 3
@@ -132,7 +131,6 @@ final class GeneratorSweepReportTest: XCTestCase {
     private func controlMemoryB() -> TrainingMemory {
         var m = TrainingMemory()
         m.experience = .advanced
-        m.focuses = [.generalStrength]
         m.equipment = [.fullGym]
         m.sessionMinutes = 90
         m.liftDaysPerWeek = 4
@@ -270,13 +268,6 @@ final class GeneratorSweepReportTest: XCTestCase {
                 Variant(label: "intermediate", expectsChange: false, maxScope: .selection) { m, _, _ in m.experience = .intermediate },
                 Variant(label: "advanced", maxScope: .selection)     { m, _, _ in m.experience = .advanced },
             ]))
-
-        sweeps.append(sweep(
-            "primaryFocus", "→ focusBias() sets/reps/rest scheme + accessory layer",
-            baseline: baseA,
-            PrimaryFocus.allCases.map { f in
-                Variant(label: f.rawValue, expectsChange: f != .hypertrophy) { m, _, _ in m.focuses = [f] }
-            }))
 
         sweeps.append(sweep(
             "age", "→ ≥55 drops one set; also shifts derived era cohort",
@@ -520,13 +511,6 @@ final class GeneratorSweepReportTest: XCTestCase {
             ]))
 
         // ===== Baseline B (advanced / generalStrength / 90 min) — unmask clamped schemes =====
-
-        sweeps.append(sweep(
-            "primaryFocus @ B (advanced)", "→ no 4-set cap at advanced: generalStrength shows its true 5×5 (masked to 4×5 at baseline A)",
-            baseline: baseB,
-            PrimaryFocus.allCases.map { f in
-                Variant(label: f.rawValue, expectsChange: f != .generalStrength) { m, _, _ in m.focuses = [f] }
-            }))
 
         sweeps.append(sweep(
             "sessionMinutes @ B (90 min)", "→ 90-min budget shows the full drop ladder as minutes fall (baseline A's 60 min already near-minimal)",

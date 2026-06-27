@@ -16,7 +16,6 @@ final class EvalRigExportSmokeTest: XCTestCase {
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
-        m.focuses = [.hypertrophy]
         m.liftDaysPerWeek = 4
         m.sessionMinutes = 60
         m.age = 32
@@ -83,7 +82,6 @@ final class EvalRigExportSmokeTest: XCTestCase {
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
-        m.focuses = [.hypertrophy]
         m.liftDaysPerWeek = 4
         m.sessionMinutes = 60
         m.age = 32
@@ -128,7 +126,6 @@ final class EvalRigExportSmokeTest: XCTestCase {
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
-        m.focuses = [.hypertrophy]
         m.liftDaysPerWeek = 3
         m.sessionMinutes = 60
         m.age = 32
@@ -171,7 +168,6 @@ final class EvalRigExportSmokeTest: XCTestCase {
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
-        m.focuses = [.hypertrophy]
         m.liftDaysPerWeek = 2
         m.sessionMinutes = 60
         m.age = 32
@@ -263,7 +259,6 @@ final class EvalRigExportSmokeTest: XCTestCase {
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
-        m.focuses = [.hypertrophy]
         m.liftDaysPerWeek = 4
         m.sessionMinutes = 60
         m.age = age
@@ -330,7 +325,6 @@ final class EvalRigExportSmokeTest: XCTestCase {
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
-        m.focuses = [.hypertrophy]
         m.liftDaysPerWeek = 4
         m.sessionMinutes = 60
         m.age = 32
@@ -390,15 +384,6 @@ final class EvalRigExportSmokeTest: XCTestCase {
                                         "\(ex.name): rest must be a sane positive band")
             XCTAssertLessThanOrEqual(ex.restSeconds, 300,
                                      "\(ex.name): rest unexpectedly long (\(ex.restSeconds)s)")
-        }
-        // The heavy lower/full-body compound lead lift must respect the 3-min
-        // floor. Only assert when such a slot exists (upper-push won't have one).
-        if let lead = workout.exercises.first, lead.isCompound,
-           memory.primaryFocus == .hypertrophy,
-           let pattern = lead.pattern,
-           pattern.contains("squat") || pattern.contains("hinge") || pattern.contains("deadlift") {
-            XCTAssertGreaterThanOrEqual(lead.restSeconds, 180,
-                "Heavy compound lead lift \(lead.name) must rest >= 180s")
         }
     }
 

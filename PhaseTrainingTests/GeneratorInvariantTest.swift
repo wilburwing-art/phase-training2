@@ -35,7 +35,6 @@ final class GeneratorInvariantTest: XCTestCase {
     /// "baseline" means.
     private func mem(
         experience: ExperienceLevel = .intermediate,
-        focus: PrimaryFocus = .hypertrophy,
         equipment: [Equipment] = [.fullGym],
         age: Int = 32,
         minutes: Int = 60,
@@ -43,7 +42,6 @@ final class GeneratorInvariantTest: XCTestCase {
     ) -> TrainingMemory {
         var m = TrainingMemory()
         m.experience = experience
-        m.focuses = [focus]
         m.equipment = equipment
         m.sessionMinutes = minutes
         m.liftDaysPerWeek = days
@@ -86,45 +84,43 @@ final class GeneratorInvariantTest: XCTestCase {
         ]
         var cells = 0
         for experience in [ExperienceLevel.beginner, .intermediate, .advanced] {
-            for focus in PrimaryFocus.allCases {
-                for equipment in equipmentSets {
-                    for age in [18, 32, 70] {
-                        for minutes in [20, 60, 120] {
-                            cells += 1
-                            let m = mem(experience: experience, focus: focus,
-                                        equipment: equipment, age: age, minutes: minutes)
-                            let w = week(m)
-                            let where_ = "exp=\(experience) focus=\(focus.rawValue) "
-                                + "equip=\(equipment.map { "\($0)" }.joined(separator: "+")) "
-                                + "age=\(age) min=\(minutes)"
+            for equipment in equipmentSets {
+                for age in [18, 32, 70] {
+                    for minutes in [20, 60, 120] {
+                        cells += 1
+                        let m = mem(experience: experience,
+                                    equipment: equipment, age: age, minutes: minutes)
+                        let w = week(m)
+                        let where_ = "exp=\(experience) "
+                            + "equip=\(equipment.map { "\($0)" }.joined(separator: "+")) "
+                            + "age=\(age) min=\(minutes)"
 
-                            for day in w {
-                                XCTAssertFalse(day.exercises.isEmpty,
-                                    "empty day [\(where_)] — graceful-degradation floor failed to backfill")
-                                XCTAssertGreaterThanOrEqual(day.estimatedMinutes, 1,
-                                    "estMin < 1 [\(where_)]")
+                        for day in w {
+                            XCTAssertFalse(day.exercises.isEmpty,
+                                "empty day [\(where_)] — graceful-degradation floor failed to backfill")
+                            XCTAssertGreaterThanOrEqual(day.estimatedMinutes, 1,
+                                "estMin < 1 [\(where_)]")
 
-                                // No exercise repeats within a day (pickedIds gate).
-                                let ids = day.exercises.map { $0.exerciseId }
-                                XCTAssertEqual(Set(ids).count, ids.count,
-                                    "duplicate exercise within a day [\(where_)]")
+                            // No exercise repeats within a day (pickedIds gate).
+                            let ids = day.exercises.map { $0.exerciseId }
+                            XCTAssertEqual(Set(ids).count, ids.count,
+                                "duplicate exercise within a day [\(where_)]")
 
-                                for ex in day.exercises {
-                                    XCTAssertTrue((1...8).contains(ex.sets),
-                                        "sets \(ex.sets) out of [1,8] for \(ex.name) [\(where_)]")
-                                    XCTAssertGreaterThanOrEqual(ex.restSeconds, 0,
-                                        "negative rest for \(ex.name) [\(where_)]")
-                                    XCTAssertFalse(
-                                        ex.reps.trimmingCharacters(in: .whitespaces).isEmpty,
-                                        "empty reps for \(ex.name) [\(where_)]")
-                                }
+                            for ex in day.exercises {
+                                XCTAssertTrue((1...8).contains(ex.sets),
+                                    "sets \(ex.sets) out of [1,8] for \(ex.name) [\(where_)]")
+                                XCTAssertGreaterThanOrEqual(ex.restSeconds, 0,
+                                    "negative rest for \(ex.name) [\(where_)]")
+                                XCTAssertFalse(
+                                    ex.reps.trimmingCharacters(in: .whitespaces).isEmpty,
+                                    "empty reps for \(ex.name) [\(where_)]")
                             }
                         }
                     }
                 }
             }
         }
-        XCTAssertGreaterThan(cells, 100, "grid collapsed — check the loop bounds")
+        XCTAssertGreaterThan(cells, 50, "grid collapsed — check the loop bounds")
     }
 
     /// A disliked keyword must never appear in any picked exercise name, in ANY
@@ -132,14 +128,12 @@ final class GeneratorInvariantTest: XCTestCase {
     func test_dislike_keyword_never_appears() throws {
         for kw in ["barbell", "machine"] {
             for experience in [ExperienceLevel.intermediate, .advanced] {
-                for focus in PrimaryFocus.allCases {
-                    var m = mem(experience: experience, focus: focus)
-                    m.dislikes = [kw]
-                    for day in week(m) {
-                        for ex in day.exercises {
-                            XCTAssertFalse(ex.name.lowercased().contains(kw),
-                                "disliked '\(kw)' leaked: \(ex.name) [exp=\(experience) focus=\(focus.rawValue)]")
-                        }
+                var m = mem(experience: experience)
+                m.dislikes = [kw]
+                for day in week(m) {
+                    for ex in day.exercises {
+                        XCTAssertFalse(ex.name.lowercased().contains(kw),
+                            "disliked '\(kw)' leaked: \(ex.name) [exp=\(experience)]")
                     }
                 }
             }
@@ -160,18 +154,16 @@ final class GeneratorInvariantTest: XCTestCase {
         // Set of contra'd ids that actually surface in a focus×seed sweep.
         func contraHits(injury slug: String?, contra: Set<Int>) -> Set<Int> {
             var hits: Set<Int> = []
-            for focus in PrimaryFocus.allCases {
-                var m = mem(focus: focus)
-                if let slug { m.userInjuries = [UserInjury(slug: slug)] }
-                let profile = DemographicProfile.from(m)
-                let days = max(0, min(7, m.liftDaysPerWeek))
-                for s in probeSeeds {
-                    for i in 0..<days {
-                        let w = WorkoutGenerator.generateLift(
-                            liftIndex: i, totalLifts: days, memory: m, profile: profile,
-                            hashSeed: s, recentlyPicked: [], context: .empty, strategy: .auto)
-                        for ex in w.exercises where contra.contains(ex.exerciseId) { hits.insert(ex.exerciseId) }
-                    }
+            var m = mem()
+            if let slug { m.userInjuries = [UserInjury(slug: slug)] }
+            let profile = DemographicProfile.from(m)
+            let days = max(0, min(7, m.liftDaysPerWeek))
+            for s in probeSeeds {
+                for i in 0..<days {
+                    let w = WorkoutGenerator.generateLift(
+                        liftIndex: i, totalLifts: days, memory: m, profile: profile,
+                        hashSeed: s, recentlyPicked: [], context: .empty, strategy: .auto)
+                    for ex in w.exercises where contra.contains(ex.exerciseId) { hits.insert(ex.exerciseId) }
                 }
             }
             return hits
@@ -251,7 +243,7 @@ final class GeneratorInvariantTest: XCTestCase {
     func test_metamorphic_shorter_budget_never_adds() throws {
         func plan(_ minutes: Int) -> (count: Int, est: Int) {
             var s = GeneratorStrategy.auto; s.focus = .push
-            let w = week(mem(focus: .hypertrophy, minutes: minutes), .empty, s)
+            let w = week(mem(minutes: minutes), .empty, s)
             return (movementCount(w), totalEstMin(w))
         }
         let ladder = [20, 30, 45, 60, 90].map(plan)
@@ -302,7 +294,7 @@ final class GeneratorInvariantTest: XCTestCase {
     /// catch), so diff the picks against the healthy day to prove interaction.
     func test_interaction_soreness_x_focus_excludes_and_degrades() throws {
         var s = GeneratorStrategy.auto; s.focus = .push
-        let m = mem(focus: .hypertrophy)
+        let m = mem()
         let healthy = week(m, .empty, s)
         var c = GeneratorContext.empty
         c.recentSoreAreas = ["chest", "shoulders", "triceps"]   // == push prime movers

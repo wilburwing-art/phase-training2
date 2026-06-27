@@ -21,7 +21,6 @@ final class PlanStoreRegenTests: XCTestCase {
         m.experience = .intermediate
         m.sessionMinutes = 60
         m.liftDaysPerWeek = 3
-        m.focuses = [.generalStrength]
         return m
     }
 
@@ -202,7 +201,6 @@ final class PlanStoreRegenTests: XCTestCase {
         var memory = gymMemory()
         // Force today to be rest.
         memory.liftDaysPerWeek = 0
-        memory.focuses = [.generalStrength]
         _ = store.generate(from: memory, today: today)
 
         let originalTitle = store.plan?.today()?.title

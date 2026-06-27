@@ -35,14 +35,6 @@ extension ProfileScreen {
         return "Mixed"
     }
 
-    var focusesSummary: String {
-        let focuses = store.memory.focuses
-        guard !focuses.isEmpty else { return "None" }
-        let primary = focuses[0].label
-        if focuses.count == 1 { return primary }
-        return "\(primary) +\(focuses.count - 1)"
-    }
-
     var liftDaysSummary: String {
         let n = store.memory.liftDaysPerWeek
         return "\(n) " + (n == 1 ? "day" : "days") + " / week"

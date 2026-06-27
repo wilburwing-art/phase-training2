@@ -74,7 +74,6 @@ final class WeeklyCoachIntentTests: XCTestCase {
 
     func test_liftFocusOverride_appliedAsGeneratorFocus() {
         var m = memory()
-        m.focuses = [.generalStrength]
         let monday = mondayAnchor()
         var overrides = WeekOverrides(weekStart: monday)
         overrides.dayOverrides[monday] = .lift(routineId: nil, focus: .push)
@@ -99,7 +98,6 @@ final class WeeklyCoachIntentTests: XCTestCase {
         // When the override has BOTH a routineId and a focus, the routine
         // is more specific and should win — focus gets ignored.
         var m = memory()
-        m.focuses = [.generalStrength]
         let monday = mondayAnchor()
         let routine = BundledRoutineRow(
             id: 99, name: "Hand-Picked Routine", slug: "hand-picked",

@@ -66,7 +66,6 @@ enum CoachContext {
             let others = memory.sports.filter { $0.id != memory.primarySport?.id }.map(\.name)
             if !others.isEmpty { profile.append("other sports: \(others.joined(separator: ", "))") }
         }
-        profile.append("focus: \(memory.primaryFocus.label)")
         // Season is what tells the planner whether to bias toward strength
         // (off-season) or sport time (in-season). Without it the coach was
         // guessing from sport + recent volume.

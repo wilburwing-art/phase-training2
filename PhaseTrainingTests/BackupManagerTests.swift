@@ -40,7 +40,6 @@ final class BackupManagerTests: XCTestCase {
             mem.experience = .advanced
             mem.age = 28
             mem.equipment = [.fullGym]
-            mem.focuses = [.hypertrophy]
         }
         memoryStore.completeOnboarding()
 
@@ -77,7 +76,6 @@ final class BackupManagerTests: XCTestCase {
         XCTAssertEqual(restoredMemory.memory.experience, .advanced)
         XCTAssertEqual(restoredMemory.memory.age, 28)
         XCTAssertEqual(restoredMemory.memory.equipment, [.fullGym])
-        XCTAssertEqual(restoredMemory.memory.focuses, [.hypertrophy])
         XCTAssertTrue(restoredMemory.isOnboarded)
 
         XCTAssertNotNil(restoredSession.active)

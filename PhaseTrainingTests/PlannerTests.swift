@@ -72,7 +72,6 @@ final class PlannerTests: XCTestCase {
 
     func testProducesExactlySevenContiguousDays() {
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
         XCTAssertEqual(plan.days.count, 7)
@@ -88,7 +87,6 @@ final class PlannerTests: XCTestCase {
 
     func testInputsHashMatchesMemory() {
         var memory = fixtureMemory()
-        memory.focuses = [.hypertrophy]
         memory.liftDaysPerWeek = 3
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -99,7 +97,6 @@ final class PlannerTests: XCTestCase {
 
     func testUnavailableDaysFromOverridesForceRest() {
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
 
         var overrides = WeekOverrides(weekStart: mondayAnchor())
         overrides.unavailableDays = [.tuesday, .thursday, .saturday, .sunday]
@@ -119,7 +116,6 @@ final class PlannerTests: XCTestCase {
 
     func testNoOverridesAllowsAllSevenDays() {
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
         let restCount = plan.days.filter { $0.kind == .rest }.count
@@ -149,7 +145,6 @@ final class PlannerTests: XCTestCase {
 
     func testRaceEventWithHardIntensityTapersPreviousLift() {
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]   // shape gives lifts on Mon, Wed, Fri
         memory.liftDaysPerWeek = 3
 
         let cal = Calendar.current
@@ -169,7 +164,6 @@ final class PlannerTests: XCTestCase {
 
     func testRaceEventWithLightIntensityDoesNotTaper() {
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 3
 
         let cal = Calendar.current
@@ -245,7 +239,6 @@ final class PlannerTests: XCTestCase {
     func testGeneralFitnessFallbackProducesUsableShape() {
         var memory = fixtureMemory()
         memory.primarySport = nil          // no sport
-        memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 3
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -262,7 +255,6 @@ final class PlannerTests: XCTestCase {
         // is still accepted for day overrides + custom routines, but the
         // main planning path doesn't use it.)
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
         memory.experience = .intermediate
         memory.sessionMinutes = 45
         memory.liftDaysPerWeek = 3
@@ -281,7 +273,6 @@ final class PlannerTests: XCTestCase {
         // difficulty=beginner (the preferred bucket for beginners is
         // ["beginner"] only — no advanced/elite leakage).
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
         memory.experience = .beginner
         memory.sessionMinutes = 45
         memory.liftDaysPerWeek = 3
@@ -305,7 +296,6 @@ final class PlannerTests: XCTestCase {
         // A bodyweight user's generated workout exercises should never hit a
         // gym-only exercise. (Mobility flows go through the same env filter.)
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
         memory.experience = .intermediate
         memory.sessionMinutes = 45
         memory.liftDaysPerWeek = 3
@@ -325,7 +315,6 @@ final class PlannerTests: XCTestCase {
         // A user with a "left knee" constraint should not see any exercise
         // whose name contains "knee" anywhere in their generated workouts.
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
         memory.experience = .intermediate
         memory.sessionMinutes = 50
         memory.liftDaysPerWeek = 3
@@ -352,7 +341,6 @@ final class PlannerTests: XCTestCase {
 
     func testDeterministicGivenSameInputs() {
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
         memory.experience = .intermediate
         memory.sessionMinutes = 45
         memory.liftDaysPerWeek = 3
@@ -373,7 +361,6 @@ final class PlannerTests: XCTestCase {
         climberInSeason.liftDaysPerWeek = 1
 
         var liftHeavy = TrainingMemory()
-        liftHeavy.focuses = [.hypertrophy]
         liftHeavy.liftDaysPerWeek = 5
 
         let a = Planner.generate(memory: climberInSeason, routines: catalog(), today: mondayAnchor())
@@ -388,7 +375,6 @@ final class PlannerTests: XCTestCase {
     func testLiftDaysOverrideAddsLiftsBeyondShape() {
         // General-strength shape gives 3 lifts; user wants 5.
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 5
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -399,7 +385,6 @@ final class PlannerTests: XCTestCase {
     func testLiftDaysOverrideRemovesLiftsBelowShape() {
         // Hypertrophy shape gives 5 lifts; user wants 2.
         var memory = fixtureMemory()
-        memory.focuses = [.hypertrophy]
         memory.liftDaysPerWeek = 2
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -411,7 +396,6 @@ final class PlannerTests: XCTestCase {
         // User asks for 5 lifts but marks 4 days unavailable → only 3 slots
         // remain. Planner should cap the lift count at the empty slot count.
         var memory = fixtureMemory()
-        memory.focuses = [.hypertrophy]
         memory.liftDaysPerWeek = 5
 
         var overrides = WeekOverrides(weekStart: mondayAnchor())
@@ -426,7 +410,6 @@ final class PlannerTests: XCTestCase {
 
     func testZeroLiftDaysProducesNoLifts() {
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 0
 
         let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
@@ -663,7 +646,6 @@ final class PlannerTests: XCTestCase {
 
     func testDayOverrideForcesKindThroughRegeneration() {
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 3
 
         let cal = Calendar.current
@@ -682,7 +664,6 @@ final class PlannerTests: XCTestCase {
 
     func testSwapOverridesCarryRoutineIdsBothWays() {
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 3
 
         let cal = Calendar.current
@@ -705,7 +686,6 @@ final class PlannerTests: XCTestCase {
 
     func testHardRaceTriggersTwoDayTaper() {
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 5
 
         let cal = Calendar.current
@@ -729,7 +709,6 @@ final class PlannerTests: XCTestCase {
 
     func testModerateRaceOnlyTapersDayMinusOne() {
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 5
 
         let cal = Calendar.current
@@ -757,7 +736,6 @@ final class PlannerTests: XCTestCase {
 
     func testHardRaceTriggersDayAfterRest() {
         var memory = fixtureMemory()
-        memory.focuses = [.generalStrength]
         memory.liftDaysPerWeek = 5
 
         let cal = Calendar.current

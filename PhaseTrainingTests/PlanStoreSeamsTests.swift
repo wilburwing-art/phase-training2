@@ -44,7 +44,6 @@ final class PlanStoreSeamsTests: XCTestCase {
         m.experience = .intermediate
         m.sessionMinutes = 60
         m.liftDaysPerWeek = 3
-        m.focuses = [.generalStrength]
         return m
     }
 

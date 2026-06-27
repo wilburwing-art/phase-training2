@@ -19,8 +19,6 @@ struct TrainingMemory: Codable {
     // Identity / intent
     var sports: [Sport] = []
     var primarySport: Sport? = nil
-    /// Multi-select. First entry is primary; planner uses focuses.first for shape resolution.
-    var focuses: [PrimaryFocus] = [.generalStrength]
     /// Per-sport season. Allows pre-season skiing + year-round climbing simultaneously.
     var seasonsBySport: [Sport: SeasonPhase] = [:]
     /// Used when no sport is set OR for any sport without a per-sport entry.
@@ -149,8 +147,8 @@ struct TrainingMemory: Codable {
 
     enum CodingKeys: String, CodingKey {
         case schemaVersion, sports, primarySport
-        case focuses, seasonsBySport, defaultSeason, peakDate
-        case primaryFocus, season                 // legacy (build 20-23) — read for migration
+        case seasonsBySport, defaultSeason, peakDate
+        case season                               // legacy (build 20-23) — read for migration
         case availableDays, fixedSportDays        // legacy (build 20-24) — read but dropped on encode
         case phaseStartedAt
         case sessionMinutes, liftDaysPerWeek
@@ -174,20 +172,9 @@ struct TrainingMemory: Codable {
         self.sports          = (try? c.decode([Sport].self,        forKey: .sports))          ?? []
         self.primarySport    =  try? c.decodeIfPresent(Sport.self, forKey: .primarySport)
 
-        // Focus migration: prefer focuses[]; fall back to legacy primaryFocus
-        // singleton. Decode element-by-element from strings so saved data
-        // containing dropped cases (.mobility/.rehab — removed when the
-        // prehab/mobility catalog was cleared) doesn't poison the whole array
-        // and we keep the other focuses the user picked.
-        if let rawArr = try? c.decode([String].self, forKey: .focuses) {
-            let mapped = rawArr.compactMap(PrimaryFocus.init(rawValue:))
-            self.focuses = mapped.isEmpty ? [.generalStrength] : mapped
-        } else if let legacyRaw = try? c.decode(String.self, forKey: .primaryFocus),
-                  let legacy = PrimaryFocus(rawValue: legacyRaw) {
-            self.focuses = [legacy]
-        } else {
-            self.focuses = [.generalStrength]
-        }
+        // The goal axis (focuses / legacy primaryFocus) is gone — the season
+        // engine drives prescription. Old saves still carry those keys; Swift's
+        // keyed decoder ignores unknown keys, so they load cleanly with no shim.
 
         // Season migration: prefer seasonsBySport map + defaultSeason; fall back to legacy
         // single `season` (which becomes both the default and per-primary-sport entry).
@@ -259,7 +246,6 @@ struct TrainingMemory: Codable {
         try c.encode(schemaVersion,   forKey: .schemaVersion)
         try c.encode(sports,          forKey: .sports)
         try c.encodeIfPresent(primarySport, forKey: .primarySport)
-        try c.encode(focuses,         forKey: .focuses)
         try c.encode(seasonsBySport,  forKey: .seasonsBySport)
         try c.encode(defaultSeason,   forKey: .defaultSeason)
         try c.encodeIfPresent(peakDate, forKey: .peakDate)
@@ -293,11 +279,6 @@ struct TrainingMemory: Codable {
 // MARK: - Convenience accessors
 
 extension TrainingMemory {
-    /// Primary focus — first entry in focuses, or .generalStrength if empty.
-    var primaryFocus: PrimaryFocus {
-        focuses.first ?? .generalStrength
-    }
-
     /// Season the planner should use to pick a WeeklyShape. Reads
     /// seasonsBySport[primarySport] first, then falls back to defaultSeason.
     var seasonForPlanner: SeasonPhase {
@@ -473,39 +454,6 @@ struct Sport: Codable, Hashable, Identifiable {
 }
 
 // MARK: - Enums
-
-enum PrimaryFocus: String, Codable, CaseIterable, Identifiable {
-    case generalStrength    = "general_strength"
-    case hypertrophy
-    case sportPerformance   = "sport_performance"
-    case endurance
-    case weightLoss         = "weight_loss"
-    case longevity
-
-    var id: String { rawValue }
-
-    var label: String {
-        switch self {
-        case .generalStrength:  return "Get stronger"
-        case .hypertrophy:      return "Build muscle"
-        case .sportPerformance: return "Sport performance"
-        case .endurance:        return "Build endurance"
-        case .weightLoss:       return "Lose weight"
-        case .longevity:        return "Longevity / healthspan"
-        }
-    }
-
-    var subtitle: String {
-        switch self {
-        case .generalStrength:  return "Compound lifts, progressive overload"
-        case .hypertrophy:      return "Volume + isolation, look the part"
-        case .sportPerformance: return "Power + prehab + sport-specific"
-        case .endurance:        return "Zone 2, intervals, work capacity"
-        case .weightLoss:       return "Calorie burn + lean mass retention"
-        case .longevity:        return "Strength + balance + cardio mix"
-        }
-    }
-}
 
 enum SeasonPhase: String, Codable, CaseIterable, Identifiable {
     case offSeason   = "off_season"

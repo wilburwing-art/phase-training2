@@ -198,7 +198,6 @@ final class PlanStoreMissedWorkoutTests: XCTestCase {
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
-        m.focuses = [.hypertrophy]
         m.sessionMinutes = 60
         return m
     }

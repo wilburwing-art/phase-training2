@@ -50,7 +50,6 @@ final class ReadinessGeneratorShipGateTests: XCTestCase {
         var m = TrainingMemory()
         m.age = 32
         m.experience = .intermediate
-        m.focuses = [.hypertrophy]
         m.sessionMinutes = 60
         m.liftDaysPerWeek = 5
         m.equipment = [.fullGym]

@@ -11,7 +11,6 @@ final class RpeTempoPrescriptionTests: XCTestCase {
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
-        m.focuses = [.generalStrength]
         let p = DemographicProfile.from(m)
         let workout = WorkoutGenerator.generateLift(
             liftIndex: 0, totalLifts: 3,
@@ -27,7 +26,6 @@ final class RpeTempoPrescriptionTests: XCTestCase {
         var m = TrainingMemory()
         m.experience = .intermediate
         m.equipment = [.fullGym]
-        m.focuses = [.hypertrophy]
         let p = DemographicProfile.from(m)
 
         // Probe to see what gets picked first.
