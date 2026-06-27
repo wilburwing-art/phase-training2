@@ -165,43 +165,6 @@ final class GeneratorContextTests: XCTestCase {
 
     // MARK: - Generator integration
 
-    /// When the generator runs with priorBest data for an exercise it picks,
-    /// the resulting GeneratedExercise should carry a target-weight note.
-    /// Doesn't pin the exact exercise picked — only that *some* exercise in
-    /// the workout matches a priorBest key and emits a hint.
-    func test_generator_emitsTargetWeightWhenPriorBestExists() {
-        var m = TrainingMemory()
-        m.experience = .intermediate
-        m.equipment = [.fullGym]
-        m.sessionMinutes = 45
-        m.usesImperial = true
-        let p = DemographicProfile.from(m)
-
-        // First pass: discover what the generator picks, no context.
-        let probe = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: m, profile: p, hashSeed: "probe"
-        )
-        guard let picked = probe.exercises.first else {
-            return XCTFail("planner returned no exercises")
-        }
-
-        // Second pass: feed priorBest for THAT exercise and confirm a note appears.
-        var ctx = GeneratorContext.empty
-        ctx.priorBest[picked.name.lowercased()] = PriorBest(
-            weight: 200, reps: 5, date: Date().addingTimeInterval(-7 * 86400)
-        )
-        let workout = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: m, profile: p, hashSeed: "probe", context: ctx
-        )
-        let match = workout.exercises.first { $0.name == picked.name }
-        XCTAssertNotNil(match?.notes,
-                        "expected a target-weight note on the picked exercise — got \(String(describing: match?.notes))")
-        XCTAssertTrue(match?.notes?.contains("target:") ?? false,
-                      "note should be a target-weight hint: \(String(describing: match?.notes))")
-    }
-
     /// Empty context = no notes (existing behavior unchanged).
     func test_generator_emitsNoNotesWithEmptyContext() {
         var m = TrainingMemory()

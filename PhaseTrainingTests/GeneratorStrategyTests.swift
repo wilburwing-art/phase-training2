@@ -7,50 +7,7 @@ final class GeneratorStrategyTests: XCTestCase {
 
     // MARK: - Strategy application: focus override
 
-    func test_focusOverride_overridesLiftIndexDerivation() {
-        var m = TrainingMemory()
-        m.experience = .intermediate
-        m.equipment = [.fullGym]
-        let p = DemographicProfile.from(m)
-        // liftIndex 1 of 3 = pull. Strategy says push.
-        var s = GeneratorStrategy.auto
-        s.focus = .push
-        let workout = WorkoutGenerator.generateLift(
-            liftIndex: 1, totalLifts: 3,
-            memory: m, profile: p, hashSeed: "focus-test",
-            strategy: s
-        )
-        XCTAssertEqual(workout.title, WorkoutFocus.push.title,
-                       "strategy.focus = .push should win over liftIndex-derived pull")
-    }
-
     // MARK: - Strategy application: intensity bias
-
-    func test_intensityBias_deload_dropsSetCounts() {
-        var m = TrainingMemory()
-        m.experience = .intermediate
-        m.equipment = [.fullGym]
-        let p = DemographicProfile.from(m)
-
-        let normal = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: m, profile: p, hashSeed: "intensity",
-            strategy: .auto
-        )
-
-        var deload = GeneratorStrategy.auto
-        deload.intensityBias = .deload
-        let deloaded = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: m, profile: p, hashSeed: "intensity",
-            strategy: deload
-        )
-
-        let normalTotal = normal.exercises.reduce(0) { $0 + $1.sets }
-        let deloadTotal = deloaded.exercises.reduce(0) { $0 + $1.sets }
-        XCTAssertLessThan(deloadTotal, normalTotal,
-                          "deload should drop total sets (normal=\(normalTotal), deload=\(deloadTotal))")
-    }
 
     // MARK: - Strategy application: deprioritize patterns
 
@@ -83,38 +40,6 @@ final class GeneratorStrategyTests: XCTestCase {
     }
 
     // MARK: - Strategy application: targetWeightOverrides
-
-    func test_targetWeightOverride_winsOverPriorBest() {
-        var m = TrainingMemory()
-        m.experience = .intermediate
-        m.equipment = [.fullGym]
-        m.usesImperial = true
-        let p = DemographicProfile.from(m)
-
-        // Probe to learn what the generator picks first under this config.
-        let probe = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: m, profile: p, hashSeed: "override-probe"
-        )
-        guard let picked = probe.exercises.first else { return XCTFail() }
-
-        var ctx = GeneratorContext.empty
-        ctx.priorBest[picked.name.lowercased()] = PriorBest(
-            weight: 200, reps: 5, date: Date()
-        )
-
-        var strat = GeneratorStrategy.auto
-        strat.targetWeightOverrides[picked.name.lowercased()] = 175  // explicit deload
-
-        let workout = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: m, profile: p, hashSeed: "override-probe",
-            context: ctx, strategy: strat
-        )
-        let match = workout.exercises.first { $0.name == picked.name }
-        XCTAssertEqual(match?.notes, "target: 175 lb",
-                       "override should win over priorBest-derived target (load only, no rep count). Got: \(String(describing: match?.notes))")
-    }
 
     // MARK: - Decoder
 

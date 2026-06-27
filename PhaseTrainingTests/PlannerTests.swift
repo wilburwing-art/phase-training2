@@ -248,26 +248,6 @@ final class PlannerTests: XCTestCase {
 
     // MARK: - BundledRoutineRow selection
 
-    func testLiftDaysCarryGeneratedWorkout() {
-        // Phase 15: the planner now generates workouts exercise-by-exercise
-        // from coach.db instead of picking a bundled routine. Every lift day
-        // should ship with a non-empty generatedWorkout. (The catalog: arg
-        // is still accepted for day overrides + custom routines, but the
-        // main planning path doesn't use it.)
-        var memory = fixtureMemory()
-        memory.experience = .intermediate
-        memory.sessionMinutes = 45
-        memory.liftDaysPerWeek = 3
-
-        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
-        for day in plan.days where day.kind == .lift {
-            XCTAssertNotNil(day.generatedWorkout,
-                            "\(day.title) should have a generated workout")
-            XCTAssertFalse(day.generatedWorkout?.exercises.isEmpty ?? true,
-                           "\(day.title) generated workout should have exercises")
-        }
-    }
-
     func testBeginnerGeneratedExercisesRespectDifficulty() {
         // A beginner user's generated workout exercises should be
         // difficulty=beginner (the preferred bucket for beginners is

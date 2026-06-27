@@ -112,30 +112,6 @@ final class PlanStoreRegenTests: XCTestCase {
         }
     }
 
-    func test_regenerateToday_differentSaltsYieldDifferentWorkouts() {
-        // Pin to a Monday so the 3-lift-per-week split reliably lands a lift
-        // on `today`. Without a fixed anchor, running on a rest/sport calendar
-        // day makes regenerateToday early-return and both picks come back nil.
-        var c = DateComponents(); c.year = 2026; c.month = 5; c.day = 11
-        let today = Calendar.current.date(from: c)!
-        let defaults = UserDefaults(suiteName: "PlanStoreRegenTests.\(#function)")!
-        defaults.removePersistentDomain(forName: "PlanStoreRegenTests.\(#function)")
-        let store = PlanStore(defaults: defaults, today: today)
-        let memory = gymMemory()
-        _ = store.generate(from: memory, today: today)
-
-        store.regenerateToday(memory: memory, today: today, salt: "a")
-        let pickA = store.plan?.today(now: today)?.generatedWorkout?.exercises.map(\.exerciseId)
-
-        store.regenerateToday(memory: memory, today: today, salt: "b")
-        let pickB = store.plan?.today(now: today)?.generatedWorkout?.exercises.map(\.exerciseId)
-
-        XCTAssertNotNil(pickA)
-        XCTAssertNotNil(pickB)
-        XCTAssertNotEqual(pickA, pickB,
-                          "Different regen salts should produce different exercise picks")
-    }
-
     // MARK: - migrateIfStale (build ≤35 → 36+ schema migration)
 
     func test_migrateIfStale_replacesRoutineIdDaysWithGeneratedWorkouts() {

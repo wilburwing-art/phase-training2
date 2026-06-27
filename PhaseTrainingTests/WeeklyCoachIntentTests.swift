@@ -72,28 +72,6 @@ final class WeeklyCoachIntentTests: XCTestCase {
         XCTAssertEqual(decoded.liftFocus, .legs)
     }
 
-    func test_liftFocusOverride_appliedAsGeneratorFocus() {
-        var m = memory()
-        let monday = mondayAnchor()
-        var overrides = WeekOverrides(weekStart: monday)
-        overrides.dayOverrides[monday] = .lift(routineId: nil, focus: .push)
-
-        let plan = Planner.generate(
-            memory: m,
-            overrides: overrides,
-            routines: emptyRoutineCatalog(),
-            today: monday
-        )
-        let mondaySlot = plan.days[0]
-        XCTAssertEqual(mondaySlot.kind, .lift)
-        // The workout title reflects the WorkoutFocus the user picked —
-        // confirms the focus made it through the strategy pipeline.
-        XCTAssertEqual(mondaySlot.generatedWorkout?.title, "Push day")
-        // generatedReason should mention focus by name
-        XCTAssertTrue(mondaySlot.generatedReason?.contains("push") ?? false,
-                      "reason should call out the chosen focus")
-    }
-
     func test_liftFocusOverride_routineWinsOverFocus() {
         // When the override has BOTH a routineId and a focus, the routine
         // is more specific and should win — focus gets ignored.

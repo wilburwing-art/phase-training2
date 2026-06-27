@@ -184,10 +184,6 @@ struct ProfileScreen: View {
                                     value: "DEBUG",
                                     icon: "figure.strengthtraining.traditional",
                                     action: { presentingMuscleChipGenerator = true })
-                        SettingsRow(label: "Export eval-rig JSON",
-                                    value: "DEBUG",
-                                    icon: "square.and.arrow.up.on.square",
-                                    action: { exportEvalRigJSON() })
                         #endif
                     }
 
@@ -503,54 +499,6 @@ struct ProfileScreen: View {
             }
         }
     }
-
-    #if DEBUG
-    /// DEBUG-only: dump a GeneratedWorkout to a JSON file matching the
-    /// `~/repos/eval-rig` workout schema, then surface a ShareSheet so the
-    /// user can move it into `eval-rig/workouts/<batch>/`. Resolution order:
-    ///   1. Today's day in the current plan (if any)
-    ///   2. The first generatedWorkout in the plan (any day)
-    ///   3. Synthesize one via WorkoutGenerator.generateLift using current
-    ///      memory + DemographicProfile (so the button works cold — useful
-    ///      when running with --ui-test-onboarded before any plan exists)
-    private func exportEvalRigJSON() {
-        let workout: GeneratedWorkout = {
-            let today = Calendar.current.startOfDay(for: Date())
-            if let w = planStore.plan?.days.first(where: { Calendar.current.isDate($0.date, inSameDayAs: today) })?.generatedWorkout {
-                return w
-            }
-            if let w = planStore.plan?.days.compactMap(\.generatedWorkout).first {
-                return w
-            }
-            // Cold fallback — synthesize using the real generator path so the
-            // exported JSON reflects what the user would actually receive on
-            // their first plan-day.
-            let memory = store.memory
-            let profile = DemographicProfile.from(memory)
-            return WorkoutGenerator.generateLift(
-                liftIndex: 0,
-                totalLifts: max(1, memory.liftDaysPerWeek),
-                memory: memory,
-                profile: profile,
-                hashSeed: "eval-rig-export-\(Int(Date().timeIntervalSince1970))"
-            )
-        }()
-
-        do {
-            let dir = try EvalRigExporter.defaultExportDirectory()
-            let url = try EvalRigExporter.exportToFile(
-                workout: workout,
-                memory: store.memory,
-                to: dir
-            )
-            print("[EvalRigExporter] Wrote \(url.path)")
-            backup.exportURL = url
-            backup.presentingShare = true
-        } catch {
-            print("[EvalRigExporter] Export failed: \(error.localizedDescription)")
-        }
-    }
-    #endif
 
     private static let shortDateFormatter: DateFormatter = {
         let f = DateFormatter()

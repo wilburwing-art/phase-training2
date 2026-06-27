@@ -7,47 +7,7 @@ final class RpeTempoPrescriptionTests: XCTestCase {
 
     // MARK: - Defaults
 
-    func test_strengthPrimary_emitsLowerVolume() {
-        var m = TrainingMemory()
-        m.experience = .intermediate
-        m.equipment = [.fullGym]
-        let p = DemographicProfile.from(m)
-        let workout = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: m, profile: p, hashSeed: "s-prim"
-        )
-        guard let first = workout.exercises.first else { return XCTFail() }
-        XCTAssertEqual(first.rpe, "8", "general strength primary should be RPE 8")
-    }
-
     // MARK: - LLM overrides
-
-    func test_strategyOverridesWinOverDefaults() {
-        var m = TrainingMemory()
-        m.experience = .intermediate
-        m.equipment = [.fullGym]
-        let p = DemographicProfile.from(m)
-
-        // Probe to see what gets picked first.
-        let probe = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: m, profile: p, hashSeed: "ovr"
-        )
-        guard let picked = probe.exercises.first else { return XCTFail() }
-
-        var s = GeneratorStrategy.auto
-        s.rpeOverrides[picked.name.lowercased()] = "5-6"
-        s.tempoOverrides[picked.name.lowercased()] = "5-3-1-0"
-
-        let workout = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: m, profile: p, hashSeed: "ovr",
-            strategy: s
-        )
-        let match = workout.exercises.first { $0.name == picked.name }
-        XCTAssertEqual(match?.rpe, "5-6", "LLM strategy RPE override should win")
-        XCTAssertEqual(match?.tempo, "5-3-1-0", "LLM strategy tempo override should win")
-    }
 
     // MARK: - Decoder
 

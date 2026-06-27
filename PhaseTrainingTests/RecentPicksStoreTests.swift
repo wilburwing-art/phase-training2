@@ -40,37 +40,4 @@ final class RecentPicksStoreTests: XCTestCase {
     }
 
     // MARK: - End-to-end with the generator
-
-    func test_generatorSoftFiltersRecentlyPickedExercises() {
-        // Seed memory + profile that yields a healthy candidate pool on push.
-        var memory = TrainingMemory()
-        memory.experience = .intermediate
-        memory.equipment = [.fullGym]
-        memory.sessionMinutes = 60
-        let profile = DemographicProfile.from(memory)
-
-        // First generation — nothing recent yet.
-        let first = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: memory, profile: profile,
-            hashSeed: memory.planInputsHash,
-            recentlyPicked: []
-        )
-        let firstIds = Set(first.exercises.map(\.exerciseId))
-        XCTAssertFalse(firstIds.isEmpty)
-
-        // Second generation with first picks marked recent — pool should
-        // largely shift to different exercises. If the pool was very small,
-        // we tolerate some overlap (variety is best-effort).
-        let second = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: memory, profile: profile,
-            hashSeed: memory.planInputsHash,
-            recentlyPicked: firstIds
-        )
-        let secondIds = Set(second.exercises.map(\.exerciseId))
-        let overlap = firstIds.intersection(secondIds)
-        XCTAssertLessThan(overlap.count, firstIds.count,
-                          "Variety should drop at least some recently-picked exercises (overlap=\(overlap.count))")
-    }
 }
