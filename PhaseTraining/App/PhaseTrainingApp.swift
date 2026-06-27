@@ -281,6 +281,11 @@ struct PhaseTrainingApp: App {
                     // Cheap and safe to call on every cold start.
                     await subscriptions.refresh()
                 }
+                .task {
+                    // Ski/climb narrowing: route users on an unsupported / no
+                    // sport back through onboarding to pick a supported one.
+                    memory.migrateToSupportedSportGate()
+                }
                 #if DEBUG
                 .task {
                     // UITest hook (DEBUG-only): deterministically present the

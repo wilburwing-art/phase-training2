@@ -17,7 +17,6 @@ enum OnboardingStep: Int, CaseIterable {
     case welcome = 0
     case sports
     case sportSeasons       // per-sport season picker (replaces single .season)
-    case focus              // multi-select
     case availability       // days + minutes + lift target
     case equipment          // tier-based
     case experience
@@ -79,8 +78,6 @@ struct OnboardingFlow: View {
             OnboardingSportsScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .sportSeasons:
             OnboardingSportSeasonsScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
-        case .focus:
-            OnboardingFocusScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .availability:
             OnboardingAvailabilityScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .equipment:

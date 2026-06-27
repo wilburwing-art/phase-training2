@@ -1,9 +1,7 @@
 // OnboardingSportsScreen.swift — step 2 of the onboarding flow.
 // Multi-select sports + designate one as primary. The primary drives the
-// rules engine's WeeklyShape lookup; the secondary list weights accessory work.
-//
-// "General Fitness" is always offered as a fallback so users without a sport
-// can still proceed.
+// season-aware generator. The catalog is gated to the sports the engine
+// supports (ski / climb) — a supported sport is required to proceed.
 
 import SwiftUI
 
@@ -30,7 +28,7 @@ struct OnboardingSportsScreen: View {
             VStack(alignment: .leading, spacing: 16) {
                 OnboardingSectionLabel(text: "Sports")
                 WrappingFlow(spacing: 8) {
-                    ForEach(Sport.catalog) { sport in
+                    ForEach(Sport.catalog.filter { SportSeasonGenerator.supports($0.slug) }) { sport in
                         OnboardingChip(
                             label: sport.name,
                             selected: draft.sports.contains(sport),

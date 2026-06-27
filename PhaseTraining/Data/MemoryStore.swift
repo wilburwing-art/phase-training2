@@ -70,6 +70,22 @@ final class MemoryStore: ObservableObject {
         update { $0.onboardedAt = date }
     }
 
+    /// Ski/climb narrowing migration (run once on launch). An existing user on
+    /// an unsupported or no sport is routed back through the now ski/climb-only
+    /// onboarding to pick a supported sport. Unsupported sports are stripped so
+    /// onboarding restarts clean (otherwise the unsupported primarySport would
+    /// survive a filtered picker and the gate would re-trigger forever). All
+    /// other profile data (experience, equipment, age, injuries) persists.
+    func migrateToSupportedSportGate() {
+        guard isOnboarded,
+              !SportSeasonGenerator.supports(memory.primarySport?.slug) else { return }
+        update {
+            $0.sports.removeAll { !SportSeasonGenerator.supports($0.slug) }
+            $0.primarySport = $0.sports.first
+            $0.onboardedAt = nil
+        }
+    }
+
     /// Bump the per-exercise affinity score by `delta`. Positive = "recommend
     /// more often"; negative = "recommend less often". Keyed by exercise name
     /// (same vocabulary the rest of the app uses for joins back to coach.db).

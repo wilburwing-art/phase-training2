@@ -224,6 +224,39 @@ final class SeasonFidelityTest: XCTestCase {
         }
     }
 
+    // MARK: - M2b migration gate (unsupported sport → re-onboard, no loop)
+
+    func test_migration_reonboards_unsupported_sport_without_loop() {
+        let suite = "season-migration-test"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        let store = MemoryStore(defaults: defaults)
+
+        // Onboarded user on an unsupported sport → re-onboard, strip the sport.
+        store.update {
+            $0.sports = [Sport(slug: "running", name: "Running")]
+            $0.primarySport = Sport(slug: "running", name: "Running")
+            $0.onboardedAt = Date()
+        }
+        store.migrateToSupportedSportGate()
+        XCTAssertNil(store.memory.onboardedAt, "unsupported user should be re-onboarded")
+        XCTAssertTrue(store.memory.sports.isEmpty, "unsupported sport must be stripped (else gate loops)")
+        XCTAssertNil(store.memory.primarySport)
+
+        // Idempotent: once re-onboarding, the guard short-circuits.
+        store.migrateToSupportedSportGate()
+        XCTAssertNil(store.memory.onboardedAt)
+
+        // A supported user is never re-onboarded.
+        store.update {
+            $0.sports = [Sport(slug: "climbing", name: "Climbing")]
+            $0.primarySport = Sport(slug: "climbing", name: "Climbing")
+            $0.onboardedAt = Date()
+        }
+        store.migrateToSupportedSportGate()
+        XCTAssertNotNil(store.memory.onboardedAt, "supported user must NOT be re-onboarded")
+    }
+
     // MARK: - Report
 
     func test_write_season_fidelity_report() {
