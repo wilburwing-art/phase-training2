@@ -626,25 +626,6 @@ final class PlannerTests: XCTestCase {
                        "Promotion must cap at 2/week. Got \(secondarySportDays.count) secondary sport days")
     }
 
-    // MARK: - Multi-focus
-
-    func testMultiFocusUsesFirstAsPrimary() {
-        // Pre-cleanup this test used `.mobility` as the primary focus to
-        // verify focuses[0] drives shape selection. PrimaryFocus.mobility is
-        // gone; this rewrites against .endurance which has a distinct shape
-        // (heavy sport/cardio bias) different from the .hypertrophy default.
-        var memory = fixtureMemory()
-        memory.focuses = [.endurance, .hypertrophy]    // primary = endurance
-        memory.liftDaysPerWeek = 1
-
-        let plan = Planner.generate(memory: memory, routines: catalog(), today: mondayAnchor())
-        let sports = plan.days.filter { $0.kind == .sport }.count
-        // Endurance shape: 4 sport / 1 lift / 2 rest. With liftDaysPerWeek=1
-        // the sport days survive intact (we only swap rests/mobilities to hit
-        // the lift target, not sports).
-        XCTAssertGreaterThanOrEqual(sports, 3)
-    }
-
     // MARK: - adjustForLiftBudget unit
 
     func testAdjustDemotesExcessLiftsFromTheEnd() {

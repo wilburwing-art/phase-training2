@@ -1,5 +1,5 @@
-// WeeklyShape.swift — lookup tables that map (primarySport × season) or
-// (primaryFocus) onto a 7-element ordered list of DayKinds.
+// WeeklyShape.swift — lookup tables that map (primarySport × season) onto a
+// 7-element ordered list of DayKinds.
 //
 // Each shape is a *priority-ordered* sequence the Planner walks to fill
 // slots after fixed sport days and forced-rest days are placed. The order
@@ -9,8 +9,7 @@
 // Resolution falls through in this order:
 //   1. (sport, season)        — specific + seasonal
 //   2. (sport, .maintenance)  — sport-only fallback
-//   3. (focus)                — focus-only when no sport is set
-//   4. defaultShape           — 3-day full body if nothing else hits
+//   3. defaultShape           — 3-day full body if nothing else hits
 
 import Foundation
 
@@ -19,15 +18,11 @@ struct WeeklyShape: Hashable {
     let description: String
 
     static func resolve(primarySport: Sport?,
-                        season: SeasonPhase,
-                        focus: PrimaryFocus) -> WeeklyShape {
+                        season: SeasonPhase) -> WeeklyShape {
         if let s = primarySport, let shape = sportSeasonShapes[ShapeKey(sport: s.slug, season: season)] {
             return shape
         }
         if let s = primarySport, let shape = sportSeasonShapes[ShapeKey(sport: s.slug, season: .maintenance)] {
-            return shape
-        }
-        if let shape = focusShapes[focus] {
             return shape
         }
         return defaultShape
@@ -154,27 +149,4 @@ private let sportSeasonShapes: [ShapeKey: WeeklyShape] = [
     ShapeKey(sport: "obstacle-course-racing", season: .preSeason): WeeklyShape(
         kinds:       [.lift, .sport, .rest, .lift, .sport, .lift, .rest],
         description: "OCR pre-season: 2 sport, 3 lifts, 2 rest")
-]
-
-// MARK: - Focus-only shapes (used when no sport is set)
-
-private let focusShapes: [PrimaryFocus: WeeklyShape] = [
-    .generalStrength: WeeklyShape(
-        kinds:       [.lift, .rest, .lift, .rest, .lift, .rest, .rest],
-        description: "General strength: 3 lifts, 4 rest"),
-    .hypertrophy: WeeklyShape(
-        kinds:       [.lift, .lift, .rest, .lift, .lift, .lift, .rest],
-        description: "Hypertrophy: 5 lifts, 2 rest"),
-    .endurance: WeeklyShape(
-        kinds:       [.sport, .lift, .rest, .sport, .sport, .rest, .sport],
-        description: "Endurance: 4 cardio sessions, 1 lift, 2 rest"),
-    .weightLoss: WeeklyShape(
-        kinds:       [.lift, .sport, .rest, .lift, .sport, .lift, .rest],
-        description: "Weight loss: 3 lifts, 2 cardio, 2 rest"),
-    .longevity: WeeklyShape(
-        kinds:       [.lift, .sport, .rest, .lift, .rest, .sport, .rest],
-        description: "Longevity: 2 lifts, 2 cardio, 3 rest"),
-    .sportPerformance: WeeklyShape(
-        kinds:       [.lift, .sport, .rest, .sport, .lift, .rest, .rest],
-        description: "Sport performance: 2 sport, 2 lifts, 3 rest")
 ]

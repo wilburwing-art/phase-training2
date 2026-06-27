@@ -202,8 +202,7 @@ enum Planner {
         let dates: [Date] = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: start) }
         let shape = WeeklyShape.resolve(
             primarySport: memory.primarySport,
-            season: memory.seasonForPlanner,
-            focus: memory.primaryFocus
+            season: memory.seasonForPlanner
         )
 
         var slots: [DayPlan?] = Array(repeating: nil, count: 7)

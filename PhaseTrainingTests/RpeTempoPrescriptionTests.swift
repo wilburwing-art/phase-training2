@@ -7,22 +7,6 @@ final class RpeTempoPrescriptionTests: XCTestCase {
 
     // MARK: - Defaults
 
-    func test_hypertrophyPrimary_emits9RpeAnd3SecEccentric() {
-        var m = TrainingMemory()
-        m.experience = .intermediate
-        m.equipment = [.fullGym]
-        m.focuses = [.hypertrophy]
-        let p = DemographicProfile.from(m)
-        let workout = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: m, profile: p, hashSeed: "h-prim"
-        )
-        guard let first = workout.exercises.first else { return XCTFail() }
-        XCTAssertEqual(first.rpe, "8-9", "hypertrophy primary should be 8-9 RPE")
-        XCTAssertEqual(first.tempo, "3-0-1-0",
-                       "hypertrophy compound should run 3-sec eccentric for time-under-tension")
-    }
-
     func test_strengthPrimary_emitsLowerVolume() {
         var m = TrainingMemory()
         m.experience = .intermediate
@@ -35,29 +19,6 @@ final class RpeTempoPrescriptionTests: XCTestCase {
         )
         guard let first = workout.exercises.first else { return XCTFail() }
         XCTAssertEqual(first.rpe, "8", "general strength primary should be RPE 8")
-    }
-
-    func test_sportPerformance_compoundPrimary_isExplosive() {
-        var m = TrainingMemory()
-        m.experience = .intermediate
-        m.equipment = [.fullGym]
-        m.focuses = [.sportPerformance]
-        let p = DemographicProfile.from(m)
-        let workout = WorkoutGenerator.generateLift(
-            liftIndex: 0, totalLifts: 3,
-            memory: m, profile: p, hashSeed: "sport-prim"
-        )
-        // Power emphasis — concentric should be X (explosive) on the primary
-        // compound lift.
-        guard let first = workout.exercises.first, first.isCompound else {
-            // Not all probe picks land a compound; if the slot resolved to an
-            // isolation, the test just verifies we got SOME prescription and
-            // skips the X-tempo check.
-            XCTAssertNotNil(workout.exercises.first?.rpe)
-            return
-        }
-        XCTAssertTrue(first.tempo?.contains("X") ?? false,
-                      "sport-performance compound primary should have explosive concentric ('X'). Got: \(String(describing: first.tempo))")
     }
 
     // MARK: - LLM overrides

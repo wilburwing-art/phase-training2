@@ -98,9 +98,9 @@ extension WorkoutGenerator {
         return "target: \(display)"
     }
 
-    /// RPE + tempo hints for a picked exercise. Defaults driven by the
-    /// user's primaryFocus + the slot position (primary compound vs
-    /// accessory). LLM strategy overrides win per-exercise.
+    /// RPE + tempo hints for a picked exercise. A neutral default driven by
+    /// slot position (primary compound vs accessory). LLM strategy overrides
+    /// win per-exercise.
     ///
     /// RPE scale: 1-10 where 10 is true failure. Hypertrophy lives in the
     /// 7-9 range; strength in 8-9; endurance in 5-7. Mobility skips RPE
@@ -126,31 +126,11 @@ extension WorkoutGenerator {
         let isPrimary = slotIdx == 0
         let isCompound = exercise.isCompound
 
-        // Default scheme keyed on primaryFocus. Primary compounds get a
-        // slightly heavier RPE than accessories in every category.
-        let rpe: String
-        let tempo: String
-        switch memory.primaryFocus {
-        case .generalStrength:
-            rpe = isPrimary ? "8" : "7-8"
-            tempo = isCompound ? "2-0-1-0" : "2-1-1-0"
-        case .hypertrophy:
-            rpe = isPrimary ? "8-9" : "7-9"
-            tempo = isCompound ? "3-0-1-0" : "3-1-1-0"
-        case .sportPerformance:
-            rpe = isPrimary ? "7-8" : "7"
-            // Power emphasis: explosive concentric on compound primary work.
-            tempo = isCompound && isPrimary ? "2-0-X-0" : "2-0-1-0"
-        case .endurance:
-            rpe = isPrimary ? "6-7" : "5-7"
-            tempo = "1-0-1-0"
-        case .weightLoss:
-            rpe = isPrimary ? "7-8" : "7"
-            tempo = "2-0-1-0"
-        case .longevity:
-            rpe = isPrimary ? "7" : "6-7"
-            tempo = "3-1-1-1"
-        }
+        // Neutral default scheme. The season engine (DemandScheme) owns
+        // demand-specific RPE + tempo for ski/climb; this legacy fallback runs
+        // only for a nil-sport preview, so one moderate scheme is enough.
+        let rpe = isPrimary ? "8" : "7-8"
+        let tempo = isCompound ? "2-0-1-0" : "2-1-1-0"
 
         // Sore-area RPE cap: when the exercise's prime mover matches a
         // recent SorenessEntry at mild+ severity, the generator already
@@ -180,11 +160,10 @@ extension WorkoutGenerator {
     /// expert defaults when present, adjusted by experience + age. Position
     /// 0 (primary compound) gets the heaviest scheme.
     ///
-    /// Closes leak #3 from the loop audit: when `memory.primaryFocus` has a
-    /// rep-scheme bias (hypertrophy, sport performance, endurance, etc.),
-    /// the focus overrides coach.db reps + rest defaults. Lifters who said
-    /// "I want hypertrophy" used to get the same 5×5 every workout because
-    /// the generator only consumed focus to pick a movement-pattern shape.
+    /// Coach.db's per-exercise defaults drive reps + rest, with a movement-type
+    /// formula as the safety net, then experience + age clamps on top. (The live
+    /// ski/climb path prescribes via the season engine's DemandScheme; this is
+    /// the nil-sport fallback.)
     static func prescription(
         for exercise: Exercise,
         slotIdx: Int,
@@ -195,15 +174,10 @@ extension WorkoutGenerator {
         let isPrimary = slotIdx == 0
         let isCompound = exercise.isCompound
 
-        // Focus-driven bias from the user's primary training focus.
-        let bias = focusBias(memory.primaryFocus, isPrimary: isPrimary)
-
-        // Sets — prefer the focus bias when present, otherwise fall back to
-        // coach.db default, then the formula. Then apply experience + age
-        // clamps so an advanced lifter gets the bias's full count but a
-        // beginner stays capped at 3.
-        var sets = bias?.sets
-            ?? exercise.defaultSets
+        // Sets — coach.db default, then the movement-type formula. Then apply
+        // experience + age clamps so an advanced lifter gets the full count but
+        // a beginner stays capped at 3.
+        var sets = exercise.defaultSets
             ?? defaultSetsFromFormula(isPrimary: isPrimary, isCompound: isCompound)
         switch memory.experience {
         case .beginner:     sets = min(sets, 3)
@@ -226,46 +200,11 @@ extension WorkoutGenerator {
             sets = max(1, sets - 1)
         }
 
-        // Reps + rest. Focus bias wins over per-exercise coach.db values —
-        // a hypertrophy lifter should see 8-12 on every lift even if coach.db
-        // tagged bench as "5". Fallback path is preserved as a safety net in
-        // case a future focus addition forgets to populate the bias table.
-        let reps: String
-        var restSec: Int
-        if let bias = bias {
-            reps = bias.reps
-            restSec = bias.restSec
-        } else {
-            reps = exercise.defaultReps?.trimmingCharacters(in: .whitespaces).nilIfEmpty
-                ?? defaultRepsFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
-            restSec = exercise.defaultRest.flatMap(parseRestSeconds)
-                ?? defaultRestFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
-        }
-
-        // Hypertrophy's default 90s rest is too short on heavy compound
-        // lower-body work — eval-rig's lower-body Q7 expects 3-4 min on the
-        // squat slot. Bump primary compound lower-body rest to 180s without
-        // disturbing upper-push (90s is fine for bench / OHP). Full-body
-        // days (A: squat-first / B: hinge-first) lead with the same heavy
-        // compound lower-body movement and get the same treatment.
-        if memory.primaryFocus == .hypertrophy
-            && isPrimary && isCompound
-            && (focus == .lower || focus == .legs
-                || focus == .fullBodyA || focus == .fullBodyB) {
-            restSec = max(restSec, 180)
-        }
-
-        // Hypertrophy compound pull (weighted pull-up / heavy row /
-        // deadlift) sits between upper-push and squat for systemic load —
-        // 2-3 min rest is the modern guidance, eval-rig's pull Q7 enforces
-        // it. Bump compound pull primary to 120s. Picks up focus.pull
-        // (PPL split) but NOT focus.upper (which mixes vertical/horizontal
-        // push + pull — 90s default stays right for that aggregate).
-        if memory.primaryFocus == .hypertrophy
-            && isPrimary && isCompound
-            && focus == .pull {
-            restSec = max(restSec, 120)
-        }
+        // Reps + rest from coach.db, falling back to the movement-type formula.
+        let reps = exercise.defaultReps?.trimmingCharacters(in: .whitespaces).nilIfEmpty
+            ?? defaultRepsFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
+        var restSec = exercise.defaultRest.flatMap(parseRestSeconds)
+            ?? defaultRestFromFormula(isPrimary: isPrimary, isCompound: isCompound, focus: focus)
 
         // Rest differentiates COMPOUNDS from ISOLATIONS by movement type, not
         // just by slot position. The primary bumps above cover slot 0; a
@@ -276,40 +215,19 @@ extension WorkoutGenerator {
         // compound rests longer than every isolation. Isolations are untouched;
         // the extra per-set time still flows through the loop's time-budget
         // check, which drops optional slots to keep the session in budget.
-        if isCompound, !isPrimary,
-           let primaryRest = focusBias(memory.primaryFocus, isPrimary: true)?.restSec {
+        if isCompound, !isPrimary {
+            let primaryRest = defaultRestFromFormula(isPrimary: true, isCompound: true, focus: focus)
             restSec = max(restSec, primaryRest)
         }
 
-        // Phase-1 era-affinity rep-range nudge.
-        //
-        // Only applies when memory.primaryFocus is .hypertrophy — that's
-        // the focus most flavored by era (bro-split mid reps vs PPL low
-        // reps vs current-meta high reps on isolation). Strength /
-        // sport-performance / endurance focuses have their own
-        // load-intent intent that should NOT be overridden by aesthetic
-        // affinity (orthogonality rule:
-        // phase-training-personalization-three-axes skill).
-        //
-        // For .hypertrophy users the era picks the rep band: low / mid /
-        // high. Primary compound uses .compound band, accessories use
-        // .isolation band. Sets + rest stay as focusBias computed them —
-        // only the rep STRING is replaced.
-        // Time / distance / hold prescriptions (coach.db stores Wall Sit as
-        // "30-60 sec", a loaded carry as "40-60 ft", a hang as "5-10 sec hold")
-        // are NOT rep counts, so the focus-bias and era numeric bands must not
-        // overwrite them — preserve the native prescription. Without this a
-        // hypertrophy user saw Wall Sit / Battle Ropes / Reverse Plank as
-        // "8-15" reps. 71 catalog exercises are affected. (T1.2)
+        // Preserve native time/distance/hold prescriptions (coach.db stores Wall
+        // Sit as "30-60 sec", a loaded carry as "40-60 ft", a hang as "5-10 sec
+        // hold") — only numeric rep bands flow through the formula, never the
+        // native string. Without this a non-rep movement would read "8-15". (T1.2)
         let exerciseReps = exercise.defaultReps?.trimmingCharacters(in: .whitespaces).nilIfEmpty
         let finalReps: String
         if let exerciseReps, !isNumericRepBand(exerciseReps) {
             finalReps = exerciseReps
-        } else if let eraStyle = profile.eraStyle, memory.primaryFocus == .hypertrophy {
-            let band = (isPrimary && isCompound)
-                ? eraStyle.repRangeBias.compound
-                : eraStyle.repRangeBias.isolation
-            finalReps = band.display
         } else {
             finalReps = reps
         }
@@ -321,62 +239,6 @@ extension WorkoutGenerator {
         // a hypertrophy range — revisit if you want to special-case 5×5.
         let outReps = memory.experience == .beginner ? beginnerRepFloor(finalReps) : finalReps
         return (sets, outReps, restSec)
-    }
-
-    /// Map the user's stated goal to a coherent sets × reps × rest scheme.
-    /// Primary compound gets a heavier scheme than accessories within the
-    /// same focus. Returns nil only when the focus genuinely has no opinion
-    /// on volume — currently just `mobility` (mobility lifts run on hold-
-    /// style defaults in the mobility branch above).
-    ///
-    /// Schemes target the consensus middle of evidence-based programming:
-    /// hypertrophy 6-15 + 60-90s rest, strength 3-6 + 2-3min, endurance
-    /// 10-20 + 30-60s. Build 97 added sets to the contract — the old
-    /// version only adjusted reps + rest, so a hypertrophy day still
-    /// got coach.db's per-exercise set count which varied wildly (bench
-    /// 5 sets, fly 3 sets) and made workouts feel inconsistent.
-    /// `generalStrength` went from nil → a real 4-5 set strength scheme;
-    /// previously it inherited coach.db defaults which mixed strength
-    /// and hypertrophy schemes in the same workout.
-    static func focusBias(_ focus: PrimaryFocus, isPrimary: Bool) -> (sets: Int, reps: String, restSec: Int)? {
-        switch focus {
-        case .generalStrength:
-            // True strength: low-rep heavy work, long rest. 5×5 on the
-            // primary lift, 3×6-8 on accessories.
-            return (sets: isPrimary ? 5 : 3,
-                    reps: isPrimary ? "5" : "6-8",
-                    restSec: isPrimary ? 180 : 120)
-        case .hypertrophy:
-            // Slightly wider rep range than build 96 — modern guidance is
-            // 5-30 reps drives growth, so 6-12 primary / 8-15 accessory
-            // captures the "effort matters more than load" middle.
-            return (sets: isPrimary ? 4 : 3,
-                    reps: isPrimary ? "6-12" : "8-15",
-                    restSec: isPrimary ? 90 : 60)
-        case .sportPerformance:
-            // Power scheme — heavy doubles/triples need volume across sets
-            // to drive adaptation. Same rep range, more sets than the
-            // previous default (which gave only 3-4 sets via coach.db).
-            return (sets: isPrimary ? 5 : 3,
-                    reps: isPrimary ? "3-5" : "5-8",
-                    restSec: isPrimary ? 180 : 120)
-        case .endurance:
-            return (sets: isPrimary ? 3 : 3,
-                    reps: isPrimary ? "10-15" : "12-20",
-                    restSec: isPrimary ? 60 : 45)
-        case .weightLoss:
-            // Circuit-friendly volume — keep sets moderate so total time
-            // stays short and density stays high.
-            return (sets: 3,
-                    reps: isPrimary ? "8-12" : "10-15",
-                    restSec: 60)
-        case .longevity:
-            // Lower volume, controlled tempo. Hits the stimulus floor
-            // without overreaching.
-            return (sets: 3,
-                    reps: isPrimary ? "5-8" : "8-10",
-                    restSec: 90)
-        }
     }
 
     /// A plain rep prescription — a count ("5") or numeric range ("6-12").
