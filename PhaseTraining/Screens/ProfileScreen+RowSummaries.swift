@@ -41,6 +41,9 @@ extension ProfileScreen {
     }
 
     var supportSummary: String {
+        // Gated + not subscribed → tease it as Pro (held open today, so this
+        // is dormant until SupportEntitlement.proRequired flips true).
+        if !SupportEntitlement.unlocked(pro: subStore.isPro) { return "Pro" }
         guard let p = store.memory.supportPattern, !p.isEmpty else { return "Off" }
         let n = p.days.count
         return "Climbing · \(n) " + (n == 1 ? "day" : "days")

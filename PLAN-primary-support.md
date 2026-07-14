@@ -20,8 +20,23 @@ Status: vision locked 2026-07-13. This is the launch differentiator and the Pro 
   (green, verified visually). Row summary "Climbing · N days".
   Remaining polish: gate the row to ski/snow-primary users (currently shown to
   all); dedicated week-view badges beyond the reason text.
+- **Phase 3 Pro gate (done 2026-07-14)** — `SupportEntitlement` mirrors
+  CoachEntitlement's held-open pattern with its OWN switch (`proRequired = false`
+  today) so support can become the FIRST paid feature independently of the
+  free coach; both read the same entitlement mirror. ProfileScreen routes the
+  row to editor (unlocked) or PaywallView (gated); row summary teases "Pro".
+  Gate is wired + dormant — flip `proRequired` + create ASC products to charge.
+  4 entitlement tests + UI test green. Planner left pure (revocation deferred to
+  the flip-day checklist).
+- **Phase 4 (NEXT)** — TestFlight build: bump `CURRENT_PROJECT_VERSION` in
+  Project.yml (118 → next), commit, tag → CI builds + uploads
+  (ios-ci-testflight). Outward-facing — confirm before pushing.
+- **Earnings switch (business step, needs the user)** — create the subscription
+  products in App Store Connect, then flip `SupportEntitlement.proRequired` (and
+  decide coach's). Nothing can charge until the ASC products exist.
 - **Follow-up** — consolidate: once the SupportPattern UI ships, deprecate the
-  crude `applySecondarySportPromotion` placeholder path entirely.
+  crude `applySecondarySportPromotion` placeholder path entirely. Gate polish:
+  restrict the row to ski/snow-primary users.
 
 ## Problem
 

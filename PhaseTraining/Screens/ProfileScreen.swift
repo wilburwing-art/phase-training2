@@ -107,7 +107,13 @@ struct ProfileScreen: View {
                         SettingsRow(label: "Support sport",
                                     value: supportSummary,
                                     icon: "figure.climbing",
-                                    action: { presentingSupportEditor = true })
+                                    action: {
+                                        if SupportEntitlement.unlocked(pro: subStore.isPro) {
+                                            presentingSupportEditor = true
+                                        } else {
+                                            presentingPaywall = true
+                                        }
+                                    })
                         SettingsRow(label: "Session length",
                                     value: "\(store.memory.sessionMinutes) min",
                                     icon: "clock",
