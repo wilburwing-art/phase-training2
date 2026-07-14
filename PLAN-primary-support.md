@@ -13,10 +13,13 @@ Status: vision locked 2026-07-13. This is the launch differentiator and the Pro 
   stamped support days write into `generatedReason`, which WeekScreen already
   renders — so the "why it moved" surfacing is free. 24 support tests + 112
   affected-suite tests green.
-- **Phase 2 UI (NEXT)** — an onboarding/editor picker to DECLARE the support
-  sport + weekly pattern (no UI entry point yet; only programmatic). Follow
-  SeasonsEditorSheet conventions. Then dedicated week-view badges beyond the
-  reason text.
+- **Phase 2 UI (done 2026-07-14)** — `SupportSportEditorSheet` (Profile →
+  "Support sport" row): None/Climbing enable, discipline chips (sport/boulder/
+  trad-alpine), a 7-weekday × magnitude grid, all store-derived like
+  SeasonsEditorSheet. `SupportSportUITests` drives it end-to-end + screenshots
+  (green, verified visually). Row summary "Climbing · N days".
+  Remaining polish: gate the row to ski/snow-primary users (currently shown to
+  all); dedicated week-view badges beyond the reason text.
 - **Follow-up** — consolidate: once the SupportPattern UI ships, deprecate the
   crude `applySecondarySportPromotion` placeholder path entirely.
 

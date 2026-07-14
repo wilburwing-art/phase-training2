@@ -36,6 +36,7 @@ struct ProfileScreen: View {
     // Editor-sheet presentation flags.
     @State private var presentingSportsEditor = false
     @State private var presentingSeasonsEditor = false
+    @State private var presentingSupportEditor = false
     @State private var presentingEquipmentEditor = false
     @State private var presentingExperienceEditor = false
     @State private var presentingAboutEditor = false
@@ -103,6 +104,10 @@ struct ProfileScreen: View {
                                     value: seasonsSummary,
                                     icon: "calendar",
                                     action: { presentingSeasonsEditor = true })
+                        SettingsRow(label: "Support sport",
+                                    value: supportSummary,
+                                    icon: "figure.climbing",
+                                    action: { presentingSupportEditor = true })
                         SettingsRow(label: "Session length",
                                     value: "\(store.memory.sessionMinutes) min",
                                     icon: "clock",
@@ -201,6 +206,9 @@ struct ProfileScreen: View {
         }
         .sheet(isPresented: $presentingSeasonsEditor) {
             SeasonsEditorSheet().environmentObject(store)
+        }
+        .sheet(isPresented: $presentingSupportEditor) {
+            SupportSportEditorSheet().environmentObject(store)
         }
         .sheet(isPresented: $presentingEquipmentEditor) {
             EquipmentEditorSheet().environmentObject(store)

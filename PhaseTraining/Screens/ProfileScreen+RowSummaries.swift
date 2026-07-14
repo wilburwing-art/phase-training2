@@ -40,6 +40,12 @@ extension ProfileScreen {
         return "\(n) " + (n == 1 ? "day" : "days") + " / week"
     }
 
+    var supportSummary: String {
+        guard let p = store.memory.supportPattern, !p.isEmpty else { return "Off" }
+        let n = p.days.count
+        return "Climbing · \(n) " + (n == 1 ? "day" : "days")
+    }
+
     var equipmentSummary: String {
         let tier = currentTier
         if tier == .custom {
