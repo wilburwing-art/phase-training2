@@ -21,6 +21,13 @@ struct TrainingMemory: Codable {
     var primarySport: Sport? = nil
     /// Per-sport season. Allows pre-season skiing + year-round climbing simultaneously.
     var seasonsBySport: [Sport: SeasonPhase] = [:]
+    /// The SUPPORT sport's declared weekly load (primary/support model —
+    /// PLAN-primary-support.md). When set, the planner reflows the primary
+    /// lift week AROUND these days instead of just placing a crude placeholder
+    /// (the `applySecondarySportPromotion` path). Persisted INTENT only: the
+    /// scheduled week is always re-derived from this by SupportScheduler.
+    /// nil = single-sport user (no change to shipped behavior).
+    var supportPattern: SupportPattern? = nil
     /// Used when no sport is set OR for any sport without a per-sport entry.
     var defaultSeason: SeasonPhase = .maintenance
     /// Target peak date for .eventPrep seasons. Build 78 — before this, .eventPrep
@@ -147,7 +154,7 @@ struct TrainingMemory: Codable {
 
     enum CodingKeys: String, CodingKey {
         case schemaVersion, sports, primarySport
-        case seasonsBySport, defaultSeason, peakDate
+        case seasonsBySport, supportPattern, defaultSeason, peakDate
         case season                               // legacy (build 20-23) — read for migration
         case availableDays, fixedSportDays        // legacy (build 20-24) — read but dropped on encode
         case phaseStartedAt
@@ -179,6 +186,9 @@ struct TrainingMemory: Codable {
         // Season migration: prefer seasonsBySport map + defaultSeason; fall back to legacy
         // single `season` (which becomes both the default and per-primary-sport entry).
         self.seasonsBySport = (try? c.decode([Sport: SeasonPhase].self, forKey: .seasonsBySport)) ?? [:]
+        // Pre-primary/support saves never wrote the key → decodeIfPresent nil →
+        // single-sport behavior, no migration needed.
+        self.supportPattern = (try? c.decodeIfPresent(SupportPattern.self, forKey: .supportPattern)) ?? nil
         if let ds = try? c.decode(SeasonPhase.self, forKey: .defaultSeason) {
             self.defaultSeason = ds
         } else if let legacySeason = try? c.decode(SeasonPhase.self, forKey: .season) {
@@ -247,6 +257,7 @@ struct TrainingMemory: Codable {
         try c.encode(sports,          forKey: .sports)
         try c.encodeIfPresent(primarySport, forKey: .primarySport)
         try c.encode(seasonsBySport,  forKey: .seasonsBySport)
+        try c.encodeIfPresent(supportPattern, forKey: .supportPattern)
         try c.encode(defaultSeason,   forKey: .defaultSeason)
         try c.encodeIfPresent(peakDate, forKey: .peakDate)
         try c.encodeIfPresent(phaseStartedAt, forKey: .phaseStartedAt)

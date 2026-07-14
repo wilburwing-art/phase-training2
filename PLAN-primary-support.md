@@ -1,10 +1,24 @@
 # PLAN — Primary/Support model (two-sport de-confliction)
 
-Status: vision locked 2026-07-13. Phase 1 (models + SupportScheduler + rules
-table + tests) landed same day — `Data/SportSeason/SupportPattern.swift`,
-`Data/SportSeason/SupportScheduler.swift`, `PhaseTrainingTests/SupportSchedulerTest.swift`
-(11 tests green; SeasonFidelityTest still green). Next: phase 2 (onboarding +
-week-view surfacing). This is the launch differentiator and the Pro gate.
+Status: vision locked 2026-07-13. This is the launch differentiator and the Pro gate.
+
+- **Phase 1 (done 2026-07-13)** — models + SupportScheduler + rules table:
+  `Data/SportSeason/SupportPattern.swift`, `SupportScheduler.swift`,
+  `PhaseTrainingTests/SupportSchedulerTest.swift`.
+- **Phase 2 wiring (done 2026-07-14)** — the pattern now reflows a REAL week:
+  `TrainingMemory.supportPattern` (Codable + in planInputsHash),
+  `SupportScheduler.deconflictInPlace` (fixed-weekday, lighten-only app entry),
+  `Planner.applySupportPattern` (step 6.6; supersedes the crude
+  `applySecondarySportPromotion` for the support sport). Lightened lift days +
+  stamped support days write into `generatedReason`, which WeekScreen already
+  renders — so the "why it moved" surfacing is free. 24 support tests + 112
+  affected-suite tests green.
+- **Phase 2 UI (NEXT)** — an onboarding/editor picker to DECLARE the support
+  sport + weekly pattern (no UI entry point yet; only programmatic). Follow
+  SeasonsEditorSheet conventions. Then dedicated week-view badges beyond the
+  reason text.
+- **Follow-up** — consolidate: once the SupportPattern UI ships, deprecate the
+  crude `applySecondarySportPromotion` placeholder path entirely.
 
 ## Problem
 

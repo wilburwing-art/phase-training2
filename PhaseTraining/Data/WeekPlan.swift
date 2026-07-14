@@ -333,12 +333,20 @@ extension TrainingMemory {
             .sorted { $0.slug < $1.slug }
             .map { "\($0.slug):\($0.severity?.rawValue ?? "_"):\($0.side?.rawValue ?? "_")" }
             .joined(separator: ",")
+        // Support pattern (primary/support model): a change to which days /
+        // how big must reflow the primary week, so it belongs in the hash.
+        let support = supportPattern.map { p in
+            "\(p.sportSlug):\(p.variant.rawValue):" + p.days
+                .map { "\($0.weekday.rawValue)\($0.magnitude.rawValue.prefix(1))" }
+                .joined(separator: ",")
+        } ?? "_"
         let canonical = [
             "v\(schemaVersion)",
             "ps:\(primarySport?.slug ?? "_")",
             "sp:\(sports.map(\.slug).sorted().joined(separator: ","))",
             "ds:\(defaultSeason.rawValue)",
             "ss:\(seasons)",
+            "sup:\(support)",
             "pd:\(peakDate.map { String(Int($0.timeIntervalSince1970)) } ?? "_")",
             "mn:\(sessionMinutes)",
             "ld:\(liftDaysPerWeek)",

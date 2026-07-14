@@ -207,6 +207,51 @@ final class SupportSchedulerTest: XCTestCase {
         }
     }
 
+    // MARK: - deconflictInPlace (app-pipeline entry; fixed weekdays)
+
+    /// Weekdays are preserved exactly (the Planner owns placement) and no
+    /// session is dropped.
+    func test_deconflict_preserves_weekdays_and_count() {
+        let lifts: [(weekday: Weekday, workout: GeneratedWorkout)] =
+            [(.monday, skiWeek()[0]), (.thursday, skiWeek()[1]), (.saturday, skiWeek()[2])]
+        let p = pattern([(.tuesday, .medium), (.friday, .big)])
+        let out = SupportScheduler.deconflictInPlace(lifts: lifts, pattern: p,
+                                                     primaryVariant: .backcountry)
+        XCTAssertEqual(out.map(\.weekday), [.monday, .thursday, .saturday])
+    }
+
+    /// A lift the day before a big trad/alpine day (2-day buffer) is lightened;
+    /// one far from any support day is untouched.
+    func test_deconflict_lightens_only_buffer_violators() {
+        // Sat big (tradAlpine, restDaysBefore 2) → Thu & Fri violate; Mon safe.
+        let lifts: [(weekday: Weekday, workout: GeneratedWorkout)] =
+            [(.monday, skiWeek()[0]), (.friday, skiWeek()[1])]
+        let p = pattern([(.saturday, .big)], variant: .tradAlpine)
+        let out = SupportScheduler.deconflictInPlace(lifts: lifts, pattern: p,
+                                                     primaryVariant: .backcountry)
+        let mon = out.first { $0.weekday == .monday }!
+        let fri = out.first { $0.weekday == .friday }!
+        // Budget: big(1.0)=1 equivalent → one budget drop from the heaviest
+        // (Monday) too; Friday additionally hit by the buffer. Assert Friday is
+        // adjusted and Monday's adjustment set differs by the buffer note.
+        XCTAssertTrue(fri.adjustments.contains { $0.contains("buffer") },
+                      "Friday (in the 2-day buffer) must carry a buffer note")
+        XCTAssertFalse(mon.adjustments.contains { $0.contains("buffer") },
+                       "Monday is outside the buffer")
+    }
+
+    /// nil / empty pattern is a pass-through: same workouts, no adjustments.
+    func test_deconflict_no_pattern_is_passthrough() {
+        let lifts: [(weekday: Weekday, workout: GeneratedWorkout)] =
+            [(.monday, skiWeek()[0]), (.thursday, skiWeek()[1])]
+        for p in [nil, pattern([])] as [SupportPattern?] {
+            let out = SupportScheduler.deconflictInPlace(lifts: lifts, pattern: p,
+                                                         primaryVariant: .backcountry)
+            XCTAssertTrue(out.allSatisfy { $0.adjustments.isEmpty })
+            XCTAssertEqual(out.map { $0.workout.exercises.count }, [4, 4])
+        }
+    }
+
     // MARK: - Integration: real generator output
 
     /// The PLAN's canonical fixture: splitboard off-season build × climbing

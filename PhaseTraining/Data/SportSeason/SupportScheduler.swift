@@ -120,6 +120,60 @@ enum SupportScheduler {
         return ScheduledWeek(sessions: sessions, supportDays: pattern.days, notes: notes)
     }
 
+    /// In-place de-confliction for the APP PIPELINE, where the Planner has
+    /// ALREADY placed lift days on fixed weekdays (respecting overrides /
+    /// events / protected days) — so we must NOT relocate, only lighten.
+    ///
+    /// Applies the same two rules as `schedule()` minus placement:
+    ///   - weekly budget: floor(Σ loadFraction) exercises dropped from the
+    ///     heaviest day(s);
+    ///   - buffer: any lift day sitting inside a support day's restDaysBefore
+    ///     window is lightened once (can't move it → downgrade, floor 3).
+    /// Returns the (possibly-lightened) sessions with per-day adjustment notes,
+    /// in the input order. `lifts` weekdays are authoritative and preserved.
+    static func deconflictInPlace(lifts: [(weekday: Weekday, workout: GeneratedWorkout)],
+                                  pattern: SupportPattern?,
+                                  primaryVariant: SportVariant) -> [ScheduledSession] {
+        var workouts = lifts.map(\.workout)
+        let weekdays = lifts.map(\.weekday)
+        var adjustments: [[String]] = Array(repeating: [], count: lifts.count)
+        guard let pattern, !pattern.isEmpty, !lifts.isEmpty else {
+            return zip(weekdays, workouts).map { ScheduledSession(weekday: $0, workout: $1, adjustments: []) }
+        }
+
+        // Rule 4 — weekly budget: drop floor(Σ loadFraction) from the heaviest.
+        let equivalents = pattern.days.reduce(0.0) {
+            $0 + SupportInterference.resolve(primary: primaryVariant,
+                                             support: pattern.variant,
+                                             magnitude: $1.magnitude).loadFraction
+        }
+        var drops = min(Int(equivalents), workouts.count)
+        while drops > 0 {
+            drops -= 1
+            guard let idx = workouts.indices
+                .filter({ workouts[$0].exercises.count > 3 })
+                .max(by: { sessionLoad(workouts[$0]) < sessionLoad(workouts[$1]) })
+            else { break }
+            let (w, note) = lighten(workouts[idx],
+                reason: "combined weekly load — \(pattern.sportSlug) is carrying \(String(format: "%.1f", equivalents)) session-equivalents")
+            workouts[idx] = w
+            adjustments[idx].append(note)
+        }
+
+        // Rule 2 — buffer: a fixed lift day inside a support buffer downgrades.
+        for i in lifts.indices where violatesBuffer(weekdays[i], pattern: pattern, primaryVariant: primaryVariant) {
+            guard workouts[i].exercises.count > 3 else { continue }
+            let (w, note) = lighten(workouts[i],
+                reason: "sits within a \(pattern.sportSlug) recovery buffer")
+            workouts[i] = w
+            adjustments[i].append(note)
+        }
+
+        return weekdays.indices.map {
+            ScheduledSession(weekday: weekdays[$0], workout: workouts[$0], adjustments: adjustments[$0])
+        }
+    }
+
     // MARK: - Load scoring (content-derived; works for authored spines too)
 
     /// Σ sets × RPE-midpoint per exercise. RPE parses "6-7"/"8"; nil → 7

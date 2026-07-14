@@ -325,6 +325,14 @@ enum Planner {
         // all-sport weeks.
         applySecondarySportPromotion(&slots, memory: memory, overrides: overrides, calendar: calendar)
 
+        // Step 6.6 — primary/support de-confliction (PLAN-primary-support.md).
+        // When the user has declared a SUPPORT sport's weekly pattern, stamp
+        // those days and reflow the primary lift week AROUND them (buffer +
+        // weekly-load lightening). Supersedes the crude promotion for that
+        // sport (see the skip in applySecondarySportPromotion). Runs before the
+        // buffer passes so they see the stamped support days.
+        applySupportPattern(&slots, memory: memory, calendar: calendar)
+
         // Step 7 — best-practice rules. Each pass mutates only NON-protected slots.
         if let overrides {
             applyPreEventTaper(&slots, dates: dates, overrides: overrides, calendar: calendar)
@@ -707,9 +715,12 @@ enum Planner {
         calendar: Calendar
     ) {
         let primarySlug = memory.primarySport?.slug
+        // The support sport (if declared) is placed by applySupportPattern with
+        // explicit weekdays + magnitude — skip it here so it isn't double-placed.
+        let supportSlug = memory.supportPattern?.sportSlug
         // Deterministic order: sport slug. seasonsBySport is a dict.
         let candidates = memory.seasonsBySport
-            .filter { $0.key.slug != primarySlug }
+            .filter { $0.key.slug != primarySlug && $0.key.slug != supportSlug }
             .filter { $0.value == .inSeason || $0.value == .eventPrep }
             .sorted { $0.key.slug < $1.key.slug }
             .prefix(2)
@@ -737,6 +748,63 @@ enum Planner {
                 sport: sport,
                 generatedReason: "\(sport.name) is in-season — added a placeholder day"
             )
+        }
+    }
+
+    /// Primary/support de-confliction (PLAN-primary-support.md). Two passes,
+    /// both respecting protected / event / override slots:
+    ///   1. Stamp each declared support day onto its weekday's slot when that
+    ///      slot is an unprotected REST (the common case — the user rests from
+    ///      lifting on their climb days). Lift/protected slots are left intact.
+    ///   2. Reflow the primary lift week via SupportScheduler.deconflictInPlace
+    ///      (fixed weekdays, lighten-only): drop volume from lift days inside a
+    ///      support recovery buffer or over the combined weekly budget, and
+    ///      record a human-readable reason on the day.
+    static func applySupportPattern(
+        _ slots: inout [DayPlan?],
+        memory: TrainingMemory,
+        calendar: Calendar
+    ) {
+        guard let pattern = memory.supportPattern, !pattern.isEmpty else { return }
+        let primaryVariant = SportSeasonGenerator.defaultVariant(forSport: memory.primarySport?.slug)
+        let supportSport = Sport.catalog.first { $0.slug == pattern.sportSlug }
+        let verb = pattern.sportSlug == "climbing" ? "climb" : "train \(supportSport?.name ?? pattern.sportSlug)"
+
+        // 1. Stamp support days onto matching unprotected rest slots.
+        for sd in pattern.days {
+            guard let idx = slots.indices.first(where: { i in
+                guard let s = slots[i] else { return false }
+                return Weekday.from(date: s.date, calendar: calendar) == sd.weekday
+            }), let cur = slots[idx], !cur.protected, cur.kind == .rest else { continue }
+            slots[idx] = DayPlan(
+                date: cur.date,
+                kind: .sport,
+                title: supportSport.map { "\($0.name) — \(sd.magnitude.label.lowercased()) day" } ?? "Support day",
+                sport: supportSport,
+                generatedReason: "You \(verb) on \(sd.weekday.short) (\(sd.magnitude.label.lowercased()))"
+            )
+        }
+
+        // 2. Lighten colliding lift days (fixed weekdays → downgrade, not move).
+        let liftEntries: [(idx: Int, weekday: Weekday, workout: GeneratedWorkout)] =
+            slots.indices.compactMap { i in
+                guard let s = slots[i], !s.protected, s.kind == .lift,
+                      let w = s.generatedWorkout else { return nil }
+                return (i, Weekday.from(date: s.date, calendar: calendar), w)
+            }
+        guard !liftEntries.isEmpty else { return }
+        let deconflicted = SupportScheduler.deconflictInPlace(
+            lifts: liftEntries.map { ($0.weekday, $0.workout) },
+            pattern: pattern,
+            primaryVariant: primaryVariant
+        )
+        for (entry, result) in zip(liftEntries, deconflicted) where !result.adjustments.isEmpty {
+            guard var day = slots[entry.idx] else { continue }
+            day.generatedWorkout = result.workout
+            let note = result.adjustments.joined(separator: "; ")
+            day.generatedReason = [day.generatedReason, note]
+                .compactMap { $0 }.joined(separator: " · ")
+            slots[entry.idx] = day
         }
     }
 
