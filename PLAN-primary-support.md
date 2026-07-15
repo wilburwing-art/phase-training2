@@ -28,9 +28,17 @@ Status: vision locked 2026-07-13. This is the launch differentiator and the Pro 
   Gate is wired + dormant — flip `proRequired` + create ASC products to charge.
   4 entitlement tests + UI test green. Planner left pure (revocation deferred to
   the flip-day checklist).
-- **Phase 4 (NEXT)** — TestFlight build: bump `CURRENT_PROJECT_VERSION` in
-  Project.yml (118 → next), commit, tag → CI builds + uploads
-  (ios-ci-testflight). Outward-facing — confirm before pushing.
+- **Phase 4 (done 2026-07-15)** — build 119 shipped to TestFlight via CI tag
+  `v1.1.0-build119` (release.yml, manual signing). Success.
+- **Discoverability + conversion (done 2026-07-15)** — (1) paywall leads with
+  the two-sport hook (hero + first feature bullet) so the flip converts.
+  (2) Onboarding: the "When are you in season?" step surfaces a TRAIN TWO
+  SPORTS? section for ski/snow-primary users, so the feature is found during
+  onboarding, not buried in Profile. The editing UI was extracted to a shared
+  `SupportPatternEditor(pattern:)` reused by both the Profile sheet and
+  onboarding. Verified: SupportSportUITests (refactor regression) +
+  SupportOnboardingUITests (screenshot) green. These land in build 120 (not yet
+  cut).
 - **Earnings switch (business step, needs the user)** — create the subscription
   products in App Store Connect, then flip `SupportEntitlement.proRequired` (and
   decide coach's). Nothing can charge until the ASC products exist.

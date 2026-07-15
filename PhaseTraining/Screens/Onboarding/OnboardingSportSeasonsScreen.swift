@@ -32,7 +32,31 @@ struct OnboardingSportSeasonsScreen: View {
                     Divider().background(Color.lineSoft)
                     defaultSeasonPicker
                 }
+                if showSupport {
+                    Divider().background(Color.lineSoft)
+                    supportSection
+                }
             }
+        }
+    }
+
+    /// The primary/support wedge is ski/board-primary + climbing-support, so
+    /// this only appears for a ski/snow primary sport — the highest-intent
+    /// moment to discover the two-sport feature.
+    private var showSupport: Bool {
+        PhaseRule.skiSlugs.contains(draft.primarySport?.slug ?? "")
+    }
+
+    private var supportSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("TRAIN TWO SPORTS?")
+                .styled(.micro)
+                .foregroundStyle(Color.accent)
+            Text("If you climb through your ski off-season, tell us your weekly rhythm and we'll plan your ski training around it — optional, and you can change it anytime.")
+                .font(.custom("Inter-Regular", size: 13))
+                .foregroundStyle(Color.ink2)
+                .fixedSize(horizontal: false, vertical: true)
+            SupportPatternEditor(pattern: $draft.supportPattern, showBlurb: false)
         }
     }
 
