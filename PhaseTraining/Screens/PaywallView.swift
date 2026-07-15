@@ -62,7 +62,7 @@ struct PaywallView: View {
                     .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(Color.ink)
             }
-            Text("Unlock the AI coach that personalizes each workout to your recent sessions, soreness, and sport goals.")
+            Text("The only training app that plans your primary sport around a second one — plus an AI coach that personalizes every workout.")
                 .font(.system(size: 15))
                 .foregroundStyle(Color.ink2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -71,6 +71,7 @@ struct PaywallView: View {
 
     private var features: some View {
         VStack(alignment: .leading, spacing: 10) {
+            featureRow("Two-sport planning — your lifts flex around your climb and ski days")
             featureRow("Personalized workout polish on every plan generation")
             featureRow("Chat coach that can shift your week or swap a lift")
             featureRow("Weekly coaching insights and recovery feedback")
