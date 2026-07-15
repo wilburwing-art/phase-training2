@@ -77,7 +77,7 @@ struct OnboardingEraAffinityScreen: View {
                 if let derivedStyle {
                     OnboardingPickRow(
                         title: "Looks about right — \(derivedStyle.displayName.lowercased())",
-                        subtitle: derivedStyle.narrativeBlurb,
+                        subtitle: derivedStyle.plainDescriptor,
                         selected: selection == .accept,
                         leading: "checkmark.seal",
                         action: {
@@ -137,11 +137,17 @@ struct OnboardingEraAffinityScreen: View {
                 }
             }
             if let style = pickedCohort.map(EraAffinity.style(for:)) {
-                Text(style.narrativeBlurb)
+                Text(style.plainDescriptor)
                     .styled(.body)
                     .foregroundStyle(Color.ink2)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 2)
+                // Program names, dimmed — a confirmation cue for those who know
+                // them, ignorable for those who don't.
+                Text("Sound familiar? \(style.narrativeBlurb)")
+                    .styled(.monoXS)
+                    .foregroundStyle(Color.ink3)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(.horizontal, 14)
@@ -158,7 +164,7 @@ struct OnboardingEraAffinityScreen: View {
 
     private var subtitleText: String {
         if derivedStyle != nil {
-            return "Most lifters absorb a training style from whoever they were reading or watching in their late teens. Confirm or pick a different fit."
+            return "We guessed from your age — but go by how your training actually feels, not the program names. Confirm or pick a different fit."
         } else {
             return "Most lifters absorb a training style from whoever they were reading or watching in their late teens. (Skip 'About you' meant we can't guess — pick one or skip.)"
         }

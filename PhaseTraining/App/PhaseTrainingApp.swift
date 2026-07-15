@@ -257,6 +257,7 @@ struct PhaseTrainingApp: App {
         m.experience = .intermediate
         m.equipment = [.fullGym]
         m.liftDaysPerWeek = 3
+        m.age = 33   // → redditFitness derived era, so the era step has a row
         return m
     }
 

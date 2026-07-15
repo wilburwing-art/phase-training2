@@ -84,6 +84,8 @@ final class EraAffinityTests: XCTestCase {
                            "cohort \(cohort) has empty displayName")
             XCTAssertFalse(style.narrativeBlurb.isEmpty,
                            "cohort \(cohort) has empty narrativeBlurb")
+            XCTAssertFalse(style.plainDescriptor.isEmpty,
+                           "cohort \(cohort) has empty plainDescriptor")
             XCTAssertFalse(style.splitPreference.isEmpty,
                            "cohort \(cohort) has empty splitPreference")
             XCTAssertFalse(style.terminologyHints.isEmpty,

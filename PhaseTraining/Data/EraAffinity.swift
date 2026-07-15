@@ -102,7 +102,15 @@ struct EraStyle: Hashable {
     /// Short noun-phrase shown in onboarding ("Magazine bodybuilding era").
     let displayName: String
 
-    /// One-liner shown under the displayName in onboarding.
+    /// Jargon-FREE "how you actually train" one-liner — the primary subtitle in
+    /// onboarding. Lets a lifter recognize their style by feel without knowing
+    /// the program names (someone who's trained a way for years may not know
+    /// it's called "GZCL" or "5/3/1"). The `narrativeBlurb` (which carries the
+    /// program names) becomes a secondary "sound familiar?" line.
+    let plainDescriptor: String
+
+    /// One-liner with the recognizable program/terminology names. Secondary in
+    /// onboarding (a confirmation cue for those who know the names).
     let narrativeBlurb: String
 
     /// Per-lift-day focus rotation the cohort prefers. The generator
@@ -179,6 +187,7 @@ enum EraAffinity {
             return EraStyle(
                 cohort: .veteranStrength,
                 displayName: "Veteran strength era",
+                plainDescriptor: "A few big lifts done heavy but careful — low reps, long rests, and balance work to stay sturdy. Recovery built in.",
                 narrativeBlurb: "70+ programming: power-focused low-rep compounds for neural drive, single-leg and balance work, and extra recovery built in.",
                 // Upper-lower keeps volume manageable and co-locates push/pull
                 // pairs for supersets without the fatigue of a full-body day.
@@ -196,6 +205,7 @@ enum EraAffinity {
             return EraStyle(
                 cohort: .magazineBodybuilding,
                 displayName: "Magazine bodybuilding era",
+                plainDescriptor: "One body part a day — chest day, back day, arm day. Machines and dumbbells, chasing the pump.",
                 narrativeBlurb: "Bro splits, machines and dumbbells, pump-and-burn cues. Joe Weider, Arnold, HIT.",
                 // 5-day body-part split: chest day, back day, shoulders, arms, legs.
                 // Maps to the existing focus enum as push (chest+shoulders+tris)
@@ -217,6 +227,7 @@ enum EraAffinity {
             return EraStyle(
                 cohort: .tNationForum,
                 displayName: "T-Nation / forum era",
+                plainDescriptor: "Barbell strength first — squat, bench, deadlift on a set progression, with accessory work piled on.",
                 narrativeBlurb: "Westside-influenced, 5×5 revival, DC training, early 5/3/1. Heavy compounds, dynamic-effort work.",
                 // Upper-lower split with conjugate flavor; falls through to
                 // upper/lower on 4-day weeks, push/pull/legs on 3-day weeks.
@@ -232,6 +243,7 @@ enum EraAffinity {
             return EraStyle(
                 cohort: .redditFitness,
                 displayName: "Reddit /r/fitness era",
+                plainDescriptor: "Barbell-first off a program: add a little weight each session, push the last set for max reps, rotate push / pull / legs.",
                 narrativeBlurb: "Starting Strength, StrongLifts, 5/3/1 BBB, Reddit PPL, GZCL. AMRAP top sets, RPE-aware progression.",
                 // Classic PPL rotation.
                 splitPreference: [.push, .pull, .legs, .push, .pull, .legs],
@@ -246,6 +258,7 @@ enum EraAffinity {
             return EraStyle(
                 cohort: .scienceBased,
                 displayName: "Science-based era",
+                plainDescriptor: "Muscle-building by the numbers — higher volume, stop a rep or two short, track your weekly sets, lots of cables and machines.",
                 narrativeBlurb: "Nippard/RP style high-volume hypertrophy, autoregulation, MEV/MAV/MRV, RIR-based progression.",
                 // Upper-lower or PPL — both are canonical in the science-based
                 // crowd. Pick upper-lower as the primary because RP-style
@@ -262,6 +275,7 @@ enum EraAffinity {
             return EraStyle(
                 cohort: .currentMeta,
                 displayName: "Current meta",
+                plainDescriptor: "The newest social-media style — deep stretchy reps, constant tension, cable and machine isolation, short rests.",
                 narrativeBlurb: "TikTok fitness, science-based with shorter feedback loops, lengthened-partial heavy, cable-isolation forward.",
                 splitPreference: [.push, .pull, .legs, .upper, .lower],
                 repRangeBias: (compound: .mid, isolation: .high),
