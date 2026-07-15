@@ -104,16 +104,22 @@ struct ProfileScreen: View {
                                     value: seasonsSummary,
                                     icon: "calendar",
                                     action: { presentingSeasonsEditor = true })
-                        SettingsRow(label: "Support sport",
-                                    value: supportSummary,
-                                    icon: "figure.climbing",
-                                    action: {
-                                        if SupportEntitlement.unlocked(pro: subStore.isPro) {
-                                            presentingSupportEditor = true
-                                        } else {
-                                            presentingPaywall = true
-                                        }
-                                    })
+                        // The primary/support wedge is ski/board-primary +
+                        // climbing-support, so the row only appears for a
+                        // ski/snow primary sport (the interference table is
+                        // authored for exactly that pairing).
+                        if PhaseRule.skiSlugs.contains(store.memory.primarySport?.slug ?? "") {
+                            SettingsRow(label: "Support sport",
+                                        value: supportSummary,
+                                        icon: "figure.climbing",
+                                        action: {
+                                            if SupportEntitlement.unlocked(pro: subStore.isPro) {
+                                                presentingSupportEditor = true
+                                            } else {
+                                                presentingPaywall = true
+                                            }
+                                        })
+                        }
                         SettingsRow(label: "Session length",
                                     value: "\(store.memory.sessionMinutes) min",
                                     icon: "clock",

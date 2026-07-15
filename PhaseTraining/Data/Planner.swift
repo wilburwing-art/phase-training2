@@ -779,7 +779,9 @@ enum Planner {
             slots[idx] = DayPlan(
                 date: cur.date,
                 kind: .sport,
-                title: supportSport.map { "\($0.name) — \(sd.magnitude.label.lowercased()) day" } ?? "Support day",
+                // Bare sport name — the Week tab's SupportBadge carries the
+                // magnitude, and the reason line keeps it for other surfaces.
+                title: supportSport?.name ?? "Support day",
                 sport: supportSport,
                 generatedReason: "You \(verb) on \(sd.weekday.short) (\(sd.magnitude.label.lowercased()))"
             )

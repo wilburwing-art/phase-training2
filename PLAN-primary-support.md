@@ -34,9 +34,21 @@ Status: vision locked 2026-07-13. This is the launch differentiator and the Pro 
 - **Earnings switch (business step, needs the user)** — create the subscription
   products in App Store Connect, then flip `SupportEntitlement.proRequired` (and
   decide coach's). Nothing can charge until the ASC products exist.
-- **Follow-up** — consolidate: once the SupportPattern UI ships, deprecate the
-  crude `applySecondarySportPromotion` placeholder path entirely. Gate polish:
-  restrict the row to ski/snow-primary users.
+- **Phase 2 polish (done 2026-07-14)** — (1) the Profile "Support sport" row is
+  gated to ski/snow-primary users (`PhaseRule.skiSlugs`) — the wedge pairing.
+  (2) Week-tab `SupportBadge`: an outlined 🧗 magnitude chip (LIGHT ink / MED
+  accent / BIG danger) next to the SPORT badge on declared support days,
+  derived from `memory.supportPattern`; the stamped day title is now the bare
+  sport name (magnitude rides in the badge + reason). Verified via
+  `--seed-support-demo` + `SupportBadgeUITests` screenshot; `--seed-ski-primary`
+  added so `SupportSportUITests` meets the new row gate.
+- **`applySecondarySportPromotion` — KEEP (resolved 2026-07-14, not retired).**
+  It's NOT redundant: it promotes ANY non-primary in-season sport to a
+  placeholder day (already skipping the support sport). Retiring it would
+  regress the general N-secondary-sport case (e.g. running-in-season alongside
+  the ski+climb wedge). The support pattern is the richer treatment for ONE
+  sport; the two coexist cleanly. The earlier "retire entirely" note was wrong
+  about its scope.
 
 ## Problem
 

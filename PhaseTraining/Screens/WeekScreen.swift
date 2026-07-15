@@ -303,16 +303,28 @@ private struct DraggableDayRow: View {
         return Calendar.current.isDate(dragging, inSameDayAs: day.date)
     }
 
+    /// Magnitude of the declared SUPPORT day this row represents, if any —
+    /// derived from memory.supportPattern (source of truth), so only the
+    /// climbing days the user actually declared get the badge. nil for regular
+    /// sport days, lifts, and rests.
+    private var supportMagnitude: SupportMagnitude? {
+        guard day.kind == .sport,
+              let pattern = memory.memory.supportPattern,
+              day.sport?.slug == pattern.sportSlug else { return nil }
+        return pattern.magnitude(on: Weekday.from(date: day.date, calendar: .current))
+    }
+
     var body: some View {
         Button(action: onTap) {
-            DayRow(day: day, isToday: isToday, isTargeted: isTargeted, isSelfTarget: isSelfTarget)
+            DayRow(day: day, isToday: isToday, isTargeted: isTargeted, isSelfTarget: isSelfTarget,
+                   supportMagnitude: supportMagnitude)
         }
         .buttonStyle(.plain)
         .draggable(MovableDay(date: day.date)) {
             // Lightweight drag preview — same row but de-saturated. onAppear
             // doubles as the drag-start hook (SwiftUI exposes no other one)
             // to record which day is in flight.
-            DayRow(day: day, isToday: false, isTargeted: false)
+            DayRow(day: day, isToday: false, isTargeted: false, supportMagnitude: supportMagnitude)
                 .frame(maxWidth: 340)
                 .opacity(0.92)
                 .onAppear { draggingDate = day.date }
@@ -372,6 +384,9 @@ private struct DayRow: View {
     /// True while the row is hovered by its own drag — dropping is a no-op,
     /// so render a dimmed dashed treatment instead of the accent drop ring.
     var isSelfTarget: Bool = false
+    /// Non-nil when this is a declared support-sport day — renders the
+    /// magnitude badge next to the SPORT kind badge.
+    var supportMagnitude: SupportMagnitude? = nil
 
     var body: some View {
         HStack(spacing: 12) {
@@ -387,6 +402,10 @@ private struct DayRow: View {
             .frame(width: 36)
 
             KindBadge(kind: day.kind)
+
+            if let mag = supportMagnitude {
+                SupportBadge(magnitude: mag)
+            }
 
             Text(day.title)
                 .styled(.displayS)
@@ -445,6 +464,46 @@ private struct DayRow: View {
 
     private var dayNumber: String {
         WeekDateFormatters.dayNumber.string(from: day.date)
+    }
+}
+
+/// Support-sport magnitude chip, shown next to the SPORT kind badge on a
+/// declared support day. Outlined (not filled) so it reads as secondary
+/// metadata vs the filled kind badges; color escalates with load so a big day
+/// — the one the primary plan bends hardest to protect — stands out.
+private struct SupportBadge: View {
+    let magnitude: SupportMagnitude
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: "figure.climbing")
+                .font(.system(size: 9, weight: .semibold))
+            Text(shortLabel)
+                .styled(.micro)
+        }
+        .foregroundStyle(tint)
+        .padding(.horizontal, 7)
+        .padding(.vertical, 4)
+        .overlay(
+            RoundedRectangle(cornerRadius: 4)
+                .strokeBorder(tint.opacity(0.55), lineWidth: 0.75)
+        )
+    }
+
+    private var shortLabel: String {
+        switch magnitude {
+        case .light:  return "LIGHT"
+        case .medium: return "MED"
+        case .big:    return "BIG"
+        }
+    }
+
+    private var tint: Color {
+        switch magnitude {
+        case .light:  return Color.ink2
+        case .medium: return Color.accent
+        case .big:    return Color.danger
+        }
     }
 }
 

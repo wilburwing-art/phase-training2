@@ -82,8 +82,11 @@ final class PlannerSupportPatternTests: XCTestCase {
         let sat = slots[idx(.saturday)]!
         XCTAssertEqual(sat.kind, .sport)
         XCTAssertEqual(sat.sport?.slug, "climbing")
-        XCTAssertTrue(sat.title.lowercased().contains("big"), "magnitude in title: \(sat.title)")
+        // Title is the bare sport name (magnitude rides in the Week-tab badge);
+        // the reason line still carries the magnitude for other surfaces.
+        XCTAssertEqual(sat.title, "Climbing")
         XCTAssertTrue(sat.generatedReason?.contains("Sat") == true)
+        XCTAssertTrue(sat.generatedReason?.lowercased().contains("big") == true)
     }
 
     func test_stamp_skips_protected_and_lift_slots() {

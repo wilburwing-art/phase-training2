@@ -71,6 +71,18 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-missed-consolidation-demo") {
             Self.seedMissedConsolidationDemo()
         }
+        //   --seed-support-demo → ski-primary + climbing-support (Tue medium,
+        //     Sat big) with a plan that has climbing .sport days on those
+        //     weekdays, so the Week tab renders the SupportBadge. Pair with
+        //     --ui-test-onboarded --ui-test-reset.
+        if ProcessInfo.processInfo.arguments.contains("--seed-support-demo") {
+            Self.seedSupportDemo()
+        }
+        //   --seed-ski-primary → ski-primary, no support pattern; the Profile
+        //     "Support sport" row appears and its editor opens empty.
+        if ProcessInfo.processInfo.arguments.contains("--seed-ski-primary") {
+            Self.seedSkiPrimary()
+        }
         #endif
         // Upsize URLCache so coach.db image bytes survive across app launches.
         // The catalog serves ~555 images from raw.githubusercontent.com; the
@@ -230,6 +242,70 @@ struct PhaseTrainingApp: App {
         seedWeekPlan { date in
             DayPlan(date: date, kind: .sport, title: sport.name,
                     sport: sport, generatedReason: "UITest seed")
+        }
+    }
+
+    /// UITest-only: a ski-primary TrainingMemory (off-season), the base for the
+    /// support seeds. Shared so the Profile-row gate (ski/snow primary) is met.
+    private static func skiPrimaryMemory() -> TrainingMemory? {
+        guard let ski = Sport.catalog.first(where: { $0.slug == "alpine-skiing" }) else { return nil }
+        var m = TrainingMemory()
+        m.sports = [ski]
+        m.primarySport = ski
+        m.seasonsBySport = [ski: .offSeason]
+        m.defaultSeason = .offSeason
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.liftDaysPerWeek = 3
+        return m
+    }
+
+    /// Write memory directly (key + encoder mirror MemoryStore), leaving
+    /// `onboardedAt` nil so PlanStore's auto-regen stays gated off.
+    private static func writeSeedMemory(_ m: TrainingMemory) {
+        let enc = JSONEncoder()
+        enc.dateEncodingStrategy = .secondsSince1970
+        if let data = try? enc.encode(m) {
+            UserDefaults.standard.set(data, forKey: "pt_training_memory")
+        }
+    }
+
+    /// --seed-ski-primary: ski-primary memory with NO support pattern, so the
+    /// Profile "Support sport" row appears (gated to ski/snow) and its editor
+    /// opens empty. Used by the editor UI test.
+    private static func seedSkiPrimary() {
+        guard let m = skiPrimaryMemory() else { return }
+        writeSeedMemory(m)
+    }
+
+    /// --seed-support-demo: ski-primary + a climbing support pattern (Tue
+    /// medium, Sat big) + a plan whose Tue/Sat are climbing `.sport` days, so
+    /// the Week tab renders the SupportBadge.
+    private static func seedSupportDemo() {
+        guard var m = skiPrimaryMemory(),
+              let climbing = Sport.catalog.first(where: { $0.slug == "climbing" }) else { return }
+        m.supportPattern = SupportPattern(
+            sportSlug: "climbing", variant: .tradAlpine,
+            days: [SupportDay(weekday: .tuesday, magnitude: .medium),
+                   SupportDay(weekday: .saturday, magnitude: .big)])
+        writeSeedMemory(m)
+        seedWeekPlan { date in
+            switch Weekday.from(date: date, calendar: .current) {
+            case .tuesday:
+                return DayPlan(date: date, kind: .sport, title: climbing.name,
+                               sport: climbing, generatedReason: "You climb on Tue (medium)")
+            case .saturday:
+                return DayPlan(date: date, kind: .sport, title: climbing.name,
+                               sport: climbing, generatedReason: "You climb on Sat (big)")
+            case .monday, .thursday:
+                return DayPlan(date: date, kind: .lift, title: "Ski · off-season — strength",
+                               generatedWorkout: GeneratedWorkout(
+                                   title: "Strength", summary: "5 movements", exercises: [],
+                                   estimatedMinutes: 60, provenance: "seed", focus: .fullBodyA),
+                               generatedReason: "Primary build")
+            default:
+                return DayPlan(date: date, kind: .rest, title: "Rest")
+            }
         }
     }
 

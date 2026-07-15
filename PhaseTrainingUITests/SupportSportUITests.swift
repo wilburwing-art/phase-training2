@@ -9,7 +9,9 @@ final class SupportSportUITests: XCTestCase {
 
     private func launch() -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments += ["--ui-test-onboarded", "--ui-test-reset"]
+        // Ski-primary so the (ski/snow-gated) Support sport row appears; no
+        // pattern seeded so the editor opens empty and the footer reads "1 day".
+        app.launchArguments += ["--ui-test-onboarded", "--ui-test-reset", "--seed-ski-primary"]
         app.launch()
         return app
     }
