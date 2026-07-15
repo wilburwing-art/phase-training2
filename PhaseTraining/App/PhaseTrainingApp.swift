@@ -289,6 +289,10 @@ struct PhaseTrainingApp: App {
             days: [SupportDay(weekday: .tuesday, magnitude: .medium),
                    SupportDay(weekday: .saturday, magnitude: .big)])
         writeSeedMemory(m)
+        // Real off-season ski sessions from the actual season engine so the
+        // lift days carry real exercises (not empty stubs) — the demo then
+        // shows both the support badges AND tappable workouts.
+        let athlete = AthleteState.from(m, variant: .backcountry)
         seedWeekPlan { date in
             switch Weekday.from(date: date, calendar: .current) {
             case .tuesday:
@@ -298,11 +302,10 @@ struct PhaseTrainingApp: App {
                 return DayPlan(date: date, kind: .sport, title: climbing.name,
                                sport: climbing, generatedReason: "You climb on Sat (big)")
             case .monday, .thursday:
-                return DayPlan(date: date, kind: .lift, title: "Ski · off-season — strength",
-                               generatedWorkout: GeneratedWorkout(
-                                   title: "Strength", summary: "5 movements", exercises: [],
-                                   estimatedMinutes: 60, provenance: "seed", focus: .fullBodyA),
-                               generatedReason: "Primary build")
+                let idx = Weekday.from(date: date, calendar: .current) == .monday ? 0 : 1
+                let w = SportSeasonGenerator.generateSession(athlete, sessionIndex: idx)
+                return DayPlan(date: date, kind: .lift, title: w.title,
+                               generatedWorkout: w, generatedReason: "Primary build")
             default:
                 return DayPlan(date: date, kind: .rest, title: "Rest")
             }
