@@ -30,7 +30,11 @@ final class SubscriptionStore: ObservableObject {
     ///   com.phasetraining.app.pro_monthly
     ///   com.phasetraining.app.pro_yearly  (if you add an annual tier)
     static let proMonthlyProductID = "com.phasetraining.app.pro_monthly"
-    static let allProductIDs: Set<String> = [SubscriptionStore.proMonthlyProductID]
+    static let proYearlyProductID = "com.phasetraining.app.pro_yearly"
+    static let allProductIDs: Set<String> = [
+        SubscriptionStore.proMonthlyProductID,
+        SubscriptionStore.proYearlyProductID,
+    ]
 
     @Published private(set) var products: [Product] = []
     @Published private(set) var isPro: Bool = false
