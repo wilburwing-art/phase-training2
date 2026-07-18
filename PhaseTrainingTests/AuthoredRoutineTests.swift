@@ -140,6 +140,33 @@ final class AuthoredRoutineTests: XCTestCase {
         }
     }
 
+    // MARK: - Easy Strength: the generic cross-sport base
+
+    func testEasyStrengthIsTheGeneralFitnessBase() {
+        let ids = CoachDatabase.shared.authoredRoutineIds(
+            sportSlug: "general-fitness", phaseLabels: AuthoredRoutineSelector.allPhaseLabels)
+        XCTAssertTrue(ids.contains(298), "Easy Strength (#298) should be the general-fitness base")
+    }
+
+    func testSnowboardingOffSeasonRotationIncludesEasyStrength() {
+        // Off-season maps to [off_season, base]; snowboarding now carries its
+        // splitboard off-season (#70) + the Easy Strength base (#298).
+        let served = (0..<4).compactMap {
+            AuthoredRoutineSelector.select(sportSlug: "snowboarding", phase: .offSeason, sessionIndex: $0)
+        }
+        XCTAssertTrue(served.contains(298), "Easy Strength should rotate into snowboarding off-season")
+    }
+
+    func testEasyStrengthBuildsRunnableWorkout() {
+        var memory = TrainingMemory()
+        memory.primarySport = Sport.resolve(slug: "snowboarding")
+        let workout = AuthoredRoutine.workout(
+            forRoutineId: 298, memory: memory, context: .empty, focus: .fullBodyA)
+        XCTAssertEqual(workout?.exercises.count, 6)
+        XCTAssertTrue(workout?.exercises.allSatisfy { $0.exerciseId > 0 } ?? false)
+        XCTAssertTrue((workout?.title ?? "").contains("Easy Strength"))
+    }
+
     func testWorkoutBuildsFromAuthoredRoutinePreservingSetsReps() {
         var memory = TrainingMemory()
         memory.primarySport = Sport.resolve(slug: "climbing")

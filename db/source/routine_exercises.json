@@ -4587,5 +4587,83 @@
     "tempo": null,
     "duration": null,
     "notes": null
+  },
+  {
+    "id": 1216,
+    "routine_id": 298,
+    "exercise_id": 904,
+    "position": 1,
+    "superset_group": null,
+    "sets": 2,
+    "reps": "5",
+    "rest": "2 min",
+    "tempo": null,
+    "duration": null,
+    "notes": "Press — 60-80%, never miss"
+  },
+  {
+    "id": 1217,
+    "routine_id": 298,
+    "exercise_id": 1,
+    "position": 2,
+    "superset_group": null,
+    "sets": 2,
+    "reps": "5",
+    "rest": "2 min",
+    "tempo": null,
+    "duration": null,
+    "notes": "Pull"
+  },
+  {
+    "id": 1218,
+    "routine_id": 298,
+    "exercise_id": 451,
+    "position": 3,
+    "superset_group": null,
+    "sets": 2,
+    "reps": "5",
+    "rest": "2-3 min",
+    "tempo": null,
+    "duration": null,
+    "notes": "Hinge — heavy but easy"
+  },
+  {
+    "id": 1219,
+    "routine_id": 298,
+    "exercise_id": 450,
+    "position": 4,
+    "superset_group": null,
+    "sets": 2,
+    "reps": "5",
+    "rest": "2-3 min",
+    "tempo": null,
+    "duration": null,
+    "notes": "Squat"
+  },
+  {
+    "id": 1220,
+    "routine_id": 298,
+    "exercise_id": 64,
+    "position": 5,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "40m",
+    "rest": "60 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Loaded carry — vary distance/load"
+  },
+  {
+    "id": 1221,
+    "routine_id": 298,
+    "exercise_id": 7,
+    "position": 6,
+    "superset_group": null,
+    "sets": 1,
+    "reps": "5",
+    "rest": "60 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "One solid set"
   }
 ]

@@ -2198,5 +2198,25 @@
     "tags": "[\"snowboarding\", \"splitboard\", \"in-season\", \"maintenance\", \"strength\"]",
     "created_at": "2026-07-17 00:00:00",
     "updated_at": "2026-07-17 00:00:00"
+  },
+  {
+    "id": 298,
+    "name": "Easy Strength — 5-Lift Base",
+    "slug": "easy-strength-5-lift-base",
+    "description": "Autoregulated — never miss a rep, never grind, leave 1-2 in the tank, finish feeling stronger than you started. ~60-80% of max on the 2x5s (Dan John / Pavel, Easy Strength). When the weight feels light, add load.",
+    "goal": "strength",
+    "difficulty": "intermediate",
+    "phase": "base",
+    "duration_minutes": 40,
+    "frequency": "5x/week",
+    "environment": "gym",
+    "time_commitment": "40 min",
+    "ideal_schedule": null,
+    "notes": "Autoregulated — never miss a rep, never grind, leave 1-2 in the tank, finish feeling stronger than you started. ~60-80% of max on the 2x5s (Dan John / Pavel, Easy Strength). When the weight feels light, add load.",
+    "source_name": "Easy Strength — Dan John & Pavel Tsatsouline (distilled)",
+    "source_url": null,
+    "tags": "[\"general\", \"strength\", \"base\", \"off-season\", \"easy-strength\", \"5-lift\"]",
+    "created_at": "2026-07-18 00:00:00",
+    "updated_at": "2026-07-18 00:00:00"
   }
 ]

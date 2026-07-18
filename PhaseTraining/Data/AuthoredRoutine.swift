@@ -25,6 +25,11 @@ enum AuthoredRoutineSelector {
     /// an authored-served sport with a phase gap still gets a session.
     static let allPhaseLabels = ["off_season", "base", "build", "peak", "race", "recovery", "maintenance"]
 
+    /// The universal cross-sport base pool. `general-fitness` carries Easy
+    /// Strength (Dan John / Pavel) — the last-resort content when a sport has
+    /// no bespoke routine of its own for any phase.
+    static let genericBaseSlug = "general-fitness"
+
     /// coach.db `routines.phase` labels that stand in for a SeasonPhase. A
     /// SeasonPhase can map to more than one label (off-season pulls both the
     /// sport's off_season block and generic base work).
@@ -70,6 +75,12 @@ enum AuthoredRoutineSelector {
             // an authored-served sport must never yield an empty day.
             guard !SportSeasonGenerator.supports(sportSlug) else { return nil }
             ids = db.authoredRoutineIds(sportSlug: sportSlug, phaseLabels: allPhaseLabels)
+            if ids.isEmpty, SportCatalog.outdoorAuthoredSlugs.contains(sportSlug) {
+                // Last resort for a real outdoor sport with no content of its
+                // own: the universal cross-sport base (Easy Strength). Gated on
+                // the allowlist so an arbitrary/unknown slug still returns nil.
+                ids = db.authoredRoutineIds(sportSlug: genericBaseSlug, phaseLabels: allPhaseLabels)
+            }
         }
         guard !ids.isEmpty else { return nil }
         // Non-negative modulo so a negative sessionIndex can't crash.

@@ -3670,5 +3670,22 @@
     "unsupported_reason": null,
     "created_at": "2026-05-13 05:47:23",
     "updated_at": "2026-05-13 05:47:23"
+  },
+  {
+    "id": 755,
+    "name": "General Fitness",
+    "slug": "general-fitness",
+    "description": null,
+    "parent_id": null,
+    "depth": 0,
+    "sort_order": 999,
+    "typical_session_minutes": null,
+    "common_training_days": null,
+    "peak_season": null,
+    "common_injuries": null,
+    "governing_body": null,
+    "unsupported_reason": null,
+    "created_at": "2026-07-18 00:00:00",
+    "updated_at": "2026-07-18 00:00:00"
   }
 ]
