@@ -117,9 +117,12 @@ struct TodayScreen: View {
                             // presence. (xcuitest-swiftui-gotchas #1.)
                         }
 
-                        SeasonPhaseBadge(style: .full, surface: "today")
+                        RepelicanPhaseCard()
                             .padding(.horizontal, 20)
                             .padding(.top, 14)
+                        SeasonPhaseBadge(style: .full, surface: "today")
+                            .padding(.horizontal, 20)
+                            .padding(.top, 10)
                         sorenessCheckInPill
                             .padding(.horizontal, 20)
                             .padding(.top, 10)
