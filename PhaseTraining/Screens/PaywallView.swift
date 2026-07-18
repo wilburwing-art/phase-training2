@@ -53,15 +53,21 @@ struct PaywallView: View {
     // MARK: - Pieces
 
     private var hero: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(Color.accent)
-                Text("Phase Training Pro")
-                    .font(.system(size: 26, weight: .bold))
-                    .foregroundStyle(Color.ink)
+        VStack(alignment: .leading, spacing: 12) {
+            // Lean + Swole — one athlete, two builds. The mascot pair is the
+            // two-sport differentiator made visual: a lean endurance build next
+            // to a strength build, the range Pro plans across.
+            HStack(alignment: .bottom, spacing: 8) {
+                RepelicanView(build: .lean)
+                    .frame(width: 76, height: 88)
+                RepelicanView(build: .swole)
+                    .frame(width: 94, height: 88)
+                Spacer(minLength: 0)
             }
+            .accessibilityHidden(true)
+            Text("Phase Training Pro")
+                .font(.system(size: 26, weight: .bold))
+                .foregroundStyle(Color.ink)
             Text("The only training app that plans your primary sport around a second one — plus an AI coach that personalizes every workout.")
                 .font(.system(size: 15))
                 .foregroundStyle(Color.ink2)
