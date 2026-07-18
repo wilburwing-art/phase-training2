@@ -163,13 +163,13 @@ struct MissedWorkoutBanner: View {
         switch edit {
         case .move(_, let toDate):
             return "  → moves to \(Self.shortWeekdayFormatter.string(from: toDate))"
-        case .swapKind(_, let to, let title, _):
+        case .swapKind(_, let to, let title, _, _, _):
             return "  → \(title) (\(to.label.lowercased()))"
         case .protectDay(_, let title):
             return "  → protect as \(title)"
         case .shorten(_, let mins):
             return "  → shorten to \(mins) min"
-        case .addSession(let date, _, let title, _):
+        case .addSession(let date, _, let title, _, _, _):
             return "  → \(title) on \(Self.shortWeekdayFormatter.string(from: date))"
         case .removeSession:
             return "  → remove"

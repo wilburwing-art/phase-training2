@@ -11,8 +11,9 @@ enum PlanEdit: Hashable {
     /// a day in the plan, the two swap positions (so the week stays 7 contiguous).
     case move(dayId: UUID, toDate: Date)
 
-    /// Change a day's kind in place. routineId only meaningful for .lift.
-    case swapKind(dayId: UUID, to: DayKind, title: String, routineId: Int?)
+    /// Change a day's kind in place. routineId only meaningful for .lift;
+    /// `sport` + `note` (a read-and-log prescription) only for .sport.
+    case swapKind(dayId: UUID, to: DayKind, title: String, routineId: Int?, sport: Sport?, note: String?)
 
     /// Convert a day to a protected event. Locks `protected = true` so the
     /// planner won't auto-move it on next regen.
@@ -21,8 +22,9 @@ enum PlanEdit: Hashable {
     /// Override durationMinutes on a day. nil restores planner default.
     case shorten(dayId: UUID, toMinutes: Int)
 
-    /// Insert a new session on an existing day (replaces it).
-    case addSession(date: Date, kind: DayKind, title: String, routineId: Int?)
+    /// Insert a new session on an existing day (replaces it). `sport` + `note`
+    /// (a read-and-log prescription) apply only when kind == .sport.
+    case addSession(date: Date, kind: DayKind, title: String, routineId: Int?, sport: Sport?, note: String?)
 
     /// Drop a day back to .rest.
     case removeSession(dayId: UUID)

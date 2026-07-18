@@ -403,20 +403,21 @@ struct Sport: Codable, Hashable, Identifiable {
 
     init(from decoder: Decoder) throws {
         let c = try decoder.singleValueContainer()
-        let raw = try c.decode(String.self)
-        // Normalize legacy underscore slugs (build 20-22 wrote these) to the
-        // hyphenated form coach.db actually uses. Falls back to a synthetic
-        // entry if the slug never matched any catalog row.
+        self = Sport.resolve(slug: try c.decode(String.self))
+    }
+
+    /// Resolve a raw slug (LLM- or coach-supplied) to a catalog Sport,
+    /// normalizing legacy underscore slugs (build 20-22 wrote these) to the
+    /// hyphenated form coach.db uses. Falls back to a synthetic entry with a
+    /// prettified name when the slug matches no catalog row — so an
+    /// off-catalog sport (e.g. "mountain-biking") still yields a usable Sport.
+    static func resolve(slug raw: String) -> Sport {
         let normalized = raw.replacingOccurrences(of: "_", with: "-")
-        if let known = Sport.catalog.first(where: { $0.slug == normalized }) {
-            self = known
-        } else if let known = Sport.catalog.first(where: { $0.slug == raw }) {
-            self = known
-        } else {
-            self = Sport(slug: raw, name: raw.replacingOccurrences(of: "_", with: " ")
-                                              .replacingOccurrences(of: "-", with: " ")
-                                              .capitalized)
-        }
+        if let known = catalog.first(where: { $0.slug == normalized }) { return known }
+        if let known = catalog.first(where: { $0.slug == raw }) { return known }
+        return Sport(slug: normalized, name: raw.replacingOccurrences(of: "_", with: " ")
+                                                .replacingOccurrences(of: "-", with: " ")
+                                                .capitalized)
     }
 
     func encode(to encoder: Encoder) throws {

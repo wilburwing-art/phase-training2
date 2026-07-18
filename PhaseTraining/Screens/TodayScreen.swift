@@ -131,6 +131,11 @@ struct TodayScreen: View {
                                 .padding(.horizontal, 20)
                                 .padding(.top, 10)
                         }
+                        if effectiveKind == .sport, let note = todayPlan?.notes, !note.isEmpty {
+                            sportPrescriptionCard(note)
+                                .padding(.horizontal, 20)
+                                .padding(.top, 14)
+                        }
                         if effectiveKind.isWorkout {
                             lastSessionCard
                                 .padding(.horizontal, 20)
@@ -492,6 +497,32 @@ struct TodayScreen: View {
             // No primary action — the user sees today's status, no session to start.
             EmptyView()
         }
+    }
+
+    /// Read-and-log prescription for a sport day — e.g. a coach-scheduled MTB
+    /// ride's structure. Shown above the "Log session" CTA so the user reads
+    /// the plan, does the session, then logs it. Populated from DayPlan.notes.
+    private func sportPrescriptionCard(_ note: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                Image(systemName: "list.bullet")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Color.accent)
+                Text((todayPlan?.sport?.name ?? "Sport").uppercased())
+                    .styled(.micro)
+                    .foregroundStyle(Color.accent)
+            }
+            Text(note)
+                .font(.custom("Inter-Regular", size: 14))
+                .foregroundStyle(Color.ink)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.surface)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .accessibilityIdentifier("today-sport-prescription")
     }
 
     private var sportLogButton: some View {

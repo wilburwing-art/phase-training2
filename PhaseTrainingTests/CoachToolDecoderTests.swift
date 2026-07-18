@@ -102,7 +102,7 @@ final class CoachToolDecoderTests: XCTestCase {
             ProposalOp(op: "swap_kind", date: "2026-05-21", kind: "rest", title: "Rest")
         ]), in: plan)
         XCTAssertEqual(edits.count, 1)
-        if case .swapKind(let dayId, let to, let title, _) = edits[0] {
+        if case .swapKind(let dayId, let to, let title, _, _, _) = edits[0] {
             XCTAssertEqual(dayId, plan.days[3].id)
             XCTAssertEqual(to, .rest)
             XCTAssertEqual(title, "Rest")
@@ -114,7 +114,7 @@ final class CoachToolDecoderTests: XCTestCase {
         let edits = CoachToolDecoder.planEdits(for: proposal([
             ProposalOp(op: "swap_kind", date: "2026-05-21", kind: "sport")
         ]), in: plan)
-        if case .swapKind(_, _, let title, _) = edits[0] {
+        if case .swapKind(_, _, let title, _, _, _) = edits[0] {
             XCTAssertEqual(title, "Sport")
         } else { XCTFail() }
     }
@@ -178,11 +178,48 @@ final class CoachToolDecoderTests: XCTestCase {
             ProposalOp(op: "add_session", date: "2026-05-22", kind: "lift", title: "Bonus pull")
         ]), in: plan)
         XCTAssertEqual(edits.count, 1)
-        if case .addSession(let date, let kind, let title, _) = edits[0] {
+        if case .addSession(let date, let kind, let title, _, _, _) = edits[0] {
             XCTAssertEqual(date, df.date(from: "2026-05-22"))
             XCTAssertEqual(kind, .lift)
             XCTAssertEqual(title, "Bonus pull")
         } else { XCTFail() }
+    }
+
+    // MARK: - add_session (sport session — closes the MTB coach dead-end)
+
+    func testAddSessionSportCarriesSportSlugAndNote() {
+        let (plan, df) = fixturePlan()
+        let edits = CoachToolDecoder.planEdits(for: proposal([
+            ProposalOp(op: "add_session", date: "2026-05-22", kind: "sport",
+                       title: "MTB", sportSlug: "mountain-biking",
+                       note: "4x8min threshold climbs, 90s spin recovery")
+        ]), in: plan)
+        XCTAssertEqual(edits.count, 1)
+        guard case .addSession(let date, let kind, _, _, let sport, let note) = edits[0] else {
+            return XCTFail("Expected .addSession")
+        }
+        XCTAssertEqual(date, df.date(from: "2026-05-22"))
+        XCTAssertEqual(kind, .sport)
+        XCTAssertEqual(sport?.slug, "mountain-biking")
+        XCTAssertEqual(note, "4x8min threshold climbs, 90s spin recovery")
+    }
+
+    func testApplyEditAddSportSessionSetsSportAndNotes() {
+        let (plan0, df) = fixturePlan()
+        var plan = plan0
+        let edits = CoachToolDecoder.planEdits(for: proposal([
+            ProposalOp(op: "add_session", date: "2026-05-22", kind: "sport",
+                       title: "MTB", sportSlug: "cycling", note: "Z2 ride, 60min")
+        ]), in: plan)
+        XCTAssertEqual(edits.count, 1)
+        PlanStore.applyEdit(edits[0], to: &plan)
+        let cal = Calendar.current
+        guard let day = plan.days.first(where: { cal.isDate($0.date, inSameDayAs: df.date(from: "2026-05-22")!) }) else {
+            return XCTFail("day not found")
+        }
+        XCTAssertEqual(day.kind, .sport)
+        XCTAssertEqual(day.sport?.slug, "cycling")
+        XCTAssertEqual(day.notes, "Z2 ride, 60min")
     }
 
     // MARK: - remove_session

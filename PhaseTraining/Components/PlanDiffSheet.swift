@@ -208,12 +208,12 @@ private struct DiffDayRow: View {
     let before = WeekPlan.sample()
     var after = before
     PlanStore.applyEdit(
-        .swapKind(dayId: before.days[3].id, to: .rest, title: "Rest", routineId: nil),
+        .swapKind(dayId: before.days[3].id, to: .rest, title: "Rest", routineId: nil, sport: nil, note: nil),
         to: &after
     )
     let diff = PlanDiff(
         before: before, after: after,
-        edits: [.swapKind(dayId: before.days[3].id, to: .rest, title: "Rest", routineId: nil)],
+        edits: [.swapKind(dayId: before.days[3].id, to: .rest, title: "Rest", routineId: nil, sport: nil, note: nil)],
         reasoning: "You said you wanted Thursdays off."
     )
     return PlanDiffSheet(diff: diff, onApply: {}, onCancel: {})

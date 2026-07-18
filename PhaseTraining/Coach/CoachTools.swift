@@ -27,7 +27,9 @@ enum CoachTools {
             "kind":       JSONSchema(type: "string", description: "Day kind for swap_kind / add_session.",         enumValues: kindEnum),
             "title":      JSONSchema(type: "string", description: "Display title for swap_kind / add_session (optional)."),
             "eventTitle": JSONSchema(type: "string", description: "Event title for protect_day."),
-            "toMinutes":  JSONSchema(type: "integer", description: "New duration for shorten (15-180).")
+            "toMinutes":  JSONSchema(type: "integer", description: "New duration for shorten (15-180)."),
+            "sportSlug":  JSONSchema(type: "string", description: "Sport identifier when swap_kind / add_session targets kind=sport, e.g. 'cycling', 'climbing', 'mountain-biking'. Sets which sport the day is so the user can log it."),
+            "note":       JSONSchema(type: "string", description: "For a sport session: the ride/session prescription the user reads on the day and logs after — e.g. 'MTB: 4×8min threshold climbs, 90s spin recovery, Z2 between'. Use this to actually put a sport workout on a day.")
         ]
         opItem.required = ["op"]
 
@@ -271,6 +273,12 @@ struct ProposalOp: Codable, Hashable {
     var title: String?
     var eventTitle: String?
     var toMinutes: Int?
+    /// Sport identifier for a sport session (swap_kind / add_session with
+    /// kind == sport), e.g. "cycling", "climbing", "mountain-biking".
+    var sportSlug: String?
+    /// Read-and-log prescription shown on a sport day (e.g. an MTB ride's
+    /// structure). Only meaningful when kind == sport.
+    var note: String?
 }
 
 struct ProposalToolInput: Codable {
@@ -462,7 +470,9 @@ enum CoachToolDecoder {
                       let kindRaw = op.kind,
                       let kind = DayKind(rawValue: kindRaw) else { continue }
                 let title = op.title ?? defaultTitle(for: kind)
-                out.append(.swapKind(dayId: target.id, to: kind, title: title, routineId: nil))
+                let sport = (kind == .sport) ? op.sportSlug.map(Sport.resolve(slug:)) : nil
+                let note = (kind == .sport) ? op.note : nil
+                out.append(.swapKind(dayId: target.id, to: kind, title: title, routineId: nil, sport: sport, note: note))
 
             case "protect_day":
                 guard let target = day(for: op.date),
@@ -480,7 +490,9 @@ enum CoachToolDecoder {
                 guard let dateStr = op.date, let date = df.date(from: dateStr),
                       let kindRaw = op.kind, let kind = DayKind(rawValue: kindRaw) else { continue }
                 let title = op.title ?? defaultTitle(for: kind)
-                out.append(.addSession(date: date, kind: kind, title: title, routineId: nil))
+                let sport = (kind == .sport) ? op.sportSlug.map(Sport.resolve(slug:)) : nil
+                let note = (kind == .sport) ? op.note : nil
+                out.append(.addSession(date: date, kind: kind, title: title, routineId: nil, sport: sport, note: note))
 
             case "remove_session":
                 guard let target = day(for: op.date) else { continue }

@@ -141,15 +141,20 @@ struct MiniPlanDiffCard: View {
 
     private func short(_ day: DayPlan) -> String {
         var parts: [String] = [day.kind.label.lowercased()]
-        if !day.title.isEmpty { parts.append("· \(day.title)") }
+        if day.kind == .sport, let sport = day.sport { parts.append("· \(sport.name)") }
+        else if !day.title.isEmpty { parts.append("· \(day.title)") }
         if let mins = day.durationMinutes { parts.append("· \(mins)m") }
         if day.protected { parts.append("· locked") }
+        if day.kind == .sport, let note = day.notes, !note.isEmpty {
+            parts.append("— \(note)")
+        }
         return parts.joined(separator: " ")
     }
 
     private func rowEqual(_ a: DayPlan, _ b: DayPlan) -> Bool {
         a.kind == b.kind && a.title == b.title &&
         a.protected == b.protected && a.durationMinutes == b.durationMinutes &&
+        a.sport == b.sport && a.notes == b.notes &&
         Calendar.current.isDate(a.date, inSameDayAs: b.date)
     }
 }

@@ -474,12 +474,18 @@ final class PlanStore: ObservableObject {
                 plan.days.sort { $0.date < $1.date }
             }
 
-        case .swapKind(let id, let to, let title, let routineId):
+        case .swapKind(let id, let to, let title, let routineId, let sport, let note):
             guard let idx = plan.days.firstIndex(where: { $0.id == id }) else { return }
             plan.days[idx].kind = to
             plan.days[idx].title = title
             plan.days[idx].routineId = (to == .lift) ? routineId : nil
-            if to != .sport { plan.days[idx].sport = nil }
+            if to == .sport {
+                plan.days[idx].sport = sport
+                plan.days[idx].notes = note
+            } else {
+                plan.days[idx].sport = nil
+                plan.days[idx].notes = nil
+            }
 
         case .protectDay(let id, let eventTitle):
             guard let idx = plan.days.firstIndex(where: { $0.id == id }) else { return }
@@ -493,12 +499,19 @@ final class PlanStore: ObservableObject {
             guard let idx = plan.days.firstIndex(where: { $0.id == id }) else { return }
             plan.days[idx].durationMinutes = toMinutes
 
-        case .addSession(let date, let kind, let title, let routineId):
+        case .addSession(let date, let kind, let title, let routineId, let sport, let note):
             let target = cal.startOfDay(for: date)
             if let idx = plan.days.firstIndex(where: { cal.isDate($0.date, inSameDayAs: target) }) {
                 plan.days[idx].kind = kind
                 plan.days[idx].title = title
                 plan.days[idx].routineId = (kind == .lift) ? routineId : nil
+                if kind == .sport {
+                    plan.days[idx].sport = sport
+                    plan.days[idx].notes = note
+                } else {
+                    plan.days[idx].sport = nil
+                    plan.days[idx].notes = nil
+                }
             }
 
         case .removeSession(let id):
