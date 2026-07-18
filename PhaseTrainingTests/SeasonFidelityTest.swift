@@ -206,7 +206,11 @@ final class SeasonFidelityTest: XCTestCase {
     // MARK: - M2a injection (Planner routes supported sports to the season engine)
 
     func test_planner_routes_supported_sport_to_season_engine() {
-        for f in sports {
+        // Phase 2: pilot sports (climbing) are deliberately served authored
+        // routines, not the season engine — covered by the companion test
+        // below + AuthoredRoutineTests. This check covers the supported sports
+        // that still route to the season engine (ski).
+        for f in sports where !AuthoredRoutineSelector.pilotSports.contains(f.slug) {
             let m = mem(f, season: .offSeason, days: 3)
             let plan = Planner.generate(memory: m, routines: [])
             let liftDays = plan.days.filter { $0.kind == .lift }
@@ -221,6 +225,26 @@ final class SeasonFidelityTest: XCTestCase {
                 XCTAssertTrue(w?.exercises.allSatisfy { $0.exerciseId > 0 } ?? false,
                     "[\(f.slug)] season exercises must have real catalog ids")
             }
+        }
+    }
+
+    /// Phase 2 contract: a pilot sport's lift days are filled from curated
+    /// authored coach.db routines (provenance "Authored …"), not the season
+    /// engine — with real catalog exercise ids so they log/complete normally.
+    func test_planner_routes_pilot_sport_to_authored() {
+        guard let climbing = sports.first(where: { AuthoredRoutineSelector.pilotSports.contains($0.slug) }) else {
+            return XCTFail("expected a pilot sport in the fixture")
+        }
+        let m = mem(climbing, season: .offSeason, days: 3)
+        let plan = Planner.generate(memory: m, routines: [])
+        let liftDays = plan.days.filter { $0.kind == .lift }
+        XCTAssertFalse(liftDays.isEmpty, "[\(climbing.slug)] no lift days generated")
+        for d in liftDays {
+            let w = d.generatedWorkout
+            XCTAssertTrue(w?.provenance.contains("Authored") ?? false,
+                "[\(climbing.slug)] pilot lift day should be authored: \(w?.provenance ?? "nil")")
+            XCTAssertTrue(w?.exercises.allSatisfy { $0.exerciseId > 0 } ?? false,
+                "[\(climbing.slug)] authored exercises must have real catalog ids")
         }
     }
 
@@ -255,6 +279,23 @@ final class SeasonFidelityTest: XCTestCase {
         }
         store.migrateToSupportedSportGate()
         XCTAssertNotNil(store.memory.onboardedAt, "supported user must NOT be re-onboarded")
+    }
+
+    func test_migration_keeps_outdoor_authored_primary() {
+        // Snowboarding isn't season-engine supported but is now plannable
+        // (authored coverage) → the gate must keep it, not re-onboard.
+        let suite = "season-migration-outdoor-test"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        let store = MemoryStore(defaults: defaults)
+        store.update {
+            $0.sports = [Sport.resolve(slug: "snowboarding")]
+            $0.primarySport = Sport.resolve(slug: "snowboarding")
+            $0.onboardedAt = Date()
+        }
+        store.migrateToSupportedSportGate()
+        XCTAssertNotNil(store.memory.onboardedAt, "snowboarding is plannable — must NOT be re-onboarded")
+        XCTAssertEqual(store.memory.primarySport?.slug, "snowboarding")
     }
 
     // MARK: - Prescription tracks the slot demand (not the generic catalog)

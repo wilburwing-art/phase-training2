@@ -1184,6 +1184,52 @@ final class CoachDatabase {
         return rows
     } }
 
+    /// Phase 2 — full-session authored routine ids for a sport + coach.db
+    /// phase labels, ordered by id (deterministic). Excludes short add-ons
+    /// (prehab / mobility / warm-up / rehab / recovery) and anything under
+    /// 25 min, so a lift day is never served a 10-minute prehab block as its
+    /// whole session. Consumed by `AuthoredRoutineSelector`.
+    func authoredRoutineIds(sportSlug: String, phaseLabels: [String]) -> [Int] { withLock {
+        guard let db, !phaseLabels.isEmpty else { return [] }
+        let phasePlaceholders = phaseLabels.map { _ in "?" }.joined(separator: ",")
+        let sql = """
+        SELECT DISTINCT r.id
+        FROM routines r
+        JOIN routine_sports rs ON rs.routine_id = r.id
+        JOIN sport_categories s ON s.id = rs.sport_id
+        WHERE s.slug = ?
+          AND r.phase IN (\(phasePlaceholders))
+          AND r.goal NOT IN ('prehab','mobility','warm_up','pt_rehab','recovery')
+          AND COALESCE(r.duration_minutes, 0) >= 25
+        ORDER BY r.id ASC
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_text(stmt, 1, sportSlug, -1, SQLITE_TRANSIENT)
+        for (i, label) in phaseLabels.enumerated() {
+            sqlite3_bind_text(stmt, Int32(2 + i), label, -1, SQLITE_TRANSIENT)
+        }
+        var ids: [Int] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            ids.append(Int(sqlite3_column_int64(stmt, 0)))
+        }
+        return ids
+    } }
+
+    /// Name + source attribution for a routine, for the authored workout's
+    /// title + provenance line. nil when the id isn't a real routine.
+    func authoredRoutineMeta(id: Int) -> (name: String, source: String?)? { withLock {
+        guard let db else { return nil }
+        let sql = "SELECT name, source_name FROM routines WHERE id = ? LIMIT 1"
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return nil }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_int64(stmt, 1, Int64(id))
+        guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
+        return (text(stmt, 0) ?? "Session", text(stmt, 1))
+    } }
+
     /// Season-aware generator pool: every `sport_movements` row for a sport,
     /// joined with its catalog exercise for name + scheme. The pool is tiny
     /// (~44 rows), so phase/variant/demand filtering happens in Swift

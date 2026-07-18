@@ -56,6 +56,22 @@ enum WorkoutGenerator {
         strategy: GeneratorStrategy = .auto,
         adjacentSportDay: Bool = false
     ) -> GeneratedWorkout {
+        // Phase 2 — authored program spines. If a curated coach.db routine
+        // exists for this (sport, phase, session slot), serve it verbatim with
+        // per-user weight recs instead of generating. Placed BEFORE the
+        // supports gate so authored content can serve sports the season engine
+        // doesn't (e.g. MTB) once they're curated. Falls through to the season
+        // engine whenever no authored routine matches.
+        if let sport = memory.primarySport {
+            let season = memory.seasonsBySport[sport] ?? memory.defaultSeason
+            if let routineId = AuthoredRoutineSelector.select(
+                    sportSlug: sport.slug, phase: season, sessionIndex: liftIndex),
+               let authored = AuthoredRoutine.workout(
+                    forRoutineId: routineId, memory: memory, context: context,
+                    focus: WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts)) {
+                return authored
+            }
+        }
         // The season-aware engine (ski / climb) is the only generator. Every
         // caller routes here; onboarding gates to a supported sport (M2b), so the
         // no-supported-sport branch is an unreachable safety net, not a real path.
