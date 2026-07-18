@@ -77,10 +77,13 @@ final class MemoryStore: ObservableObject {
     /// survive a filtered picker and the gate would re-trigger forever). All
     /// other profile data (experience, equipment, age, injuries) persists.
     func migrateToSupportedSportGate() {
+        // "Plannable" = season-engine supported (ski/climb) OR an outdoor sport
+        // with authored coverage. A user already on such a sport is NOT
+        // re-onboarded; only genuinely unplannable sports are stripped.
         guard isOnboarded,
-              !SportSeasonGenerator.supports(memory.primarySport?.slug) else { return }
+              !SportCatalog.isPlannable(memory.primarySport?.slug ?? "") else { return }
         update {
-            $0.sports.removeAll { !SportSeasonGenerator.supports($0.slug) }
+            $0.sports.removeAll { !SportCatalog.isPlannable($0.slug) }
             $0.primarySport = $0.sports.first
             $0.onboardedAt = nil
         }

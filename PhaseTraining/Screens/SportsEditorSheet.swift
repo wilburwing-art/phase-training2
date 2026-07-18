@@ -21,7 +21,7 @@ struct SportsEditorSheet: View {
                             .styled(.micro)
                             .foregroundStyle(Color.ink3)
                         WrappingFlow(spacing: 8) {
-                            ForEach(Sport.catalog) { sport in
+                            ForEach(Sport.catalog.filter { SportCatalog.isPlannable($0.slug) }) { sport in
                                 OnboardingChip(
                                     label: sport.name,
                                     selected: store.memory.sports.contains(sport),

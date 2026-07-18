@@ -28,7 +28,7 @@ struct OnboardingSportsScreen: View {
             VStack(alignment: .leading, spacing: 16) {
                 OnboardingSectionLabel(text: "Sports")
                 WrappingFlow(spacing: 8) {
-                    ForEach(Sport.catalog.filter { SportSeasonGenerator.supports($0.slug) }) { sport in
+                    ForEach(Sport.catalog.filter { SportCatalog.isPlannable($0.slug) }) { sport in
                         OnboardingChip(
                             label: sport.name,
                             selected: draft.sports.contains(sport),
