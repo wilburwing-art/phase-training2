@@ -16,6 +16,12 @@ struct CustomRoutineEditSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     let original: CustomRoutine
+    /// When set, a "Start workout" action is shown that hands the current
+    /// draft back to the caller to run as today's live session. Left nil by
+    /// callers (e.g. the Week-day scheduling flow) where "start now" makes no
+    /// sense. The draft is NOT auto-saved to the library on start — that's a
+    /// deliberate ad-hoc path; the user hits Save separately to keep it.
+    let onStartNow: ((CustomRoutine) -> Void)?
     @State private var draft: CustomRoutine
     @State private var showingPicker = false
     @State private var detailExercise: Exercise? = nil
@@ -24,8 +30,9 @@ struct CustomRoutineEditSheet: View {
     /// (via the row's `.controls` swap button). nil = sheet closed.
     @State private var swappingExerciseId: String? = nil
 
-    init(routine: CustomRoutine) {
+    init(routine: CustomRoutine, onStartNow: ((CustomRoutine) -> Void)? = nil) {
         self.original = routine
+        self.onStartNow = onStartNow
         _draft = State(initialValue: routine)
     }
 
@@ -133,6 +140,27 @@ struct CustomRoutineEditSheet: View {
                 Text("EXERCISES (\(draft.exercises.count))")
                     .styled(.micro)
                     .foregroundStyle(Color.ink3)
+            }
+
+            if onStartNow != nil {
+                Section {
+                    Button {
+                        startNow()
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "bolt.fill")
+                            Text("Start workout")
+                        }
+                        .foregroundStyle(canSave ? Color.accent : Color.ink3)
+                    }
+                    .disabled(!canSave)
+                    .listRowBackground(Color.surface)
+                    .accessibilityIdentifier("custom-routine-start")
+                } footer: {
+                    Text("Starts this as today's session. It won't be saved to your library unless you tap Save.")
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                }
             }
 
             Section {
@@ -433,6 +461,16 @@ struct CustomRoutineEditSheet: View {
     private func save() {
         renumberPositions()
         store.save(draft)
+        dismiss()
+    }
+
+    /// Hand the current draft to the caller to run as today's live session,
+    /// then dismiss. Persisting to the library is intentionally NOT done here
+    /// (see `onStartNow`); the caller owns the active-session hand-off and the
+    /// in-progress-session guard.
+    private func startNow() {
+        renumberPositions()
+        onStartNow?(draft)
         dismiss()
     }
 }

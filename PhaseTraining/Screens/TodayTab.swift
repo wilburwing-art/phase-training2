@@ -6,7 +6,6 @@ import SwiftUI
 struct TodayTab: View {
     @EnvironmentObject private var store: SessionStore
     @State private var route: TodayRoute = .start
-    @State private var bootstrapped = false
 
     enum TodayRoute: Equatable {
         case start
@@ -19,11 +18,19 @@ struct TodayTab: View {
             Color.bg.ignoresSafeArea()
             content
         }
-        .onAppear {
-            guard !bootstrapped else { return }
-            bootstrapped = true
-            if store.active != nil { route = .log }
+        // Enter the live session whenever one exists — covers cold-launch
+        // resume AND a session started from another tab (e.g. Library's
+        // "Start workout"), which lands here after a tab switch. Guarded on
+        // `route == .start` so it's idempotent and never yanks the user out
+        // of an in-flight log/complete step.
+        .onAppear { enterLiveSessionIfNeeded() }
+        .onChange(of: store.active != nil) { _, hasActive in
+            if hasActive { enterLiveSessionIfNeeded() }
         }
+    }
+
+    private func enterLiveSessionIfNeeded() {
+        if store.active != nil, route == .start { route = .log }
     }
 
     @ViewBuilder

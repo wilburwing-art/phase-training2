@@ -42,6 +42,9 @@ struct ExerciseTileVM {
         case summary(text: String, rpe: String?, isPR: Bool)
         case duration(String)
         case overflow(onTap: () -> Void)
+        /// A single tappable SF Symbol button (e.g. play.fill to start a
+        /// saved workout). Fires independently of the row's `onTap`.
+        case iconButton(systemName: String, accessibilityLabel: String, onTap: () -> Void)
         case none
     }
 
@@ -258,6 +261,18 @@ struct ExerciseTile: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("More options")
+
+        case .iconButton(let systemName, let label, let onTap):
+            Button(action: onTap) {
+                Image(systemName: systemName)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(Color.accent)
+                    .frame(width: 32, height: 32)
+                    .background(Color.accentWash)
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(label)
 
         case .none:
             EmptyView()

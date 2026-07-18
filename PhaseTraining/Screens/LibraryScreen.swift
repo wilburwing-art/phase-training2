@@ -29,11 +29,21 @@ struct LibraryScreen: View {
 
     @EnvironmentObject private var customStore: CustomRoutineStore
     @EnvironmentObject private var memoryStore: MemoryStore
+    @EnvironmentObject private var sessionStore: SessionStore
+    @EnvironmentObject private var tabSelection: TabSelectionStore
 
     @State private var segment: Segment = .exercises
     @State private var query: String = ""
     @State private var detailExercise: Exercise? = nil
     @State private var editingRoutine: CustomRoutine? = nil
+    /// Set by the edit sheet's "Start workout" button (via onStartNow); the
+    /// sheet dismisses itself and we run the start in `.sheet(onDismiss:)` so
+    /// the in-progress-session alert isn't racing the sheet's dismissal.
+    @State private var pendingStart: CustomRoutine? = nil
+    /// A start request deferred behind the "you have a workout in progress"
+    /// confirmation. nil = no pending confirmation.
+    @State private var trampleTarget: CustomRoutine? = nil
+    @State private var showTrampleConfirm = false
     /// Bundled stock workouts from coach.db (`routines` table). Loaded once
     /// on appear and cached — `listRoutines()` is heavier than the audit
     /// expects when fired on every render. Tap a row → read-only preview.
@@ -77,8 +87,24 @@ struct LibraryScreen: View {
             .sheet(item: $detailExercise) { ex in
                 ExerciseDetailSheet(exercise: ex)
             }
-            .sheet(item: $editingRoutine) { routine in
-                CustomRoutineEditSheet(routine: routine)
+            .sheet(item: $editingRoutine, onDismiss: {
+                // Run the deferred start after the sheet is fully gone so the
+                // in-progress-session alert presents cleanly.
+                if let c = pendingStart {
+                    pendingStart = nil
+                    requestStart(c)
+                }
+            }) { routine in
+                CustomRoutineEditSheet(routine: routine, onStartNow: { pendingStart = $0 })
+            }
+            .alert("Workout in progress", isPresented: $showTrampleConfirm, presenting: trampleTarget) { target in
+                Button("Discard & start", role: .destructive) {
+                    sessionStore.clearActive()
+                    performStart(target)
+                }
+                Button("Keep current", role: .cancel) { trampleTarget = nil }
+            } message: { _ in
+                Text("You have an unfinished workout. Starting a new one discards its logged sets.")
             }
             .sheet(item: $previewingStock) { row in
                 BundledRoutinePreviewSheet(row: row)
@@ -302,9 +328,14 @@ struct LibraryScreen: View {
                                     leading: .icon(systemName: "figure.strengthtraining.traditional"),
                                     title: c.name.isEmpty ? "Untitled workout" : c.name,
                                     meta: customSubtitle(c),
-                                    trailing: .chevron,
+                                    trailing: .iconButton(
+                                        systemName: "play.fill",
+                                        accessibilityLabel: "Start workout",
+                                        onTap: { requestStart(c) }
+                                    ),
                                     onTap: { editingRoutine = c }
                                 ))
+                                .accessibilityIdentifier("library-custom-routine-\(c.id)")
                             }
                         }
                         if !filteredStock.isEmpty {
@@ -390,6 +421,29 @@ struct LibraryScreen: View {
     private func customSubtitle(_ c: CustomRoutine) -> String {
         let count = c.exercises.count
         return count == 1 ? "1 movement" : "\(count) movements"
+    }
+
+    // MARK: - Start a saved / built workout as today's session
+
+    /// Entry point for both the row play button and the edit sheet's "Start
+    /// workout" action. Guards an in-progress session behind a confirmation so
+    /// a stray tap can't discard logged sets.
+    private func requestStart(_ custom: CustomRoutine) {
+        guard !custom.exercises.isEmpty else { return }
+        if sessionStore.active != nil {
+            trampleTarget = custom
+            showTrampleConfirm = true
+        } else {
+            performStart(custom)
+        }
+    }
+
+    /// Bridge the routine into the active-session runtime and jump to the
+    /// Today tab, where TodayTab routes a fresh active session to the log.
+    private func performStart(_ custom: CustomRoutine) {
+        sessionStore.saveActive(sessionStore.createSession(from: custom.toWorkoutTemplate()))
+        trampleTarget = nil
+        tabSelection.selected = .today
     }
 
 }
