@@ -331,6 +331,69 @@ final class TapBudgetTests: XCTestCase {
         wait(for: [gone], timeout: 12)
     }
 
+    // MARK: - 12. Build a workout from scratch and start it
+
+    /// The "build my day" path: Library → Workouts → Build a workout → add one
+    /// exercise → Start. The from-scratch activation cost when the user wants to
+    /// train something their plan didn't give them. Before this path existed the
+    /// only route was scheduling a custom routine onto a day and waiting for a
+    /// regen, so this flow's budget is the whole point of the feature.
+    func testTapBudget_buildAndStartWorkout() throws {
+        let app = XCUIApplication()
+        app.launchArguments += ["--ui-test-onboarded", "--ui-test-reset"]
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["Library"].waitForExistence(timeout: 10),
+                      "should land in the tabs")
+
+        var counter = TapCounter(app: app, flow: "build-and-start-workout")
+        app.tabBars.buttons["Library"].tap()          // 1 — Library tab
+        counter.bump()
+        counter.tap("Workouts")                       // 2 — Workouts segment
+        counter.tap("library-create-custom")          // 3 — Build a workout
+        counter.tap("Add exercise")                   // 4 — open the picker
+        tapFirstPickerRow(&counter)                   // 5 — pick an exercise
+        counter.tap("custom-routine-start")           // 6 — Start workout
+
+        XCTAssertTrue(app.buttons["log-finish"].waitForExistence(timeout: 10),
+                      "build-and-start should land in the live log")
+        recordTapBudget(counter, reference: 6)
+    }
+
+    // MARK: - 13. Start a SAVED workout (the Library play button)
+
+    /// One-tap-per-step start of an existing saved workout: Library → Workouts →
+    /// ▶ on the row. The saved-workout counterpart to flow 12 — this is the
+    /// repeat-use cost once a workout exists.
+    func testTapBudget_startSavedWorkout() throws {
+        let app = XCUIApplication()
+        app.launchArguments += ["--ui-test-onboarded", "--ui-test-reset"]
+        app.launch()
+        XCTAssertTrue(app.tabBars.buttons["Library"].waitForExistence(timeout: 10))
+
+        // Arrange: build + save one workout (not counted — this is setup).
+        app.tabBars.buttons["Library"].tap()
+        app.buttons["Workouts"].tap()
+        app.buttons["library-create-custom"].tap()
+        app.buttons["Add exercise"].tap()
+        let firstRow = app.staticTexts.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'picker-row-name-'")).firstMatch
+        XCTAssertTrue(firstRow.waitForExistence(timeout: 5))
+        firstRow.tap()
+        app.buttons["Save"].tap()
+
+        // Act: the measured flow — the saved row's play button.
+        var counter = TapCounter(app: app, flow: "start-saved-workout")
+        let play = app.buttons.matching(
+            NSPredicate(format: "label == 'Start workout'")).firstMatch
+        XCTAssertTrue(play.waitForExistence(timeout: 6), "saved workout should expose a play button")
+        play.tap()
+        counter.bump()                                // 1 — ▶ on the saved row
+
+        XCTAssertTrue(app.buttons["log-finish"].waitForExistence(timeout: 10),
+                      "play button should land in the live log")
+        recordTapBudget(counter, reference: 1)
+    }
+
     // MARK: - Launch helpers
 
     /// Launch straight into LogScreen with the deterministic superset demo

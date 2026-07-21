@@ -8,6 +8,8 @@
   "edit-then-start": 3,
   "discard-workout": 3,
   "log-sport": 2,
-  "onboarding-to-first-plan": 13,
-  "weekly-check-in": 6
+  "onboarding-to-first-plan": 12,
+  "weekly-check-in": 6,
+  "build-and-start-workout": 6,
+  "start-saved-workout": 1
 }
