@@ -274,9 +274,8 @@ private struct ExerciseDetailContent: View {
                     loaded: { image in
                         image
                             .resizable()
-                            .scaledToFit()
+                            .scaledToFill()
                             .frame(maxWidth: .infinity)
-                            .background(Color.white)
                     },
                     placeholder: {
                         ZStack {

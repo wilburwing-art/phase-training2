@@ -46,18 +46,18 @@ struct ExerciseThumbnail: View {
             if let bundled = bundledImage {
                 Image(uiImage: bundled)
                     .resizable()
-                    .scaledToFit()
+                    .scaledToFill()
                     .frame(width: size, height: size)
-                    .background(Color.white)
+                    .clipped()
             } else {
                 CachedAsyncImage(
                     url: urlString.flatMap(URL.init(string:)),
                     loaded: { image in
                         image
                             .resizable()
-                            .scaledToFit()
+                            .scaledToFill()
                             .frame(width: size, height: size)
-                            .background(Color.white)
+                            .clipped()
                     },
                     placeholder: {
                         ZStack {
