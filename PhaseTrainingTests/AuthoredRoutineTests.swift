@@ -82,11 +82,34 @@ final class AuthoredRoutineTests: XCTestCase {
         XCTAssertFalse(SportCatalog.isPlannable("nonexistent-sport-xyz"))
     }
 
-    func testMountainBikingPreSeasonFallsBackNotEmpty() {
-        // MTB has no `build` (pre-season) routine — the nearest-phase fallback
-        // must still return a session so the day isn't empty.
-        XCTAssertNotNil(
-            AuthoredRoutineSelector.select(sportSlug: "mountain-biking", phase: .preSeason, sessionIndex: 0))
+    func testMountainBikingPreSeasonServesDistilledRoutines() {
+        // MTB now has real pre-season (build) content — #299 / #300 — so lift
+        // days rotate through them instead of falling back to off-season.
+        XCTAssertEqual(
+            AuthoredRoutineSelector.select(sportSlug: "mountain-biking", phase: .preSeason, sessionIndex: 0), 299)
+        XCTAssertEqual(
+            AuthoredRoutineSelector.select(sportSlug: "mountain-biking", phase: .preSeason, sessionIndex: 1), 300)
+    }
+
+    func testMTBPreSeasonRoutineBuildsRunnableWorkout() {
+        var memory = TrainingMemory()
+        memory.primarySport = Sport.resolve(slug: "mountain-biking")
+        let workout = AuthoredRoutine.workout(
+            forRoutineId: 299, memory: memory, context: .empty, focus: .fullBodyA)
+        XCTAssertEqual(workout?.exercises.count, 7)
+        // Signature MTI movements resolved to real catalog ids so they log.
+        XCTAssertTrue(workout?.exercises.allSatisfy { $0.exerciseId > 0 } ?? false)
+        XCTAssertTrue(workout?.exercises.contains { $0.name == "Scotty Bobs" } ?? false)
+        XCTAssertTrue((workout?.title ?? "").contains("MTB Pre-Season"))
+    }
+
+    func testMountainBikingHasEveryPhaseCovered() {
+        // base / build / maintenance / off_season all resolve for MTB now.
+        for phase in [SeasonPhase.offSeason, .preSeason, .inSeason, .maintenance, .eventPrep] {
+            XCTAssertNotNil(
+                AuthoredRoutineSelector.select(sportSlug: "mountain-biking", phase: phase, sessionIndex: 0),
+                "MTB should serve a routine for \(phase)")
+        }
     }
 
     // MARK: - Phase 3: distilled snowboarding routines are served

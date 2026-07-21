@@ -1734,5 +1734,13 @@
   {
     "routine_id": 298,
     "sport_id": 100
+  },
+  {
+    "routine_id": 299,
+    "sport_id": 2
+  },
+  {
+    "routine_id": 300,
+    "sport_id": 2
   }
 ]
