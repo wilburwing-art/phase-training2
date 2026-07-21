@@ -221,6 +221,25 @@ final class ProfileFieldCoverageTests: XCTestCase {
               },
               snapshotMarker: "Magazine bodybuilding era",
               skipReason: nil),
+
+        // Primary/support model. The support sport's declared weekly pattern
+        // reflows the primary plan (SupportScheduler), so it's in planInputsHash
+        // (WeekPlan.swift, "sup:" component). Now also surfaced in the coach
+        // snapshot so the coach reasons about the interference it plans around.
+        Probe(name: "supportPattern",
+              mutateForHash: { m in
+                  m.supportPattern = SupportPattern(
+                      sportSlug: "climbing", variant: .sportRoute,
+                      days: [SupportDay(weekday: .tuesday, magnitude: .medium),
+                             SupportDay(weekday: .thursday, magnitude: .big)])
+              },
+              mutateForSnapshot: { m in
+                  m.supportPattern = SupportPattern(
+                      sportSlug: "climbing", variant: .sportRoute,
+                      days: [SupportDay(weekday: .tuesday, magnitude: .medium)])
+              },
+              snapshotMarker: "support sport:",
+              skipReason: nil),
     ]
 
     // MARK: - Tests

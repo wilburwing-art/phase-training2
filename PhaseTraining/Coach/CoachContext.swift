@@ -66,6 +66,16 @@ enum CoachContext {
             let others = memory.sports.filter { $0.id != memory.primarySport?.id }.map(\.name)
             if !others.isEmpty { profile.append("other sports: \(others.joined(separator: ", "))") }
         }
+        // Support sport (primary/support model): a declared weekly rhythm the
+        // primary plan flows around. Surfaced so the coach reasons about the
+        // interference the SupportScheduler is already planning for.
+        if let support = memory.supportPattern, !support.isEmpty {
+            let name = Sport.resolve(slug: support.sportSlug).name
+            let days = support.days
+                .map { "\($0.weekday.short) \($0.magnitude.label.lowercased())" }
+                .joined(separator: ", ")
+            profile.append("support sport: \(name) — \(support.days.count) declared day\(support.days.count == 1 ? "" : "s")/week (\(days))")
+        }
         // Season is what tells the planner whether to bias toward strength
         // (off-season) or sport time (in-season). Without it the coach was
         // guessing from sport + recent volume.
