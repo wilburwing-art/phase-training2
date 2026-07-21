@@ -55,6 +55,7 @@ struct RepelicanPhaseCard: View {
             RepelicanView(bulk: bulk)
                 .frame(width: 64, height: 72)
                 .animation(reduceMotion ? nil : .easeInOut(duration: 0.6), value: bulk)
+                .repelicanIdle()
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 3) {

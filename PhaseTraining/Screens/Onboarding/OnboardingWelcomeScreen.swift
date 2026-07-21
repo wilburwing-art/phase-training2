@@ -14,6 +14,7 @@ struct OnboardingWelcomeScreen: View {
                 Spacer()
                 RepelicanView(build: .athletic)
                     .frame(width: 132, height: 150)
+                    .repelicanIdle()
                     .accessibilityHidden(true)
                 Text("PHASE TRAINING")
                     .styled(.micro)

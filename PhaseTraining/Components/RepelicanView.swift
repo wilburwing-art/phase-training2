@@ -250,6 +250,33 @@ enum RepelicanBuild: String, CaseIterable, Identifiable {
     }
 }
 
+// MARK: - Idle breathing
+
+/// A subtle continuous idle animation — a slow scale + tiny bob, anchored at the
+/// feet so the Repelican looks alive without drifting off its ground. Respects
+/// Reduce Motion (renders still). Apply to a resting RepelicanView.
+struct RepelicanIdle: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var breathing = false
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(breathing ? 1.03 : 1.0, anchor: .bottom)
+            .offset(y: breathing ? -1.5 : 0)
+            .onAppear {
+                guard !reduceMotion else { return }
+                withAnimation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true)) {
+                    breathing = true
+                }
+            }
+    }
+}
+
+extension View {
+    /// Subtle continuous idle breathing for a resting Repelican.
+    func repelicanIdle() -> some View { modifier(RepelicanIdle()) }
+}
+
 // MARK: - Phase → physique mapping
 
 /// Maps a training phase to the mascot's `bulk`, so the Repelican's build

@@ -14,7 +14,10 @@ import StoreKit
 struct PaywallView: View {
     @EnvironmentObject private var subStore: SubscriptionStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var managingSubscriptions = false
+    /// Drives the on-appear flex: the second Repelican morphs lean -> swole.
+    @State private var flexed = false
 
     var body: some View {
         NavigationStack {
@@ -60,11 +63,18 @@ struct PaywallView: View {
             HStack(alignment: .bottom, spacing: 8) {
                 RepelicanView(build: .lean)
                     .frame(width: 76, height: 88)
-                RepelicanView(build: .swole)
+                    .repelicanIdle()
+                // Flexes up (lean -> swole) on appear — the range Pro plans across.
+                RepelicanView(bulk: flexed ? RepelicanBuild.swole.bulk : RepelicanBuild.lean.bulk)
                     .frame(width: 94, height: 88)
+                    .repelicanIdle()
                 Spacer(minLength: 0)
             }
             .accessibilityHidden(true)
+            .onAppear {
+                guard !reduceMotion else { flexed = true; return }
+                withAnimation(.easeInOut(duration: 0.8).delay(0.25)) { flexed = true }
+            }
             Text("Phase Training Pro")
                 .font(.system(size: 26, weight: .bold))
                 .foregroundStyle(Color.ink)
