@@ -119,6 +119,13 @@ struct CompleteScreen: View {
                 )
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
+                        // Mr Kettle takes a flex — the session-complete payoff.
+                        KettleView(loop: .flex)
+                            .frame(height: 116)
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 18)
+                            .accessibilityHidden(true)
+
                         statGrid
                             .padding(.horizontal, 20)
                             .padding(.top, 24)
