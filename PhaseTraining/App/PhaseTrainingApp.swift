@@ -64,6 +64,11 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-sport-demo") {
             Self.seedSportDemo()
         }
+        //   --seed-snow-sport-demo → TODAY is a SNOWBOARDING sport day, so the
+        //     sport-matched Kettle loop (KettlePose.forSport) shows him carving.
+        if ProcessInfo.processInfo.arguments.contains("--seed-snow-sport-demo") {
+            Self.seedSnowSportDemo()
+        }
         //   --seed-missed-consolidation-demo → a PAST missed push day in a
         //     week-full plan (4 lifts → reshuffle drop-rule fires), with
         //     focus-tagged future lifts, so TodayScreen's missed-workout banner
@@ -238,6 +243,15 @@ struct PhaseTrainingApp: App {
     /// 60 min / moderate, so the minimal log path is open + save (2 taps).
     private static func seedSportDemo() {
         guard let sport = Sport.catalog.first(where: { $0.slug == "climbing" })
+                ?? Sport.catalog.first else { return }
+        seedWeekPlan { date in
+            DayPlan(date: date, kind: .sport, title: sport.name,
+                    sport: sport, generatedReason: "UITest seed")
+        }
+    }
+
+    private static func seedSnowSportDemo() {
+        guard let sport = Sport.catalog.first(where: { $0.slug == "snowboarding" })
                 ?? Sport.catalog.first else { return }
         seedWeekPlan { date in
             DayPlan(date: date, kind: .sport, title: sport.name,

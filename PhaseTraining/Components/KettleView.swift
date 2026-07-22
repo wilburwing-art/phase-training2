@@ -50,9 +50,15 @@ enum KettlePose: String, CaseIterable, Identifiable {
     /// app doesn't have a loop for fall back to the flex idle.
     static func forSport(_ slug: String?) -> KettlePose {
         switch slug {
-        case "climbing": return .climb
-        case "cycling":  return .bike
-        default:         return .flex
+        case "climbing", "bouldering", "sport-climbing":
+            return .climb
+        case "cycling", "mountain-biking", "road-cycling":
+            return .bike
+        case "snowboarding", "splitboarding", "alpine-skiing",
+             "ski-mountaineering", "snow-sports":
+            return .snowboard
+        default:
+            return .flex
         }
     }
 }

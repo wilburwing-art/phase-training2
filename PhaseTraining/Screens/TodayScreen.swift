@@ -134,6 +134,15 @@ struct TodayScreen: View {
                                 .padding(.horizontal, 20)
                                 .padding(.top, 10)
                         }
+                        if effectiveKind == .sport, let sport = todayPlan?.sport {
+                            // Mr Kettle does the user's actual sport — carve for
+                            // snow, climb for climbing, pedal for MTB, else flex.
+                            KettleView(pose: .forSport(sport.slug))
+                                .frame(height: 132)
+                                .frame(maxWidth: .infinity)
+                                .padding(.top, 10)
+                                .accessibilityHidden(true)
+                        }
                         if effectiveKind == .sport, let note = todayPlan?.notes, !note.isEmpty {
                             sportPrescriptionCard(note)
                                 .padding(.horizontal, 20)
