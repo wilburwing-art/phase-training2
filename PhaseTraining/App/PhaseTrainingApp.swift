@@ -69,6 +69,10 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-snow-sport-demo") {
             Self.seedSnowSportDemo()
         }
+        //   --seed-rest-day-demo → TODAY is a REST day, so the stretch Kettle shows.
+        if ProcessInfo.processInfo.arguments.contains("--seed-rest-day-demo") {
+            Self.seedRestDayDemo()
+        }
         //   --seed-missed-consolidation-demo → a PAST missed push day in a
         //     week-full plan (4 lifts → reshuffle drop-rule fires), with
         //     focus-tagged future lifts, so TodayScreen's missed-workout banner
@@ -256,6 +260,12 @@ struct PhaseTrainingApp: App {
         seedWeekPlan { date in
             DayPlan(date: date, kind: .sport, title: sport.name,
                     sport: sport, generatedReason: "UITest seed")
+        }
+    }
+
+    private static func seedRestDayDemo() {
+        seedWeekPlan { date in
+            DayPlan(date: date, kind: .rest, title: "Rest", generatedReason: "UITest seed")
         }
     }
 

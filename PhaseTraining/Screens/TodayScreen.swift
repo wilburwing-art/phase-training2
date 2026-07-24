@@ -134,6 +134,15 @@ struct TodayScreen: View {
                                 .padding(.horizontal, 20)
                                 .padding(.top, 10)
                         }
+                        if effectiveKind == .rest {
+                            // Rest day — Mr Kettle takes a stretch. A calm beat
+                            // for a screen that has no session to start.
+                            KettleView(pose: .stretch)
+                                .frame(height: 132)
+                                .frame(maxWidth: .infinity)
+                                .padding(.top, 14)
+                                .accessibilityHidden(true)
+                        }
                         if effectiveKind == .sport, let sport = todayPlan?.sport {
                             // Mr Kettle does the user's actual sport — carve for
                             // snow, climb for climbing, pedal for MTB, else flex.
