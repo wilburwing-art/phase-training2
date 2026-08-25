@@ -783,4 +783,100 @@ final class PlanStoreSeamsTests: XCTestCase {
         XCTAssertFalse(candidates.contains { cal.isDate($0.day.date, inSameDayAs: date) },
                        "a refreshed custom day stays excluded from LLM refinement")
     }
+
+    // MARK: - Staged next-week plan (T0-8)
+
+    /// The Weekly Check-In plans NEXT week. Staging must not disturb the
+    /// in-flight week — `plan.today()` matches by date, so installing next
+    /// week's days immediately would blank Today until Monday.
+    func test_stagePlan_doesNotReplaceCurrentWeek() {
+        let today = monday()
+        let cal = Calendar.current
+        let nextMonday = cal.date(byAdding: .day, value: 7, to: today)!
+        let store = makeStore(today: today)
+        let current = makePlan([.lift, .rest, .lift, .rest, .lift, .rest, .rest],
+                               anchoredTo: today)
+        store.setPlan(current)
+
+        let staged = makePlan([.rest, .lift, .rest, .lift, .rest, .lift, .rest],
+                              anchoredTo: nextMonday, hash: "staged")
+        var o = WeekOverrides(weekStart: nextMonday)
+        o.unavailableDays = [.wednesday]
+        store.stagePlan(staged, overrides: o)
+
+        XCTAssertNotNil(store.plan?.today(now: today), "current week still resolves Today")
+        XCTAssertEqual(store.plan?.inputsHash, "fixture", "live plan untouched by staging")
+        XCTAssertEqual(store.pendingPlan?.inputsHash, "staged")
+        XCTAssertEqual(store.overrides.unavailableDays, [], "this week's overrides untouched")
+    }
+
+    /// Once the staged week actually begins, promotion installs both the plan
+    /// and the overrides it was built against — the half that used to be
+    /// discarded, since PlanStore resets overrides stamped for another week.
+    func test_promotePending_installsPlanAndOverrides_whenWeekArrives() {
+        let today = monday()
+        let cal = Calendar.current
+        let nextMonday = cal.date(byAdding: .day, value: 7, to: today)!
+        let store = makeStore(today: today)
+        let staged = makePlan([.rest, .lift, .rest, .lift, .rest, .lift, .rest],
+                              anchoredTo: nextMonday, hash: "staged")
+        var o = WeekOverrides(weekStart: nextMonday)
+        o.unavailableDays = [.wednesday]
+        store.stagePlan(staged, overrides: o)
+
+        store.promotePendingIfDue(today: nextMonday)
+
+        XCTAssertEqual(store.plan?.inputsHash, "staged", "staged plan is now live")
+        XCTAssertEqual(store.overrides.unavailableDays, [.wednesday],
+                       "the constraints entered during check-in survived the rollover")
+        XCTAssertNil(store.pendingPlan, "slot consumed on promotion")
+        XCTAssertNil(store.pendingOverrides)
+    }
+
+    /// A staged plan whose week came and went while the app was closed must be
+    /// dropped, never installed over a later week.
+    func test_promotePending_dropsStaleStagedPlan() {
+        let today = monday()
+        let cal = Calendar.current
+        let nextMonday = cal.date(byAdding: .day, value: 7, to: today)!
+        let twoWeeksOn = cal.date(byAdding: .day, value: 14, to: today)!
+        let store = makeStore(today: today)
+        let current = makePlan([.lift, .rest, .lift, .rest, .lift, .rest, .rest],
+                               anchoredTo: today)
+        store.setPlan(current)
+        store.stagePlan(makePlan([.rest, .lift, .rest, .lift, .rest, .lift, .rest],
+                                 anchoredTo: nextMonday, hash: "staged"),
+                        overrides: WeekOverrides(weekStart: nextMonday))
+
+        store.promotePendingIfDue(today: twoWeeksOn)
+
+        XCTAssertNil(store.pendingPlan, "stale staged plan is discarded")
+        XCTAssertEqual(store.plan?.inputsHash, "fixture",
+                       "a week-old staged plan never overwrites the live one")
+    }
+
+    /// Staging survives a relaunch: the slot is persisted, and a store created
+    /// once the week has arrived promotes it during init.
+    func test_stagedPlan_persistsAndPromotesOnNextLaunch() {
+        let today = monday()
+        let cal = Calendar.current
+        let nextMonday = cal.date(byAdding: .day, value: 7, to: today)!
+        let suite = "PlanStoreSeamsTests.staged.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+
+        let first = PlanStore(defaults: defaults, today: today)
+        var o = WeekOverrides(weekStart: nextMonday)
+        o.unavailableDays = [.friday]
+        first.stagePlan(makePlan([.rest, .lift, .rest, .lift, .rest, .lift, .rest],
+                                 anchoredTo: nextMonday, hash: "staged"),
+                        overrides: o)
+
+        let relaunched = PlanStore(defaults: defaults, today: nextMonday)
+
+        XCTAssertEqual(relaunched.plan?.inputsHash, "staged",
+                       "init promotes a staged plan whose week has begun")
+        XCTAssertEqual(relaunched.overrides.unavailableDays, [.friday])
+        XCTAssertNil(relaunched.pendingPlan)
+    }
 }

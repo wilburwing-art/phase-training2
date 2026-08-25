@@ -149,7 +149,13 @@ struct WeeklyCheckInFlow: View {
         // the preview (or abandoning the flow) never double-stamps the check-in
         // or leaves a half-applied state. We generate against a LOCAL copy of
         // overrides merged with the draft's unavailable-days + events.
-        var candidateOverrides = planStore.overrides
+        // NEXT week, not this one. Every string in this flow says so — the
+        // title, "days you can't train next week", the Today pill "PLAN NEXT
+        // WEEK" — and the reminder fires Sunday 6 PM. Planner.generate defaults
+        // `today:` to now and anchors on `today.startOfTrainingWeek()`, so
+        // omitting it regenerated the week that was about to end, six of whose
+        // seven days were already in the past.
+        var candidateOverrides = WeekOverrides(weekStart: Self.nextWeekStart())
         candidateOverrides.unavailableDays = draft.unavailableDays
         candidateOverrides.events = draft.events
         let routines = CoachDatabase.shared.listRoutines()
@@ -159,6 +165,7 @@ struct WeeklyCheckInFlow: View {
             routines: routines,
             previousFeedback: Array(memoryStore.memory.feedback.suffix(20)),
             recentSportLogs: sportLogStore.entries,
+            today: Self.nextWeekStart(),
             // Without context the readiness lift-day floor defaults to neutral,
             // so the check-in regen silently ignored detrained-state capping
             // that every PlanStore regen path applies. Thread the real context.
@@ -167,26 +174,34 @@ struct WeeklyCheckInFlow: View {
         advance()
     }
 
+    /// Monday of the week after the current training week.
+    static func nextWeekStart(now: Date = Date(), calendar: Calendar = .current) -> Date {
+        let thisWeek = now.startOfTrainingWeek(calendar: calendar)
+        return calendar.date(byAdding: .weekOfYear, value: 1, to: thisWeek) ?? thisWeek
+    }
+
     private func accept() {
         guard let plan = previewPlan else { onDismiss(); return }
-        // Commit everything together, exactly once, on accept. Stamp the
-        // check-in into memory, push the draft's constraints/events into
-        // overrides (idempotent wholesale replace), then set the plan.
+        let weekStart = Self.nextWeekStart()
+        // Commit everything together, exactly once, on accept, all stamped for
+        // NEXT week. Writing the draft into `planStore.overrides` (this week's)
+        // silently discarded it: PlanStore resets overrides whose weekStart
+        // isn't the current training week on both init and reload, so a
+        // check-in done Sunday evening evaporated by Monday morning.
         memoryStore.update { mem in
             mem.weeklyCheckIns.append(
                 WeeklyCheckIn(
-                    weekStart: Date().startOfTrainingWeek(),
+                    weekStart: weekStart,
                     intent: composedIntent,
                     lastWeekRating: draft.lastWeekRating,
                     notes: composedNotes
                 )
             )
         }
-        planStore.updateOverrides(memory: nil) { ov in
-            ov.unavailableDays = draft.unavailableDays
-            ov.events = draft.events
-        }
-        planStore.setPlan(plan)
+        var nextOverrides = WeekOverrides(weekStart: weekStart)
+        nextOverrides.unavailableDays = draft.unavailableDays
+        nextOverrides.events = draft.events
+        planStore.stagePlan(plan, overrides: nextOverrides)
         onDismiss()
     }
 

@@ -64,6 +64,14 @@ final class PlanStore: ObservableObject {
     // them cross-file. Do NOT rename the string values — they're persisted.
     static let planKey      = "pt_week_plan"
     static let overridesKey = "pt_week_overrides"
+    /// Staged NEXT-week plan + overrides, written by the Weekly Check-In and
+    /// promoted into `plan` / `overrides` once that week actually begins.
+    /// The check-in is titled "Next week" and its reminder fires Sunday 6 PM,
+    /// so it must not overwrite the in-flight week: `plan.today()` matches by
+    /// date, and installing next week's days would leave Today empty until
+    /// Monday. Staging keeps one live plan while letting the user plan ahead.
+    static let pendingPlanKey      = "pt_pending_week_plan"
+    static let pendingOverridesKey = "pt_pending_week_overrides"
     /// PR 4 — historical plan snapshots, rolling 12-week cap.
     /// Foundation for the weekly-coach features in
     /// PLAN-weekly-coach-roadmap.md (painted strip, rules engine,
@@ -104,6 +112,13 @@ final class PlanStore: ObservableObject {
 
     @Published var plan: WeekPlan?
     @Published var overrides: WeekOverrides
+    /// Plan the user accepted in the Weekly Check-In for the week that hasn't
+    /// started yet, with the overrides (unavailable days, events) it was built
+    /// against. Promoted by `promotePendingIfDue` at init and on rollover.
+    /// Nil whenever nothing is staged. Read by WeekScreen to show that next
+    /// week is already planned.
+    @Published private(set) var pendingPlan: WeekPlan?
+    @Published private(set) var pendingOverrides: WeekOverrides?
     /// Rolling history of past weeks' plans. Snapshotted on every
     /// `setPlan(_:)` call (idempotent by `weekStart` — re-snapshotting the
     /// same week replaces the prior entry, keeping the latest capture) and
@@ -251,6 +266,65 @@ final class PlanStore: ObservableObject {
         // until the planner regenerates, but the prior week deserves a
         // snapshot before that overwrite.
         captureRolloverIfNeeded(today: today)
+
+        // Load anything the Weekly Check-In staged for a future week, then
+        // promote it if that week has since begun. Order matters: promotion
+        // must run AFTER captureRolloverIfNeeded so the outgoing week is
+        // snapshotted into pastPlans before the staged plan replaces it.
+        if let data = defaults.data(forKey: Self.pendingPlanKey),
+           let p = try? Self.decoder().decode(WeekPlan.self, from: data) {
+            self.pendingPlan = p
+        }
+        if let data = defaults.data(forKey: Self.pendingOverridesKey),
+           let o = try? Self.decoder().decode(WeekOverrides.self, from: data) {
+            self.pendingOverrides = o
+        }
+        promotePendingIfDue(today: today)
+    }
+
+    /// Install the staged next-week plan once its week has arrived, and drop a
+    /// stale one (its week came and went while the app was closed) so it can
+    /// never overwrite a later week. Safe to call repeatedly.
+    func promotePendingIfDue(today: Date = Date()) {
+        guard let staged = pendingPlan,
+              let firstDate = staged.days.first?.date else { return }
+        let stagedWeek = firstDate.startOfTrainingWeek()
+        let nowWeek = today.startOfTrainingWeek()
+        guard stagedWeek <= nowWeek else { return }   // still in the future — leave staged
+
+        if Calendar.current.isDate(stagedWeek, inSameDayAs: nowWeek) {
+            plan = staged
+            savePlan()
+            snapshotCurrentPlan(now: today)
+            if let stagedOverrides = pendingOverrides,
+               Calendar.current.isDate(stagedOverrides.weekStart, inSameDayAs: nowWeek) {
+                overrides = stagedOverrides
+                saveOverrides()
+            }
+        }
+        // Promoted or expired, the slot is consumed either way.
+        clearPending()
+    }
+
+    /// Stage a plan for a week that hasn't started yet. Used by the Weekly
+    /// Check-In, whose whole premise is "plan next week" — writing straight to
+    /// `plan` would blank out Today for the rest of the current week.
+    func stagePlan(_ p: WeekPlan, overrides o: WeekOverrides) {
+        pendingPlan = p
+        pendingOverrides = o
+        if let data = try? Self.encoder().encode(p) {
+            defaults.set(data, forKey: Self.pendingPlanKey)
+        }
+        if let data = try? Self.encoder().encode(o) {
+            defaults.set(data, forKey: Self.pendingOverridesKey)
+        }
+    }
+
+    func clearPending() {
+        pendingPlan = nil
+        pendingOverrides = nil
+        defaults.removeObject(forKey: Self.pendingPlanKey)
+        defaults.removeObject(forKey: Self.pendingOverridesKey)
     }
 
     /// Snapshot the currently-loaded plan if it belongs to a past week
