@@ -87,19 +87,32 @@ final class BackupCoordinator: ObservableObject {
 
     /// Full local wipe. `MemoryStore.wipeAllUserData()` clears both storage
     /// layers (UserDefaults + the SQLite store) and cancels the pending
-    /// reminder; the per-store resets drop the live @Published caches so the
+    /// reminders; the per-store resets drop the live @Published caches so the
     /// app falls back to the onboarding cover immediately (driven by
     /// `MemoryStore.isOnboarded`).
+    ///
+    /// EVERY app-lifetime store that persists itself must be reset here. The
+    /// wipe removes the `pt_`-prefixed keys from disk, but a store whose
+    /// in-memory array survives will write the whole pre-erase history back on
+    /// its next mutation — erase, re-onboard, log one sport session, and the
+    /// old log reappears. `sportLogStore`, `recentPicks` and `conversation`
+    /// were resurrecting exactly that way.
     func eraseAllData(
         store: MemoryStore,
         planStore: PlanStore,
         sessionStore: SessionStore,
-        customStore: CustomRoutineStore
+        customStore: CustomRoutineStore,
+        sportLogStore: SportLogStore,
+        recentPicks: RecentPicksStore,
+        conversation: CoachConversationStore
     ) {
         MemoryStore.wipeAllUserData()
         store.reset()
         sessionStore.clearInMemoryState()
         customStore.reload()
         planStore.clear()
+        sportLogStore.reset()
+        recentPicks.clear()
+        conversation.resetAll()
     }
 }

@@ -150,6 +150,27 @@ final class CoachConversationStore: ObservableObject {
         defaults.removeObject(forKey: Self.todayKey)
     }
 
+    /// Full reset for the "Erase all my data" path: today's transcript, every
+    /// `pt_coach_archive_<day>` bucket, the rollover marker, and the daily turn
+    /// counter. `clearToday()` is deliberately narrower (it preserves archives
+    /// and the cost guard), so the wipe cannot reuse it. Needed because this is
+    /// an app-lifetime @StateObject whose in-memory `messages` and `turnsToday`
+    /// outlive `MemoryStore.wipeAllUserData()` and get written back on the next
+    /// `save()`.
+    func resetAll() {
+        messages = []
+        presented = false
+        prefill = ""
+        turnsToday = 0
+        for key in defaults.dictionaryRepresentation().keys
+        where key == Self.todayKey
+            || key == Self.lastSeenDayKey
+            || key == Self.turnsKey
+            || key.hasPrefix(Self.archivePrefix) {
+            defaults.removeObject(forKey: key)
+        }
+    }
+
     // MARK: - Rollover
 
     /// If today's date differs from the last-seen day, archive the current

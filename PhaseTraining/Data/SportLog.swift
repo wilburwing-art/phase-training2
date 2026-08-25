@@ -110,6 +110,15 @@ final class SportLogStore: ObservableObject {
 
     // MARK: - Persistence
 
+    /// Drop the live cache after a wipe. `MemoryStore.wipeAllUserData()` removes
+    /// `pt_sport_logs` from UserDefaults, but this store is an app-lifetime
+    /// @StateObject: without this, `entries` survives the wipe and the next
+    /// `persist()` writes the whole pre-erase history straight back.
+    func reset() {
+        entries = []
+        defaults.removeObject(forKey: Self.key)
+    }
+
     private func persist() {
         guard let data = try? Self.encoder().encode(entries) else { return }
         defaults.set(data, forKey: Self.key)

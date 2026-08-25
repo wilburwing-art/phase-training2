@@ -27,6 +27,11 @@ struct ProfileScreen: View {
     @EnvironmentObject var subStore: SubscriptionStore
     @EnvironmentObject private var sessionStore: SessionStore
     @EnvironmentObject private var customStore: CustomRoutineStore
+    // Needed only by the erase path: these three persist themselves and would
+    // otherwise write their pre-erase caches back after a wipe.
+    @EnvironmentObject private var sportLogStore: SportLogStore
+    @EnvironmentObject private var recentPicks: RecentPicksStore
+    @EnvironmentObject private var conversation: CoachConversationStore
 
     // Backup / restore / erase state machine. The iOS-level presentation
     // surfaces stay on this screen, bound to the coordinator's published
@@ -511,7 +516,10 @@ struct ProfileScreen: View {
                     backup.eraseAllData(store: store,
                                         planStore: planStore,
                                         sessionStore: sessionStore,
-                                        customStore: customStore)
+                                        customStore: customStore,
+                                        sportLogStore: sportLogStore,
+                                        recentPicks: recentPicks,
+                                        conversation: conversation)
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
@@ -538,6 +546,10 @@ struct ProfileScreen: View {
         .environmentObject(PlanStore(defaults: defaults))
         .environmentObject(SessionStore(defaults: defaults))
         .environmentObject(CustomRoutineStore(defaults: defaults))
+        .environmentObject(SubscriptionStore())
+        .environmentObject(SportLogStore(defaults: defaults))
+        .environmentObject(RecentPicksStore(defaults: defaults))
+        .environmentObject(CoachConversationStore(defaults: defaults))
 }
 
 #Preview("Populated") {
@@ -564,4 +576,8 @@ struct ProfileScreen: View {
         .environmentObject(PlanStore(defaults: defaults))
         .environmentObject(SessionStore(defaults: defaults))
         .environmentObject(CustomRoutineStore(defaults: defaults))
+        .environmentObject(SubscriptionStore())
+        .environmentObject(SportLogStore(defaults: defaults))
+        .environmentObject(RecentPicksStore(defaults: defaults))
+        .environmentObject(CoachConversationStore(defaults: defaults))
 }
