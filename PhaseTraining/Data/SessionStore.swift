@@ -244,6 +244,15 @@ final class SessionStore: ObservableObject {
         return userDB.previousSession(templateId: templateId)
     }
 
+    /// Prior sets for an exercise looked up by NAME rather than template id.
+    /// Used by the mid-workout swap, where the replacement exercise has no
+    /// position in the current template's history — carrying the replaced
+    /// exercise's `prevSets` forward would make the progression pill prescribe
+    /// a load derived from a different lift.
+    func previousSets(forExerciseNamed name: String) -> [LoggedSet] {
+        return userDB.mostRecentExerciseByName(name)?.sets ?? []
+    }
+
     /// Build a fresh ActiveSession from the named template, pulling prior set
     /// weight + reps forward when available. Mirrors `data.jsx:51-77`.
     func createSession(templateId: String) -> ActiveSession {

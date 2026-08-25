@@ -115,6 +115,12 @@ struct LogScreen: View {
     /// In-session substitution. Replace the exercise's name + display type
     /// in-place; keep already-logged sets intact (the user did the work,
     /// just under a different label).
+    ///
+    /// `prevSets` and `unit` MUST be re-derived, not carried over: they belong
+    /// to the exercise being replaced. Leaving prevSets made the progression
+    /// pill prescribe a load computed from a different lift ("SUGGESTED · 190 lb
+    /// · +5" for a movement the user has never performed) and the per-row "Last"
+    /// column show the old exercise's numbers.
     private func swapExercise(at idx: Int, with picked: Exercise) {
         guard session.exercises.indices.contains(idx) else { return }
         let originalName = session.exercises[idx].name
@@ -122,6 +128,9 @@ struct LogScreen: View {
         if let modality = picked.modality, !modality.isEmpty {
             session.exercises[idx].type = picked.modalityLabel
         }
+        let category = CoachDatabase.shared.equipmentCategory(forExerciseIds: [picked.id])[picked.id]
+        session.exercises[idx].unit = LoggedExercise.unit(for: category)
+        session.exercises[idx].prevSets = store.previousSets(forExerciseNamed: picked.name)
         // Remember the swap so the generator favors the chosen exercise (and,
         // after repeated swaps-away, demotes the original) in future plans.
         memoryStore.recordSwap(out: originalName, in: picked.name)

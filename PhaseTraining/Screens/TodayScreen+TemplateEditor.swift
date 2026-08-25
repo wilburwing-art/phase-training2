@@ -230,8 +230,16 @@ extension TodayScreen {
         guard let tmpl = editableTemplate, tmpl.exercises.indices.contains(idx) else { return }
         let old = tmpl.exercises[idx]
         var newExercises = tmpl.exercises
+        // The replacement gets its OWN identity and unit. Reusing `old.id` made
+        // SessionStore.buildSession match prev-session rows by id, so a
+        // Back Squat → Bulgarian Split Squat swap pre-filled every set with the
+        // squat's history under the new name; reusing `old.unit` carried the
+        // bodyweight sentinel across, collapsing the weight column on a barbell
+        // lift (and forcing a weight field onto a reps-only movement).
+        let category = CoachDatabase.shared.equipmentCategory(forExerciseIds: [picked.id])[picked.id]
         newExercises[idx] = ExerciseTemplate(
-            id: old.id, name: picked.name, type: picked.modality, unit: old.unit,
+            id: "gex-\(picked.id)", name: picked.name, type: picked.modality,
+            unit: LoggedExercise.unit(for: category),
             targetSets: picked.defaultSets ?? old.targetSets,
             targetReps: parseRepsLeading(picked.defaultReps) ?? old.targetReps,
             rest: parseRestSeconds(picked.defaultRest) ?? old.rest
