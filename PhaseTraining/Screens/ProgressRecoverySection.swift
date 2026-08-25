@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProgressRecoverySection: View {
     @EnvironmentObject private var store: SessionStore
+    @EnvironmentObject private var memoryStore: MemoryStore
 
     /// Front / back toggle for the big body silhouette. Back default —
     /// most lifting hammers posterior chain, so back is more interesting
@@ -32,7 +33,13 @@ struct ProgressRecoverySection: View {
 
     private func topStats(rows: [MuscleFreshness.Row]) -> some View {
         let daysSince = daysSinceLastWorkout()
-        let freshCount = rows.filter { $0.freshness >= 1.0 }.count
+        // Count the SAME rows the list below renders. This counted all 80
+        // muscle_groups rows — including muscles never trained, which default
+        // to freshness 1.0 — while the list is filtered to the 19 mainSlugs.
+        // The headline routinely read 70+ and was unrelated to what it labelled.
+        let freshCount = rows
+            .filter { Self.mainSlugs.contains($0.slug) && $0.freshness >= 1.0 }
+            .count
         return HStack(spacing: 8) {
             statBlock(
                 value: daysSince.map { "\($0)" } ?? "—",
@@ -81,7 +88,8 @@ struct ProgressRecoverySection: View {
     ) -> some View {
         ZStack(alignment: .topTrailing) {
             VStack {
-                BodyAnatomyView(highlights: highlights, side: side)
+                BodyAnatomyView(highlights: highlights, side: side,
+                                bodyGender: memoryStore.memory.gender ?? .male)
                     .frame(height: 320)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
@@ -140,9 +148,16 @@ struct ProgressRecoverySection: View {
 
     private func muscleRow(row: MuscleFreshness.Row) -> some View {
         HStack(spacing: 12) {
+            // Each thumbnail shows the side its OWN muscle is on, not the
+            // screen-wide toggle. With the shared toggle (defaulting to .back)
+            // every anterior row — Quadriceps, Chest, Anterior Delt, Rectus
+            // Abdominis, Biceps — rendered a back silhouette with nothing
+            // highlighted, i.e. a blank body beside most of the list, and
+            // flipping the toggle just blanked the posterior rows instead.
             BodyAnatomyView(
                 highlights: [row.slug: .primary],
-                side: side
+                side: Self.side(forSlug: row.slug) ?? side,
+                bodyGender: memoryStore.memory.gender ?? .male
             )
             .frame(width: 36, height: 64)
 
@@ -206,6 +221,24 @@ struct ProgressRecoverySection: View {
                                       from: cal.startOfDay(for: last),
                                       to: cal.startOfDay(for: Date())).day ?? 0
         return max(0, days)
+    }
+
+    /// Which silhouette actually shows a given muscle. nil = visible from
+    /// either side (or not worth forcing), so the caller's toggle stands.
+    /// Covers exactly `mainSlugs`, the only rows the list renders.
+    static func side(forSlug slug: String) -> BodyAnatomyView.AnatomySide? {
+        switch slug {
+        case "chest", "pec-major-clav", "pec-major-sternal",
+             "delt-anterior", "biceps",
+             "rectus-abdominis", "external-obliques", "internal-obliques",
+             "quadriceps":
+            return .front
+        case "lats", "rhomboids", "erector-thoracic", "erector-lumbar",
+             "delt-posterior", "triceps", "hamstrings", "glutes":
+            return .back
+        default:
+            return nil   // shoulders / delt-lateral read on both
+        }
     }
 
     static let mainSlugs: Set<String> = [

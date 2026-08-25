@@ -76,7 +76,11 @@ struct ProgressScreen: View {
     var body: some View {
         ZStack {
             Color.bg.ignoresSafeArea()
-            if store.savedSessions.isEmpty {
+            // Gate per-card, not per-tab. The whole screen used to be replaced
+            // by "Nothing yet." whenever no workout had been logged — hiding
+            // body weight, body composition and the recovery silhouette, which
+            // have their own data and render fine before the first session.
+            if store.savedSessions.isEmpty && !hasNonWorkoutData {
                 emptyState
             } else {
                 content
@@ -107,6 +111,13 @@ struct ProgressScreen: View {
     }
 
     // MARK: - Content
+
+    /// Data that exists independently of logged workouts, so the tab has
+    /// something real to show before the first session is finished.
+    private var hasNonWorkoutData: Bool {
+        !memoryStore.memory.bodyWeightLog.isEmpty
+            || !memoryStore.memory.bodyCompositionLog.isEmpty
+    }
 
     private var content: some View {
         ScrollView {

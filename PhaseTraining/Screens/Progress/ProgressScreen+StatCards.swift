@@ -169,9 +169,15 @@ extension ProgressScreen {
             // counting from last week instead.
             cursor = cal.date(byAdding: .weekOfYear, value: -1, to: cursor) ?? cursor
         }
-        while (byWeek[cursor] ?? 0) >= target {
+        // Bounded by the oldest week we actually have data for. The old loop
+        // advanced with `?? cursor`, so a nil from date arithmetic left the
+        // cursor pinned while `byWeek[cursor] >= target` stayed true — an
+        // infinite loop on the main thread, inside a body evaluation.
+        let oldestWeek = byWeek.keys.min() ?? cursor
+        while (byWeek[cursor] ?? 0) >= target, cursor >= oldestWeek {
             streak += 1
-            cursor = cal.date(byAdding: .weekOfYear, value: -1, to: cursor) ?? cursor
+            guard let prev = cal.date(byAdding: .weekOfYear, value: -1, to: cursor) else { break }
+            cursor = prev
         }
         return streak
     }

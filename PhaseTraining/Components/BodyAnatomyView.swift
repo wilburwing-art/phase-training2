@@ -69,6 +69,12 @@ struct BodyAnatomyView: View {
     /// `pelvic-floor`, container slugs like `upper-body`).
     let highlights: [String: HighlightIntensity]
     let side: AnatomySide
+    /// Silhouette to draw. Defaults to `.male` so existing call sites are
+    /// unchanged, but the recovery views pass the user's actual
+    /// `TrainingMemory.gender` — this was hardcoded `.male` for every caller,
+    /// including the 320pt recovery hero, while the same screen already read
+    /// gender for StrengthStandards.
+    var bodyGender: Gender = .male
     /// Optional override color. When set, every highlighted muscle renders in
     /// this color regardless of its `HighlightIntensity` — the badge-on-tile
     /// case wants accent-on-elevated, not the red/orange/yellow recovery
@@ -87,8 +93,15 @@ struct BodyAnatomyView: View {
             .accessibilityLabel(accessibilityLabel)
     }
 
+    /// MuscleMap ships two silhouettes, so `.nonbinary` / `.preferNotToSay`
+    /// have to land on one. Kept on `.male` — the prior behavior for every
+    /// user — rather than silently reassigning people who declined to say.
+    private var muscleMapGender: BodyGender {
+        bodyGender == .female ? .female : .male
+    }
+
     private func buildBodyView() -> BodyView {
-        var view = BodyView(gender: .male, side: side.muscleMapSide)
+        var view = BodyView(gender: muscleMapGender, side: side.muscleMapSide)
             .showSubGroups()
         for (muscle, color) in mappedHighlights {
             view = view.highlight(muscle, color: color)

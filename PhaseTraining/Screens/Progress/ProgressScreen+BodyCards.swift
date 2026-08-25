@@ -231,14 +231,31 @@ extension ProgressScreen {
                             }
                         }
                     }
-                    if memoryStore.memory.gender == nil {
-                        Text("Add your gender on Profile to see tier labels.")
-                            .font(.monoXS)
-                            .foregroundStyle(Color.ink3)
-                            .padding(.top, 6)
-                    }
+                    // Tiers render as bare authoritative words ("ELITE"), but
+                    // StrengthStandards.swift:14 says they're "a directional
+                    // signal, not a diagnosis" — say so where the user reads
+                    // them. And .nonbinary / .preferNotToSay are routed to the
+                    // female curve, which the card must not do silently while
+                    // telling the user that gender is what unlocks the label.
+                    Text(tierDisclosure)
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 6)
                 }
             }
+        }
+    }
+
+    /// What the tier labels mean, and which curve produced them.
+    private var tierDisclosure: String {
+        switch memoryStore.memory.gender {
+        case .none:
+            return "Tiers are a rough directional signal, not a diagnosis. Add your gender on Profile to see them."
+        case .male, .female:
+            return "Tiers are a rough directional signal, not a diagnosis."
+        case .nonbinary, .preferNotToSay:
+            return "Tiers are a rough directional signal, not a diagnosis. Published standards only come in two curves, so these use the female thresholds."
         }
     }
 
