@@ -12,6 +12,7 @@
 import SwiftUI
 import UIKit
 import AudioToolbox
+import UserNotifications
 
 /// Rest timer state (view-local, intentionally non-persistent per spec).
 /// Initial duration is `ex.rest`; +15 increments `duration` so the countdown
@@ -34,6 +35,28 @@ struct RestTimerState {
     /// ~1.2s after expiry so the card transitions back to a normal hidden state.
     var expiredFlashUntil: Date? = nil
 
+    /// Notification identifier for the backgrounded rest-expiry alert. One at a
+    /// time — a new rest replaces the pending one.
+    static let expiryNotificationId = "pt.rest_expiry"
+
+    /// Begin a rest and schedule the background alert.
+    ///
+    /// The in-app alert (sound + haptic) fires from inside the TimelineView
+    /// render tick, so it only happens while this screen is on-screen and the
+    /// app is foregrounded. A lifter who locks the phone or switches apps
+    /// during a 3-minute rest got NOTHING, and on return the sound fired late
+    /// against a stale tick date. A local notification covers the backgrounded
+    /// case; `maybeFireRestExpiry` still owns the foreground one.
+    mutating func start(exIdx: Int, setIdx: Int, duration: Int, now: Date = Date()) {
+        self.exIdx = exIdx
+        self.setIdx = setIdx
+        self.startedAt = now
+        self.duration = duration
+        self.alertFiredFor = nil
+        self.expiredFlashUntil = nil
+        Self.scheduleExpiryNotification(after: duration)
+    }
+
     mutating func clear() {
         exIdx = nil
         setIdx = nil
@@ -41,6 +64,45 @@ struct RestTimerState {
         duration = nil
         alertFiredFor = nil
         expiredFlashUntil = nil
+        Self.cancelExpiryNotification()
+    }
+
+    /// Fire-and-forget: request authorization opportunistically, and schedule
+    /// only if it's already granted. Rest alerts are not worth a cold permission
+    /// prompt mid-workout — WeeklyReminderScheduler already owns the ask.
+    static func scheduleExpiryNotification(after seconds: Int) {
+        guard seconds > 0 else { return }
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: [expiryNotificationId])
+        center.getNotificationSettings { settings in
+            guard settings.authorizationStatus == .authorized else { return }
+            let content = UNMutableNotificationContent()
+            content.title = "Rest's up"
+            content.body = "Time for your next set."
+            content.sound = .default
+            content.interruptionLevel = .timeSensitive
+            let trigger = UNTimeIntervalNotificationTrigger(
+                timeInterval: TimeInterval(seconds), repeats: false)
+            center.add(UNNotificationRequest(identifier: expiryNotificationId,
+                                             content: content,
+                                             trigger: trigger))
+        }
+    }
+
+    /// Re-arm the pending notification after the countdown length changes
+    /// in place (+15, or a preset pick). Without this the banner would still
+    /// fire at the original expiry time.
+    func rescheduleExpiryNotification(now: Date = Date()) {
+        guard let remaining = remaining(at: now) else {
+            Self.cancelExpiryNotification()
+            return
+        }
+        Self.scheduleExpiryNotification(after: remaining)
+    }
+
+    static func cancelExpiryNotification() {
+        UNUserNotificationCenter.current()
+            .removePendingNotificationRequests(withIdentifiers: [expiryNotificationId])
     }
 
     func remaining(at date: Date) -> Int? {
@@ -74,7 +136,10 @@ extension LogScreen {
                 RestTimer(
                     remaining: r,
                     expired: false,
-                    onAdd15: { rest.duration = (rest.duration ?? 0) + 15 },
+                    onAdd15: {
+                        rest.duration = (rest.duration ?? 0) + 15
+                        rest.rescheduleExpiryNotification()
+                    },
                     onSkip: { rest.clear() },
                     onSetDuration: { newDuration in
                         // Reset start time so the new duration runs from now.
@@ -82,6 +147,7 @@ extension LogScreen {
                         rest.duration = newDuration
                         rest.startedAt = Date()
                         rest.alertFiredFor = rest.startedAt
+                        rest.rescheduleExpiryNotification()
                     }
                 )
                 .padding(.vertical, 6)
@@ -131,6 +197,9 @@ extension LogScreen {
 
         rest.alertFiredFor = started
         rest.expiredFlashUntil = date.addingTimeInterval(1.2)
+        // We're foregrounded and just played the in-app alert, so drop the
+        // pending background banner rather than double-notifying.
+        RestTimerState.cancelExpiryNotification()
 
         // System sound 1322 = "Begin recording" (short, attention-grabbing).
         // Pair with success haptic so the user notices even with the phone
