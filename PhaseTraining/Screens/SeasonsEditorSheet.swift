@@ -101,21 +101,38 @@ struct SeasonsEditorSheet: View {
         VStack(alignment: .leading, spacing: 6) {
             sectionLabel("PEAK DATE")
                 .padding(.top, 4)
+            // An unset peak date must LOOK unset. Binding `get:` to `?? Date()`
+            // rendered today's date as though it were chosen, and the Clear
+            // button keyed off `peakDate != nil` so it stayed hidden — a user
+            // in Event Prep opened Seasons, saw a plausible date already
+            // filled in, closed the sheet, and peakDate was still nil, so the
+            // taper never engaged. It also made "my event IS today"
+            // unsettable, since picking the shown value changes nothing.
             HStack {
-                DatePicker(
-                    "Peak date",
-                    selection: Binding(
-                        get: { store.memory.peakDate ?? Date() },
-                        set: { newDate in store.update { $0.peakDate = newDate } }
-                    ),
-                    in: Date()...,
-                    displayedComponents: .date
-                )
-                .labelsHidden()
-                if store.memory.peakDate != nil {
+                if let peak = store.memory.peakDate {
+                    DatePicker(
+                        "Peak date",
+                        selection: Binding(
+                            get: { peak },
+                            set: { newDate in store.update { $0.peakDate = newDate } }
+                        ),
+                        in: Date()...,
+                        displayedComponents: .date
+                    )
+                    .labelsHidden()
                     Button("Clear") { store.update { $0.peakDate = nil } }
                         .styled(.micro)
                         .foregroundStyle(Color.ink3)
+                } else {
+                    Text("Not set")
+                        .styled(.body)
+                        .foregroundStyle(Color.ink3)
+                    Spacer()
+                    Button("Set date") {
+                        store.update { $0.peakDate = Calendar.current.startOfDay(for: Date()) }
+                    }
+                    .styled(.micro)
+                    .foregroundStyle(Color.accent)
                 }
             }
         }

@@ -21,13 +21,32 @@ struct DislikesEditorSheet: View {
                         Text("EXERCISES TO AVOID")
                             .styled(.micro)
                             .foregroundStyle(Color.ink3)
+                        // "burpees" was the app's own suggested example and
+                        // could never work: CoachDatabase's exclude path does a
+                        // plain `lowerName.contains(dislike)` substring test and
+                        // the catalog row is the SINGULAR "Burpee", so
+                        // `like '%burpees%'` matches 0 of 582 exercises. The
+                        // user followed the example verbatim, saw the chip
+                        // appear as if it took effect, and kept being
+                        // programmed burpees.
                         tagList(
                             items: store.memory.dislikes,
                             input: $dislikeInput,
-                            placeholder: "e.g. burpees",
+                            placeholder: "e.g. burpee",
                             onAdd: { v in store.update { $0.dislikes.append(v) } },
                             onRemove: { v in store.update { $0.dislikes.removeAll { $0 == v } } }
                         )
+                        // Tell the user whether the term actually excludes
+                        // anything — the editor gave no match count, so a dead
+                        // entry was indistinguishable from a working one.
+                        ForEach(store.memory.dislikes, id: \.self) { term in
+                            if Self.matchCount(for: term) == 0 {
+                                Text("\"\(term)\" doesn't match any exercise — try a shorter word.")
+                                    .font(.monoXS)
+                                    .foregroundStyle(Color.danger)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 18)
@@ -125,5 +144,16 @@ struct DislikesEditorSheet: View {
         guard !items.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) else { return }
         onAdd(trimmed)
         input.wrappedValue = ""
+    }
+
+    /// How many catalog exercises a dislike term would actually exclude.
+    /// Mirrors CoachDatabase's exclude path, which is a plain substring test
+    /// on the lowercased name.
+    static func matchCount(for term: String) -> Int {
+        let needle = term.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !needle.isEmpty else { return 0 }
+        return CoachDatabase.shared.listExercises()
+            .filter { $0.name.lowercased().contains(needle) }
+            .count
     }
 }

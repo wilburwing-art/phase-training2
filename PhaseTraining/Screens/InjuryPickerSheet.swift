@@ -29,7 +29,19 @@ struct InjuryPickerSheet: View {
         let filtered: [CommonInjury] = {
             let q = searchText.trimmingCharacters(in: .whitespaces).lowercased()
             guard !q.isEmpty else { return all }
-            return all.filter { $0.name.lowercased().contains(q) }
+            // Search the body region too. Filtering on name alone meant the
+            // most obvious query returned nothing: coach.db has zero injuries
+            // whose NAME contains "knee", but eight with body_region='knee'
+            // (Patellar Tendinopathy, ACL Sprain/Tear, MCL Sprain, Meniscus
+            // Tear, IT Band Syndrome, Patellofemoral Pain Syndrome,
+            // Chondromalacia Patella, Baker's Cyst) — all one group header
+            // away, behind a "No matches" empty state. Same for back, hip,
+            // ankle, neck.
+            return all.filter {
+                $0.name.lowercased().contains(q)
+                    || $0.bodyRegionLabel.lowercased().contains(q)
+                    || ($0.bodyRegion ?? "").lowercased().contains(q)
+            }
         }()
         let dict = Dictionary(grouping: filtered, by: { $0.bodyRegionLabel })
         return dict.sorted { $0.key < $1.key }.map { (region: $0.key, items: $0.value) }
