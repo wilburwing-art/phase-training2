@@ -137,7 +137,11 @@ struct BodyMetricsSyncSection: View {
                 }
                 lastBodyMetricsSummary = merged.summary
             } catch {
-                bodyMetricsError = "\(error)"
+                // LocalizedError first, like CSVImportSection. Raw interpolation
+                // surfaced HKError as `Error Domain=com.apple.healthkit Code=5
+                // "Authorization not determined" UserInfo={...}` under a heading
+                // that just said "Sync error".
+                bodyMetricsError = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
             }
         }
     }

@@ -180,7 +180,11 @@ struct HealthWorkoutSyncSection: View {
                 didAttemptSync = true
                 refreshSummary()
             } catch {
-                lastError = "\(error)"
+                // LocalizedError first, like CSVImportSection. Raw interpolation
+                // surfaced HKError as `Error Domain=com.apple.healthkit Code=5
+                // "Authorization not determined" UserInfo={...}` under a heading
+                // that just said "Sync error".
+                lastError = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
             }
         }
     }

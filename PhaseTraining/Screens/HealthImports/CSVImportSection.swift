@@ -145,10 +145,28 @@ struct CSVImportSection: View {
                     .foregroundColor(.ink2)
                     .lineLimit(2)
             }
+            // The reasons were carried all the way from FitbodCSVParser through
+            // WorkoutCSVImporter into this view and then used only for
+            // `.count`, under a message pointing at an Xcode console that
+            // nothing ever writes to — a grep for print/os_log/Logger across
+            // Imports/, HealthImports/ and Health/ returns zero hits. Show them.
             if !result.parseErrors.isEmpty {
-                Text("\(result.parseErrors.count) rows skipped (see Xcode console for details)")
-                    .font(.caption2)
-                    .foregroundColor(.ink2)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(result.parseErrors.count) \(result.parseErrors.count == 1 ? "row" : "rows") skipped")
+                        .font(.caption2)
+                        .foregroundColor(.ink2)
+                    ForEach(Array(result.parseErrors.prefix(3).enumerated()), id: \.offset) { _, err in
+                        Text("Line \(err.line): \(err.reason)")
+                            .font(.caption2)
+                            .foregroundColor(.ink3)
+                            .lineLimit(2)
+                    }
+                    if result.parseErrors.count > 3 {
+                        Text("…and \(result.parseErrors.count - 3) more")
+                            .font(.caption2)
+                            .foregroundColor(.ink3)
+                    }
+                }
             }
         }
         .padding(8)

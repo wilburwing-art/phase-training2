@@ -147,12 +147,27 @@ struct PaywallView: View {
         .accessibilityIdentifier("paywall-buy-\(product.id)")
     }
 
+    /// Build instructions belong in a debug build, not in front of a
+    /// TestFlight tester who tapped Upgrade.
+    static var unconfiguredMessage: String {
+        #if DEBUG
+        return "Subscriptions aren't set up for this build. Create the Pro product in App Store Connect, then update `SubscriptionStore.allProductIDs`. For local previews, add a StoreKit Configuration File to the scheme."
+        #else
+        return "Pro isn't available yet. Everything in the app is free in the meantime — nothing is locked."
+        #endif
+    }
+
     private var unconfiguredState: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("PRO IS NOT YET CONFIGURED")
+            // User-facing copy. This used to render build instructions —
+            // "Create the Pro product in App Store Connect, then update
+            // `SubscriptionStore.allProductIDs`" — to anyone who tapped
+            // Upgrade, backticked Swift symbol and all. The developer version
+            // now lives in the DEBUG branch below.
+            Text("NOT AVAILABLE YET")
                 .styled(.micro)
                 .foregroundStyle(Color.ink3)
-            Text("Subscriptions aren't set up for this build. Create the Pro product in App Store Connect, then update `SubscriptionStore.allProductIDs`. For local previews, add a StoreKit Configuration File to the scheme.")
+            Text(Self.unconfiguredMessage)
                 .font(.system(size: 13))
                 .foregroundStyle(Color.ink2)
                 .fixedSize(horizontal: false, vertical: true)
