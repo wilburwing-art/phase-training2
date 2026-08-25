@@ -82,13 +82,31 @@ enum SportSeasonGenerator {
 
     // MARK: - Pool
 
+    /// Map a supported sport slug onto the slug that actually has rows in
+    /// `sport_movements`. The engine claims three ski slugs and seven climbing
+    /// slugs, but the shipped coach.db seeds only `alpine-skiing` (44 rows) and
+    /// `climbing` (25). Picking "Skiing / Snowboarding" (snow-sports) or
+    /// "Ski Mountaineering" — both in Sport.catalog and both accepted by
+    /// `supports()` — therefore produced an empty pool and a 0-movement session
+    /// on EVERY lift day. The ski variants share a movement vocabulary, so
+    /// aliasing is correct, not a stopgap; `PhaseRule.applyingVariantOverride`
+    /// is what expresses their differences.
+    ///
+    /// The climbing variants are aliased for the same reason, though none are
+    /// currently in Sport.catalog so they're unreachable from the UI today.
+    static func poolSlug(for sportSlug: String) -> String {
+        if PhaseRule.skiSlugs.contains(sportSlug) { return "alpine-skiing" }
+        if PhaseRule.climbingSlugs.contains(sportSlug) { return "climbing" }
+        return sportSlug
+    }
+
     private static func filteredPool(_ athlete: AthleteState, phase: SeasonPhase) -> [SportMovement] {
         // eventPrep draws from BOTH its own pool and the pre-season pool: for
         // skiing it's literally "pre-season tapered" (same movements); for
         // climbing it's antagonist-heavy, so its distinct event_prep-tagged
         // movements must surface alongside the sharp pre-season ones. Accepting
         // either tag covers both without duplicating phase tags across the seed.
-        let raw = CoachDatabase.shared.sportMovements(sport: athlete.sportSlug)
+        let raw = CoachDatabase.shared.sportMovements(sport: poolSlug(for: athlete.sportSlug))
             .filter { m in
                 let phaseOK = (phase == .eventPrep)
                     ? (m.allowed(in: .eventPrep) || m.allowed(in: .preSeason))

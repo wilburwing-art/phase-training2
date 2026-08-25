@@ -86,6 +86,43 @@ final class SeasonFidelityTest: XCTestCase {
         }
     }
 
+    /// T0-7 regression gate. The fixture grid above is hardcoded to the two
+    /// slugs that HAVE seeded rows, so it could never catch a sport the engine
+    /// claims to support but has no movements for. `snow-sports` and
+    /// `ski-mountaineering` are both in Sport.catalog, both pass `supports()`,
+    /// and both had zero rows — every lift day generated "0 movements · ~0 min".
+    ///
+    /// Iterate what a USER can actually pick, and assert through the aliasing
+    /// seam rather than the raw slug.
+    func test_everyPlannableSeasonSport_resolvesToANonEmptyPool() {
+        let plannable = Sport.catalog
+            .map(\.slug)
+            .filter { SportSeasonGenerator.supports($0) }
+        XCTAssertFalse(plannable.isEmpty, "catalog should expose season-engine sports")
+
+        for slug in plannable {
+            let pool = CoachDatabase.shared.sportMovements(
+                sport: SportSeasonGenerator.poolSlug(for: slug))
+            XCTAssertGreaterThanOrEqual(
+                pool.count, 20,
+                "[\(slug)] resolves to an empty/thin movement pool — a user picking this sport "
+                + "gets 0-exercise workouts on every lift day. Seed sport_movements for it or "
+                + "alias it in SportSeasonGenerator.poolSlug(for:).")
+        }
+    }
+
+    /// Every slug the engine claims — including ones not yet in the catalog —
+    /// must resolve somewhere real, so adding a variant to Sport.catalog can
+    /// never silently ship an empty pool.
+    func test_everySupportedSlug_aliasesToASeededPool() {
+        for slug in PhaseRule.skiSlugs.union(PhaseRule.climbingSlugs) {
+            let resolved = SportSeasonGenerator.poolSlug(for: slug)
+            XCTAssertGreaterThanOrEqual(
+                CoachDatabase.shared.sportMovements(sport: resolved).count, 20,
+                "[\(slug)] → '\(resolved)' has no seeded movements")
+        }
+    }
+
     // MARK: - SPEC §6 checks (both sports)
 
     /// Check 1 — phase fidelity: realized slot mix tracks the generator's
