@@ -343,8 +343,17 @@ extension TrainingMemory {
     /// Append a logged weight and mirror the scalar to whatever is newest.
     /// Single writer for the append+mirror pair so a back-dated entry can't
     /// clobber a newer scalar.
+    /// Record a weigh-in, replacing any existing entry for the same calendar
+    /// day. The sheet prefills its field from the latest entry and never
+    /// clears it, so tapping "Log weight" twice — or once, having just opened
+    /// the sheet — appended a duplicate with the identical value and today's
+    /// date, putting a flat segment in the trend chart with no confirmation.
+    /// One weight per day is also just what a weigh-in log means.
     mutating func recordBodyWeight(_ kg: Double, on date: Date = Date(), note: String? = nil) {
+        let cal = Calendar.current
+        bodyWeightLog.removeAll { cal.isDate($0.date, inSameDayAs: date) }
         bodyWeightLog.append(BodyWeightEntry(date: date, weightKg: kg, note: note))
+        bodyWeightLog.sort { $0.date < $1.date }
         weightKg = latestBodyWeightEntry?.weightKg
     }
 

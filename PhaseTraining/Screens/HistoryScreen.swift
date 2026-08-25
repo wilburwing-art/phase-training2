@@ -176,7 +176,7 @@ struct HistoryScreen: View {
 
     private var totalDoneSetsAllSessions: Int {
         displayedSessions.reduce(0) { acc, sess in
-            acc + sess.exercises.reduce(0) { $0 + $1.sets.filter { $0.done }.count }
+            acc + sess.exercises.reduce(0) { $0 + $1.sets.filter { $0.done && !$0.isWarmup }.count }
         }
     }
 
@@ -292,7 +292,11 @@ struct HistoryScreen: View {
     }
 
     private func exerciseDetailRow(ex: LoggedExercise, isLast: Bool) -> some View {
-        let doneSets = ex.sets.filter { $0.done && !$0.weight.isEmpty }
+        // Bodyweight rows log reps + done with NO weight — LogScreen collapses
+        // the weight column to a "BW" label for them by design. Requiring a
+        // non-empty weight dropped every push-up / plank / dip set, so the row
+        // rendered "—" and the reps the user did log were invisible in history.
+        let doneSets = ex.sets.filter { $0.done && (!$0.weight.isEmpty || ex.isBodyweight) }
         // `pr` flag is not present on LoggedExercise/LoggedSet today; skip badge.
         return VStack(alignment: .leading, spacing: 3) {
             HStack(alignment: .firstTextBaseline) {
@@ -356,7 +360,7 @@ struct HistoryScreen: View {
     }
 
     private func doneSetCount(_ session: SavedSession) -> Int {
-        session.exercises.reduce(0) { $0 + $1.sets.filter { $0.done }.count }
+        session.exercises.reduce(0) { $0 + $1.sets.filter { $0.done && !$0.isWarmup }.count }
     }
 
     private func dateLabel(_ date: Date) -> String {
