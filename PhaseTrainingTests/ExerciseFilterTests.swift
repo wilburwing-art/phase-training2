@@ -84,6 +84,21 @@ final class ExerciseFilterTests: XCTestCase {
         f.clearSecondary()
         XCTAssertEqual(f.secondaryCount, 0)
         XCTAssertEqual(f.bucket, .chest, "clearSecondary preserves the primary bucket")
+        XCTAssertFalse(f.hideOtherSports,
+                       "Reset must clear the sport filter too — it defaults ON and hides "
+                       + "~44% of the catalog for a single-sport user, so leaving it set "
+                       + "made Reset fail to broaden anything")
+    }
+
+    /// hideOtherSports stays out of `secondaryCount` on purpose: it defaults on,
+    /// so counting it would pin the badge at "(1)" before the user touches
+    /// anything. The filter is surfaced by name in ExerciseFilterSheet instead.
+    func test_secondaryCount_ignoresDefaultOnSportFilter() {
+        var f = ExerciseFilters()
+        XCTAssertTrue(f.hideOtherSports, "sport filter ships on")
+        XCTAssertEqual(f.secondaryCount, 0, "an untouched filter set reads as zero")
+        f.hideOtherSports = false
+        XCTAssertEqual(f.secondaryCount, 0)
     }
 
     // MARK: - Sport-relevance filter (build 88)

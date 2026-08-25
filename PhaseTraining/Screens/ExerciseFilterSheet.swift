@@ -93,6 +93,26 @@ struct ExerciseFilterSheet: View {
                                 }
                             )
                         }
+
+                        // The single most consequential filter in the tab, and
+                        // until now it had no UI anywhere: `hideOtherSports`
+                        // defaults ON and both Library query paths read it, so
+                        // a single-sport user silently saw ~44% less catalog
+                        // with no explanation and no way to switch it off.
+                        section(title: "Sports") {
+                            chipGrid(
+                                items: [("mine", "For my sports"), ("all", "All sports")],
+                                selected: filters.hideOtherSports ? "mine" : "all",
+                                onSelect: { slug in
+                                    filters.hideOtherSports = (slug == "mine")
+                                }
+                            )
+                            Text("\"For my sports\" hides exercises tagged only for sports you don't train. Foundation lifts always show.")
+                                .font(.monoXS)
+                                .foregroundStyle(Color.ink3)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.top, 4)
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 20)

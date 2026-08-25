@@ -279,6 +279,13 @@ struct ExerciseFilters: Hashable {
         if difficulty != nil  { n += 1 }
         if environment != nil { n += 1 }
         if compoundOnly != nil { n += 1 }
+        // `hideOtherSports` is deliberately NOT counted: it defaults ON, so
+        // counting it would pin the badge at "(1)" in the untouched state and
+        // mean nothing. Its discoverability problem — the user couldn't tell
+        // ~44% of the catalog was hidden — is solved by the Sports section in
+        // ExerciseFilterSheet instead, which names the filter and lets the user
+        // switch it off. `clearSecondary()` does reset it, since Reset means
+        // "stop narrowing".
         return n
     }
 
@@ -289,5 +296,8 @@ struct ExerciseFilters: Hashable {
         difficulty = nil
         environment = nil
         compoundOnly = nil
+        // Reset must be able to clear the one filter that is actually removing
+        // rows, otherwise "Reset" leaves the catalog still ~44% hidden.
+        hideOtherSports = false
     }
 }
