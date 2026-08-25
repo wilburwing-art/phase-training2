@@ -63,6 +63,11 @@ struct TodayScreen: View {
     /// Build 99 — pre-workout soreness check-in moved from an inline
     /// expand/collapse card to a header-adjacent pill that opens a modal sheet.
     @State private var showSorenessSheet: Bool = false
+    /// "Train anyway" on a rest or event day. Without it those days rendered no
+    /// exercise list and no CTA at all, and the only way to train was to leave
+    /// Today, open the Week tab, tap into WeekDayEditSheet and drill down —
+    /// four screens to say "actually, I want to lift".
+    @State private var showTrainAnyway: Bool = false
     @State private var showingSportLog: Bool = false
     /// Drives the read-only explanation sheet for the "personalized by coach"
     /// badge — shown only when today's generated workout was LLM-refined
@@ -272,6 +277,11 @@ struct TodayScreen: View {
                 refinedAt: todayPlan?.generatedWorkout?.refinedByLLMAt,
                 provenance: todayPlan?.generatedReason
             )
+        }
+        .sheet(isPresented: $showTrainAnyway) {
+            // targetDate nil = start-now mode: pick or generate a workout and
+            // begin the session immediately, same as the lift-day path.
+            OverrideTodaySheet(onStartSession: onStart)
         }
         .sheet(isPresented: $showingSportLog) {
             // Guard inside the sheet builder rather than gating the modifier —
@@ -515,8 +525,24 @@ struct TodayScreen: View {
                 EmptyView()
             }
         case .rest, .event:
-            // No primary action — the user sees today's status, no session to start.
-            EmptyView()
+            // Rest is the prescription, so this is deliberately secondary — but
+            // it must exist. OverrideTodaySheet in start-now mode (targetDate
+            // nil) already does exactly this job for the lift-day path.
+            Button {
+                showTrainAnyway = true
+            } label: {
+                Text("Train anyway")
+                    .font(.custom("Inter-Regular", size: 13).weight(.bold))
+                    .foregroundStyle(Color.ink2)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(Color.lineSoft, lineWidth: 1)
+                    )
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("today-train-anyway")
         }
     }
 
