@@ -25,8 +25,13 @@ struct WeekDayEditSheet: View {
     @State private var addingEvent = false
     @State private var overridingWorkout = false
     @State private var pickingMoveTarget = false
-    @State private var editingIntensity = false
-    @State private var previewingWorkout = false
+    // Presented via .sheet(item:) rather than isPresented + `if let`. The
+    // builder is evaluated when the flag flips, so a nil optional at that
+    // moment (e.g. the event cleared by a concurrent regen between render and
+    // tap) rendered an EMPTY sheet the user had to dismiss by hand, instead of
+    // presenting nothing.
+    @State private var editingIntensity: WeekEvent?
+    @State private var previewingWorkout: DayPlan?
     /// PR 6 (weekly-coach roadmap) — opens the inline LiftFocus picker
     /// for lift days. Sheet-style picker rather than inline-expand because
     /// the picker grid takes vertical room the sheet body doesn't have
@@ -40,7 +45,7 @@ struct WeekDayEditSheet: View {
     @State private var pendingEventReplace: PendingEventReplace? = nil
     @State private var confirmingEventReplace = false
 
-    private enum PendingEventReplace { case sport, event }
+    private enum PendingEventReplace { case sport, event, outOfTown }
 
     var body: some View {
         NavigationStack {
@@ -100,21 +105,17 @@ struct WeekDayEditSheet: View {
                 }
             )
         }
-        .sheet(isPresented: $editingIntensity) {
-            if let event = currentEvent {
-                IntensityEditorSheet(event: event) { newIntensity in
-                    setIntensity(for: event, to: newIntensity)
-                    editingIntensity = false
-                }
+        .sheet(item: $editingIntensity) { event in
+            IntensityEditorSheet(event: event) { newIntensity in
+                setIntensity(for: event, to: newIntensity)
+                editingIntensity = nil
             }
         }
-        .sheet(isPresented: $previewingWorkout) {
-            if let dayPlan {
-                DayWorkoutPreviewSheet(day: dayPlan, onStartSession: {
-                    previewingWorkout = false
-                    dismiss()
-                })
-            }
+        .sheet(item: $previewingWorkout) { day in
+            DayWorkoutPreviewSheet(day: day, onStartSession: {
+                previewingWorkout = nil
+                dismiss()
+            })
         }
         .sheet(isPresented: $pickingLiftFocus) {
             LiftFocusPickerSheet(
@@ -196,15 +197,18 @@ struct WeekDayEditSheet: View {
                         ? "See exercises, swap before starting"
                         : "See the planned exercises",
                     icon: "list.bullet.rectangle",
-                    action: { previewingWorkout = true }
+                    action: { previewingWorkout = dayPlan }
                 )
             }
 
             ActionRow(
                 title: isMarkedUnavailable ? "Re-enable this day" : "Mark off this week",
+                // Names the tapped day, not "today". This sheet exists to edit
+                // FUTURE days — tapping Friday from Monday marks Friday off —
+                // so "Forces rest for today only" was wrong in the common case.
                 subtitle: isMarkedUnavailable
                     ? "Will use your normal plan again"
-                    : "Forces rest for today only",
+                    : "Forces rest on \(weekdayLabel.capitalized) only",
                 icon: isMarkedUnavailable ? "checkmark.circle" : "moon.zzz.fill",
                 action: toggleUnavailable
             )
@@ -300,7 +304,7 @@ struct WeekDayEditSheet: View {
                     title: "Edit intensity",
                     subtitle: intensitySubtitle,
                     icon: "flame",
-                    action: { editingIntensity = true }
+                    action: { editingIntensity = currentEvent }
                 )
             }
 
@@ -379,6 +383,7 @@ struct WeekDayEditSheet: View {
         switch pending {
         case .sport: pickingSport = true
         case .event: addingEvent = true
+        case .outOfTown: writeOutOfTownEvent()
         }
     }
 
@@ -459,7 +464,16 @@ struct WeekDayEditSheet: View {
     /// Add a `.outOfTown` event for this date. Replaces any existing event
     /// on this date so we don't pile up — mirrors the existing
     /// `addSportSession` / `addEvent` behavior.
+    /// Route through the same replace-confirmation the two sibling add actions
+    /// use. This row is shown precisely when `currentEvent?.kind != .outOfTown`
+    /// — i.e. exactly when there IS another event to clobber — and it used to
+    /// removeAll-then-append with no confirmation, silently destroying a race
+    /// or sport session in one tap.
     private func addOutOfTownEvent() {
+        requestAdd(.outOfTown)
+    }
+
+    private func writeOutOfTownEvent() {
         planStore.updateOverrides(memory: memory.memory) { o in
             o.events.removeAll { Calendar.current.isDate($0.date, inSameDayAs: date) }
             o.events.append(WeekEvent(
