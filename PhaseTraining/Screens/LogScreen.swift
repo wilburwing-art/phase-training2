@@ -34,6 +34,26 @@ struct LogScreen: View {
     @State var session: ActiveSession = Self.placeholder
     @State private var didLoad = false
     @State private var showCancelConfirm = false
+    /// Finish commits irreversibly — CompleteScreen saves on .onAppear
+    /// ("Finish IS the save"). The button sits directly beside "Log all" in the
+    /// sticky header, so a mis-tap permanently wrote a half-logged workout into
+    /// user.db, streaks and planner history. Cancel already confirms; the far
+    /// more destructive action did not.
+    @State private var showFinishConfirm = false
+    /// Reached with no active session — an anomalous state, not a normal entry.
+    /// LogScreen used to paper over it by creating a hardcoded "upper-1"
+    /// session, silently ignoring today's plan, generated workout and any day
+    /// override. TodayTab only routes here when `store.active != nil`, and
+    /// TodayScreen owns session creation precisely so it can build from today's
+    /// routine instead of upper-1 (TodayTab.swift:40) — so the fallback was
+    /// vestigial and could only ever fabricate the wrong workout.
+    @State private var noSession = false
+
+    /// Sets the user marked done. Finishing with some still open is normal
+    /// (dropped a set, ran out of time) — only confirm when it looks accidental.
+    private var incompleteSetCount: Int {
+        session.exercises.reduce(0) { $0 + $1.sets.filter { !$0.done }.count }
+    }
 
     /// Rest timer state (view-local, intentionally non-persistent per spec).
     @State var rest = RestTimerState()
@@ -63,7 +83,9 @@ struct LogScreen: View {
         ZStack {
             Color.bg.ignoresSafeArea()
 
-            if didLoad {
+            if noSession {
+                noSessionState
+            } else if didLoad {
                 content
             }
         }
@@ -78,6 +100,14 @@ struct LogScreen: View {
             Button("Keep going", role: .cancel) {}
         } message: {
             Text("Your in-progress sets won't be saved.")
+        }
+        .alert("Finish workout?", isPresented: $showFinishConfirm) {
+            Button("Finish") { onFinish() }
+            Button("Keep going", role: .cancel) {}
+        } message: {
+            Text(incompleteSetCount == 1
+                 ? "One set isn't logged yet. Finishing saves the workout as it stands."
+                 : "\(incompleteSetCount) sets aren't logged yet. Finishing saves the workout as it stands.")
         }
         .sheet(item: $swappingExIdx.exerciseSheetItem) { wrapped in
             let original = session.exercises[wrapped.index]
@@ -263,7 +293,11 @@ struct LogScreen: View {
                     .accessibilityIdentifier("log-all-workout")
                 }
 
-                Button(action: onFinish) {
+                Button(action: {
+                    // Fully-logged workout finishes straight through; only an
+                    // apparently-accidental tap (open sets remaining) confirms.
+                    if incompleteSetCount > 0 { showFinishConfirm = true } else { onFinish() }
+                }) {
                     Text("Finish")
                         .font(.custom("Inter-Regular", size: 13).weight(.bold))
                         .tracking(-0.01 * 13)
@@ -371,22 +405,12 @@ struct LogScreen: View {
                 // moves cleanly to the next group member.
                 rest.clear()
             } else if !Self.uiTestSuppressAutoRest, hasMoreSets {
-                rest.exIdx = exIdx
-                rest.setIdx = setIdx
-                rest.startedAt = Date()
-                rest.duration = ex.rest
-                rest.alertFiredFor = nil
-                rest.expiredFlashUntil = nil
+                rest.start(exIdx: exIdx, setIdx: setIdx, duration: ex.rest)
             } else if !Self.uiTestSuppressAutoRest, hasFollowingWork(afterExIdx: exIdx) {
                 // Last set of this exercise, but the session has more work
                 // ahead — auto-start the rest so the user gets the same
                 // countdown + expiry alert between exercises.
-                rest.exIdx = exIdx
-                rest.setIdx = setIdx
-                rest.startedAt = Date()
-                rest.duration = ex.rest
-                rest.alertFiredFor = nil
-                rest.expiredFlashUntil = nil
+                rest.start(exIdx: exIdx, setIdx: setIdx, duration: ex.rest)
             }
         } else {
             // Untoggled — clear rest if it was anchored to this set.
@@ -494,13 +518,13 @@ struct LogScreen: View {
 
     private func loadIfNeeded() {
         guard !didLoad else { return }
-        if let existing = store.active {
-            session = existing
-        } else {
-            let fresh = store.createSession(templateId: "upper-1")
-            session = fresh
-            store.saveActive(fresh)
+        guard let existing = store.active else {
+            // Render an empty state rather than inventing a workout that isn't
+            // today's. See `noSession`.
+            noSession = true
+            return
         }
+        session = existing
         // UI-test hook: --ui-test-rest-seconds=N clamps every exercise's rest
         // so timer-expiry tests can fire in ~2s instead of 60-90s. Has no
         // effect outside test runs.
@@ -510,6 +534,28 @@ struct LogScreen: View {
             }
         }
         didLoad = true
+    }
+
+    private var noSessionState: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "figure.strengthtraining.traditional")
+                .font(.system(size: 34))
+                .foregroundStyle(Color.ink3)
+            Text("No workout in progress")
+                .font(.custom("Inter-Regular", size: 15).weight(.bold))
+                .foregroundStyle(Color.ink)
+            Text("Start today's session from the Today tab.")
+                .font(.custom("Inter-Regular", size: 13))
+                .foregroundStyle(Color.ink2)
+                .multilineTextAlignment(.center)
+            if onCancel != nil {
+                Button("Back to Today") { onCancel?() }
+                    .font(.custom("Inter-Regular", size: 13).weight(.bold))
+                    .foregroundStyle(Color.accent)
+                    .padding(.top, 4)
+            }
+        }
+        .padding(32)
     }
 
     private static let uiTestRestOverride: Int? = {
