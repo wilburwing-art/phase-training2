@@ -18,13 +18,39 @@ extension PlanStore {
     /// memory. Returns the visible issues — already filtered through
     /// `suppressedRulePatterns`. Pure computation; safe to call on
     /// every render. Returns empty when no plan exists.
-    func currentValidationIssues(memory: TrainingMemory) -> [PlanValidationIssue] {
+    func currentValidationIssues(memory: TrainingMemory,
+                                 now: Date = Date()) -> [PlanValidationIssue] {
         guard let plan else { return [] }
-        return PlanValidator.validate(
+        let issues = PlanValidator.validate(
             plan: plan,
             memory: memory,
             overrides: overrides,
             suppressedRulePatterns: suppressedRulePatterns
+        )
+        // "Got it" used to be visibly inert: it logs a WeeklyPlanOverride, but
+        // suppression needs the same (rule, pattern) across >=3 DISTINCT
+        // weekStarts and same-week duplicates are deliberately dropped — so
+        // repeat taps could never advance it. The user tapped the only
+        // affordance the banner offers and the warning stayed put, with no
+        // indication anything had been recorded.
+        //
+        // Acknowledging now also hides the issue for the REST OF THIS WEEK,
+        // derived from the same persisted log (so it survives relaunch) while
+        // leaving the multi-week suppression learner untouched.
+        let acknowledgedThisWeek = acknowledgedRulePatterns(inWeekOf: now)
+        guard !acknowledgedThisWeek.isEmpty else { return issues }
+        return issues.filter { !acknowledgedThisWeek.contains("\($0.ruleKey):\($0.patternKey)") }
+    }
+
+    /// `"rule:pattern"` keys dismissed during the training week containing
+    /// `now`. Read off `recentPlanOverrides`, which `recordPlanOverride`
+    /// already stamps with a weekStart.
+    func acknowledgedRulePatterns(inWeekOf now: Date = Date()) -> Set<String> {
+        let weekStart = now.startOfTrainingWeek()
+        return Set(
+            recentPlanOverrides
+                .filter { Calendar.current.isDate($0.weekStart, inSameDayAs: weekStart) }
+                .map { "\($0.rule):\($0.pattern)" }
         )
     }
 
