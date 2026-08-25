@@ -301,4 +301,86 @@ final class BackupManagerTests: XCTestCase {
         XCTAssertFalse(envelope.isMemorySchemaStale,
                        "No memory payload means nothing can be stale")
     }
+
+    // MARK: - v2 envelope (T0-3)
+
+    /// The v1 envelope silently dropped sport logs and the entire imported
+    /// history on a phone switch — the Fitbod/HealthKit rows behind priorBest
+    /// and lifetime peaks, often the biggest thing in the app.
+    func test_v2RoundTrip_preservesSportLogsAndImportedHistory() throws {
+        let original = freshDefaults("v2-original")
+        let db = UserDatabase(path: ":memory:")
+
+        let logs = [SportLogEntry(date: Date(timeIntervalSince1970: 1_700_000_000),
+                                  sport: Sport.catalog[0],
+                                  durationMinutes: 90,
+                                  intensity: .hard,
+                                  note: nil,
+                                  loggedAt: Date(timeIntervalSince1970: 1_700_000_100))]
+        let logData = try JSONEncoder().encode(logs)
+        original.set(logData, forKey: "pt_sport_logs")
+
+        let sets = (1...3).map { i in
+            ImportedSet(id: "fitbod:\(i)", source: .fitbodCSV, exerciseId: 42,
+                        exerciseNameRaw: "Bench Press",
+                        performedAt: Date(timeIntervalSince1970: TimeInterval(1_600_000_000 + i)),
+                        setNum: i, weight: 60.0 + Double(i), reps: 8, rir: nil, rpe: nil)
+        }
+        db.insertImportedSets(sets)
+
+        let envelope = BackupManager.snapshot(defaults: original, userDB: db)
+        XCTAssertEqual(envelope.schemaVersion, 2)
+        XCTAssertEqual(envelope.sportLogs.count, 1, "sport logs must be captured")
+        XCTAssertEqual(envelope.importedSets.count, 3, "imported sets must be captured")
+
+        let data = try BackupManager.encode(envelope)
+        let decoded = try BackupManager.decode(data)
+        let restored = freshDefaults("v2-restored")
+        let restoredDB = UserDatabase(path: ":memory:")
+        try BackupManager.restore(decoded, into: restored, userDB: restoredDB)
+
+        XCTAssertEqual(restoredDB.allImportedSets().count, 3,
+                       "a phone switch keeps the imported history")
+        XCTAssertNotNil(restored.data(forKey: "pt_sport_logs"),
+                        "a phone switch keeps logged sport sessions")
+        let restoredLogs = try JSONDecoder().decode(
+            [SportLogEntry].self, from: restored.data(forKey: "pt_sport_logs")!)
+        XCTAssertEqual(restoredLogs.first?.durationMinutes, 90)
+    }
+
+    /// Restore is destructive by design; before T0-3 the imported tables were
+    /// exempt, so the new device kept its OWN imports mixed into the restore.
+    func test_restore_clearsPreexistingImportsOnTargetDevice() throws {
+        let db = UserDatabase(path: ":memory:")
+        db.insertImportedSets([
+            ImportedSet(id: "stale:1", source: .fitbodCSV, exerciseId: 7,
+                        exerciseNameRaw: "Squat", performedAt: Date(), setNum: 1,
+                        weight: 100, reps: 5, rir: nil, rpe: nil)
+        ])
+        XCTAssertEqual(db.allImportedSets().count, 1)
+
+        let envelope = BackupEnvelope(
+            exportedAt: Date(),
+            memory: nil, savedSessions: [], activeSession: nil,
+            customRoutines: [], plan: nil, overrides: nil,
+            reminderEnabled: false
+        )
+        try BackupManager.restore(envelope, into: freshDefaults("clears-imports"), userDB: db)
+
+        XCTAssertTrue(db.allImportedSets().isEmpty,
+                      "restore must not leave the target device's imports behind")
+    }
+
+    /// A v1 backup (no v2 fields at all) must still decode and restore.
+    func test_v1Envelope_stillDecodes() throws {
+        let v1JSON = """
+        {"schemaVersion":1,"exportedAt":0,"savedSessions":[],
+         "customRoutines":[],"reminderEnabled":true}
+        """
+        let decoded = try BackupManager.decode(Data(v1JSON.utf8))
+        XCTAssertEqual(decoded.schemaVersion, 1)
+        XCTAssertTrue(decoded.sportLogs.isEmpty)
+        XCTAssertTrue(decoded.importedSets.isEmpty)
+        XCTAssertTrue(decoded.reminderEnabled)
+    }
 }

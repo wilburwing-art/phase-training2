@@ -13,7 +13,11 @@
 import Foundation
 
 struct BackupEnvelope: Codable {
-    static let currentSchemaVersion = 1
+    /// v2 (T0-3) adds sportLogs, missedWorkouts, recentPicks and the imported
+    /// history. v1 envelopes still decode — every added field is optional with
+    /// a default — so an older backup restores exactly as it did before, just
+    /// without the slices it never carried.
+    static let currentSchemaVersion = 2
     /// TrainingMemory's schema version in the running app. Pinned into each
     /// export (`memorySchemaVersion`) so a later restore can tell when a
     /// backup predates fields the current memory schema carries.
@@ -34,6 +38,26 @@ struct BackupEnvelope: Codable {
     var overrides: WeekOverrides?
     var reminderEnabled: Bool
 
+    // MARK: - v2 additions (T0-3)
+    //
+    // The v1 envelope claimed to get the user off "lose phone = lose
+    // everything" while omitting every one of these. A phone switch silently
+    // dropped all sport-day sessions and the entire imported history — the
+    // Fitbod/HealthKit rows that back priorBest and lifetime peaks, which is
+    // often the single biggest thing in the app.
+
+    /// `pt_sport_logs` — logged climbing/ski/etc. sessions.
+    var sportLogs: [SportLogEntry] = []
+    /// `pt_missed_workouts` — the missed-workout log driving the autopilot.
+    var missedWorkouts: [MissedWorkoutEntry] = []
+    /// `pt_recent_exercise_picks` — variety memory, so a restore doesn't
+    /// immediately re-serve the exercises the user just cycled away from.
+    var recentPicks: [String: Date] = [:]
+    /// `imported_workouts` rows (HealthKit + CSV).
+    var importedWorkouts: [ImportedWorkout] = []
+    /// `imported_sets` rows — thousands, spanning years.
+    var importedSets: [ImportedSet] = []
+
     /// True when the embedded memory predates the app's current
     /// TrainingMemory schema — fields added since were decoded as defaults,
     /// not real values. Informational only: stale backups still restore
@@ -42,6 +66,65 @@ struct BackupEnvelope: Codable {
     var isMemorySchemaStale: Bool {
         guard let memory else { return false }
         return (memorySchemaVersion ?? memory.schemaVersion) < Self.currentMemorySchemaVersion
+    }
+
+    /// Explicit decoder so the v2 fields are genuinely optional on read.
+    /// Swift's synthesized `init(from:)` does NOT fall back to a property's
+    /// default value — a missing key throws `keyNotFound` — so relying on the
+    /// `= []` defaults would have made every existing v1 backup un-restorable.
+    /// Caught by test_v1Envelope_stillDecodes.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try c.decodeIfPresent(Int.self, forKey: .schemaVersion)
+            ?? Self.currentSchemaVersion
+        memorySchemaVersion = try c.decodeIfPresent(Int.self, forKey: .memorySchemaVersion)
+        exportedAt = try c.decode(Date.self, forKey: .exportedAt)
+        memory = try c.decodeIfPresent(TrainingMemory.self, forKey: .memory)
+        savedSessions = try c.decodeIfPresent([SavedSession].self, forKey: .savedSessions) ?? []
+        activeSession = try c.decodeIfPresent(ActiveSession.self, forKey: .activeSession)
+        customRoutines = try c.decodeIfPresent([CustomRoutine].self, forKey: .customRoutines) ?? []
+        plan = try c.decodeIfPresent(WeekPlan.self, forKey: .plan)
+        overrides = try c.decodeIfPresent(WeekOverrides.self, forKey: .overrides)
+        reminderEnabled = try c.decodeIfPresent(Bool.self, forKey: .reminderEnabled) ?? false
+        // v2 — absent in every v1 backup.
+        sportLogs = try c.decodeIfPresent([SportLogEntry].self, forKey: .sportLogs) ?? []
+        missedWorkouts = try c.decodeIfPresent([MissedWorkoutEntry].self, forKey: .missedWorkouts) ?? []
+        recentPicks = try c.decodeIfPresent([String: Date].self, forKey: .recentPicks) ?? [:]
+        importedWorkouts = try c.decodeIfPresent([ImportedWorkout].self, forKey: .importedWorkouts) ?? []
+        importedSets = try c.decodeIfPresent([ImportedSet].self, forKey: .importedSets) ?? []
+    }
+
+    /// Memberwise init, restored because declaring `init(from:)` suppresses it.
+    init(schemaVersion: Int = BackupEnvelope.currentSchemaVersion,
+         memorySchemaVersion: Int? = nil,
+         exportedAt: Date,
+         memory: TrainingMemory?,
+         savedSessions: [SavedSession],
+         activeSession: ActiveSession?,
+         customRoutines: [CustomRoutine],
+         plan: WeekPlan?,
+         overrides: WeekOverrides?,
+         reminderEnabled: Bool,
+         sportLogs: [SportLogEntry] = [],
+         missedWorkouts: [MissedWorkoutEntry] = [],
+         recentPicks: [String: Date] = [:],
+         importedWorkouts: [ImportedWorkout] = [],
+         importedSets: [ImportedSet] = []) {
+        self.schemaVersion = schemaVersion
+        self.memorySchemaVersion = memorySchemaVersion
+        self.exportedAt = exportedAt
+        self.memory = memory
+        self.savedSessions = savedSessions
+        self.activeSession = activeSession
+        self.customRoutines = customRoutines
+        self.plan = plan
+        self.overrides = overrides
+        self.reminderEnabled = reminderEnabled
+        self.sportLogs = sportLogs
+        self.missedWorkouts = missedWorkouts
+        self.recentPicks = recentPicks
+        self.importedWorkouts = importedWorkouts
+        self.importedSets = importedSets
     }
 }
 
@@ -101,6 +184,9 @@ enum BackupManager {
         let plan: WeekPlan? = decodeIfPresent(defaults: defaults, key: "pt_week_plan")
         let overrides: WeekOverrides? = decodeIfPresent(defaults: defaults, key: "pt_week_overrides")
         let reminderEnabled = defaults.bool(forKey: "pt_weekly_reminder_enabled")
+        let sportLogs: [SportLogEntry] = decodeIfPresent(defaults: defaults, key: "pt_sport_logs") ?? []
+        let missedWorkouts: [MissedWorkoutEntry] = decodeIfPresent(defaults: defaults, key: "pt_missed_workouts") ?? []
+        let recentPicks: [String: Date] = decodeIfPresent(defaults: defaults, key: "pt_recent_exercise_picks") ?? [:]
         return BackupEnvelope(
             memorySchemaVersion: memory?.schemaVersion,
             exportedAt: exportedAt,
@@ -110,7 +196,12 @@ enum BackupManager {
             customRoutines: customRoutines,
             plan: plan,
             overrides: overrides,
-            reminderEnabled: reminderEnabled
+            reminderEnabled: reminderEnabled,
+            sportLogs: sportLogs,
+            missedWorkouts: missedWorkouts,
+            recentPicks: recentPicks,
+            importedWorkouts: userDB.allImportedWorkouts(),
+            importedSets: userDB.allImportedSets()
         )
     }
 
@@ -177,6 +268,14 @@ enum BackupManager {
         for routine in envelope.customRoutines { userDB.save(routine) }
         userDB.clearAllSessions()
         for session in envelope.savedSessions { userDB.saveSession(session) }
+        // Imported history is part of the destructive contract too: without the
+        // clear, the new device kept its OWN imports mixed in with the restored
+        // ones. Restoring a v1 envelope (which carries no imports) therefore
+        // clears them — correct, since v1 restore was already documented as
+        // destructive and a v1 backup genuinely has nothing to put back.
+        userDB.clearAllImports()
+        userDB.insertImportedWorkouts(envelope.importedWorkouts)
+        userDB.insertImportedSets(envelope.importedSets)
         if userDB.routineCount() != envelope.customRoutines.count {
             rollBack(userDB, routines: priorRoutines, sessions: priorSessions)
             throw BackupError.restoreIncomplete(.routines)
@@ -194,7 +293,9 @@ enum BackupManager {
         let touchedKeys = ["pt_training_memory", "pt_active_session",
                            "pt_week_plan", "pt_week_overrides",
                            "pt_weekly_reminder_enabled",
-                           "pt_sessions", "pt_custom_routines"]
+                           "pt_sessions", "pt_custom_routines",
+                           "pt_sport_logs", "pt_missed_workouts",
+                           "pt_recent_exercise_picks"]
         var priorValues: [String: Any] = [:]
         for key in touchedKeys { priorValues[key] = defaults.object(forKey: key) }
         do {
@@ -203,6 +304,9 @@ enum BackupManager {
             try encodeAndWrite(envelope.plan, defaults: defaults, key: "pt_week_plan")
             try encodeAndWrite(envelope.overrides, defaults: defaults, key: "pt_week_overrides")
             defaults.set(envelope.reminderEnabled, forKey: "pt_weekly_reminder_enabled")
+            try encodeAndWrite(envelope.sportLogs, defaults: defaults, key: "pt_sport_logs")
+            try encodeAndWrite(envelope.missedWorkouts, defaults: defaults, key: "pt_missed_workouts")
+            try encodeAndWrite(envelope.recentPicks, defaults: defaults, key: "pt_recent_exercise_picks")
             // Wipe legacy UserDefaults keys so a stale post-migration import
             // path can never resurrect them. Idempotent.
             defaults.removeObject(forKey: "pt_sessions")

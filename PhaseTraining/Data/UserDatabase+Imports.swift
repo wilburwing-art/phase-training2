@@ -65,9 +65,21 @@ extension UserDatabase {
     /// Fetch imported workouts whose `start_time` falls within the last
     /// `days` days, newest first. Used by `GeneratorContext.from(...)`
     /// to union with native sessions for readiness signal computation.
-    func recentImportedWorkouts(within days: Int) -> [ImportedWorkout] { withLock {
-        guard let db, days > 0 else { return [] }
+    /// Every imported workout, for the backup envelope. Unbounded on purpose —
+    /// the whole point is that a phone switch keeps a decade of imported
+    /// history, which `recentImportedWorkouts(within:)` can't express.
+    func allImportedWorkouts() -> [ImportedWorkout] {
+        recentImportedWorkoutsSince(cutoff: Int64.min)
+    }
+
+    func recentImportedWorkouts(within days: Int) -> [ImportedWorkout] {
+        guard days > 0 else { return [] }
         let cutoff = Int64(Date().addingTimeInterval(-Double(days) * 86_400).timeIntervalSince1970)
+        return recentImportedWorkoutsSince(cutoff: cutoff)
+    }
+
+    private func recentImportedWorkoutsSince(cutoff: Int64) -> [ImportedWorkout] { withLock {
+        guard let db else { return [] }
         let sql = """
         SELECT id, source, kind, start_time, duration_seconds, energy_kcal
         FROM imported_workouts
@@ -174,6 +186,60 @@ extension UserDatabase {
             if sqlite3_step(stmt) != SQLITE_DONE { ok = false; break }
             sqlite3_reset(stmt)
         }
+    } }
+
+    /// Every imported set, for the backup envelope. This is the big one: a
+    /// Fitbod CSV import is thousands of rows spanning years, and it lived
+    /// only in SQLite — a phone switch silently lost all of it.
+    func allImportedSets() -> [ImportedSet] { withLock {
+        guard let db else { return [] }
+        let sql = """
+        SELECT id, source, exercise_id, exercise_name_raw, performed_at,
+               set_num, weight, reps, rir, rpe
+        FROM imported_sets
+        ORDER BY performed_at ASC, set_num ASC
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+
+        func optDouble(_ idx: Int32) -> Double? {
+            sqlite3_column_type(stmt, idx) == SQLITE_NULL ? nil : sqlite3_column_double(stmt, idx)
+        }
+        func optInt(_ idx: Int32) -> Int? {
+            sqlite3_column_type(stmt, idx) == SQLITE_NULL ? nil : Int(sqlite3_column_int64(stmt, idx))
+        }
+
+        var out: [ImportedSet] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            guard let id = text(stmt, 0),
+                  let sourceRaw = text(stmt, 1),
+                  let source = ImportSource(rawValue: sourceRaw),
+                  let nameRaw = text(stmt, 3)
+            else { continue }
+            out.append(ImportedSet(
+                id: id,
+                source: source,
+                exerciseId: optInt(2),
+                exerciseNameRaw: nameRaw,
+                performedAt: Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(stmt, 4))),
+                setNum: Int(sqlite3_column_int64(stmt, 5)),
+                weight: optDouble(6),
+                reps: optInt(7),
+                rir: optDouble(8),
+                rpe: optDouble(9)
+            ))
+        }
+        return out
+    } }
+
+    /// Drop every imported row. Used by restore, which is destructive by
+    /// design — without this the new device kept its OWN imported history
+    /// mixed in with the restored one.
+    func clearAllImports() { withLock {
+        guard let db else { return }
+        sqlite3_exec(db, "DELETE FROM imported_sets", nil, nil, nil)
+        sqlite3_exec(db, "DELETE FROM imported_workouts", nil, nil, nil)
     } }
 
     /// Per-exercise heaviest matched set in the import history. Used by
