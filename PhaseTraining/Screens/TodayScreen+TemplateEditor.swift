@@ -190,7 +190,7 @@ extension TodayScreen {
             HStack(spacing: 6) {
                 Image(systemName: didSaveToLibrary ? "checkmark" : "tray.and.arrow.down")
                     .font(.system(size: 12, weight: .semibold))
-                Text(didSaveToLibrary ? "Saved to library" : "Save changes to library")
+                Text(didSaveToLibrary ? "Saved for today" : "Save changes")
                     .styled(.micro)
                 Spacer(minLength: 0)
                 if !didSaveToLibrary {
@@ -298,6 +298,17 @@ extension TodayScreen {
             createdAt: Date()
         )
         customStore.save(routine)
+        // Pin the saved routine to TODAY as well. Saving used to fork a
+        // CustomRoutine with a fresh UUID and no connection to today's DayPlan,
+        // so the edits the user just made — reorder, swap, delete — applied to
+        // nothing: the in-flight copy lived only in `editableTemplate` @State
+        // and died when TodayTab tore the view down on route change or the app
+        // was force-quit. Writing the same per-day override OverrideTodaySheet
+        // uses (build 105) makes the save mean what the user meant by it.
+        let key = Calendar.current.startOfDay(for: Date())
+        planStore.updateOverrides(memory: memoryStore.memory) { o in
+            o.customRoutineByDate[key] = routine.id
+        }
         // Save success: the edits are persisted, so clear the dirty flag —
         // the template onChange guard protects *unsaved* edits only, and the
         // next mutation re-arms both flags. didSaveToLibrary keeps the pill
