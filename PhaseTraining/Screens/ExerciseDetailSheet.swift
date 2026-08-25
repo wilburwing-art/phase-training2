@@ -267,7 +267,20 @@ private struct ExerciseDetailContent: View {
 
     @ViewBuilder
     private var heroImage: some View {
-        if let urlString = exercise.imageURL, let url = URL(string: urlString) {
+        // Bundle first, network second — the offline-first order ExerciseThumbnail
+        // already uses for the same exercise id. The hero used to read only
+        // `imageURL`, so tapping a Library row whose 48pt thumbnail had rendered
+        // instantly from the bundle showed a spinner and then "Image unavailable"
+        // when offline, for the 438 exercises whose image ships inside the app.
+        if let bundled = BundledExerciseImage.shared.image(forID: exercise.id) {
+            Image(uiImage: bundled)
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity)
+                .frame(height: 200)
+                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        } else if let urlString = exercise.imageURL, let url = URL(string: urlString) {
             VStack(alignment: .leading, spacing: 6) {
                 CachedAsyncImage(
                     url: url,

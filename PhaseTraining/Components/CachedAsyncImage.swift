@@ -47,7 +47,20 @@ struct CachedAsyncImage<Loaded: View, Placeholder: View, Failure: View>: View {
     }
 
     private func load() async {
-        guard let url else { didFail = true; return }
+        // Reset before fetching. `.task(id: url)` re-fires for a new URL on a
+        // view whose state was preserved (LazyVStack reuse while scrolling or
+        // re-filtering), and without this the PREVIOUS image — or the previous
+        // failure glyph — kept rendering until the new fetch completed, showing
+        // the wrong thumbnail against the new row.
+        image = nil
+        didFail = false
+
+        // A missing URL is "nothing to show", not a failure. Treating it as one
+        // made the failure() branch render instead of placeholder(): 144 of 582
+        // catalog exercises have neither an image_url nor a bundled WebP, so a
+        // quarter of the Library rendered a broken-photo error glyph and
+        // ExerciseThumbnail's neutral figure placeholder was unreachable.
+        guard let url else { return }
         let key = url.absoluteString as NSString
         if let cached = ImageCache.memory.object(forKey: key) {
             image = cached
