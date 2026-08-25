@@ -150,8 +150,12 @@ struct EventEditorSheet: View {
                                 )
                             }
                         }
-                        if intensity == .hard {
-                            Text("Hard events: the day before will be reset to recover.")
+                        // Was an unconditional "Hard events: the day before will
+                        // be reset to recover." — shown even for .outOfTown,
+                        // which triggers no taper, no buffer and no post-event
+                        // recovery anywhere in Planner. Keyed to kind now.
+                        if intensity == .hard, let note = hardIntensityNote {
+                            Text(note)
                                 .font(.monoXS)
                                 .foregroundStyle(Color.ink3)
                         }
@@ -198,6 +202,21 @@ struct EventEditorSheet: View {
 
     private var canSave: Bool {
         !title.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    /// What a hard event of THIS kind actually does to the surrounding days.
+    /// nil = nothing, so no promise is shown. Mirrors Planner's
+    /// applyPreEventTaper (races only) and applyPreSportBuffer (hard sport
+    /// sessions, and only when the prior slot is an unprotected lift).
+    private var hardIntensityNote: String? {
+        switch kind {
+        case .race:
+            return "Hard race: the two days before are reset to rest."
+        case .sportSession:
+            return "Hard sport day: a lift the day before is dropped to rest."
+        default:
+            return nil
+        }
     }
 
     private func save() {
@@ -359,16 +378,28 @@ struct IntensityEditorSheet: View {
         .presentationBackground(Color.bg)
     }
 
+    /// Must track Planner exactly. The old copy claimed a taper for every kind
+    /// at moderate ("the day before is reset to rest") when applyPreEventTaper
+    /// filters `kind == .race` (Planner.swift:595), and said day -2 becomes
+    /// mobility when Planner demotes it to REST — the mobility catalog is gone
+    /// and the code comment says so.
     private var intensityHint: String {
         switch event.intensity {
         case .light:
             return "Light = no taper, no buffer."
         case .moderate:
-            return "Moderate = the day before is reset to rest."
-        case .hard:
             return event.kind == .race
-                ? "Hard race = day before = rest, day -2 = mobility, day after = recovery."
-                : "Hard sport day = day before lift becomes mobility, day after = recovery."
+                ? "Moderate race = the day before is reset to rest."
+                : "Moderate = no taper. Only races taper the days before."
+        case .hard:
+            switch event.kind {
+            case .race:
+                return "Hard race = the two days before are reset to rest."
+            case .sportSession:
+                return "Hard sport day = a lift the day before is dropped to rest."
+            default:
+                return "Hard = no taper for this event type."
+            }
         }
     }
 }
