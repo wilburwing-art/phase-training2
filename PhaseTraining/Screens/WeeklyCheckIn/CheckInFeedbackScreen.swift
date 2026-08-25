@@ -6,6 +6,10 @@ struct CheckInFeedbackScreen: View {
     @Binding var draft: WeeklyCheckInDraft
     let onNext: () -> Void
     let onBack: () -> Void
+    /// Escape hatch. Steps 2-5 passed nil, so CheckInScaffold rendered a blank
+    /// 32x32 spacer where the X should be — a user who opened the flow from the
+    /// Sunday notification and wanted out had to tap Back three or four times.
+    let onClose: () -> Void
 
     private static let ratings: [(String, String)] = [
         ("too_easy", String(localized: "Too easy", comment: "Last-week difficulty rating")),
@@ -22,7 +26,7 @@ struct CheckInFeedbackScreen: View {
             nextEnabled: draft.lastWeekRating != nil,
             onNext: onNext,
             onBack: onBack,
-            onClose: nil
+            onClose: onClose
         ) {
             VStack(alignment: .leading, spacing: 18) {
                 ratingRow

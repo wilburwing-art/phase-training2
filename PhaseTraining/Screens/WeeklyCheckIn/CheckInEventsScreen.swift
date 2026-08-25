@@ -4,7 +4,7 @@
 // recovery passes.
 //
 // UI: a row of date chips covering the 7 days the planner will operate over
-// (overrides.weekStart … +6). Tap a date → EventEditorSheet → save lands in
+// (NEXT week's start … +6 — this flow plans next week, not the current one). Tap a date → EventEditorSheet → save lands in
 // draft.events. The list below shows everything currently in the draft with
 // swipe-to-delete.
 
@@ -18,6 +18,10 @@ struct CheckInEventsScreen: View {
     let weekStart: Date
     let onNext: () -> Void
     let onBack: () -> Void
+    /// Escape hatch. Steps 2-5 passed nil, so CheckInScaffold rendered a blank
+    /// 32x32 spacer where the X should be — a user who opened the flow from the
+    /// Sunday notification and wanted out had to tap Back three or four times.
+    let onClose: () -> Void
 
     @State private var pickingDate: Date? = nil
 
@@ -30,7 +34,7 @@ struct CheckInEventsScreen: View {
             nextEnabled: true,
             onNext: onNext,
             onBack: onBack,
-            onClose: nil
+            onClose: onClose
         ) {
             VStack(alignment: .leading, spacing: 18) {
                 dayPickerSection
@@ -41,6 +45,16 @@ struct CheckInEventsScreen: View {
         }
         .sheet(item: pickingDateBinding) { wrapped in
             EventEditorSheet(date: wrapped.date) { event in
+                // One event per day. Planner takes `.first` for a date
+                // (Planner.swift:212), so a second event on the same day was
+                // silently ignored by the plan while still rendering in the
+                // list below — the user saw two, the planner honored one.
+                // WeekDayEditSheet enforces this with an explicit "Replace
+                // existing event?" confirmation; this screen had no equivalent,
+                // so replace-in-place is the closest honest behavior here.
+                draft.events.removeAll {
+                    Calendar.current.isDate($0.date, inSameDayAs: event.date)
+                }
                 draft.events.append(event)
             }
         }
@@ -83,7 +97,7 @@ struct CheckInEventsScreen: View {
 
     private var eventList: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("THIS WEEK")
+            Text("NEXT WEEK")
                 .styled(.micro)
                 .foregroundStyle(Color.ink3)
             VStack(spacing: 8) {

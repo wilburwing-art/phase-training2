@@ -6,6 +6,10 @@ struct CheckInPreviewScreen: View {
     let plan: WeekPlan?
     let onAccept: () -> Void
     let onBack: () -> Void
+    /// Escape hatch. Steps 2-5 passed nil, so CheckInScaffold rendered a blank
+    /// 32x32 spacer where the X should be — a user who opened the flow from the
+    /// Sunday notification and wanted out had to tap Back three or four times.
+    let onClose: () -> Void
 
     var body: some View {
         CheckInScaffold(
@@ -16,7 +20,7 @@ struct CheckInPreviewScreen: View {
             nextEnabled: plan != nil,
             onNext: onAccept,
             onBack: onBack,
-            onClose: nil
+            onClose: onClose
         ) {
             if let plan {
                 VStack(alignment: .leading, spacing: 12) {

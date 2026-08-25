@@ -45,6 +45,23 @@ struct WeeklyCheckInDraft {
         ("more_mobility",String(localized: "More mobility", comment: "Weekly check-in intent")),
         ("travel",       String(localized: "Travel week", comment: "Weekly check-in intent")),
     ]
+
+    /// Map the Intent chips onto the `WeekTone` the planner actually honors
+    /// (`Planner.applyWeekTone`, Planner.swift:184-190).
+    ///
+    /// These chips were labelled "TONE" and wired to nothing: picking Deload
+    /// produced a byte-identical plan, while WeekScreen's separate WeekToneChip
+    /// was the control that really worked. Two competing tone controls, and the
+    /// one inside the check-in was the inert one.
+    ///
+    /// Precedence is deliberate — a user who taps both "Deload" and "More
+    /// volume" gets the conservative reading.
+    var derivedWeekTone: WeekTone? {
+        if intentTags.contains("deload") || intentTags.contains("less_volume") { return .recovery }
+        if intentTags.contains("travel") { return .busy }
+        if intentTags.contains("more_volume") { return .build }
+        return nil   // more_sport / more_mobility carry no tone signal
+    }
 }
 
 // MARK: - Steps
@@ -100,26 +117,33 @@ struct WeeklyCheckInFlow: View {
             CheckInConstraintsScreen(
                 draft: $draft,
                 onNext: advance,
-                onBack: back
+                onBack: back,
+                onClose: onDismiss
             )
         case .events:
             CheckInEventsScreen(
                 draft: $draft,
-                weekStart: planStore.overrides.weekStart,
+                // NEXT week's days, matching what this flow actually plans.
+                // Was `planStore.overrides.weekStart` — the CURRENT week — so
+                // the day chips offered dates already in the past.
+                weekStart: Self.nextWeekStart(),
                 onNext: advance,
-                onBack: back
+                onBack: back,
+                onClose: onDismiss
             )
         case .feedback:
             CheckInFeedbackScreen(
                 draft: $draft,
                 onNext: { regenerateAndAdvance() },
-                onBack: back
+                onBack: back,
+                onClose: onDismiss
             )
         case .preview:
             CheckInPreviewScreen(
                 plan: previewPlan,
                 onAccept: accept,
-                onBack: back
+                onBack: back,
+                onClose: onDismiss
             )
         }
     }
@@ -158,6 +182,7 @@ struct WeeklyCheckInFlow: View {
         var candidateOverrides = WeekOverrides(weekStart: Self.nextWeekStart())
         candidateOverrides.unavailableDays = draft.unavailableDays
         candidateOverrides.events = draft.events
+        candidateOverrides.weekTone = draft.derivedWeekTone
         let routines = CoachDatabase.shared.listRoutines()
         previewPlan = Planner.generate(
             memory: memoryStore.memory,
@@ -201,6 +226,9 @@ struct WeeklyCheckInFlow: View {
         var nextOverrides = WeekOverrides(weekStart: weekStart)
         nextOverrides.unavailableDays = draft.unavailableDays
         nextOverrides.events = draft.events
+        // Same tone the preview was generated against, so what the user
+        // accepted is what gets stored.
+        nextOverrides.weekTone = draft.derivedWeekTone
         planStore.stagePlan(plan, overrides: nextOverrides)
         onDismiss()
     }
