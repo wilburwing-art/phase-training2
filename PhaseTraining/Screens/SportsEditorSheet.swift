@@ -77,6 +77,13 @@ struct SportsEditorSheet: View {
                 if mem.primarySport == sport {
                     mem.primarySport = mem.sports.first
                 }
+                // Drop the season too. Planner.applySecondarySportPromotion
+                // iterates memory.seasonsBySport with no membership check, so a
+                // deselected sport still marked .inSeason kept getting a
+                // placeholder day booked into the week forever — and no UI
+                // could reach the orphaned entry, since SeasonsEditorSheet only
+                // iterates memory.sports.
+                mem.seasonsBySport[sport] = nil
             } else {
                 mem.sports.append(sport)
                 if mem.primarySport == nil {

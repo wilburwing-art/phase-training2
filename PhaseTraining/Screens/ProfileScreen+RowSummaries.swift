@@ -135,11 +135,10 @@ extension ProfileScreen {
         WeeklyReminderScheduler.isEnabled ? "On" : "Off"
     }
 
+    /// Delegates rather than keeping a second copy — this classifier existed
+    /// verbatim in both EquipmentEditorSheet and here, so a new tier had to be
+    /// added twice or the row summary silently drifted from the editor.
     var currentTier: EquipmentTier {
-        let eq = store.memory.equipment
-        if eq == [.bodyweight] { return .bodyweight }
-        if eq == [.dumbbells]  { return .dumbbells  }
-        if eq == [.fullGym]    { return .fullGym    }
-        return .custom
+        EquipmentEditorSheet.inferredTier(from: store.memory.equipment)
     }
 }

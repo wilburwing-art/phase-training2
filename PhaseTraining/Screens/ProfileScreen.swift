@@ -49,6 +49,9 @@ struct ProfileScreen: View {
     @State private var presentingInjuriesEditor = false
     @State private var presentingRemindersEditor = false
     @State private var presentingDataEditor = false
+    /// Action to run once DataEditorSheet has finished dismissing — see the
+    /// `.sheet(onDismiss:)` below.
+    @State private var pendingDataAction: (() -> Void)?
     @State private var presentingHealthImports = false
     @State private var presentingPaywall = false
     @State private var presentingBodyWeightLog = false
@@ -110,10 +113,20 @@ struct ProfileScreen: View {
                                     icon: "calendar",
                                     action: { presentingSeasonsEditor = true })
                         // The primary/support wedge is ski/board-primary +
-                        // climbing-support, so the row only appears for a
-                        // ski/snow primary sport (the interference table is
-                        // authored for exactly that pairing).
-                        if PhaseRule.skiSlugs.contains(store.memory.primarySport?.slug ?? "") {
+                        // climbing-support, so the row appears for a ski/snow
+                        // primary sport (the interference table is authored for
+                        // exactly that pairing) — OR whenever a pattern already
+                        // exists, so it stays reachable.
+                        //
+                        // Planner.applySupportPattern guards only on the
+                        // pattern being non-empty and never checks the primary
+                        // sport, so a user who declared Tue/Thu climbing days
+                        // under a ski primary and then switched to Running lost
+                        // the row while the planner kept stamping climbing days
+                        // onto rest slots and lightening lift days, with no
+                        // reachable UI to turn it off.
+                        if PhaseRule.skiSlugs.contains(store.memory.primarySport?.slug ?? "")
+                            || !(store.memory.supportPattern?.isEmpty ?? true) {
                             SettingsRow(label: "Support sport",
                                         value: supportSummary,
                                         icon: "figure.climbing",
@@ -245,10 +258,20 @@ struct ProfileScreen: View {
         .sheet(isPresented: $presentingRemindersEditor) {
             RemindersEditorSheet().environmentObject(store)
         }
-        .sheet(isPresented: $presentingDataEditor) {
+        // Both the data editor and the share sheet hang off this same view, so
+        // firing the share while the editor is still the presented controller
+        // logged "attempt to present … which is already presenting" and the
+        // share sheet never appeared. Defer the follow-on presentation into
+        // `onDismiss`, which runs once the editor has actually gone away.
+        .sheet(isPresented: $presentingDataEditor, onDismiss: {
+            if let action = pendingDataAction {
+                pendingDataAction = nil
+                action()
+            }
+        }) {
             DataEditorSheet(
-                onExport: backup.exportBackup,
-                onImport: { backup.presentingImporter = true }
+                onExport: { pendingDataAction = backup.exportBackup },
+                onImport: { pendingDataAction = { backup.presentingImporter = true } }
             )
         }
         .sheet(isPresented: $presentingHealthImports) {
