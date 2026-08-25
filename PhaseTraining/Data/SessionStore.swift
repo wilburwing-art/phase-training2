@@ -19,6 +19,10 @@ final class SessionStore: ObservableObject {
 
     @Published var savedSessions: [SavedSession]
     @Published var active: ActiveSession?
+    /// Set when a completed workout failed to reach SQLite. Latches until the
+    /// user acknowledges — losing a finished session silently is the worst
+    /// failure this app has, so it must never be a one-frame condition.
+    @Published var persistenceFailed = false
 
     private let defaults: UserDefaults
     private let userDB: UserDatabase
@@ -357,7 +361,13 @@ final class SessionStore: ObservableObject {
             endTime: endTime,
             duration: duration
         )
-        userDB.saveSession(saved)
+        // A failed write used to be invisible: saveSession swallowed it and this
+        // still returned a SavedSession, so CompleteScreen showed the summary
+        // and the workout vanished at next launch. Keep the in-memory insert
+        // (the user's work stays on screen) but flag it loudly.
+        if !userDB.saveSession(saved) {
+            persistenceFailed = true
+        }
         savedSessions.insert(saved, at: 0)
         clearActive()
         return saved

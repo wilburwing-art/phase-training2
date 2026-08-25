@@ -49,7 +49,9 @@ final class UserDatabase {
     init(path: String) {
         let flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX
         if sqlite3_open_v2(path, &db, flags, nil) != SQLITE_OK {
+            let detail = db.map { String(cString: sqlite3_errmsg($0)) } ?? "unknown error"
             if let d = db { sqlite3_close(d); db = nil }
+            unavailableReason = "Couldn't open the workout database (\(detail))."
             return
         }
         runMigrations()
@@ -58,6 +60,14 @@ final class UserDatabase {
     deinit { if let db { sqlite3_close(db) } }
 
     var isOpen: Bool { db != nil }
+
+    /// Non-nil when the store is unusable — the file wouldn't open, or a schema
+    /// migration failed and left the connection on an older version than the
+    /// code expects. Every read then returns empty and every write no-ops, so
+    /// without surfacing this the app reports zero history and *accepts saves
+    /// that never land*: the workout looks saved until the next launch. Read by
+    /// RootTabView to warn the user before they train on top of it.
+    private(set) var unavailableReason: String?
 
     // MARK: - Migrations
 
@@ -212,7 +222,14 @@ final class UserDatabase {
         // swallow-the-duplicate-error pattern.
         if current == 0 { addWarmupColumnIfMissing() }
         for migration in Self.migrations where migration.version > current {
-            if !apply(migration: migration) { return }
+            if !apply(migration: migration) {
+                // Bail without advancing user_version (apply() rolled back), but
+                // do NOT stay silent: the schema is older than this build
+                // expects, so writes against the new columns will fail.
+                unavailableReason =
+                    "The workout database couldn't be upgraded (migration v\(migration.version) failed)."
+                return
+            }
         }
     }
 

@@ -210,8 +210,15 @@ extension UserDatabase {
     /// Insert one completed session + its exercises + its sets in one
     /// transaction. Idempotent on PK conflict (start_time): REPLACE so
     /// re-saving from an in-memory list during migration doesn't dup-fail.
-    func saveSession(_ session: SavedSession) { withLock {
-        guard let db else { return }
+    /// Returns false when the session did not reach disk. Previously this was
+    /// `Void` with a silent `guard let db else { return }`, so a closed or
+    /// un-migrated database swallowed the write while SessionStore still
+    /// reported success to CompleteScreen — the workout looked saved until the
+    /// next launch, when it was gone.
+    @discardableResult
+    func saveSession(_ session: SavedSession) -> Bool { withLock {
+        guard let db else { return false }
+        var ok = true
         sqlite3_exec(db, "BEGIN IMMEDIATE", nil, nil, nil)
         defer { sqlite3_exec(db, "COMMIT", nil, nil, nil) }
 
@@ -248,7 +255,9 @@ extension UserDatabase {
             sqlite3_bind_int64(s, 6, Int64(session.duration))
             if let f = session.feel { sqlite3_bind_text(s, 7, f, -1, SQLITE_TRANSIENT_USER) } else { sqlite3_bind_null(s, 7) }
             if let n = session.note { sqlite3_bind_text(s, 8, n, -1, SQLITE_TRANSIENT_USER) } else { sqlite3_bind_null(s, 8) }
-            sqlite3_step(s)
+            if sqlite3_step(s) != SQLITE_DONE { ok = false }
+        } else {
+            ok = false
         }
         sqlite3_finalize(s)
 
@@ -275,7 +284,9 @@ extension UserDatabase {
                 sqlite3_bind_int64(eStmt, 9, Int64(ex.rest))
                 let prevJSON = (try? enc.encode(ex.prevSets)).flatMap { String(data: $0, encoding: .utf8) }
                 if let j = prevJSON { sqlite3_bind_text(eStmt, 10, j, -1, SQLITE_TRANSIENT_USER) } else { sqlite3_bind_null(eStmt, 10) }
-                sqlite3_step(eStmt)
+                if sqlite3_step(eStmt) != SQLITE_DONE { ok = false }
+            } else {
+                ok = false
             }
             sqlite3_finalize(eStmt)
 
@@ -290,11 +301,14 @@ extension UserDatabase {
                     sqlite3_bind_text(sStmt, 6, set.rpe, -1, SQLITE_TRANSIENT_USER)
                     sqlite3_bind_int64(sStmt, 7, set.done ? 1 : 0)
                     sqlite3_bind_int64(sStmt, 8, set.isWarmup ? 1 : 0)
-                    sqlite3_step(sStmt)
+                    if sqlite3_step(sStmt) != SQLITE_DONE { ok = false }
+                } else {
+                    ok = false
                 }
                 sqlite3_finalize(sStmt)
             }
         }
+        return ok
     } }
 
     func deleteSession(startTime: Date) { withLock {

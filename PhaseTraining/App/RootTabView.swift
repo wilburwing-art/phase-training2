@@ -31,6 +31,31 @@ struct RootTabView: View {
     @EnvironmentObject private var sportLogStore: SportLogStore
     @EnvironmentObject private var customStore: CustomRoutineStore
 
+    /// Dismissed-for-this-launch flag for the storage warning, so an unopenable
+    /// database doesn't re-alert on every tab switch.
+    @State private var storageAlertDismissed = false
+
+    /// The store either never opened / failed to migrate, or a finished workout
+    /// didn't reach disk. Both mean "what you do here won't be there tomorrow".
+    private var storageFailure: String? {
+        if sessionStore.persistenceFailed {
+            return "Your last workout couldn't be written to storage. It's still on screen, but it won't be here after you close the app."
+        }
+        if let reason = UserDatabase.shared.unavailableReason {
+            return reason + " Your workouts and history can't be saved until this is fixed. Reinstalling the app usually clears it — restore a backup from Profile first if you have one."
+        }
+        return nil
+    }
+
+    private var showStorageAlert: Binding<Bool> {
+        Binding(
+            get: { storageFailure != nil && !storageAlertDismissed },
+            set: { if !$0 { storageAlertDismissed = true } }
+        )
+    }
+
+    private var storageAlertMessage: String { storageFailure ?? "" }
+
     var body: some View {
         TabView(selection: $tabSelection.selected) {
             TodayTab()
@@ -55,6 +80,16 @@ struct RootTabView: View {
         }
         .tint(Color.accent)
         .preferredColorScheme(.dark)
+        // A dead database used to be completely silent: reads returned empty and
+        // writes no-opped, so the app showed "no history" and still accepted
+        // saves that never landed. Warn once, at the shell, before the user
+        // trains on top of it.
+        .alert("Your data isn't being saved",
+               isPresented: showStorageAlert) {
+            Button("OK", role: .cancel) { sessionStore.persistenceFailed = false }
+        } message: {
+            Text(storageAlertMessage)
+        }
         .overlay(alignment: .bottomTrailing) {
             CoachBubble()
                 .padding(.bottom, 56)  // clear the tab bar
@@ -109,4 +144,9 @@ struct RootTabView: View {
         .environmentObject(RecentPicksStore(defaults: defaults))
         .environmentObject(TabSelectionStore())
         .environmentObject(CoachConversationStore(defaults: defaults))
+        // Both are declared on RootTabView and read in the .task, so omitting
+        // them made this preview trap with "No ObservableObject of type
+        // SportLogStore found" the moment it rendered.
+        .environmentObject(SportLogStore(defaults: defaults))
+        .environmentObject(SubscriptionStore())
 }
