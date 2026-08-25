@@ -273,7 +273,12 @@ struct CompleteScreen: View {
     /// PR pill, per-set summary text, and RPE range all move into the tile's
     /// summary slot — no more bespoke layout here.
     private var exerciseSummary: some View {
-        let prIds = Set(prs.map(\.id))
+        // Match by NAME, not id: PRItem.id is "\(exerciseName)|\(reps)" while
+        // LoggedExercise.id is a template slug like "bench", so the two
+        // namespaces never intersected and this badge could never light up.
+        // The prBlock chips below read the same `prs` and did work, which is
+        // why the dead comparison went unnoticed.
+        let prNames = Set(prs.map(\.name))
         let rows: [LoggedExercise] = session.exercises.filter { ex in
             ex.sets.contains(where: { $0.done })
         }
@@ -296,7 +301,7 @@ struct CompleteScreen: View {
                         leading: .index(idx + 1),
                         title: ex.name,
                         meta: setsLabel,
-                        trailing: .summary(text: summary, rpe: rpeString, isPR: prIds.contains(ex.id))
+                        trailing: .summary(text: summary, rpe: rpeString, isPR: prNames.contains(ex.name))
                     ),
                     density: .flat
                 )
