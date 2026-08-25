@@ -279,6 +279,19 @@ final class CoachDatabase {
         return out
     } }
 
+    /// Total catalog size. The Library eyebrow only needs the number, and was
+    /// materializing all 582 rows (21 columns each, fully decoded) to call
+    /// `.count` on the array.
+    func exerciseCount() -> Int { withLock {
+        guard let db else { return 0 }
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, "SELECT COUNT(*) FROM exercises", -1, &stmt, nil) == SQLITE_OK
+        else { return 0 }
+        defer { sqlite3_finalize(stmt) }
+        guard sqlite3_step(stmt) == SQLITE_ROW else { return 0 }
+        return Int(sqlite3_column_int64(stmt, 0))
+    } }
+
     func listExercises(search: String? = nil, modality: String? = nil) -> [Exercise] { withLock {
         guard let db else { return [] }
         var sql = """

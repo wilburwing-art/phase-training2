@@ -71,7 +71,13 @@ struct LibraryScreen: View {
                         subtitle: "Browse every exercise and workout."
                     )
                     segmentControl
-                    if segment == .routines && showSearchBar {
+                    // Search is available on BOTH segments now. Gating it to
+                    // .routines left the Exercises segment tile-only, so a user
+                    // who knew a lift by name had to guess which of 7 muscle
+                    // tiles owned it — and 19 catalog rows (Assault Bike,
+                    // Jump Rope, Tibialis Raise, Neck Bridge, …) map to none of
+                    // the tiles' member slugs and were unreachable entirely.
+                    if segment == .exercises || showSearchBar {
                         searchBar
                     }
                     if segment == .routines {
@@ -116,17 +122,10 @@ struct LibraryScreen: View {
                 if stockRoutines.isEmpty {
                     stockRoutines = CoachDatabase.shared.listRoutines()
                 }
+                // COUNT(*), not a full 21-column SELECT decoded into 582
+                // Exercise structs just to read `.count` off it.
                 if exerciseCount == 0 {
-                    exerciseCount = CoachDatabase.shared.listExercises(
-                        search: nil,
-                        muscleSlugs: [],
-                        patternSlugs: [],
-                        modality: nil,
-                        difficulty: nil,
-                        environment: nil,
-                        compoundOnly: false,
-                        userSportSlugs: []
-                    ).count
+                    exerciseCount = CoachDatabase.shared.exerciseCount()
                 }
             }
         }
@@ -250,6 +249,49 @@ struct LibraryScreen: View {
     /// `NavigationLink` carrying a `LibraryTile`; the destination
     /// (`LibraryMuscleScreen`) is registered on the enclosing
     /// `NavigationStack` via `.navigationDestination(for: LibraryTile.self)`.
+    /// Global exercise search across the whole catalog — the thing the tab
+    /// lacked. Backed by the same `listExercises` query ExercisePickerSheet and
+    /// LibraryMuscleScreen use, with no muscle filter, so nothing in the
+    /// catalog is unreachable by name.
+    ///
+    /// Deliberately does NOT apply `hideOtherSports`: if the user typed the
+    /// name, they want the exercise, not a sport-relevance opinion about it.
+    private var exerciseSearchResults: some View {
+        ScrollView {
+            if searchResults.isEmpty {
+                searchEmptyState
+            } else {
+                VStack(spacing: 8) {
+                    ForEach(searchResults) { ex in
+                        ExerciseTile(vm: .init(
+                            leading: .thumb(exerciseID: ex.id, urlString: ex.thumbnailURL ?? ex.imageURL),
+                            title: ex.name,
+                            meta: ex.metaLabel(),
+                            trailing: .chevron,
+                            onTap: { detailExercise = ex }
+                        ))
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 4)
+                .padding(.bottom, 32)
+            }
+        }
+    }
+
+    private var searchResults: [Exercise] {
+        CoachDatabase.shared.listExercises(
+            search: query,
+            muscleSlugs: [],
+            patternSlugs: [],
+            modality: nil,
+            difficulty: nil,
+            environment: nil,
+            compoundOnly: false,
+            userSportSlugs: []
+        )
+    }
+
     private var tileGrid: some View {
         let columns = [
             GridItem(.flexible(), spacing: 12),
@@ -301,7 +343,11 @@ struct LibraryScreen: View {
     private var list: some View {
         switch segment {
         case .exercises:
-            tileGrid
+            if query.isEmpty {
+                tileGrid
+            } else {
+                exerciseSearchResults
+            }
 
         case .routines:
             let allCustoms = customStore.routines
