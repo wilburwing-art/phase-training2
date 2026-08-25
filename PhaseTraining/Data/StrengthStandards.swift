@@ -45,7 +45,11 @@ enum StrengthStandards {
                 // any name containing "row" disqualifies (incline bench row).
                 return ["bench press"]
             case .squat:
-                return ["back squat", "barbell squat", " squat"]
+                // No LEADING SPACE on the bare fragment. " squat" could never
+                // match a name that *begins* with the word — and the shipped
+                // catalog's plain barbell squat is "Squat (Barbell)", so a user
+                // whose program uses it got no Squat row on the card at all.
+                return ["back squat", "barbell squat", "squat"]
             case .deadlift:
                 return ["deadlift"]
             case .ohp:
@@ -60,8 +64,25 @@ enum StrengthStandards {
         /// row" shouldn't count as a bench press).
         var disqualifiers: [String] {
             switch self {
-            case .bench:    return ["row"]
-            case .squat:    return ["jump", "split", "goblet", "bulgarian", "pistol"]
+            // Bench previously disqualified only "row", so "Dumbbell Bench
+            // Press", "Incline Barbell Bench Press", "Decline Bench Press",
+            // "Close-Grip Bench Press" and the Smith/cable variants all
+            // resolved to the flat-barbell standard. Dumbbell loads are logged
+            // PER HAND, so 80x8 dumbbells produced a ~101 lb "Bench Press" 1RM
+            // and a bogus tier. OHP already filtered exactly this class of
+            // variant ("dumbbell", "seated") — bench simply never did.
+            case .bench:    return ["row", "dumbbell", "incline", "decline",
+                                    "close-grip", "close grip", "wide grip", "wide-grip",
+                                    "reverse-grip", "reverse grip", "floor",
+                                    "machine", "cable", "smith"]
+            // The bare "squat" fragment above matches broadly, so the
+            // disqualifier list carries the weight. Without hack/front/box a
+            // 400 lb hack squat at 180 lb bodyweight scored 2.2x BW and
+            // labelled the user ELITE at a lift they have never performed.
+            case .squat:    return ["jump", "split", "goblet", "bulgarian", "pistol",
+                                    "hack", "front", "box", "belt", "safety",
+                                    "landmine", "zercher", "overhead", "sissy",
+                                    "bodyweight", "band", "wall", "machine", "smith"]
             case .deadlift: return ["romanian", "stiff", "single-leg", "single leg"]
             case .ohp:      return ["seated", "dumbbell", "kettlebell"]
             case .pullup:   return []
@@ -218,7 +239,13 @@ enum StrengthStandards {
                     guard effectiveWeight > 0 else { continue }
                     let oneRm = epley1RM(weight: effectiveWeight, reps: reps)
                     if oneRm > (bestPerLift[lift]?.oneRm ?? 0) {
-                        bestPerLift[lift] = (effectiveWeight, reps, oneRm)
+                        // Keep the LOGGED weight for display alongside the
+                        // effective one used for the estimate. Storing only
+                        // effectiveWeight made the "from your 145 × 5" subtitle
+                        // render a number the user never entered: log "+20 × 8"
+                        // at 180 lb bodyweight and the card read "from 200 × 8",
+                        // presenting an internal quantity as user data.
+                        bestPerLift[lift] = (weight, reps, oneRm)
                     }
                 }
             }

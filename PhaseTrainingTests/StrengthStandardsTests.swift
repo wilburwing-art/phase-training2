@@ -87,8 +87,15 @@ final class StrengthStandardsTests: XCTestCase {
             gender: .male
         )
         XCTAssertEqual(rows.first?.lift, .pullup)
-        // bestWeightLb stores the BW-added weight per the doc-comment.
-        XCTAssertEqual(rows.first?.bestWeightLb ?? 0, 200, accuracy: 0.5)
+        // bestWeightLb is what the user actually LOGGED (+20), not the
+        // bodyweight-inclusive figure used for the estimate. The card renders
+        // it as "from your 20 × 8"; showing 200 presented an internal quantity
+        // as a set the user entered. The doc comment always said "actually
+        // logged" — the code and this assertion were the things out of step.
+        XCTAssertEqual(rows.first?.bestWeightLb ?? 0, 20, accuracy: 0.5)
+        // The estimate still includes bodyweight, so the 1RM stays well above
+        // the logged load.
+        XCTAssertGreaterThan(rows.first?.oneRepMaxLb ?? 0, 200)
     }
 
     /// A 95×5 warmup must not flag as the user's "best bench"; only the
@@ -137,5 +144,70 @@ final class StrengthStandardsTests: XCTestCase {
             exercises: [logged], feel: nil, note: nil,
             endTime: Date(), duration: 3600
         )
+    }
+
+    // MARK: - Canonical-lift name matching (T1-20)
+
+    /// Table of REAL coach.db exercise names → the canonical lift each should
+    /// resolve to (nil = must match nothing). Every row here is a name actually
+    /// present in the shipped catalog, so this fails if either the matcher or
+    /// the catalog drifts.
+    func test_canonicalLiftMatching_realCatalogNames() {
+        let cases: [(name: String, expected: StrengthStandards.CanonicalLift?)] = [
+            // Squat — the plain barbell squat is the one the old " squat"
+            // fragment (leading space) could never match.
+            ("Squat (Barbell)",              .squat),
+            ("Back Squat",                   .squat),
+            ("Barbell Squat",                .squat),
+            // …and the variants that were silently scoring as Back Squat.
+            ("Hack Squat (Machine)",         nil),
+            ("Machine Hack Squat",           nil),
+            ("Front Squat (Barbell)",        nil),
+            ("Dumbbell Front Squat",         nil),
+            ("Smith Machine Front Squat",    nil),
+            ("Box Squat",                    nil),
+            ("Squat (Bodyweight)",           nil),
+            ("Squat (Band)",                 nil),
+            ("Squat (Smith Machine)",        nil),
+            ("Bulgarian Split Squat",        nil),
+            ("Goblet Squat",                 nil),
+
+            // Bench — flat barbell only.
+            ("Barbell Bench Press",          .bench),
+            ("Dumbbell Bench Press",         nil),   // logged per hand
+            ("Incline Barbell Bench Press",  nil),
+            ("Decline Bench Press (Barbell)", nil),
+            ("Close-Grip Bench Press",       nil),
+            ("Bench Press (Smith Machine)",  nil),
+            ("Bench Press (Cable)",          nil),
+
+            // Untouched lifts — guard against collateral damage.
+            ("Deadlift (Barbell)",           .deadlift),
+            ("Romanian Deadlift",            nil),
+            ("Overhead Press",               .ohp),
+            ("Seated Dumbbell Press",        nil),
+        ]
+
+        for (name, expected) in cases {
+            let matched = StrengthStandards.CanonicalLift.allCases.first { $0.matches(name: name) }
+            XCTAssertEqual(
+                matched, expected,
+                "\"\(name)\" resolved to \(matched.map(\.rawValue) ?? "nothing"), expected \(expected.map(\.rawValue) ?? "nothing")"
+            )
+        }
+    }
+
+    /// Every name in the table above that expects a match must also exist in
+    /// the shipped catalog — otherwise the test passes against a name no user
+    /// can ever log.
+    func test_canonicalMatchTable_namesExistInCatalog() {
+        let mustExist = ["Squat (Barbell)", "Barbell Bench Press", "Hack Squat (Machine)",
+                         "Front Squat (Barbell)", "Dumbbell Bench Press",
+                         "Incline Barbell Bench Press", "Close-Grip Bench Press"]
+        let catalog = Set(CoachDatabase.shared.listExercises().map(\.name))
+        for name in mustExist {
+            XCTAssertTrue(catalog.contains(name),
+                          "\"\(name)\" is no longer in coach.db — update the matcher table")
+        }
     }
 }
