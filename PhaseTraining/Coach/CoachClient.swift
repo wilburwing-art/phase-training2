@@ -18,6 +18,7 @@ import Foundation
 actor CoachClient {
     enum CoachError: Error, LocalizedError {
         case missingGatewayToken
+        case dailyCeilingReached
         case http(status: Int, body: String)
         case decode(Error)
         case transport(Error)
@@ -26,6 +27,8 @@ actor CoachClient {
             switch self {
             case .missingGatewayToken:
                 return "No Cloudflare AI Gateway token configured. Set PHASETRAINING_CF_AIG_DEV_TOKEN in ~/.config/phase-training/cf-aigateway-tokens.env and rebuild."
+            case .dailyCeilingReached:
+                return "The coach has reached today's request limit. It'll pick back up tomorrow."
             case .http(let status, let body):
                 return "Gateway returned HTTP \(status): \(body)"
             case .decode(let err):
@@ -50,6 +53,33 @@ actor CoachClient {
         self.session = session
     }
 
+    // MARK: - Daily request ceiling (cost backstop)
+
+    private static let ceilingCountKey = "pt_coach_gateway_requests_today"
+    private static let ceilingDayKey   = "pt_coach_gateway_requests_day"
+
+    /// Count one outbound gateway request and report whether it's allowed.
+    /// Enforced HERE rather than at each call site because this is the single
+    /// chokepoint every caller shares — the drawer, "Ask coach to build", the
+    /// daily insight, and the per-lift-day refinement pass. Rolls over on
+    /// calendar day.
+    static func consumeDailyRequestBudget(
+        defaults: UserDefaults = .standard,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> Bool {
+        let today = calendar.startOfDay(for: now).timeIntervalSince1970
+        let storedDay = defaults.double(forKey: ceilingDayKey)
+        var count = defaults.integer(forKey: ceilingCountKey)
+        if storedDay != today {
+            count = 0
+            defaults.set(today, forKey: ceilingDayKey)
+        }
+        guard count < CoachConfig.dailyRequestCeiling else { return false }
+        defaults.set(count + 1, forKey: ceilingCountKey)
+        return true
+    }
+
     /// Conversation turn — assistant or user message used in the chat history.
     struct Turn: Sendable {
         let role: String      // "user" or "assistant"
@@ -65,6 +95,9 @@ actor CoachClient {
     ) async throws -> PingResult {
         guard !CoachSecrets.gatewayToken.isEmpty else {
             throw CoachError.missingGatewayToken
+        }
+        guard Self.consumeDailyRequestBudget() else {
+            throw CoachError.dailyCeilingReached
         }
 
         var req = URLRequest(url: CoachConfig.baseURL.appendingPathComponent("v1/messages"))
@@ -141,6 +174,10 @@ actor CoachClient {
     ) -> AsyncThrowingStream<StreamPart, Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
+                guard Self.consumeDailyRequestBudget() else {
+                    continuation.finish(throwing: CoachError.dailyCeilingReached)
+                    return
+                }
                 guard !CoachSecrets.gatewayToken.isEmpty else {
                     continuation.finish(throwing: CoachError.missingGatewayToken)
                     return

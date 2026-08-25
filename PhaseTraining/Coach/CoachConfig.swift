@@ -36,6 +36,25 @@ enum CoachConfig {
     /// "Pause until tomorrow."
     static let hardTurnCap = 100
 
+    /// Daily ceiling on ALL gateway calls, not just drawer sends.
+    ///
+    /// `hardTurnCap` counts only user-initiated chat turns via
+    /// `CoachConversationStore.recordTurn()`. Three other callers reach the
+    /// gateway without touching it — CoachRequestScreen's "Ask coach to build",
+    /// InsightGenerator's daily insight, and the background plan-refinement
+    /// pass (one call PER LIFT DAY per regen) — so the documented cost guard
+    /// did not bound actual spend at all. This is the backstop enforced inside
+    /// CoachClient itself, the one chokepoint every caller shares.
+    ///
+    /// Set above hardTurnCap so normal chat still hits the friendlier
+    /// per-conversation limit first; this only catches runaway non-chat spend.
+    ///
+    /// NOTE: this is a client-side guard in UserDefaults and is trivially
+    /// bypassed by anyone who extracts the gateway token from the IPA. It
+    /// limits accidental spend, not abuse — the real ceiling has to be a
+    /// rate/spend limit configured on the Cloudflare AI Gateway itself.
+    static let dailyRequestCeiling = 400
+
     /// Max tokens to request from the model per turn.
     static let maxOutputTokens = 1024
 
