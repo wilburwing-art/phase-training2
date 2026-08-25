@@ -7,6 +7,16 @@ import SwiftUI
 struct EquipmentEditorSheet: View {
     @EnvironmentObject private var store: MemoryStore
     @Environment(\.dismiss) private var dismiss
+    /// The tier the user explicitly picked. Seeded from the stored equipment
+    /// on appear, then owned by the user's taps.
+    ///
+    /// It CANNOT be re-derived from `equipment` on every render: the old
+    /// `currentTier` computed property exact-matched single-element arrays, so
+    /// from Custom seeded with [bodyweight, dumbbells], deselecting Bodyweight
+    /// left exactly [.dumbbells] — the tier flipped to .dumbbells, the whole
+    /// "PICK WHAT YOU HAVE" grid disappeared mid-edit, and the Dumbbells preset
+    /// lit up instead. Deselecting everything did the same via the empty array.
+    @State private var tierSelection: EquipmentTier?
 
     var body: some View {
         NavigationStack {
@@ -79,7 +89,12 @@ struct EquipmentEditorSheet: View {
     }
 
     private var currentTier: EquipmentTier {
-        let eq = store.memory.equipment
+        tierSelection ?? Self.inferredTier(from: store.memory.equipment)
+    }
+
+    /// First-open guess only. Shared with ProfileScreen+RowSummaries, which
+    /// showed a drifting summary because it kept its own copy of this logic.
+    static func inferredTier(from eq: [Equipment]) -> EquipmentTier {
         if eq == [.bodyweight] { return .bodyweight }
         if eq == [.dumbbells]  { return .dumbbells  }
         if eq == [.fullGym]    { return .fullGym    }
@@ -87,13 +102,15 @@ struct EquipmentEditorSheet: View {
     }
 
     private func selectTier(_ tier: EquipmentTier) {
+        let wasCustom = currentTier == .custom
+        tierSelection = tier
         store.update { mem in
             switch tier {
             case .bodyweight: mem.equipment = [.bodyweight]
             case .dumbbells:  mem.equipment = [.dumbbells]
             case .fullGym:    mem.equipment = [.fullGym]
             case .custom:
-                if currentTier != .custom {
+                if !wasCustom {
                     mem.equipment = [.bodyweight, .dumbbells]
                 }
             }
@@ -101,6 +118,9 @@ struct EquipmentEditorSheet: View {
     }
 
     private func toggleCustomEquipment(_ eq: Equipment) {
+        // Editing chips keeps us in Custom regardless of what the array
+        // momentarily looks like.
+        tierSelection = .custom
         store.update { mem in
             if let idx = mem.equipment.firstIndex(of: eq) {
                 mem.equipment.remove(at: idx)

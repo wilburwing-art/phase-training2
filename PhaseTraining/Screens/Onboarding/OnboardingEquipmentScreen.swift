@@ -14,6 +14,8 @@ struct OnboardingEquipmentScreen: View {
     @Binding var draft: TrainingMemory
     let onNext: () -> Void
     let onBack: () -> Void
+    /// The tier the user explicitly picked; see `currentTier`.
+    @State private var tierSelection: EquipmentTier?
 
     var body: some View {
         OnboardingScaffold(
@@ -52,14 +54,16 @@ struct OnboardingEquipmentScreen: View {
         }
     }
 
+    /// Same collapse bug as EquipmentEditorSheet: derived by exact-matching
+    /// single-element arrays, so from Custom with an empty cloud the FIRST chip
+    /// tap made equipment == [.bodyweight], flipped the tier, and the custom
+    /// grid vanished under the user mid-interaction. Explicit state instead.
     private var currentTier: EquipmentTier {
-        if draft.equipment == [.bodyweight] { return .bodyweight }
-        if draft.equipment == [.dumbbells]  { return .dumbbells  }
-        if draft.equipment == [.fullGym]    { return .fullGym    }
-        return .custom
+        tierSelection ?? EquipmentEditorSheet.inferredTier(from: draft.equipment)
     }
 
     private func selectTier(_ tier: EquipmentTier) {
+        tierSelection = tier
         switch tier {
         case .bodyweight: draft.equipment = [.bodyweight]
         case .dumbbells:  draft.equipment = [.dumbbells]
@@ -75,6 +79,10 @@ struct OnboardingEquipmentScreen: View {
     }
 
     private func toggleCustom(_ eq: Equipment) {
+        // Editing chips keeps us in Custom no matter what the array looks like
+        // between taps — including the empty and single-element states that
+        // used to collapse the section.
+        tierSelection = .custom
         if let idx = draft.equipment.firstIndex(of: eq) {
             draft.equipment.remove(at: idx)
         } else {
