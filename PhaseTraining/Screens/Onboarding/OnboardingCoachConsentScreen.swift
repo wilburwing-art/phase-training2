@@ -5,8 +5,13 @@
 // CoachConsent.swift always claimed onboarding owned — without it the coach
 // bubble never appears for a new install.
 //
-// Default is ON: the user picks Coach or No coach, and Continue writes the
-// choice into the same @AppStorage key the Profile toggle reads/writes.
+// Default is OFF and NEITHER option is pre-selected: the user must make an
+// affirmative pick before Continue enables. A pre-ticked "Enable AI Coach"
+// accepted by a generic "See my plan" button is a pre-checked consent box —
+// weak evidence of consent for App Review and not valid opt-in under GDPR,
+// especially since the payload includes health-adjacent body metrics and
+// injury notes. Continue writes the choice into the same @AppStorage key the
+// Profile toggle reads/writes.
 
 import SwiftUI
 
@@ -17,8 +22,9 @@ struct OnboardingCoachConsentScreen: View {
     let onBack: () -> Void
 
     /// Local state so the user can flip back-and-forth without committing to
-    /// AppStorage until they tap Continue.
-    @State private var localOn: Bool = true
+    /// AppStorage until they tap Continue. `nil` = no choice made yet, which
+    /// gates Continue — consent must be an affirmative act, not a default.
+    @State private var localOn: Bool?
 
     var body: some View {
         OnboardingScaffold(
@@ -26,8 +32,9 @@ struct OnboardingCoachConsentScreen: View {
             title: "Want a coach in your pocket?",
             subtitle: "An AI Coach can answer training questions and tailor your plan. You can switch it off any time in Profile.",
             nextLabel: "See my plan",
+            nextEnabled: localOn != nil,
             onNext: {
-                consentGranted = localOn
+                consentGranted = localOn ?? false
                 onNext()
             },
             onBack: onBack
@@ -35,25 +42,30 @@ struct OnboardingCoachConsentScreen: View {
             VStack(alignment: .leading, spacing: 14) {
                 OnboardingPickRow(
                     title: "Enable AI Coach",
-                    subtitle: "Chat reaches \(CoachConsent.providerName) via \(CoachConsent.routedVia). No identity info is sent.",
-                    selected: localOn,
+                    subtitle: CoachConsent.shortDisclosure,
+                    selected: localOn == true,
                     leading: "sparkles",
                     action: { localOn = true }
                 )
                 OnboardingPickRow(
                     title: "No coach",
                     subtitle: "Nothing leaves your phone. You can turn this on later in Profile.",
-                    selected: !localOn,
+                    selected: localOn == false,
                     leading: "lock.fill",
                     action: { localOn = false }
                 )
+                Text(CoachConsent.modalBody)
+                    .font(.caption)
+                    .foregroundColor(.ink2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 4)
             }
         }
         .onAppear {
-            // A stored choice mirrors as-is so backing into this step shows
-            // what the user actually picked; only a fresh install (no stored
-            // choice) defaults ON.
-            localOn = hasMadeChoice ? consentGranted : true
+            // A stored choice mirrors as-is so backing into this step shows what
+            // the user actually picked. A fresh install starts with NO selection
+            // so neither option is pre-consented.
+            localOn = hasMadeChoice ? consentGranted : nil
         }
     }
 

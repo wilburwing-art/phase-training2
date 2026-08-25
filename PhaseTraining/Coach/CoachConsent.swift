@@ -21,10 +21,22 @@ enum CoachConsent {
     static let routedVia    = "our Cloudflare AI Gateway"
 
     static let modalBody = """
-    The AI Coach sends what's on your screen — today's plan, recent feedback, your messages — to \(providerName) via \(routedVia) so it can answer questions about your training.
+    The AI Coach sends your training context to \(providerName) via \(routedVia) so it can answer questions and adjust your plan. That includes:
 
-    No identity information is sent. We don't sell or share this data. You can turn the coach off anytime in Profile, which stops all transmissions.
+    • Your plan, workout history and logged sets
+    • Body metrics you've entered — height, weight, age, gender
+    • Injuries and soreness you've logged, including your own notes
+    • Estimated strength numbers, and your messages to the coach
+
+    We don't send your name, email or device identifiers, and we don't sell or share this data. You can turn the coach off anytime in Profile, which stops all transmissions.
     """
+
+    /// One-line version for the onboarding row, which has no room for the full
+    /// list. Must stay consistent with `modalBody` — the onboarding screen is
+    /// the ONLY consent surface a new install sees, so it can't be vaguer than
+    /// the modal a returning user gets.
+    static let shortDisclosure =
+        "Sends your plan, workouts, body metrics (height, weight, age, gender) and injury notes to \(providerName) via \(routedVia). Never your name or email."
 }
 
 /// View modifier that drives a confirmation alert before flipping the toggle
