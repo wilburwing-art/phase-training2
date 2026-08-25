@@ -17,6 +17,11 @@ struct CSVImportSection: View {
     @State private var csvError: String?
     @State private var csvSummary: (count: Int, oldest: Date?, newest: Date?, perSource: [String: Int])?
     @State private var lastImport: WorkoutCSVImporter.Result?
+    /// Pending per-source delete, held until the user confirms. Deleting an
+    /// import source drops every set that came from it — the data behind
+    /// priorBest and lifetime peaks — and there is no undo, so this follows
+    /// the confirmed-destructive pattern the erase-all and restore paths use.
+    @State private var pendingDelete: (source: String, count: Int)?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -68,6 +73,24 @@ struct CSVImportSection: View {
         ) { result in
             handleCSVPick(result)
         }
+        .confirmationDialog(
+            pendingDelete.map { "Delete \($0.count) sets from \(prettySource($0.source))?" } ?? "",
+            isPresented: Binding(
+                get: { pendingDelete != nil },
+                set: { if !$0 { pendingDelete = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            if let pending = pendingDelete {
+                Button("Delete \(pending.count) sets", role: .destructive) {
+                    deleteSource(rawValue: pending.source)
+                    pendingDelete = nil
+                }
+            }
+            Button("Cancel", role: .cancel) { pendingDelete = nil }
+        } message: {
+            Text("This permanently removes that imported history, including the sets behind your lifetime bests. It can't be undone.")
+        }
     }
 
     // MARK: - Blocks
@@ -88,7 +111,7 @@ struct CSVImportSection: View {
                     Spacer()
                     Text("\(entry.value)").font(.caption.monospaced()).foregroundColor(.ink2)
                     Button(role: .destructive) {
-                        deleteSource(rawValue: entry.key)
+                        pendingDelete = (source: entry.key, count: entry.value)
                     } label: {
                         Text("Delete").font(.caption)
                     }
