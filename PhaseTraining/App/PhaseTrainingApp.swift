@@ -38,17 +38,14 @@ struct PhaseTrainingApp: App {
             // so UI tests could inherit saved sessions/routines from a prior run.
             MemoryStore.wipeAllUserData()
         }
-        // Debug-only screenshot seed: drop a 5-exercise active session with two
-        // supersets (A1/A2, B1/B2) plus a solo so the live LogScreen shows the
-        // band + label rendering at runtime. Launched via:
-        //   `--seed-supersets-demo`
-        // Demo data is written to a separate UserDefaults suite so it never
-        // pollutes the user's real state.
-        if ProcessInfo.processInfo.arguments.contains("--seed-supersets-demo") {
-            Self.seedSupersetsDemo()
-        }
         // UITest seeds, DEBUG-only so they can't ship in a release binary and
         // overwrite a real user's plan:
+        //   --seed-supersets-demo → a 5-exercise active session with two
+        //     supersets (A1/A2, B1/B2) plus a solo, so the live LogScreen shows
+        //     the band + A1/A2/B1/B2 label rendering at runtime. Writes the REAL
+        //     `pt_active_session` key in `.standard` (not a separate suite —
+        //     LogScreen reads SessionStore, which only looks there), so it must
+        //     stay inside this DEBUG block. Pair with --ui-test-reset.
         //   --seed-plan-demo  → TODAY is a lift day with a 5-exercise
         //     generatedWorkout (TodayScreen resolves the planned-user branch,
         //     not the upper-1 fallback) — the start→log→save path.
@@ -58,6 +55,9 @@ struct PhaseTrainingApp: App {
         // clears pt_week_plan first so the seed lands last. Auto-regen is gated
         // on memory.onboardedAt (nil under reset), so the seed isn't clobbered.
         #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--seed-supersets-demo") {
+            Self.seedSupersetsDemo()
+        }
         if ProcessInfo.processInfo.arguments.contains("--seed-plan-demo") {
             Self.seedPlanDemo()
         }
@@ -103,11 +103,17 @@ struct PhaseTrainingApp: App {
         WeeklyReminderScheduler.registerDelegate()
     }
 
+    #if DEBUG
     /// Debug-only: write a 5-exercise supersetted ActiveSession into
     /// UserDefaults so the live LogScreen shows the band + A1/A2/B1/B2
     /// labels. Mirrors the encoder config in SessionStore so the on-disk
     /// shape matches. Pair with `--ui-test-onboarded` to skip the welcome
     /// gate so the active-session bar surfaces immediately on launch.
+    ///
+    /// Writes the REAL `pt_active_session` key in `.standard` — SessionStore
+    /// reads only there, so a separate suite would make the seed invisible.
+    /// That is exactly why this is DEBUG-gated: in a release binary it would
+    /// overwrite a user's in-flight workout.
     private static func seedSupersetsDemo() {
         let session = ActiveSession(
             templateId: "demo-supersets",
@@ -182,7 +188,6 @@ struct PhaseTrainingApp: App {
         }
     }
 
-    #if DEBUG
     /// UITest-only: write a deterministic 7-day WeekPlan to `pt_week_plan` where
     /// `day(date)` builds each day, encoded with `.secondsSince1970` to match
     /// `PlanStore.decoder()`. Shared by the --seed-*-demo hooks.
