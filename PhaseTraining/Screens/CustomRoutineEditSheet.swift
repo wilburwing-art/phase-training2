@@ -66,7 +66,14 @@ struct CustomRoutineEditSheet: View {
                 // Look the row up by stable id, not array index — the row can
                 // be deleted between tapping Swap and this sheet rendering.
                 let name = draft.exercises.first(where: { $0.id == wrapped.id })?.name ?? "exercise"
-                ExercisePickerSheet(title: "Replace \(name)") { picked in
+                // Pre-narrow to same-muscle / same-pattern alternatives, like
+                // every other swap surface (LogScreen:93, TodayScreen:226,
+                // DayWorkoutPreviewSheet:77). This one opened on the unfiltered
+                // 582-row list, so swapping a bench press inside a custom
+                // workout dropped the user somewhere the identical action on
+                // Today would not.
+                ExercisePickerSheet(title: "Replace \(name)",
+                                    initialFilters: .similar(toExerciseNamed: name)) { picked in
                     if let i = draft.exercises.firstIndex(where: { $0.id == wrapped.id }) {
                         draft.exercises[i].exerciseId = picked.id
                         draft.exercises[i].name = picked.name
@@ -163,17 +170,24 @@ struct CustomRoutineEditSheet: View {
                 }
             }
 
-            Section {
-                Button(role: .destructive) {
-                    showingDeleteConfirm = true
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "trash")
-                        Text("Delete workout")
+            // Only for a workout that actually exists in the library. A blank
+            // routine straight from the Library CTA (CustomRoutine.makeBlank())
+            // opened offering "Delete workout" — with a "This removes it
+            // permanently" alert — for something that had never been saved and
+            // whose name rendered as the empty string.
+            if isExistingRoutine {
+                Section {
+                    Button(role: .destructive) {
+                        showingDeleteConfirm = true
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "trash")
+                            Text("Delete workout")
+                        }
+                        .foregroundStyle(Color.danger)
                     }
-                    .foregroundStyle(Color.danger)
+                    .listRowBackground(Color.surface)
                 }
-                .listRowBackground(Color.surface)
             }
         }
         .scrollContentBackground(.hidden)
@@ -267,8 +281,18 @@ struct CustomRoutineEditSheet: View {
     /// we render in superset-grouped (not source) order, so iterating
     /// `$draft.exercises` directly would deliver the wrong index.
     private func binding(forId id: String) -> Binding<CustomRoutineExercise> {
+        // The old fallback was `?? draft.exercises[0]`, which traps on an empty
+        // array: deleting the only exercise (swipe-to-delete, sheet permanently
+        // in edit mode) can have SwiftUI evaluate the removed row's binding once
+        // more during the delete animation. When the array was NON-empty the
+        // same fallback silently handed back exercise 0, so a stale row edited
+        // the WRONG exercise. Both failure modes go away with an inert
+        // placeholder whose setter is already a no-op for a missing id.
         Binding(
-            get: { draft.exercises.first(where: { $0.id == id }) ?? draft.exercises[0] },
+            get: {
+                draft.exercises.first(where: { $0.id == id })
+                    ?? CustomRoutineExercise(id: id, exerciseId: 0, name: "", position: 0)
+            },
             set: { newValue in
                 if let i = draft.exercises.firstIndex(where: { $0.id == id }) {
                     draft.exercises[i] = newValue
@@ -335,9 +359,20 @@ struct CustomRoutineEditSheet: View {
 
     private func fieldBlock(_ label: String, text: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(label.uppercased())
-                .styled(.micro)
-                .foregroundStyle(Color.ink3)
+            HStack(spacing: 4) {
+                Text(label.uppercased())
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                // Both fields silently enforce a bound they never disclosed: a
+                // typed "0" for sets snapped back with no message, and "100"
+                // reps became "50" mid-keystroke. Naming the range makes the
+                // clamp legible instead of feeling broken.
+                if let hint = Self.fieldBoundHint(for: label) {
+                    Text(hint)
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3.opacity(0.7))
+                }
+            }
             TextField("", text: text)
                 .font(.monoS)
                 .foregroundStyle(Color.ink)
@@ -345,7 +380,21 @@ struct CustomRoutineEditSheet: View {
                 .padding(.vertical, 6)
                 .background(Color.elevated)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
-                .keyboardType(label == "Sets" ? .numberPad : .default)
+                // Keyed off a user-facing label, which breaks the moment these
+                // are localized. Rest is numeric in the common case ("90s") but
+                // accepts free text, so it keeps the default keyboard.
+                .keyboardType(label == Self.setsFieldLabel ? .numberPad : .default)
+        }
+    }
+
+    static let setsFieldLabel = "Sets"
+    static let repsFieldLabel = "Reps"
+
+    private static func fieldBoundHint(for label: String) -> String? {
+        switch label {
+        case setsFieldLabel: return "1–99"
+        case repsFieldLabel: return "1–50"
+        default: return nil
         }
     }
 
@@ -454,8 +503,18 @@ struct CustomRoutineEditSheet: View {
         }
     }
 
+    /// True once this routine exists in the library. `original` is the value
+    /// the sheet opened with, so a never-saved blank draft is distinguishable
+    /// from an edit of a stored routine.
+    private var isExistingRoutine: Bool {
+        store.routines.contains { $0.id == original.id }
+    }
+
+    /// A routine needs a name as well as exercises — the blank draft's name
+    /// renders as an empty string in every list that shows it.
     private var canSave: Bool {
         !draft.exercises.isEmpty
+            && !draft.name.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     private func save() {
