@@ -448,8 +448,7 @@ enum CoachToolDecoder {
     /// supplied plan. Skips ops that don't match any day (no UUID resolution).
     static func planEdits(for proposal: CoachProposal, in plan: WeekPlan) -> [PlanEdit] {
         let cal = Calendar.current
-        let df = DateFormatter()
-        df.dateFormat = "yyyy-MM-dd"
+        let df = DayKeyFormatter.iso
 
         func day(for ymd: String?) -> DayPlan? {
             guard let ymd, let target = df.date(from: ymd) else { return nil }

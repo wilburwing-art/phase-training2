@@ -20,6 +20,8 @@ struct MiniWorkoutDiffCard: View {
 
     @State private var diff: WorkoutDiff? = nil
     @State private var resolutionNote: String? = nil
+    /// Latches on the first Apply tap; see `apply()`.
+    @State private var isApplying = false
 
     var body: some View {
         MiniDiffCardChrome(
@@ -102,11 +104,7 @@ struct MiniWorkoutDiffCard: View {
     /// DateFormatter is expensive to allocate; resolve() runs on every card
     /// appearance and apply() on tap, both parsing the proposal's yyyy-MM-dd
     /// date string, so cache one instance.
-    private static let isoDay: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        return f
-    }()
+    private static let isoDay: DateFormatter = DayKeyFormatter.iso
 
     private var canApply: Bool {
         guard proposal.status == .pending,
@@ -115,7 +113,14 @@ struct MiniWorkoutDiffCard: View {
         return true
     }
 
+    /// Same early-bail its sibling MiniPlanDiffCard documents as a build-60
+    /// watchdog fix — this card never had it. In a LazyVStack `onAppear`
+    /// re-fires after scrolling away and back, so POST-apply it recomputed the
+    /// diff against the already-mutated workout, got isNoop, and rendered
+    /// "(No matching exercises in today's workout — nothing to change.)"
+    /// underneath an APPLIED header.
     private func resolve() {
+        guard diff == nil, resolutionNote == nil else { return }
         guard let plan = planStore.plan,
               let target = Self.isoDay.date(from: proposal.dateString) else {
             resolutionNote = "No active plan to edit."
@@ -130,6 +135,13 @@ struct MiniWorkoutDiffCard: View {
     }
 
     private func apply() {
+        // Double-tap guard. MiniMemoryDiffCard documents why this is needed —
+        // the captured `proposal` is a render-time snapshot that still reads
+        // .pending on a second tap — but neither this card nor MiniPlanDiffCard
+        // had it, so a fast double-tap fired applyWorkoutDiff and the haptic
+        // twice.
+        guard !isApplying else { return }
+        isApplying = true
         guard let diff = diff, let target = Self.isoDay.date(from: proposal.dateString) else { return }
         let planOk = planStore.applyWorkoutDiff(diff, on: target)
         // If the user has already started the session, mirror the edit into

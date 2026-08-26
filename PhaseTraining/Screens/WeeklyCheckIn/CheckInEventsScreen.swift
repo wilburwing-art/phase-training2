@@ -205,9 +205,5 @@ private enum EventDateFormatters {
     }()
 
     /// ISO yyyy-MM-dd — sheet identity for EventPickDate.
-    static let isoDay: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        return f
-    }()
+    static let isoDay: DateFormatter = DayKeyFormatter.iso
 }

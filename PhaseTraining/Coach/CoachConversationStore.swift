@@ -217,9 +217,7 @@ final class CoachConversationStore: ObservableObject {
     }
 
     private static func dayString(for date: Date) -> String {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        return f.string(from: date)
+        DayKeyFormatter.string(from: date)
     }
 
     private static func encoder() -> JSONEncoder {

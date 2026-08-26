@@ -249,12 +249,7 @@ struct WeekScreen: View {
 /// drag payload, so cache one instance per distinct format.
 private enum WeekDateFormatters {
     /// ISO yyyy-MM-dd — sheet identity + drag payload encoding.
-    static let isoDay: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        f.timeZone = .current
-        return f
-    }()
+    static let isoDay: DateFormatter = DayKeyFormatter.iso
 
     static let weekdayShort: DateFormatter = {
         let f = DateFormatter()

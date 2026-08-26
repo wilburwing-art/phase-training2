@@ -332,6 +332,34 @@ extension WeekOverrides {
 
 // MARK: - Week anchoring
 
+/// The app's single `yyyy-MM-dd` day-key formatter.
+///
+/// Six separate copies existed (WeekScreen, CheckInEventsScreen, CoachTools,
+/// CoachDrawer, CoachConversationStore, MiniWorkoutDiffCard) and NONE of them
+/// pinned a locale. `yyyy` is the *calendar-relative* year, so on a device set
+/// to a Japanese, Buddhist or ROC calendar `df.date(from: "2026-08-25")`
+/// resolves to a different era-year: the coach's plan-edit matching found no
+/// day and every proposal degraded to "Couldn't match the proposed ops to your
+/// current plan", and the conversation store's day bucket keyed wrong so the
+/// midnight rollover misfired.
+///
+/// `en_US_POSIX` + an explicit Gregorian calendar makes the format mean what
+/// the string says regardless of device settings. Machine-readable day keys
+/// must never use a user-locale formatter.
+enum DayKeyFormatter {
+    static let iso: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.calendar = Calendar(identifier: .gregorian)
+        f.dateFormat = "yyyy-MM-dd"
+        f.timeZone = .current
+        return f
+    }()
+
+    static func string(from date: Date) -> String { iso.string(from: date) }
+    static func date(from key: String) -> Date? { iso.date(from: key) }
+}
+
 extension Date {
     /// Monday of the ISO week containing this date, at start-of-day. Stable
     /// across timezones using the current Calendar's firstWeekday convention.
