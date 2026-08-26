@@ -24,11 +24,7 @@ struct CoachDrawer: View {
     private let client = CoachClient()
 
     /// Cached — allocating a DateFormatter per tool call is needless churn.
-    private static let isoDayFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd"
-        return f
-    }()
+    private static let isoDayFormatter: DateFormatter = DayKeyFormatter.iso
 
     var body: some View {
         VStack(spacing: 0) {
@@ -368,10 +364,18 @@ struct CoachDrawer: View {
                             conv.appendDelta(to: assistantMsg.id, chunk)
                         }
                     case .toolCall(_, let name, let inputData):
+                        // A failed decode used to fall through silently: the
+                        // assistant said "I've proposed moving Thursday to
+                        // Friday", no diff card rendered, and the user had no
+                        // error and no way to retry. Truncation at max_tokens
+                        // and malformed input_json_delta both land here.
+                        var decoded = true
                         switch name {
                         case "propose_plan_edits":
                             if let proposal = CoachToolDecoder.decodeProposal(from: inputData) {
                                 await MainActor.run { conv.setProposal(on: assistantMsg.id, proposal) }
+                            } else {
+                                decoded = false
                             }
                         case "propose_workout_changes":
                             // Build 99: pass today as the FALLBACK, not as
@@ -382,13 +386,26 @@ struct CoachDrawer: View {
                             let today = Self.isoDayFormatter.string(from: Date())
                             if let proposal = CoachToolDecoder.decodeWorkoutProposal(from: inputData, fallbackDate: today) {
                                 await MainActor.run { conv.setWorkoutProposal(on: assistantMsg.id, proposal) }
+                            } else {
+                                decoded = false
                             }
                         case "propose_memory_update":
                             if let proposal = CoachToolDecoder.decodeMemoryProposal(from: inputData) {
                                 await MainActor.run { conv.setMemoryProposal(on: assistantMsg.id, proposal) }
+                            } else {
+                                decoded = false
                             }
                         default:
                             continue
+                        }
+                        if !decoded {
+                            await MainActor.run { noteUndeliveredProposal() }
+                        }
+
+                    case .stopped(let reason):
+                        // "max_tokens" means the model was cut off mid-thought.
+                        if reason == "max_tokens" {
+                            await MainActor.run { noteTruncatedReply() }
                         }
                     }
                 }
@@ -406,11 +423,65 @@ struct CoachDrawer: View {
         inflightTask = nil
     }
 
+    /// User-facing error taxonomy. `error.localizedDescription` was written
+    /// straight into the assistant bubble, so the coach appeared to say things
+    /// like "No Cloudflare AI Gateway token configured. Set
+    /// PHASETRAINING_CF_AIG_DEV_TOKEN in ~/.config/phase-training/…" or up to
+    /// 512 characters of raw gateway JSON. Three cases the user can act on;
+    /// anything else is "try again".
+    private static func userFacingMessage(for error: Error) -> String {
+        if let coachError = error as? CoachClient.CoachError {
+            switch coachError {
+            case .dailyCeilingReached:
+                return "That's the coach's limit for today — it'll pick back up tomorrow."
+            case .missingGatewayToken:
+                return "The coach isn't available in this build."
+            case .http(let status, _):
+                if status == 429 { return "The coach is rate-limited right now. Try again in a minute." }
+                if (500...599).contains(status) { return "The coach is having trouble on its end. Try again shortly." }
+                return "The coach couldn't complete that. Try again."
+            case .transport:
+                return "Couldn't reach the coach. Check your connection and try again."
+            case .decode:
+                return "The coach's reply came back garbled. Try again."
+            }
+        }
+        let ns = error as NSError
+        if ns.domain == NSURLErrorDomain {
+            return "Couldn't reach the coach. Check your connection and try again."
+        }
+        return "Something went wrong reaching the coach. Try again."
+    }
+
+    /// The model announced a change but its tool payload didn't decode, so no
+    /// diff card can render. Say so inline instead of leaving the user staring
+    /// at a claim with no card and no way to retry.
+    private func noteUndeliveredProposal() {
+        guard let id = streamingId,
+              let idx = conv.messages.firstIndex(where: { $0.id == id }) else { return }
+        let note = "\n\n⚠️ That change didn't come through in a usable form — ask again and I'll re-propose it."
+        if !conv.messages[idx].text.hasSuffix(note) {
+            conv.messages[idx].text += note
+        }
+    }
+
+    /// The reply hit maxOutputTokens. Without this the user just got a
+    /// sentence that stopped mid-word, with nothing to distinguish it from a
+    /// complete answer and no way to ask for the rest.
+    private func noteTruncatedReply() {
+        guard let id = streamingId,
+              let idx = conv.messages.firstIndex(where: { $0.id == id }) else { return }
+        let note = "\n\n… (cut off — ask me to continue)"
+        if !conv.messages[idx].text.hasSuffix(note) {
+            conv.messages[idx].text += note
+        }
+    }
+
     private func finishError(_ error: Error) {
         if let id = streamingId,
            let idx = conv.messages.firstIndex(where: { $0.id == id }) {
             let prefix = conv.messages[idx].text.isEmpty ? "" : conv.messages[idx].text + "\n\n"
-            conv.messages[idx].text = prefix + "⚠️ \(error.localizedDescription)"
+            conv.messages[idx].text = prefix + "⚠️ " + Self.userFacingMessage(for: error)
         }
         conv.flush()
         sending = false

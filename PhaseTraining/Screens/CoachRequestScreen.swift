@@ -433,6 +433,11 @@ struct CoachRequestScreen: View {
                     }
                 case .textDelta:
                     continue   // pre-tool reasoning text — not surfaced
+                case .stopped:
+                    // This path only cares about the build_workout tool call;
+                    // a truncated preamble is irrelevant, and the guard below
+                    // already handles "no usable tool call arrived".
+                    continue
                 }
             }
         } catch {

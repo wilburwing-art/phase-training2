@@ -161,6 +161,11 @@ actor CoachClient {
     enum StreamPart: Sendable {
         case textDelta(String)
         case toolCall(id: String, name: String, input: Data)
+        /// Terminal `message_delta.stop_reason`. Never read before, so a reply
+        /// cut off at maxOutputTokens (1024) was indistinguishable from a
+        /// complete one — the user got a sentence that stopped mid-word with no
+        /// indicator and no way to continue.
+        case stopped(reason: String)
     }
 
     /// Streaming chat. Yields text deltas + tool calls as they arrive.
@@ -258,6 +263,11 @@ actor CoachClient {
                                 toolUseScratch[idx]?.json += partial
                             }
 
+                        case "message_delta":
+                            if let reason = event.delta?.stopReason {
+                                continuation.yield(.stopped(reason: reason))
+                            }
+
                         case "content_block_stop":
                             guard let idx = event.index, let scratch = toolUseScratch[idx] else { continue }
                             toolUseScratch.removeValue(forKey: idx)
@@ -350,10 +360,12 @@ private struct StreamEvent: Decodable {
         let type: String?
         let text: String?
         let partialJson: String?
+        let stopReason: String?
 
         enum CodingKeys: String, CodingKey {
             case type, text
             case partialJson = "partial_json"
+            case stopReason = "stop_reason"
         }
     }
 
