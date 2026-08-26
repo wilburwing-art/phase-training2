@@ -29,11 +29,39 @@ extension PlanStore {
     /// Called from generate(from:) after the deterministic plan is stamped.
     /// Reads CoachConsent at call time so toggling consent in settings
     /// takes effect on the next regen with no app restart needed.
+    /// Does `WorkoutGenerator.generateLift` actually consume the
+    /// `GeneratorStrategy` the refinement pass produces? It does not — see the
+    /// comment in `kickOffLLMRefinementIfConsented`. Flip this in the same
+    /// change that wires strategy into the season engine.
+    static let llmRefinementConsumesStrategy = false
+
     func kickOffLLMRefinementIfConsented(memory: TrainingMemory) {
         // Cancel any in-flight refinement so we don't race two against
         // the same plan (last write wins on the @Published mutation,
         // but the older task wastes LLM calls).
         currentRefinementTask?.cancel()
+        // T2-2: refinement is a NO-OP on the only generator we have, so don't
+        // spend on it.
+        //
+        // The pass fires one Claude call PER LIFT DAY per regen (unbounded
+        // TaskGroup fan-out, re-fired on every memory-drift regen and every
+        // structural apply()), builds a GeneratorStrategy from the tool call,
+        // then calls WorkoutGenerator.generateLift — which states outright at
+        // WorkoutGenerator.swift:78 that "`context` / `strategy` are accepted
+        // for signature stability but the season engine doesn't consume them
+        // yet". The season engine is the ONLY generator. So the "refined"
+        // workout is byte-identical to the deterministic one, and it was still
+        // stamped refinedByLLMAt and surfaced to the user as coach-personalized.
+        //
+        // That's pure token spend plus a false product claim. Turning it off
+        // here also resolves the onboarding complaint that the previewed plan
+        // was silently rewritten after Accept (it wasn't being changed — but
+        // the stamp made the app say it was), and the variety + wrong-day-index
+        // races the refinement path carried.
+        //
+        // Re-enable in the same change that makes generateLift consume
+        // `strategy`. The refinement machinery below is left intact for that.
+        guard Self.llmRefinementConsumesStrategy else { return }
         guard isCoachEnabled else { return }
         guard plan != nil else { return }
         currentRefinementTask = Task { @MainActor in
