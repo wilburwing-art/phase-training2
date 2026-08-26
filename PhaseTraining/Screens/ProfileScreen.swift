@@ -328,7 +328,16 @@ struct ProfileScreen: View {
             }
             Button("Cancel", role: .cancel) { backup.pendingRestore = nil }
         } message: { envelope in
-            Text("This replaces your current profile, workouts, history, and plan with the backup from \(formattedShort(envelope.exportedAt)). It can't be undone.")
+            // T2-5: isMemorySchemaStale was fully implemented and documented as
+            // "callers can surface a 'backup is from an older version' notice
+            // off this" — and no caller did; grep found it only in its own
+            // declaration and the tests. So a user restoring a backup written
+            // by an older TrainingMemory schema silently got defaults for every
+            // field added since, with nothing telling them.
+            Text("This replaces your current profile, workouts, history, and plan with the backup from \(formattedShort(envelope.exportedAt)). It can't be undone."
+                 + (envelope.isMemorySchemaStale
+                    ? "\n\nThis backup predates some settings this version stores. Those will come back as defaults — worth a look at Profile afterwards."
+                    : ""))
         }
         .alert("Restore complete", isPresented: $backup.restoreCompleted) {
             Button("Done") {}
