@@ -107,9 +107,17 @@ extension TodayScreen {
     /// Phase-11 rules. Picks first matching source.
     private var insightCopy: String? {
         let cal = Calendar.current
-        if let coach = memoryStore.memory.coachInsights.last(where: {
-            $0.surface == "today" && cal.isDate($0.date, inSameDayAs: Date())
-        }) {
+        // Same entitlement gate `isCoachPolished` applies, for the same reason.
+        // coachInsights is LLM-authored free text (InsightGenerator), and it fed
+        // straight into heroCaption — the most prominent copy on the screen —
+        // with no consent or Pro check at all. Nothing prunes the array on
+        // revocation, so a user who turned the coach OFF kept reading
+        // coach-written text in the header. Gating the READ is what matters;
+        // pruning stored insights isn't needed once nothing surfaces them.
+        if CoachEntitlement.unlocked(consent: consentGranted, pro: proEntitled),
+           let coach = memoryStore.memory.coachInsights.last(where: {
+               $0.surface == "today" && cal.isDate($0.date, inSameDayAs: Date())
+           }) {
             return coach.body
         }
         guard let plan = planStore.plan else { return nil }

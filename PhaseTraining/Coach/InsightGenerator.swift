@@ -125,11 +125,28 @@ enum InsightGenerator {
         s = s.replacingOccurrences(of: "\u{201C}", with: "")   // “
         s = s.replacingOccurrences(of: "\u{201D}", with: "")   // ”
         s = s.replacingOccurrences(of: "\"", with: "")
-        // If the model rambles, keep only the last non-empty sentence.
-        if s.count > 140, let lastSentence = s.split(whereSeparator: { ".!?".contains($0) }).map({ String($0).trimmingCharacters(in: .whitespacesAndNewlines) }).last(where: { !$0.isEmpty }) {
-            s = lastSentence
+        // Truncate, don't decapitate. This used to keep only the LAST sentence
+        // whenever the reply exceeded 140 characters — but the prompt asks for
+        // "OBSERVATION first, then ONE concrete takeaway" within 280, so a
+        // well-formed two-sentence insight was reduced to the takeaway with the
+        // evidence that justified it stripped off ("Add a set next week." with
+        // no mention of what the user did to earn it).
+        //
+        // 280 is the real budget; only trim past it, and trim at a sentence
+        // boundary so we never cut mid-word.
+        if s.count > 280 {
+            let sentences = s
+                .split(whereSeparator: { ".!?".contains($0) })
+                .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+            var kept = ""
+            for sentence in sentences {
+                let candidate = kept.isEmpty ? sentence : kept + ". " + sentence
+                if candidate.count > 280 { break }
+                kept = candidate
+            }
+            s = kept.isEmpty ? String(s.prefix(280)) : kept
         }
-        if s.count > 280 { s = String(s.prefix(280)) }
         return s
     }
 }

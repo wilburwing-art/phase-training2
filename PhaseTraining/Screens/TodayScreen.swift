@@ -31,8 +31,10 @@ struct TodayScreen: View {
     // badge must not render for users without consent/Pro, even when a stale
     // refinedByLLMAt stamp survives in the plan from before consent was
     // revoked (nothing clears the stamp on revocation).
-    @AppStorage(CoachConsent.storageKey) private var consentGranted: Bool = false
-    @AppStorage(CoachEntitlement.proKey) private var proEntitled: Bool = false
+    // Internal (not private) so the +Derived extension file can read them —
+    // `insightCopy` gates the same way `isCoachPolished` does.
+    @AppStorage(CoachConsent.storageKey) var consentGranted: Bool = false
+    @AppStorage(CoachEntitlement.proKey) var proEntitled: Bool = false
 
     let onStart: () -> Void
 

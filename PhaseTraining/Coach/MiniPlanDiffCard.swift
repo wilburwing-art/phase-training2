@@ -17,6 +17,8 @@ struct MiniPlanDiffCard: View {
 
     @State private var resolvedDiff: PlanDiff? = nil
     @State private var resolutionNote: String? = nil
+    /// Latches on the first Apply tap; see `apply()`.
+    @State private var isApplying = false
 
     var body: some View {
         MiniDiffCardChrome(
@@ -120,6 +122,11 @@ struct MiniPlanDiffCard: View {
     }
 
     private func apply() {
+        // See MiniMemoryDiffCard: the captured `proposal` is a render-time
+        // snapshot that still reads .pending on a double tap, so without this
+        // the apply and haptic fire twice.
+        guard !isApplying else { return }
+        isApplying = true
         guard let diff = resolvedDiff else { return }
         planStore.apply(diff)
         conv.setProposalStatus(messageId: messageId, .applied)
