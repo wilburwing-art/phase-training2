@@ -20,6 +20,8 @@ struct CoachDrawer: View {
     @State private var streamingId: UUID? = nil
     @State private var inflightTask: Task<Void, Never>? = nil
     @FocusState private var inputFocused: Bool
+    @State private var confirmingClear = false
+    @State private var showingHistory = false
 
     private let client = CoachClient()
 
@@ -43,6 +45,16 @@ struct CoachDrawer: View {
         .preferredColorScheme(.dark)
         .onAppear(perform: handleAppear)
         .onDisappear { inflightTask?.cancel() }
+        .alert("Clear today's chat?", isPresented: $confirmingClear) {
+            Button("Clear", role: .destructive) { conv.clearToday() }
+            Button("Keep", role: .cancel) {}
+        } message: {
+            Text("This removes today's messages. Past days stay in History.")
+        }
+        .sheet(isPresented: $showingHistory) {
+            CoachHistorySheet()
+                .environmentObject(conv)
+        }
     }
 
     // MARK: - Pieces
@@ -65,10 +77,19 @@ struct CoachDrawer: View {
                 .styled(.micro)
                 .foregroundStyle(Color.accent)
             Spacer()
+            // T2-4: past days' transcripts were archived and unreachable.
+            if !conv.archivedDays().isEmpty {
+                Button { showingHistory = true } label: {
+                    Text("HISTORY")
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                }
+                .buttonStyle(.plain)
+            }
             if !conv.messages.isEmpty {
-                Button {
-                    conv.clearToday()
-                } label: {
+                // One tap, no confirmation, no undo — and it was the only
+                // affordance next to a transcript the user may want.
+                Button { confirmingClear = true } label: {
                     Text("CLEAR")
                         .styled(.micro)
                         .foregroundStyle(Color.ink3)
@@ -345,7 +366,19 @@ struct CoachDrawer: View {
             recentSessions: sessionStore.savedSessions,
             recentFeedback: memoryStore.memory.feedback,
             recentSoreness: memoryStore.memory.soreness,
-            recentSportLogs: Array(recentSportLogs)
+            recentSportLogs: Array(recentSportLogs),
+            // T2-3: these three blocks are fully implemented and unit-tested in
+            // CoachContext, but NO production call site passed them — verified
+            // by grep across the app. So the PAST WEEKS / PLAN ISSUES / MISSED
+            // WORKOUTS sections the comments promise the coach can discuss never
+            // reached the model, even though PlanStore publishes all three.
+            //
+            // Wired here (the chat surface) only. The insight and refinement
+            // passes are one-shot and cost-sensitive; the drawer is where a user
+            // actually asks "why did I miss Tuesday?".
+            pastPlans: planStore.pastPlans,
+            planIssues: planStore.currentValidationIssues(memory: memoryStore.memory),
+            missedWorkouts: planStore.missedWorkouts
         )
 
         inflightTask = Task {
@@ -509,4 +542,105 @@ struct CoachDrawer: View {
         .environmentObject(SessionStore(defaults: defaults))
         .environmentObject(TabSelectionStore())
         .environmentObject(SportLogStore(defaults: defaults))
+}
+
+// MARK: - Archived conversations (T2-4)
+
+/// Read-only browser for `pt_coach_archive_<day>` transcripts.
+///
+/// Lives in this file rather than its own because project.pbxproj is
+/// hand-managed AND gitignored here — a new file wouldn't compile into the
+/// target for anyone else. See the repo's pbxproj note.
+struct CoachHistorySheet: View {
+    @EnvironmentObject private var conv: CoachConversationStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedDay: String?
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.bg.ignoresSafeArea()
+                let days = conv.archivedDays()
+                if days.isEmpty {
+                    Text("No past conversations yet.")
+                        .styled(.body)
+                        .foregroundStyle(Color.ink3)
+                } else if let day = selectedDay,
+                          let messages = conv.archivedMessages(forDay: day) {
+                    transcript(day: day, messages: messages)
+                } else {
+                    dayList(days)
+                }
+            }
+            .navigationTitle(selectedDay ?? "Past chats")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    if selectedDay != nil {
+                        Button("Back") { selectedDay = nil }
+                            .foregroundStyle(Color.accent)
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .foregroundStyle(Color.accent)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationBackground(Color.bg)
+        .preferredColorScheme(.dark)
+    }
+
+    private func dayList(_ days: [String]) -> some View {
+        ScrollView {
+            VStack(spacing: 8) {
+                ForEach(days, id: \.self) { day in
+                    Button { selectedDay = day } label: {
+                        HStack {
+                            Text(day)
+                                .styled(.body)
+                                .foregroundStyle(Color.ink)
+                            Spacer()
+                            Text("\(conv.archivedMessages(forDay: day)?.count ?? 0) messages")
+                                .font(.monoXS)
+                                .foregroundStyle(Color.ink3)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(Color.ink3)
+                        }
+                        .padding(12)
+                        .background(Color.surface)
+                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+        }
+    }
+
+    private func transcript(day: String, messages: [CoachMessage]) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(messages) { m in
+                    VStack(alignment: m.isUser ? .trailing : .leading, spacing: 2) {
+                        Text(m.text)
+                            .font(.custom("Inter-Regular", size: 14))
+                            .foregroundStyle(m.isUser ? Color.accentInk : Color.ink)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(m.isUser ? Color.accent : Color.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: m.isUser ? .trailing : .leading)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+        }
+    }
 }

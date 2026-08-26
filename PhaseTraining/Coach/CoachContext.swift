@@ -276,7 +276,8 @@ enum CoachContext {
             for s in sessions {
                 let done = s.exercises.flatMap(\.sets).filter(\.done).count
                 let feel = s.feel.map { " · felt: \($0.lowercased())" } ?? ""
-                lines.append("- \(short(s.startTime)) · \(s.name) · \(done) sets · \(s.duration / 60) min\(feel)")
+                // T2-9: session name comes from a custom routine title.
+                lines.append("- \(short(s.startTime)) · \(sanitizeFreeText(s.name, max: 80)) · \(done) sets · \(s.duration / 60) min\(feel)")
             }
             blocks.append("\(header)\n" + lines.joined(separator: "\n"))
         }

@@ -121,7 +121,7 @@ extension CoachContext {
             .prefix(limit)
         let lines = top.map { row -> String in
             let plural = row.sessions == 1 ? "session" : "sessions"
-            return "- \(row.name): \(row.sets) sets across \(row.sessions) \(plural)"
+            return "- \(CoachContext.sanitizeFreeText(row.name, max: 80)): \(row.sets) sets across \(row.sessions) \(plural)"
         }
         return "EXERCISE FAMILIARITY — last \(days)d\n" + lines.joined(separator: "\n")
     }

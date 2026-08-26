@@ -171,6 +171,27 @@ final class CoachConversationStore: ObservableObject {
         }
     }
 
+    // MARK: - Archives
+
+    /// Past days that have an archived transcript, newest first.
+    ///
+    /// T2-4: `rolloverIfNeeded` has always written `pt_coach_archive_<day>`,
+    /// and nothing in the app ever read those keys back — verified by grep, the
+    /// prefix appeared only at its declaration, the write, and the wipe. So the
+    /// conversation silently disappeared at midnight with no history surface at
+    /// all, while the archives accumulated in UserDefaults unreachable.
+    func archivedDays() -> [String] {
+        defaults.dictionaryRepresentation().keys
+            .filter { $0.hasPrefix(Self.archivePrefix) }
+            .map { String($0.dropFirst(Self.archivePrefix.count)) }
+            .sorted(by: >)
+    }
+
+    /// Transcript for an archived day key (`yyyy-MM-dd`), or nil.
+    func archivedMessages(forDay day: String) -> [CoachMessage]? {
+        Self.load(defaults: defaults, key: Self.archivePrefix + day)
+    }
+
     // MARK: - Rollover
 
     /// If today's date differs from the last-seen day, archive the current
@@ -201,10 +222,21 @@ final class CoachConversationStore: ObservableObject {
     /// (apply/reject of a proposal); with a long chat + diff cards, the
     /// synchronous encode added ms to a hot UI path. Build 60 hit the iOS
     /// watchdog from a long apply cascade where this was a contributor.
+    /// Serial queue for transcript writes.
+    ///
+    /// T2-10: `save()` used to fire an UNSEQUENCED `Task.detached` per call with
+    /// a snapshot of `messages`. Two saves in quick succession —
+    /// setProposalStatus followed by flush, or a stream flush racing an apply —
+    /// had no ordering guarantee, so an older snapshot could land last and
+    /// persist a transcript missing the newer applied/rejected status. A serial
+    /// queue keeps writes in call order while staying off the main thread.
+    private static let saveQueue = DispatchQueue(label: "pt.coach.conversation.save",
+                                                 qos: .utility)
+
     private func save() {
         let snapshot = messages
         let store = defaults
-        Task.detached(priority: .utility) {
+        Self.saveQueue.async {
             if let data = try? Self.encoder().encode(snapshot) {
                 store.set(data, forKey: Self.todayKey)
             }

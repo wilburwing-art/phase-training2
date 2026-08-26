@@ -83,10 +83,12 @@ extension CoachContext {
             for ex in session.exercises {
                 let workingSets = ex.sets.filter { $0.done && !$0.isWarmup }
                 guard !workingSets.isEmpty else { continue }
-                lines.append("  • \(ex.name): \(renderWorkingSets(workingSets, unit: ex.displayUnit))")
+                // T2-9: exercise names are user-authorable (ad-hoc adds,
+                // custom routines) and reached the prompt raw.
+                lines.append("  • \(CoachContext.sanitizeFreeText(ex.name, max: 80)): \(renderWorkingSets(workingSets, unit: ex.displayUnit))")
             }
             guard !lines.isEmpty else { continue }
-            let header = "\(short(session.startTime)) · \(session.name)"
+            let header = "\(short(session.startTime)) · \(CoachContext.sanitizeFreeText(session.name, max: 80))"
             sessionBlocks.append(([header] + lines).joined(separator: "\n"))
         }
         guard !sessionBlocks.isEmpty else { return nil }
