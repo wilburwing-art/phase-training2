@@ -18,6 +18,9 @@ extension PlanStore {
             plan: plan,
             sessions: sessions,
             overrides: overrides,
+            // sportLogStore is already wired on PlanStore (PlanStore.swift:148)
+            // and used by the generation paths; the detector just never read it.
+            sportLogs: sportLogStore?.entries ?? [],
             now: now
         )
         let calendar = Calendar.current

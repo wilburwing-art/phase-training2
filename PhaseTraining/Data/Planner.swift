@@ -233,9 +233,25 @@ enum Planner {
         // Step 3 — apply per-day kind overrides (Move-to-day swaps, force-kind).
         // These are protected so subsequent rules can't undo them.
         if let overrides {
+            // Ordinal of each .lift override within the week, so pinned days get
+            // DISTINCT sessions. makeOverrideSlot used to hardcode
+            // liftIndex: 0, totalLifts: 1, and the season engine keys the whole
+            // session off sessionIndex (= liftIndex) — so every user-pinned lift
+            // day, and every day restored by PlanStore.adoptLastWeekShape (which
+            // writes .lift overrides for all prior lift days), produced the
+            // byte-identical workout. Pin Mon/Wed/Fri and you got the same three
+            // exercises three times.
+            let liftOverrideDates: [Date] = dates.enumerated().compactMap { i, date in
+                guard slots[i] == nil,
+                      let ov = overrides.override(on: date, calendar: calendar),
+                      case .lift = ov else { return nil }
+                return date
+            }
             for (i, date) in dates.enumerated() where slots[i] == nil {
                 guard let ov = overrides.override(on: date, calendar: calendar) else { continue }
-                slots[i] = makeOverrideSlot(date: date, override: ov, memory: memory, routines: routines, recentlyPicked: recentlyPicked, context: context, strategy: strategy)
+                let liftIndex = liftOverrideDates.firstIndex(where: { calendar.isDate($0, inSameDayAs: date) }) ?? 0
+                slots[i] = makeOverrideSlot(date: date, override: ov, memory: memory, routines: routines, recentlyPicked: recentlyPicked, context: context, strategy: strategy,
+                                            liftIndex: liftIndex, totalLifts: max(1, liftOverrideDates.count))
             }
         }
 
@@ -363,7 +379,11 @@ enum Planner {
         routines: [BundledRoutineRow],
         recentlyPicked: Set<Int>,
         context: GeneratorContext = .empty,
-        strategy: GeneratorStrategy = .auto
+        strategy: GeneratorStrategy = .auto,
+        /// Position of this day among the week's pinned lift days, and how many
+        /// there are. Threaded so each pinned day generates a different session.
+        liftIndex: Int = 0,
+        totalLifts: Int = 1
     ) -> DayPlan {
         switch override {
         case .rest:
@@ -391,11 +411,11 @@ enum Planner {
             if let focus { liftStrategy.focus = focus.asWorkoutFocus }
             let profile = DemographicProfile.from(memory)
             let workout = WorkoutGenerator.generateLift(
-                liftIndex: 0,
-                totalLifts: 1,
+                liftIndex: liftIndex,
+                totalLifts: totalLifts,
                 memory: memory,
                 profile: profile,
-                hashSeed: memory.planInputsHash + "-lift-override",
+                hashSeed: memory.planInputsHash + "-lift-override-\(liftIndex)",
                 recentlyPicked: recentlyPicked,
                 context: context,
                 strategy: liftStrategy
@@ -719,7 +739,16 @@ enum Planner {
         // explicit weekdays + magnitude — skip it here so it isn't double-placed.
         let supportSlug = memory.supportPattern?.sportSlug
         // Deterministic order: sport slug. seasonsBySport is a dict.
+        // Only sports the user still has selected. seasonsBySport was iterated
+        // with no membership check, so a sport deselected in SportsEditorSheet
+        // while marked .inSeason kept getting a placeholder day booked into the
+        // week forever, with no UI able to reach the orphaned entry
+        // (SeasonsEditorSheet only iterates memory.sports). The editor now
+        // clears it on deselect; this makes stale data from older installs
+        // inert too.
+        let selected = Set(memory.sports.map(\.slug))
         let candidates = memory.seasonsBySport
+            .filter { selected.contains($0.key.slug) }
             .filter { $0.key.slug != primarySlug && $0.key.slug != supportSlug }
             .filter { $0.value == .inSeason || $0.value == .eventPrep }
             .sorted { $0.key.slug < $1.key.slug }
@@ -766,6 +795,14 @@ enum Planner {
         calendar: Calendar
     ) {
         guard let pattern = memory.supportPattern, !pattern.isEmpty else { return }
+        // The interference table is authored for a ski/board primary paired with
+        // a support sport, and ProfileScreen only offered the editor for that
+        // pairing — but this ran on ANY primary. Switch primary from ski to
+        // Running and the planner kept stamping support days onto rest slots
+        // and lightening lift days via the deconflict pass. ProfileScreen now
+        // also keeps the row reachable whenever a pattern exists, so the user
+        // can clear it; this stops it applying where it was never authored.
+        guard PhaseRule.skiSlugs.contains(memory.primarySport?.slug ?? "") else { return }
         let primaryVariant = SportSeasonGenerator.defaultVariant(forSport: memory.primarySport?.slug)
         let supportSport = Sport.catalog.first { $0.slug == pattern.sportSlug }
         let verb = pattern.sportSlug == "climbing" ? "climb" : "train \(supportSport?.name ?? pattern.sportSlug)"
@@ -775,7 +812,24 @@ enum Planner {
             guard let idx = slots.indices.first(where: { i in
                 guard let s = slots[i] else { return false }
                 return Weekday.from(date: s.date, calendar: calendar) == sd.weekday
-            }), let cur = slots[idx], !cur.protected, cur.kind == .rest else { continue }
+            }), let cur = slots[idx] else { continue }
+            // Couldn't place it — the slot is protected, or the planner already
+            // put a lift there. The day used to just VANISH from the week: the
+            // user declared "I climb Tuesday" and Tuesday showed only a lift,
+            // with at most a lightening note and no indication their declared
+            // day had been dropped. Say so on the day itself.
+            guard !cur.protected, cur.kind == .rest else {
+                if !cur.protected, cur.kind == .lift {
+                    slots[idx] = DayPlan(
+                        date: cur.date, kind: cur.kind, title: cur.title,
+                        routineId: cur.routineId, generatedWorkout: cur.generatedWorkout,
+                        sport: cur.sport, protected: cur.protected,
+                        generatedReason: (cur.generatedReason.map { $0 + " · " } ?? "")
+                            + "Couldn't fit your \(sd.weekday.short) \(supportSport?.name ?? pattern.sportSlug) day here"
+                    )
+                }
+                continue
+            }
             slots[idx] = DayPlan(
                 date: cur.date,
                 kind: .sport,

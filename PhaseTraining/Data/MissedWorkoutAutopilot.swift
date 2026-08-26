@@ -46,12 +46,19 @@ enum MissedWorkoutAutopilot {
         plan: WeekPlan,
         sessions: [SavedSession],
         overrides: WeekOverrides,
+        /// Logged sport sessions. A `.sport` day qualifies as missed below, but
+        /// only LIFT history was consulted — so a user who planned Tuesday
+        /// climbing, went climbing, and logged it through SportLogSheet still
+        /// got a "you missed Tuesday" banner the next morning, offering a
+        /// reshuffle for a workout they had completed.
+        sportLogs: [SportLogEntry] = [],
         now: Date = Date(),
         calendar: Calendar = .current
     ) -> [DayPlan] {
         let today = calendar.startOfDay(for: now)
         // Set of calendar days that already have a logged session
         let sessionDays = Set(sessions.map { calendar.startOfDay(for: $0.startTime) })
+            .union(sportLogs.map { calendar.startOfDay(for: $0.date) })
 
         return plan.days.filter { day in
             guard day.kind == .lift || day.kind == .sport else { return false }
