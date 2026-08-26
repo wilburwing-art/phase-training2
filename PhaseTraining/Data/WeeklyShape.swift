@@ -22,8 +22,26 @@ struct WeeklyShape: Hashable {
         if let s = primarySport, let shape = sportSeasonShapes[ShapeKey(sport: s.slug, season: season)] {
             return shape
         }
-        if let s = primarySport, let shape = sportSeasonShapes[ShapeKey(sport: s.slug, season: .maintenance)] {
-            return shape
+        // Try the season-engine's own slug alias before giving up. Every ski
+        // variant shares a shape vocabulary, but only snow-sports and
+        // alpine-skiing had entries — ski-mountaineering had NONE, so it fell
+        // all the way to defaultShape (3 lifts / 4 rests, zero sport days). An
+        // in-season ski-mountaineer's week could therefore contain no ski days
+        // at all, which also disables the adjacentSportDay defer-to-sport
+        // lightening the in-season PhaseRule is built around.
+        if let s = primarySport {
+            let alias = SportSeasonGenerator.poolSlug(for: s.slug)
+            if alias != s.slug,
+               let shape = sportSeasonShapes[ShapeKey(sport: alias, season: season)] {
+                return shape
+            }
+            if let shape = sportSeasonShapes[ShapeKey(sport: s.slug, season: .maintenance)] {
+                return shape
+            }
+            if alias != s.slug,
+               let shape = sportSeasonShapes[ShapeKey(sport: alias, season: .maintenance)] {
+                return shape
+            }
         }
         return defaultShape
     }
@@ -103,6 +121,23 @@ private let sportSeasonShapes: [ShapeKey: WeeklyShape] = [
     ShapeKey(sport: "alpine-skiing", season: .inSeason): WeeklyShape(
         kinds:       [.sport, .rest, .lift, .sport, .rest, .rest, .rest],
         description: "Alpine ski in-season: 2 ski, 1 lift, 4 rest"),
+    // offSeason / maintenance / eventPrep were missing for both ski slugs, so
+    // those phases fell through to defaultShape and lost every sport day.
+    ShapeKey(sport: "alpine-skiing", season: .offSeason): WeeklyShape(
+        kinds:       [.lift, .rest, .lift, .rest, .lift, .sport, .rest],
+        description: "Alpine ski off-season: 3 lifts, 1 cross-training day, 3 rest"),
+    ShapeKey(sport: "alpine-skiing", season: .maintenance): WeeklyShape(
+        kinds:       [.sport, .rest, .lift, .rest, .sport, .lift, .rest],
+        description: "Alpine ski maintenance: 2 ski, 2 lifts, 3 rest"),
+    ShapeKey(sport: "alpine-skiing", season: .eventPrep): WeeklyShape(
+        kinds:       [.lift, .rest, .sport, .rest, .lift, .sport, .rest],
+        description: "Alpine ski event prep: 2 ski, 2 sharp lifts, 3 rest"),
+    ShapeKey(sport: "snow-sports", season: .offSeason): WeeklyShape(
+        kinds:       [.lift, .rest, .lift, .rest, .lift, .sport, .rest],
+        description: "Ski off-season: 3 lifts, 1 cross-training day, 3 rest"),
+    ShapeKey(sport: "snow-sports", season: .maintenance): WeeklyShape(
+        kinds:       [.sport, .rest, .lift, .rest, .sport, .lift, .rest],
+        description: "Ski maintenance: 2 ski, 2 lifts, 3 rest"),
 
     // Combat sports — high frequency sport days
     ShapeKey(sport: "bjj", season: .maintenance): WeeklyShape(

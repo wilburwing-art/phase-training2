@@ -36,8 +36,12 @@ enum SportSeasonGenerator {
                                 adjacentSportDay: Bool = false) -> GeneratedWorkout {
         let rule = PhaseRule.resolve(sportSlug: athlete.sportSlug,
                                      variant: athlete.variant, season: athlete.season)
-        let weights = applyInjuryRedistribution(rule.demandWeights, flagged: athlete.flaggedDemands)
+        // Pool first: redistribution needs to know which demands this sport can
+        // actually serve.
         let pool = filteredPool(athlete, phase: athlete.season)
+        let weights = applyInjuryRedistribution(rule.demandWeights,
+                                                flagged: athlete.flaggedDemands,
+                                                available: Set(pool.flatMap(\.demands)))
         let seed = "\(athlete.sportSlug)-\(athlete.season.rawValue)-w\(athlete.weekNumber)-s\(sessionIndex)"
 
         let target = targetMovementCount(rule)
@@ -50,6 +54,7 @@ enum SportSeasonGenerator {
 
         var picks: [Pick] = []
         var used = Set<Int>()
+        var shortfall = 0
         for (demand, count) in slots {
             let candidates = pool
                 .filter { $0.serves(demand) && !used.contains($0.exerciseId) }
@@ -68,6 +73,27 @@ enum SportSeasonGenerator {
             for m in candidates.prefix(count) {
                 picks.append(Pick(movement: m, demand: demand))
                 used.insert(m.exerciseId)
+            }
+            // Track the shortfall. `candidates.prefix(count)` of an empty or
+            // short list silently yields fewer movements and the slot is simply
+            // LOST — an equipment-restricted or injury-filtered athlete got a
+            // session below the documented 3-movement floor with no explanation.
+            shortfall += max(0, count - candidates.count)
+        }
+
+        // Backfill from any demand that still has candidates, so the session
+        // keeps its intended size. Ordered by the rule's own weights, so what
+        // replaces a dropped slot is still phase-appropriate.
+        if shortfall > 0 {
+            let byWeight = rule.demandWeights.sorted { $0.value > $1.value }.map(\.key)
+            outer: for demand in byWeight {
+                for m in pool.filter({ $0.serves(demand) && !used.contains($0.exerciseId) })
+                    .sorted(by: { djb2("\(seed)-backfill-\($0.exerciseId)") < djb2("\(seed)-backfill-\($1.exerciseId)") }) {
+                    picks.append(Pick(movement: m, demand: demand))
+                    used.insert(m.exerciseId)
+                    shortfall -= 1
+                    if shortfall == 0 { break outer }
+                }
             }
         }
 
@@ -133,14 +159,31 @@ enum SportSeasonGenerator {
 
     /// SPEC §5 applyInjuryRedistribution: a flagged demand zeroes; its weight
     /// lands on antagonist/prehab. Empty for skiing M1 (mechanism for M3).
+    /// - Parameter available: demands this sport's movement pool can actually
+    ///   serve. The sinks were hardcoded [.prehab, .antagonist], but the
+    ///   alpine-skiing pool carries ZERO antagonist movements (its demands are
+    ///   maxStrength / kneeStability / eccentricLeg / prehab / legEndurance /
+    ///   aerobicUphill / power / hipLateral / core). So for an injured skier
+    ///   half the freed weight allocated slots that found no candidates. Pass
+    ///   nil to keep the old unfiltered behavior (tests, callers without a pool).
     static func applyInjuryRedistribution(_ weights: [Demand: Double],
-                                          flagged: Set<Demand>) -> [Demand: Double] {
+                                          flagged: Set<Demand>,
+                                          available: Set<Demand>? = nil) -> [Demand: Double] {
         guard !flagged.isEmpty else { return weights }
         var w = weights
         var freed = 0.0
         for d in flagged where w[d] != nil { freed += w[d] ?? 0; w[d] = 0 }
         guard freed > 0 else { return w }
-        let sinks: [Demand] = [.prehab, .antagonist]
+        var sinks: [Demand] = [.prehab, .antagonist]
+        if let available {
+            let servable = sinks.filter { available.contains($0) && !flagged.contains($0) }
+            // Fall back to any non-flagged demand the pool serves rather than
+            // dropping the weight on the floor.
+            sinks = servable.isEmpty
+                ? available.subtracting(flagged).sorted { $0.rawValue < $1.rawValue }
+                : servable
+        }
+        guard !sinks.isEmpty else { return w }
         let share = freed / Double(sinks.count)
         for s in sinks { w[s, default: 0] += share }
         return w
@@ -275,6 +318,17 @@ enum SportSeasonGenerator {
             source: .recipe)
     }
 
+    /// Short, human label for a session title. Prefers the catalog's own name
+    /// so a new sport needs no change here.
+    static func sportTitlePrefix(for slug: String) -> String {
+        if let sport = Sport.catalog.first(where: { $0.slug == slug }) {
+            return sport.name
+        }
+        if PhaseRule.skiSlugs.contains(slug) { return "Ski" }
+        if PhaseRule.climbingSlugs.contains(slug) { return "Climb" }
+        return slug.replacingOccurrences(of: "-", with: " ").capitalized
+    }
+
     // MARK: - Assembly
 
     private static func assemble(_ exercises: [GeneratedExercise], picks: [Pick],
@@ -282,7 +336,12 @@ enum SportSeasonGenerator {
                                  sessionIndex: Int, lightened: Bool) -> GeneratedWorkout {
         let minutes = exercises.reduce(0) { $0 + Int(ceil(Double($1.sets) * (Double($1.restSeconds) + 40) / 60)) }
         let demandMix = picks.map { $0.demand.rawValue }
-        let title = "Ski · \(athlete.season.label) — Session \(sessionIndex + 1)"
+        // Derived from the athlete's actual sport. Hardcoding "Ski" meant a
+        // climbing athlete who fell through to the engine read
+        // "Ski · In-season — Session 1" on a finger-strength session — and the
+        // string also poisons PlanValidator.resolveFocus, which infers focus
+        // from title text.
+        let title = "\(sportTitlePrefix(for: athlete.sportSlug)) · \(athlete.season.label) — Session \(sessionIndex + 1)"
         let summary = "\(exercises.count) movements · ~\(minutes) min"
         var prov = "\(athlete.sportSlug) · \(athlete.variant.rawValue) · \(rule.objective)"
         if lightened { prov += " · lightened (sport day adjacent)" }
