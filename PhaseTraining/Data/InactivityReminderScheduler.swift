@@ -28,10 +28,20 @@ enum InactivityReminderScheduler {
     /// fresh, so calling on every saveActive is safe (and intentional — the
     /// timer should reflect the most recent activity).
     static func scheduleForActiveSession() {
+        // Generation token. This runs in a detached Task that AWAITS
+        // notificationSettings() before it removes+adds, while cancel() is
+        // synchronous and fire-and-forget (SessionStore.clearActive, which
+        // saveCompleted calls). So the last keystroke's in-flight schedule
+        // could land its `add` AFTER the finish-workout `cancel` — the user
+        // taps Finish, the session is saved, and 30 minutes later they get
+        // "Still training?" for a workout already in history.
+        let generation = bumpGeneration()
         Task.detached(priority: .utility) {
             let center = UNUserNotificationCenter.current()
             let settings = await center.notificationSettings()
             guard settings.authorizationStatus == .authorized else { return }
+            // A cancel (or a newer schedule) happened while we were awaiting.
+            guard isCurrent(generation) else { return }
 
             let content = UNMutableNotificationContent()
             content.title = "Still training?"
@@ -45,14 +55,38 @@ enum InactivityReminderScheduler {
             let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
 
             center.removePendingNotificationRequests(withIdentifiers: [identifier])
+            // Re-check immediately before the write: the guard above and this
+            // add straddle another suspension point.
+            guard isCurrent(generation) else { return }
             try? await center.add(request)
         }
+    }
+
+    // MARK: - Generation tracking
+
+    private static let generationLock = NSLock()
+    private static var generation: UInt64 = 0
+
+    /// Invalidate any in-flight schedule and claim the next generation.
+    private static func bumpGeneration() -> UInt64 {
+        generationLock.lock()
+        defer { generationLock.unlock() }
+        generation &+= 1
+        return generation
+    }
+
+    private static func isCurrent(_ g: UInt64) -> Bool {
+        generationLock.lock()
+        defer { generationLock.unlock() }
+        return g == generation
     }
 
     /// Cancel any pending inactivity reminder. Called when the user completes
     /// or clears the active session, or on launch when there's no active
     /// session (drops a stale schedule from a previous run).
     static func cancel() {
+        // Bump first so any awaiting schedule task drops its write.
+        _ = bumpGeneration()
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [identifier])
     }
 }

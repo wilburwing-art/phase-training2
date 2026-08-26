@@ -163,8 +163,18 @@ final class MemoryStore: ObservableObject {
             defaults.removeObject(forKey: key)
         }
         (userDB ?? UserDatabase.defaultStore()).wipeAll()
+        // EVERY pending notification, not just the weekly one. The doc comment
+        // above claims this wipe covers "any pending local notification", but
+        // it named a single hardcoded identifier — so erasing all data (or
+        // --ui-test-reset) while a workout was in flight left a 30-minute
+        // "Still training?" reminder scheduled against a session that no longer
+        // exists on disk, and likewise a pending rest-timer alert.
         UNUserNotificationCenter.current()
-            .removePendingNotificationRequests(withIdentifiers: ["pt.weekly_reminder"])
+            .removePendingNotificationRequests(withIdentifiers: [
+                WeeklyReminderScheduler.identifier,
+                InactivityReminderScheduler.identifier,
+                RestTimerState.expiryNotificationId,
+            ])
     }
 
     // MARK: - JSON

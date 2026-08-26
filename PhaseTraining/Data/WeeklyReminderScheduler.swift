@@ -21,7 +21,9 @@ import UserNotifications
 import UIKit
 
 enum WeeklyReminderScheduler {
-    private static let identifier = "pt.weekly_reminder"
+    /// Internal so MemoryStore.wipeAllUserData can cancel it by name rather
+    /// than repeating the string literal.
+    static let identifier = "pt.weekly_reminder"
     private static let enabledKey = "pt_weekly_reminder_enabled"
     /// D1 — quick-action category for the Sunday push. Day-count buttons set
     /// memory.liftDaysPerWeek + regenerate via the `set-lift-days` deep link;
