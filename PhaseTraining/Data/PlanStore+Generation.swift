@@ -164,7 +164,8 @@ extension PlanStore {
     /// user's era cohort for readiness-norm computation. When no HK auth
     /// has been granted, the imported list is empty and the readiness
     /// signal still works off native sessions + sport logs alone.
-    func buildGeneratorContext(memory: TrainingMemory, today: Date) -> GeneratorContext {
+    func buildGeneratorContext(memory: TrainingMemory, today: Date,
+                               includeParkedSignals: Bool = false) -> GeneratorContext {
         guard let sessionStore else { return .empty }
         let profile = DemographicProfile.from(memory)
         let imported = UserDatabase.shared.recentImportedWorkouts(within: 28)
@@ -180,7 +181,8 @@ extension PlanStore {
             importedPeaks: peaks,
             cohort: profile.eraCohort,
             exerciseAffinities: memory.exerciseAffinities,
-            now: today
+            now: today,
+            includeParkedSignals: includeParkedSignals
         )
     }
 
@@ -189,8 +191,13 @@ extension PlanStore {
     /// call `Planner.generate` directly (WeeklyCheckInFlow). Without it the
     /// check-in regen ran with `context: .empty`, silently skipping the
     /// Phase-2 readiness lift-day floor that every other regen path honors.
-    func makeGeneratorContext(memory: TrainingMemory, today: Date = Date()) -> GeneratorContext {
-        buildGeneratorContext(memory: memory, today: today)
+    /// - Parameter includeParkedSignals: forwarded to `GeneratorContext.from`.
+    ///   Production leaves it off (T2-11 — nothing reads those fields and they
+    ///   are the expensive half of the build); tests that assert on them opt in.
+    func makeGeneratorContext(memory: TrainingMemory, today: Date = Date(),
+                              includeParkedSignals: Bool = false) -> GeneratorContext {
+        buildGeneratorContext(memory: memory, today: today,
+                              includeParkedSignals: includeParkedSignals)
     }
 
     /// Stamp every exercise the generator just picked into the variety

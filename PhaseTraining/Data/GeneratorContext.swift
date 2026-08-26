@@ -135,7 +135,13 @@ extension GeneratorContext {
         // don't have to thread it; PlanStore.buildGeneratorContext passes the
         // real map so swap-derived preferences reach the slot picker.
         exerciseAffinities: [String: Int] = [:],
-        now: Date = Date()
+        now: Date = Date(),
+        /// Compute the PARKED adaptive signals (recentSoreAreas,
+        /// stagnantExercises, exerciseAffinities)? Defaults OFF because nothing
+        /// reads them and they're the expensive half of building a context.
+        /// Tests pass `true` to keep exercising the builders, which stay
+        /// correct and ready for the day the engine consumes them.
+        includeParkedSignals: Bool = false
     ) -> GeneratorContext {
         let cal = Calendar.current
         let weekSoreCutoff = cal.date(byAdding: .day, value: -7, to: now) ?? now
@@ -157,13 +163,33 @@ extension GeneratorContext {
         )
         let hasData = !readinessEvents.isEmpty
 
+        // T2-11 — PARKED ADAPTIVE LAYER, do not delete.
+        //
+        // `recentSoreAreas`, `stagnantExercises` and `exerciseAffinities` have
+        // NO reader: verified by grep for `context.<field>` / `ctx.<field>`
+        // across the app — zero hits, against 9 for the live
+        // readinessScore / priorBest / hasReadinessData. (Careful: grepping the
+        // bare field name is misleading, because TrainingMemory has its OWN
+        // `exerciseAffinities` that MemoryStore.recordSwap writes and
+        // PlanStore+Generation passes IN here. The memory side is live; the
+        // context side is what nothing reads.)
+        //
+        // They belong to the adaptive layer that is built but deliberately not
+        // consumed by the season engine (see the repo's direction note), so the
+        // fix is to stop PAYING for them on every regen, NOT to remove them —
+        // buildStagnantExercises walks 4 weeks of sessions computing Epley 1RMs
+        // per exercise, and buildRecentSoreAreas resolves names through
+        // CoachDatabase. `computeParkedSignals` is the single switch to flip
+        // when the engine starts consuming them.
         return GeneratorContext(
             priorBest: buildPriorBest(sessions: sessions, importedPeaks: importedPeaks),
-            recentSoreAreas: buildRecentSoreAreas(soreness: soreness,
-                                                  feedback: feedback,
-                                                  cutoff: weekSoreCutoff),
-            stagnantExercises: buildStagnantExercises(sessions: sessions, now: now),
-            exerciseAffinities: exerciseAffinities,
+            recentSoreAreas: includeParkedSignals
+                ? buildRecentSoreAreas(soreness: soreness, feedback: feedback, cutoff: weekSoreCutoff)
+                : [],
+            stagnantExercises: includeParkedSignals
+                ? buildStagnantExercises(sessions: sessions, now: now)
+                : [],
+            exerciseAffinities: includeParkedSignals ? exerciseAffinities : [:],
             recentHardSportDays: buildRecentHardSportDays(sportLogs: sportLogs,
                                                           cutoff: weekSoreCutoff,
                                                           calendar: cal),

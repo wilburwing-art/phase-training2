@@ -60,7 +60,10 @@ final class GeneratorContextTests: XCTestCase {
             templateId: "t", name: "Push-Up", category: "",
             startTime: start, exercises: [bw], feel: nil, note: nil,
             endTime: start.addingTimeInterval(3600), duration: 3600)
-        let ctx = GeneratorContext.from(sessions: [session], soreness: [], feedback: [])
+        // includeParkedSignals: these builders serve the PARKED adaptive layer,
+        // so production skips them (T2-11). The tests keep them honest.
+        let ctx = GeneratorContext.from(sessions: [session], soreness: [], feedback: [],
+                                        includeParkedSignals: true)
         let pb = ctx.priorBest["push-up"]
         XCTAssertNotNil(pb, "bodyweight movement should produce a reps-based priorBest")
         XCTAssertEqual(pb?.weight, 0, "bodyweight priorBest carries weight 0 as the reps-mode signal")
@@ -85,7 +88,8 @@ final class GeneratorContextTests: XCTestCase {
             ranLong: false, notes: nil
         )
         let ctx = GeneratorContext.from(
-            sessions: [], soreness: [sore], feedback: [fb], now: now
+            sessions: [], soreness: [sore], feedback: [fb], now: now,
+            includeParkedSignals: true
         )
         XCTAssertTrue(ctx.recentSoreAreas.contains("quads"))
         XCTAssertTrue(ctx.recentSoreAreas.contains("back"))
@@ -115,7 +119,7 @@ final class GeneratorContextTests: XCTestCase {
             )
         }
         let ctx = GeneratorContext.from(sessions: sessions, soreness: [],
-                                        feedback: [], now: now)
+                                        feedback: [], now: now, includeParkedSignals: true)
         XCTAssertTrue(ctx.stagnantExercises.contains("bench press"))
     }
 

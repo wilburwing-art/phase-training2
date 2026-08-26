@@ -69,7 +69,10 @@ final class ReadinessEventsTests: XCTestCase {
             feedback: feedback,
             sportLogs: sportLogs,
             importedWorkouts: importedWorkouts,
-            now: now()
+            now: now(),
+            // Parked signals are off in production (T2-11); this suite asserts
+            // on them, so it opts in.
+            includeParkedSignals: true
         )
     }
 

@@ -122,7 +122,7 @@ final class PlanStoreSeamsTests: XCTestCase {
         sore.areas = ["quads"]
         memory.soreness = [sore]
 
-        let ctx = store.makeGeneratorContext(memory: memory, today: monday())
+        let ctx = store.makeGeneratorContext(memory: memory, today: monday(), includeParkedSignals: true)
         XCTAssertEqual(ctx, GeneratorContext.empty,
                        "no sessionStore wired → exactly the .empty context")
         XCTAssertTrue(ctx.isEmpty)
@@ -181,7 +181,7 @@ final class PlanStoreSeamsTests: XCTestCase {
         stale.areas = ["back"]
         memory.soreness = [recent, stale]
 
-        let ctx = store.makeGeneratorContext(memory: memory, today: today)
+        let ctx = store.makeGeneratorContext(memory: memory, today: today, includeParkedSignals: true)
         XCTAssertTrue(ctx.recentSoreAreas.contains("quads"),
                       "2-day-old soreness is inside the 7-day window")
         XCTAssertFalse(ctx.recentSoreAreas.contains("back"),
@@ -203,7 +203,7 @@ final class PlanStoreSeamsTests: XCTestCase {
             ranLong: false, notes: nil
         )]
 
-        let ctx = store.makeGeneratorContext(memory: memory, today: today)
+        let ctx = store.makeGeneratorContext(memory: memory, today: today, includeParkedSignals: true)
         XCTAssertTrue(ctx.recentSoreAreas.contains("shoulder"),
                       "hurt areas union into recentSoreAreas, lowercased")
     }
