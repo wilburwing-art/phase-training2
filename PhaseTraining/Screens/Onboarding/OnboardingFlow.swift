@@ -54,6 +54,7 @@ struct OnboardingFlow: View {
     @EnvironmentObject private var planStore: PlanStore
     @State private var step: OnboardingStep = .welcome
     @State private var draft = TrainingMemory()
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ZStack {
@@ -62,11 +63,66 @@ struct OnboardingFlow: View {
                 .id(step) // forces transition each step
                 .transition(.opacity.combined(with: .move(edge: .trailing)))
         }
-        .onAppear {
-            // Resume mid-flow if the user is editing their profile? No — onboarding only
-            // shows when onboardedAt is nil, so we always start fresh.
-            draft = store.memory
+        .onAppear(perform: restoreOrStartFresh)
+        // Persist on every step change and whenever the app leaves the
+        // foreground, so a background-jettison mid-questionnaire doesn't cost
+        // the user everything they typed.
+        //
+        // Step-change rather than draft-change because TrainingMemory isn't
+        // Equatable (it holds dictionaries keyed by Sport), so .onChange can't
+        // observe it — and a per-keystroke encode of the whole memory blob
+        // would be the same write-amplification problem T2-1 just fixed.
+        // scenePhase covers the case the step boundary misses: typing on a step
+        // and getting jettisoned before advancing.
+        .onChange(of: step) { _, newStep in persistDraft(draft, step: newStep) }
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active { persistDraft(draft, step: step) }
         }
+    }
+
+    // MARK: - Resume (T2-12)
+    //
+    // The flow used to hard-code "we always start fresh", so a user
+    // backgrounded-and-jettisoned on step 9 — after entering sports, seasons,
+    // availability, equipment, experience, age, height, weight, era,
+    // free-text dislikes and injuries — came back to Welcome with all of it
+    // gone. For an 11-screen mandatory fullScreenCover with no skip and no
+    // exit, that is a real abandonment cliff.
+    //
+    // Both keys are `pt_`-prefixed, so MemoryStore.wipeAllUserData (and
+    // --ui-test-reset, which routes through it) clears them for free.
+
+    private static let draftKey = "pt_onboarding_draft"
+    private static let stepKey  = "pt_onboarding_step"
+
+    private func restoreOrStartFresh() {
+        let defaults = UserDefaults.standard
+        if let data = defaults.data(forKey: Self.draftKey),
+           let saved = try? JSONDecoder().decode(TrainingMemory.self, from: data),
+           // Never resume INTO the questionnaire from Welcome: a user who only
+           // saw the splash has nothing worth restoring, and jumping them past
+           // it would be disorienting.
+           let savedStep = OnboardingStep(rawValue: defaults.integer(forKey: Self.stepKey)),
+           savedStep != .welcome {
+            draft = saved
+            step = savedStep
+            return
+        }
+        draft = store.memory
+    }
+
+    private func persistDraft(_ value: TrainingMemory, step: OnboardingStep) {
+        let defaults = UserDefaults.standard
+        guard step != .welcome else { return }
+        if let data = try? JSONEncoder().encode(value) {
+            defaults.set(data, forKey: Self.draftKey)
+            defaults.set(step.rawValue, forKey: Self.stepKey)
+        }
+    }
+
+    private func clearPersistedDraft() {
+        UserDefaults.standard.removeObject(forKey: Self.draftKey)
+        UserDefaults.standard.removeObject(forKey: Self.stepKey)
     }
 
     @ViewBuilder
@@ -110,6 +166,7 @@ struct OnboardingFlow: View {
     private func finish() {
         store.memory = draft
         store.completeOnboarding()
+        clearPersistedDraft()
         // Generate + persist the plan against the just-committed memory so the
         // Today + Week tabs have something live the moment the cover dismisses.
         planStore.generate(from: store.memory)
