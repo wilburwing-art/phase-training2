@@ -156,8 +156,19 @@ Mechanical, wide diff — do it in a quiet moment, not alongside feature work.
 - Bundled workouts are browse-only (LibraryScreen.swift:536) — highest-value
   Tier 4 item; promote to a feature PR.
 - Rest/event-day "train anyway" beyond T1-5's minimal affordance.
-- Support-sport placement: T2-8 wires `SupportScheduler.schedule`; if the
-  verify failed, the placement algorithm is still test-only surface.
+- **Support-sport placement (from T2-8, resolved-as-deferred 2026-08-26).**
+  VERIFIED: `SupportScheduler.schedule` — the placement half (rules 1-3, 5,
+  `evenSpread`, forced-stack fallback) — has no production caller; only
+  `deconflictInPlace` is wired, at Planner.swift:852. Not dead code: tested,
+  correct, and the declared design in PLAN-primary-support.md.
+  **Why it wasn't wired inline:** `schedule` assigns weekdays for a whole lift
+  week from `[GeneratedWorkout]`, but Planner has already placed lift days via
+  WeeklyShape before the support pass runs. Adopting it means replacing
+  WeeklyShape-driven placement with SupportScheduler-driven placement — an
+  architectural swap with regression surface across the planner suite, not a
+  Tier-2 fix. **Tests first:** a Planner-level test asserting current placement
+  for a ski+climbing pattern week, so the swap is diffable.
+  The file header now states the wiring gap so it can't be misread again.
 - `regenerateToday` re-roll exhaustion against small sport pools
   (PlanStore.swift:576) — needs a pool-size-aware salt or an honest "pool
   exhausted" notice; interacts with the parked adaptive layer.

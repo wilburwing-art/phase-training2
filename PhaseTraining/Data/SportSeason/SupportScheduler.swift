@@ -6,7 +6,28 @@
 // `[GeneratedWorkout]` — NOT the generator — so the same layer schedules
 // authored spines (shralpinism import) later without change.
 //
-// Rules, in priority order:
+// ⚠️ WIRING STATUS (T2-8, audited 2026-08-26). Only `deconflictInPlace` is
+// called by the app (Planner.swift:852). **`schedule(week:pattern:primaryVariant:)`
+// — the placement half described by rules 1-3 and 5 below, plus `evenSpread`
+// and the forced-stack fallback — has NO production caller.** Verified by grep:
+// every reference outside this file is in SupportSchedulerTest. So roughly half
+// of what this header describes is test-only surface presented as the shipping
+// algorithm, and rules 1-3 do not currently govern any user's week.
+//
+// It is NOT dead code and must not be deleted — it is tested, correct, and the
+// declared design. But wiring it is a Tier-3-sized change, not a bug fix:
+// `schedule` assigns weekdays for a whole lift week from `[GeneratedWorkout]`,
+// whereas Planner has already placed lift days via WeeklyShape by the time the
+// support pass runs. Adopting it means replacing WeeklyShape-driven placement
+// with SupportScheduler-driven placement — a real architectural swap with
+// regression surface across the planner's test suite. Tracked in
+// audits/2026-08-23-architecture-report.md rather than done inline.
+//
+// Until then, T1-57 covers the user-visible symptom: a support day that can't
+// be placed is annotated on the day that displaced it instead of silently
+// vanishing.
+//
+// Rules, in priority order (1-3 + 5 apply to `schedule`, i.e. not yet live):
 //   1. Session days and support days are disjoint (never stack) unless the
 //      week has no free day left; a forced stack is downgraded, not skipped.
 //   2. The heaviest primary session never lands inside a support day's
