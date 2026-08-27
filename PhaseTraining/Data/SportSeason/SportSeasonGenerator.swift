@@ -44,7 +44,7 @@ enum SportSeasonGenerator {
                                                 available: Set(pool.flatMap(\.demands)))
         let seed = "\(athlete.sportSlug)-\(athlete.season.rawValue)-w\(athlete.weekNumber)-s\(sessionIndex)"
 
-        let target = targetMovementCount(rule)
+        let target = targetMovementCount(rule, preferredMinutes: athlete.preferredSessionMinutes)
         let slots = allocateSlots(weights, count: target)
         // Fatigue-shedding phases (in-season / transition / event taper — all
         // the deferToSport phases) bias selection toward lighter movements so
@@ -235,9 +235,22 @@ enum SportSeasonGenerator {
         return PhaseRule.climbingSlugs.contains(s) ? .sportRoute : .inbounds
     }
 
-    private static func targetMovementCount(_ rule: PhaseRule) -> Int {
+    private static func targetMovementCount(_ rule: PhaseRule,
+                                            preferredMinutes: Int? = nil) -> Int {
         // ~11 min per movement; clamp to a sane session shape.
-        max(3, min(6, rule.sessionMinutesTarget.upperBound / 11))
+        //
+        // T2-7: honor the user's declared session length. This read ONLY the
+        // rule's own band, so `memory.sessionMinutes` had no effect on season
+        // workouts at all — "30 minutes" and "90 minutes" both produced the
+        // same ~63-minute off-season session. The phase rule still bounds the
+        // result: a 90-minute preference can't inflate an in-season taper past
+        // what the phase intends, and a 20-minute one can't drop below the
+        // 3-movement floor.
+        let ruleMinutes = rule.sessionMinutesTarget
+        let minutes = preferredMinutes.map {
+            min(max($0, ruleMinutes.lowerBound), ruleMinutes.upperBound)
+        } ?? ruleMinutes.upperBound
+        return max(3, min(6, minutes / 11))
     }
 
     /// The generator's INTENDED per-session demand emphasis (normalized slot
@@ -245,8 +258,16 @@ enum SportSeasonGenerator {
     /// vector; this is the quantization-limited best match, used by
     /// SeasonFidelity check 1 as the fidelity floor (realized should track THIS,
     /// not the raw weights). Exposed for the eval.
-    static func intendedSlotDistribution(for rule: PhaseRule) -> [Demand: Double] {
-        let slots = allocateSlots(rule.demandWeights, count: targetMovementCount(rule))
+    /// - Parameter preferredMinutes: MUST match what generation used, or this
+    ///   describes a differently-sized session than the one produced and the
+    ///   fidelity check compares apples to oranges. (T2-7 wired the user's
+    ///   declared session length into `targetMovementCount`; this overload
+    ///   existed only in the rule's-ceiling form and immediately disagreed with
+    ///   every generated week.)
+    static func intendedSlotDistribution(for rule: PhaseRule,
+                                         preferredMinutes: Int? = nil) -> [Demand: Double] {
+        let slots = allocateSlots(rule.demandWeights,
+                                  count: targetMovementCount(rule, preferredMinutes: preferredMinutes))
         let total = Double(slots.reduce(0) { $0 + $1.1 })
         guard total > 0 else { return [:] }
         var out: [Demand: Double] = [:]

@@ -133,8 +133,13 @@ final class SeasonFidelityTest: XCTestCase {
                 let rule = PhaseRule.resolve(sportSlug: f.slug, variant: f.variant, season: phase)
                 var sessions: [GeneratedWorkout] = []
                 for wk in 1...3 { sessions += SportSeasonGenerator.generateWeek(athlete(f, season: phase, weekNumber: wk)) }
+                // Same session size the generator used — the fixture athlete
+                // carries TrainingMemory's default sessionMinutes, which T2-7
+                // now honors.
                 let drift = l1(slotDemandDistribution(sessions),
-                               SportSeasonGenerator.intendedSlotDistribution(for: rule))
+                               SportSeasonGenerator.intendedSlotDistribution(
+                                   for: rule,
+                                   preferredMinutes: athlete(f, season: phase).preferredSessionMinutes))
                 XCTAssertLessThan(drift, 0.20,
                     "[\(f.slug)/\(phase.rawValue)] realized drifts from intended allocation by L1=\(String(format: "%.2f", drift)) — pool coverage gap?")
             }

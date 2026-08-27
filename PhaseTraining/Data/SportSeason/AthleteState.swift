@@ -44,6 +44,12 @@ struct AthleteState: Equatable {
     /// SPEC §5). Sourced from `DemographicProfile.allowedEquipmentSlugs`.
     let availableEquipmentSlugs: Set<String>
     let sessionsPerWeek: Int
+    /// The user's declared session length (`TrainingMemory.sessionMinutes`).
+    /// T2-7: `targetMovementCount` sized sessions purely from the phase rule's
+    /// own band, so a user who said "30 minutes" and one who said "90" got the
+    /// SAME ~63-minute off-season session. Defaulted so tests/previews that
+    /// build a state by hand keep the prior behavior.
+    var preferredSessionMinutes: Int? = nil
 
     /// Set for `.eventPrep` (a trip / objective); drives the taper countdown
     /// via `MesocycleProgression`. nil ⇒ no peak.
@@ -86,6 +92,7 @@ struct AthleteState: Equatable {
             season: memory.seasonForPlanner,
             availableEquipmentSlugs: profile.allowedEquipmentSlugs,
             sessionsPerWeek: memory.liftDaysPerWeek,
+            preferredSessionMinutes: memory.sessionMinutes,
             targetObjectiveDate: memory.peakDate,
             weekNumber: weekNumber,
             recentMovementIDs: recentMovementIDs,
