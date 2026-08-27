@@ -40,10 +40,28 @@ enum CoachEntitlement {
     ///      substitute.
     static let proRequired = false
 
+    /// Is the coach present in THIS build at all?
+    ///
+    /// Beta builds ship with no gateway token (PHASETRAINING_BETA=1 blanks it
+    /// in generate-coach-secrets.sh, so the literal never reaches the binary).
+    /// Without this check every coach surface would still render and then fail
+    /// at send time with "coach isn't available in this build" — an error the
+    /// tester can neither fix nor act on. Better to not offer it.
+    ///
+    /// Derived from the token rather than a separate flag, so the UI can never
+    /// disagree with what the binary can actually do.
+    static var coachAvailable: Bool { !CoachSecrets.gatewayToken.isEmpty }
+
     /// Pure gate logic — parameterized so tests can exercise both sides of
     /// the switch regardless of the shipped value.
-    static func unlocked(consent: Bool, pro: Bool, requirePro: Bool = proRequired) -> Bool {
-        consent && (pro || !requirePro)
+    ///
+    /// `available` defaults to the build's real capability; tests pass it
+    /// explicitly so a token-less test host doesn't silently turn every
+    /// entitlement assertion into `false`.
+    static func unlocked(consent: Bool, pro: Bool,
+                         requirePro: Bool = proRequired,
+                         available: Bool = coachAvailable) -> Bool {
+        available && consent && (pro || !requirePro)
     }
 
     /// The Pro half alone (consent handled by the caller's own flag —

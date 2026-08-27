@@ -46,11 +46,33 @@ case "$CONFIG" in
   *)       TOKEN="" ;;
 esac
 
+# 2b. BETA BUILDS SHIP NO TOKEN.
+#
+# A distributed IPA carries whatever string we bake in, and the Cloudflare
+# gateway is BYOK: anyone who runs `strings` on a build a tester received gets
+# an unmetered Claude proxy billed to us, bounded only by a client-side
+# UserDefaults counter they can also bypass. Handing builds to external testers
+# is exactly when that stops being theoretical.
+#
+# PHASETRAINING_BETA=1 blanks the token HERE, at generation, so it never
+# reaches the binary at all. Gating in Swift would not be enough: the literal
+# would still be in the compiled string table.
+#
+# CoachClient already refuses to send on an empty token, and
+# CoachEntitlement.coachAvailable hides the surfaces, so the app degrades to
+# "coach not in this build" rather than erroring at the user.
+if [ "${PHASETRAINING_BETA:-0}" = "1" ]; then
+  TOKEN=""
+  BETA_NOTE=" (beta build — token withheld on purpose)"
+else
+  BETA_NOTE=""
+fi
+
 mkdir -p "$OUT_DIR"
 
 # Mark missing token with an empty value + a comment so runtime can detect.
 if [ -z "$TOKEN" ]; then
-  MARKER="// WARNING: no token resolved for configuration $CONFIG"
+  MARKER="// WARNING: no token resolved for configuration $CONFIG$BETA_NOTE"
 else
   MARKER="// Token resolved for configuration $CONFIG"
 fi

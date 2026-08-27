@@ -52,7 +52,27 @@ jobs:
         env:
           CONFIGURATION: Release
           PHASETRAINING_CF_AIG_PROD_TOKEN: ${{ secrets.PHASETRAINING_CF_AIG_PROD_TOKEN }}
+          # Beta builds ship NO gateway token. A distributed IPA carries whatever
+          # we bake in, and the CF gateway is BYOK — `strings` on a build a
+          # tester received would yield an unmetered Claude proxy on our account.
+          # Set the repo variable PHASETRAINING_BETA to 0 (or delete it) once the
+          # gateway has rate + spend limits configured; see T0-1 in
+          # audits/2026-08-23-backlog.md.
+          PHASETRAINING_BETA: ${{ vars.PHASETRAINING_BETA || '1' }}
         run: ./scripts/generate-coach-secrets.sh
+
+      - name: Assert no gateway token in beta builds
+        # Belt and braces: the generator blanks the token, this proves it did.
+        # A silent regression here ships the secret to every tester, so fail the
+        # build rather than trust the step above.
+        run: |
+          if [ "${{ vars.PHASETRAINING_BETA || '1' }}" = "1" ]; then
+            if grep -qE 'gatewayToken: String = "..*"' PhaseTraining/Generated/CoachSecrets.swift; then
+              echo "::error::BETA build contains a non-empty gateway token — refusing to ship."
+              exit 1
+            fi
+            echo "Verified: beta build has an empty gatewayToken."
+          fi
 
       - name: Generate project
         run: xcodegen generate
