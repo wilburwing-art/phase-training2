@@ -60,7 +60,17 @@ struct WeeklyCheckInDraft {
         if intentTags.contains("deload") || intentTags.contains("less_volume") { return .recovery }
         if intentTags.contains("travel") { return .busy }
         if intentTags.contains("more_volume") { return .build }
-        return nil   // more_sport / more_mobility carry no tone signal
+        // T2-1: fall back to last week's rating. CheckInFeedbackScreen BLOCKS
+        // Continue on this field (nextEnabled: lastWeekRating != nil), so the
+        // user is forced to answer — and it reached only memory.weeklyCheckIns,
+        // which nothing reads. Required input with no effect is worse than no
+        // input. An explicit intent chip still wins; this only speaks when the
+        // user expressed no intent.
+        switch lastWeekRating {
+        case "too_hard": return .recovery
+        case "too_easy": return .build
+        default:         return nil   // "right", or unanswered
+        }
     }
 }
 
@@ -222,6 +232,7 @@ struct WeeklyCheckInFlow: View {
                     notes: composedNotes
                 )
             )
+            mem.weeklyCheckIns = WeeklyCheckIn.prune(mem.weeklyCheckIns)
         }
         var nextOverrides = WeekOverrides(weekStart: weekStart)
         nextOverrides.unavailableDays = draft.unavailableDays

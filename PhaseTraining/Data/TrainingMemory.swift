@@ -789,6 +789,18 @@ struct WeeklyCheckIn: Codable, Identifiable, Hashable {
     var intent: String?
     var lastWeekRating: String?
     var notes: String?
+
+    /// Rolling 26-week window, mirroring the retention every sibling history
+    /// array already has (coachInsights trims to 30 days on append,
+    /// recentPlanOverrides to 90). `weeklyCheckIns` had NONE — and each record
+    /// carries two uncapped TextEditor free-text fields, inside the
+    /// TrainingMemory blob that is JSON-encoded into UserDefaults on every
+    /// single memory mutation. Unbounded growth there is a write-amplification
+    /// problem, not just a storage one.
+    static func prune(_ checkIns: [WeeklyCheckIn], now: Date = Date()) -> [WeeklyCheckIn] {
+        let cutoff = Calendar.current.date(byAdding: .weekOfYear, value: -26, to: now) ?? .distantPast
+        return checkIns.filter { $0.weekStart >= cutoff }
+    }
 }
 
 // MARK: - Weekday ↔ Date helpers
