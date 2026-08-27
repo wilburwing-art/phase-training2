@@ -57,7 +57,14 @@ enum WorkoutCSVImporter {
         }
 
         // Format detection: header row.
-        let firstLine = csv.split(separator: "\n").first.map(String.init)?.trimmingCharacters(in: .whitespaces) ?? ""
+        // .whitespacesAndNewlines, not .whitespaces — the latter is
+        // HORIZONTAL only (space + tab), so a CRLF-terminated export left a
+        // trailing \r on the header and the byte-exact comparison in
+        // detectSource failed. A Fitbod CSV saved on Windows, or round-tripped
+        // through a spreadsheet, was rejected as "unknown format" with no clue
+        // why. Every mainstream export tool can emit CRLF.
+        let firstLine = csv.split(separator: "\n").first.map(String.init)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let source = detectSource(headerLine: firstLine)
         guard let source else { throw Failure.unknownFormat }
 
@@ -76,6 +83,13 @@ enum WorkoutCSVImporter {
     private static func detectSource(headerLine: String) -> ImportSource? {
         if headerLine == FitbodCSVParser.expectedHeader { return .fitbodCSV }
         // Hevy + Strava header signatures land in Phase 3.5.
+        //
+        // T2-6 note (2026-08-26): the audit suggested implementing detection
+        // here because "the parse layer exists". It does NOT — FitbodCSVParser
+        // is the only parser in Imports/, so detecting a Hevy header would just
+        // route to the stub below and throw. Detection without a parser is
+        // worse than no detection: it turns "unknown format" into a silent
+        // failure on a file we claimed to recognize. Both land together.
         return nil
     }
 

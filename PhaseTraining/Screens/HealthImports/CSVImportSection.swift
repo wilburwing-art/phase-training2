@@ -61,7 +61,9 @@ struct CSVImportSection: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            Text("Hevy and Strava export support arrives in a follow-up. We only read the file — we don't upload anything.")
+            // Was "arrives in a follow-up", which reads as imminent for
+            // something with no parser written (T2-6). Say what's true today.
+            Text("Fitbod exports only for now. We only read the file — we don't upload anything.")
                 .font(.caption)
                 .foregroundColor(.ink2)
         }
