@@ -92,7 +92,18 @@ struct TodayScreen: View {
                     eyebrowTrailing: phaseEyebrow,
                     title: heroTitle,
                     subtitle: headerSubtitle,
-                    caption: heroCaption
+                    caption: heroCaption,
+                    // The title doubles as the workout switcher. Only when
+                    // there is something to switch TO — a lone stop would be
+                    // a scroll gesture that does nothing.
+                    wheel: wheelOptions.count > 1
+                        ? TabHeader.WheelConfig(
+                            options: wheelOptions,
+                            selectedId: wheelSelection,
+                            onCommit: { commitWheel($0) },
+                            onSeeAll: { showTrainAnyway = true }
+                        )
+                        : nil
                 )
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {

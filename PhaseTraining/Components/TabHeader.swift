@@ -17,18 +17,33 @@ struct TabHeader: View {
     let subtitle: String?
     let caption: String?          // optional sparkle-prefixed insight line
 
+    /// Optional: render the title as a horizontally scrollable wheel instead
+    /// of static text (Today uses this to switch workouts). Every other tab
+    /// omits these and gets the spec layout unchanged, which is what keeps
+    /// "one primitive across all five tabs" true.
+    var wheel: WheelConfig?
+
+    struct WheelConfig {
+        let options: [WorkoutWheelOption]
+        let selectedId: String
+        let onCommit: (WorkoutWheelOption) -> Void
+        let onSeeAll: () -> Void
+    }
+
     init(
         eyebrow: String,
         eyebrowTrailing: String? = nil,
         title: String,
         subtitle: String? = nil,
-        caption: String? = nil
+        caption: String? = nil,
+        wheel: WheelConfig? = nil
     ) {
         self.eyebrow = eyebrow
         self.eyebrowTrailing = eyebrowTrailing
         self.title = title
         self.subtitle = subtitle
         self.caption = caption
+        self.wheel = wheel
     }
 
     var body: some View {
@@ -59,11 +74,20 @@ struct TabHeader: View {
             Color.clear.frame(height: 24)
 
             // Step 5: title (displayL · ink · lineSpacing(-2))
-            Text(title)
-                .styled(.displayL)
-                .foregroundStyle(Color.ink)
-                .lineSpacing(-2)
-                .fixedSize(horizontal: false, vertical: true)
+            if let wheel {
+                WorkoutTitleWheel(
+                    options: wheel.options,
+                    selectedId: wheel.selectedId,
+                    onCommit: wheel.onCommit,
+                    onSeeAll: wheel.onSeeAll
+                )
+            } else {
+                Text(title)
+                    .styled(.displayL)
+                    .foregroundStyle(Color.ink)
+                    .lineSpacing(-2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             // Step 6: gap 6, subtitle (body · ink2)
             if let subtitle {
@@ -92,7 +116,10 @@ struct TabHeader: View {
         .padding(.horizontal, 20)
         // One logical header for VoiceOver — eyebrow, title, subtitle, and
         // caption read as a single element instead of four swipe stops.
-        .accessibilityElement(children: .combine)
+        // Combining makes the header one VoiceOver stop, but it would also
+        // swallow the wheel's adjustable action, so the wheel keeps its own
+        // element when present.
+        .accessibilityElement(children: wheel == nil ? .combine : .contain)
     }
 }
 

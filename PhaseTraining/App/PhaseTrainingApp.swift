@@ -64,6 +64,13 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-sport-demo") {
             Self.seedSportDemo()
         }
+        //   --seed-saved-workouts → three CustomRoutines, so Today's title
+        //     wheel has somewhere to scroll TO. Without saved workouts the
+        //     wheel has one stop and is deliberately not rendered, so this is
+        //     required to exercise it at all. Pair with --seed-plan-demo.
+        if ProcessInfo.processInfo.arguments.contains("--seed-saved-workouts") {
+            Self.seedSavedWorkouts()
+        }
         //   --seed-snow-sport-demo → TODAY is a SNOWBOARDING sport day, so the
         //     sport-matched Kettle loop (KettlePose.forSport) shows him carving.
         if ProcessInfo.processInfo.arguments.contains("--seed-snow-sport-demo") {
@@ -217,6 +224,28 @@ struct PhaseTrainingApp: App {
     /// --seed-plan-demo: TODAY is a lift day carrying a 5-exercise
     /// generatedWorkout, so TodayScreen resolves the planned-user branch rather
     /// than the upper-1 fallback (which only fires when `planStore.plan == nil`).
+    /// --seed-saved-workouts: three saved routines for the Today title wheel.
+    /// Real exercise ids so the rows resolve photos and muscle buckets like
+    /// any other workout.
+    private static func seedSavedWorkouts() {
+        let store = CustomRoutineStore()
+        let specs: [(String, [(Int, String)])] = [
+            ("Quick Push",  [(900, "Bench Press"), (904, "Overhead Press"), (953, "Tricep Pushdown")]),
+            ("Pull Day",    [(922, "Pull Up"), (1028, "Incline Row"), (546, "Lateral Raise")]),
+            ("Legs, Short", [(544, "Skullcrusher"), (24, "Face Pull")]),
+        ]
+        for (offset, spec) in specs.enumerated() {
+            let exercises = spec.1.enumerated().map { i, ex in
+                CustomRoutineExercise(id: UUID().uuidString, exerciseId: ex.0, name: ex.1,
+                                      position: i, sets: 3, reps: "8", rest: "90", notes: nil)
+            }
+            store.save(CustomRoutine(id: "seed-routine-\(offset)",
+                                     name: spec.0,
+                                     exercises: exercises,
+                                     createdAt: Date().addingTimeInterval(Double(-offset) * 60)))
+        }
+    }
+
     private static func seedPlanDemo() {
         let workout = GeneratedWorkout(
             title: "Push day",

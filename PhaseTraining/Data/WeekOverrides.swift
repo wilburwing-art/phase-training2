@@ -222,6 +222,18 @@ enum PrescriptionRefreshMode: String, Codable, Hashable {
     case weightsOnly = "weights_only"  // recompute target notes only
 }
 
+// MARK: - Displaced plan
+
+/// The slice of a DayPlan a custom-routine override replaces. Enough to put
+/// the day back exactly as the planner left it.
+struct DisplacedPlan: Codable, Hashable {
+    var kind: DayKind
+    var title: String
+    var workout: GeneratedWorkout?
+    var reason: String?
+    var routineId: Int?
+}
+
 // MARK: - WeekOverrides
 
 struct WeekOverrides: Codable {
@@ -246,6 +258,14 @@ struct WeekOverrides: Codable {
     /// missing from an old payload, nuking the whole week's overrides via
     /// the try? decode in PlanStore.
     var prescriptionRefreshByDate: [Date: PrescriptionRefreshMode]?
+    /// Build 122 — what a custom-routine override displaced, so scrolling the
+    /// Today wheel back to the planned stop restores exactly what the plan
+    /// had. Without it "back" re-derives the day, which is not the same
+    /// workout and reads as the app rerolling your session for no reason.
+    /// MUST stay Optional (weekTone / prescriptionRefresh pattern): a
+    /// non-optional field missing from an old payload throws keyNotFound and
+    /// nukes the whole week's overrides via the try? decode in PlanStore.
+    var displacedPlanByDate: [Date: DisplacedPlan]?
 
     init(weekStart: Date) {
         self.weekStart = weekStart

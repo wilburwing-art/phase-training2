@@ -112,7 +112,9 @@ extension PlanStore {
     /// planner output. Uses sensible fallback prescriptions when the
     /// routine doesn't carry them (older saves predate the per-exercise
     /// sets/reps/rest fields).
-    private func composeWorkout(fromCustom custom: CustomRoutine) -> GeneratedWorkout {
+    /// Not private: PlanStore+TodayWorkoutSwitch composes the same workout for
+    /// a wheel switch, and the two paths must agree for the same routine.
+    func composeWorkout(fromCustom custom: CustomRoutine) -> GeneratedWorkout {
         let exercises = custom.exercises.enumerated().map { idx, ex in
             GeneratedExercise(
                 id: "custom-\(custom.id)-\(idx)",
