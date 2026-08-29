@@ -56,10 +56,32 @@ static rest frame.
   carries a descriptive label.
 - Honor Reduce Motion (the view already does).
 
+## Where it ships
+
+- **The coach button** (`CoachBubble`) is Kettle's first live surface: the flex
+  pose at 64pt with NO container, bottom-right above the tab bar. Framed by
+  `KettleBust`, which crops the 160x200 design space to a 156-unit square at
+  (2, 32). Do not tighten that window: anything smaller cuts the shoes off flat
+  at the frame edge, which a disc used to hide and a container-less control
+  does not. `KettleBustTests` pins it against the pose extremes.
+- The Today card and the complete screen use `KettleView` directly.
+
+**Known and accepted (2026-08-29):** on Today the button floats over the
+full-width lime "Start workout" CTA, and the lime handle washes out against it.
+A dark halo behind the art was offered and declined; the decision is to leave
+it. Do not "fix" this without asking.
+
+**Open:** whether the button's pose binds to `KettlePose.forSport(_:)`. The five
+loops span 80 to 135 units wide, a 1.7x spread that a disc would have hidden,
+so binding it makes the button change size. Current call is to keep flex on the
+button permanently and spend the other loops on the cards.
+
 ## Files
 
 - `PhaseTraining/Components/KettleView.swift` — the shipped native mascot
   (`KettleView`, `KettlePose` + `forSport`, the `Canvas`/`TimelineView` loops).
+- `PhaseTraining/Components/KettleBust.swift` — the square crop used by the
+  coach button, plus `peakFlex` (the loop time where the squeeze is at 1).
 - `handoff/mascot2/generate.mjs` — the parametric SVG **source of truth**. Run
   `node handoff/mascot2/generate.mjs` to regenerate the frozen stills.
 - `handoff/mascot2/kettle*.svg` — one representative still per pose (reference;
