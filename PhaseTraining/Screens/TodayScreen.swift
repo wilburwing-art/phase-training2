@@ -64,7 +64,6 @@ struct TodayScreen: View {
     @State var didSaveToLibrary: Bool = false
     /// Build 99 — pre-workout soreness check-in moved from an inline
     /// expand/collapse card to a header-adjacent pill that opens a modal sheet.
-    @State private var showSorenessSheet: Bool = false
     /// "Train anyway" on a rest or event day. Without it those days rendered no
     /// exercise list and no CTA at all, and the only way to train was to leave
     /// Today, open the Week tab, tap into WeekDayEditSheet and drill down —
@@ -124,18 +123,13 @@ struct TodayScreen: View {
                             // presence. (xcuitest-swiftui-gotchas #1.)
                         }
 
-                        RepelicanPhaseCard()
-                            .padding(.horizontal, 20)
-                            .padding(.top, 14)
-                        SeasonPhaseBadge(style: .full, surface: "today")
-                            .padding(.horizontal, 20)
-                            .padding(.top, 10)
-                        sorenessCheckInPill
-                            .padding(.horizontal, 20)
-                            .padding(.top, 10)
-                        TodayRecoveryCard()
-                            .padding(.horizontal, 20)
-                            .padding(.top, 10)
+                        // Build 122 — the mascot card, the season badge, the
+                        // soreness prompt and the recovery readout used to sit
+                        // here. Today answers one question (what am I doing,
+                        // and where do I walk first), so anything that asked
+                        // for a second decision came out. NOTE: the soreness
+                        // pill was the ONLY entry point to SorenessCheckInSheet;
+                        // that screen is now unreachable until it gets one.
                         if planEndingSoon {
                             planNextWeekPill
                                 .padding(.horizontal, 20)
@@ -165,9 +159,6 @@ struct TodayScreen: View {
                                 .padding(.top, 14)
                         }
                         if effectiveKind.isWorkout {
-                            lastSessionCard
-                                .padding(.horizontal, 20)
-                                .padding(.top, 14)
                             if isCoachPolished {
                                 coachPolishedBadge
                                     .padding(.horizontal, 20)
@@ -262,9 +253,6 @@ struct TodayScreen: View {
         .sheet(item: $historyFilterExerciseName.exerciseSheetItem) { wrapped in
             HistoryScreen(initialExerciseFilter: wrapped.name)
                 .environmentObject(store)
-        }
-        .sheet(isPresented: $showSorenessSheet) {
-            SorenessCheckInSheet(onDone: {})
         }
         // Attached at screen level, NOT on the banner — by the time the
         // no-op flag flips, dismissMissed has already removed the banner
@@ -383,36 +371,6 @@ struct TodayScreen: View {
         return "The week couldn't absorb the missed work — \(reason). The workout was skipped instead."
     }
 
-    /// Discoverable affordance for the pre-workout body check. Always visible
-    /// on Today (regardless of day kind) so rest-day soreness can still be
-    /// logged. When today's entry exists, the pill shows a "LOGGED" tick to
-    /// signal it's already captured — same behavior the inline card had.
-    private var sorenessCheckInPill: some View {
-        let logged = todaysSorenessLogged
-        return Button { showSorenessSheet = true } label: {
-            HStack(spacing: 8) {
-                Image(systemName: logged ? "checkmark.circle.fill" : "figure.cooldown")
-                    .font(.system(size: 13, weight: .semibold))
-                Text(logged ? "SORENESS · LOGGED" : "HOW SORE ARE YOU TODAY?")
-                    .styled(.micro)
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .semibold))
-            }
-            .foregroundStyle(logged ? Color.accent : Color.ink2)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 12)
-            .background(Color.surface)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(logged ? Color.accentBorder : Color.line, lineWidth: 0.5)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("today-soreness-checkin")
-    }
-
     private var planNextWeekPill: some View {
         Button { tabSelection.showWeeklyCheckIn = true } label: {
             HStack(spacing: 8) {
@@ -479,35 +437,6 @@ struct TodayScreen: View {
         .buttonStyle(.plain)
         .accessibilityIdentifier("today-coach-polished-badge")
         .accessibilityLabel("Personalized by coach. Tap for details.")
-    }
-
-    // MARK: - Last session card
-
-    private var lastSessionCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline) {
-                Text("LAST SESSION")
-                    .styled(.micro)
-                    .foregroundStyle(Color.ink3)
-                Spacer()
-                Text(daysAgoShort)
-                    .font(.monoXS)
-                    .foregroundStyle(Color.ink3)
-            }
-            Text(lastSessionDetail)
-                .font(.monoXS)
-                .foregroundStyle(Color.ink2)
-                .lineSpacing(2)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.surface)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.line, lineWidth: 0.5)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     // MARK: - Buttons
