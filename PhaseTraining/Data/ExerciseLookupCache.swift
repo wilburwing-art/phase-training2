@@ -90,9 +90,22 @@ final class ExerciseLookupCache {
     // MARK: - Resolution
 
     private func resolve(name: String) -> ExerciseLookup {
-        let dbEx = CoachDatabase.shared
+        // Exact canonical name first. Generator-written plans carry canonical
+        // names, so this is the hot path.
+        var dbEx = CoachDatabase.shared
             .listExercises(search: name)
             .first { $0.name.caseInsensitiveCompare(name) == .orderedSame }
+        // Then the shorthand path. Display names are deliberately short
+        // ("Bench Press") while coach.db stays specific ("Barbell Bench
+        // Press"), so an exact miss is expected here, not a data error.
+        // Reuses the CSV importer's resolver, which walks name, then slug,
+        // then exercise_aliases, with a trailing "(Foo)" strip. Without this
+        // a shorthand name resolves to nil and the row renders a muscle-chip
+        // placeholder while its photo sits unused in the bundle.
+        if dbEx == nil,
+           let id = CoachDatabase.shared.exerciseId(forImportName: name) {
+            dbEx = CoachDatabase.shared.exercise(id: id)
+        }
         guard let dbEx else {
             return ExerciseLookup(exercise: nil, bucket: nil, thumbnailURL: nil)
         }

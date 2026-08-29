@@ -106,6 +106,12 @@ struct ProgressScreen: View {
                 .foregroundStyle(Color.ink2)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
+            // Soreness does not need a logged session, and a new user is
+            // exactly who might record it first, so the check-in is offered
+            // here too rather than only in the populated branch.
+            SorenessCheckInPill()
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
             Spacer()
         }
     }
@@ -130,6 +136,7 @@ struct ProgressScreen: View {
                 )
                 .padding(.horizontal, -20)
                 SeasonPhaseBadge(style: .full, surface: "progress")
+                SorenessCheckInPill()
                 statStrip
                 bodyWeightTrendCard
                 bodyCompositionTrendCard
