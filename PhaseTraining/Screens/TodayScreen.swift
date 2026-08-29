@@ -75,10 +75,6 @@ struct TodayScreen: View {
     /// (`refinedByLLMAt` stamped). No accept / reject: the refinement is
     /// already applied; this is pure transparency.
     @State private var showCoachPolishedSheet: Bool = false
-    @State private var showConsolidationNoop: Bool = false
-    /// Which constraint blocked the consolidation — appended to the no-op
-    /// alert so the user sees why the week couldn't absorb the miss.
-    @State private var consolidationDecline: PlanStore.ConsolidationDecline?
 
     // Derived read-only state (todayPlan, effectiveKind, template, hero copy,
     // …) lives in TodayScreen+Derived.swift; the inline editor surface +
@@ -100,29 +96,6 @@ struct TodayScreen: View {
                 )
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        // PR 8 — missed-workout banner. Renders the most
-                        // recent pending miss (planned day passed with
-                        // no logged session). Once the user acts, the
-                        // next pending miss (if any) takes its place.
-                        if let pending = currentPendingMiss {
-                            MissedWorkoutBanner(
-                                missedDay: pending,
-                                proposedDiff: planStore.proposeMissedReshuffle(missedDate: pending.date),
-                                onAccept: { acceptMissedReshuffle(for: pending) },
-                                onDismiss: { dismissMissed(for: pending) },
-                                onConsolidate: planStore.shouldOfferConsolidation(missedDate: pending.date)
-                                    ? { consolidateForMiss(for: pending) } : nil
-                            )
-                            .padding(.horizontal, 20)
-                            .padding(.top, 14)
-                            // No wrapper accessibilityIdentifier here: a parent
-                            // id leaks to every child Button (XCUITest then sees
-                            // Skip/Consolidate both reporting the wrapper id, not
-                            // their own). The banner's own buttons carry
-                            // missed-banner-* ids; use missed-banner-header for
-                            // presence. (xcuitest-swiftui-gotchas #1.)
-                        }
-
                         // Build 122 — the mascot card, the season badge, the
                         // soreness prompt and the recovery readout used to sit
                         // here. Today answers one question (what am I doing,
@@ -130,11 +103,6 @@ struct TodayScreen: View {
                         // for a second decision came out. NOTE: the soreness
                         // pill was the ONLY entry point to SorenessCheckInSheet;
                         // that screen is now unreachable until it gets one.
-                        if planEndingSoon {
-                            planNextWeekPill
-                                .padding(.horizontal, 20)
-                                .padding(.top, 10)
-                        }
                         if effectiveKind == .rest {
                             // Rest day — Mr Kettle takes a stretch. A calm beat
                             // for a screen that has no session to start.
@@ -254,14 +222,6 @@ struct TodayScreen: View {
             HistoryScreen(initialExerciseFilter: wrapped.name)
                 .environmentObject(store)
         }
-        // Attached at screen level, NOT on the banner — by the time the
-        // no-op flag flips, dismissMissed has already removed the banner
-        // from the hierarchy, and an alert on a removed view never shows.
-        .alert("Nothing to consolidate", isPresented: $showConsolidationNoop) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(consolidationNoopMessage)
-        }
         .sheet(isPresented: $showCoachPolishedSheet) {
             CoachPolishedExplanationSheet(
                 refinedAt: todayPlan?.generatedWorkout?.refinedByLLMAt,
@@ -317,84 +277,6 @@ struct TodayScreen: View {
     }
 
     // MARK: - PR 8 — Missed-workout banner glue
-
-    /// The single pending missed workout we surface in the banner.
-    /// Picks the most recent unresolved miss; once the user acts on
-    /// it (Accept / Skip), the next pending miss surfaces.
-    private var currentPendingMiss: DayPlan? {
-        planStore.pendingMissedWorkouts().last  // last = most recent date
-    }
-
-    private func acceptMissedReshuffle(for day: DayPlan) {
-        if let diff = planStore.proposeMissedReshuffle(missedDate: day.date) {
-            planStore.applyMissedReshuffle(diff, missedDate: day.date)
-        } else {
-            // Drop-rule fired or no valid target → log as dropped so we
-            // don't re-banner the same date.
-            planStore.dismissMissed(date: day.date, asDropped: true)
-        }
-    }
-
-    private func dismissMissed(for day: DayPlan) {
-        planStore.dismissMissed(date: day.date, asDropped: false)
-    }
-
-    /// D3 — consolidate the remaining week onto fewer lift days (offered when
-    /// reshuffle found no clean slot), then clear the miss so it stops
-    /// bannering.
-    private func consolidateForMiss(for day: DayPlan) {
-        // consolidateWeekDetailed reports which constraint blocked a no-op
-        // (weekly cap, <2 future lift days, unrecoverable focus). Don't
-        // pretend it worked — tell the user the miss was just dropped and why.
-        let decline = planStore.consolidateWeekDetailed(memory: memoryStore.memory)
-        planStore.dismissMissed(date: day.date, asDropped: true)
-        if let decline {
-            consolidationDecline = decline
-            showConsolidationNoop = true
-        }
-    }
-
-    /// No-op alert body: the base sentence plus the constraint that blocked
-    /// consolidation, so "couldn't absorb" isn't left unexplained.
-    private var consolidationNoopMessage: String {
-        let reason: String
-        switch consolidationDecline {
-        case .weeklyCapMet:
-            reason = "the weekly cap is already met"
-        case .notEnoughLiftDays:
-            reason = "not enough lift days left this week"
-        case .unrecoverableFocus:
-            reason = "the remaining workouts couldn't be merged"
-        case nil:
-            return "The week couldn't absorb the missed work — the workout was skipped instead."
-        }
-        return "The week couldn't absorb the missed work — \(reason). The workout was skipped instead."
-    }
-
-    private var planNextWeekPill: some View {
-        Button { tabSelection.showWeeklyCheckIn = true } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "calendar.badge.plus")
-                    .font(.system(size: 12, weight: .semibold))
-                Text("PLAN NEXT WEEK")
-                    .styled(.micro)
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .semibold))
-            }
-            .foregroundStyle(Color.accent)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(Color.accentWash)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.accentBorder, lineWidth: 0.5)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("today-plan-next-week")
-    }
 
     /// True when today's generated workout was LLM-polished in the background
     /// by the build-98 refinement pass. Drives the "personalized by coach"

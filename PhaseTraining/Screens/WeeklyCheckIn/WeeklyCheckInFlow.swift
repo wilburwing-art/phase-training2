@@ -77,15 +77,22 @@ struct WeeklyCheckInDraft {
 // MARK: - Steps
 
 enum WeeklyCheckInStep: Int, CaseIterable {
-    case intent = 0
+    /// Build 122 — reviewing the week that just ended, before planning the
+    /// next one. Conditional: shown only when a miss is pending, and skipped
+    /// entirely otherwise, so it sits OUTSIDE the counted flow like .preview.
+    case missed = 0
+    case intent
     case constraints
     case events
     case feedback
     case preview
 
     /// Treated like onboarding's planPreview step — hide the counter.
-    var humanIndex: Int { self == .preview ? 0 : rawValue + 1 }
-    static var total: Int { WeeklyCheckInStep.allCases.count - 1 }
+    var humanIndex: Int {
+        (self == .preview || self == .missed) ? 0 : rawValue
+    }
+    /// Excludes the two uncounted steps (.missed, .preview).
+    static var total: Int { WeeklyCheckInStep.allCases.count - 2 }
 
     func next() -> WeeklyCheckInStep? { WeeklyCheckInStep(rawValue: rawValue + 1) }
     func prev() -> WeeklyCheckInStep? { WeeklyCheckInStep(rawValue: rawValue - 1) }
@@ -117,6 +124,11 @@ struct WeeklyCheckInFlow: View {
     @ViewBuilder
     private var content: some View {
         switch step {
+        case .missed:
+            CheckInMissedScreen(
+                onNext: advance,
+                onClose: onDismiss
+            )
         case .intent:
             CheckInIntentScreen(
                 draft: $draft,
@@ -163,17 +175,25 @@ struct WeeklyCheckInFlow: View {
     private func hydrateFromOverrides() {
         guard !draft.hydrated else { return }
         draft.hydrated = true
+        // The missed step is a pre-step: enter on it when the finished week
+        // left something unresolved, otherwise begin at .intent as before.
+        if !planStore.pendingMissedWorkouts().isEmpty { step = .missed }
         draft.unavailableDays = planStore.overrides.unavailableDays
         draft.events = planStore.overrides.events
     }
 
     private func advance() {
-        guard let next = step.next() else { return }
+        guard var next = step.next() else { return }
+        if next == .missed { next = next.next() ?? next }
         withAnimation(.easeInOut(duration: 0.22)) { step = next }
     }
 
     private func back() {
         guard let prev = step.prev() else { return }
+        // Backing out of .intent lands on .missed, which is empty once the
+        // user has resolved everything. Stay put rather than showing a step
+        // with nothing on it.
+        if prev == .missed, planStore.pendingMissedWorkouts().isEmpty { return }
         withAnimation(.easeInOut(duration: 0.18)) { step = prev }
     }
 
@@ -345,6 +365,8 @@ struct CheckInScaffold<Content: View>: View {
                             .frame(width: 32, height: 32)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Back")
+                    .accessibilityIdentifier("checkin-back")
                 } else {
                     Color.clear.frame(width: 32, height: 32)
                 }
@@ -361,8 +383,13 @@ struct CheckInScaffold<Content: View>: View {
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(Color.ink2)
                             .frame(width: 32, height: 32)
+                            // On the Image, not the Button: an SF Symbol
+                            // supplies its own identifier ("xmark") and it
+                            // wins over one set on the enclosing Button.
+                            .accessibilityIdentifier("checkin-close")
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Close")
                 } else {
                     Color.clear.frame(width: 32, height: 32)
                 }

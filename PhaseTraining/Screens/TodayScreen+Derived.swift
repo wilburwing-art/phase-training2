@@ -92,17 +92,6 @@ extension TodayScreen {
         }
     }
 
-    /// True when the current plan's last day is within 2 days (or already past).
-    /// Drives the "Plan next week" pill.
-    var planEndingSoon: Bool {
-        guard let last = planStore.plan?.days.last?.date else { return false }
-        let cal = Calendar.current
-        let now = cal.startOfDay(for: Date())
-        let lastDay = cal.startOfDay(for: last)
-        let daysLeft = cal.dateComponents([.day], from: now, to: lastDay).day ?? 0
-        return daysLeft <= 2
-    }
-
     /// Phase 13e: coach-written observation when present, otherwise the static
     /// Phase-11 rules. Picks first matching source.
     private var insightCopy: String? {
@@ -206,7 +195,22 @@ extension TodayScreen {
     /// subtitle. Coach insight wins if present; otherwise we fall back to
     /// the planner's static generatedReason.
     var heroCaption: String? {
-        insightCopy ?? todayPlan?.generatedReason
+        // insightCopy is coach-written (gated on consent + Pro) and always
+        // wins. The fallback used to be `todayPlan?.generatedReason`, which
+        // PlanStore fills from the generator's provenance string — a machine
+        // trace rendered as the most prominent copy on the screen. PlanBlurb
+        // writes a sentence from the same facts instead; provenance stays in
+        // the data for the coach prompt and the explanation sheet.
+        if let insight = insightCopy { return insight }
+        guard let day = todayPlan else { return nil }
+        return PlanBlurb.sentence(
+            kind: day.kind,
+            phase: memoryStore.memory.seasonForPlanner,
+            // A lift day carries no `sport`; the season it serves is the
+            // athlete's primary. Sport days name their own.
+            sportLabel: day.sport?.name ?? memoryStore.memory.primarySport?.name,
+            weekInPhase: memoryStore.memory.weeksInCurrentPhase
+        )
     }
 
     var daysAgoShort: String {

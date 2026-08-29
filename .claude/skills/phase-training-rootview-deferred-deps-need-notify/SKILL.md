@@ -1,6 +1,6 @@
 ---
 name: phase-training-rootview-deferred-deps-need-notify
-description: phase-training2 wires PlanStore's injected stores (sessionStore, recentPicks, memoryStore, sportLogStore, customStore) in RootTabView's `.task` — AFTER first render, and they are plain `var`s, NOT @Published. So any PlanStore-derived view state that depends on them computes against nil on COLD LAUNCH and never refreshes (wiring them fires no objectWillChange). The Today missed-workout banner is the known victim: currentPendingMiss → pendingMissedWorkouts() does `guard let sessionStore` → returns [] at launch → banner absent until an UNRELATED @Published change re-renders. Trigger when a cold-launch banner/screen element doesn't appear until you tap around, when adding derived view state that reads planStore.sessionStore/memoryStore/recentPicks, when wiring a NEW injected store into PlanStore, or when an XCUITest that checks an on-launch element (with no prior interaction) fails while manual use "works".
+description: phase-training2 wires PlanStore's injected stores (sessionStore, recentPicks, memoryStore, sportLogStore, customStore) in RootTabView's `.task` — AFTER first render, and they are plain `var`s, NOT @Published. So any PlanStore-derived view state that depends on them computes against nil on COLD LAUNCH and never refreshes (wiring them fires no objectWillChange). The Today missed-workout banner is the known victim: currentPendingMiss → pendingMissedWorkouts() does `guard let sessionStore` → returns [] at launch → banner absent until an UNRELATED @Published change re-renders. Trigger when a cold-launch banner/screen element doesn't appear until you tap around, when adding derived view state that reads planStore.sessionStore/memoryStore/recentPicks, when wiring a NEW injected store into PlanStore, or when an XCUITest that checks an on-launch element (with no prior interaction) fails while manual use "works". ALSO trigger before REMOVING or hiding the Today missed-workout banner: its buttons are the only callers of applyMissedReshuffle/dismissMissed, so it is the sole transition out of the pending state, not a notice.
 when-to-use: cold-launch-only missing UI in phase-training2, or adding/​debugging PlanStore-derived state that depends on a .task-wired store.
 ---
 
@@ -39,3 +39,19 @@ assert the gates directly — for the consolidate banner:
 Reuse the `PlanStoreMissedWorkoutTests` harness (`freshStore(today:)`,
 `focusedLiftDay`, `restDay`, set `store.sessionStore` before `setPlan`).
 Pairs with `phase-training-planstore-mutation-seams-and-week-caps`.
+
+## The banner is the only exit from the pending state
+
+Worth knowing before anyone declutters Today. `pendingMissedWorkouts()` returns
+detected days minus those already recorded in `missedWorkouts`, and the only
+things that record one are `applyMissedReshuffle` and `dismissMissed`. The
+banner's Skip / Got it / Consolidate buttons are their only callers.
+
+So the banner is a state machine's single transition wearing a notification's
+clothes. Remove it and a missed day stays pending forever: never reshuffled,
+never dismissed, accumulating in every later `pendingMissedWorkouts()` call,
+with nothing rendering it and nothing failing.
+
+If Today has to lose it, the resolve path has to land somewhere else first
+(the weekly check-in and the Week tab's day rows are the two natural homes).
+Deleting the view alone is not a UI change, it strands the data.

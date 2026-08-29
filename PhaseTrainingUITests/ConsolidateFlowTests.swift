@@ -31,26 +31,42 @@ final class ConsolidateFlowTests: XCTestCase {
         app.buttons["missed-banner-consolidate"]
     }
 
-    func test_missedBanner_offersConsolidate_andConsolidatesWeek() {
+    /// Build 122 moved missed-workout resolution off Today and into the
+    /// weekly check-in's first step, reached from the Week header. The
+    /// behaviour is unchanged; only the entry point moved, so this drives the
+    /// new path and still asserts the week actually consolidates.
+    private func openCheckIn(_ app: XCUIApplication) {
+        let weekTab = app.tabBars.buttons["Week"]
+        XCTAssertTrue(weekTab.waitForExistence(timeout: 10), "Week tab should exist")
+        weekTab.tap()
+        let planNext = app.buttons["week-plan-next"]
+        XCTAssertTrue(planNext.waitForExistence(timeout: 5),
+                      "Week header should offer Plan next week")
+        planNext.tap()
+    }
+
+    func test_missedWorkout_offersConsolidateInCheckIn_andConsolidatesWeek() {
         let app = launch()
 
-        // 1. Affordance: the banner offers Consolidate (reshuffle found no slot).
-        let consolidate = consolidateButton(app)
-        XCTAssertTrue(consolidate.waitForExistence(timeout: 10),
-                      "missed-workout banner should offer a Consolidate button")
-
-        // 2. Baseline: the week has 4 lift days.
+        // 1. Baseline: the week has 4 lift days.
         let weekTab = app.tabBars.buttons["Week"]
-        XCTAssertTrue(weekTab.waitForExistence(timeout: 5))
+        XCTAssertTrue(weekTab.waitForExistence(timeout: 10))
         weekTab.tap()
         XCTAssertTrue(liftCountText(app, 4).waitForExistence(timeout: 5),
                       "baseline week should show 4 lift days")
 
-        // 3. Back to Today, tap Consolidate.
-        app.tabBars.buttons["Today"].tap()
-        let consolidateAgain = consolidateButton(app)
-        XCTAssertTrue(consolidateAgain.waitForExistence(timeout: 5))
-        consolidateAgain.tap()
+        // 2. The check-in opens on the missed step, which offers Consolidate
+        //    (reshuffle found no slot).
+        openCheckIn(app)
+        let consolidate = consolidateButton(app)
+        XCTAssertTrue(consolidate.waitForExistence(timeout: 10),
+                      "the check-in's missed step should offer a Consolidate button")
+        consolidate.tap()
+
+        // 3. Leave the flow without planning a new week.
+        let close = app.buttons["checkin-close"]
+        XCTAssertTrue(close.waitForExistence(timeout: 5), "check-in should offer a close")
+        close.tap()
 
         // 4. The week dropped one lift day (4 → 3) — consolidateWeek ran.
         weekTab.tap()
@@ -59,10 +75,11 @@ final class ConsolidateFlowTests: XCTestCase {
         XCTAssertFalse(liftCountText(app, 4).exists,
                        "the 4-lift baseline should be gone after consolidation")
 
-        // 5. The banner cleared (miss resolved by consolidation).
-        app.tabBars.buttons["Today"].tap()
+        // 5. The miss is resolved, so reopening the check-in skips the missed
+        //    step entirely rather than showing an empty one.
+        openCheckIn(app)
         XCTAssertFalse(consolidateButton(app).waitForExistence(timeout: 3),
-                       "banner should disappear after consolidating")
+                       "resolved miss should not reappear in the check-in")
     }
 
     /// PR 6 gap — convert a rest day into a lift via the Week-tab edit sheet.

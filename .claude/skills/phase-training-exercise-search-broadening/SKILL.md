@@ -54,3 +54,39 @@ means it can't recurse back into the fuzzy branch.
   [[phase-training2-gitignored-pbxproj]]). Build/test via `xcodebuild -only-testing:...` with an
   explicit `-project` path; the XcodeBuildMCP session-default profile may point at a stale
   worktree (see [[xcodebuildmcp-session-defaults-cross-worktree]]).
+
+## What an exact-name miss looks like on screen
+
+The re-filter above has a visible consequence nobody reports: when
+`ExerciseLookupCache.resolve` finds no exact match it returns
+`ExerciseLookup(exercise: nil, ...)`, so `CompositeLeading` gets `exerciseID:
+nil` and renders the muscle-chip placeholder. The exercise row looks designed
+rather than broken, and the photo was on disk the whole time.
+
+Seen 2026-08-29 on Today: "Bench Press", "Overhead Press", "Incline DB Press"
+and "Lateral Raise" all showed placeholders while **Tricep Pushdown showed a
+photo**. The database names are `Barbell Bench Press` (900), `Barbell Overhead
+Press (Strict)` (904), `Incline Dumbbell Bench Press` (907), `Cable Lateral
+Raise` (958). All four `.webp` files ship correctly.
+
+**The mixed screenshot is the diagnosis.** If some rows have photos and others
+do not, it is a name-resolution miss, not an asset or bundling problem. The one
+row with a photo is the one whose plan name equals a DB name exactly. Confirm
+with:
+
+```bash
+sqlite3 PhaseTraining/Resources/coach.db \
+  "SELECT id FROM exercises WHERE lower(name)=lower('Bench Press');"   # empty
+ls PhaseTraining/Resources/ExerciseImages/900.webp                     # present
+```
+
+Before assuming a bundling fault: the 525 images land in
+`PhaseTraining.app/ExerciseImages/`, NOT the bundle root, and
+`BundledExerciseImage` already handles that subdirectory. That path works.
+
+**`exercise_aliases` exists and this lookup never consults it.** It is the
+obvious fallback for short plan names, and adding it is a change to overload
+1's *caller*, not to the search overloads. The other fix is upstream: have the
+generator emit canonical DB names. Do not reach for fuzzy matching here, for
+the reason in "Where broadening is safe" above, and because a wrong photo looks
+correct.

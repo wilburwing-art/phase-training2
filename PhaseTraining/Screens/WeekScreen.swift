@@ -12,6 +12,7 @@ import UniformTypeIdentifiers
 struct WeekScreen: View {
     @EnvironmentObject private var planStore: PlanStore
     @EnvironmentObject private var memory: MemoryStore
+    @EnvironmentObject private var tabSelection: TabSelectionStore
     @State private var editingDate: Date? = nil
     /// PR 6 (weekly-coach roadmap) — opens the WeekTone picker sheet.
     @State private var pickingWeekTone = false
@@ -198,33 +199,55 @@ struct WeekScreen: View {
                 )
                 .accessibilityIdentifier("week-tone-chip")
             }
-            // PR 6 — "typical week" fast path: copy last week's shape onto this
-            // week in one tap. Only shown when a prior week exists to copy.
-            if planStore.hasPriorWeekShape {
-                Button {
-                    planStore.adoptLastWeekShape(memory: memory.memory)
-                } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: "arrow.uturn.backward")
-                            .font(.system(size: 10, weight: .semibold))
-                        Text("Same as last week")
-                            .styled(.monoXS)
+            // Week-level actions. Both are chips rather than full-width pills
+            // because the seven day rows below are sized by GeometryReader to
+            // fill the viewport, so anything taller here steals row height.
+            HStack(spacing: 6) {
+                // PR 6 — "typical week" fast path: copy last week's shape onto
+                // this week in one tap. Only when a prior week exists to copy.
+                if planStore.hasPriorWeekShape {
+                    chip(icon: "arrow.uturn.backward", title: "Same as last week",
+                         identifier: "week-same-as-last") {
+                        planStore.adoptLastWeekShape(memory: memory.memory)
                     }
-                    .foregroundStyle(Color.ink2)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color.surface)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .strokeBorder(Color.line, lineWidth: 0.5)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("week-same-as-last")
-                .padding(.top, 2)
+                // Build 122 — moved off Today, where it was one of five tiles
+                // between the header and the workout. Week is the planning
+                // surface, and this is now the only in-app door to the check-in
+                // (the other setter is a `plan-week` notification deep link),
+                // so it is permanent here rather than gated on the week ending.
+                chip(icon: "calendar.badge.plus", title: "Plan next week",
+                     identifier: "week-plan-next") {
+                    tabSelection.showWeeklyCheckIn = true
+                }
+                Spacer(minLength: 0)
             }
+            .padding(.top, 2)
         }
+    }
+
+    /// Shared chrome for the header's week-level actions.
+    private func chip(icon: String, title: String, identifier: String,
+                      action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 5) {
+                Image(systemName: icon)
+                    .font(.system(size: 10, weight: .semibold))
+                Text(title)
+                    .styled(.monoXS)
+            }
+            .foregroundStyle(Color.ink2)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(Color.surface)
+            .overlay(
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .strokeBorder(Color.line, lineWidth: 0.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(identifier)
     }
 
     private func planSummary(_ plan: WeekPlan) -> String {
