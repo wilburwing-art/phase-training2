@@ -24,6 +24,13 @@ struct CoachMessage: Codable, Identifiable, Equatable {
     var memoryProposal: CoachMemoryProposal? = nil
 
     var isUser: Bool { role == "user" }
+
+    /// Any proposal on this turn the user has neither applied nor rejected.
+    var hasPendingProposal: Bool {
+        proposal?.status == .pending
+            || workoutProposal?.status == .pending
+            || memoryProposal?.status == .pending
+    }
 }
 
 final class CoachConversationStore: ObservableObject {
@@ -39,6 +46,10 @@ final class CoachConversationStore: ObservableObject {
     /// transcript so clearing the chat doesn't reset the daily cost guard;
     /// reset on calendar-day rollover. Drives the soft/hard turn caps.
     @Published private(set) var turnsToday: Int = 0
+
+    /// A proposal is waiting on the user's decision. Drives the coach
+    /// button's unread dot; the drawer is where they act on it.
+    var hasPendingProposal: Bool { messages.contains(where: \.hasPendingProposal) }
 
     private let defaults: UserDefaults
 

@@ -75,6 +75,9 @@ enum KettlePose: String, CaseIterable, Identifiable {
 struct KettleView: View {
     var pose: KettlePose
     var animated: Bool = true
+    /// Loop time to hold when not animating (Reduce Motion included). 0 is the
+    /// rest frame; `period / 2` is the far end of every loop's cosine.
+    var frozenAt: TimeInterval = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -84,7 +87,7 @@ struct KettleView: View {
                     canvas(at: timeline.date.timeIntervalSinceReferenceDate)
                 }
             } else {
-                canvas(at: 0)
+                canvas(at: frozenAt)
             }
         }
         .aspectRatio(160.0 / 200.0, contentMode: .fit)
