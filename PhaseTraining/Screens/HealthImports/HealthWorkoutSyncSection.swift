@@ -15,6 +15,7 @@ import SwiftUI
 struct HealthWorkoutSyncSection: View {
     @EnvironmentObject private var store: MemoryStore
     @EnvironmentObject private var sessionStore: SessionStore
+    @EnvironmentObject private var activityDetection: ActivityDetectionStore
 
     let importer: HealthKitImporter
 
@@ -129,7 +130,27 @@ struct HealthWorkoutSyncSection: View {
             Text("Pulls your last 28 days of workouts. You'll see Apple's permission prompt the first time.")
                 .font(.caption)
                 .foregroundColor(.ink2)
+            detectionToggle
         }
+    }
+
+    /// Kill switch for the on-open activity check (the Today "looks like
+    /// you went skiing" banner). Lives here because the feature rides on
+    /// the same Health workout read the sync above grants.
+    private var detectionToggle: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Toggle(isOn: $activityDetection.enabled) {
+                Text("Check for activity on open")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundColor(.ink)
+            }
+            .tint(Color.accent)
+            Text("When the app opens, recent skiing, climbing, hiking and similar sessions found in Health are surfaced on Today so you can log them and rebalance your week.")
+                .font(.caption)
+                .foregroundColor(.ink2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.top, 8)
     }
 
     private func errorSection(message: String) -> some View {

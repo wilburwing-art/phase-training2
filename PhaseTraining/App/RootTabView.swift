@@ -149,4 +149,8 @@ struct RootTabView: View {
         // SportLogStore found" the moment it rendered.
         .environmentObject(SportLogStore(defaults: defaults))
         .environmentObject(SubscriptionStore())
+        // TodayScreen (rendered inside TodayTab) declares the detection
+        // store, so the preview traps without it — same reason as the
+        // SportLogStore line above.
+        .environmentObject(ActivityDetectionStore(defaults: defaults))
 }

@@ -104,7 +104,8 @@ final class BackupCoordinator: ObservableObject {
         customStore: CustomRoutineStore,
         sportLogStore: SportLogStore,
         recentPicks: RecentPicksStore,
-        conversation: CoachConversationStore
+        conversation: CoachConversationStore,
+        activityDetection: ActivityDetectionStore
     ) {
         MemoryStore.wipeAllUserData()
         store.reset()
@@ -114,5 +115,6 @@ final class BackupCoordinator: ObservableObject {
         sportLogStore.reset()
         recentPicks.clear()
         conversation.resetAll()
+        activityDetection.reset()
     }
 }

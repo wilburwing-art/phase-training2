@@ -286,6 +286,17 @@ actor HealthKitImporter {
         return raw.map(Self.map(_:))
     }
 
+    /// Raw last-`days` workouts, unmapped. The activity-detection layer
+    /// (ActivityDetection.swift) needs the specific HKWorkoutActivityType
+    /// (ski vs climb vs hike) that ImportedWorkout's coarse WorkoutKind
+    /// deliberately drops, so it reads this instead of recentWorkouts.
+    /// Same auth posture: never triggers the system dialog — an
+    /// undetermined/denied read errors or comes back empty and the caller
+    /// stays silent.
+    func recentRawWorkouts(days: Int = 7) async throws -> [HKWorkoutLike] {
+        try await store.recentWorkouts(days: days)
+    }
+
     /// Pure mapper exposed for testability. Maps one HK workout to our
     /// internal value type, including the activity-type → WorkoutKind
     /// bucketing documented at the top of this file.

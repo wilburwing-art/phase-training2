@@ -32,6 +32,7 @@ struct ProfileScreen: View {
     @EnvironmentObject private var sportLogStore: SportLogStore
     @EnvironmentObject private var recentPicks: RecentPicksStore
     @EnvironmentObject private var conversation: CoachConversationStore
+    @EnvironmentObject private var activityDetection: ActivityDetectionStore
 
     // Backup / restore / erase state machine. The iOS-level presentation
     // surfaces stay on this screen, bound to the coordinator's published
@@ -551,7 +552,8 @@ struct ProfileScreen: View {
                                         customStore: customStore,
                                         sportLogStore: sportLogStore,
                                         recentPicks: recentPicks,
-                                        conversation: conversation)
+                                        conversation: conversation,
+                                        activityDetection: activityDetection)
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {

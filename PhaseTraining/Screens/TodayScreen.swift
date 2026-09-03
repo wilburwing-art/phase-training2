@@ -27,6 +27,7 @@ struct TodayScreen: View {
     @EnvironmentObject var tabSelection: TabSelectionStore
     @EnvironmentObject var customStore: CustomRoutineStore
     @EnvironmentObject var sportLogStore: SportLogStore
+    @EnvironmentObject var activityDetection: ActivityDetectionStore
     // Coach gate — same pair CoachBubble reads. The "personalized by coach"
     // badge must not render for users without consent/Pro, even when a stale
     // refinedByLLMAt stamp survives in the plan from before consent was
@@ -107,6 +108,22 @@ struct TodayScreen: View {
                 )
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
+                        // Detected-activity confirm card — "looks like you
+                        // went skiing yesterday". One at a time; resolving
+                        // promotes the next pending candidate. Transient by
+                        // design (only when Health shows an outing we don't
+                        // know about), so it coexists with the build-122
+                        // one-decision rule below.
+                        if let detected = activityDetection.pending.first {
+                            DetectedActivityBanner(
+                                activity: detected,
+                                adjustsWeek: detectedActivityAdjustsWeek(detected),
+                                onConfirm: { confirmDetectedActivity(detected) },
+                                onDismiss: { activityDetection.markHandled(detected) }
+                            )
+                            .padding(.horizontal, 20)
+                            .padding(.top, 14)
+                        }
                         // Build 122 — the mascot card, the season badge, the
                         // soreness prompt and the recovery readout used to sit
                         // here. Today answers one question (what am I doing,
@@ -285,6 +302,56 @@ struct TodayScreen: View {
             // which case keep their edits rather than clobber them).
             if !didModify { editableTemplate = newTemplate }
         }
+    }
+
+    // MARK: - Detected-activity banner glue
+
+    /// A confirm rebalances the week only when the outing (a) falls in the
+    /// current training week — WeekOverrides is week-scoped, a stale-dated
+    /// event would be dropped on the Monday rollover anyway — and (b) isn't
+    /// already a planned sport day, where there's nothing to rebalance.
+    /// Outside those cases the confirm still writes the sport log, which
+    /// feeds readiness + recentHardSportDays on the next generation.
+    private func detectedActivityAdjustsWeek(_ activity: DetectedActivity) -> Bool {
+        let cal = Calendar.current
+        guard cal.isDate(activity.day.startOfTrainingWeek(),
+                         inSameDayAs: Date().startOfTrainingWeek()) else { return false }
+        if let day = planStore.plan?.days.first(where: { cal.isDate($0.date, inSameDayAs: activity.day) }),
+           day.kind == .sport {
+            return false
+        }
+        return true
+    }
+
+    /// Confirm path: retroactive sport log always; when the outing is in
+    /// the current week, also persist a WeekEvent (intent, not output — it
+    /// survives regens) and regenerate via updateOverrides so the planner
+    /// re-lays the week: the day becomes a sport day, adjacent lifts
+    /// lighten (defer-to-sport), and a hard outing counts toward the
+    /// recent-hard-sport-days volume trim.
+    private func confirmDetectedActivity(_ activity: DetectedActivity) {
+        sportLogStore.log(
+            sport: activity.sport,
+            on: activity.day,
+            durationMinutes: activity.durationMinutes,
+            intensity: activity.suggestedIntensity,
+            note: "From Apple Health"
+        )
+        if detectedActivityAdjustsWeek(activity) {
+            planStore.updateOverrides(memory: memoryStore.memory) { overrides in
+                // Planner takes the first event per date; don't stack a
+                // second onto a day the user already booked something for.
+                guard overrides.events(on: activity.day).isEmpty else { return }
+                overrides.events.append(WeekEvent(
+                    date: activity.day,
+                    title: activity.activityLabel,
+                    kind: .sportSession,
+                    sport: activity.sport,
+                    intensity: activity.suggestedIntensity
+                ))
+            }
+        }
+        activityDetection.markHandled(activity)
     }
 
     // MARK: - PR 8 — Missed-workout banner glue
@@ -466,6 +533,7 @@ struct TodayScreen: View {
         .environmentObject(TabSelectionStore())
         .environmentObject(CustomRoutineStore(defaults: defaults))
         .environmentObject(SportLogStore(defaults: defaults))
+        .environmentObject(ActivityDetectionStore(defaults: defaults))
 }
 
 #Preview("No plan (fallback)") {
@@ -479,4 +547,5 @@ struct TodayScreen: View {
         .environmentObject(TabSelectionStore())
         .environmentObject(CustomRoutineStore(defaults: defaults))
         .environmentObject(SportLogStore(defaults: defaults))
+        .environmentObject(ActivityDetectionStore(defaults: defaults))
 }
