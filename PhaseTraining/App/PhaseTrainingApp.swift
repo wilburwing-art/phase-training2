@@ -471,12 +471,16 @@ struct PhaseTrainingApp: App {
                                 sessionStore: session,
                                 consentGranted: coachConsentGranted
                             )
-                            // On-open Health activity check ("looks like you
-                            // went skiing yesterday" → Today banner). Covers
-                            // cold launch too: scenePhase transitions to
-                            // .active on first render. Silent when Health
-                            // read access was never granted.
-                            if memory.isOnboarded {
+                        }
+                        // On-open Health activity check ("looks like you
+                        // went skiing yesterday" → Today banner). Covers
+                        // cold launch too: scenePhase transitions to
+                        // .active on first render. Silent when Health read
+                        // access was never granted. Its own Task — the
+                        // banner must not wait behind the StoreKit refresh
+                        // above, which can take seconds on a bad connection.
+                        if memory.isOnboarded {
+                            Task {
                                 await activityDetection.scan(sportLogs: sportLog.entries)
                             }
                         }

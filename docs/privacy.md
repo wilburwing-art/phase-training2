@@ -16,6 +16,12 @@ Phase Training does not collect personal data, usage analytics, crash reports, o
 
 Workout sessions you record (exercises, sets, weights, reps, RPE, notes, feel ratings) are saved on your device using iOS's standard local storage. Uninstalling the app removes this data.
 
+## Apple Health (optional, read-only)
+
+If you grant access, Phase Training reads from Apple Health on your device: recent workouts (activity type, date, duration, and calories) and, with a separate permission, body weight, body-fat percentage, and lean-mass readings. This data is used to gauge your training readiness, to match generated workouts to your real activity, and to offer to log outdoor sessions the app finds (for example a ski day or a climb) so your training week can adjust. It is stored locally alongside the rest of your log and never leaves your device on its own.
+
+Phase Training never writes to Apple Health, and Health data is never used for advertising or shared with data brokers. If you enable the AI Coach below, summaries of your logged activity, which can include sessions you confirmed from Health, may be part of the coach's context; nothing is sent unless the AI Coach is on. You can revoke Health access at any time in iOS Settings → Health → Data Access & Devices.
+
 ## AI Coach (optional, off by default)
 
 If you enable the AI Coach in Profile → AI Coach, the app sends the text of your messages plus a snapshot of your current plan, recent workout feedback, and today's plan day to Anthropic (Claude) via our Cloudflare AI Gateway proxy. No name, email, or device identifier is sent. The data is used only to generate the coach's response and is not used to train any model.

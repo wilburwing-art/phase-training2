@@ -124,7 +124,7 @@ struct TodayScreen: View {
                                 activity: detected,
                                 mode: detectedConfirmMode(detected),
                                 onConfirm: { confirmDetectedActivity(detected) },
-                                onDismiss: { activityDetection.markHandled(detected) }
+                                onDismiss: { activityDetection.markDismissed(detected) }
                             )
                             .padding(.horizontal, 20)
                             .padding(.top, 14)
@@ -337,7 +337,15 @@ struct TodayScreen: View {
     /// routes through a choice dialog instead of deciding for them.
     private func detectedConfirmMode(_ activity: DetectedActivity) -> DetectedActivityConfirmMode {
         let cal = Calendar.current
-        let trainedDays = Set(store.savedSessions.map { cal.startOfDay(for: $0.startTime) })
+        // confirmMode only consults days inside the current training week,
+        // so don't pay for start-of-day math over a multi-year session
+        // history on every render the banner is visible for.
+        let weekStart = Date().startOfTrainingWeek()
+        let trainedDays = Set(
+            store.savedSessions.lazy
+                .filter { $0.startTime >= weekStart }
+                .map { cal.startOfDay(for: $0.startTime) }
+        )
         return ActivityDetector.confirmMode(
             for: activity,
             plan: planStore.plan,
@@ -363,13 +371,18 @@ struct TodayScreen: View {
     /// lighten (defer-to-sport), and a hard outing counts toward the
     /// recent-hard-sport-days volume trim.
     private func resolveDetectedActivity(_ activity: DetectedActivity, convertDay: Bool) {
-        sportLogStore.log(
-            sport: activity.sport,
-            on: activity.day,
-            durationMinutes: activity.durationMinutes,
-            intensity: activity.suggestedIntensity,
-            note: "From Apple Health"
-        )
+        // The user can log the day manually (SportLogSheet) while the
+        // banner is up — pending only rebuilds on the next foreground
+        // scan. Don't stack a second entry on a day that has one.
+        if sportLogStore.entry(on: activity.day) == nil {
+            sportLogStore.log(
+                sport: activity.sport,
+                on: activity.day,
+                durationMinutes: activity.durationMinutes,
+                intensity: activity.suggestedIntensity,
+                note: "From Apple Health"
+            )
+        }
         if convertDay {
             planStore.updateOverrides(memory: memoryStore.memory) { overrides in
                 // Planner takes the first event per date; don't stack a
@@ -384,7 +397,7 @@ struct TodayScreen: View {
                 ))
             }
         }
-        activityDetection.markHandled(activity)
+        activityDetection.markConfirmed(activity)
     }
 
     // MARK: - PR 8 — Missed-workout banner glue

@@ -130,12 +130,19 @@ struct DetectedActivityBanner: View {
     }()
 
     /// "today" / "yesterday" / weekday name — banner copy reads as a
-    /// sentence, so the label is lowercase except weekday names.
+    /// sentence, so the label is lowercase except weekday names. At the
+    /// 7-day window edge an outing shares today's weekday name, so that
+    /// collision says "last Wednesday" instead of an ambiguous
+    /// "on Wednesday" that reads as today.
     private var dayLabel: String {
         let cal = Calendar.current
         if cal.isDateInToday(activity.startTime) { return "today" }
         if cal.isDateInYesterday(activity.startTime) { return "yesterday" }
-        return "on \(Self.weekdayFormatter.string(from: activity.startTime))"
+        let name = Self.weekdayFormatter.string(from: activity.startTime)
+        if cal.component(.weekday, from: activity.startTime) == cal.component(.weekday, from: Date()) {
+            return "last \(name)"
+        }
+        return "on \(name)"
     }
 
     private var durationLabel: String {

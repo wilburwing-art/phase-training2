@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Manual runs so a feature branch can be validated without opening a PR
+  # (e.g. agent sessions that can't build locally).
+  workflow_dispatch:
 
 jobs:
   test:

@@ -42,6 +42,10 @@ struct DetectedActivity: Identifiable, Equatable {
     let activityLabel: String
     /// Earliest contributing workout's start.
     let startTime: Date
+    /// Start-of-day of `startTime`, stamped by detect() with the SAME
+    /// calendar it grouped and excluded by — stored, not derived, so a
+    /// test-injected calendar can't disagree with Calendar.current.
+    let day: Date
     /// Summed duration across contributing workouts.
     let durationMinutes: Int
     /// Duration-derived guess the confirm writes to the sport log and the
@@ -49,7 +53,14 @@ struct DetectedActivity: Identifiable, Equatable {
     /// session (moderate), under that light.
     let suggestedIntensity: EventIntensity
 
-    var day: Date { Calendar.current.startOfDay(for: startTime) }
+    /// Stable "(day, sport)" key for this outing — the unit a dismissal
+    /// tombstones, so a fragment of the SAME outing that syncs into
+    /// Health after the user said "Not me" can't re-prompt it.
+    var outingKey: String { Self.outingKey(day: day, sportSlug: sport.slug) }
+
+    static func outingKey(day: Date, sportSlug: String) -> String {
+        "\(Int(day.timeIntervalSince1970))|\(sportSlug)"
+    }
 }
 
 /// What confirming a detected activity should do to the plan. Decided by
@@ -138,11 +149,19 @@ enum ActivityDetector {
     ///      per-activity minimum
     ///   4. already logged — a day with ANY SportLogEntry is out (the user
     ///      already told us; re-prompting would double-log)
+    ///   5. dismissed outings — a (day, sport) the user said "Not me" to
+    ///      stays gone even when a LATE-SYNCING fragment of it shows up
+    ///      with a fresh UUID
     /// then collapses per (day, sport) and returns newest-day first.
+    /// Every day derivation in here uses the injected `calendar`, and the
+    /// resulting `DetectedActivity.day` is stamped from it too, so the
+    /// grouping, the exclusions and the downstream confirm logic can never
+    /// partition days differently.
     static func detect(
         workouts: [HKWorkoutLike],
         sportLogs: [SportLogEntry],
         seenIds: Set<String>,
+        dismissedOutingKeys: Set<String> = [],
         now: Date = Date(),
         calendar: Calendar = .current
     ) -> [DetectedActivity] {
@@ -153,6 +172,7 @@ enum ActivityDetector {
             let uuid: String
             let mapping: Mapping
             let startTime: Date
+            let day: Date
             let minutes: Int
         }
 
@@ -160,11 +180,13 @@ enum ActivityDetector {
             guard hk.startDate >= cutoff, hk.startDate <= now else { return nil }
             guard !seenIds.contains(hk.uuid.uuidString) else { return nil }
             guard let map = mapping(for: hk.activityType) else { return nil }
-            guard !loggedDays.contains(calendar.startOfDay(for: hk.startDate)) else { return nil }
+            let day = calendar.startOfDay(for: hk.startDate)
+            guard !loggedDays.contains(day) else { return nil }
             return Candidate(
                 uuid: hk.uuid.uuidString,
                 mapping: map,
                 startTime: hk.startDate,
+                day: day,
                 minutes: Int(hk.duration / 60)
             )
         }
@@ -174,12 +196,13 @@ enum ActivityDetector {
         // 20-minute ski runs are an 80-minute ski day.
         var grouped: [String: [Candidate]] = [:]
         for c in candidates {
-            let key = DayKeyFormatter.string(from: c.startTime) + "|" + c.mapping.sportSlug
-            grouped[key, default: []].append(c)
+            grouped[DetectedActivity.outingKey(day: c.day, sportSlug: c.mapping.sportSlug),
+                    default: []].append(c)
         }
 
         var out: [DetectedActivity] = []
-        for (_, group) in grouped {
+        for (key, group) in grouped {
+            guard !dismissedOutingKeys.contains(key) else { continue }
             let total = group.reduce(0) { $0 + $1.minutes }
             guard let map = group.first?.mapping, total >= map.minMinutes else { continue }
             let sorted = group.sorted { $0.startTime < $1.startTime }
@@ -189,6 +212,7 @@ enum ActivityDetector {
                 sport: Sport.resolve(slug: map.sportSlug),
                 activityLabel: map.label,
                 startTime: sorted.first!.startTime,
+                day: sorted.first!.day,
                 durationMinutes: total,
                 suggestedIntensity: suggestedIntensity(durationMinutes: total)
             ))
@@ -207,6 +231,9 @@ enum ActivityDetector {
     ///   - outside the current training week → logOnly (WeekOverrides is
     ///     week-scoped; the sport log still feeds the next generation)
     ///   - day already planned as sport → logOnly (nothing to rebalance)
+    ///   - day is a race/event day → logOnly (the detected activity IS
+    ///     the booked event; converting would fight the user's own
+    ///     WeekEvent, and the resolve guard would silently drop ours)
     ///   - lift day the user ALSO trained on → logOnly (they did both;
     ///     keep the lift day + its session record)
     ///   - TODAY with a pending (un-trained) lift → userChoice: the user
@@ -230,7 +257,7 @@ enum ActivityDetector {
             // event; the planner honors it whenever the week generates.
             return .adjustWeek
         }
-        if planDay.kind == .sport { return .logOnly }
+        if planDay.kind == .sport || planDay.kind == .event { return .logOnly }
         if planDay.kind == .lift {
             if completedSessionDays.contains(calendar.startOfDay(for: day)) { return .logOnly }
             if calendar.isDate(day, inSameDayAs: now) { return .userChoice }
