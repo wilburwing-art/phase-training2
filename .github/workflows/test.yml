@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Manual runs so a feature branch can be validated without opening a PR
+  # (e.g. agent sessions that can't build locally).
+  workflow_dispatch:
 
 jobs:
   test:
@@ -12,7 +15,10 @@ jobs:
     # behavior in UI tests — rest-card preset Menu items rendered differently
     # between iOS 18 and iOS 26, making LogFlowTests unfixable on both.
     runs-on: macos-26
-    timeout-minutes: 20
+    # 45, not 20: every run since #307 (2026-08-27) was killed at exactly
+    # the 20-minute mark mid-UI-suite — the suite has outgrown the old
+    # budget on these runners, so CI could never reach a verdict.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
 

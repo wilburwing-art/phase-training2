@@ -14,6 +14,7 @@ struct PhaseTrainingApp: App {
     @StateObject private var conv = CoachConversationStore()
     @StateObject private var sportLog = SportLogStore()
     @StateObject private var subscriptions = SubscriptionStore()
+    @StateObject private var activityDetection = ActivityDetectionStore()
 
     /// UI tests pass `--ui-test-onboarded` to skip the first-launch onboarding cover
     /// without persisting state to UserDefaults.
@@ -414,6 +415,7 @@ struct PhaseTrainingApp: App {
                 .environmentObject(conv)
                 .environmentObject(sportLog)
                 .environmentObject(subscriptions)
+                .environmentObject(activityDetection)
                 .task {
                     // Sync products + entitlement state once on launch.
                     // Cheap and safe to call on every cold start.
@@ -469,6 +471,18 @@ struct PhaseTrainingApp: App {
                                 sessionStore: session,
                                 consentGranted: coachConsentGranted
                             )
+                        }
+                        // On-open Health activity check ("looks like you
+                        // went skiing yesterday" → Today banner). Covers
+                        // cold launch too: scenePhase transitions to
+                        // .active on first render. Silent when Health read
+                        // access was never granted. Its own Task — the
+                        // banner must not wait behind the StoreKit refresh
+                        // above, which can take seconds on a bad connection.
+                        if memory.isOnboarded {
+                            Task {
+                                await activityDetection.scan(sportLogs: sportLog.entries)
+                            }
                         }
                     }
                 }

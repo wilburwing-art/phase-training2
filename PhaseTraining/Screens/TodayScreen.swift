@@ -27,6 +27,7 @@ struct TodayScreen: View {
     @EnvironmentObject var tabSelection: TabSelectionStore
     @EnvironmentObject var customStore: CustomRoutineStore
     @EnvironmentObject var sportLogStore: SportLogStore
+    @EnvironmentObject var activityDetection: ActivityDetectionStore
     // Coach gate — same pair CoachBubble reads. The "personalized by coach"
     // badge must not render for users without consent/Pro, even when a stale
     // refinedByLLMAt stamp survives in the plan from before consent was
@@ -75,6 +76,11 @@ struct TodayScreen: View {
     /// (`refinedByLLMAt` stamped). No accept / reject: the refinement is
     /// already applied; this is pure transparency.
     @State private var showCoachPolishedSheet: Bool = false
+    /// Detected-activity confirm that landed on a day with a pending lift
+    /// (confirmMode == .userChoice) — drives the keep-the-lift vs
+    /// swap-for-the-sport dialog. Cancel leaves the banner up so the user
+    /// can decide later.
+    @State private var pendingDetectedChoice: DetectedActivity?
 
     // Derived read-only state (todayPlan, effectiveKind, template, hero copy,
     // …) lives in TodayScreen+Derived.swift; the inline editor surface +
@@ -107,6 +113,22 @@ struct TodayScreen: View {
                 )
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
+                        // Detected-activity confirm card — "looks like you
+                        // went skiing yesterday". One at a time; resolving
+                        // promotes the next pending candidate. Transient by
+                        // design (only when Health shows an outing we don't
+                        // know about), so it coexists with the build-122
+                        // one-decision rule below.
+                        if let detected = activityDetection.pending.first {
+                            DetectedActivityBanner(
+                                activity: detected,
+                                mode: detectedConfirmMode(detected),
+                                onConfirm: { confirmDetectedActivity(detected) },
+                                onDismiss: { activityDetection.markDismissed(detected) }
+                            )
+                            .padding(.horizontal, 20)
+                            .padding(.top, 14)
+                        }
                         // Build 122 — the mascot card, the season badge, the
                         // soreness prompt and the recovery readout used to sit
                         // here. Today answers one question (what am I doing,
@@ -274,6 +296,25 @@ struct TodayScreen: View {
                 )
             }
         }
+        .confirmationDialog(
+            "Still planning to lift today?",
+            isPresented: Binding(
+                get: { pendingDetectedChoice != nil },
+                set: { if !$0 { pendingDetectedChoice = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: pendingDetectedChoice
+        ) { activity in
+            Button("Keep today's lift") {
+                resolveDetectedActivity(activity, convertDay: false)
+            }
+            Button("Swap it for \(activity.activityLabel.lowercased())") {
+                resolveDetectedActivity(activity, convertDay: true)
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: { activity in
+            Text("Health shows \(activity.activityLabel.lowercased()) today. Keep your planned lift as-is and just log the session, or make today a sport day and rebalance the rest of the week.")
+        }
         .onAppear {
             if editableTemplate == nil { editableTemplate = template }
         }
@@ -285,6 +326,78 @@ struct TodayScreen: View {
             // which case keep their edits rather than clobber them).
             if !didModify { editableTemplate = newTemplate }
         }
+    }
+
+    // MARK: - Detected-activity banner glue
+
+    /// What confirming this outing does — see ActivityDetector.confirmMode
+    /// for the rules. The interesting case: the outing is TODAY and today
+    /// still has an un-trained planned lift, where whether to keep the
+    /// lift or swap it for the sport is the user's call, so the confirm
+    /// routes through a choice dialog instead of deciding for them.
+    private func detectedConfirmMode(_ activity: DetectedActivity) -> DetectedActivityConfirmMode {
+        let cal = Calendar.current
+        // confirmMode only consults days inside the current training week,
+        // so don't pay for start-of-day math over a multi-year session
+        // history on every render the banner is visible for.
+        let weekStart = Date().startOfTrainingWeek()
+        let trainedDays = Set(
+            store.savedSessions.lazy
+                .filter { $0.startTime >= weekStart }
+                .map { cal.startOfDay(for: $0.startTime) }
+        )
+        return ActivityDetector.confirmMode(
+            for: activity,
+            plan: planStore.plan,
+            completedSessionDays: trainedDays
+        )
+    }
+
+    private func confirmDetectedActivity(_ activity: DetectedActivity) {
+        switch detectedConfirmMode(activity) {
+        case .userChoice:
+            pendingDetectedChoice = activity
+        case .adjustWeek:
+            resolveDetectedActivity(activity, convertDay: true)
+        case .logOnly:
+            resolveDetectedActivity(activity, convertDay: false)
+        }
+    }
+
+    /// Terminal confirm path: retroactive sport log always; with
+    /// `convertDay`, also persist a WeekEvent (intent, not output — it
+    /// survives regens) and regenerate via updateOverrides so the planner
+    /// re-lays the week: the day becomes a sport day, adjacent lifts
+    /// lighten (defer-to-sport), and a hard outing counts toward the
+    /// recent-hard-sport-days volume trim.
+    private func resolveDetectedActivity(_ activity: DetectedActivity, convertDay: Bool) {
+        // The user can log the day manually (SportLogSheet) while the
+        // banner is up — pending only rebuilds on the next foreground
+        // scan. Don't stack a second entry on a day that has one.
+        if sportLogStore.entry(on: activity.day) == nil {
+            sportLogStore.log(
+                sport: activity.sport,
+                on: activity.day,
+                durationMinutes: activity.durationMinutes,
+                intensity: activity.suggestedIntensity,
+                note: "From Apple Health"
+            )
+        }
+        if convertDay {
+            planStore.updateOverrides(memory: memoryStore.memory) { overrides in
+                // Planner takes the first event per date; don't stack a
+                // second onto a day the user already booked something for.
+                guard overrides.events(on: activity.day).isEmpty else { return }
+                overrides.events.append(WeekEvent(
+                    date: activity.day,
+                    title: activity.activityLabel,
+                    kind: .sportSession,
+                    sport: activity.sport,
+                    intensity: activity.suggestedIntensity
+                ))
+            }
+        }
+        activityDetection.markConfirmed(activity)
     }
 
     // MARK: - PR 8 — Missed-workout banner glue
@@ -466,6 +579,7 @@ struct TodayScreen: View {
         .environmentObject(TabSelectionStore())
         .environmentObject(CustomRoutineStore(defaults: defaults))
         .environmentObject(SportLogStore(defaults: defaults))
+        .environmentObject(ActivityDetectionStore(defaults: defaults))
 }
 
 #Preview("No plan (fallback)") {
@@ -479,4 +593,5 @@ struct TodayScreen: View {
         .environmentObject(TabSelectionStore())
         .environmentObject(CustomRoutineStore(defaults: defaults))
         .environmentObject(SportLogStore(defaults: defaults))
+        .environmentObject(ActivityDetectionStore(defaults: defaults))
 }

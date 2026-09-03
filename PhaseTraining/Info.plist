@@ -34,7 +34,7 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>PhaseTraining reads recent workout history to gauge your current training readiness, so generated workouts match how active you've actually been. With your separate permission, it can also import body weight, body-fat %, and lean-mass readings to populate your training log.</string>
+	<string>PhaseTraining reads recent workout history to gauge your current training readiness, match generated workouts to how active you've actually been, and offer to log outdoor sessions it finds (like a ski day or a climb) so your training week can adjust. With your separate permission, it can also import body weight, body-fat %, and lean-mass readings to populate your training log.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>PhaseTraining does not write to Apple Health — it only reads your workout and body-metric data. iOS requires this permission whenever an app includes HealthKit; PhaseTraining never adds, edits, or deletes anything in Health.</string>
 	<key>NSPrivacyCollectedDataTypes</key>
