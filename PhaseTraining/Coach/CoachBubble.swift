@@ -55,8 +55,13 @@ struct CoachBubble: View {
     /// requirePro is parameterized like CoachEntitlement.unlocked so both
     /// sides of the monetization switch stay testable.
     static func shouldShow(consent: Bool, pro: Bool, onProfileTab: Bool, sessionActive: Bool,
-                           requirePro: Bool = CoachEntitlement.proRequired) -> Bool {
-        CoachEntitlement.unlocked(consent: consent, pro: pro, requirePro: requirePro)
+                           requirePro: Bool = CoachEntitlement.proRequired,
+                           available: Bool = CoachEntitlement.coachAvailable) -> Bool {
+        // `available` mirrors CoachEntitlement.unlocked's parameter: tests
+        // pass it explicitly so a token-less test host (CI blanks the
+        // gateway token) doesn't turn every should-show assertion false.
+        CoachEntitlement.unlocked(consent: consent, pro: pro, requirePro: requirePro,
+                                  available: available)
             && !onProfileTab
             && !sessionActive
     }

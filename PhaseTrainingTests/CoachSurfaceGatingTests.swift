@@ -4,6 +4,10 @@
 // (consent x pro x tab x session) and CoachSettingsRow's lapsed notice.
 // requirePro is passed explicitly so both sides of the monetization switch
 // are exercised regardless of the shipped CoachEntitlement.proRequired value.
+// `available: true` likewise: CI builds with a blanked gateway token, so
+// the coachAvailable default is false there — without the explicit value
+// the true-assertions fail on the token and the false-assertions pass
+// vacuously, testing nothing.
 
 import XCTest
 @testable import PhaseTraining
@@ -15,22 +19,22 @@ final class CoachSurfaceGatingTests: XCTestCase {
     func test_bubble_open_consentAlone_shows() {
         XCTAssertTrue(CoachBubble.shouldShow(
             consent: true, pro: false, onProfileTab: false, sessionActive: false,
-            requirePro: false))
+            requirePro: false, available: true))
     }
 
     func test_bubble_noConsent_hidden_evenWithPro() {
         XCTAssertFalse(CoachBubble.shouldShow(
             consent: false, pro: true, onProfileTab: false, sessionActive: false,
-            requirePro: true))
+            requirePro: true, available: true))
         XCTAssertFalse(CoachBubble.shouldShow(
             consent: false, pro: false, onProfileTab: false, sessionActive: false,
-            requirePro: false))
+            requirePro: false, available: true))
     }
 
     func test_bubble_gated_consentAndPro_shows() {
         XCTAssertTrue(CoachBubble.shouldShow(
             consent: true, pro: true, onProfileTab: false, sessionActive: false,
-            requirePro: true))
+            requirePro: true, available: true))
     }
 
     func test_bubble_lapsed_consentWithoutPro_hidden() {
@@ -38,7 +42,15 @@ final class CoachSurfaceGatingTests: XCTestCase {
         // the bubble goes dark, it doesn't fall back to free.
         XCTAssertFalse(CoachBubble.shouldShow(
             consent: true, pro: false, onProfileTab: false, sessionActive: false,
-            requirePro: true))
+            requirePro: true, available: true))
+    }
+
+    func test_bubble_unavailableBuild_hidden() {
+        // Beta/no-token build: the bubble never renders, whatever the
+        // consent and Pro state say.
+        XCTAssertFalse(CoachBubble.shouldShow(
+            consent: true, pro: true, onProfileTab: false, sessionActive: false,
+            requirePro: false, available: false))
     }
 
     // MARK: - CoachBubble.shouldShow — surface conditions
@@ -46,13 +58,13 @@ final class CoachSurfaceGatingTests: XCTestCase {
     func test_bubble_profileTab_hidden_evenWhenUnlocked() {
         XCTAssertFalse(CoachBubble.shouldShow(
             consent: true, pro: true, onProfileTab: true, sessionActive: false,
-            requirePro: false))
+            requirePro: false, available: true))
     }
 
     func test_bubble_activeSession_hidden_evenWhenUnlocked() {
         XCTAssertFalse(CoachBubble.shouldShow(
             consent: true, pro: true, onProfileTab: false, sessionActive: true,
-            requirePro: false))
+            requirePro: false, available: true))
     }
 
     // MARK: - CoachSettingsRow lapsed notice
