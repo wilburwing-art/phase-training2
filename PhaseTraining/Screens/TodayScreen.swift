@@ -76,6 +76,11 @@ struct TodayScreen: View {
     /// (`refinedByLLMAt` stamped). No accept / reject: the refinement is
     /// already applied; this is pure transparency.
     @State private var showCoachPolishedSheet: Bool = false
+    /// Detected-activity confirm that landed on a day with a pending lift
+    /// (confirmMode == .userChoice) — drives the keep-the-lift vs
+    /// swap-for-the-sport dialog. Cancel leaves the banner up so the user
+    /// can decide later.
+    @State private var pendingDetectedChoice: DetectedActivity?
 
     // Derived read-only state (todayPlan, effectiveKind, template, hero copy,
     // …) lives in TodayScreen+Derived.swift; the inline editor surface +
@@ -117,7 +122,7 @@ struct TodayScreen: View {
                         if let detected = activityDetection.pending.first {
                             DetectedActivityBanner(
                                 activity: detected,
-                                adjustsWeek: detectedActivityAdjustsWeek(detected),
+                                mode: detectedConfirmMode(detected),
                                 onConfirm: { confirmDetectedActivity(detected) },
                                 onDismiss: { activityDetection.markHandled(detected) }
                             )
@@ -291,6 +296,25 @@ struct TodayScreen: View {
                 )
             }
         }
+        .confirmationDialog(
+            "Still planning to lift today?",
+            isPresented: Binding(
+                get: { pendingDetectedChoice != nil },
+                set: { if !$0 { pendingDetectedChoice = nil } }
+            ),
+            titleVisibility: .visible,
+            presenting: pendingDetectedChoice
+        ) { activity in
+            Button("Keep today's lift") {
+                resolveDetectedActivity(activity, convertDay: false)
+            }
+            Button("Swap it for \(activity.activityLabel.lowercased())") {
+                resolveDetectedActivity(activity, convertDay: true)
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: { activity in
+            Text("Health shows \(activity.activityLabel.lowercased()) today. Keep your planned lift as-is and just log the session, or make today a sport day and rebalance the rest of the week.")
+        }
         .onAppear {
             if editableTemplate == nil { editableTemplate = template }
         }
@@ -306,30 +330,39 @@ struct TodayScreen: View {
 
     // MARK: - Detected-activity banner glue
 
-    /// A confirm rebalances the week only when the outing (a) falls in the
-    /// current training week — WeekOverrides is week-scoped, a stale-dated
-    /// event would be dropped on the Monday rollover anyway — and (b) isn't
-    /// already a planned sport day, where there's nothing to rebalance.
-    /// Outside those cases the confirm still writes the sport log, which
-    /// feeds readiness + recentHardSportDays on the next generation.
-    private func detectedActivityAdjustsWeek(_ activity: DetectedActivity) -> Bool {
+    /// What confirming this outing does — see ActivityDetector.confirmMode
+    /// for the rules. The interesting case: the outing is TODAY and today
+    /// still has an un-trained planned lift, where whether to keep the
+    /// lift or swap it for the sport is the user's call, so the confirm
+    /// routes through a choice dialog instead of deciding for them.
+    private func detectedConfirmMode(_ activity: DetectedActivity) -> DetectedActivityConfirmMode {
         let cal = Calendar.current
-        guard cal.isDate(activity.day.startOfTrainingWeek(),
-                         inSameDayAs: Date().startOfTrainingWeek()) else { return false }
-        if let day = planStore.plan?.days.first(where: { cal.isDate($0.date, inSameDayAs: activity.day) }),
-           day.kind == .sport {
-            return false
-        }
-        return true
+        let trainedDays = Set(store.savedSessions.map { cal.startOfDay(for: $0.startTime) })
+        return ActivityDetector.confirmMode(
+            for: activity,
+            plan: planStore.plan,
+            completedSessionDays: trainedDays
+        )
     }
 
-    /// Confirm path: retroactive sport log always; when the outing is in
-    /// the current week, also persist a WeekEvent (intent, not output — it
+    private func confirmDetectedActivity(_ activity: DetectedActivity) {
+        switch detectedConfirmMode(activity) {
+        case .userChoice:
+            pendingDetectedChoice = activity
+        case .adjustWeek:
+            resolveDetectedActivity(activity, convertDay: true)
+        case .logOnly:
+            resolveDetectedActivity(activity, convertDay: false)
+        }
+    }
+
+    /// Terminal confirm path: retroactive sport log always; with
+    /// `convertDay`, also persist a WeekEvent (intent, not output — it
     /// survives regens) and regenerate via updateOverrides so the planner
     /// re-lays the week: the day becomes a sport day, adjacent lifts
     /// lighten (defer-to-sport), and a hard outing counts toward the
     /// recent-hard-sport-days volume trim.
-    private func confirmDetectedActivity(_ activity: DetectedActivity) {
+    private func resolveDetectedActivity(_ activity: DetectedActivity, convertDay: Bool) {
         sportLogStore.log(
             sport: activity.sport,
             on: activity.day,
@@ -337,7 +370,7 @@ struct TodayScreen: View {
             intensity: activity.suggestedIntensity,
             note: "From Apple Health"
         )
-        if detectedActivityAdjustsWeek(activity) {
+        if convertDay {
             planStore.updateOverrides(memory: memoryStore.memory) { overrides in
                 // Planner takes the first event per date; don't stack a
                 // second onto a day the user already booked something for.

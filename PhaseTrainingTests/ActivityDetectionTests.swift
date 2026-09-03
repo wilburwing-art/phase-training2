@@ -150,6 +150,122 @@ final class ActivityDetectionTests: XCTestCase {
     }
 }
 
+// MARK: - Confirm mode (keep the lift vs swap for the sport)
+
+final class ActivityDetectionConfirmModeTests: XCTestCase {
+
+    // Week-anchored fixture dates so results don't depend on the machine's
+    // timezone: "today" is Thursday noon of the training week containing a
+    // fixed epoch instant.
+    private let weekStart = Date(timeIntervalSince1970: 1_760_000_000).startOfTrainingWeek()
+    private var now: Date { weekStart.addingTimeInterval(3 * 86_400 + 12 * 3_600) }
+
+    private func date(dayOffset: Int, hour: Double = 9) -> Date {
+        weekStart.addingTimeInterval(Double(dayOffset) * 86_400 + hour * 3_600)
+    }
+
+    private func activity(startTime: Date) -> DetectedActivity {
+        DetectedActivity(
+            id: "hk-1", workoutIds: ["hk-1"],
+            sport: Sport.resolve(slug: "alpine-skiing"),
+            activityLabel: "Skiing",
+            startTime: startTime,
+            durationMinutes: 200,
+            suggestedIntensity: .hard
+        )
+    }
+
+    private func plan(_ days: [DayPlan]) -> WeekPlan {
+        WeekPlan(days: days, generatedAt: now, inputsHash: "test")
+    }
+
+    private func day(_ offset: Int, _ kind: DayKind, title: String = "Day") -> DayPlan {
+        DayPlan(date: Calendar.current.startOfDay(for: date(dayOffset: offset)),
+                kind: kind, title: title)
+    }
+
+    func testOutsideCurrentWeekLogsOnly() {
+        let mode = ActivityDetector.confirmMode(
+            for: activity(startTime: date(dayOffset: -3)),   // previous week
+            plan: plan([day(3, .lift)]),
+            completedSessionDays: [], now: now
+        )
+        XCTAssertEqual(mode, .logOnly)
+    }
+
+    func testPlannedSportDayLogsOnly() {
+        let mode = ActivityDetector.confirmMode(
+            for: activity(startTime: date(dayOffset: 1)),
+            plan: plan([day(1, .sport)]),
+            completedSessionDays: [], now: now
+        )
+        XCTAssertEqual(mode, .logOnly)
+    }
+
+    func testPastLiftDayNotTrainedAdjustsWeek() {
+        // Skied Tuesday instead of the planned lift — honest record is a
+        // sport day; also resolves the would-be missed-workout state.
+        let mode = ActivityDetector.confirmMode(
+            for: activity(startTime: date(dayOffset: 1)),
+            plan: plan([day(1, .lift)]),
+            completedSessionDays: [], now: now
+        )
+        XCTAssertEqual(mode, .adjustWeek)
+    }
+
+    func testPastLiftDayAlsoTrainedLogsOnly() {
+        // Did BOTH that day: keep the lift day + its session record.
+        let trained = Calendar.current.startOfDay(for: date(dayOffset: 1))
+        let mode = ActivityDetector.confirmMode(
+            for: activity(startTime: date(dayOffset: 1)),
+            plan: plan([day(1, .lift)]),
+            completedSessionDays: [trained], now: now
+        )
+        XCTAssertEqual(mode, .logOnly)
+    }
+
+    func testTodayWithPendingLiftAsksTheUser() {
+        // Skied this morning, lift still planned and not yet logged —
+        // whether to still lift on a ski day is the user's decision.
+        let mode = ActivityDetector.confirmMode(
+            for: activity(startTime: date(dayOffset: 3, hour: 7)),
+            plan: plan([day(3, .lift)]),
+            completedSessionDays: [], now: now
+        )
+        XCTAssertEqual(mode, .userChoice)
+    }
+
+    func testTodayLiftAlreadyTrainedLogsOnly() {
+        let trained = Calendar.current.startOfDay(for: date(dayOffset: 3))
+        let mode = ActivityDetector.confirmMode(
+            for: activity(startTime: date(dayOffset: 3, hour: 7)),
+            plan: plan([day(3, .lift)]),
+            completedSessionDays: [trained], now: now
+        )
+        XCTAssertEqual(mode, .logOnly)
+    }
+
+    func testPastRestDayAdjustsWeek() {
+        let mode = ActivityDetector.confirmMode(
+            for: activity(startTime: date(dayOffset: 2)),
+            plan: plan([day(2, .rest, title: "Rest")]),
+            completedSessionDays: [], now: now
+        )
+        XCTAssertEqual(mode, .adjustWeek)
+    }
+
+    func testNoPlanAdjustsWeek() {
+        // In-week with no plan yet: record the event; the planner honors
+        // it whenever the week generates.
+        let mode = ActivityDetector.confirmMode(
+            for: activity(startTime: date(dayOffset: 2)),
+            plan: nil,
+            completedSessionDays: [], now: now
+        )
+        XCTAssertEqual(mode, .adjustWeek)
+    }
+}
+
 // MARK: - Store persistence
 
 @MainActor

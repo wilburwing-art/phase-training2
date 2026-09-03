@@ -12,10 +12,11 @@ import SwiftUI
 
 struct DetectedActivityBanner: View {
     let activity: DetectedActivity
-    /// True when confirming also rebalances the current plan week (the
-    /// outing is in this training week and its day isn't already a
-    /// planned sport day). Drives the copy + primary button label.
-    let adjustsWeek: Bool
+    /// What confirming will do (rebalance / log only / ask about today's
+    /// lift) — drives the copy + primary button label. The glue in
+    /// TodayScreen computes it via ActivityDetector.confirmMode and also
+    /// owns the userChoice dialog; the banner only labels honestly.
+    let mode: DetectedActivityConfirmMode
     let onConfirm: () -> Void
     let onDismiss: () -> Void
 
@@ -39,9 +40,7 @@ struct DetectedActivityBanner: View {
             }
             .accessibilityIdentifier("detected-activity-header")
 
-            Text(adjustsWeek
-                 ? "Confirm and I'll log it and rebalance your week around it."
-                 : "Confirm and I'll log it so your training signal stays accurate.")
+            Text(summaryLine)
                 .styled(.monoXS)
                 .foregroundStyle(Color.ink2)
                 .padding(.leading, 26)
@@ -65,7 +64,7 @@ struct DetectedActivityBanner: View {
                 .accessibilityIdentifier("detected-activity-skip")
 
                 Button(action: onConfirm) {
-                    Text(adjustsWeek ? "Log & adjust" : "Log it")
+                    Text(confirmLabel)
                         .styled(.monoXS)
                         .foregroundStyle(Color.accentInk)
                         .padding(.horizontal, 10)
@@ -88,6 +87,25 @@ struct DetectedActivityBanner: View {
     }
 
     // MARK: - Labels
+
+    private var summaryLine: String {
+        switch mode {
+        case .adjustWeek:
+            return "Confirm and I'll log it and rebalance your week around it."
+        case .logOnly:
+            return "Confirm and I'll log it so your training signal stays accurate."
+        case .userChoice:
+            return "Confirm and choose what happens to today's planned lift."
+        }
+    }
+
+    private var confirmLabel: String {
+        switch mode {
+        case .adjustWeek: return "Log & adjust"
+        case .logOnly:    return "Log it"
+        case .userChoice: return "Log it…"
+        }
+    }
 
     /// SF Symbol per detected sport. Fallback is the generic runner —
     /// every slug here matches Sport.catalog / ActivityDetector.mapping.

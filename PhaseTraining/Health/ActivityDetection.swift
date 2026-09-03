@@ -52,6 +52,22 @@ struct DetectedActivity: Identifiable, Equatable {
     var day: Date { Calendar.current.startOfDay(for: startTime) }
 }
 
+/// What confirming a detected activity should do to the plan. Decided by
+/// `ActivityDetector.confirmMode` from the plan + session history; the
+/// Today glue executes it.
+enum DetectedActivityConfirmMode: Equatable {
+    /// Convert the outing's day to a sport day (WeekEvent) + regenerate,
+    /// so adjacent lifts lighten and the week rebalances.
+    case adjustWeek
+    /// Sport log only — outside the current week, day already a sport
+    /// day, or the user trained that day too (keep the lift record).
+    case logOnly
+    /// The outing is TODAY and today still has an un-trained planned
+    /// lift. Whether to keep the lift or swap it for the sport is the
+    /// user's call — surface a choice instead of deciding for them.
+    case userChoice
+}
+
 enum ActivityDetector {
 
     /// How far back the on-open scan looks. Past 7 days the week is
@@ -181,5 +197,44 @@ enum ActivityDetector {
         // Newest outing first — the banner surfaces one at a time and the
         // most recent one matters most to this week's remaining days.
         return out.sorted { $0.startTime > $1.startTime }
+    }
+
+    /// Decide what a confirm does to the plan. Pure so the branching is
+    /// testable; `completedSessionDays` is start-of-day dates of native
+    /// SavedSessions (did the user lift that day too?).
+    ///
+    /// Rules, in order:
+    ///   - outside the current training week → logOnly (WeekOverrides is
+    ///     week-scoped; the sport log still feeds the next generation)
+    ///   - day already planned as sport → logOnly (nothing to rebalance)
+    ///   - lift day the user ALSO trained on → logOnly (they did both;
+    ///     keep the lift day + its session record)
+    ///   - TODAY with a pending (un-trained) lift → userChoice: the user
+    ///     may well still want to lift on a ski day
+    ///   - otherwise → adjustWeek (a past lift day they skied instead of,
+    ///     or a rest day that was actually an outing)
+    static func confirmMode(
+        for activity: DetectedActivity,
+        plan: WeekPlan?,
+        completedSessionDays: Set<Date>,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> DetectedActivityConfirmMode {
+        let day = activity.day
+        guard calendar.isDate(day.startOfTrainingWeek(calendar: calendar),
+                              inSameDayAs: now.startOfTrainingWeek(calendar: calendar)) else {
+            return .logOnly
+        }
+        guard let planDay = plan?.days.first(where: { calendar.isDate($0.date, inSameDayAs: day) }) else {
+            // In-week but no plan (or the day isn't on it): record the
+            // event; the planner honors it whenever the week generates.
+            return .adjustWeek
+        }
+        if planDay.kind == .sport { return .logOnly }
+        if planDay.kind == .lift {
+            if completedSessionDays.contains(calendar.startOfDay(for: day)) { return .logOnly }
+            if calendar.isDate(day, inSameDayAs: now) { return .userChoice }
+        }
+        return .adjustWeek
     }
 }
