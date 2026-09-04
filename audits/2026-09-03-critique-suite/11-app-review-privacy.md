@@ -108,16 +108,21 @@ Two consequences to check before submission:
    Content under-declares the sensitive categories, and the App Store privacy
    label generated from it will not match F1's own consent modal.
 
-### F4 (medium, accuracy) The privacy policy over-discloses in one place and under-discloses in another
+### F4 REFUTED 2026-09-04 — the policy's Health sentence is correct
 
-`docs/privacy.md:23` says Health-confirmed sessions "may be part of the coach's
-context". Per the greps above, they are not. Over-disclosure is the safe
-direction and it is still an inaccuracy in a document that should be exact,
-particularly since it is the only mention of Health data crossing the boundary
-and it is the claim a reviewer would probe.
+This finding claimed `docs/privacy.md:23` over-disclosed by saying
+Health-confirmed sessions "may be part of the coach's context". It does not.
 
-Paired with F1's under-disclosure of body metrics, the policy is wrong in both
-directions about the same payload.
+Raw HealthKit data never reaches `CoachContext`, which is what the greps
+established and what the "What holds up" section above still correctly says.
+But confirming a detected activity **writes a `SportLogEntry`**
+(`Health/ActivityDetection.swift:8,136`), and sport logs are one of the 22
+context blocks. So a session the user confirmed from Health does travel, as a
+logged sport session, exactly as the sentence describes.
+
+Left in place and corrected rather than deleted: this was a wrong finding that
+would have led someone to "fix" an accurate sentence into an inaccurate one.
+The under-disclosure half of the original claim stands and is F1.
 
 ### F5 (medium, staleness) A code comment contradicts the shipped consent default
 

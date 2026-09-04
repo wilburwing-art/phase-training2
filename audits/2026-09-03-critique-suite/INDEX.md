@@ -58,5 +58,11 @@ real time:
 
 ## Output
 
-`BACKLOG.md`, written 2026-09-03 after all 13 closed: severity-tiered,
-one checkbox per item, each carrying the critique it came from.
+`BACKLOG.md`, written 2026-09-03 after all 13 closed: severity-tiered, one
+checkbox per item, each carrying the critique it came from.
+
+**Tier 0 landed 2026-09-04**, all 7, one commit each (`594654a`, `0908b1c`,
+`139d4bc`, `a148e76`, `e66c760` plus the docs commit). Two were product bugs
+rather than the doc or test problems they were scoped as, and one finding
+(11 F4) was refuted while fixing it and is corrected in place rather than
+deleted. Main's seven red UI tests all pass.
