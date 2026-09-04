@@ -54,6 +54,13 @@ struct ProfileScreen: View {
     /// `.sheet(onDismiss:)` below.
     @State private var pendingDataAction: (() -> Void)?
     @State private var presentingHealthImports = false
+    /// Whether anything has ever been imported from Health. Cached rather than
+    /// queried per render (see healthImportsRowValue). Refreshed on appear and
+    /// when the Health sheet closes, which is the only place a grant happens.
+    /// Internal (not private) so the row summary in
+    /// ProfileScreen+RowSummaries.swift can read it. That extension must not
+    /// query SQLite per render.
+    @State var hasHealthImports = false
     @State private var presentingPaywall = false
     @State private var presentingBodyWeightLog = false
     @State private var presentingBodyCompositionLog = false
@@ -204,7 +211,7 @@ struct ProfileScreen: View {
                                     action: { presentingRemindersEditor = true })
                         CoachSettingsRow()
                         SettingsRow(label: "Health & Imports",
-                                    value: "Workout history",
+                                    value: healthImportsRowValue,
                                     icon: "heart.text.square",
                                     action: { presentingHealthImports = true })
                         SettingsRow(label: "Subscription",
@@ -275,10 +282,11 @@ struct ProfileScreen: View {
                 onImport: { pendingDataAction = { backup.presentingImporter = true } }
             )
         }
-        .sheet(isPresented: $presentingHealthImports) {
+        .sheet(isPresented: $presentingHealthImports, onDismiss: { refreshHealthImportState() }) {
             HealthImportsScreen()
                 .environmentObject(store)
         }
+        .onAppear { refreshHealthImportState() }
         .sheet(isPresented: $presentingBodyWeightLog) {
             BodyWeightLogSheet().environmentObject(store)
         }
@@ -430,6 +438,13 @@ struct ProfileScreen: View {
         }
     }
 
+
+    /// One COUNT(*) on appear and after the Health sheet closes, cached into
+    /// `hasHealthImports`. The row reads the flag so the Profile tab does not
+    /// hit SQLite on every render.
+    private func refreshHealthImportState() {
+        hasHealthImports = (UserDatabase.shared.importedWorkoutSummary()?.count ?? 0) > 0
+    }
     private func tuningRow(label: String, value: String, matches: Bool, actualHint: String?) -> some View {
         HStack(alignment: .center, spacing: 12) {
             Text(label)

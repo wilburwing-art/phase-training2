@@ -92,8 +92,13 @@ extension LogScreen {
                 checkDot(done: set.done) {
                     toggleSet(exIdx: exIdx, setIdx: setIdx)
                 }
-                .frame(width: 24)
+                // 44 to match the button's own hit area (see checkDot). The
+                // dot still DRAWS at 22.
+                .frame(width: 44)
                 .accessibilityIdentifier("log-set-check-\(exIdx)-\(setIdx)")
+                .accessibilityLabel(set.done
+                                    ? "Set \(setIdx + 1) done, tap to undo"
+                                    : "Complete set \(setIdx + 1)")
             }
         }
         .padding(.vertical, 6)
@@ -274,19 +279,24 @@ extension LogScreen {
 
     private func checkDot(done: Bool, onTap: @escaping () -> Void) -> some View {
         Button(action: onTap) {
-            if done {
-                ZStack {
+            // The dot DRAWS at 22. The surrounding 44x44 contentShape is the
+            // tappable area: this is the most-tapped control in the app and it
+            // was a 22pt target against Apple's 44pt minimum, one-handed, in a
+            // gym. Inside the label so the hit region is the padded box rather
+            // than the glyph.
+            ZStack {
+                if done {
                     Circle().fill(Color.ok)
                     Image(systemName: "checkmark")
                         .font(.system(size: 11, weight: .heavy))
                         .foregroundStyle(Color.bg)
+                } else {
+                    Circle().strokeBorder(Color.line, lineWidth: 1.5)
                 }
-                .frame(width: 22, height: 22)
-            } else {
-                Circle()
-                    .strokeBorder(Color.line, lineWidth: 1.5)
-                    .frame(width: 22, height: 22)
             }
+            .frame(width: 22, height: 22)
+            .frame(width: 44, height: 44)
+            .contentShape(Rectangle())
         }
         // .borderless instead of .plain. Visually identical here (the label
         // is a Circle with an explicit fill, not a tinted system image), but
@@ -294,7 +304,8 @@ extension LogScreen {
         // when the label is < ~44pt — they DO fire .borderless. That broke
         // every rest-card-after-set-done UI test (the 22pt check dot tap
         // synthesized cleanly but never flipped done, so no rest card ever
-        // rendered for the test to assert against).
+        // rendered for the test to assert against). The label is 44 now, but
+        // .borderless stays: no reason to re-test that interaction.
         .buttonStyle(.borderless)
     }
 }

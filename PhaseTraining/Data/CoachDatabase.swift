@@ -1214,6 +1214,15 @@ final class CoachDatabase {
           AND r.phase IN (\(phasePlaceholders))
           AND r.goal NOT IN ('prehab','mobility','warm_up','pt_rehab','recovery')
           AND COALESCE(r.duration_minutes, 0) >= 25
+          -- A routine is served VERBATIM as a day's workout, so it has to be
+          -- a session. AuthoredRoutine.workout only rejected the empty case,
+          -- and 5 routines clear every other filter here with one or two
+          -- exercises. 3 is the season engine's own documented movement floor
+          -- (targetMovementCount's `max(3, ...)`). Measured before landing:
+          -- every plannable sport keeps at least 2 qualifying routines and
+          -- general-fitness keeps its Easy Strength last resort, so no sport
+          -- loses plannability.
+          AND (SELECT COUNT(*) FROM routine_exercises re WHERE re.routine_id = r.id) >= 3
         ORDER BY r.id ASC
         """
         var stmt: OpaquePointer?

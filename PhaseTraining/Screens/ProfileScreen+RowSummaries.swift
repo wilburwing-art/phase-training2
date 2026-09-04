@@ -107,6 +107,32 @@ extension ProfileScreen {
         return "\(count) items"
     }
 
+    /// Health & Imports row value. Reads "Not connected" until something has
+    /// actually been imported.
+    ///
+    /// Authorization is only ever requested from two buttons inside
+    /// Health & Imports itself (HealthWorkoutSyncSection, BodyMetricsSyncSection),
+    /// onboarding never mentions Health, and nothing else in the app points
+    /// here — so a user who does not go looking never grants it and never
+    /// learns that on-open activity detection, readiness from real activity
+    /// and body-metric import exist. HealthKit deliberately will not tell an
+    /// app that a READ was denied, so the app cannot detect the gap and
+    /// prompt; an imported-row count is the only honest proxy, and it is the
+    /// same one HealthWorkoutSyncSection uses to decide whether a grant
+    /// landed.
+    ///
+    /// Deliberately a state on an existing row rather than a prompt: the
+    /// detection surface must never nag someone who has not opted in
+    /// (ActivityDetectionStore).
+    /// Reads the cached flag, NOT the database: this is evaluated on every
+    /// render of the Profile tab, and per-render DB work is item 1 of the
+    /// 2026-08-23 architecture report. `ProfileScreen` refreshes the cache on
+    /// appear and after the Health sheet closes, the same shape LibraryScreen
+    /// uses for `stockRoutines`.
+    var healthImportsRowValue: String {
+        hasHealthImports ? "Workout history" : "Not connected"
+    }
+
     /// Trailing summary for the Subscription row. Shows "Pro" when the
     /// entitlement is active, otherwise prompts the user to upgrade.
     var subscriptionRowValue: String {

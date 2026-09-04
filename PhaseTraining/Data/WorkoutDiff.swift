@@ -91,16 +91,37 @@ enum WorkoutDiffBuilder {
             guard let from = change.fromName, let to = change.toName,
                   let idx = workout.exercises.firstIndex(where: { $0.name.caseInsensitiveCompare(from) == .orderedSame }) else { return }
             let existing = workout.exercises[idx]
+            // Resolve the model's free-text name against the catalog. Writing
+            // `exerciseId: 0` unconditionally (the old behaviour) detached the
+            // row from coach.db: no detail sheet, no photo, no muscle
+            // attribution, and — load-bearing — no injury contraindication
+            // could ever match it, because the exclusion set is a set of real
+            // ids. The lookup walks canonical name, then shorthand, slug and
+            // aliases, so "Goblet Squat" resolves the way the model writes it.
+            let resolved = ExerciseLookupCache.shared.exercise(forName: to)
             workout.exercises[idx] = GeneratedExercise(
                 id: existing.id,                      // keep slot id so SessionStore session id mapping holds
-                exerciseId: 0,                        // 0 = "not from coach.db" sentinel
-                name: to,
-                pattern: existing.pattern,
-                isCompound: existing.isCompound,
+                exerciseId: resolved?.id ?? 0,        // 0 only when the catalog has no match
+                name: resolved?.name ?? to,
+                // Identity travels with the NEW movement, not the old one.
+                // Same defect T0-9 fixed at TodayScreen+TemplateEditor and
+                // LogScreen; this was the third site and was out of its scope.
+                pattern: resolved == nil ? existing.pattern : nil,
+                isCompound: resolved?.isCompound ?? existing.isCompound,
+                // The DOSE is what the user asked to keep — they asked to swap
+                // the movement, not to re-prescribe it.
                 sets: existing.sets,
                 reps: existing.reps,
                 restSeconds: existing.restSeconds,
-                notes: existing.notes
+                // notes/rpe/tempo describe the exercise being replaced. notes
+                // in particular can carry a progressive-overload target ("target:
+                // 225 lb") computed from the OLD lift's history, which is the
+                // safety-relevant half. Dropped rather than inherited.
+                notes: nil,
+                rpe: nil,
+                tempo: nil,
+                source: existing.source,
+                supersetGroup: existing.supersetGroup
             )
 
         case "adjust":
