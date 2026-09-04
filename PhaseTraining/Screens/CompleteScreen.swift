@@ -226,6 +226,10 @@ struct CompleteScreen: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.line, lineWidth: 0.5)
         )
+        // VoiceOver read "DURATION" and "48:12" as two unrelated elements.
+        // One element, label then value. CompleteScreen had zero labels.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(label.capitalized), \(value)")
     }
 
     private var prBlock: some View {

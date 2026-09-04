@@ -33,8 +33,16 @@ private struct TypeSpec {
     let fontName: String
     let size: CGFloat
     let trackingEm: CGFloat
+    /// The system text style this size scales WITH. `Font.custom(_:size:)`
+    /// alone is fixed-size and ignores Dynamic Type entirely; this table was
+    /// the app's only source of sizes, so a user on the largest accessibility
+    /// setting got 13pt body copy and 10pt labels (T2-1). `relativeTo:` scales
+    /// `size` by the ratio of the style's current size to its default, so every
+    /// design size below is unchanged at the default setting and grows from
+    /// there.
+    let relativeTo: Font.TextStyle
 
-    var font: Font { Font.custom(fontName, size: size) }
+    var font: Font { Font.custom(fontName, size: size, relativeTo: relativeTo) }
 
     /// Tracking in points (em ratio × size).
     var tracking: CGFloat { trackingEm * size }
@@ -54,21 +62,34 @@ enum TypeStyle {
     private var spec: TypeSpec {
         switch self {
         // Display (Space Grotesk, weight 600)
-        case .displayL: return TypeSpec(fontName: FontName.spaceGroteskSemiBold, size: 34,   trackingEm: -0.03)
-        case .displayM: return TypeSpec(fontName: FontName.spaceGroteskSemiBold, size: 26,   trackingEm: -0.03)
-        case .displayS: return TypeSpec(fontName: FontName.spaceGroteskSemiBold, size: 16,   trackingEm: -0.02)
+        // The `relativeTo:` style is chosen so its DEFAULT size matches the
+        // design size as closely as possible, which keeps the scale curve
+        // proportional (largeTitle 34, title 28, title2 22, headline 17,
+        // body 17, footnote 13, caption2 11).
+        case .displayL: return TypeSpec(fontName: FontName.spaceGroteskSemiBold, size: 34,   trackingEm: -0.03, relativeTo: .largeTitle)
+        case .displayM: return TypeSpec(fontName: FontName.spaceGroteskSemiBold, size: 26,   trackingEm: -0.03, relativeTo: .title)
+        case .displayS: return TypeSpec(fontName: FontName.spaceGroteskSemiBold, size: 16,   trackingEm: -0.02, relativeTo: .headline)
         // Body (Inter)
-        case .body:     return TypeSpec(fontName: FontName.inter,                size: 13,   trackingEm: 0)
+        case .body:     return TypeSpec(fontName: FontName.inter,                size: 13,   trackingEm: 0,     relativeTo: .footnote)
         // Mono (JetBrains Mono)
-        case .monoL:    return TypeSpec(fontName: FontName.monoSemiBold,         size: 22,   trackingEm: -0.02) // weight 600
-        case .monoM:    return TypeSpec(fontName: FontName.monoMedium,           size: 17,   trackingEm: 0)     // weight 500
-        case .monoS:    return TypeSpec(fontName: FontName.monoMedium,           size: 13.5, trackingEm: 0)     // weight 500
-        case .monoXS:   return TypeSpec(fontName: FontName.monoRegular,          size: 11,   trackingEm: 0)     // weight 400
-        case .micro:    return TypeSpec(fontName: FontName.monoMedium,           size: 10,   trackingEm: 0.14)  // weight 500, uppercase
+        case .monoL:    return TypeSpec(fontName: FontName.monoSemiBold,         size: 22,   trackingEm: -0.02, relativeTo: .title2)    // weight 600
+        case .monoM:    return TypeSpec(fontName: FontName.monoMedium,           size: 17,   trackingEm: 0,     relativeTo: .body)      // weight 500
+        case .monoS:    return TypeSpec(fontName: FontName.monoMedium,           size: 13.5, trackingEm: 0,     relativeTo: .footnote)  // weight 500
+        case .monoXS:   return TypeSpec(fontName: FontName.monoRegular,          size: 11,   trackingEm: 0,     relativeTo: .caption2)  // weight 400
+        case .micro:    return TypeSpec(fontName: FontName.monoMedium,           size: 10,   trackingEm: 0.14,  relativeTo: .caption2)  // weight 500, uppercase
         }
     }
 
     var font: Font { spec.font }
+
+    /// The system text style this style scales with. Exposed so a test can
+    /// assert every style is wired to Dynamic Type (T2-8); a case that ever
+    /// drops back to a fixed `Font.custom(_:size:)` would have to remove it
+    /// from the table, which the test would catch.
+    var relativeTo: Font.TextStyle { spec.relativeTo }
+
+    /// The design size at the default content size category.
+    var designSize: CGFloat { spec.size }
 
     /// Tracking in points (em ratio × size).
     var tracking: CGFloat { spec.tracking }

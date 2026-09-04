@@ -13,6 +13,9 @@ import SwiftUI
 struct InjuriesEditorSheet: View {
     @EnvironmentObject private var store: MemoryStore
     @Environment(\.dismiss) private var dismiss
+    /// injury slug -> contraindicated exercise ids, for the coverage line.
+    /// One query on appear over every slug in the catalog; the sheet is small.
+    @State private var contraindicatedByInjury: [String: Set<Int>] = [:]
     @State private var presentingInjuryPicker = false
 
     var body: some View {
@@ -43,6 +46,12 @@ struct InjuriesEditorSheet: View {
                 }
             }
             .navigationTitle("Injuries")
+            .onAppear {
+                if contraindicatedByInjury.isEmpty {
+                    let slugs = Set(CoachDatabase.shared.listInjuries().map(\.slug))
+                    contraindicatedByInjury = CoachDatabase.shared.contraindicatedExerciseIds(bySlug: slugs)
+                }
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -127,6 +136,26 @@ struct InjuriesEditorSheet: View {
         }
     }
 
+    /// Per-injury honesty line: how many exercises this injury removes from
+    /// generated workouts, or that it removes none yet. Computed once per
+    /// sheet lifetime, not per render (`contraindicatedByInjury`).
+    private func injuryCoverageLine(slug: String) -> some View {
+        let n = contraindicatedByInjury[slug]?.count ?? 0
+        return HStack(spacing: 6) {
+            Image(systemName: n > 0 ? "checkmark.shield" : "exclamationmark.shield")
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(n > 0 ? Color.ok : Color.ink3)
+            Text(n > 0
+                 ? (n == 1 ? "Filters 1 exercise from your workouts"
+                           : "Filters \(n) exercises from your workouts")
+                 : "No exercise filter for this injury yet. Your plan won't change; check with a clinician.")
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
     /// Card per active injury — title + remove button + inline severity / side
     /// chip rows + optional onset date row. Each row shows every option as its
     /// own chip (plus "—" for unset); one tap selects, tapping the selected
@@ -149,6 +178,13 @@ struct InjuriesEditorSheet: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("Remove \(injuryName(forSlug: injury.slug))")
             }
+            // T1-5 (safe half). 42 of the 56 injuries a user can declare have
+            // no contraindication mapping in coach.db, so declaring one of
+            // them filters nothing while the sheet promises "We'll filter out
+            // exercises that aren't safe". The mapping table is the one whose
+            // errors hurt people and is not auto-filled; what IS safe is
+            // saying which case this is, per injury, where the user can see it.
+            injuryCoverageLine(slug: injury.slug)
             HStack(spacing: 14) {
                 metaPicker(title: "Severity",
                            options: InjurySeverity.allCases.map(\.label),

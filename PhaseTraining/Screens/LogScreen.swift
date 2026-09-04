@@ -26,6 +26,18 @@ import SwiftUI
 import UIKit
 
 struct LogScreen: View {
+    // T2-1 / T2-3 (declared here: LogSetRow.swift is an extension and
+    // cannot hold stored properties). Column widths were hard pixel frames sized for the fixed
+    // 13.5pt mono font. Now that the type scales with Dynamic Type these have
+    // to scale with it or the log clips at the first larger setting.
+    // `.footnote` matches what `.monoS` / `.body` scale with.
+    @ScaledMetric(relativeTo: .footnote) var setNumWidth: CGFloat = 22
+    @ScaledMetric(relativeTo: .footnote) var labelWidth: CGFloat = 58
+    @ScaledMetric(relativeTo: .footnote) var effortWidth: CGFloat = 52
+    @ScaledMetric(relativeTo: .caption2) var warmupPillWidth: CGFloat = 18
+    @ScaledMetric(relativeTo: .caption2) var warmupPillHeight: CGFloat = 14
+    @ScaledMetric(relativeTo: .caption2) var warmupPillFont: CGFloat = 9
+
     @EnvironmentObject private var store: SessionStore
     @EnvironmentObject private var memoryStore: MemoryStore
     let onFinish: () -> Void

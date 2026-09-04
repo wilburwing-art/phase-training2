@@ -42,18 +42,18 @@ extension LogScreen {
                     // "W" pill replaces the set-number for warmup sets.
                     // Visually flags the row as a non-counting ramp set.
                     Text("W")
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.system(size: warmupPillFont, weight: .bold))
                         .foregroundStyle(Color.bg)
-                        .frame(width: 18, height: 14)
+                        .frame(width: warmupPillWidth, height: warmupPillHeight)
                         .background(Color.ink3)
                         .clipShape(Capsule())
-                        .frame(width: 22, alignment: .center)
+                        .frame(width: setNumWidth, alignment: .center)
                         .accessibilityLabel("Warmup set")
                 } else {
                     Text("\(set.num)")
                         .styled(.monoXS)
                         .foregroundStyle(setNumberColor)
-                        .frame(width: 22, alignment: .center)
+                        .frame(width: setNumWidth, alignment: .center)
                         .monospacedDigit()
                         .accessibilityIdentifier("log-set-num-\(exIdx)-\(setIdx)")
                 }
@@ -68,7 +68,7 @@ extension LogScreen {
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .monospacedDigit()
-                    .frame(width: 58, alignment: .leading)
+                    .frame(width: labelWidth, alignment: .leading)
 
                 weightCell(exIdx: exIdx, setIdx: setIdx, done: set.done, isActive: isActive)
                     .frame(maxWidth: .infinity)
@@ -81,13 +81,14 @@ extension LogScreen {
                 )
                 .frame(maxWidth: .infinity)
                 .accessibilityIdentifier("log-set-reps-\(exIdx)-\(setIdx)")
+                .accessibilityLabel("Reps, set \(setIdx + 1)")
 
                 effortCell(
                     text: $session.exercises[exIdx].sets[setIdx].rpe,
                     done: set.done,
                     active: isActive
                 )
-                .frame(width: 52)
+                .frame(width: effortWidth)
 
                 checkDot(done: set.done) {
                     toggleSet(exIdx: exIdx, setIdx: setIdx)
@@ -160,6 +161,11 @@ extension LogScreen {
                 active: isActive
             )
             .accessibilityIdentifier("log-set-weight-\(exIdx)-\(setIdx)")
+            // Label only. A TextField already exposes its text as the
+            // accessibility value; overriding it with "135 lbs" changed what
+            // XCUITest reads back through `.value` and broke two LogFlowTests
+            // that assert the raw "135". The unit goes in the label instead.
+            .accessibilityLabel("Weight in \(session.exercises[exIdx].unit), set \(setIdx + 1)")
             .onChange(of: session.exercises[exIdx].sets[setIdx].weight) { oldValue, newValue in
                 // Debounce per cell: fill downstream sets only once typing
                 // pauses, so partial values (1, 13, 135) don't briefly land in
@@ -274,6 +280,10 @@ extension LogScreen {
                     .contentShape(Rectangle())
             }
             .menuStyle(.borderlessButton)
+            // VoiceOver: this is a Menu, so without a label it reads its
+            // current text ("—") and nothing else.
+            .accessibilityLabel("Effort")
+            .accessibilityValue(text.wrappedValue.isEmpty ? "not set" : "RPE \(text.wrappedValue)")
         }
     }
 

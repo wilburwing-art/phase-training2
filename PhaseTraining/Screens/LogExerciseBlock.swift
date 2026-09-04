@@ -41,6 +41,8 @@ extension LogScreen {
                     .styled(.displayS)
                     .foregroundStyle(allDone ? Color.ink2 : Color.ink)
                     .accessibilityIdentifier("log-exercise-name-\(exIdx)")
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityLabel(allDone ? "\(displayName), all sets done" : displayName)
                 if let type = ex.type, !type.isEmpty {
                     Text("(\(type))")
                         .font(.system(size: 11))
