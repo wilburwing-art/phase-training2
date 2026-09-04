@@ -88,7 +88,7 @@ new items (R2-01 to R2-04); R2-01 and R2-02 were fixed in the same sitting.
 
 **Status 2026-09-04 (evening): 8 of 10 done, 1 partial, 1 refuted.**
 T2-1, T2-3, T2-4, T2-5, T2-6, T2-8, T2-9, T2-10 landed with tests. T2-2 is
-partial (logging surface only). T2-7 refuted. Unit target 1,068 green. What is
+partial (logging surface only). T2-7 refuted. Whole scheme green: 1,110 passed, 0 failed (unit 1,068, UI 42, budgets all on reference). What is
 NOT yet true, said plainly so nobody reads the checkboxes as "on par with
 Fitbod": Dynamic Type is wired at the root and in the log rows but has not
 been looked at on a device at AX5, and the fixed frames on Today, Week and
