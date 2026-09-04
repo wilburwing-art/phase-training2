@@ -147,12 +147,35 @@ final class CoachConversationStore: ObservableObject {
     var atHardCap: Bool { turnsToday >= CoachConfig.hardTurnCap }
 
     /// Conversation history in the wire format CoachClient.stream expects.
-    /// Drops empty placeholder bubbles (in-flight assistant turn before any
-    /// deltas arrive).
+    ///
+    /// Two guarantees, both required by the Messages API and neither
+    /// previously tested (this was gate test 3 in the 2026-08-23 backlog):
+    ///
+    /// 1. Empty placeholder bubbles are dropped (the in-flight assistant turn
+    ///    before any deltas arrive, or a send that errored before a reply).
+    /// 2. Roles strictly alternate. Anthropic rejects consecutive same-role
+    ///    messages with a 400. A dropped empty assistant turn leaves two user
+    ///    turns adjacent, and `CoachClient.stream` appends the new user
+    ///    message unconditionally, so without this the very next send after a
+    ///    failed reply would fail too, with an error the drawer renders as
+    ///    coach speech (T1-41). Consecutive same-role turns are merged with a
+    ///    blank line; content is never dropped.
     func wireHistory() -> [CoachClient.Turn] {
-        messages
-            .filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-            .map { .init(role: $0.role, text: $0.text) }
+        var out: [CoachClient.Turn] = []
+        for m in messages {
+            let text = m.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty else { continue }
+            if let last = out.last, last.role == m.role {
+                out[out.count - 1] = .init(role: last.role, text: last.text + "\n\n" + text)
+            } else {
+                out.append(.init(role: m.role, text: text))
+            }
+        }
+        // The API also requires the FIRST message to be a user turn. A
+        // conversation that begins with an assistant greeting is dropped from
+        // the wire, not from the transcript.
+        if let first = out.first, first.role != "user" { out.removeFirst() }
+        return out
     }
 
     /// Manual reset — clears today's slot without archiving.

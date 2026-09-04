@@ -69,4 +69,53 @@ final class CoachConversationStoreTests: XCTestCase {
         let s2 = CoachConversationStore(defaults: defaults, now: day2)
         XCTAssertEqual(s2.turnsToday, 0, "A new calendar day resets the daily turn counter")
     }
+
+    // MARK: - Gate test 3: the wireHistory() contract
+
+    private func msg(_ role: String, _ text: String) -> CoachMessage {
+        CoachMessage(role: role, text: text)
+    }
+
+    func test_wireHistory_dropsEmptyTurns() {
+        let store = CoachConversationStore(defaults: freshDefaults())
+        store.messages = [msg("user", "hi"), msg("assistant", "   \n"), msg("user", "still there?")]
+        let wire = store.wireHistory()
+        XCTAssertFalse(wire.contains { $0.text.isEmpty })
+        // The two user turns left adjacent by the drop are MERGED, not sent
+        // back-to-back — the API 400s on consecutive same-role messages.
+        XCTAssertEqual(wire.map(\.role), ["user"])
+        XCTAssertEqual(wire.first?.text, "hi\n\nstill there?")
+    }
+
+    func test_wireHistory_rolesStrictlyAlternate() {
+        let store = CoachConversationStore(defaults: freshDefaults())
+        store.messages = [
+            msg("user", "a"), msg("user", "b"),
+            msg("assistant", "c"), msg("assistant", "d"),
+            msg("user", "e"),
+        ]
+        let roles = store.wireHistory().map(\.role)
+        XCTAssertEqual(roles, ["user", "assistant", "user"])
+        for (l, r) in zip(roles, roles.dropFirst()) {
+            XCTAssertNotEqual(l, r, "consecutive same-role turns must be merged")
+        }
+    }
+
+    func test_wireHistory_preservesOrderAndContent() {
+        let store = CoachConversationStore(defaults: freshDefaults())
+        store.messages = [msg("user", "one"), msg("assistant", "two"), msg("user", "three")]
+        XCTAssertEqual(store.wireHistory().map(\.text), ["one", "two", "three"])
+    }
+
+    func test_wireHistory_startsWithUser() {
+        let store = CoachConversationStore(defaults: freshDefaults())
+        store.messages = [msg("assistant", "welcome"), msg("user", "hello")]
+        XCTAssertEqual(store.wireHistory().first?.role, "user")
+    }
+
+    func test_wireHistory_emptyConversationIsEmpty() {
+        let store = CoachConversationStore(defaults: freshDefaults())
+        store.messages = []
+        XCTAssertTrue(store.wireHistory().isEmpty)
+    }
 }
