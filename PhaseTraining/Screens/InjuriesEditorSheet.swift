@@ -118,6 +118,12 @@ struct InjuriesEditorSheet: View {
                     .font(.monoXS)
                     .foregroundStyle(Color.ink3)
             }
+            // The line above is a promise about exercise selection, not about
+            // whether you should be training. Both are worth saying, and this
+            // is the screen where the second one lands.
+            Text("Phase Training isn't medical advice. If something hurts, see a clinician before you train through it.")
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
         }
     }
 

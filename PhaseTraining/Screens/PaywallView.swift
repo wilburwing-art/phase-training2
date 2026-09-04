@@ -71,7 +71,12 @@ struct PaywallView: View {
             Text("Phase Training Pro")
                 .font(.system(size: 26, weight: .bold))
                 .foregroundStyle(Color.ink)
-            Text("The only training app that plans your primary sport around a second one — plus an AI coach that personalizes every workout.")
+            // Copy claims are load-bearing: keep every line to something the
+            // shipped code actually does. The old sentence promised "an AI
+            // coach that personalizes every workout"; the generator discards
+            // the coach's strategy on both paths, which is the same false
+            // claim PlanStore+LLMRefinement disabled itself over.
+            Text("Training that follows your season, and plans your primary sport around the second one you refuse to give up.")
                 .font(.system(size: 15))
                 .foregroundStyle(Color.ink2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -80,8 +85,8 @@ struct PaywallView: View {
 
     private var features: some View {
         VStack(alignment: .leading, spacing: 10) {
-            featureRow("Two-sport planning — your lifts flex around your climb and ski days")
-            featureRow("Personalized workout polish on every plan generation")
+            featureRow("Two-sport planning: your lifts flex around your climb and ski days")
+            featureRow("Season-phase programming, from off-season base to event taper")
             featureRow("Chat coach that can shift your week or swap a lift")
             featureRow("Weekly coaching insights and recovery feedback")
         }

@@ -176,7 +176,11 @@ struct CoachRequestScreen: View {
                 }
             }
 
-            Text("The coach picks exercises that fit your equipment, injuries, and dislikes. Tap Generate to see a workout — you can re-roll if you don't like it.")
+            // Claimed equipment + injuries + dislikes. Injuries hold on both
+            // generation paths; equipment only on the season one; dislikes on
+            // neither. Say what is true until the strategy the coach builds
+            // actually reaches the generator.
+            Text("Pick a focus and a length and we'll build a session from your plan, keeping clear of anything your injuries rule out. Re-roll if you don't like it.")
                 .font(.custom("Inter-Regular", size: 12))
                 .foregroundStyle(Color.ink3)
                 .padding(.top, 4)
