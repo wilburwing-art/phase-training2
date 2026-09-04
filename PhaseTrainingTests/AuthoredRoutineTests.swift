@@ -121,6 +121,9 @@ final class AuthoredRoutineTests: XCTestCase {
 
     func testMTBPreSeasonRoutineBuildsRunnableWorkout() {
         var memory = TrainingMemory()
+        // Full gym: this test pins the routine AS AUTHORED. An empty selection
+        // reads as bodyweight-only since R2-05 and would swap or drop rows.
+        memory.equipment = [.fullGym]
         memory.primarySport = Sport.resolve(slug: "mountain-biking")
         let workout = AuthoredRoutine.workout(
             forRoutineId: 299, memory: memory, context: .empty, focus: .fullBodyA,
@@ -163,6 +166,9 @@ final class AuthoredRoutineTests: XCTestCase {
 
     func testDistilledSnowboardRoutineBuildsRunnableWorkout() {
         var memory = TrainingMemory()
+        // Full gym: this test pins the routine AS AUTHORED. An empty selection
+        // reads as bodyweight-only since R2-05 and would swap or drop rows.
+        memory.equipment = [.fullGym]
         memory.primarySport = Sport.resolve(slug: "snowboarding")
         let workout = AuthoredRoutine.workout(
             forRoutineId: 295, memory: memory, context: .empty, focus: .fullBodyA,
@@ -216,6 +222,9 @@ final class AuthoredRoutineTests: XCTestCase {
 
     func testEasyStrengthBuildsRunnableWorkout() {
         var memory = TrainingMemory()
+        // Full gym: this test pins the routine AS AUTHORED. An empty selection
+        // reads as bodyweight-only since R2-05 and would swap or drop rows.
+        memory.equipment = [.fullGym]
         memory.primarySport = Sport.resolve(slug: "snowboarding")
         let workout = AuthoredRoutine.workout(
             forRoutineId: 298, memory: memory, context: .empty, focus: .fullBodyA,
@@ -331,6 +340,101 @@ final class AuthoredRoutineTests: XCTestCase {
                         + "\(w.exercises.count) movements: '\(w.title)'")
                 }
             }
+        }
+    }
+
+    // MARK: - R2-05: equipment on the authored path
+
+    /// Measured before the fix: 69% of the exercises served to a bodyweight-only
+    /// user on the authored path needed gear they said they did not have, and
+    /// 103 of 113 routines carry a barbell or dumbbell movement, so a plain
+    /// filter would have gutted the library. The rule is the season engine's:
+    /// required slugs must be a subset of the allowed set.
+    func testAuthoredPathNeverServesEquipmentTheUserLacks() {
+        for (slug, gear) in [("mountain-biking", [Equipment.bodyweight]),
+                             ("mountain-biking", [.dumbbells]),
+                             ("snowboarding", [.bodyweight]),
+                             ("hiking-trekking", [.dumbbells]),
+                             ("climbing", [.bodyweight])] {
+            var memory = TrainingMemory()
+            memory.primarySport = Sport.resolve(slug: slug)
+            memory.equipment = gear
+            let profile = DemographicProfile.from(memory)
+            let allowed = profile.allowedEquipmentSlugs
+            XCTAssertFalse(allowed.isEmpty, "[\(slug)/\(gear)] fixture reads as full gym")
+
+            for phase in SeasonPhase.allCases {
+                memory.defaultSeason = phase
+                if let sport = memory.primarySport { memory.seasonsBySport = [sport: phase] }
+                for slot in 0..<3 {
+                    let w = WorkoutGenerator.generateLift(
+                        liftIndex: slot, totalLifts: 3, memory: memory, profile: profile,
+                        hashSeed: "gear-\(slug)-\(phase.rawValue)-\(slot)")
+                    if w.exercises.isEmpty { continue }
+                    XCTAssertGreaterThanOrEqual(
+                        w.exercises.count, AuthoredRoutineSelector.minimumMovements,
+                        "[\(slug)/\(gear)/\(phase.rawValue)/slot \(slot)] served "
+                        + "\(w.exercises.count) movements: '\(w.title)'")
+                    let reqs = CoachDatabase.shared.requiredEquipmentSlugs(
+                        forExerciseIds: Set(w.exercises.map(\.exerciseId)))
+                    for ex in w.exercises {
+                        let need = reqs[ex.exerciseId] ?? []
+                        XCTAssertTrue(
+                            need.isEmpty || need.isSubset(of: allowed),
+                            "[\(slug)/\(gear)/\(phase.rawValue)/slot \(slot)] served "
+                            + "'\(ex.name)' needing \(need)")
+                    }
+                }
+            }
+        }
+    }
+
+    /// A gear gap is answered by a curated substitute where one exists (option
+    /// A), and the swapped row says so. The row is dropped only when the
+    /// substitutions table has nothing the user can equip.
+    func testEquipmentGapIsFilledByASubstituteWhereOneExists() {
+        var memory = TrainingMemory()
+        memory.primarySport = Sport.resolve(slug: "mountain-biking")
+        memory.equipment = [.dumbbells]
+        let profile = DemographicProfile.from(memory)
+
+        var swaps: [String] = []
+        for phase in SeasonPhase.allCases {
+            memory.defaultSeason = phase
+            if let sport = memory.primarySport { memory.seasonsBySport = [sport: phase] }
+            for slot in 0..<3 {
+                let w = WorkoutGenerator.generateLift(
+                    liftIndex: slot, totalLifts: 3, memory: memory, profile: profile,
+                    hashSeed: "swap-mtb-\(phase.rawValue)-\(slot)")
+                swaps += w.exercises.compactMap { ex in
+                    ex.notes.flatMap { $0.hasPrefix("Swapped in for") ? "\(ex.name): \($0)" : nil }
+                }
+                // A substitute never duplicates a movement already in the session.
+                XCTAssertEqual(Set(w.exercises.map(\.exerciseId)).count, w.exercises.count,
+                               "[\(phase.rawValue)/slot \(slot)] duplicate exercise after substitution")
+            }
+        }
+        XCTAssertFalse(swaps.isEmpty, "no substitution fired for a dumbbells-only MTB user across every phase and slot")
+    }
+
+    /// The selector and the builder read the same resolved rows, so a routine
+    /// the floor rejects for this user is never the one built.
+    func testResolvedRowsDriveBothSelectorAndBuilder() {
+        var memory = TrainingMemory()
+        memory.primarySport = Sport.resolve(slug: "mountain-biking")
+        memory.equipment = [.bodyweight]
+        let profile = DemographicProfile.from(memory)
+        for phase in SeasonPhase.allCases {
+            guard let id = AuthoredRoutineSelector.select(
+                sportSlug: "mountain-biking", phase: phase, sessionIndex: 0,
+                excludedExerciseIds: profile.excludedExerciseIds,
+                allowedEquipmentSlugs: profile.allowedEquipmentSlugs) else { continue }
+            let resolved = AuthoredRoutine.resolvedRows(forRoutineId: id, profile: profile)
+            XCTAssertGreaterThanOrEqual(resolved.count, AuthoredRoutineSelector.minimumMovements)
+            let built = AuthoredRoutine.workout(
+                forRoutineId: id, memory: memory, context: .empty,
+                focus: WorkoutFocus.lift(liftIndex: 0, totalLifts: 3), profile: profile)
+            XCTAssertEqual(built?.exercises.map(\.exerciseId), resolved.map(\.exerciseId))
         }
     }
 

@@ -66,7 +66,8 @@ enum WorkoutGenerator {
             let season = memory.seasonsBySport[sport] ?? memory.defaultSeason
             if let routineId = AuthoredRoutineSelector.select(
                     sportSlug: sport.slug, phase: season, sessionIndex: liftIndex,
-                    excludedExerciseIds: profile.excludedExerciseIds),
+                    excludedExerciseIds: profile.excludedExerciseIds,
+                    allowedEquipmentSlugs: profile.allowedEquipmentSlugs),
                let authored = AuthoredRoutine.workout(
                     forRoutineId: routineId, memory: memory, context: context,
                     focus: WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts),
@@ -82,6 +83,21 @@ enum WorkoutGenerator {
         // (T2-10) via AthleteState.readinessScore. Soreness-area avoidance
         // (`context.recentSoreAreas`) is the remaining unconsumed signal.
         guard SportSeasonGenerator.supports(memory.primarySport?.slug) else {
+            // An authored-only sport lands here when every routine fell below
+            // the movement floor for this user's equipment or injuries (R2-05,
+            // option C: say so, rather than serve a barbell session to someone
+            // who said bodyweight only).
+            if let sport = memory.primarySport,
+               AuthoredRoutineSelector.shouldServeAuthored(sportSlug: sport.slug) {
+                return GeneratedWorkout(
+                    title: "Rest",
+                    summary: "No \(sport.name) routine fits your equipment and injuries yet. "
+                        + "Add gear in Profile to unlock the authored sessions.",
+                    exercises: [],
+                    estimatedMinutes: 0,
+                    provenance: "authored-no-fit",
+                    focus: WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts))
+            }
             return GeneratedWorkout(
                 title: "Rest",
                 summary: "No supported sport set",

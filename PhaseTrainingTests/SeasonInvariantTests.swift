@@ -119,10 +119,11 @@ final class SeasonInvariantTests: XCTestCase {
         // nothing" is not the test — the first draft of this assertion failed
         // on Side Plank "needing [bodyweight]".
         //
-        // Season path filters by this; authored routines do not (the equipment
-        // half of the T0-1 gap). Assert where the engine owns the answer, and
-        // report the authored gap as a count so it stays visible.
-        var authoredLoaded = 0, authoredRows = 0
+        // The authored path applies the same rule since R2-05 (2026-09-04):
+        // a row the user cannot equip is swapped for a curated substitute or
+        // dropped, so both paths are asserted. Before that it served 2,382 of
+        // 3,264 rows to a bodyweight-only user with gear they did not have.
+        var swapped = 0
         for c in grid where c.equipment == [.bodyweight] {
             var memory = TrainingMemory()
             memory.equipment = c.equipment
@@ -134,11 +135,10 @@ final class SeasonInvariantTests: XCTestCase {
             for ex in w.exercises {
                 let need = reqs[ex.exerciseId] ?? []
                 let usable = need.isEmpty || allowed.isEmpty || need.isSubset(of: allowed)
-                if isAuthored { authoredRows += 1; if !usable { authoredLoaded += 1 }; continue }
-                XCTAssertTrue(usable, "[\(c)] season engine prescribed '\(ex.name)' needing \(need) to a user with \(allowed)")
+                if isAuthored, ex.notes?.hasPrefix("Swapped in for") == true { swapped += 1 }
+                XCTAssertTrue(usable, "[\(c)] \(isAuthored ? "authored routine" : "season engine") prescribed '\(ex.name)' needing \(need) to a user with \(allowed)")
             }
         }
-        // Not asserted, reported: the equipment half of the authored-path gap.
-        print("SEASON-INVARIANT authored rows unusable by a bodyweight-only user: \(authoredLoaded) of \(authoredRows)")
+        print("SEASON-INVARIANT authored rows swapped for a bodyweight-only user: \(swapped)")
     }
 }
