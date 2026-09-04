@@ -68,7 +68,8 @@ enum WorkoutGenerator {
                     sportSlug: sport.slug, phase: season, sessionIndex: liftIndex),
                let authored = AuthoredRoutine.workout(
                     forRoutineId: routineId, memory: memory, context: context,
-                    focus: WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts)) {
+                    focus: WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts),
+                    profile: profile) {
                 return authored
             }
         }

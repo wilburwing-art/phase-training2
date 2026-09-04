@@ -119,15 +119,30 @@ enum AuthoredRoutine {
     /// Build a `GeneratedWorkout` from a coach.db routine, layering a per-user
     /// "target: X lb" weight rec onto each strength row from the user's prior
     /// best (via `WorkoutGenerator.progressiveOverloadHint`) WITHOUT changing
-    /// the authored sets/reps. Returns nil when the routine has no exercises.
+    /// the authored sets/reps.
+    ///
+    /// `profile` is REQUIRED, not defaulted, because it carries the injury
+    /// filter. InjuriesEditorSheet promises "We'll filter out exercises that
+    /// aren't safe for the injuries you pick"; the season engine honours that at
+    /// `SportSeasonGenerator.filteredPool`, and this path served seven of the
+    /// ten plannable sports (every outdoor authored sport, plus climbing via the
+    /// pilot flag) with no filter at all. A defaulted empty set would let a new
+    /// call site silently opt out of the safety property again.
+    ///
+    /// Returns nil when the routine has no exercises, or when the injury filter
+    /// removes all of them — the caller falls through to its next option rather
+    /// than serving a session the user was told would be filtered.
     static func workout(
         forRoutineId routineId: Int,
         memory: TrainingMemory,
         context: GeneratorContext,
-        focus: WorkoutFocus
+        focus: WorkoutFocus,
+        profile: DemographicProfile
     ) -> GeneratedWorkout? {
         let db = CoachDatabase.shared
-        let rows = db.exercises(forRoutineId: routineId)
+        let all = db.exercises(forRoutineId: routineId)
+        guard !all.isEmpty else { return nil }
+        let rows = all.filter { !profile.excludedExerciseIds.contains($0.exerciseId) }
         guard !rows.isEmpty else { return nil }
 
         let exercises: [GeneratedExercise] = rows.map { re in
