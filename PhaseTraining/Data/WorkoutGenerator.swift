@@ -65,7 +65,8 @@ enum WorkoutGenerator {
         if let sport = memory.primarySport {
             let season = memory.seasonsBySport[sport] ?? memory.defaultSeason
             if let routineId = AuthoredRoutineSelector.select(
-                    sportSlug: sport.slug, phase: season, sessionIndex: liftIndex),
+                    sportSlug: sport.slug, phase: season, sessionIndex: liftIndex,
+                    excludedExerciseIds: profile.excludedExerciseIds),
                let authored = AuthoredRoutine.workout(
                     forRoutineId: routineId, memory: memory, context: context,
                     focus: WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts),
@@ -76,9 +77,11 @@ enum WorkoutGenerator {
         // The season-aware engine (ski / climb) is the only generator. Every
         // caller routes here; onboarding gates to a supported sport (M2b), so the
         // no-supported-sport branch is an unreachable safety net, not a real path.
-        // `context` / `strategy` are accepted for signature stability but the
-        // season engine doesn't consume them yet — parked for a future adaptive
-        // wiring milestone (readiness/soreness/overload + LLM build_workout).
+        // `strategy` now reaches the season engine (T1-6): intensity bias and
+        // the per-exercise RPE / tempo / load overrides. `context` is still
+        // unconsumed there — readiness and soreness scaling live in
+        // makePickedRow, which only the custom-routine re-prescription path
+        // uses. That half stays parked.
         guard SportSeasonGenerator.supports(memory.primarySport?.slug) else {
             return GeneratedWorkout(
                 title: "Rest",
@@ -94,7 +97,8 @@ enum WorkoutGenerator {
             weekNumber: memory.weeksInCurrentPhase ?? 1,
             recentMovementIDs: recentlyPicked)
         return SportSeasonGenerator.generateSession(
-            athlete, sessionIndex: liftIndex, adjacentSportDay: adjacentSportDay)
+            athlete, sessionIndex: liftIndex, adjacentSportDay: adjacentSportDay,
+            sessionsInWeek: max(1, totalLifts), strategy: strategy)
     }
 
     /// Generate a workout for a consolidated (merged) day. The season engine has

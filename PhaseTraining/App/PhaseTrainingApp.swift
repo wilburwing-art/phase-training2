@@ -458,6 +458,14 @@ struct PhaseTrainingApp: App {
                 #endif
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active {
+                        // T1-1. Nothing regenerated on a date change, so the
+                        // Monday after a quiet week left `plan` holding last
+                        // week's dates, `WeekPlan.today()` nil, and Today's
+                        // Start button disabled with no explanation. Runs
+                        // before the async work below because everything else
+                        // on this screen reads the plan. No-op when the plan
+                        // already covers this week, and skipped mid-session.
+                        plan.refreshForCurrentWeek(memory: memory.memory)
                         Task {
                             // Entitlement mirror first: runIfDue's pro gate
                             // reads the proKey default that refresh() writes,

@@ -64,21 +64,52 @@ enum AuthoredRoutineSelector {
     /// nil to fall through to the season engine. Deterministic: the same
     /// (sport, phase, sessionIndex) always resolves to the same routine, and
     /// multiple lift days in a phase rotate through the available routines.
-    static func select(sportSlug: String, phase: SeasonPhase, sessionIndex: Int) -> Int? {
+    /// Minimum movements for a routine to be served as a day's workout. Mirrors
+    /// the season engine's own floor (`targetMovementCount`'s `max(3, ...)`).
+    /// The DB query applies it to the routine as authored; `viable` below
+    /// applies it again AFTER the user's injury exclusions, because a 3-movement
+    /// routine with one contraindicated lift is a 2-movement session.
+    static let minimumMovements = 3
+
+    /// Routines that still clear `minimumMovements` once this user's
+    /// contraindicated exercises are removed. Filtering here rather than in
+    /// `AuthoredRoutine.workout` keeps the fallback chain intact: a routine
+    /// rejected for this user is skipped and the NEXT one is offered, where
+    /// rejecting it at build time would drop an authored-only sport (MTB,
+    /// hiking) through to the empty "no supported sport" workout.
+    private static func viable(_ ids: [Int], excluding excluded: Set<Int>) -> [Int] {
+        guard !excluded.isEmpty else { return ids }
+        let db = CoachDatabase.shared
+        return ids.filter { id in
+            db.exercises(forRoutineId: id)
+                .filter { !excluded.contains($0.exerciseId) }
+                .count >= minimumMovements
+        }
+    }
+
+    static func select(sportSlug: String, phase: SeasonPhase, sessionIndex: Int,
+                       excludedExerciseIds: Set<Int> = []) -> Int? {
         guard isEnabled, shouldServeAuthored(sportSlug: sportSlug) else { return nil }
         let db = CoachDatabase.shared
-        var ids = db.authoredRoutineIds(sportSlug: sportSlug, phaseLabels: phaseLabels(for: phase))
+        var ids = viable(db.authoredRoutineIds(sportSlug: sportSlug,
+                                               phaseLabels: phaseLabels(for: phase)),
+                         excluding: excludedExerciseIds)
         if ids.isEmpty {
             // Phase gap. A season-engine-supported sport (climbing pilot) falls
             // THROUGH to the engine. An unsupported authored sport has no engine
             // backstop, so broaden to any full-session routine for the sport —
             // an authored-served sport must never yield an empty day.
             guard !SportSeasonGenerator.supports(sportSlug) else { return nil }
-            ids = db.authoredRoutineIds(sportSlug: sportSlug, phaseLabels: allPhaseLabels)
+            ids = viable(db.authoredRoutineIds(sportSlug: sportSlug, phaseLabels: allPhaseLabels),
+                         excluding: excludedExerciseIds)
             if ids.isEmpty, SportCatalog.outdoorAuthoredSlugs.contains(sportSlug) {
                 // Last resort for a real outdoor sport with no content of its
                 // own: the universal cross-sport base (Easy Strength). Gated on
                 // the allowlist so an arbitrary/unknown slug still returns nil.
+                // Last resort is NOT injury-filtered on viability: if Easy
+                // Strength is all that is left, serve what remains of it rather
+                // than nothing. `AuthoredRoutine.workout` still removes the
+                // contraindicated rows.
                 ids = db.authoredRoutineIds(sportSlug: genericBaseSlug, phaseLabels: allPhaseLabels)
             }
         }

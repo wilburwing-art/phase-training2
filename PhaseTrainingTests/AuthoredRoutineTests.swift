@@ -26,13 +26,41 @@ final class AuthoredRoutineTests: XCTestCase {
     }
 
     func testSelectRotatesAcrossMultipleLiftDays() {
-        // Pre-season climbing has two full-session routines (#2, #10); a second
-        // lift slot should resolve to the other one.
-        let first = AuthoredRoutineSelector.select(sportSlug: "climbing", phase: .preSeason, sessionIndex: 0)
-        let second = AuthoredRoutineSelector.select(sportSlug: "climbing", phase: .preSeason, sessionIndex: 1)
+        // Off-season climbing has two qualifying full-session routines; a
+        // second lift slot should resolve to the other one.
+        //
+        // This used to test pre-season climbing, which had "two full-session
+        // routines (#2, #10)". #2 is `Climbing Finger Strength Protocol
+        // (Repeaters)` — ONE exercise, 35 declared minutes. A hangboard
+        // protocol is not a session, and serving it as a lift day is the
+        // defect T1-9 closed by gating the selector at 3 exercises. Pre-season
+        // now has exactly one qualifying routine, so it can no longer show
+        // rotation.
+        let first = AuthoredRoutineSelector.select(sportSlug: "climbing", phase: .offSeason, sessionIndex: 0)
+        let second = AuthoredRoutineSelector.select(sportSlug: "climbing", phase: .offSeason, sessionIndex: 1)
         XCTAssertNotNil(first)
         XCTAssertNotNil(second)
         XCTAssertNotEqual(first, second)
+    }
+
+    /// T1-9. A routine is served VERBATIM as a day's workout, so a one- or
+    /// two-movement protocol must never be selectable as one. Five routines
+    /// cleared every other filter (goal, duration >= 25) with fewer than three
+    /// exercises.
+    func testSelectorRejectsRoutinesTooThinToBeASession() {
+        let db = CoachDatabase.shared
+        for phase in SeasonPhase.allCases {
+            for slug in ["climbing", "mountain-biking", "snowboarding",
+                         "trail-running", "hiking-trekking", "thru-hiking",
+                         "mountaineering", "general-fitness"] {
+                let labels = AuthoredRoutineSelector.phaseLabels(for: phase)
+                for id in db.authoredRoutineIds(sportSlug: slug, phaseLabels: labels) {
+                    XCTAssertGreaterThanOrEqual(
+                        db.exercises(forRoutineId: id).count, 3,
+                        "[\(slug)/\(phase.rawValue)] routine \(id) is too thin to serve as a session")
+                }
+            }
+        }
     }
 
     func testSelectUnknownSportReturnsNil() {
@@ -255,6 +283,42 @@ final class AuthoredRoutineTests: XCTestCase {
                         "[\(sportSlug)/\(injurySlug)/\(phase.rawValue)/slot \(slot)] "
                         + "served contraindicated exercise '\(ex.name)' (id \(ex.exerciseId))",
                         file: file, line: line)
+                }
+            }
+        }
+    }
+
+    /// R2-01. The injury filter runs AFTER selection, so a 3-movement routine
+    /// with one contraindicated lift became a 2-movement session and slipped
+    /// under the floor T1-9 established. Measured against the shipped db, four
+    /// selectable routines drop below 3 for some injury and one of them is
+    /// reachable from a plannable sport: `Cyclist In-Season Maintenance`
+    /// (3 movements) via mountain-biking, for lumbar-disc-herniation.
+    func testInjuryFilterNeverLeavesASessionUnderTheMovementFloor() {
+        for (slug, injury) in [("mountain-biking", "lumbar-disc-herniation"),
+                               ("climbing", "finger-pulley"),
+                               ("snowboarding", "acl-injury"),
+                               ("trail-running", "acl-injury")] {
+            var memory = TrainingMemory()
+            memory.primarySport = Sport.resolve(slug: slug)
+            memory.userInjuries = [UserInjury(slug: injury)]
+            memory.equipment = [.fullGym]
+            let profile = DemographicProfile.from(memory)
+
+            for phase in SeasonPhase.allCases {
+                memory.defaultSeason = phase
+                if let sport = memory.primarySport { memory.seasonsBySport = [sport: phase] }
+                for slot in 0..<3 {
+                    let w = WorkoutGenerator.generateLift(
+                        liftIndex: slot, totalLifts: 3, memory: memory, profile: profile,
+                        hashSeed: "floor-\(slug)-\(phase.rawValue)-\(slot)")
+                    // An empty workout is the "no supported sport" safety net and
+                    // is a separate concern; what must not happen is a SHORT one.
+                    if w.exercises.isEmpty { continue }
+                    XCTAssertGreaterThanOrEqual(
+                        w.exercises.count, AuthoredRoutineSelector.minimumMovements,
+                        "[\(slug)/\(injury)/\(phase.rawValue)/slot \(slot)] served "
+                        + "\(w.exercises.count) movements: '\(w.title)'")
                 }
             }
         }

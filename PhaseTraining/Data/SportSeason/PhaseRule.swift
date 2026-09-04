@@ -24,6 +24,30 @@ struct PhaseRule: Equatable {
     let deferToSport: Bool
     let sessionMinutesTarget: ClosedRange<Int>
 
+    /// This rule as a DELOAD week: the phase's own emphasis and demand mix,
+    /// re-prescribed at deload volumes with the fatigue ceiling cut.
+    ///
+    /// `MesocycleProgression` computed a real cycle status (4-week meso off/pre,
+    /// 6 in-season) and its only non-test consumer was the badge. `weekNumber`
+    /// reached the generator and was used in exactly one place, the
+    /// deterministic seed string, so week 4 of a block showed a DELOAD pill
+    /// above the same sets, reps and RPE as week 1. Switching `progression`
+    /// re-resolves every `DemandScheme`, which is where sets/reps/RPE come
+    /// from, so the whole session lightens rather than one number.
+    ///
+    /// 0.6 on the ceiling is deliberate: it has to bite even when the deload
+    /// scheme alone would still fit under the normal cap.
+    func deloaded() -> PhaseRule {
+        PhaseRule(
+            objective: objective,
+            sessionsPerWeek: sessionsPerWeek,
+            demandWeights: demandWeights,
+            progression: .deload,
+            sessionVolumeCap: max(4, Int((Double(sessionVolumeCap) * 0.6).rounded())),
+            deferToSport: deferToSport,
+            sessionMinutesTarget: sessionMinutesTarget)
+    }
+
     /// Resolve the rule for an athlete. Skiing + climbing are implemented;
     /// other sports fall back to the low-fatigue transition rule.
     static func resolve(sportSlug: String, variant: SportVariant, season: SeasonPhase) -> PhaseRule {

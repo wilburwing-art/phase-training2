@@ -631,9 +631,47 @@ final class PlanStore: ObservableObject {
 
     /// True when the persisted plan was generated from inputs that no longer
     /// match the current memory — phase 12 weekly check-in will read this.
-    func needsRegeneration(for memory: TrainingMemory) -> Bool {
+    func needsRegeneration(for memory: TrainingMemory, today: Date = Date()) -> Bool {
         guard let plan else { return true }
+        if !planCoversCurrentWeek(today: today) { return true }
         return plan.inputsHash != memory.planInputsHash
+    }
+
+    /// Whether the active plan belongs to the training week `today` falls in.
+    ///
+    /// This had no date term at all, which is the whole of T1-1: nothing in the
+    /// app regenerated on a date change. The three callers of `generate` are
+    /// the Week tab's empty-state button, the end of onboarding, and the
+    /// memory-drift subscription, and an unchanged profile means the drift
+    /// subscription never fires. `captureRolloverIfNeeded` snapshots the
+    /// outgoing week without replacing it, so on the Monday after a quiet week
+    /// `plan` still held last week's dates, `WeekPlan.today()` returned nil,
+    /// the upper-1 fallback is gated on `plan == nil`, and TodayScreen's Start
+    /// button sat disabled with nothing on screen explaining why.
+    func planCoversCurrentWeek(today: Date = Date()) -> Bool {
+        guard let first = plan?.days.first?.date else { return false }
+        return Calendar.current.isDate(first.startOfTrainingWeek(),
+                                       inSameDayAs: today.startOfTrainingWeek())
+    }
+
+    /// Foreground hook: install a staged week if one is due, and regenerate
+    /// when the active plan has aged out of the current week.
+    ///
+    /// Ordering matters and mirrors `init`: snapshot the outgoing week, then
+    /// prefer a plan the Weekly Check-In already staged (it carries the user's
+    /// answers), and only fall back to generating a fresh one. Nothing is lost
+    /// when it does — `captureRolloverIfNeeded` has already written the old
+    /// week into `pastPlans`.
+    ///
+    /// Skipped mid-session so a day rollover during a workout cannot reroll the
+    /// template under the user.
+    func refreshForCurrentWeek(memory: TrainingMemory, today: Date = Date()) {
+        guard memory.onboardedAt != nil else { return }
+        guard sessionStore?.active == nil else { return }
+        captureRolloverIfNeeded(today: today)
+        promotePendingIfDue(today: today)
+        guard !planCoversCurrentWeek(today: today) else { return }
+        _ = generate(from: memory, today: today)
     }
 
     // MARK: - Targeted regeneration (Phase 15c)

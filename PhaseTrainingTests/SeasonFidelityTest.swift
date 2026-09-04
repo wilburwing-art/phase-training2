@@ -23,6 +23,96 @@ final class SeasonFidelityTest: XCTestCase {
     ]
     private let phases: [SeasonPhase] = [.offSeason, .preSeason, .inSeason, .maintenance, .eventPrep]
 
+    // MARK: - T1-6: the coach's strategy must reach the season engine
+
+    /// `CoachRequestScreen` builds a `GeneratorStrategy` from a billed LLM call
+    /// and hands it to `generateLift`, which dropped it on both paths. The user
+    /// saw the model's reasoning above a workout it had not influenced.
+    func test_strategy_reachesTheSeasonEngine() {
+        for f in sports {
+            let a = athlete(f, season: .offSeason)
+            let base = SportSeasonGenerator.generateSession(a, sessionIndex: 0)
+
+            var push = GeneratorStrategy.auto
+            push.intensityBias = .push
+            let pushed = SportSeasonGenerator.generateSession(a, sessionIndex: 0, strategy: push)
+            XCTAssertGreaterThan(
+                pushed.exercises.reduce(0) { $0 + $1.sets },
+                base.exercises.reduce(0) { $0 + $1.sets },
+                "[\(f.slug)] intensityBias .push must add sets")
+
+            var down = GeneratorStrategy.auto
+            down.intensityBias = .deload
+            XCTAssertLessThan(
+                SportSeasonGenerator.generateSession(a, sessionIndex: 0, strategy: down)
+                    .exercises.reduce(0) { $0 + $1.sets },
+                base.exercises.reduce(0) { $0 + $1.sets },
+                "[\(f.slug)] intensityBias .deload must remove sets")
+
+            // Per-exercise overrides land on the movement the coach named.
+            guard let first = base.exercises.first else {
+                return XCTFail("[\(f.slug)] no baseline session to override")
+            }
+            var over = GeneratorStrategy.auto
+            over.rpeOverrides = [first.name.lowercased(): "9"]
+            over.tempoOverrides = [first.name.lowercased(): "5-0-1-0"]
+            over.targetWeightOverrides = [first.name.lowercased(): 185]
+            let o = SportSeasonGenerator.generateSession(a, sessionIndex: 0, strategy: over)
+            let row = o.exercises.first { $0.name == first.name }
+            XCTAssertEqual(row?.rpe, "9", "[\(f.slug)] rpe override should apply")
+            XCTAssertEqual(row?.tempo, "5-0-1-0", "[\(f.slug)] tempo override should apply")
+            XCTAssertTrue(row?.notes?.contains("target: 185 lb") ?? false,
+                          "[\(f.slug)] load target should reach the notes, got \(row?.notes ?? "nil")")
+        }
+    }
+
+    // MARK: - T1-8: the deload must actually deload
+
+    /// Week 4 of a 4-week off-season meso is a deload week. Before T1-8 the
+    /// badge said DELOAD and the session carried the same sets, reps and RPE
+    /// as week 1, because `weekNumber` reached the generator only as part of
+    /// the deterministic seed string.
+    func test_deloadWeek_reducesVolumeAgainstAnEarlyWeek() {
+        for f in sports {
+            for phase in [SeasonPhase.offSeason, .preSeason] {
+                let cycle = MesocycleProgression.cycleLength(for: phase)
+                XCTAssertGreaterThan(cycle, 0, "[\(f.slug)] \(phase.rawValue) should run a meso")
+
+                let build = SportSeasonGenerator.generateSession(
+                    athlete(f, season: phase, weekNumber: 1), sessionIndex: 0)
+                let deload = SportSeasonGenerator.generateSession(
+                    athlete(f, season: phase, weekNumber: cycle), sessionIndex: 0)
+
+                XCTAssertEqual(
+                    MesocycleProgression.status(phase: phase, weeksInPhase: cycle,
+                                                daysUntilPeak: nil).state,
+                    .deload,
+                    "[\(f.slug)] week \(cycle) of \(phase.rawValue) should BE the deload week")
+
+                let buildSets = build.exercises.reduce(0) { $0 + $1.sets }
+                let deloadSets = deload.exercises.reduce(0) { $0 + $1.sets }
+                XCTAssertLessThan(
+                    deloadSets, buildSets,
+                    "[\(f.slug)/\(phase.rawValue)] deload week must prescribe fewer total sets "
+                    + "than week 1 (build \(buildSets), deload \(deloadSets))")
+            }
+        }
+    }
+
+    /// A normal week inside the cycle is untouched — the deload must not leak
+    /// into every session.
+    func test_buildWeek_isNotDeloaded() {
+        for f in sports {
+            let w1 = SportSeasonGenerator.generateSession(
+                athlete(f, season: .offSeason, weekNumber: 1), sessionIndex: 0)
+            let w2 = SportSeasonGenerator.generateSession(
+                athlete(f, season: .offSeason, weekNumber: 2), sessionIndex: 0)
+            XCTAssertEqual(w1.exercises.reduce(0) { $0 + $1.sets },
+                           w2.exercises.reduce(0) { $0 + $1.sets },
+                           "[\(f.slug)] weeks 1 and 2 are both build weeks")
+        }
+    }
+
     // MARK: - Fixtures
 
     private func mem(_ f: SportFixture, season: SeasonPhase,
@@ -136,10 +226,19 @@ final class SeasonFidelityTest: XCTestCase {
                 // Same session size the generator used — the fixture athlete
                 // carries TrainingMemory's default sessionMinutes, which T2-7
                 // now honors.
+                // Slots are apportioned across the WEEK now (T1-3), so the
+                // intent has to be computed at the same grain or it describes a
+                // coarser session than the one produced.
+                let a = athlete(f, season: phase)
+                let n = max(1, min(a.sessionsPerWeek, rule.sessionsPerWeek.upperBound))
                 let drift = l1(slotDemandDistribution(sessions),
                                SportSeasonGenerator.intendedSlotDistribution(
                                    for: rule,
-                                   preferredMinutes: athlete(f, season: phase).preferredSessionMinutes))
+                                   preferredMinutes: a.preferredSessionMinutes,
+                                   sessionsInWeek: n,
+                                   signature: SportSeasonGenerator.signatureDemand(f.slug),
+                                   pool: CoachDatabase.shared.sportMovements(
+                                       sport: SportSeasonGenerator.poolSlug(for: f.slug))))
                 XCTAssertLessThan(drift, 0.20,
                     "[\(f.slug)/\(phase.rawValue)] realized drifts from intended allocation by L1=\(String(format: "%.2f", drift)) — pool coverage gap?")
             }
@@ -211,7 +310,13 @@ final class SeasonFidelityTest: XCTestCase {
     func test_check6_antagonist_inversion_climbing() {
         let climb = sports[1]
         let rule = PhaseRule.resolve(sportSlug: climb.slug, variant: climb.variant, season: .inSeason)
-        let intended = SportSeasonGenerator.intendedSlotDistribution(for: rule)
+        let a = athlete(climb, season: .inSeason)
+        let intended = SportSeasonGenerator.intendedSlotDistribution(
+            for: rule, preferredMinutes: a.preferredSessionMinutes,
+            sessionsInWeek: max(1, min(a.sessionsPerWeek, rule.sessionsPerWeek.upperBound)),
+            signature: SportSeasonGenerator.signatureDemand(climb.slug),
+            pool: CoachDatabase.shared.sportMovements(
+                sport: SportSeasonGenerator.poolSlug(for: climb.slug)))
         XCTAssertEqual(intended[.antagonist], intended.values.max(),
             "in-season climbing must allocate antagonist the largest share")
         let realized = slotDemandDistribution(SportSeasonGenerator.generateWeek(athlete(climb, season: .inSeason)))
