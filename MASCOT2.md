@@ -1,16 +1,17 @@
 # Kettle — PhaseTraining mascot #2
 
-An anthropomorphized **kettlebell**, sibling to [the Repelican](MASCOT.md). Same
-cream-lime-coral family so the two read as one universe: the cast-iron bell is
-the body, the iconic handle is the signature, and it wears a friendly
-face-on-a-belly.
+An anthropomorphized **kettlebell**, and as of 2026-08-29 the app's **only**
+mascot — it replaced [the Repelican](MASCOT.md) on every live surface. The
+cast-iron bell is the body, the iconic handle is the signature, and it wears a
+friendly face-on-a-belly, in the cream-lime-coral family.
 
 Chosen over a dumbbell and a shaker bottle — the kettlebell has the strongest
 silhouette and the friendliest read at small sizes.
 
 ## The five loops
 
-Unlike the Repelican (one `bulk` scalar), Kettle's variation axis is **motion**.
+Kettle's variation axis is **motion** (the retired Repelican's was a single
+`bulk` scalar).
 It has five seamless animation loops — each a periodic function of time, so
 there's no seam at the wrap:
 
@@ -26,7 +27,7 @@ there's no seam at the wrap:
 cycling → bike, else the flex idle), so a sport-day card can show the loop that
 matches the user's actual sport.
 
-## Palette — shared with the Repelican
+## Palette
 
 Identity colors are `Theme.swift` tokens; in-app rendering references them so
 the mascot can't drift from the theme.
@@ -45,7 +46,7 @@ colors. Dark-ground only.
 
 Native SwiftUI, no raster: a `Canvas` drives the drawing and a
 `TimelineView(.animation)` advances a clock so the loops animate with zero image
-weight (same philosophy as `RepelicanView`). Reduce Motion falls back to a
+weight. Reduce Motion falls back to a
 static rest frame.
 
 ## Usage rules

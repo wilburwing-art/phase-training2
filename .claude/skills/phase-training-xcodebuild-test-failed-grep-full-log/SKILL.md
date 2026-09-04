@@ -1,6 +1,6 @@
 ---
 name: phase-training-xcodebuild-test-failed-grep-full-log
-description: When `xcodebuild test` on a phase-training-family iOS app prints `** TEST FAILED **` but a `tail` of the output shows the UITest target with "0 failures", the real failures are in the earlier-printed PhaseTrainingTests UNIT target and scrolled off. Don't trust the tail — capture the full log to a file and grep it. Also covers the missing-iPhone-16-simulator destination gotcha and the ProfileFieldCoverage "new TrainingMemory field needs a probe" unit gate. Trigger when a phase-training / phase-training2 / workout-plan `xcodebuild test` run is red but the visible summary looks green, or when picking a simulator destination for these repos.
+description: When `xcodebuild test` on a phase-training-family iOS app prints `** TEST FAILED **` but a `tail` of the output shows the UITest target with "0 failures", the real failures are in the earlier-printed PhaseTrainingTests UNIT target and scrolled off. Also covers a run where ZERO tests executed because the test host could not launch — typically because the session was driving the same simulator with simctl at the time. Don't trust the tail — capture the full log to a file and grep it. Also covers the missing-iPhone-16-simulator destination gotcha and the ProfileFieldCoverage "new TrainingMemory field needs a probe" unit gate. Trigger when a phase-training / phase-training2 / workout-plan `xcodebuild test` run is red but the visible summary looks green, or when picking a simulator destination for these repos.
 when-to-use: Running `xcodebuild test` for a phase-training-family scheme and the result is `** TEST FAILED **` despite the tail showing a passing suite, or choosing a `-destination` and `iPhone 16` isn't installed.
 ---
 
@@ -74,6 +74,7 @@ separates only the first:
 |---|---|---|---|
 | Simulator death | large (153) | **none** | `IOSurfaceClientSetSurfaceNotify` |
 | Bundle/catalog not loaded | medium (67) | ~20, **all identical** | every message is a *resource precondition* (`coach.db must have…`), not business logic |
+| Test host never launched | **zero** (`Executed` absent) | none | `Failed to send signal 19 to process`, `IDELaunchReport ... Finished with error` — usually self-inflicted, see below |
 | Real regression | usually small | varied | messages differ, and they name YOUR behavior |
 
 **Read what the assertions say, not just that they exist.** If they all fail on
@@ -82,6 +83,31 @@ infrastructure — re-run before diagnosing. If the messages are varied and
 describe behavior, it's yours: fix it, don't re-run for a green (that happened
 too, same day — 8 failures across 5 tests from a constant-vs-parameter gate,
 genuinely mine, fixed properly).
+
+## Don't touch the simulator while a test run is in flight (2026-08-29)
+
+`** TEST FAILED **` with **no `Executed N tests` line anywhere in the log** and:
+
+```
+DTServiceHub - Error resuming pid NNNNN 'Failed to send signal 19 to process NNNNN: 3'
+IDELaunchReport: ...:Launch PhaseTrainingTests Finished with error
+```
+
+Zero tests ran. The test host could not launch, because the same session was
+running `xcrun simctl terminate/install/launch` against the SAME simulator to
+grab screenshots while `xcodebuild test` was starting up. Self-inflicted, and it
+reads exactly like a red suite.
+
+- **The tell is the absence of `Executed`**, not the error text. Every other
+  shape in the table above still reports a count. `grep -c "Executed [0-9]* test"`
+  returning 0 on a red run means nothing was measured at all.
+- Serialize sim work: finish the test run, THEN screenshot. Or point the test at
+  a different `-destination` than the one you are driving by hand.
+- Never report this as a failure or as a pass. Nothing was measured; re-run
+  clean and report the re-run.
+
+The same collision corrupts the reverse direction: a `simctl install` landing
+mid-test can leave the wrong binary installed for later manual checks.
 
 ## Known failure shapes in this repo
 - **Compile gate before any test runs:** a `@ViewBuilder func -> some View` called with `if let x = f()`

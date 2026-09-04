@@ -1,17 +1,21 @@
 ---
 name: phase-training-mascot-geometry-three-copies
-description: The Repelican's geometry exists in three places that can drift (handoff/mascot/generate.mjs, the frozen repelican*.svg exports, RepelicanView.swift's Canvas paint). Writing a fourth copy, or changing any one of them, needs a string diff against the frozen exports at bulk 0 / 0.55 / 1, because every error in mirrored geometry still renders a plausible flexing bird. Trigger before editing generate.mjs, RepelicanView.swift, KettleView.swift, or before re-deriving the parametric formulas for a mockup, an avatar crop, or an export.
+description: Kettle's geometry exists in three places that can drift (handoff/mascot2/generate.mjs, the frozen kettle-*.svg exports, KettleView.swift's Canvas paint). Writing a fourth copy, or changing any one of them, needs a string diff against the frozen exports, because every error in mirrored geometry still renders a plausible mascot. Trigger before editing handoff/mascot2/generate.mjs, KettleView.swift or KettleBust.swift, or before re-deriving the parametric formulas for a mockup, an avatar crop, or an export. The Repelican half of this skill is history: it was retired 2026-08-29 and RepelicanView.swift no longer exists.
 ---
 
 # Mascot geometry lives in three copies
 
-`MASCOT.md` names `handoff/mascot/generate.mjs` the source of truth. Two other
-copies mirror it and neither is generated from it:
+**Kettle is the only mascot as of 2026-08-29** (see MASCOT.md's retirement
+banner). Its three copies are the live ones:
 
-- `handoff/mascot/repelican{,-lean,-athletic,-swole}.svg` (frozen exports)
-- `PhaseTraining/Components/RepelicanView.swift` (`Canvas`, hand-ported)
+- `handoff/mascot2/generate.mjs` (source of truth)
+- `handoff/mascot2/kettle-*.svg` (frozen exports)
+- `PhaseTraining/Components/KettleView.swift` (`Canvas`, hand-ported)
 
-`MASCOT2.md` / `KettleView.swift` have the same shape.
+The Repelican had the same shape — `handoff/mascot/generate.mjs`, the frozen
+`repelican*.svg`, and `RepelicanView.swift`. **The Swift copy is gone**; the
+mjs and the SVGs are kept as history only. The verification method below was
+learned on the Repelican and still applies to Kettle unchanged.
 
 ## Verify a fourth copy by string diff, never by eye
 
@@ -41,12 +45,15 @@ easy to get backwards, with `s = -1` left / `+1` right and `b` the bulk scalar:
 | pec arcs (b > 0) | from `cx ∓ bodyRX*0.5` at y176, `q ±bodyRX*0.5, 10+10b, 0, 26+10b` |
 | swole energy ticks | `gx = cx + s*(bodyRX+limb+30)`; line 1 `gx → gx+s*10` at y126; line 2 `gx-s*2 → gx+s*12` at y140 (line 2 does **not** follow `s` the same way) |
 
-## The head does not vary with bulk
+## The head does not vary with bulk (Repelican, history)
 
 The head circle, headband, eyes and bill are byte-identical in all three frozen
 exports. Only arms, fists (`r = 10+8b`) and wristbands (`r = limb+1`) respond.
-Any avatar crop tighter than the fists shows zero phase signal, so binding it to
-`RepelicanPhysique.bulk(phase:...)` would be dead wiring.
+Any avatar crop tighter than the fists showed zero phase signal. The general
+lesson survives the retirement and applies to any Kettle crop: **check that the
+region you crop to actually contains the varying parts**, which is why
+`KettleBust` crops to 156 units and keeps the handle and shoes rather than
+tightening to the bell.
 
 ## Kettle: the frozen still is the PEAK frame, not the rest frame
 
@@ -70,22 +77,26 @@ The loop is `flex = 0.5 - 0.5*cos(2π * t/1.1)`. Everything else is linear in it
 Shoulders `(40,110)`/`(120,110)`, legs `(66,152)→(60,176)` mirrored, arm stroke
 8, fist r7 are all fixed.
 
-## Kettle has no bulk axis
+## Kettle has no bulk axis, and nothing binds a mascot to training phase
 
-`RepelicanPhysique.bulk(phase:...)` has no Kettle equivalent: Kettle's variation
-is `KettlePose` (five loops), so anything that binds a Repelican surface to
-training phase does not port. `KettlePose.forSport(_:)` is the analogous
-binding and keys off sport, changing on a day boundary rather than a phase one.
+Kettle's variation is `KettlePose` (five loops). `RepelicanPhysique.bulk(phase:)`
+was deleted with the retirement and had no Kettle equivalent, so **no mascot
+surface is bound to training phase any more**. `KettlePose.forSport(_:)` is the
+analogous binding and keys off sport, changing on a day boundary rather than a
+phase one. Don't reintroduce a phase→appearance binding without a new axis to
+carry it — motion is already spent on sport.
 
-## PR 53 is closed but Kettle is on main
+## Where Kettle renders
 
-`KettleView.swift` shipped and renders in `TodayScreen` (147, 156) and
-`CompleteScreen` (123). Check the file before trusting the PR state.
+`TodayScreen` (rest-day stretch, sport-day `forSport`), `CompleteScreen`,
+`OnboardingWelcomeScreen`, `PaywallView` (a bike+flex pair) and `CoachBubble`
+via `KettleBust`. Grep for `KettleView(`/`KettleBust(` rather than trusting
+line numbers — they move.
 
 ## Read the usage rules, not only the geometry
 
-`MASCOT.md` and `MASCOT2.md` both set a **64pt floor on live surfaces** and ban
-the mascot from scrolling list rows. Those rules live only in the markdown; the
+`MASCOT2.md` sets a **64pt floor on live surfaces** and bans the mascot from
+scrolling list rows (`MASCOT.md` set the same rules for the retired Repelican). Those rules live only in the markdown; the
 geometry sources say nothing about size, so anyone working from `generate.mjs`
 or the Swift view will miss them. Three rounds of coach-button mockups were
 drawn at 52pt before anyone noticed they were all out of spec.

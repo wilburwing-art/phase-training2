@@ -2,8 +2,8 @@
 //  KettleView.swift
 //  PhaseTraining
 //
-//  Kettle — the second mascot: an anthropomorphized kettlebell, sibling to the
-//  Repelican and in the same cream-lime-coral family. Cast-iron bell body =
+//  Kettle — the app's mascot: an anthropomorphized kettlebell in the
+//  cream-lime-coral family. Cast-iron bell body =
 //  ink, handle = accent lime, feet = coral. Rendered natively (Canvas) and
 //  animated with TimelineView so the five motion loops run with no image
 //  weight. See MASCOT2.md; handoff/mascot2/generate.mjs is the parametric SVG
@@ -12,8 +12,8 @@
 //  Five seamless loops, each a periodic function of time (no seams):
 //    flex · stretch · snowboard · climb · bike
 //
-//  Usage rule (shared with the Repelican, see MASCOT.md): render at ≥ 64 pt,
-//  never in scrolling list rows. Honors Reduce Motion (falls back to a still).
+//  Usage rule (see MASCOT2.md): render at ≥ 64 pt, never in scrolling list
+//  rows. Honors Reduce Motion (falls back to a still).
 //
 
 import SwiftUI

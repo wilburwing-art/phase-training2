@@ -14,10 +14,7 @@ import StoreKit
 struct PaywallView: View {
     @EnvironmentObject private var subStore: SubscriptionStore
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var managingSubscriptions = false
-    /// Drives the on-appear flex: the second Repelican morphs lean -> swole.
-    @State private var flexed = false
 
     var body: some View {
         NavigationStack {
@@ -57,24 +54,20 @@ struct PaywallView: View {
 
     private var hero: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Lean + Swole — one athlete, two builds. The mascot pair is the
-            // two-sport differentiator made visual: a lean endurance build next
-            // to a strength build, the range Pro plans across.
+            // Two Kettles, two loops. The pair is the two-sport differentiator
+            // made visual — an endurance loop beside the strength flex, which
+            // is the range Pro plans across and what the copy below says.
+            // Kettle's variation axis is motion, so the pair carries the idea
+            // the old lean/swole builds did. Both loops run live; KettleView
+            // falls back to a still under Reduce Motion.
             HStack(alignment: .bottom, spacing: 8) {
-                RepelicanView(build: .lean)
+                KettleView(pose: .bike)
                     .frame(width: 76, height: 88)
-                    .repelicanIdle()
-                // Flexes up (lean -> swole) on appear — the range Pro plans across.
-                RepelicanView(bulk: flexed ? RepelicanBuild.swole.bulk : RepelicanBuild.lean.bulk)
-                    .frame(width: 94, height: 88)
-                    .repelicanIdle()
+                KettleView(pose: .flex)
+                    .frame(width: 76, height: 88)
                 Spacer(minLength: 0)
             }
             .accessibilityHidden(true)
-            .onAppear {
-                guard !reduceMotion else { flexed = true; return }
-                withAnimation(.easeInOut(duration: 0.8).delay(0.25)) { flexed = true }
-            }
             Text("Phase Training Pro")
                 .font(.system(size: 26, weight: .bold))
                 .foregroundStyle(Color.ink)

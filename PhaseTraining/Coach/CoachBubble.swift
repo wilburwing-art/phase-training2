@@ -4,7 +4,8 @@
 // sitting above the tab bar via safe-area-inset padding. A kettlebell is
 // already a closed round shape, so a disc was drawing a circle around a
 // circle; dropping it also lets the art hit MASCOT2.md's 64pt floor, which
-// the old 52pt disc did not. The frame is the tap target.
+// the old 52pt disc did not. The frame is the tap target. It runs its flex
+// loop live, matching the big Kettle on Today.
 //
 // Hidden conditions (any one short-circuits):
 //   - user hasn't granted AI Coach consent
@@ -94,7 +95,13 @@ private struct CoachAvatarStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         ZStack(alignment: .topLeading) {
-            KettleBust(frozenAt: configuration.isPressed ? KettleBust.peakFlex : 0,
+            // Runs its flex loop the whole time the bubble is up, same as the
+            // big Kettle on Today. Pressing stops the loop and snaps to the
+            // peak of the squeeze, so the press still reads as a beat rather
+            // than getting lost in the motion. Reduce Motion drops both back
+            // to a still, handled inside KettleView.
+            KettleBust(animated: !configuration.isPressed,
+                       frozenAt: configuration.isPressed ? KettleBust.peakFlex : 0,
                        size: art)
                 .shadow(color: Color.black.opacity(0.55), radius: 2, x: 0, y: 2)
             if pending {

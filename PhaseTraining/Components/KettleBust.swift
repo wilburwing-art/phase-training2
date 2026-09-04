@@ -21,9 +21,11 @@ import SwiftUI
 struct KettleBust: View {
 
     var pose: KettlePose = .flex
-    /// Off by default. This sits in a permanent overlay, so a running
-    /// TimelineView would redraw on every tab for a control nobody is
-    /// looking at.
+    /// Off by default so a still frame stays a one-argument call. The live
+    /// caller (CoachBubble) turns it on: the corner Kettle runs the same flex
+    /// loop as the big one on Today, and the overlay is already scoped to
+    /// consent + pro + not-on-profile + no-active-session, so the running
+    /// TimelineView is not paid for on every tab.
     var animated: Bool = false
     /// Loop time to hold when not animating. 0 is the rest frame.
     var frozenAt: TimeInterval = 0

@@ -1,4 +1,14 @@
-# The Repelican — PhaseTraining mascot
+# The Repelican — PhaseTraining mascot (RETIRED 2026-08-29)
+
+> **Superseded by [Kettle](MASCOT2.md), which is now the app's only mascot.**
+> The Repelican was swapped out of its last two live surfaces (the onboarding
+> welcome screen and the Pro paywall hero) and `RepelicanView.swift`,
+> `RepelicanPhaseCard.swift`, `RepelicanPhysique` and `RepelicanTests.swift`
+> were deleted. This file is kept for the design decisions behind it — the
+> `bulk` parameter, the phase→physique mapping and the naming — none of which
+> Kettle inherits, since Kettle's variation axis is motion rather than build.
+> The frozen SVG exports under `handoff/mascot/` are likewise kept as history.
+> Nothing here describes shipping code.
 
 A workout pelican. A riff on Simon Willison's
 [pedalican](https://simonwillison.net/2026/Jul/14/pedalican/) — but where the

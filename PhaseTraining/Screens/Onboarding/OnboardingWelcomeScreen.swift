@@ -12,9 +12,8 @@ struct OnboardingWelcomeScreen: View {
 
             VStack(alignment: .leading, spacing: 18) {
                 Spacer()
-                RepelicanView(build: .athletic)
-                    .frame(width: 132, height: 150)
-                    .repelicanIdle()
+                KettleView(pose: .flex)
+                    .frame(width: 120, height: 150)
                     .accessibilityHidden(true)
                 Text("PHASE TRAINING")
                     .styled(.micro)

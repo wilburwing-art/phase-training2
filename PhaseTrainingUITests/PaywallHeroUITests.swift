@@ -1,9 +1,10 @@
-// PaywallHeroUITests.swift — the Repelican Lean+Swole paywall hero.
+// PaywallHeroUITests.swift — the two-Kettle paywall hero.
 //
-// The paywall hero swapped the sparkles icon for a Lean + Swole Repelican pair
-// (the two-sport differentiator made visual). This drives Profile -> Subscription
-// and confirms the paywall presents without crashing — the mascot is a SwiftUI
-// Canvas rendered inside a sheet, the one place a paint bug would surface.
+// The hero is a Kettle pair running two loops, bike beside flex (the two-sport
+// differentiator made visual). This drives Profile -> Subscription and confirms
+// the paywall presents without crashing — the mascot is a SwiftUI Canvas
+// rendered inside a sheet, the one place a paint bug would surface, and both
+// loops are live TimelineViews there.
 
 import XCTest
 
@@ -22,7 +23,7 @@ final class PaywallHeroUITests: XCTestCase {
         XCTAssertTrue(subscription.waitForExistence(timeout: 8), "Subscription row should exist")
         subscription.tap()
 
-        // The Pro paywall (Lean + Swole hero) presents without crashing.
+        // The Pro paywall (two-Kettle hero) presents without crashing.
         XCTAssertTrue(app.staticTexts["Phase Training Pro"].waitForExistence(timeout: 5),
                       "paywall should present with its mascot hero")
     }
