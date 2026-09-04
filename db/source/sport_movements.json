@@ -284,25 +284,6 @@
     "injury_caution": null
   },
   {
-    "id": 16,
-    "slug": "ski-step-up-with-pack-high-box",
-    "name": "Step-Up with Pack (High Box)",
-    "sport": "alpine-skiing",
-    "exercise_id": 622,
-    "demands": [
-      "legEndurance",
-      "aerobicUphill"
-    ],
-    "allowed_phases": [
-      "off_season",
-      "pre_season"
-    ],
-    "allowed_variants": null,
-    "fatigue_cost": 3,
-    "min_experience": null,
-    "injury_caution": null
-  },
-  {
     "id": 17,
     "slug": "ski-calf-raise-endurance-bilateral-high-rep",
     "name": "Calf Raise Endurance (Bilateral High-Rep)",

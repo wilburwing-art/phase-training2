@@ -2850,21 +2850,6 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 622,
-    "muscle_group_id": 65,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 622,
-    "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 622,
-    "muscle_group_id": 83,
-    "role": "secondary"
-  },
-  {
     "exercise_id": 623,
     "muscle_group_id": 65,
     "role": "primary"

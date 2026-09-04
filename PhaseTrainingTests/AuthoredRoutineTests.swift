@@ -125,10 +125,14 @@ final class AuthoredRoutineTests: XCTestCase {
         let workout = AuthoredRoutine.workout(
             forRoutineId: 299, memory: memory, context: .empty, focus: .fullBodyA,
             profile: DemographicProfile.from(memory))
-        XCTAssertEqual(workout?.exercises.count, 7)
-        // Signature MTI movements resolved to real catalog ids so they log.
+        // Rewritten from first principles 2026-09-04 (5b): the MTI-distilled
+        // circuit with its branded movements is gone; this is leg endurance +
+        // trunk from catalog exercises only.
+        XCTAssertEqual(workout?.exercises.count, 6)
         XCTAssertTrue(workout?.exercises.allSatisfy { $0.exerciseId > 0 } ?? false)
-        XCTAssertTrue(workout?.exercises.contains { $0.name == "Scotty Bobs" } ?? false)
+        XCTAssertTrue(workout?.exercises.contains { $0.name == "Walking Lunge" } ?? false)
+        XCTAssertFalse(workout?.exercises.contains { $0.name.contains("Blaster") || $0.name == "Scotty Bobs" } ?? true,
+                       "no MTI-branded movement may remain")
         XCTAssertTrue((workout?.title ?? "").contains("MTB Pre-Season"))
     }
 

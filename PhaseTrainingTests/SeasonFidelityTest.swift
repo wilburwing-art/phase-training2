@@ -213,6 +213,18 @@ final class SeasonFidelityTest: XCTestCase {
 
     // MARK: - Sanity
 
+    /// A pool must not list the same catalog exercise twice. It did for one
+    /// day (Loaded Step-Up appeared twice in the ski pool after a retire-and-
+    /// remap), and `Dictionary(uniqueKeysWithValues:)` in the generator
+    /// crashed the whole test host on it rather than failing one test.
+    func test_pools_have_no_duplicate_exercise_ids() {
+        for slug in ["alpine-skiing", "climbing"] {
+            let ids = CoachDatabase.shared.sportMovements(sport: slug).map(\.exerciseId)
+            let dupes = Dictionary(grouping: ids, by: { $0 }).filter { $0.value.count > 1 }.keys
+            XCTAssertTrue(dupes.isEmpty, "[\(slug)] duplicate exercise ids in pool: \(Array(dupes))")
+        }
+    }
+
     func test_catalog_pools_are_healthy() {
         for f in sports {
             let pool = CoachDatabase.shared.sportMovements(sport: f.slug)
