@@ -73,3 +73,42 @@ final class ProgressionDecisionTests: XCTestCase {
         XCTAssertEqual(la?.targetReps, 5)
     }
 }
+
+/// 03 F7. The per-exercise maps were keyed by lowercased display name only, so
+/// a session logged under a shorthand ("Bench Press") and a generated row
+/// carrying the catalog's canonical name never matched. The fix is additive:
+/// the raw key still works (every older test reads it) and an `id:` key is
+/// mirrored when the catalog resolves the name.
+@MainActor
+final class ExerciseKeyTests: XCTestCase {
+
+    func test_rawKeyStillWorks() {
+        var map: [String: Int] = [:]
+        ExerciseKey.store(1, name: "Totally Unknown Movement XYZ", into: &map)
+        XCTAssertEqual(map["totally unknown movement xyz"], 1)
+        XCTAssertEqual(ExerciseKey.lookup(map, name: "Totally Unknown Movement XYZ"), 1)
+        XCTAssertEqual(map.count, 1, "no id key for a name the catalog cannot resolve")
+    }
+
+    func test_shorthandAndCanonicalNameShareAnEntry() throws {
+        // Find a shorthand the catalog resolves to a DIFFERENT display name.
+        let shorthand = "Bench Press"
+        let resolved = try XCTUnwrap(ExerciseLookupCache.shared.exercise(forName: shorthand),
+                                     "fixture needs a resolvable shorthand")
+        var map: [String: Int] = [:]
+        ExerciseKey.store(7, name: shorthand, into: &map)
+        XCTAssertEqual(ExerciseKey.lookup(map, name: resolved.name), 7,
+                       "'\(resolved.name)' must find the entry written as '\(shorthand)'")
+        XCTAssertEqual(ExerciseKey.lookup(map, name: shorthand), 7)
+    }
+
+    func test_idKeyNeverOverwritesAnEarlierEntry() throws {
+        let shorthand = "Bench Press"
+        let resolved = try XCTUnwrap(ExerciseLookupCache.shared.exercise(forName: shorthand))
+        var map: [String: Int] = [:]
+        ExerciseKey.store(1, name: shorthand, into: &map)       // newest session, written first
+        ExerciseKey.store(2, name: resolved.name, into: &map)   // older session under the canonical name
+        XCTAssertEqual(map["id:\(resolved.id)"], 1, "the id key keeps the first (newest) entry")
+        XCTAssertEqual(map[resolved.name.lowercased()], 2, "the raw key is per display name")
+    }
+}

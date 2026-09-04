@@ -25,7 +25,7 @@ extension WorkoutGenerator {
             return formatTargetHint(weightLb: override, memory: memory)
         }
         // Layer 2: priorBest mapped to the prescribed rep range, then stepped.
-        guard let prior = context.priorBest[key] else { return nil }
+        guard let prior = ExerciseKey.lookup(context.priorBest, name: exercise.name) else { return nil }
         // Bodyweight movement (weight 0): a load target is meaningless, so
         // progress by REPS — beat the best set by one rep. (T2.1)
         if prior.weight == 0 {
@@ -34,7 +34,8 @@ extension WorkoutGenerator {
         // T2-9: the step is no longer unconditional. A missed last attempt at
         // the best-ever weight holds the load; a badly missed one steps it
         // down. Everything else (no history, a lighter day) steps up as before.
-        let decision = ProgressionDecision.decide(prior: prior, last: context.lastAttempt[key])
+        let decision = ProgressionDecision.decide(prior: prior,
+                                                  last: ExerciseKey.lookup(context.lastAttempt, name: exercise.name))
         let target = targetLb(
             priorWeight: prior.weight,
             priorReps: prior.reps,

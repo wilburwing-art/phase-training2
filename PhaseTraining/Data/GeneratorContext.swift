@@ -101,6 +101,38 @@ struct PriorBest: Equatable {
     let date: Date
 }
 
+/// Keys for the per-exercise maps (`priorBest`, `lastAttempt`).
+///
+/// They were keyed by lowercased DISPLAY name only (03 F7). A session logged
+/// as "Bench Press" and a generated row named "Barbell Bench Press" are the
+/// same movement in the catalog and never found each other, so the
+/// progressive-overload hint silently did not appear, and two distinct
+/// exercises sharing a display name shared a load target.
+///
+/// Additive fix: every entry is written under the raw lowercased name (what
+/// every existing reader and test expects) AND, when the catalog resolves the
+/// name through shorthand/slug/alias, under a stable `id:<exerciseId>` key.
+/// Readers try the id key first. Nothing that worked before changes.
+enum ExerciseKey {
+    static func raw(_ name: String) -> String { name.lowercased() }
+    static func id(for name: String) -> String? {
+        ExerciseLookupCache.shared.exercise(forName: name).map { "id:\($0.id)" }
+    }
+    /// Read order: canonical id, then raw name.
+    static func lookup<V>(_ map: [String: V], name: String) -> V? {
+        if let k = id(for: name), let v = map[k] { return v }
+        return map[raw(name)]
+    }
+    /// Write both keys. A later exercise with the same catalog id but a
+    /// different display name must not overwrite an earlier native entry,
+    /// so the id key is only set when empty (newest-session-wins is decided
+    /// by the caller's raw-key guard).
+    static func store<V>(_ value: V, name: String, into map: inout [String: V]) {
+        map[raw(name)] = value
+        if let k = id(for: name), map[k] == nil { map[k] = value }
+    }
+}
+
 /// The last completed session's working sets for one exercise, reduced to
 /// the one question progression needs: at the heaviest weight lifted, how
 /// many reps landed against how many were asked.
@@ -346,8 +378,9 @@ extension GeneratorContext {
                     if w > bestW || (w == bestW && r > bestR) { bestW = w; bestR = r }
                 }
                 guard bestW > 0 else { continue }
-                out[key] = LastAttempt(weight: bestW, reps: bestR,
-                                       targetReps: ex.targetReps, date: session.startTime)
+                ExerciseKey.store(LastAttempt(weight: bestW, reps: bestR,
+                                              targetReps: ex.targetReps, date: session.startTime),
+                                  name: ex.name, into: &out)
             }
         }
         return out
@@ -385,14 +418,14 @@ extension GeneratorContext {
                     }
                 }
                 if bestWeight > 0 {
-                    out[key] = PriorBest(weight: bestWeight, reps: bestReps,
-                                         date: session.startTime)
+                    ExerciseKey.store(PriorBest(weight: bestWeight, reps: bestReps,
+                                         date: session.startTime), name: ex.name, into: &out)
                 } else if bestBodyweightReps > 0 {
                     // Bodyweight movement (push-up, inverted row): no external
                     // load to progress, so track best reps — weight 0 signals the
                     // reps-based progression path in progressiveOverloadHint. (T2.1)
-                    out[key] = PriorBest(weight: 0, reps: bestBodyweightReps,
-                                         date: session.startTime)
+                    ExerciseKey.store(PriorBest(weight: 0, reps: bestBodyweightReps,
+                                         date: session.startTime), name: ex.name, into: &out)
                 }
             }
         }
