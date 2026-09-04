@@ -283,4 +283,43 @@ final class SessionStoreTests: XCTestCase {
         // active property auto-loaded on init too.
         XCTAssertEqual(store2.active?.templateId, original.templateId)
     }
+
+    // MARK: - Gate test 1: warmup flags and bodyweight sets survive a save/load
+
+    /// `isWarmup` appeared in eight test files and none of them was this one.
+    /// The flag gates PR detection, volume aggregation and the Epley math, so a
+    /// round-trip that silently dropped it would promote a warmup ramp to a PR.
+    func testWarmupAndBodyweightSetsRoundTripThroughSaveAndReload() {
+        let store = SessionStore(defaults: defaults)
+        var session = store.createSession(templateId: "upper-1")
+
+        // First exercise: set 1 is a warmup, set 2 is a working set.
+        session.exercises[0].sets[0].isWarmup = true
+        session.exercises[0].sets[0].weight = "95"
+        session.exercises[0].sets[0].reps = "8"
+        session.exercises[0].sets[0].done = true
+        session.exercises[0].sets[1].weight = "185"
+        session.exercises[0].sets[1].reps = "5"
+        session.exercises[0].sets[1].done = true
+        // Second exercise (pull-up): a bodyweight set with no load.
+        session.exercises[1].sets[0].weight = ""
+        session.exercises[1].sets[0].reps = "10"
+        session.exercises[1].sets[0].done = true
+
+        _ = store.saveCompleted(session, feel: nil, note: nil)
+
+        // A FRESH store over the same defaults is the real round-trip: it has
+        // to decode what the first one wrote.
+        let reloaded = SessionStore(defaults: defaults)
+        let saved = try? XCTUnwrap(reloaded.savedSessions.first)
+        XCTAssertNotNil(saved)
+        guard let saved else { return }
+
+        XCTAssertTrue(saved.exercises[0].sets[0].isWarmup, "warmup flag must survive save/load")
+        XCTAssertFalse(saved.exercises[0].sets[1].isWarmup)
+        XCTAssertEqual(saved.exercises[0].sets[1].weight, "185")
+        XCTAssertEqual(saved.exercises[1].sets[0].weight, "", "an empty bodyweight load must not be rewritten")
+        XCTAssertEqual(saved.exercises[1].sets[0].reps, "10")
+        XCTAssertTrue(saved.exercises[1].sets[0].done)
+    }
 }
