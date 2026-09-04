@@ -60,12 +60,17 @@ the owner chose:
   "Sourced, unreviewed." so a reviewed row stays distinguishable.
 - **Equipment fallback (2a):** substitute where a curated substitute exists,
   say so where none does. The substitutions table was audited first. See
-  R2-05 in BACKLOG.md.
-- **Hangboard cadence (3a):** cap at two sessions a week; the third
-  finger-strength slot goes to pulling or campus work.
-- **Ski pool upper body (4b):** a modest pull and press block through the
-  off-season and pre-season, as every reference program carries. New
-  `upperStrength` demand, four movements.
+  R2-05 in BACKLOG.md. The table went 1,871 to 1,795 (a later commit pruned 7 more for the retired exercises).
+- **Hangboard cadence (3a):** cap at two sessions a week. Corrected by R3:
+  the third finger-strength slot goes to Plate Pinch Hold or Fat-Grip Dead
+  Hang, which are still `fingerStrength`; the climbing pool contains no campus
+  movement, so the original wording could not have been true of any build. The
+  physiological point stands, since neither is a max hang.
+- **Ski pool upper body (4b):** a modest pull and press block, as every
+  reference program carries. New `upperStrength` demand, four movements.
+  Corrected by R3: it realizes in the off-season only. Pre-season and
+  in-season carry a 0.05 weight the allocator never pays, so the demand is
+  decoration there until the weight is raised (R3-1).
 - **Tier 3 (5):** 5a research should grow toward mountain athletes (agreed,
   no task yet); 5b the MTI-distilled routines rewritten from first
   principles and the branded exercises retired; 5c pricing and 5d the gate
