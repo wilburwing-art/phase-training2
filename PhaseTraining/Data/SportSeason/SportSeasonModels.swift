@@ -27,6 +27,11 @@ enum Demand: String, Codable, CaseIterable, Hashable {
     case core
     case prehab
     case aerobicUphill
+    /// Upper-body pull/press strength. Added 2026-09-04 from the owner's own
+    /// off-season program (shralpinism: Press 3x5 @ RPE 7; Weighted Pull-Ups
+    /// 5 x 3 rounds), which the 44-row ski pool had none of, so a skier's
+    /// off-season "muscle base" was legs and trunk only.
+    case upperStrength
     // skiing-leaning
     case eccentricLeg
     case legEndurance

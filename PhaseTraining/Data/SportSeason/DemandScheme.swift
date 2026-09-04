@@ -29,6 +29,9 @@ enum DemandScheme {
         .prehab: SetScheme(
             setsLow: 2, setsHigh: 3, repsLow: 10, repsHigh: 15,
             intensityRPELow: 5, intensityRPEHigh: 6, restSeconds: 45, fatigueCost: 1),
+        .upperStrength: SetScheme(
+            setsLow: 3, setsHigh: 5, repsLow: 4, repsHigh: 6,
+            intensityRPELow: 7, intensityRPEHigh: 8, restSeconds: 120, fatigueCost: 3),
         .aerobicUphill: SetScheme(
             setsLow: 3, setsHigh: 4, holdSeconds: 60,
             intensityRPELow: 6, intensityRPEHigh: 7, restSeconds: 60, fatigueCost: 3),

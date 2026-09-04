@@ -188,7 +188,7 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": "intermediate",
-    "injury_caution": "quad / knee \u2014 start shallow"
+    "injury_caution": "quad / knee — start shallow"
   },
   {
     "id": 11,
@@ -206,7 +206,7 @@
     "allowed_variants": null,
     "fatigue_cost": 4,
     "min_experience": "intermediate",
-    "injury_caution": "high DOMS \u2014 assist eccentric first"
+    "injury_caution": "high DOMS — assist eccentric first"
   },
   {
     "id": 12,
@@ -339,7 +339,7 @@
     "allowed_variants": null,
     "fatigue_cost": 4,
     "min_experience": null,
-    "injury_caution": "never in-season \u2014 high fatigue"
+    "injury_caution": "never in-season — high fatigue"
   },
   {
     "id": 19,
@@ -358,7 +358,7 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": "land soft \u2014 requires base"
+    "injury_caution": "land soft — requires base"
   },
   {
     "id": 20,
@@ -577,7 +577,7 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": "groin \u2014 regress to short lever"
+    "injury_caution": "groin — regress to short lever"
   },
   {
     "id": 31,
@@ -687,8 +687,8 @@
   },
   {
     "id": 36,
-    "slug": "ski-45\u00b0-back-extension",
-    "name": "45\u00b0 Back Extension",
+    "slug": "ski-45°-back-extension",
+    "name": "45° Back Extension",
     "sport": "alpine-skiing",
     "exercise_id": 939,
     "demands": [
@@ -957,8 +957,8 @@
   },
   {
     "id": 50,
-    "slug": "climb-lock-off-hold-90\u00b0",
-    "name": "Lock-Off Hold (90\u00b0)",
+    "slug": "climb-lock-off-hold-90°",
+    "name": "Lock-Off Hold (90°)",
     "sport": "climbing",
     "exercise_id": 4,
     "demands": [
@@ -1344,6 +1344,82 @@
     ],
     "allowed_variants": null,
     "fatigue_cost": 1,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 70,
+    "slug": "ski-barbell-overhead-press",
+    "name": "Barbell Overhead Press (Strict)",
+    "sport": "alpine-skiing",
+    "exercise_id": 904,
+    "demands": [
+      "upperStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": "intermediate",
+    "injury_caution": null
+  },
+  {
+    "id": 71,
+    "slug": "ski-weighted-pull-up",
+    "name": "Weighted Pull-Up",
+    "sport": "alpine-skiing",
+    "exercise_id": 1,
+    "demands": [
+      "upperStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 3,
+    "min_experience": "intermediate",
+    "injury_caution": null
+  },
+  {
+    "id": 72,
+    "slug": "ski-dumbbell-single-arm-row",
+    "name": "Dumbbell Single-Arm Row",
+    "sport": "alpine-skiing",
+    "exercise_id": 10,
+    "demands": [
+      "upperStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
+    "min_experience": null,
+    "injury_caution": null
+  },
+  {
+    "id": 73,
+    "slug": "ski-push-up",
+    "name": "Push-Up",
+    "sport": "alpine-skiing",
+    "exercise_id": 13,
+    "demands": [
+      "upperStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season"
+    ],
+    "allowed_variants": null,
+    "fatigue_cost": 2,
     "min_experience": null,
     "injury_caution": null
   }

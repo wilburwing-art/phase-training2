@@ -72,7 +72,7 @@ struct PhaseRule: Equatable {
             objective: "Build max strength + muscle base, fix imbalances",
             sessionsPerWeek: 3...4,
             demandWeights: [
-                .maxStrength: 0.35, .eccentricLeg: 0.10, .legEndurance: 0.05,
+                .maxStrength: 0.25, .upperStrength: 0.10, .eccentricLeg: 0.10, .legEndurance: 0.05,
                 .power: 0.10, .kneeStability: 0.15, .core: 0.15,
                 .hipLateral: 0.05, .prehab: 0.05,
             ],
@@ -85,7 +85,7 @@ struct PhaseRule: Equatable {
             objective: "Convert to eccentric + power + lactate; peak for opening day",
             sessionsPerWeek: 3...3,
             demandWeights: [
-                .maxStrength: 0.15, .eccentricLeg: 0.30, .legEndurance: 0.20,
+                .maxStrength: 0.15, .eccentricLeg: 0.30, .upperStrength: 0.05, .legEndurance: 0.15,
                 .power: 0.20, .kneeStability: 0.05, .core: 0.05,
                 .hipLateral: 0.05, .prehab: 0.00,
             ],
@@ -98,7 +98,7 @@ struct PhaseRule: Equatable {
             objective: "Preserve strength/power, minimal fatigue, protect knees",
             sessionsPerWeek: 2...2,
             demandWeights: [
-                .maxStrength: 0.20, .eccentricLeg: 0.20, .legEndurance: 0.10,
+                .maxStrength: 0.15, .upperStrength: 0.05, .eccentricLeg: 0.20, .legEndurance: 0.10,
                 .power: 0.15, .kneeStability: 0.15, .core: 0.10,
                 .hipLateral: 0.10, .prehab: 0.00,
             ],
