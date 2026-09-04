@@ -79,7 +79,7 @@ struct CoachSettingsRow: View {
     /// until the user (re)subscribes.
     private var proLapsedNotice: some View {
         Button { paywallPresented = true } label: {
-            Text("Pro required — coach is paused until you subscribe.")
+            Text("Pro required. The coach is paused until you subscribe.")
                 .font(.monoXS)
                 .foregroundStyle(Color.danger)
                 .fixedSize(horizontal: false, vertical: true)

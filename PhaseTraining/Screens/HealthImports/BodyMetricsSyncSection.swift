@@ -69,7 +69,7 @@ struct BodyMetricsSyncSection: View {
                 )
             }
             .disabled(bodyMetricsSyncing)
-            Text("Last 365 days. Existing log entries within a minute of an HK sample are kept — we don't double-log.")
+            Text("Last 365 days. Existing log entries within a minute of a Health sample are kept, so nothing is double-logged.")
                 .font(.caption)
                 .foregroundColor(.ink3)
         }

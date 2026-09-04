@@ -313,7 +313,7 @@ struct PlateCalculatorSheet: View {
             Text("HOW TO USE")
                 .styled(.micro)
                 .foregroundStyle(Color.ink3)
-            Text("Enter your target weight and we'll show the greedy plate stack — biggest plates outside. Using the standard \(imperial ? "45/35/25/10/5/2.5 lb" : "25/20/15/10/5/2.5/1.25 kg") plate set.")
+            Text("Enter your target weight and we'll show the greedy plate stack, biggest plates outside. Using the standard \(imperial ? "45/35/25/10/5/2.5 lb" : "25/20/15/10/5/2.5/1.25 kg") plate set.")
                 .font(.custom("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink2)
                 .fixedSize(horizontal: false, vertical: true)

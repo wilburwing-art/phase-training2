@@ -179,6 +179,9 @@ extension ProgressScreen {
                 }
             }
         }
+        // One element: label, value, then the delta with its sign spoken.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(label.capitalized), \(value)\(delta.map { ", change \($0)" } ?? "")")
     }
 
     private func miniSeries(label: String, values: [Double]) -> some View {

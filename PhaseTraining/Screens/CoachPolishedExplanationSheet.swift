@@ -29,7 +29,7 @@ struct CoachPolishedExplanationSheet: View {
                     .font(.system(size: 18, weight: .bold))
             }
 
-            Text("Your coach reshaped today's workout based on recent sessions, soreness, and goals. The shape of your week — push / pull / legs and rest days — is unchanged. Only this day's exercise picks, sets, RPE, or weights are different from the deterministic default.")
+            Text("Your coach reshaped today's workout based on recent sessions, soreness, and goals. The shape of your week (push / pull / legs and rest days) is unchanged. Only this day's exercise picks, sets, RPE, or weights are different from the deterministic default.")
                 .font(.system(size: 14))
                 .foregroundStyle(Color.ink2)
                 .fixedSize(horizontal: false, vertical: true)

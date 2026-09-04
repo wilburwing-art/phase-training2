@@ -58,7 +58,7 @@ struct HealthWorkoutSyncSection: View {
             Text("Workout history")
                 .font(.title3.bold())
                 .foregroundColor(.ink)
-            Text("Read recent workouts from the Health app to help us match the workouts we generate to how active you've actually been. Read-only — we never write to Health.")
+            Text("Read recent workouts from the Health app to help us match the workouts we generate to how active you've actually been. Read-only: we never write to Health.")
                 .font(.subheadline)
                 .foregroundColor(.ink2)
                 .fixedSize(horizontal: false, vertical: true)

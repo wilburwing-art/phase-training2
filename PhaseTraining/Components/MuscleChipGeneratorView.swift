@@ -132,7 +132,7 @@ struct MuscleChipGeneratorView: View {
     /// eyeball legibility before pulling files out of the simulator.
     private var chipPreviewGrid: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Live preview (28pt — what the row will show)")
+            Text("Live preview (28pt, what the row will show)")
                 .styled(.body)
                 .foregroundStyle(Color.ink2)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 6), spacing: 12) {

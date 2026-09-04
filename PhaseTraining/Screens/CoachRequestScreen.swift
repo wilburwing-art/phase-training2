@@ -238,7 +238,7 @@ struct CoachRequestScreen: View {
                     .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
             } else {
-                Text("Nothing generated yet — go back and tap Generate.")
+                Text("Nothing generated yet. Go back and tap Generate.")
                     .font(.monoXS)
                     .foregroundStyle(Color.ink3)
             }

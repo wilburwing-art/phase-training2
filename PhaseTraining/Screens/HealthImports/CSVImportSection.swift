@@ -63,7 +63,7 @@ struct CSVImportSection: View {
 
             // Was "arrives in a follow-up", which reads as imminent for
             // something with no parser written (T2-6). Say what's true today.
-            Text("Fitbod exports only for now. We only read the file — we don't upload anything.")
+            Text("Fitbod exports only for now. We only read the file; nothing is uploaded.")
                 .font(.caption)
                 .foregroundColor(.ink2)
         }

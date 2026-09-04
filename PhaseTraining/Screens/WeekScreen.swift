@@ -460,6 +460,22 @@ private struct DayRow: View {
         .opacity(isSelfTarget ? 0.55 : 1.0)
         .animation(.easeOut(duration: 0.12), value: isTargeted)
         .animation(.easeOut(duration: 0.12), value: isSelfTarget)
+        // VoiceOver read this as up to six elements ("TUE", "9", a badge, the
+        // title, a lock glyph, ...). One element, in speaking order, with the
+        // full weekday rather than the three-letter strip. The parent's
+        // `week-day-row-N` identifier still attaches to the container, so the
+        // UI tests that tap rows keep working.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilitySummary)
+    }
+
+    private var accessibilitySummary: String {
+        let f = DateFormatter(); f.dateFormat = "EEEE d"
+        var parts = [f.string(from: day.date), day.kind.label, day.title]
+        if let mag = supportMagnitude { parts.append("support day, \(mag)") }
+        if isToday { parts.append("today") }
+        if day.protected { parts.append("protected") }
+        return parts.joined(separator: ", ")
     }
 
     private var background: Color {

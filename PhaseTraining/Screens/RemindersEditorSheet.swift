@@ -50,7 +50,7 @@ struct RemindersEditorSheet: View {
                         .buttonStyle(.plain)
                         .disabled(remindersPending)
                         if remindersFailed {
-                            Text("Couldn't enable — notifications are off for this app. Allow them in Settings to get the reminder.")
+                            Text("Couldn't enable. Notifications are off for this app; allow them in Settings to get the reminder.")
                                 .font(.monoXS)
                                 .foregroundStyle(Color.danger)
                         }

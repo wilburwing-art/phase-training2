@@ -30,7 +30,7 @@ struct StyleGuidePreview: View {
             Text("Design system")
                 .styled(.displayL)
                 .foregroundStyle(Color.ink)
-            Text("Modern athletic — near-black, electric-lime accent, technical sans.")
+            Text("Modern athletic: near-black, electric-lime accent, technical sans.")
                 .styled(.body)
                 .foregroundStyle(Color.ink2)
         }

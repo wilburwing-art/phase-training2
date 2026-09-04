@@ -34,7 +34,7 @@ struct MiniPlanDiffCard: View {
             if let diff = resolvedDiff {
                 affectedDays(diff: diff)
                 if diff.isNoop {
-                    Text("(No effective change — proposal resolves to a no-op.)")
+                    Text("(No effective change. The proposal resolves to a no-op.)")
                         .font(.monoXS)
                         .foregroundStyle(Color.ink3)
                 }

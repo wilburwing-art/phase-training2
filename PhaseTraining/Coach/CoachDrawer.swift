@@ -122,7 +122,7 @@ struct CoachDrawer: View {
                 .font(.custom("SpaceGrotesk-SemiBold", size: 22))
                 .tracking(-0.025 * 22)
                 .foregroundStyle(Color.ink)
-            Text("The coach reads your week, recent sessions, and feedback — and can edit your plan or put a session on a day. You approve every change. Try:")
+            Text("The coach reads your week, recent sessions, and feedback, and can edit your plan or put a session on a day. You approve every change. Try:")
                 .styled(.body)
                 .foregroundStyle(Color.ink2)
                 .fixedSize(horizontal: false, vertical: true)

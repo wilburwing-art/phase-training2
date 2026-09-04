@@ -35,7 +35,7 @@ struct SupportPatternEditor: View {
     // MARK: - Sections
 
     private var blurb: some View {
-        Text("Serious about two sports? Tell us your in-season sport's weekly rhythm and we'll build your primary sport's plan around it — no more burying a hard climb day under heavy legs.")
+        Text("Serious about two sports? Tell us your in-season sport's weekly rhythm and we'll build your primary sport's plan around it, so a hard climb day never lands under heavy legs.")
             .font(.custom("Inter-Regular", size: 13))
             .foregroundStyle(Color.ink2)
             .fixedSize(horizontal: false, vertical: true)

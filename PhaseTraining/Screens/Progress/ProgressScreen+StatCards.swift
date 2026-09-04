@@ -58,6 +58,10 @@ extension ProgressScreen {
                 .stroke(Color.line, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 10))
+        // VoiceOver: "SESSIONS" / "12" / "this month" as three elements says
+        // nothing. One element, label then value then qualifier.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(label.capitalized), \(value)\(sub.map { ", \($0)" } ?? "")")
     }
 
     // MARK: - Sessions per week

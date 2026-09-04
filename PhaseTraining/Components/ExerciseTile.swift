@@ -417,7 +417,7 @@ private struct TileListRows: _VariadicView_MultiViewRoot {
                 Text("The Exercise Tile")
                     .styled(.displayM)
                     .foregroundStyle(Color.ink)
-                Text("One primitive, three slots. Every screen renders the same shape — the trailing slot is what changes per context.")
+                Text("One primitive, three slots. Every screen renders the same shape; the trailing slot is what changes per context.")
                     .styled(.body)
                     .foregroundStyle(Color.ink2)
                     .fixedSize(horizontal: false, vertical: true)

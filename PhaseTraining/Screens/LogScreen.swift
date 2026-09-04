@@ -270,6 +270,8 @@ struct LogScreen: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("log-cancel")
+                    // Icon-only: VoiceOver read "xmark".
+                    .accessibilityLabel("Discard workout")
                 }
 
                 Image(systemName: "timer")

@@ -37,7 +37,7 @@ struct MiniWorkoutDiffCard: View {
             if let d = diff {
                 changedRows(diff: d)
                 if d.isNoop {
-                    Text("(No matching exercises in today's workout — nothing to change.)")
+                    Text("(No matching exercises in today's workout. Nothing to change.)")
                         .font(.monoXS)
                         .foregroundStyle(Color.ink3)
                 }
@@ -47,7 +47,7 @@ struct MiniWorkoutDiffCard: View {
                     .foregroundStyle(Color.danger)
             }
             if sessionStore.active != nil {
-                Text("You've started today's session — applying will update your live exercises and keep any logged sets.")
+                Text("You've started today's session. Applying will update your live exercises and keep any logged sets.")
                     .font(.monoXS)
                     .foregroundStyle(Color.ink3)
                     .fixedSize(horizontal: false, vertical: true)

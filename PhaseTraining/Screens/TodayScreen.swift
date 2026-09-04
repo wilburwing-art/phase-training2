@@ -442,6 +442,7 @@ struct TodayScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("today-coach-polished-badge")
+        .accessibilityLabel("Coach adjusted today's workout, tap for why")
         .accessibilityLabel("Personalized by coach. Tap for details.")
     }
 
@@ -507,6 +508,9 @@ struct TodayScreen: View {
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .accessibilityIdentifier("today-sport-prescription")
+        // Icon + uppercase sport name + the coach's note read as three
+        // unrelated elements. One element, sport first.
+        .accessibilityElement(children: .combine)
     }
 
     private var sportLogButton: some View {

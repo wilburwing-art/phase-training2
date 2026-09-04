@@ -64,7 +64,7 @@ struct SubstituteExerciseSheet: View {
                         VStack(alignment: .leading, spacing: 12) {
                             header
                             if substitutes.isEmpty {
-                                Text("No curated matches — similar by muscle & movement pattern:")
+                                Text("No curated matches. Similar by muscle and movement pattern:")
                                     .font(.monoXS)
                                     .foregroundStyle(Color.ink3)
                                 ForEach(fallbackSimilar) { ex in

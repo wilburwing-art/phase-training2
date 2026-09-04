@@ -165,7 +165,7 @@ struct WeekDayEditSheet: View {
                 .tracking(-0.025 * 26)
                 .foregroundStyle(Color.ink)
             if let dayPlan {
-                Text("Currently: \(dayPlan.kind.label.lowercased()) — \(dayPlan.title)")
+                Text("Currently: \(dayPlan.kind.label.lowercased()), \(dayPlan.title)")
                     .font(.monoXS)
                     .foregroundStyle(Color.ink3)
             }

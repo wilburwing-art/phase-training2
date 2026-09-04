@@ -52,7 +52,7 @@ struct OnboardingSportSeasonsScreen: View {
             Text("TRAIN TWO SPORTS?")
                 .styled(.micro)
                 .foregroundStyle(Color.accent)
-            Text("If you climb through your ski off-season, tell us your weekly rhythm and we'll plan your ski training around it — optional, and you can change it anytime.")
+            Text("If you climb through your ski off-season, tell us your weekly rhythm and we'll plan your ski training around it. Optional, and you can change it anytime.")
                 .font(.custom("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink2)
                 .fixedSize(horizontal: false, vertical: true)

@@ -181,7 +181,7 @@ struct DayWorkoutPreviewSheet: View {
 
             if !isToday {
                 Section {
-                    Text("Edits stay local — tap Save to library to keep them.")
+                    Text("Edits stay local. Tap Save to library to keep them.")
                         .font(.monoXS)
                         .foregroundStyle(Color.ink3)
                         .listRowBackground(Color.clear)
