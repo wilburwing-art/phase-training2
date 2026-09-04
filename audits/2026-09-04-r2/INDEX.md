@@ -49,6 +49,42 @@ of 10 done, T2-2 partial, T2-7 refuted. R2-01 and R2-02 fixed; R2-03 fixed;
 R2-05 recorded with numbers and left as a product decision. The whole-scheme
 gate on the final state is in `scratchpad/final2.log`.
 
+## Decisions taken on the deferred items (2026-09-04, after build 124)
+
+Six items were explained in plain terms with a recommended path each, and
+the owner chose:
+
+- **Injury mapping table (1b):** build it from the reputable sources rather
+  than wait for a human reviewer. `exercise_injury_relevance` went 87 to
+  about 3,187 rows, 55 of 56 injuries mapped, every generated note ending
+  "Sourced, unreviewed." so a reviewed row stays distinguishable.
+- **Equipment fallback (2a):** substitute where a curated substitute exists,
+  say so where none does. The substitutions table was audited first. See
+  R2-05 in BACKLOG.md.
+- **Hangboard cadence (3a):** cap at two sessions a week; the third
+  finger-strength slot goes to pulling or campus work.
+- **Ski pool upper body (4b):** a modest pull and press block through the
+  off-season and pre-season, as every reference program carries. New
+  `upperStrength` demand, four movements.
+- **Tier 3 (5):** 5a research should grow toward mountain athletes (agreed,
+  no task yet); 5b the MTI-distilled routines rewritten from first
+  principles and the branded exercises retired; 5c pricing and 5d the gate
+  flip deferred until the app is tested enough for public release; 5e Kettle
+  stays decoration.
+- **Gateway token rotation (6):** deferred.
+
+Also shipped the same sitting: sample workouts for the other seasons on the
+Today wheel, so a new user with no saved workouts can swipe through what
+each season's training looks like.
+
+Two things found by running it: retiring Step-Up with Pack left Loaded
+Step-Up twice in the ski pool, and `Dictionary(uniqueKeysWithValues:)` in
+the generator took the whole test host down rather than one test
+(`test_pools_have_no_duplicate_exercise_ids` now pins it); and the
+substitutions table reaches only 42 of the 220 loaded rows a bodyweight-only
+user meets in served routines, so for that user most authored sports fall
+through to the honest empty day. Wider substitute coverage is the next lever.
+
 ## Shipped
 
 Build 124 tagged `v1.1.0-build124` at `9c4a46f` on 2026-09-04 and handed to
