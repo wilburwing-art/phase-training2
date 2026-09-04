@@ -22,3 +22,42 @@ A coach **swap** (Bench → Incline) produces diff.after with the old id but the
 - **Wrinkle:** the new-add path prefixes `gex-\(gex.id)` (SessionStore:~204), an id-space seam for previously-coach-added exercises across diffs — reconcile it (stop prefixing, or strip on match) or the next diff won't re-match them.
 - Gate: `SessionStoreActiveSessionApplyTests` + new cases: swap-preserves-sets, duplicate-name-no-collapse, genuine-add-still-adds.
 - Not a mechanical one-liner — it's an active-session identity change; do it deliberately with tests, not in an autonomous loop.
+
+## Second instance, 2026-09-04: priorBest / lastAttempt, and the ADDITIVE fix
+
+The same defect lived in `GeneratorContext`: `priorBest` and `lastAttempt`
+were keyed by `name.lowercased()` only, so a session logged as "Bench Press"
+and a generated row named "Barbell Bench Press" (catalog id 900, joined by
+`exercise_aliases`) never met, and the progressive-overload hint silently did
+not render. Three tests pinned the raw key (`priorBest["bench press"]`), so
+switching the key outright would have churned them and hidden any collision.
+
+The fix that costs nothing: **write both keys, read id first.**
+
+```swift
+enum ExerciseKey {
+    static func id(for name: String) -> String? {
+        ExerciseLookupCache.shared.exercise(forName: name).map { "id:\($0.id)" }
+    }
+    static func lookup<V>(_ map: [String: V], name: String) -> V? {
+        if let k = id(for: name), let v = map[k] { return v }
+        return map[name.lowercased()]
+    }
+    static func store<V>(_ v: V, name: String, into map: inout [String: V]) {
+        map[name.lowercased()] = v
+        if let k = id(for: name), map[k] == nil { map[k] = v }   // never overwrite
+    }
+}
+```
+
+- Every existing reader and test keeps working because the raw key is still
+  written.
+- The `id:` mirror is only set when EMPTY, so newest-session-wins (decided by
+  the caller's raw-key guard) is not undone by an older session under a
+  different display name.
+- Apply it at EVERY write site of the map, including the branch you forget:
+  `buildPriorBest` has a loaded branch and a bodyweight branch, and the first
+  pass mirrored only one.
+
+Use this shape whenever a name-keyed map has to start matching by identity and
+the old key has readers.
