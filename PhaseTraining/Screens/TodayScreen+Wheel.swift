@@ -45,7 +45,44 @@ extension TodayScreen {
                 )
             )
         }
+        // Samples fill whatever the saved workouts leave. A new user has no
+        // saved workouts, so their wheel is the plan plus one sample per
+        // season for their sport: off-season, pre-season, in-season, event
+        // prep, maintenance. Swiping through them is the fastest tour of what
+        // the app's training actually looks like. The current season is
+        // skipped because the planned stop already shows it.
+        if out.count < Self.wheelCap, let sport = memoryStore.memory.primarySport {
+            let current = memoryStore.memory.seasonsBySport[sport] ?? memoryStore.memory.defaultSeason
+            for season in SeasonPhase.allCases where season != current && out.count < Self.wheelCap {
+                out.append(
+                    WorkoutWheelOption(
+                        id: WorkoutWheelOption.sampleId(season),
+                        title: "\(season.label) sample",
+                        subtitle: sport.name,
+                        routineId: nil,
+                        sampleSeason: season
+                    )
+                )
+            }
+        }
         return out
+    }
+
+    /// A sample session: today's generator run against a copy of the user's
+    /// profile with only the season changed. Deterministic per (sport, season),
+    /// so swiping away and back shows the same workout. Injury and equipment
+    /// filters apply exactly as they would to a real plan.
+    func sampleWorkout(for season: SeasonPhase) -> GeneratedWorkout? {
+        var mem = memoryStore.memory
+        guard let sport = mem.primarySport else { return nil }
+        mem.seasonsBySport[sport] = season
+        mem.defaultSeason = season
+        let profile = DemographicProfile.from(mem)
+        let workout = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: max(1, mem.liftDaysPerWeek),
+            memory: mem, profile: profile,
+            hashSeed: "sample-\(sport.slug)-\(season.rawValue)")
+        return workout.exercises.isEmpty ? nil : workout
     }
 
     /// The generator's own title for today, independent of any override, so
@@ -79,6 +116,12 @@ extension TodayScreen {
     /// clears the override rather than writing a competing one.
     func commitWheel(_ option: WorkoutWheelOption) {
         guard let day = todayPlan else { return }
+        if let season = option.sampleSeason {
+            guard let workout = sampleWorkout(for: season) else { return }
+            planStore.switchWorkout(on: day.date, toSampleId: option.id, workout: workout,
+                                    title: option.title)
+            return
+        }
         // NOT updateOverrides: that regenerates the whole week and kicks off
         // LLM refinement, which is the wrong cost for a control you scroll.
         // switchWorkout writes the same persisted override and applies it to

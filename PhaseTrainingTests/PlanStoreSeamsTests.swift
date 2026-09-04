@@ -879,4 +879,56 @@ final class PlanStoreSeamsTests: XCTestCase {
         XCTAssertEqual(relaunched.overrides.unavailableDays, [.friday])
         XCTAssertNil(relaunched.pendingPlan)
     }
+
+    // MARK: - Sample workouts on Today's wheel (2026-09-04)
+
+    /// A new user has no saved workouts, so the wheel offers one sample per
+    /// season for their sport. The sample is a real generator run against a
+    /// season-swapped copy of the profile: deterministic, non-empty, and
+    /// subject to the same injury and equipment filters as a real plan.
+    func test_sampleSwitch_stashesPlannedDayAndRestores() throws {
+        let defaults = UserDefaults(suiteName: "PlanStoreSeamsTests.sample.\(UUID().uuidString)")!
+        var memory = TrainingMemory()
+        memory.primarySport = Sport.resolve(slug: "alpine-skiing")
+        memory.onboardedAt = Date()
+        memory.liftDaysPerWeek = 3
+        let store = PlanStore(defaults: defaults)
+        let today = Date()
+        _ = store.generate(from: memory, today: today)
+        let day = try XCTUnwrap(store.plan?.today())
+        let plannedTitle = day.title
+
+        // Build a sample the way TodayScreen does.
+        var mem = memory; let sport = mem.primarySport!
+        mem.seasonsBySport[sport] = .preSeason; mem.defaultSeason = .preSeason
+        let sample = WorkoutGenerator.generateLift(
+            liftIndex: 0, totalLifts: 3, memory: mem, profile: DemographicProfile.from(mem),
+            hashSeed: "sample-alpine-skiing-pre_season")
+        XCTAssertFalse(sample.exercises.isEmpty)
+
+        XCTAssertTrue(store.switchWorkout(on: today, toSampleId: "sample:pre_season",
+                                          workout: sample, title: "Pre-season sample"))
+        XCTAssertEqual(store.plan?.today()?.title, "Pre-season sample")
+        XCTAssertEqual(store.overrides.customRoutineId(for: today), "sample:pre_season")
+
+        // Back to the plan restores the displaced day exactly.
+        XCTAssertTrue(store.switchWorkout(on: today, to: nil))
+        XCTAssertEqual(store.plan?.today()?.title, plannedTitle)
+        XCTAssertNil(store.overrides.customRoutineId(for: today))
+    }
+
+    func test_sampleIsDeterministicPerSeason() {
+        var mem = TrainingMemory()
+        mem.primarySport = Sport.resolve(slug: "climbing")
+        let sport = mem.primarySport!
+        func gen(_ s: SeasonPhase) -> GeneratedWorkout {
+            var m = mem; m.seasonsBySport[sport] = s; m.defaultSeason = s
+            return WorkoutGenerator.generateLift(liftIndex: 0, totalLifts: 3, memory: m,
+                                                 profile: DemographicProfile.from(m),
+                                                 hashSeed: "sample-climbing-\(s.rawValue)")
+        }
+        XCTAssertEqual(gen(.offSeason), gen(.offSeason), "same season, same sample")
+        XCTAssertNotEqual(gen(.offSeason).exercises.map(\.name), gen(.inSeason).exercises.map(\.name),
+                          "different seasons should read as different training")
+    }
 }

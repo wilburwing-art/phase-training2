@@ -32,8 +32,16 @@ struct WorkoutWheelOption: Identifiable, Equatable {
     let subtitle: String?
     /// nil for the planned session; a CustomRoutine.id for a saved workout.
     let routineId: String?
+    /// Non-nil for a SAMPLE stop: a generated session for the user's primary
+    /// sport in this season, offered when the user has few or no saved
+    /// workouts so a new install can feel what each phase's training is like
+    /// without building anything. Not persisted as a routine.
+    var sampleSeason: SeasonPhase? = nil
 
     static let plannedId = "__planned__"
+    static let samplePrefix = "sample:"
+    static func sampleId(_ season: SeasonPhase) -> String { samplePrefix + season.rawValue }
+    var isSample: Bool { sampleSeason != nil }
 }
 
 struct WorkoutTitleWheel: View {

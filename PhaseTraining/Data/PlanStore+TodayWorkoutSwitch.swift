@@ -26,6 +26,44 @@ extension PlanStore {
     /// Point `date` at a saved routine, or back at the planner's own session
     /// when `routineId` is nil. Returns false when there is no plan or the
     /// date is not in it.
+    /// Put a SAMPLE session on a day (Today's wheel, for a user with few or no
+    /// saved workouts). Same stash-and-override shape as the saved-workout
+    /// switch: the planner's day is displaced once, the id is written through
+    /// `customRoutineByDate` so `wheelSelection` and the restore path see it,
+    /// and selecting the planned stop clears it via `switchWorkout(on:to: nil)`.
+    ///
+    /// `applyCustomRoutineOverrides` skips ids it cannot find in the saved
+    /// routines, so a regeneration simply drops the sample and the day reverts
+    /// to the planner's session, which is the right outcome for a demo.
+    @discardableResult
+    func switchWorkout(on date: Date, toSampleId sampleId: String,
+                       workout: GeneratedWorkout, title: String) -> Bool {
+        guard var plan else { return false }
+        let cal = Calendar.current
+        guard let idx = plan.days.firstIndex(where: { cal.isDate($0.date, inSameDayAs: date) })
+        else { return false }
+        let key = cal.startOfDay(for: date)
+        var stash = overrides.displacedPlanByDate ?? [:]
+        if stash[key] == nil {
+            let day = plan.days[idx]
+            stash[key] = DisplacedPlan(kind: day.kind, title: day.title,
+                                       workout: day.generatedWorkout,
+                                       reason: day.generatedReason,
+                                       routineId: day.routineId)
+            overrides.displacedPlanByDate = stash
+        }
+        overrides.customRoutineByDate[key] = sampleId
+        plan.days[idx].generatedWorkout = workout
+        plan.days[idx].title = title
+        plan.days[idx].routineId = nil
+        plan.days[idx].generatedReason = "A sample of this season's training"
+        if plan.days[idx].kind != .lift { plan.days[idx].kind = .lift }
+        self.plan = plan
+        savePlan()
+        saveOverrides()
+        return true
+    }
+
     @discardableResult
     func switchWorkout(on date: Date, to routineId: String?) -> Bool {
         guard var plan else { return false }
