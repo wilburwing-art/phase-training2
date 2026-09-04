@@ -124,3 +124,49 @@ What breaks, in the order you will hit it:
 
 Read a check-2 or check-7 failure after an allocator change as the invariant
 doing its job, not as a regression to suppress. Both named a real defect.
+
+## 7. A duplicate exercise in a sport pool takes the whole test host down
+
+Retiring `Step-Up with Pack` (622) and retargeting its ski row to `Loaded
+Step-Up` (238) put 238 in the alpine-skiing pool twice. The generator builds
+`Dictionary(uniqueKeysWithValues:)` over the pool, so the run did not fail
+one test: `Swift/NativeDictionary.swift:792: Fatal error: Duplicate values
+for key: '238'` killed the host three times (the runner restarts it), and
+the summary read "1 failed" with the real damage in the crash lines.
+
+- Grep the log for `Fatal error` next to `preflight checks`; both produce a
+  low-assertion run that looks like infra.
+- Before rebuilding coach.db after any retire-and-remap:
+  `SELECT sport, exercise_id FROM sport_movements GROUP BY 1,2 HAVING COUNT(*)>1`.
+- `test_pools_have_no_duplicate_exercise_ids` (SeasonFidelityTest) pins it.
+
+## 8. A new Demand can carry weight the allocator never pays, and nothing fails
+
+Adding `.upperStrength` to `PhaseRule.skiing` with 0.10 / 0.05 / 0.05 across
+off / pre / in-season passed every test and realized in ONE of the three
+phases. `/tmp/season-fidelity/report.md` is where it shows:
+
+    | upperStrength | 0.10 | 0.07 |   off-season, fine
+    | upperStrength | 0.05 | 0.00 |   pre-season
+    | upperStrength | 0.05 | 0.00 |   in-season
+
+Two independent causes, both in `allocateSlots`:
+
+- **The remainder tie-break is alphabetical on `rawValue`.** Pre-season ties
+  four demands at 0.05 with three remainder slots; `core`, `hipLateral`,
+  `kneeStability` take them and `upperStrength` loses deterministically, every
+  week. A demand whose name sorts late needs a weight that does not tie.
+- **A weight below `1/weekSlots` floors to zero.** In-season is 2 sessions x 4
+  slots; 0.05 x 8 = 0.4, and its remainder loses the ranking.
+
+So the floor is `1/(perSession * sessionsInWeek)`, and at a tie the name
+decides. Check a new demand against the phase's ACTUAL slot budget (read it off
+the realized table: the fractions are n/weekSlots), not against intuition about
+"5 percent".
+
+The general gate this repo lacks: **every demand with a non-zero target must
+realize at least one slot somewhere in the week.** Add it to SeasonFidelity and
+this class stops shipping. Sibling of pitfall 5 (a new INPUT must be wired into
+`intendedSlotDistribution`); this is a new OUTPUT category that is wired and
+still inert, the DEAD-signal class from
+[[phase-training-generator-eval-method-portfolio]].
