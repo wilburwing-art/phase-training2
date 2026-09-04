@@ -1,6 +1,6 @@
 ---
 name: phase-training-xcuitest-recipe
-description: Boot a phase-training-family iOS app (phase-training, phase-training2, workout-plan) directly into LogScreen with a deterministic session for XCUITests. The recipe combines four existing launch args — `--ui-test-onboarded` (skip welcome gate), `--ui-test-reset` (wipe defaults), `--seed-supersets-demo` (write a 5-exercise active session to UserDefaults), and `--ui-test-rest-seconds=N` (clamp every exercise's rest interval so timer-expiry tests fire in ~2s instead of 60-90s). Trigger when writing or extending XCUITests against LogScreen, RestTimer, or any in-workout flow in these repos. Also covers the picker-row identifier pattern and the known squat-hit-test flake. Skip for unit tests against SessionStore (use PhaseTrainingTests instead) and for non-fitness apps.
+description: Boot a phase-training-family iOS app (phase-training, phase-training2, workout-plan) directly into LogScreen with a deterministic session for XCUITests. The recipe combines four existing launch args — `--ui-test-onboarded` (skip welcome gate), `--ui-test-reset` (wipe defaults), `--seed-supersets-demo` (write a 5-exercise active session to UserDefaults), and `--ui-test-rest-seconds=N` (clamp every exercise's rest interval so timer-expiry tests fire in ~2s instead of 60-90s). Trigger when writing or extending XCUITests against LogScreen, RestTimer, or any in-workout flow in these repos. Also covers the picker-row identifier pattern, the known squat-hit-test flake, and the disabled-control failure mode: a tap on a button a product fix has gated no-ops and fails several assertions LATER, which left CI red for 13+ runs across three separate instances. ALSO trigger when a UI test times out waiting on a screen that never appeared, or after adding any .disabled()/nextEnabled: gate to a control a test walks. Skip for unit tests against SessionStore (use PhaseTrainingTests instead) and for non-fitness apps.
 when-to-use: writing XCUITests against LogScreen / RestTimer / mid-workout flow in phase-training / phase-training2 / workout-plan
 ---
 
@@ -113,3 +113,44 @@ the runner failing to initialize, usually after many consecutive UI runs
 against one simulator, and every test in the invocation reports as failed with
 no assertion output. Fix with `xcrun simctl shutdown <udid>` then `boot`, and
 re-run before believing any result from that invocation.
+
+## A tap on a DISABLED control fails several assertions later (bit us 3x)
+
+`isHittable` is true for a disabled SwiftUI button. The synthesized tap no-ops,
+the flow never advances, and the test dies on a later `waitForExistence` against
+a screen it never reached. The error names the wrong screen, so the search
+starts in the wrong place.
+
+**Three separate instances shipped to main and left CI red for 13+ runs**
+(2026-08-24 to 2026-09-04), each one a correct product fix whose test walk was
+never updated:
+
+| gate added | control | test symptom |
+|---|---|---|
+| T0-5 consent must be an affirmative pick | `onboarding-continue-coachConsent` | "planPreview never became enabled" |
+| T1-3 Finish confirms while sets are open | `log-finish` | "finishing should present the complete screen" |
+| `canSave` needs a NAME | `custom-routine-start`, `Save` | "should route into the live log" |
+
+**Diagnostic order** when a UI test times out waiting on a screen: walk BACKWARD
+from the failing assertion to the last control tapped, and check whether
+anything recently added a `.disabled(...)` or a gated `nextEnabled:`. The
+failure is almost never where it is reported.
+
+`TapCounter.tap` now guards `el.isHittable, el.isEnabled` and prints which one
+failed. Copy that into any new helper; `isHittable` alone is not a tap check.
+
+Two mechanics worth keeping:
+
+- **Alert buttons need `app.alerts.buttons["X"]`.** `app.buttons["Finish"]`
+  matched both the alert and LogScreen's own Finish behind it, and XCUITest
+  fails the tap with "Multiple matching elements found". An explicit
+  `accessibilityIdentifier` on an alert button also produced duplicates on
+  iOS 26, so scope the query rather than id the button.
+- **`app.textFields.firstMatch` inside a sheet can resolve to the screen
+  behind it.** Naming the routine in `CustomRoutineEditSheet` grabbed Library's
+  "Search workouts" box and failed with "Neither element nor any descendant has
+  keyboard focus". Give the field its own id (`custom-routine-name`).
+
+Note the gate that hid all three: the 2026-08-23 cycle's build gate was
+`xcodebuild test` on **the unit suite**, which cannot observe the UI target, so
+every status note read green. Gate on the whole scheme.
