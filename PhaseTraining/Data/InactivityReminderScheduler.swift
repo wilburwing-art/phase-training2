@@ -68,14 +68,16 @@ enum InactivityReminderScheduler {
     private static var generation: UInt64 = 0
 
     /// Invalidate any in-flight schedule and claim the next generation.
-    private static func bumpGeneration() -> UInt64 {
+    /// Internal (not private) so the race T1-55 fixed can be pinned by a test
+    /// without a notification center.
+    static func bumpGeneration() -> UInt64 {
         generationLock.lock()
         defer { generationLock.unlock() }
         generation &+= 1
         return generation
     }
 
-    private static func isCurrent(_ g: UInt64) -> Bool {
+    static func isCurrent(_ g: UInt64) -> Bool {
         generationLock.lock()
         defer { generationLock.unlock() }
         return g == generation

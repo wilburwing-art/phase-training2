@@ -120,7 +120,9 @@ enum InsightGenerator {
     /// Strip surrounding whitespace / quotes / trailing junk. Models sometimes
     /// reach for "Sure! Here's an insight: ..." despite the prompt; if the
     /// reply opens with throat-clearing, take only the last sentence.
-    private static func sanitize(_ raw: String) -> String {
+    /// Internal (not private) so T1-47's regression — a two-sentence insight
+    /// reduced to its last sentence — stays pinned by a test.
+    static func sanitize(_ raw: String) -> String {
         var s = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         s = s.replacingOccurrences(of: "\u{201C}", with: "")   // “
         s = s.replacingOccurrences(of: "\u{201D}", with: "")   // ”

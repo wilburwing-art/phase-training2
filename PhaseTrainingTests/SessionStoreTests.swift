@@ -290,7 +290,15 @@ final class SessionStoreTests: XCTestCase {
     /// The flag gates PR detection, volume aggregation and the Epley math, so a
     /// round-trip that silently dropped it would promote a warmup ramp to a PR.
     func testWarmupAndBodyweightSetsRoundTripThroughSaveAndReload() {
-        let store = SessionStore(defaults: defaults)
+        // Completed sessions live in SQLite (UserDatabase), not UserDefaults.
+        // Both stores must share ONE database file: `:memory:` is
+        // per-connection, and the shared on-disk DB is exactly the cross-test
+        // state that made this flake (green in one run, "no sessions" in the
+        // next after another test wiped it).
+        let dbPath = NSTemporaryDirectory() + "SessionStoreTests-\(UUID().uuidString).sqlite"
+        defer { try? FileManager.default.removeItem(atPath: dbPath) }
+        let db = UserDatabase(path: dbPath)
+        let store = SessionStore(defaults: defaults, userDB: db)
         var session = store.createSession(templateId: "upper-1")
 
         // First exercise: set 1 is a warmup, set 2 is a working set.
@@ -310,7 +318,7 @@ final class SessionStoreTests: XCTestCase {
 
         // A FRESH store over the same defaults is the real round-trip: it has
         // to decode what the first one wrote.
-        let reloaded = SessionStore(defaults: defaults)
+        let reloaded = SessionStore(defaults: defaults, userDB: UserDatabase(path: dbPath))
         let saved = try? XCTUnwrap(reloaded.savedSessions.first)
         XCTAssertNotNil(saved)
         guard let saved else { return }

@@ -6,6 +6,7 @@ import XCTest
 /// gateway is BYOK and the token ships in the IPA, so this ceiling is what
 /// stands between a distributed build and an unmetered proxy billed to the
 /// developer, pending the external rotation.
+@MainActor
 final class CoachClientCeilingTests: XCTestCase {
 
     private func fresh(_ fn: String = #function) -> UserDefaults {
