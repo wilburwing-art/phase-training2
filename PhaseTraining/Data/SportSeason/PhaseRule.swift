@@ -148,7 +148,11 @@ struct PhaseRule: Equatable {
 
     static let climbing: [SeasonPhase: PhaseRule] = [
         .offSeason: PhaseRule(
-            objective: "Pulling + finger base, hypertrophy, structural prep",
+            // "hypertrophy" was in this string while pullStrength's scheme
+            // prescribes 4x4-6 at RPE 7-8, which is max strength. The string is
+            // what the user reads, so it now says what is delivered. If the
+            // INTENT was hypertrophy, the fix is DemandScheme, not this line.
+            objective: "Pulling + finger base, strength, structural prep",
             sessionsPerWeek: 2...3,
             demandWeights: [
                 .pullStrength: 0.30, .fingerStrength: 0.20, .bodyTension: 0.15,

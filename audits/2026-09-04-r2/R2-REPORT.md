@@ -318,6 +318,15 @@ scheme throughout, which is what the finding asked for.
 
 ### New this pass
 
+**R2-05 (high, correctness) — the authored path never filters by equipment.**
+Found by the ported invariant harness on its first run, which is the point of
+having one. The season engine drops movements the athlete lacks equipment for;
+`AuthoredRoutine.workout` serves every row. Over the grid, **2,262 of 3,294
+authored rows served to a bodyweight-only user require loaded equipment**, and
+103 of 113 routines contain at least one. Recorded as a backlog item rather
+than fixed, because the naive filter would empty most of the library for that
+user and the fallback is a product decision.
+
 **R2-04 (low, infrastructure) — the simulator collapse is now a known failure
 signature.** Two full-suite runs this session returned 0 passed with every test
 carrying `Simulator device failed to launch ... Busy ("Application failed
