@@ -31,12 +31,35 @@ extension WorkoutGenerator {
         if prior.weight == 0 {
             return prior.reps > 0 ? "target: \(prior.reps + 1) reps" : nil
         }
-        let target = progressiveTargetLb(
+        // T2-9: the step is no longer unconditional. A missed last attempt at
+        // the best-ever weight holds the load; a badly missed one steps it
+        // down. Everything else (no history, a lighter day) steps up as before.
+        let decision = ProgressionDecision.decide(prior: prior, last: context.lastAttempt[key])
+        let target = targetLb(
             priorWeight: prior.weight,
             priorReps: prior.reps,
-            prescribedReps: prescribedReps
-        ) ?? steppedTargetLb(priorWeightLb: prior.weight)
+            prescribedReps: prescribedReps,
+            decision: decision
+        )
         return formatTargetHint(weightLb: target, memory: memory)
+    }
+
+    /// Rep-mapped load with the progression decision applied.
+    /// `progressiveTargetLb` stays as the step-up-only form for its existing
+    /// tests; this is the general one.
+    static func targetLb(priorWeight: Double, priorReps: Int, prescribedReps: String,
+                         decision: ProgressionDecision) -> Double {
+        let base: Double
+        if priorReps > 0, let targetReps = repBandMidpoint(prescribedReps) {
+            let e1rm = StrengthStandards.epley1RM(weight: priorWeight, reps: priorReps)
+            base = e1rm / (1 + Double(targetReps) / 30.0)
+        } else {
+            base = priorWeight
+        }
+        let scaled = (base * decision.loadMultiplier / 2.5).rounded() * 2.5
+        // A step-up never lands below the rep-mapped base (matches
+        // steppedTargetLb); a hold or step-down may.
+        return decision == .stepUp ? max(base, scaled) : scaled
     }
 
     /// Target working load for the prescribed rep band, progressed 2.5%.

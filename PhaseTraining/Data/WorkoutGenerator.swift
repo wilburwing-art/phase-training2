@@ -77,11 +77,10 @@ enum WorkoutGenerator {
         // The season-aware engine (ski / climb) is the only generator. Every
         // caller routes here; onboarding gates to a supported sport (M2b), so the
         // no-supported-sport branch is an unreachable safety net, not a real path.
-        // `strategy` now reaches the season engine (T1-6): intensity bias and
-        // the per-exercise RPE / tempo / load overrides. `context` is still
-        // unconsumed there — readiness and soreness scaling live in
-        // makePickedRow, which only the custom-routine re-prescription path
-        // uses. That half stays parked.
+        // `strategy` reaches the season engine (T1-6): intensity bias and the
+        // per-exercise RPE / tempo / load overrides. Readiness reaches it too
+        // (T2-10) via AthleteState.readinessScore. Soreness-area avoidance
+        // (`context.recentSoreAreas`) is the remaining unconsumed signal.
         guard SportSeasonGenerator.supports(memory.primarySport?.slug) else {
             return GeneratedWorkout(
                 title: "Rest",
@@ -95,7 +94,8 @@ enum WorkoutGenerator {
             memory,
             variant: SportSeasonGenerator.defaultVariant(forSport: memory.primarySport?.slug),
             weekNumber: memory.weeksInCurrentPhase ?? 1,
-            recentMovementIDs: recentlyPicked)
+            recentMovementIDs: recentlyPicked,
+            readiness: context.hasReadinessData ? context.readinessScore : nil)
         return SportSeasonGenerator.generateSession(
             athlete, sessionIndex: liftIndex, adjacentSportDay: adjacentSportDay,
             sessionsInWeek: max(1, totalLifts), strategy: strategy)

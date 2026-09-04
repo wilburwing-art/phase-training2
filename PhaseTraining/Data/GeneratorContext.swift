@@ -24,6 +24,15 @@ struct GeneratorContext: Equatable {
     /// `GeneratedExercise.notes`.
     var priorBest: [String: PriorBest]
 
+    /// Most recent completed attempt per exercise NAME (lowercased): what the
+    /// user actually did LAST session at their working weight, against what
+    /// was asked. `priorBest` answers "how strong are they"; this answers "did
+    /// the last dose land". The progression step reads both (T2-9): it used
+    /// to add 2.5% from the all-time best unconditionally, with no branch for
+    /// missed reps, so a user grinding a stalled lift was told to add weight
+    /// every week.
+    var lastAttempt: [String: LastAttempt] = [:]
+
     /// Lowercased body areas the user has reported sore or painful in the
     /// last 7 days. Slot pick excludes exercises whose primary muscle group
     /// label overlaps with this set.
@@ -90,6 +99,43 @@ struct PriorBest: Equatable {
     let weight: Double      // lb
     let reps: Int
     let date: Date
+}
+
+/// The last completed session's working sets for one exercise, reduced to
+/// the one question progression needs: at the heaviest weight lifted, how
+/// many reps landed against how many were asked.
+struct LastAttempt: Equatable {
+    let weight: Double      // lb, heaviest completed non-warmup set
+    let reps: Int           // best reps at that weight
+    let targetReps: Int     // what the session asked for
+    let date: Date
+}
+
+/// Pure decision: step up, hold, or step down, from the best-ever set and the
+/// most recent attempt. Free of DB and view state so it is testable as a
+/// table. Conservative on purpose: it only HOLDS or STEPS DOWN when the last
+/// attempt was at or above the best-ever weight and fell short, so a light
+/// day, a travel day or a deload can never trigger a step-down from the
+/// all-time best.
+enum ProgressionDecision: Equatable {
+    case stepUp, hold, stepDown
+
+    static func decide(prior: PriorBest, last: LastAttempt?) -> ProgressionDecision {
+        guard let last, last.targetReps > 0 else { return .stepUp }
+        guard last.weight >= prior.weight - 0.01 else { return .stepUp }
+        if last.reps >= last.targetReps { return .stepUp }
+        if last.reps >= last.targetReps - 1 { return .hold }
+        return .stepDown
+    }
+
+    /// Multiplier on the rep-mapped load before the 2.5-lb rounding.
+    var loadMultiplier: Double {
+        switch self {
+        case .stepUp:   return 1.025
+        case .hold:     return 1.0
+        case .stepDown: return 0.95
+        }
+    }
 }
 
 // MARK: - Builder
@@ -183,6 +229,7 @@ extension GeneratorContext {
         // when the engine starts consuming them.
         return GeneratorContext(
             priorBest: buildPriorBest(sessions: sessions, importedPeaks: importedPeaks),
+            lastAttempt: buildLastAttempt(sessions: sessions),
             recentSoreAreas: includeParkedSignals
                 ? buildRecentSoreAreas(soreness: soreness, feedback: feedback, cutoff: weekSoreCutoff)
                 : [],
@@ -284,6 +331,28 @@ extension GeneratorContext {
     /// Imported weight arrives in kg (Fitbod schema literally calls the
     /// column `Weight(kg)`) and is converted to lb to match the native
     /// path's convention.
+    /// Most recent session per exercise name; heaviest completed working set
+    /// and the best reps at that weight, against the session's target reps.
+    static func buildLastAttempt(sessions: [SavedSession]) -> [String: LastAttempt] {
+        var out: [String: LastAttempt] = [:]
+        for session in sessions.sorted(by: { $0.startTime > $1.startTime }) {
+            for ex in session.exercises {
+                let key = ex.name.lowercased()
+                guard out[key] == nil else { continue }
+                var bestW = 0.0, bestR = 0
+                for set in ex.sets where set.done && !set.isWarmup {
+                    let w = set.weightValue ?? 0, r = set.repsValue ?? 0
+                    guard w > 0, r > 0 else { continue }
+                    if w > bestW || (w == bestW && r > bestR) { bestW = w; bestR = r }
+                }
+                guard bestW > 0 else { continue }
+                out[key] = LastAttempt(weight: bestW, reps: bestR,
+                                       targetReps: ex.targetReps, date: session.startTime)
+            }
+        }
+        return out
+    }
+
     private static func buildPriorBest(
         sessions: [SavedSession],
         importedPeaks: [(exerciseId: Int, weight: Double, reps: Int, performedAt: Date)] = []

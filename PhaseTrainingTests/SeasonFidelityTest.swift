@@ -23,6 +23,24 @@ final class SeasonFidelityTest: XCTestCase {
     ]
     private let phases: [SeasonPhase] = [.offSeason, .preSeason, .inSeason, .maintenance, .eventPrep]
 
+    // MARK: - T2-10: readiness must reach the season engine
+
+    /// The app asked for a soreness check-in and a readiness signal and served
+    /// the identical session either way. Same lerp(0.6, 1.0) curve
+    /// makePickedRow has used since Phase 2.
+    func test_readiness_scalesSetsInTheSeasonEngine() {
+        for f in sports {
+            var low = athlete(f, season: .offSeason);  low.readinessScore = 0.0
+            var high = athlete(f, season: .offSeason); high.readinessScore = 1.0
+            let none = athlete(f, season: .offSeason)  // nil = no data
+            let sets: (AthleteState) -> Int = {
+                SportSeasonGenerator.generateSession($0, sessionIndex: 0).exercises.reduce(0) { $0 + $1.sets }
+            }
+            XCTAssertLessThan(sets(low), sets(high), "[\(f.slug)] readiness 0 must prescribe fewer sets than readiness 1")
+            XCTAssertEqual(sets(none), sets(high), "[\(f.slug)] no readiness data must equal the unscaled dose")
+        }
+    }
+
     // MARK: - T1-6: the coach's strategy must reach the season engine
 
     /// `CoachRequestScreen` builds a `GeneratorStrategy` from a billed LLM call

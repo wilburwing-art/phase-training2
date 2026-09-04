@@ -154,8 +154,20 @@ enum SportSeasonGenerator {
                                   phase: athlete.season, signature: signatureDemand(athlete.sportSlug))
         if rule.deferToSport && adjacentSportDay { picks = lighten(picks) }
 
-        let exercises = picks.map {
+        var exercises = picks.map {
             prescribe($0.movement, demand: $0.demand, rule: rule, strategy: strategy)
+        }
+        // Readiness x sets (T2-10). Same lerp(0.6, 1.0) curve makePickedRow
+        // has used since Phase 2: a detrained user gets 60% of the sets, a
+        // fully-ready one the full dose. nil means no data and no scaling;
+        // the neutral 0.5 sentinel never reaches here.
+        if let r = athlete.readinessScore {
+            let mul = lerp(0.6, 1.0, r)
+            exercises = exercises.map { ex in
+                var e = ex
+                e.sets = max(1, Int((Double(ex.sets) * mul).rounded()))
+                return e
+            }
         }
         return assemble(exercises, picks: picks, athlete: athlete, rule: rule,
                         sessionIndex: sessionIndex, lightened: rule.deferToSport && adjacentSportDay)

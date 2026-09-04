@@ -51,6 +51,16 @@ struct AthleteState: Equatable {
     /// build a state by hand keep the prior behavior.
     var preferredSessionMinutes: Int? = nil
 
+    /// Readiness in [0, 1] from `GeneratorContext`, or nil when the context
+    /// had no real data (`hasReadinessData == false`). The neutral 0.5
+    /// sentinel must never arrive here as a number; nil is the only "no data"
+    /// value, so the engine cannot mistake it for low readiness.
+    ///
+    /// T2-10: this scaling existed in `makePickedRow` (custom-routine
+    /// re-prescription) and neither live generator read it, so the soreness
+    /// check-in and the readiness signal changed nothing a user was served.
+    var readinessScore: Double? = nil
+
     /// Set for `.eventPrep` (a trip / objective); drives the taper countdown
     /// via `MesocycleProgression`. nil ⇒ no peak.
     let targetObjectiveDate: Date?
@@ -82,7 +92,8 @@ struct AthleteState: Equatable {
         _ memory: TrainingMemory,
         variant: SportVariant = .inbounds,
         weekNumber: Int = 1,
-        recentMovementIDs: Set<Int> = []
+        recentMovementIDs: Set<Int> = [],
+        readiness: Double? = nil
     ) -> AthleteState {
         let profile = DemographicProfile.from(memory)
         return AthleteState(
@@ -93,6 +104,7 @@ struct AthleteState: Equatable {
             availableEquipmentSlugs: profile.allowedEquipmentSlugs,
             sessionsPerWeek: memory.liftDaysPerWeek,
             preferredSessionMinutes: memory.sessionMinutes,
+            readinessScore: readiness,
             targetObjectiveDate: memory.peakDate,
             weekNumber: weekNumber,
             recentMovementIDs: recentMovementIDs,
