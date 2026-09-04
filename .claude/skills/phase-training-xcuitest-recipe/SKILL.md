@@ -1,6 +1,6 @@
 ---
 name: phase-training-xcuitest-recipe
-description: Boot a phase-training-family iOS app (phase-training, phase-training2, workout-plan) directly into LogScreen with a deterministic session for XCUITests. The recipe combines four existing launch args — `--ui-test-onboarded` (skip welcome gate), `--ui-test-reset` (wipe defaults), `--seed-supersets-demo` (write a 5-exercise active session to UserDefaults), and `--ui-test-rest-seconds=N` (clamp every exercise's rest interval so timer-expiry tests fire in ~2s instead of 60-90s). Trigger when writing or extending XCUITests against LogScreen, RestTimer, or any in-workout flow in these repos. Also covers the picker-row identifier pattern, the known squat-hit-test flake, and the disabled-control failure mode: a tap on a button a product fix has gated no-ops and fails several assertions LATER, which left CI red for 13+ runs across three separate instances. ALSO trigger when a UI test times out waiting on a screen that never appeared, or after adding any .disabled()/nextEnabled: gate to a control a test walks. Skip for unit tests against SessionStore (use PhaseTrainingTests instead) and for non-fitness apps.
+description: Boot a phase-training-family iOS app (phase-training, phase-training2, workout-plan) directly into LogScreen with a deterministic session for XCUITests. The recipe combines four existing launch args — `--ui-test-onboarded` (skip welcome gate), `--ui-test-reset` (wipe defaults), `--seed-supersets-demo` (write a 5-exercise active session to UserDefaults), and `--ui-test-rest-seconds=N` (clamp every exercise's rest interval so timer-expiry tests fire in ~2s instead of 60-90s). Trigger when writing or extending XCUITests against LogScreen, RestTimer, or any in-workout flow in these repos. Also covers the picker-row identifier pattern, the known squat-hit-test flake, and the disabled-control failure mode: a tap on a button a product fix has gated no-ops and fails several assertions LATER, which left CI red for 13+ runs across three separate instances. ALSO trigger when a UI test times out waiting on a screen that never appeared, after adding any .disabled()/nextEnabled: gate to a control a test walks, and before adding .accessibilityValue to any TextField a UI test reads through .value (it replaces the text XCUITest sees). Skip for unit tests against SessionStore (use PhaseTrainingTests instead) and for non-fitness apps.
 when-to-use: writing XCUITests against LogScreen / RestTimer / mid-workout flow in phase-training / phase-training2 / workout-plan
 ---
 
@@ -154,3 +154,20 @@ Two mechanics worth keeping:
 Note the gate that hid all three: the 2026-08-23 cycle's build gate was
 `xcodebuild test` on **the unit suite**, which cannot observe the UI target, so
 every status note read green. Gate on the whole scheme.
+
+## `.accessibilityValue` on a TextField changes what XCUITest reads
+
+2026-09-04, adding VoiceOver labels to LogSetRow. Setting
+`.accessibilityValue("\(weight) \(unit)")` on the weight field made
+`app.textFields[...].value` return `"135 lbs"` instead of `"135"`, and two
+LogFlowTests that assert the raw text failed on all three retries. The label
+was fine; the value override was the break.
+
+- A TextField already exposes its text as the accessibility value. Do not
+  override it. Put units and context in `accessibilityLabel`
+  ("Weight in lbs, set 3"), which XCUITest does not read through `.value`.
+- Overriding `accessibilityValue` is fine on controls whose `.value` no test
+  asserts (the effort `Menu` keeps "RPE 8"), so check `grep -rn '\.value'
+  PhaseTrainingUITests/` for the element before adding one.
+- Symptom to recognise: an assertion on a field's text fails with the expected
+  string plus a suffix, right after an a11y pass touched that row.
