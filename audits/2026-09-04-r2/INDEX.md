@@ -41,6 +41,14 @@ Four new findings: R2-01 (injury filter under the movement floor), R2-02
 (primary-demand match vs recency), R2-03 (Health grant discoverability, raised
 by Wilbur), R2-04 (simulator-collapse failure signature).
 
+## After the second pass (same day)
+
+Tier 1 closed at 10 of 11 (T1-5's mapping table left for a human on purpose;
+its safe half, telling the user an injury has no filter, landed). Tier 2 at 8
+of 10 done, T2-2 partial, T2-7 refuted. R2-01 and R2-02 fixed; R2-03 fixed;
+R2-05 recorded with numbers and left as a product decision. The whole-scheme
+gate on the final state is in `scratchpad/final2.log`.
+
 ## Status
 
 | # | Lens | Second-pass state |

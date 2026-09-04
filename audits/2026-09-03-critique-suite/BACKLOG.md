@@ -86,10 +86,14 @@ new items (R2-01 to R2-04); R2-01 and R2-02 were fixed in the same sitting.
 
 ## Tier 2 — coverage and accessibility
 
-**Scaffolded 2026-09-04, being worked in order.** T2-7 refuted (see item).
-The rest are written as real code with tests and are being verified one at a
-time against the whole scheme; each item's note says whether it is landed,
-partial, or scaffold-only.
+**Status 2026-09-04 (evening): 8 of 10 done, 1 partial, 1 refuted.**
+T2-1, T2-3, T2-4, T2-5, T2-6, T2-8, T2-9, T2-10 landed with tests. T2-2 is
+partial (logging surface only). T2-7 refuted. Unit target 1,068 green. What is
+NOT yet true, said plainly so nobody reads the checkboxes as "on par with
+Fitbod": Dynamic Type is wired at the root and in the log rows but has not
+been looked at on a device at AX5, and the fixed frames on Today, Week and
+Progress are untouched; VoiceOver has labels on the log and the summary and
+nowhere else; the authored path still ignores equipment (R2-05).
 
 - [x] **T2-1 The app ignores Dynamic Type completely.** `TypeSpec.font` is `Font.custom(fontName, size:)` with no `relativeTo:` (`Typography.swift:37`), and `relativeTo` appears in zero of 134 `.custom(` call sites. Body copy is fixed at 13pt, labels at 10pt. Must be done together with the fixed row frames in `LogSetRow` or the log clips. *(07 F1, F3)* **DONE** — `TypeSpec.font` is `Font.custom(_:size:relativeTo:)` with a per-style text style chosen so its default size is within 25% of the design size (keeps the scale curve proportional); all nine design sizes unchanged at the default setting. `LogSetRow`'s six fixed frames are `@ScaledMetric` (declared on `LogScreen`, since the row file is an extension). All 13 tap budgets on reference afterwards. Not yet checked visually at AX5; fixed frames on Today, Week and Progress are the next pass.
 - [~] **T2-2 VoiceOver has nothing to read on the logging surface.** 3 `accessibilityLabel`s across LogScreen, LogSetRow, LogExerciseBlock and CompleteScreen, against 16 identifiers. The check dot has an identifier and no label. Do it a screen at a time, starting there. *(07 F4)* **PARTIAL** — logging surface: check dot, weight ("Weight in lbs, set 3"), reps, effort menu (label + value), exercise name as a header trait, CompleteScreen stat cells as one element each. Learned: overriding a TextField's `accessibilityValue` changed what XCUITest reads through `.value` and broke two LogFlowTests; units live in the label. Remaining: LogScreen's own controls, History, Today, Week, Progress.
