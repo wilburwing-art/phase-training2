@@ -1,9 +1,11 @@
 ---
 name: phase-training-season-generator-engine-pitfalls
 description: >
-  Four correctness pitfalls when implementing or debugging phase-training2's
+  Six correctness pitfalls when implementing or debugging phase-training2's
   SportSeasonGenerator (the demand-weighted, fatigue-capped, deterministic §5
-  engine) and its SeasonFidelityTest eval. Each one cost a test-failure→fix
+  engine) and its SeasonFidelityTest eval, including what breaks when slot
+  allocation moves from per-session to per-week (signature coverage, rotation
+  coverage, and a stale intended-vs-realized eval). Each one cost a test-failure→fix
   cycle building the skiing M1. Trigger when writing/editing SportSeasonGenerator
   slot allocation / fatigue cap / selection ranking, when a SeasonFidelity check
   fails (phase fidelity L1, fatigue ceiling, signature coverage), or when adding
@@ -86,3 +88,39 @@ measuring a differently-sized session than the one generated.**
   and adding an input to one side silently invalidates the comparison. It is not
   a regression in the thing under test — it's the eval going stale.
 
+
+## 6. Moving allocation from per-session to per-WEEK breaks two invariants at once
+
+Added 2026-09-04 (T1-3). The change was right and it cost three test-fix cycles,
+because two checks encode properties that per-session allocation satisfied by
+accident.
+
+The motivation: `allocateSlots(weights, count: target)` quantises at `1/target`.
+With 5 slots, any demand under 0.20 rounds to zero in every session — for ski
+off-season that silently deleted `power`, `legEndurance`, `prehab` and
+`hipLateral`, the last two being what the phase's own "fix imbalances" objective
+depends on. It also asked for the same top-K demands every session, which is why
+a three-day week generated the same workout three times. `weekSlots` apportions
+over `perSession * sessionsInWeek` and deals the flat list round-robin.
+
+What breaks, in the order you will hit it:
+
+- **check-2, signature coverage.** Dealing spreads the sport-defining demand
+  (`eccentricLeg` for ski, `fingerStrength` for climbing) across the week, so
+  some session gets none. Every session must carry it. `guaranteeSignature`
+  takes the slot from the largest non-signature group, which means realized
+  signature reads ABOVE target on purpose.
+- **check-7, rotation preserves coverage.** This one only fires *because* the
+  change worked. Once a 0.05 demand is reachable it gets one slot in the week,
+  and the ski pool has exactly one `hipLateral`-primary movement; when that
+  movement was recently used, the slot went to a movement that merely LISTS the
+  demand. Fix is ordering inside the slot: **primary-demand match must outrank
+  recency**. Rotation should vary which movement serves a demand, never whether
+  it is served. Also fill scarcest-demand-first, so a one-candidate demand is
+  not consumed by a six-candidate one.
+- **check-1** goes stale exactly as pitfall 5 describes — confirmed again here.
+  `intendedSlotDistribution` has to model `weekSlots` AND `guaranteeSignature`,
+  which means summing per-session slots rather than apportioning once.
+
+Read a check-2 or check-7 failure after an allocator change as the invariant
+doing its job, not as a regression to suppress. Both named a real defect.
