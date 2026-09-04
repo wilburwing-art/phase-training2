@@ -2,8 +2,9 @@
 //
 // Apple (Nov 2025) requires explicit disclosure + per-feature consent before
 // sending personal data to any third-party AI. Our flow:
-//   1. AI Coach off by default for existing installs; on by default for new
-//      installs (set in onboarding).
+//   1. AI Coach off by default for existing installs. A new install is asked
+//      in onboarding with NEITHER option pre-selected (T0-5), so consent is
+//      always an affirmative tap and never a default.
 //   2. Toggling on presents the consent modal with provider name, what's
 //      sent, and a link to the privacy policy.
 //   3. Only after the modal's Accept does any network request leave the device.
@@ -20,6 +21,11 @@ enum CoachConsent {
     static let providerName = "Anthropic (Claude)"
     static let routedVia    = "our Cloudflare AI Gateway"
 
+    /// The hosted policy. The consent flow has promised "a link to the privacy
+    /// policy" since it was written and shipped without one; docs/privacy.md is
+    /// published from /docs on main via GitHub Pages.
+    static let privacyPolicyURL = URL(string: "https://wilburwing-art.github.io/phase-training2/privacy.html")!
+
     static let modalBody = """
     The AI Coach sends your training context to \(providerName) via \(routedVia) so it can answer questions and adjust your plan. That includes:
 
@@ -28,7 +34,11 @@ enum CoachConsent {
     • Injuries and soreness you've logged, including your own notes
     • Estimated strength numbers, and your messages to the coach
 
+    • Dislikes and constraints you've written, and notes on sport logs and post-workout feedback
+
     We don't send your name, email or device identifiers, and we don't sell or share this data. You can turn the coach off anytime in Profile, which stops all transmissions.
+
+    Full policy: \(privacyPolicyURL.absoluteString)
     """
 
     /// One-line version for the onboarding row, which has no room for the full

@@ -61,6 +61,12 @@ struct OnboardingCoachConsentScreen: View {
                     .foregroundColor(.ink2)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 4)
+                // This screen is the ONLY consent surface a new install sees,
+                // and the flow has promised a policy link since it was written.
+                Link("Read the privacy policy", destination: CoachConsent.privacyPolicyURL)
+                    .font(.caption)
+                    .foregroundColor(.accent)
+                    .accessibilityIdentifier("onboarding-consent-privacy-link")
             }
         }
         .onAppear {

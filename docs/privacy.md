@@ -24,7 +24,18 @@ Phase Training never writes to Apple Health, and Health data is never used for a
 
 ## AI Coach (optional, off by default)
 
-If you enable the AI Coach in Profile → AI Coach, the app sends the text of your messages plus a snapshot of your current plan, recent workout feedback, and today's plan day to Anthropic (Claude) via our Cloudflare AI Gateway proxy. No name, email, or device identifier is sent. The data is used only to generate the coach's response and is not used to train any model.
+If you enable the AI Coach in Profile → AI Coach, the app sends a snapshot of your training context to Anthropic (Claude) via our Cloudflare AI Gateway proxy each turn. That snapshot is assembled fresh per message and can include:
+
+- the text of your messages to the coach;
+- your current week's plan, past weeks, and any plan issues or missed workouts;
+- your completed sessions and logged sets, including sport sessions you confirmed from Apple Health;
+- body metrics you have entered: height, weight, age, gender;
+- injuries you have declared, their severity, side and onset, your own notes on them, and which exercises they filtered out;
+- soreness and post-workout feedback, including free-text notes;
+- dislikes and constraints you have written;
+- derived figures the app computes from the above: estimated strength numbers, muscle balance, movement-pattern frequency, exercise familiarity, recovery trend, and week adherence.
+
+No name, email, or device identifier is sent. The data is used only to generate the coach's response and is not used to train any model.
 
 Anthropic's processing is governed by their [Commercial Terms](https://www.anthropic.com/legal/commercial-terms) and [Privacy Policy](https://www.anthropic.com/legal/privacy). You can disable the AI Coach at any time from the same screen — once off, no further data leaves your device.
 
