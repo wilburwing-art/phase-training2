@@ -183,12 +183,25 @@ every ski slug (`SportSeasonGenerator.swift:233`; the three call sites are
 `Planner.swift:106,836` and `WorkoutGenerator.swift:92`), and no screen sets the
 generator's variant. So 9% of the ski pool is unreachable in the shipped app.
 
-### F10 (medium, consistency) The user can pick a climbing variant that the generator ignores
+### F10 REFUTED 2026-09-04 — the SupportPatternEditor variant is a different variant
 
-`SupportPatternEditor.swift:18` offers `.sportRoute`, `.boulder`, `.tradAlpine`.
-The generator ignores the choice and builds `.sportRoute` sessions regardless,
-because it resolves the variant from `defaultVariant(forSport:)` rather than
-from the user's setting. A boulderer sets "boulder" and receives route training.
+This claimed a boulderer sets "boulder" in `SupportPatternEditor.swift:18` and
+receives route training from the generator. Wrong on the premise.
+
+`SupportPattern.variant` describes the **support** sport, the second sport whose
+weekly rhythm the primary plan works around, and it feeds the support-load table
+"keyed by (primary variant, support variant, magnitude)"
+(`SupportPattern.swift:12,85`). It is not the primary sport's programming
+variant and was never read as one.
+
+There is no primary-sport variant anywhere in `TrainingMemory` (grep for
+`variant` returns nothing), so the user never picks one and nothing is being
+ignored. The real gap is F9's: the generator hardcodes `.inbounds` /
+`.sportRoute` because the variant picker (marked M4 in
+`SportSeasonGenerator.swift:231`) never landed, which leaves the backcountry,
+skimo, park, boulder and tradAlpine `PhaseRule` overrides and the four
+`aerobicUphill` movements unreachable. That is a missing feature, not a
+consistency bug.
 
 ### F11 (medium, wiring) Readiness, soreness and the Coach's build_workout tool do not reach the live generator
 
