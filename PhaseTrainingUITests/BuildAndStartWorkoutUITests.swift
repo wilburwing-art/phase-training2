@@ -40,7 +40,7 @@ final class BuildAndStartWorkoutUITests: XCTestCase {
             XCTAssertTrue(addButton.waitForExistence(timeout: 5), "Add exercise button should exist (iteration \(i))")
             addButton.tap()
 
-            let firstPickerRow = app.descendants(matching: .any)
+            let firstPickerRow = app.staticTexts
                 .matching(NSPredicate(format: "identifier BEGINSWITH 'picker-row-name-'"))
                 .firstMatch
             XCTAssertTrue(firstPickerRow.waitForExistence(timeout: 5), "Picker should show at least one exercise (iteration \(i))")

@@ -107,6 +107,10 @@ struct CustomRoutineEditSheet: View {
                     .styled(.body)
                     .foregroundStyle(Color.ink)
                     .listRowBackground(Color.surface)
+                    // Named so a test can reach THIS field: app.textFields
+                    // .firstMatch resolves to Library's "Search workouts" box
+                    // behind the sheet.
+                    .accessibilityIdentifier("custom-routine-name")
             } header: {
                 Text("NAME")
                     .styled(.micro)
@@ -158,9 +162,14 @@ struct CustomRoutineEditSheet: View {
                             Image(systemName: "bolt.fill")
                             Text("Start workout")
                         }
-                        .foregroundStyle(canSave ? Color.accent : Color.ink3)
+                        .foregroundStyle(canStart ? Color.accent : Color.ink3)
                     }
-                    .disabled(!canSave)
+                    // Start is NOT gated on `canSave`. Saving needs a name;
+                    // starting does not, and the footer below says so outright
+                    // ("It won't be saved to your library unless you tap
+                    // Save."). Requiring a title before you can train made the
+                    // button render enabled-looking and no-op on tap.
+                    .disabled(!canStart)
                     .listRowBackground(Color.surface)
                     .accessibilityIdentifier("custom-routine-start")
                 } footer: {
@@ -513,9 +522,12 @@ struct CustomRoutineEditSheet: View {
     /// A routine needs a name as well as exercises — the blank draft's name
     /// renders as an empty string in every list that shows it.
     private var canSave: Bool {
-        !draft.exercises.isEmpty
-            && !draft.name.trimmingCharacters(in: .whitespaces).isEmpty
+        canStart && !draft.name.trimmingCharacters(in: .whitespaces).isEmpty
     }
+
+    /// Starting only needs something to do. A blank name is fine — the session
+    /// is not written to the library.
+    private var canStart: Bool { !draft.exercises.isEmpty }
 
     private func save() {
         renumberPositions()

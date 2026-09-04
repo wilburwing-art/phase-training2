@@ -17,6 +17,15 @@ final class KettleCompleteUITests: XCTestCase {
                       "seeded session should land in the log")
         app.buttons["log-finish"].tap()
 
+        // T1-3: Finish confirms while sets are still open, and the supersets
+        // seed leaves 13 of 15 undone. Alert buttons are keyed by label.
+        // Scope to the alert: LogScreen's own Finish button is still behind
+        // it, so an app-wide query matches two.
+        let finishConfirm = app.alerts.buttons["Finish"]
+        XCTAssertTrue(finishConfirm.waitForExistence(timeout: 5),
+                      "open sets should raise the finish confirm")
+        finishConfirm.tap()
+
         XCTAssertTrue(app.buttons["complete-done"].waitForExistence(timeout: 8),
                       "finishing should present the complete screen (with Mr Kettle) without crashing")
 

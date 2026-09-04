@@ -221,6 +221,17 @@ final class TapBudgetTests: XCTestCase {
         var counter = TapCounter(app: app, flow: "discard-workout")
 
         counter.tap("log-finish")
+        // T1-3 made Finish confirm when sets are still open, and the seed
+        // leaves 13 of 15 undone, so this flow always sees the alert. Same
+        // label-keyed tap as the discard confirm below (an explicit id on an
+        // alert button produced duplicate matches on iOS 26).
+        // Scope to the alert: LogScreen's own Finish button is still in the
+        // hierarchy behind it, so an app-wide query matches two.
+        let finishConfirm = app.alerts.buttons["Finish"]
+        XCTAssertTrue(finishConfirm.waitForExistence(timeout: 5),
+                      "open sets should raise the finish confirm")
+        finishConfirm.tap()
+        counter.bump()
         XCTAssertTrue(app.buttons["complete-discard"].waitForExistence(timeout: 8),
                       "Finish should auto-save and show the summary")
         counter.tap("complete-discard")
@@ -236,7 +247,7 @@ final class TapBudgetTests: XCTestCase {
         confirm.tap()
         counter.bump()
 
-        recordTapBudget(counter, reference: 3)
+        recordTapBudget(counter, reference: 4)
     }
 
     // MARK: - 9. Log a sport session
@@ -383,6 +394,12 @@ final class TapBudgetTests: XCTestCase {
             NSPredicate(format: "identifier BEGINSWITH 'picker-row-name-'")).firstMatch
         XCTAssertTrue(firstRow.waitForExistence(timeout: 5))
         firstRow.tap()
+        // Save is gated on a non-empty name (Start is not — see
+        // CustomRoutineEditSheet.canStart). Setup, so not counted.
+        let nameField = app.textFields["custom-routine-name"]
+        XCTAssertTrue(nameField.waitForExistence(timeout: 5), "routine name field should exist")
+        nameField.tap()
+        nameField.typeText("Budget Flow")
         app.buttons["Save"].tap()
 
         // Act: the measured flow — the saved row's play button.
@@ -575,9 +592,14 @@ struct TapCounter {
         // A button that exists but is disabled/obscured taps as a SILENT no-op;
         // counting it would let a broken flow look fine here and fail
         // misleadingly a step later. Require it to actually be hittable.
-        guard el.isHittable else {
-            XCTFail("[\(flow)] button '\(id)' exists but isn't hittable — disabled "
-                    + "or obscured (would-be tap #\(count + 1))", file: file, line: line)
+        // isHittable alone is not enough: a DISABLED SwiftUI button still
+        // reports hittable, so the tap no-ops and the flow dies several
+        // assertions later against a screen that never advanced. Three of
+        // main's seven red UI tests failed exactly that way.
+        guard el.isHittable, el.isEnabled else {
+            XCTFail("[\(flow)] button '\(id)' exists but isn't tappable — disabled "
+                    + "(\(el.isEnabled ? "enabled" : "DISABLED")) or obscured "
+                    + "(would-be tap #\(count + 1))", file: file, line: line)
             return
         }
         el.tap()
