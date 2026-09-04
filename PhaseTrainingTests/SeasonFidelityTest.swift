@@ -23,6 +23,33 @@ final class SeasonFidelityTest: XCTestCase {
     ]
     private let phases: [SeasonPhase] = [.offSeason, .preSeason, .inSeason, .maintenance, .eventPrep]
 
+    // MARK: - 3a: max hangs at most twice a week
+
+    /// Three off-season climbing sessions used to each carry
+    /// `Hangboard Max Hang` or `Repeaters`. Standard protocols cap max hangs
+    /// at two sessions a week. Every session must STILL carry fingerStrength
+    /// (check-2), so the third fills it from pinch / dead-hang work.
+    func test_hangboardAppearsInAtMostTwoSessionsAWeek() {
+        let climb = sports[1]
+        for phase in [SeasonPhase.offSeason, .preSeason] {
+            var a = athlete(climb, season: phase)
+            let week = (0..<3).map {
+                SportSeasonGenerator.generateSession(a, sessionIndex: $0, sessionsInWeek: 3)
+            }
+            let hangboardSessions = week.filter { w in
+                w.exercises.contains { $0.name.localizedCaseInsensitiveContains("hangboard") }
+            }.count
+            XCTAssertLessThanOrEqual(hangboardSessions, 2,
+                "[\(phase.rawValue)] hangboard work in \(hangboardSessions) of 3 sessions")
+            for (i, w) in week.enumerated() {
+                let hasFinger = w.provenance.contains("fingerStrength")
+                    || w.exercises.contains { ["pinch", "hang", "hangboard"].contains(where: $0.name.lowercased().contains) }
+                XCTAssertTrue(hasFinger, "[\(phase.rawValue)] session \(i) lost its finger slot")
+            }
+            _ = a
+        }
+    }
+
     // MARK: - T2-10: readiness must reach the season engine
 
     /// The app asked for a soreness check-in and a readiness signal and served

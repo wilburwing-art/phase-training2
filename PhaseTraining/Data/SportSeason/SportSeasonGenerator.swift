@@ -98,8 +98,19 @@ enum SportSeasonGenerator {
             return a != b ? a < b : $0.0.rawValue < $1.0.rawValue
         }
         for (demand, count) in orderedSlots {
+            // Hangboard max hangs at most TWICE a week (3a, 2026-09-04). The
+            // signature guarantee puts fingerStrength in every session, which
+            // is right; but finger tendon and pulley tissue adapts on a slower
+            // timeline than muscle and the standard protocols cap max hangs at
+            // two sessions a week with 48-72 h between. The third and later
+            // sessions of a week fill the finger slot from the LIGHTER finger
+            // movements (pinch holds, dead hangs) instead. Deterministic by
+            // session index, so no cross-session state is needed.
+            let excludeHangboard = demand == .fingerStrength
+                && sessionsInWeek >= 3 && sessionIndex >= 2
             let candidates = pool
                 .filter { $0.serves(demand) && !used.contains($0.exerciseId) }
+                .filter { !excludeHangboard || !$0.name.localizedCaseInsensitiveContains("hangboard") }
                 .sorted { lhs, rhs in
                     // PRIMARY-DEMAND MATCH OUTRANKS RECENCY. It used to sit
                     // below it, so a slot whose only primary-demand movement
