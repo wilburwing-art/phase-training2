@@ -1,12 +1,5 @@
 [
   {
-    "exercise_id": 1,
-    "substitute_id": 13,
-    "context": "home_friendly",
-    "similarity_score": 0.45,
-    "notes": "Push-up as paired antagonist option when no pull-up bar is available."
-  },
-  {
     "exercise_id": 2,
     "substitute_id": 3,
     "context": "lower_intensity",
@@ -57,13 +50,6 @@
   },
   {
     "exercise_id": 7,
-    "substitute_id": 20,
-    "context": "home_friendly",
-    "similarity_score": 0.5,
-    "notes": "Pike push-up uses similar anti-extension core tension without a wheel."
-  },
-  {
-    "exercise_id": 7,
     "substitute_id": 63,
     "context": "pre_event_safe",
     "similarity_score": 0.55,
@@ -98,25 +84,11 @@
     "notes": "Dumbbell row substitutes cleanly when no cable machine is available."
   },
   {
-    "exercise_id": 9,
-    "substitute_id": 21,
-    "context": "low_energy",
-    "similarity_score": 0.4,
-    "notes": "Band pull-apart preserves scap retraction at low demand."
-  },
-  {
     "exercise_id": 10,
     "substitute_id": 9,
     "context": "equipment_swap",
     "similarity_score": 0.85,
     "notes": "Cable row gives the same pattern with a machine available."
-  },
-  {
-    "exercise_id": 10,
-    "substitute_id": 21,
-    "context": "low_energy",
-    "similarity_score": 0.35,
-    "notes": "Band pull-apart — same scap pattern, lighter."
   },
   {
     "exercise_id": 11,
@@ -159,20 +131,6 @@
     "context": "equipment_swap",
     "similarity_score": 0.85,
     "notes": "Dumbbell bench press if dumbbells available."
-  },
-  {
-    "exercise_id": 13,
-    "substitute_id": 21,
-    "context": "low_energy",
-    "similarity_score": 0.4,
-    "notes": "Band pull-apart — similar antagonist stimulus at a fraction of the demand."
-  },
-  {
-    "exercise_id": 13,
-    "substitute_id": 21,
-    "context": "pre_event_safe",
-    "similarity_score": 0.4,
-    "notes": null
   },
   {
     "exercise_id": 14,
@@ -414,13 +372,6 @@
   },
   {
     "exercise_id": 52,
-    "substitute_id": 49,
-    "context": "lower_intensity",
-    "similarity_score": 0.75,
-    "notes": "Box jump — similar power, less horizontal deceleration."
-  },
-  {
-    "exercise_id": 52,
     "substitute_id": 61,
     "context": "home_friendly",
     "similarity_score": 0.6,
@@ -530,13 +481,6 @@
     "context": "pre_event_safe",
     "similarity_score": 0.45,
     "notes": "Light kettlebell swing is the only pre-event-safe hinge option."
-  },
-  {
-    "exercise_id": 60,
-    "substitute_id": 57,
-    "context": "lower_intensity",
-    "similarity_score": 0.8,
-    "notes": "Full barbell back squat when more load is wanted."
   },
   {
     "exercise_id": 60,
@@ -679,20 +623,6 @@
     "notes": "Medball rotational throw as the explosive version."
   },
   {
-    "exercise_id": 119,
-    "substitute_id": 60,
-    "context": "home_friendly",
-    "similarity_score": 0.5,
-    "notes": null
-  },
-  {
-    "exercise_id": 119,
-    "substitute_id": 60,
-    "context": "lower_intensity",
-    "similarity_score": 0.5,
-    "notes": "Goblet squat for a fraction of the TGU complexity."
-  },
-  {
     "exercise_id": 127,
     "substitute_id": 63,
     "context": "home_friendly",
@@ -803,13 +733,6 @@
     "context": "home_friendly",
     "similarity_score": 0.8,
     "notes": null
-  },
-  {
-    "exercise_id": 135,
-    "substitute_id": 21,
-    "context": "low_energy",
-    "similarity_score": 0.4,
-    "notes": "Band pull-apart preserves scap pattern."
   },
   {
     "exercise_id": 210,
@@ -967,24 +890,10 @@
   },
   {
     "exercise_id": 227,
-    "substitute_id": 62,
-    "context": "lower_intensity",
-    "similarity_score": 0.7,
-    "notes": "Bulgarian split squat."
-  },
-  {
-    "exercise_id": 227,
     "substitute_id": 226,
     "context": "low_energy",
     "similarity_score": 0.65,
     "notes": null
-  },
-  {
-    "exercise_id": 228,
-    "substitute_id": 229,
-    "context": "lower_intensity",
-    "similarity_score": 0.7,
-    "notes": "Cross-over step — similar footwork without the continuous cardio demand."
   },
   {
     "exercise_id": 229,
@@ -1020,13 +929,6 @@
     "context": "low_energy",
     "similarity_score": 0.5,
     "notes": null
-  },
-  {
-    "exercise_id": 230,
-    "substitute_id": 49,
-    "context": "lower_intensity",
-    "similarity_score": 0.9,
-    "notes": "Box jump — similar vertical demand with landing target."
   },
   {
     "exercise_id": 230,
@@ -1076,20 +978,6 @@
     "context": "pre_event_safe",
     "similarity_score": 0.4,
     "notes": null
-  },
-  {
-    "exercise_id": 233,
-    "substitute_id": 50,
-    "context": "home_friendly",
-    "similarity_score": 0.55,
-    "notes": null
-  },
-  {
-    "exercise_id": 233,
-    "substitute_id": 50,
-    "context": "lower_intensity",
-    "similarity_score": 0.65,
-    "notes": "Medball slam; similar full-body output."
   },
   {
     "exercise_id": 234,
@@ -1146,13 +1034,6 @@
     "context": "lower_intensity",
     "similarity_score": 0.65,
     "notes": "Bulgarian split squat."
-  },
-  {
-    "exercise_id": 301,
-    "substitute_id": 121,
-    "context": "lower_intensity",
-    "similarity_score": 0.7,
-    "notes": "Neck bridge iso preserves pattern without plate load."
   },
   {
     "exercise_id": 302,
@@ -1293,13 +1174,6 @@
     "context": "lower_intensity",
     "similarity_score": 0.7,
     "notes": "Dumbbell bench press for horizontal push stimulus."
-  },
-  {
-    "exercise_id": 312,
-    "substitute_id": 23,
-    "context": "lower_intensity",
-    "similarity_score": 0.55,
-    "notes": "Overhead triceps extension hits a similar overhead range at lower demand."
   },
   {
     "exercise_id": 312,
@@ -1632,24 +1506,10 @@
   },
   {
     "exercise_id": 361,
-    "substitute_id": 103,
-    "context": "low_energy",
-    "similarity_score": 0.5,
-    "notes": "Single-leg glute bridge."
-  },
-  {
-    "exercise_id": 361,
     "substitute_id": 239,
     "context": "lower_intensity",
     "similarity_score": 0.8,
     "notes": "Eccentric step-down (sagittal) — same eccentric principle."
-  },
-  {
-    "exercise_id": 362,
-    "substitute_id": 62,
-    "context": "lower_intensity",
-    "similarity_score": 0.75,
-    "notes": "Bulgarian split squat — dynamic version."
   },
   {
     "exercise_id": 362,
@@ -1699,13 +1559,6 @@
     "context": "low_energy",
     "similarity_score": 0.65,
     "notes": "Single-arm DB row at lighter weight."
-  },
-  {
-    "exercise_id": 372,
-    "substitute_id": 21,
-    "context": "pre_event_safe",
-    "similarity_score": 0.5,
-    "notes": "Band pull-apart for light scap work."
   },
   {
     "exercise_id": 372,
@@ -1827,13 +1680,6 @@
     "notes": "Hanging leg raise as the step-down progression."
   },
   {
-    "exercise_id": 380,
-    "substitute_id": 1,
-    "context": "lower_intensity",
-    "similarity_score": 0.75,
-    "notes": "Weighted pull-up at moderate load."
-  },
-  {
     "exercise_id": 381,
     "substitute_id": 63,
     "context": "pre_event_safe",
@@ -1916,20 +1762,6 @@
     "context": "lower_intensity",
     "similarity_score": 0.9,
     "notes": "Bulgarian split squat — same pattern, neutral stance."
-  },
-  {
-    "exercise_id": 408,
-    "substitute_id": 54,
-    "context": "equipment_swap",
-    "similarity_score": 0.85,
-    "notes": "Rowing erg."
-  },
-  {
-    "exercise_id": 408,
-    "substitute_id": 54,
-    "context": "lower_intensity",
-    "similarity_score": 0.8,
-    "notes": "Rowing erg intervals."
   },
   {
     "exercise_id": 413,
@@ -2472,13 +2304,6 @@
   },
   {
     "exercise_id": 499,
-    "substitute_id": 21,
-    "context": "low_energy",
-    "similarity_score": 0.45,
-    "notes": "Band pull-apart preserves retraction."
-  },
-  {
-    "exercise_id": 499,
     "substitute_id": 135,
     "context": "home_friendly",
     "similarity_score": 0.85,
@@ -2639,27 +2464,6 @@
     "notes": "Single-leg glute bridge (non-dance version)."
   },
   {
-    "exercise_id": 526,
-    "substitute_id": 111,
-    "context": "low_energy",
-    "similarity_score": 0.55,
-    "notes": "Single-leg heel drop."
-  },
-  {
-    "exercise_id": 526,
-    "substitute_id": 111,
-    "context": "pre_event_safe",
-    "similarity_score": 0.5,
-    "notes": null
-  },
-  {
-    "exercise_id": 531,
-    "substitute_id": 57,
-    "context": "lower_intensity",
-    "similarity_score": 0.8,
-    "notes": "Barbell back squat hold / walkout — similar spinal load, lower demand."
-  },
-  {
     "exercise_id": 531,
     "substitute_id": 64,
     "context": "home_friendly",
@@ -2674,20 +2478,6 @@
     "notes": "Light farmer carry spares CNS."
   },
   {
-    "exercise_id": 532,
-    "substitute_id": 216,
-    "context": "low_energy",
-    "similarity_score": 0.35,
-    "notes": "Burpee — full-body conditioning without load."
-  },
-  {
-    "exercise_id": 532,
-    "substitute_id": 328,
-    "context": "home_friendly",
-    "similarity_score": 0.6,
-    "notes": "Sandbag bear-hug carry if no tire available."
-  },
-  {
     "exercise_id": 533,
     "substitute_id": 216,
     "context": "home_friendly",
@@ -2700,13 +2490,6 @@
     "context": "lower_intensity",
     "similarity_score": 0.6,
     "notes": "Burpee as no-equipment conditioning swap."
-  },
-  {
-    "exercise_id": 535,
-    "substitute_id": 15,
-    "context": "home_friendly",
-    "similarity_score": 0.7,
-    "notes": "DB overhead press at home as substitute pattern."
   },
   {
     "exercise_id": 535,
@@ -2728,27 +2511,6 @@
     "context": "pre_event_safe",
     "similarity_score": 0.6,
     "notes": null
-  },
-  {
-    "exercise_id": 536,
-    "substitute_id": 61,
-    "context": "home_friendly",
-    "similarity_score": 0.8,
-    "notes": "Kettlebell swing at home."
-  },
-  {
-    "exercise_id": 536,
-    "substitute_id": 61,
-    "context": "lower_intensity",
-    "similarity_score": 0.7,
-    "notes": "Kettlebell swing — same hip drive, no overhead."
-  },
-  {
-    "exercise_id": 536,
-    "substitute_id": 61,
-    "context": "pre_event_safe",
-    "similarity_score": 0.45,
-    "notes": "Light KB swings spare shoulders pre-event."
   },
   {
     "exercise_id": 537,
@@ -2835,41 +2597,6 @@
     "notes": "Full power clean — the canonical version."
   },
   {
-    "exercise_id": 543,
-    "substitute_id": 10,
-    "context": "home_friendly",
-    "similarity_score": 0.65,
-    "notes": null
-  },
-  {
-    "exercise_id": 543,
-    "substitute_id": 10,
-    "context": "low_energy",
-    "similarity_score": 0.5,
-    "notes": "Dumbbell row — bigger pattern including biceps."
-  },
-  {
-    "exercise_id": 543,
-    "substitute_id": 10,
-    "context": "pre_event_safe",
-    "similarity_score": 0.55,
-    "notes": null
-  },
-  {
-    "exercise_id": 543,
-    "substitute_id": 23,
-    "context": "lower_intensity",
-    "similarity_score": 0.55,
-    "notes": "Overhead triceps extension as antagonist swap day."
-  },
-  {
-    "exercise_id": 544,
-    "substitute_id": 13,
-    "context": "low_energy",
-    "similarity_score": 0.5,
-    "notes": "Push-up at submax volume."
-  },
-  {
     "exercise_id": 544,
     "substitute_id": 23,
     "context": "home_friendly",
@@ -2919,20 +2646,6 @@
     "notes": null
   },
   {
-    "exercise_id": 546,
-    "substitute_id": 21,
-    "context": "low_energy",
-    "similarity_score": 0.55,
-    "notes": "Band pull-apart for shoulder health with less load."
-  },
-  {
-    "exercise_id": 546,
-    "substitute_id": 21,
-    "context": "pre_event_safe",
-    "similarity_score": 0.55,
-    "notes": null
-  },
-  {
     "exercise_id": 548,
     "substitute_id": 58,
     "context": "home_friendly",
@@ -2959,34 +2672,6 @@
     "context": "lower_intensity",
     "similarity_score": 0.95,
     "notes": "Conventional deadlift from the floor."
-  },
-  {
-    "exercise_id": 549,
-    "substitute_id": 328,
-    "context": "home_friendly",
-    "similarity_score": 0.75,
-    "notes": null
-  },
-  {
-    "exercise_id": 549,
-    "substitute_id": 328,
-    "context": "low_energy",
-    "similarity_score": 0.6,
-    "notes": null
-  },
-  {
-    "exercise_id": 549,
-    "substitute_id": 328,
-    "context": "lower_intensity",
-    "similarity_score": 0.85,
-    "notes": "Sandbag bear-hug carry — same hug-and-lift pattern without the shoulder flip."
-  },
-  {
-    "exercise_id": 549,
-    "substitute_id": 328,
-    "context": "pre_event_safe",
-    "similarity_score": 0.5,
-    "notes": null
   },
   {
     "exercise_id": 551,
@@ -3043,20 +2728,6 @@
     "context": "pre_event_safe",
     "similarity_score": 0.65,
     "notes": null
-  },
-  {
-    "exercise_id": 561,
-    "substitute_id": 21,
-    "context": "home_friendly",
-    "similarity_score": 0.7,
-    "notes": null
-  },
-  {
-    "exercise_id": 561,
-    "substitute_id": 21,
-    "context": "low_energy",
-    "similarity_score": 0.55,
-    "notes": "Band pull-apart."
   },
   {
     "exercise_id": 561,
@@ -3122,34 +2793,6 @@
     "notes": null
   },
   {
-    "exercise_id": 578,
-    "substitute_id": 228,
-    "context": "home_friendly",
-    "similarity_score": 0.75,
-    "notes": null
-  },
-  {
-    "exercise_id": 578,
-    "substitute_id": 228,
-    "context": "low_energy",
-    "similarity_score": 0.55,
-    "notes": null
-  },
-  {
-    "exercise_id": 578,
-    "substitute_id": 228,
-    "context": "lower_intensity",
-    "similarity_score": 0.75,
-    "notes": "Lateral shuffle — lower intensity change-of-direction."
-  },
-  {
-    "exercise_id": 578,
-    "substitute_id": 228,
-    "context": "pre_event_safe",
-    "similarity_score": 0.6,
-    "notes": null
-  },
-  {
     "exercise_id": 579,
     "substitute_id": 535,
     "context": "home_friendly",
@@ -3178,60 +2821,11 @@
     "notes": null
   },
   {
-    "exercise_id": 612,
-    "substitute_id": 600,
-    "context": "low_energy",
-    "similarity_score": 0.4,
-    "notes": null
-  },
-  {
-    "exercise_id": 612,
-    "substitute_id": 600,
-    "context": "pre_event_safe",
-    "similarity_score": 0.4,
-    "notes": null
-  },
-  {
-    "exercise_id": 623,
-    "substitute_id": 636,
-    "context": "home_friendly",
-    "similarity_score": 0.6,
-    "notes": "High-rep calf raise endurance instead of eccentric step-down."
-  },
-  {
-    "exercise_id": 623,
-    "substitute_id": 636,
-    "context": "low_energy",
-    "similarity_score": 0.6,
-    "notes": null
-  },
-  {
-    "exercise_id": 623,
-    "substitute_id": 636,
-    "context": "pre_event_safe",
-    "similarity_score": 0.55,
-    "notes": null
-  },
-  {
-    "exercise_id": 630,
-    "substitute_id": 638,
-    "context": "home_friendly",
-    "similarity_score": 0.55,
-    "notes": "Dead hang with pack uses same equipment."
-  },
-  {
     "exercise_id": 634,
     "substitute_id": 630,
     "context": "home_friendly",
     "similarity_score": 0.6,
     "notes": "Overhead carry uses same load for similar shoulder packing."
-  },
-  {
-    "exercise_id": 638,
-    "substitute_id": 630,
-    "context": "home_friendly",
-    "similarity_score": 0.55,
-    "notes": "Overhead carry alternative at home."
   },
   {
     "exercise_id": 676,
@@ -3392,34 +2986,6 @@
     "substitute_id": 715,
     "context": "pre_event_safe",
     "similarity_score": 0.45,
-    "notes": null
-  },
-  {
-    "exercise_id": 761,
-    "substitute_id": 764,
-    "context": "home_friendly",
-    "similarity_score": 0.7,
-    "notes": null
-  },
-  {
-    "exercise_id": 761,
-    "substitute_id": 764,
-    "context": "low_energy",
-    "similarity_score": 0.55,
-    "notes": null
-  },
-  {
-    "exercise_id": 761,
-    "substitute_id": 764,
-    "context": "lower_intensity",
-    "similarity_score": 0.7,
-    "notes": "Half-kneel chop for rotation power at lower spine compression."
-  },
-  {
-    "exercise_id": 761,
-    "substitute_id": 764,
-    "context": "pre_event_safe",
-    "similarity_score": 0.55,
     "notes": null
   },
   {
@@ -4859,13 +4425,6 @@
   },
   {
     "exercise_id": 618,
-    "substitute_id": 111,
-    "context": "lower_intensity",
-    "similarity_score": 0.8,
-    "notes": "Eccentric-only heel drops bias tendon health from the same single-leg setup."
-  },
-  {
-    "exercise_id": 618,
     "substitute_id": 112,
     "context": "lower_intensity",
     "similarity_score": 0.75,
@@ -4982,41 +4541,6 @@
     "context": "age_friendly",
     "similarity_score": 0.4,
     "notes": "Unloaded easy walking as the recovery-day fallback when legs are cooked."
-  },
-  {
-    "exercise_id": 622,
-    "substitute_id": 62,
-    "context": "home_friendly",
-    "similarity_score": 0.62,
-    "notes": "Rear-foot-elevated work covers the unilateral leg drive when no box or pack is around."
-  },
-  {
-    "exercise_id": 622,
-    "substitute_id": 238,
-    "context": "equipment_swap",
-    "similarity_score": 0.9,
-    "notes": "Same high-box pattern with dumbbells when the pack isn't packed."
-  },
-  {
-    "exercise_id": 622,
-    "substitute_id": 620,
-    "context": "home_friendly",
-    "similarity_score": 0.58,
-    "notes": "Take the load outside — continuous pack climbing replaces discrete box steps."
-  },
-  {
-    "exercise_id": 622,
-    "substitute_id": 1168,
-    "context": "equipment_swap",
-    "similarity_score": 0.85,
-    "notes": "Barbell version allows precise loading of the same step pattern."
-  },
-  {
-    "exercise_id": 622,
-    "substitute_id": 1169,
-    "context": "equipment_swap",
-    "similarity_score": 0.84,
-    "notes": "Kettlebell version of the same loaded step; easy to set up anywhere in the gym."
   },
   {
     "exercise_id": 629,
@@ -6776,13 +6300,6 @@
     "notes": "Band straight-leg deadlift keeps erectors and glutes working with no pad or rack needed."
   },
   {
-    "exercise_id": 983,
-    "substitute_id": 1093,
-    "context": "lower_intensity",
-    "similarity_score": 0.58,
-    "notes": "Band straight-leg deadlift keeps erectors and glutes working with no pad or rack needed."
-  },
-  {
     "exercise_id": 984,
     "substitute_id": 103,
     "context": "home_friendly",
@@ -6807,13 +6324,6 @@
     "exercise_id": 984,
     "substitute_id": 1093,
     "context": "home_friendly",
-    "similarity_score": 0.58,
-    "notes": "Band straight-leg deadlift keeps the lumbar hinge ticking over away from the gym."
-  },
-  {
-    "exercise_id": 984,
-    "substitute_id": 1093,
-    "context": "lower_intensity",
     "similarity_score": 0.58,
     "notes": "Band straight-leg deadlift keeps the lumbar hinge ticking over away from the gym."
   },
@@ -11292,13 +10802,6 @@
   },
   {
     "exercise_id": 1124,
-    "substitute_id": 888,
-    "context": "lower_intensity",
-    "similarity_score": 0.38,
-    "notes": "Band draw-hold keeps rear delts and rhomboids ticking when traveling."
-  },
-  {
-    "exercise_id": 1124,
     "substitute_id": 994,
     "context": "equipment_swap",
     "similarity_score": 0.7,
@@ -12090,13 +11593,6 @@
   },
   {
     "exercise_id": 1160,
-    "substitute_id": 601,
-    "context": "lower_intensity",
-    "similarity_score": 0.68,
-    "notes": "Skater squat keeps single-leg knee-dominant work with zero equipment."
-  },
-  {
-    "exercise_id": 1160,
     "substitute_id": 1161,
     "context": "equipment_swap",
     "similarity_score": 0.85,
@@ -12139,13 +11635,6 @@
   },
   {
     "exercise_id": 1161,
-    "substitute_id": 601,
-    "context": "lower_intensity",
-    "similarity_score": 0.68,
-    "notes": "Skater squat for equipment-free single-leg quad work."
-  },
-  {
-    "exercise_id": 1161,
     "substitute_id": 1160,
     "context": "equipment_swap",
     "similarity_score": 0.88,
@@ -12183,13 +11672,6 @@
     "exercise_id": 1162,
     "substitute_id": 601,
     "context": "home_friendly",
-    "similarity_score": 0.68,
-    "notes": "Skater squat keeps unilateral knee-dominant work with no load at all."
-  },
-  {
-    "exercise_id": 1162,
-    "substitute_id": 601,
-    "context": "lower_intensity",
     "similarity_score": 0.68,
     "notes": "Skater squat keeps unilateral knee-dominant work with no load at all."
   },
@@ -12328,13 +11810,6 @@
   },
   {
     "exercise_id": 1168,
-    "substitute_id": 622,
-    "context": "equipment_swap",
-    "similarity_score": 0.84,
-    "notes": "Pack-loaded high-box version for hiking-specific carryover."
-  },
-  {
-    "exercise_id": 1168,
     "substitute_id": 1169,
     "context": "equipment_swap",
     "similarity_score": 0.92,
@@ -12360,13 +11835,6 @@
     "context": "equipment_swap",
     "similarity_score": 0.9,
     "notes": "Loaded step-up with any implement when kettlebells are taken."
-  },
-  {
-    "exercise_id": 1169,
-    "substitute_id": 622,
-    "context": "equipment_swap",
-    "similarity_score": 0.84,
-    "notes": "Weight-vest high-box step-up for pack-specific hiking prep."
   },
   {
     "exercise_id": 1169,

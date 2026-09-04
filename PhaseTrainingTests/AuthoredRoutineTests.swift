@@ -298,7 +298,13 @@ final class AuthoredRoutineTests: XCTestCase {
         for (slug, injury) in [("mountain-biking", "lumbar-disc-herniation"),
                                ("climbing", "finger-pulley"),
                                ("snowboarding", "acl-injury"),
-                               ("trail-running", "acl-injury")] {
+                               ("trail-running", "acl-injury"),
+                               // 1b (2026-09-04) added ~3,000 sourced-unreviewed
+                               // rows; these are the broadest of them.
+                               ("alpine-skiing", "pfps"),
+                               ("climbing", "biceps-tendinopathy"),
+                               ("mountain-biking", "hamstring-strain"),
+                               ("hiking-trekking", "meniscus-tear")] {
             var memory = TrainingMemory()
             memory.primarySport = Sport.resolve(slug: slug)
             memory.userInjuries = [UserInjury(slug: injury)]
