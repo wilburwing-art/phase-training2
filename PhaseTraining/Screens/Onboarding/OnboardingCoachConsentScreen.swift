@@ -45,14 +45,16 @@ struct OnboardingCoachConsentScreen: View {
                     subtitle: CoachConsent.shortDisclosure,
                     selected: localOn == true,
                     leading: "sparkles",
-                    action: { localOn = true }
+                    action: { localOn = true },
+                    a11yId: "onboarding-consent-on"
                 )
                 OnboardingPickRow(
                     title: "No coach",
                     subtitle: "Nothing leaves your phone. You can turn this on later in Profile.",
                     selected: localOn == false,
                     leading: "lock.fill",
-                    action: { localOn = false }
+                    action: { localOn = false },
+                    a11yId: "onboarding-consent-off"
                 )
                 Text(CoachConsent.modalBody)
                     .font(.caption)

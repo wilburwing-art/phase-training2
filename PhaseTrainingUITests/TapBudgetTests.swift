@@ -289,13 +289,17 @@ final class TapBudgetTests: XCTestCase {
         counter.tap("onboarding-continue-about")
         counter.tap("onboarding-continue-eraAffinity")
         counter.tap("onboarding-continue-constraints")
+        // Consent is the second gated step (T0-5): neither option is
+        // pre-selected, so Continue stays disabled until the user picks one.
+        // Declining keeps the walk offline and costs the same single tap.
+        counter.tap("onboarding-consent-off")
         counter.tap("onboarding-continue-coachConsent")
         counter.tapWhenEnabled("onboarding-continue-planPreview", timeout: 15)  // Accept
 
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 10),
                       "accepting the plan should dismiss onboarding into the main tabs")
 
-        recordTapBudget(counter, reference: 12)
+        recordTapBudget(counter, reference: 13)
     }
 
     // MARK: - 11. Weekly check-in → regenerated plan

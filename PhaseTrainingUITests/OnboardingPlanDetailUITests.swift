@@ -27,6 +27,8 @@ final class OnboardingPlanDetailUITests: XCTestCase {
         step(app, "onboarding-continue-about")
         step(app, "onboarding-continue-eraAffinity")
         step(app, "onboarding-continue-constraints")
+        // Consent is gated (T0-5): pick an option or Continue never enables.
+        step(app, "onboarding-consent-off")
         step(app, "onboarding-continue-coachConsent")
 
         // On the plan preview. Wait for generation (the Accept button enables
