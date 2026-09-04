@@ -49,6 +49,16 @@ of 10 done, T2-2 partial, T2-7 refuted. R2-01 and R2-02 fixed; R2-03 fixed;
 R2-05 recorded with numbers and left as a product decision. The whole-scheme
 gate on the final state is in `scratchpad/final2.log`.
 
+## Shipped
+
+Build 124 tagged `v1.1.0-build124` at `9c4a46f` on 2026-09-04 and handed to
+`release.yml`. Gate for the tag was CI's `test.yml` on that exact commit
+(run `33898540321`, **success** — the first green run on `main` since at least
+2026-08-29). The local whole-scheme run against the same commit finished the
+unit target at 1,071/0 and then wedged for 3.3 hours at UI test 12 on
+"Wait for com.phasetraining.app to idle"; it was killed and CI used as the
+gate instead, which is the gate this repo actually ships on.
+
 ## Status
 
 | # | Lens | Second-pass state |
