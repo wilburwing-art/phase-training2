@@ -118,3 +118,21 @@ mid-test can leave the wrong binary installed for later manual checks.
   with both mutators, or (b) add a probe with nil mutators + a `skipReason`. The test message spells out both.
 - **`PlateMathTests`:** assertions encode a specific plate inventory; if the `imperial`/`metric` set changes
   (e.g. a 1.25 plate drops), `achieved`/`remainder` drift and the test goes red against the new inventory.
+
+## Before diagnosing anything: main in this repo ships red
+
+The UITest target has a standing set of failures, so a red run here is the
+normal state and is usually not yours. Check the base commit's CI run first:
+
+```
+gh run list --limit 6 --workflow test.yml
+gh run view <run-id> --log-failed | grep -oE '##\[error\]\s+[a-zA-Z0-9_]+, ' | sort -u
+```
+
+2026-09-04, after merging PR #54: CI on `main` failed 8 UITests, each across
+all 3 of the workflow's `-test-iterations`. A local run on top of it failed 7,
+every one inside that roster, so the local change had added nothing. Note the
+CI log needs that `##[error]` pattern; the `Test Case '-[...]' failed` form
+used above matches only raw local output and returns empty here.
+
+Full recipe in the global `attribute-red-tests-to-ci-baseline` skill.
