@@ -20,7 +20,7 @@ item's own gate below.
 | 5 | week-shape tests for thru-hiking, mountaineering, trail-running **(done 2026-09-05)** | single | one test per sport asserting the full-gym week's shape across phases |
 | 6 | wheel samples differ **(done 2026-09-05; found and fixed 59 duplicate pairs)** | single | one assertion: exercise-id sets and titles distinct across a sport's samples |
 | 7 | R3-9 per-movement prescription override **(done 2026-09-05)** | single | `SportMovement` carries optional sets/reps/rest; scheme respects it; no-hang pull serves as 3 s pulls; fidelity green |
-| 8 | small items R3-12, R3-13, R3-14, 08-23 header | single | estimator parses "min"; routine 70 renamed or re-tagged; PFPS rule scoped; header count fixed |
+| 8 | small items R3-12, R3-13, R3-14, 08-23 header **(done 2026-09-05)** | single | estimator parses "min"; routine 70 renamed or re-tagged; PFPS rule scoped; header count fixed |
 | 9 | T3-1 mountain-athlete niche briefs | fan-out, one brief per plannable sport | verbatim-or-NOT-ON-PAGE; briefs filed, not acted on (5c) |
 
 ## Item 1 contract (the agents read this)
