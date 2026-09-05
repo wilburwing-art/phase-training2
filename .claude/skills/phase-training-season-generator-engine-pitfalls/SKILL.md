@@ -206,3 +206,32 @@ would have caught nothing. The session now appends
 
 **A filter count tells you what was removed, never what the engine does with
 what remains.** One `generateLift` call with the injury set answers it.
+
+### 8c. Fixing an inert weight moves a slot away from a demand you did not touch
+
+R3-8 landed 2026-09-05. Climbing pre-season: prehab 0.05 -> 0.10, core
+0.05 -> 0, nothing else changed. The realized table afterwards:
+
+    prehab        0.10 -> realized 0.12   (the intended gain)
+    pullStrength  0.20 -> realized 0.12   (was 0.25; its weight did not change)
+    bodyTension   0.20 -> realized 0.25   (unchanged)
+
+Twelve weekly slots quantise, so the slot prehab gained came out of
+pullStrength's realized share, not out of core's nominal one. Every funded
+demand still buys a slot, which is what `test_everyFundedDemandRealizesASlot`
+guards, but the served week moved more than the weight table did. **After any
+weight change, read the whole realized table for that phase**, not the row you
+meant to fix, and report the collateral movement to the owner as a fact.
+
+Related: a demand can realize far below target without being inert.
+`kneeStability` in ski maintenance went 0.30 -> 0.40 and still realizes 0.12,
+because `guaranteeSignature` hands its slot to `eccentricLeg` every session.
+"Buys at least one slot" (the R3-1 gate) and "realized tracks target" (check 1's
+L1 drift) answer different questions; a big gap on the second with a pass on
+the first points at the guarantee or the pool, not at the weight.
+
+Also the scripting slip that cost a round here: anchoring an edit on
+`s.index('static let climbing')` matched `static let climbingSlugs` sixty lines
+earlier and rewrote the ski block's search window. Anchor on the declaration
+with its type (`static let climbing:`), and assert the key you are about to
+change appears exactly once inside the located block.
