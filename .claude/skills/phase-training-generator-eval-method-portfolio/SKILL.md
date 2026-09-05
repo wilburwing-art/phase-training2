@@ -133,3 +133,28 @@ and points at Profile), after which it was simply wrong. **A decision comment
 justified by the absence of an option needs re-reading when someone adds that
 option.** Grep for "beats nothing", "better than empty", "rather than fail" in
 a path you are about to extend.
+
+## Determinism is not variety (2026-09-05, item 6 of the R4 work plan)
+
+`test_sampleIsDeterministicPerSeason` passed for weeks while the Today wheel
+showed a bodyweight thru-hiker five season "samples" that were all the same
+routine; 59 identical pairs across the eight sports once the pairwise
+assertion existed. A determinism test says the same input gives the same
+output. It says nothing about different inputs giving different outputs, and a
+feature whose whole promise is "see how the seasons differ" needs the second
+assertion, not the first. Write both; they fail on different bugs.
+
+The fix was in the consumer (the wheel drops candidates whose title and
+movement set match another, or the planned stop), and the test asserts the
+consumer's contract after the helper, with the raw distinct counts printed so
+the content gap it exposes (authored sports: one routine per phase label) is a
+filed number rather than a hidden one.
+
+### A check that fails on a true statement wants better wording, not a looser check
+
+Item 7 introduced per-movement protocols and check 8 ("a fingerStrength
+prescription reads as a hold") failed on "3-4 pulls per hand". Each pull IS a
+3 s isometric hold, so the reps string became "3-4 x 3 sec holds per hand",
+which is more accurate for the athlete as well, and the check stayed as it
+was. First instinct was to exempt protocol movements from the check; that
+would have removed the one place the app asserts finger work is isometric.
