@@ -2338,5 +2338,25 @@
     "tags": "[\"thru-hiking\",\"durability\",\"tendon-health\",\"eccentric\",\"core-stability\",\"bodyweight\"]",
     "created_at": "2026-09-05 00:00:00",
     "updated_at": "2026-09-05 00:00:00"
+  },
+  {
+    "id": 305,
+    "name": "Bodyweight Base: Push, Hinge, Squat, Trunk",
+    "slug": "bodyweight-base-push-hinge-squat-trunk",
+    "description": "A no-equipment base session built on the same five human movements the Easy Strength program organises around: squat, hinge, push and trunk, with the pull left honest. It is the fallback every sport reaches when its own routines cannot be equipped, so it is written to survive a bad knee, a bad back and a bad achilles with three movements standing.",
+    "goal": "strength",
+    "difficulty": "beginner",
+    "phase": "base",
+    "duration_minutes": 35,
+    "frequency": "2-3x/week",
+    "environment": "home",
+    "time_commitment": "35 min",
+    "ideal_schedule": null,
+    "notes": "No pull is included because the catalog has no bodyweight pull without a bar; add a pull-up bar or bands in Profile to unlock rows and pull-ups in your sport routines. Slow the lowering phase on every movement.",
+    "source_name": "Dan John's five human movements (push, pull, hinge, squat, loaded carry), bodyweight selection by Phase Training (2026-09-05)",
+    "source_url": "https://danjohnuniversity.com/",
+    "tags": "[\"general-fitness\", \"bodyweight\", \"base\", \"fallback\", \"beginner\"]",
+    "created_at": "2026-09-05 00:00:00",
+    "updated_at": "2026-09-05 00:00:00"
   }
 ]

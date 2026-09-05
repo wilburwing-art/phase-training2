@@ -70,6 +70,7 @@ final class FilterCompositionTests: XCTestCase {
 
                             if w.exercises.isEmpty {
                                 declaredEmpty += 1
+                                print("FILTER-COMPOSITION empty \(ctx) \(w.provenance)")
                                 XCTAssertTrue(
                                     Self.declaredEmptyStates.contains(w.provenance),
                                     "\(ctx) empty day with provenance '\(w.provenance)' — an empty day "
