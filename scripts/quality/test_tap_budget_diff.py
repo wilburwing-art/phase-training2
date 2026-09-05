@@ -106,6 +106,21 @@ class TapBudgetDiffTests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("BASELINE ERROR", out)
 
+    def test_ran_but_no_markers_gates(self):
+        """TapBudgetTests ran but emitted nothing = tracking calls removed."""
+        self.write_baseline({"a": 2})
+        out, code = self.run_diff(
+            "Test Case '-[PhaseTrainingUITests.TapBudgetTests testTapBudget_x]' passed")
+        self.assertEqual(code, 1)
+        self.assertIn("no markers", out)
+
+    def test_suite_skipped_stays_green(self):
+        """No markers AND no TapBudget test cases = suite skipped; stay green."""
+        self.write_baseline({"a": 2})
+        out, code = self.run_diff("nothing here", log_file=False)
+        self.assertEqual(code, 0)
+        self.assertIn("did the", out)
+
     # --- gating: exit 0 (visibility only) -------------------------------
 
     def test_unchanged_flows_exit_0(self):
@@ -126,12 +141,19 @@ class TapBudgetDiffTests(unittest.TestCase):
         self.assertIn("+2", out)
 
     def test_slow_flow_flagged_not_gated(self):
-        """seconds > baseline+50% → SLOW flag, exit still 0."""
+        """seconds in (baseline+50%, baseline+100%] → SLOW flag, exit still 0."""
         self.write_baseline({"a": {"taps": 2, "seconds": 5.0}})
         out, code = self.run_diff(marker("a", 2, 2, seconds=9.0))
         self.assertEqual(code, 0)
         self.assertIn("SLOW", out)
-        self.assertIn("Slow (time budget exceeded)", out)
+        self.assertIn("SLOW (over baseline +50%)", out)
+
+    def test_critical_slow_escalates(self):
+        """seconds > baseline+100% → CRITICAL tier, exit still 0."""
+        self.write_baseline({"a": {"taps": 2, "seconds": 5.0}})
+        out, code = self.run_diff(marker("a", 2, 2, seconds=11.0))
+        self.assertEqual(code, 0)
+        self.assertIn("CRITICAL (over baseline +100%)", out)
 
     def test_fast_flow_not_flagged(self):
         self.write_baseline({"a": {"taps": 2, "seconds": 5.0}})
@@ -144,6 +166,14 @@ class TapBudgetDiffTests(unittest.TestCase):
         out, code = self.run_diff(marker("a", 2, 2, seconds=6.0))
         self.assertEqual(code, 0)
         self.assertIn("unchanged", out)
+
+    def test_rename_detection_footer(self):
+        """Old flow MISSING + new flow NEW in one run → likely-rename footer."""
+        self.write_baseline({"old-flow": {"taps": 2, "seconds": 5.0}})
+        out, code = self.run_diff(marker("new-flow", 2, 2))
+        self.assertEqual(code, 1)  # missing still gates
+        self.assertIn("Likely rename", out)
+        self.assertIn("old-flow", out)
 
     def test_missing_log_is_non_gating(self):
         out, code = self.run_diff("nothing here", log_file=False)

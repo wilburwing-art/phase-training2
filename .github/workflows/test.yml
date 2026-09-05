@@ -89,6 +89,18 @@ jobs:
         if: always()
         run: python3 scripts/quality/tap_budget_diff.py build/raw-test.log
 
+      - name: Upload tap-budget history
+        # The drift step appends one line per flow to build/tap-budget-history.jsonl
+        # (date, sha, flow, actual, seconds). Uploading it as an artifact keeps
+        # the trend line alive across runners — download and re-append locally,
+        # or chain via a persist-to-branch action, to build a long-run view.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tap-budget-history
+          path: build/tap-budget-history.jsonl
+          if-no-files-found: ignore
+
       - name: Upload xcresult on failure
         if: failure()
         uses: actions/upload-artifact@v4

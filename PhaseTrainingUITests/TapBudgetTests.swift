@@ -622,11 +622,12 @@ final class TapBudgetTests: XCTestCase {
         // the history trend file.
         let seconds = String(format: "%.1f", counter.elapsedSeconds)
         let maxGap = String(format: "%.1f", counter.maxGap)
+        let p95 = String(format: "%.1f", counter.p95Gap)
         let iso = ISO8601DateFormatter().string(from: Date())
         print("TAP-BUDGET-JSON {\"flow\":\"\(counter.flow)\",\"actual\":\(counter.count),"
             + "\"reference\":\(reference),\"seconds\":\(seconds),"
             + "\"swipes\":\(counter.swipes),\"max_gap_s\":\(maxGap),"
-            + "\"date\":\"\(iso)\"}")
+            + "\"p95_gap_s\":\(p95),\"date\":\"\(iso)\"}")
         let attachment = XCTAttachment(string: line)
         attachment.name = "tap-budget-\(counter.flow)"
         attachment.lifetime = .keepAlways
@@ -647,6 +648,8 @@ struct TapCounter {
     /// while one step stalls (rest-card overlay, picker latency); max-gap
     /// isolates that from uniformly slow taps.
     private(set) var maxGap: TimeInterval = 0
+    /// All inter-tap gaps (for the p95 column). Empty for 1-tap flows.
+    private var gaps: [TimeInterval] = []
     private var lastTapAt: Date?
     /// Wall-clock from counter creation (first read in `elapsedSeconds`, so a
     /// flow that constructs the counter late — e.g. flow 13, whose setup isn't
@@ -663,10 +666,23 @@ struct TapCounter {
     private mutating func noteTap() {
         let now = Date()
         if let last = lastTapAt {
-            maxGap = max(maxGap, now.timeIntervalSince(last))
+            let gap = now.timeIntervalSince(last)
+            maxGap = max(maxGap, gap)
+            gaps.append(gap)
         }
         lastTapAt = now
         count += 1
+    }
+
+    /// 95th-percentile inter-tap gap, seconds. 0 for 1-tap flows (no gaps).
+    /// Unlike whole-flow wall-clock, this ignores deliberate dwell time and
+    /// isolates per-step stalls — the product-relevant time signal.
+    var p95Gap: TimeInterval {
+        guard !gaps.isEmpty else { return 0 }
+        let sorted = gaps.sorted()
+        let idx = min(Int((Double(sorted.count) * 0.95).rounded(.up)) - 1,
+                      sorted.count - 1)
+        return sorted[max(0, idx)]
     }
 
     /// Tap a button by accessibility id, counting it.

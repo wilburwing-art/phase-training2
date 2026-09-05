@@ -16,6 +16,8 @@ Gating contract (revised 2026-09-05 from the original always-exit-0 design):
   - Exit 1 (harness broken, should fail CI) when:
       * a baseline flow emitted no marker while OTHER flows did (a tracked
         flow stopped being tracked — silent coverage loss),
+      * the TapBudget tests ran in the log but emitted NO markers at all
+        (tracking calls removed — the test job may still pass),
       * the baseline file exists but is corrupt / non-numeric.
   - Exit 0 (visibility only) when:
       * taps != baseline (product drift — accept by editing the baseline),
@@ -27,9 +29,10 @@ Gating contract (revised 2026-09-05 from the original always-exit-0 design):
     Identical counts collapse to one row. Divergent counts are reported as
     UNSTABLE and the worst (max) count / slowest time is diffed.
 
-History: when TAP_BUDGET_HISTORY is set (or build/tap-budget-history.jsonl
-exists), each run appends one JSON line per flow — {date, sha, flow, actual,
-seconds} — giving a trend view across accepted bumps.
+History: each run appends one JSON line per flow to
+build/tap-budget-history.jsonl (or TAP_BUDGET_HISTORY) — {date, sha, flow,
+actual, seconds} — giving a trend view across accepted bumps. CI uploads the
+file as an artifact so the trend survives the runner.
 
 To accept a new cost as the baseline, edit tap-budget-baseline.json and commit.
 """
@@ -56,7 +59,11 @@ DEFAULT_HISTORY_PATH = os.path.join(
 )
 # Wall-clock on a shared CI sim is noisy; a flow must exceed the baseline by
 # this fraction before it's flagged (and it's advisory regardless — exit 0).
+# The baselines are calibrated to CI hardware (macos-26 runners), so these
+# thresholds measure real growth, not machine variance.
 TIME_DRIFT_FRACTION = 0.5
+# Above this the flag escalates: not plausibly noise, look at the flow.
+TIME_CRITICAL_FRACTION = 1.0
 
 
 def parse_actuals(text):
@@ -160,8 +167,17 @@ def main():
     baseline, baseline_err = load_baseline()
 
     if not actuals:
-        # No markers at all: the TapBudget suite likely never ran or the whole
-        # job crashed — the test job is already red. Report and stay green.
+        # No markers at all. Two cases:
+        #   - The suite never ran / job crashed: the test job is already red;
+        #     report and stay green.
+        #   - The TapBudget tests RAN but emitted nothing: harness broken in a
+        #     way the test job may not catch (e.g. recordTapBudget calls
+        #     dropped). Gate on that.
+        ran = "TapBudgetTests" in text
+        if ran:
+            print("tap-budget: TapBudgetTests ran but emitted no markers — "
+                  "tracking calls likely removed. Failing (coverage loss).")
+            return 1
         print("tap-budget: no TAP-BUDGET-JSON markers found in log — did the "
               "TapBudget tests run? (non-gating, continuing)")
         return 0
@@ -180,16 +196,18 @@ def main():
         if not recs:
             status, delta = "MISSING (in baseline, not run)", ""
             missing.append(flow)
-            rows.append((flow, base["taps"], None, None, None, None, None,
+            rows.append((flow, base["taps"], None, None, None, None, None, None,
                          status, delta))
             continue
 
         counts = [r.get("actual") for r in recs]
         times = [r.get("seconds") for r in recs if r.get("seconds") is not None]
         gaps = [r.get("max_gap_s") for r in recs if r.get("max_gap_s") is not None]
+        p95s = [r.get("p95_gap_s") for r in recs if r.get("p95_gap_s") is not None]
         ref = recs[-1].get("reference")
         seconds = max(times) if times else None
         max_gap = max(gaps) if gaps else None
+        p95_gap = max(p95s) if p95s else None
         actual = counts[-1]
 
         base_taps = base["taps"]
@@ -235,29 +253,35 @@ def main():
         else:
             status, delta = "unchanged", "0"
 
-        # Time budget: visibility-only. The baseline carries the seed-run
-        # wall-clock; a flow slower than baseline+50% is flagged for a look.
+        # Time budget: visibility-only. Baselines are calibrated to CI
+        # hardware; +50% is SLOW (usually noise), +100% is a likely real
+        # stall worth investigating even if taps held.
         base_seconds = base.get("seconds")
         if (isinstance(base_seconds, (int, float))
                 and isinstance(seconds, (int, float))
                 and seconds > base_seconds * (1 + TIME_DRIFT_FRACTION)):
-            status += f" · SLOW (baseline {base_seconds:g}s)"
-            slow_flows.append(flow)
+            tier = ("CRITICAL" if seconds > base_seconds * (1 + TIME_CRITICAL_FRACTION)
+                    else "SLOW")
+            status += f" · {tier} (baseline {base_seconds:g}s, test {seconds:g}s)"
+            slow_flows.append((flow, tier))
 
         rows.append((flow, base["taps"], counts[-1], ref, seconds, max_gap,
-                     base.get("seconds"), status, delta))
+                     p95_gap, base.get("seconds"), status, delta))
 
-    # Human/markdown table.
-    header = ("| flow | baseline | actual | reference | s | s-budget "
-              "| max-gap s | status | Δ |")
-    sep = "|---|---|---|---|---|---|---|---|---|"
+    # Human/markdown table. Columns are named so the two currencies don't blur:
+    # taps are the PRODUCT metric (user interaction cost); test-s is the
+    # HARNESS metric (sim wall-clock), never a UX cost.
+    header = ("| flow | baseline taps | actual taps | reference "
+              "| test-s | test-s-budget | max-gap s | p95-gap s "
+              "| status | Δ |")
+    sep = "|---|---|---|---|---|---|---|---|---|---|"
     lines = [header, sep]
-    for (flow, base, actual, ref, seconds, max_gap, s_budget,
+    for (flow, base, actual, ref, seconds, max_gap, p95_gap, s_budget,
          status, delta) in rows:
         lines.append(
             f"| {flow} | {fmt_num(base)} | {fmt_num(actual)} | {fmt_num(ref)} | "
             f"{fmt_num(seconds)} | {fmt_num(s_budget)} | {fmt_num(max_gap)} | "
-            f"{status} | {delta} |"
+            f"{fmt_num(p95_gap)} | {status} | {delta} |"
         )
     table = "\n".join(lines)
 
@@ -280,13 +304,29 @@ def main():
                       "— the tap count for these flows should be deterministic; "
                       "a UI-test flake is leaking into the measurement.")
     if slow_flows:
-        footer.append(f"**Slow (time budget exceeded):** {', '.join(slow_flows)} "
-                      "— taps held but wall-clock grew; usually sim noise, "
-                      "worth a re-run before investigating.")
+        slow = [f for f, tier in slow_flows if tier == "SLOW"]
+        critical = [f for f, tier in slow_flows if tier == "CRITICAL"]
+        if slow:
+            footer.append(f"**SLOW (over baseline +50%):** {', '.join(slow)} "
+                          "— taps held but wall-clock grew; usually sim noise, "
+                          "worth a re-run before investigating.")
+        if critical:
+            footer.append(f"**CRITICAL (over baseline +100%):** {', '.join(critical)} "
+                          "— not plausibly machine noise. A per-step stall or an "
+                          "app-side latency regression; investigate even though "
+                          "taps held.")
     if divergent:
         footer.append(f"**Reference ≠ baseline:** {', '.join(divergent)} — the "
                       "test's in-code reference and tap-budget-baseline.json "
                       "disagree; reconcile them.")
+    # A flow renamed in the test shows as MISSING (old id) + NEW (new id) in
+    # the same run. Connect the dots so it reads as a rename, not two anomalies.
+    if missing and drift:
+        renamed = [f for f in missing if f not in errored]
+        if renamed:
+            footer.append(f"**Likely rename:** {', '.join(renamed)} have no "
+                          "marker but NEW flows appeared — if a flow id was "
+                          "renamed, update tap-budget-baseline.json to match.")
     if not footer:
         footer.append("All flows match baseline.")
 
