@@ -94,3 +94,42 @@ describing it, and the skill reads as current.
 Pairs with [[phase-training-generator-sweep-report]] (build/use the sweep),
 [[phase-training-generator-context-dead-and-broken-signals]] (what DEAD means),
 [[eval-rig-close-the-loop-workflow]] (the long loop).
+
+## The OFAT gap is not theoretical: it hid a 17.5% defect (2026-09-05)
+
+This skill has said since it was written that "OFAT can't see interactions by
+construction". Here is the bill for it.
+
+Two filters shipped two days apart, each with its own test that switched the
+other OFF:
+
+- `testAuthoredPathNeverServesEquipmentTheUserLacks` — gear tiers, **no injuries**
+- `testInjuryFilterNeverLeavesASessionUnderTheMovementFloor` — injuries, **all `.fullGym`**
+- `SeasonInvariantTests`'s 10-sport grid — equipment dimension, **no injury dimension at all**
+
+So the user who declares both (bodyweight only AND a bad knee, an ordinary
+person) was exercised by nothing. `FilterCompositionTests` walks the cross
+product -- 8 sports x 5 injuries x 3 equipment tiers x 5 phases x 3 slots,
+1,800 days -- and **315 failed on the first run**, all of them the Easy
+Strength last resort served at one or two movements while still titled
+"Easy Strength — 5-Lift Base". Zero failures under `.fullGym`, which is
+exactly why every existing test passed.
+
+**Assert the whole contract in one place** rather than one property per test:
+either a session at or above the movement floor with nothing contraindicated
+and no gear the user lacks, or an empty day the app DECLARES (a known
+provenance plus a non-empty summary). A silent empty then cannot pass as "not
+applicable", which is how the previous floor test lost the same case.
+
+Cheap rule: **when a second guard lands on a path that already has one, the
+next test is their cross product, not another single-factor test.**
+
+### The stale-decision half
+
+The cause was a comment that was right when written: the last resort skipped
+the viability filter because "serving what remained beat serving nothing". True
+until R2-05 added an honest nothing (`authored-no-fit`, which names the reason
+and points at Profile), after which it was simply wrong. **A decision comment
+justified by the absence of an option needs re-reading when someone adds that
+option.** Grep for "beats nothing", "better than empty", "rather than fail" in
+a path you are about to extend.
