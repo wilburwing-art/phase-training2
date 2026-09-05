@@ -8513,5 +8513,55 @@
     "exercise_id": 1197,
     "muscle_group_id": 45,
     "role": "primary"
+  },
+  {
+    "exercise_id": 1199,
+    "muscle_group_id": 76,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1199,
+    "muscle_group_id": 77,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1200,
+    "muscle_group_id": 76,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1200,
+    "muscle_group_id": 77,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1201,
+    "muscle_group_id": 54,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1201,
+    "muscle_group_id": 74,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1201,
+    "muscle_group_id": 53,
+    "role": "stabilizer"
+  },
+  {
+    "exercise_id": 1202,
+    "muscle_group_id": 65,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1202,
+    "muscle_group_id": 74,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1203,
+    "muscle_group_id": 84,
+    "role": "primary"
   }
 ]

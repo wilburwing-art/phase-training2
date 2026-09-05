@@ -2326,5 +2326,25 @@
   {
     "exercise_id": 1197,
     "movement_pattern_id": 18
+  },
+  {
+    "exercise_id": 1199,
+    "movement_pattern_id": 4
+  },
+  {
+    "exercise_id": 1200,
+    "movement_pattern_id": 4
+  },
+  {
+    "exercise_id": 1201,
+    "movement_pattern_id": 20
+  },
+  {
+    "exercise_id": 1202,
+    "movement_pattern_id": 2
+  },
+  {
+    "exercise_id": 1203,
+    "movement_pattern_id": 6
   }
 ]

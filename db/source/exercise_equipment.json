@@ -3853,5 +3853,35 @@
     "exercise_id": 1198,
     "equipment_id": 1,
     "is_required": 1
+  },
+  {
+    "exercise_id": 1199,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1199,
+    "equipment_id": 23,
+    "is_required": 0
+  },
+  {
+    "exercise_id": 1200,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1201,
+    "equipment_id": 1,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1202,
+    "equipment_id": 44,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1203,
+    "equipment_id": 1,
+    "is_required": 1
   }
 ]

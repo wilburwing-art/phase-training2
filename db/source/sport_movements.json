@@ -1461,5 +1461,71 @@
     "min_experience": "beginner",
     "fatigue_cost": 1,
     "injury_caution": "unloaded; back off before tingling"
+  },
+  {
+    "id": 77,
+    "sport": "alpine-skiing",
+    "exercise_id": 1202,
+    "name": "Spanish Squat (Isometric Hold)",
+    "slug": "ski-spanish-squat-isometric-hold",
+    "demands": [
+      "kneeStability",
+      "prehab"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "maintenance",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "min_experience": "beginner",
+    "fatigue_cost": 1,
+    "injury_caution": "no pain during the hold"
+  },
+  {
+    "id": 78,
+    "sport": "alpine-skiing",
+    "exercise_id": 1201,
+    "name": "Bird Dog",
+    "slug": "ski-bird-dog",
+    "demands": [
+      "core",
+      "prehab"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "maintenance",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "min_experience": "beginner",
+    "fatigue_cost": 1,
+    "injury_caution": "neutral spine"
+  },
+  {
+    "id": 79,
+    "sport": "climbing",
+    "exercise_id": 1201,
+    "name": "Bird Dog",
+    "slug": "climb-bird-dog",
+    "demands": [
+      "core",
+      "prehab"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "maintenance",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "min_experience": "beginner",
+    "fatigue_cost": 1,
+    "injury_caution": "neutral spine"
   }
 ]

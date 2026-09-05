@@ -21388,5 +21388,59 @@
     "injury_id": 20,
     "role": "rehab_early",
     "notes": "McGill's side bridge/side plank is one of the Big Three, framed as building a pain-free foundation before more activity; Side Plank (anti-lateral-flexion) is the catalog match. Curl-up and bird dog are not in the 575-exercise catalog (bird dog is item 4's catalog gap), so only Side Plank is added here. Sourced (McGill Big Three, side bridge), unreviewed. Source: https://www.acefitness.org/resources/pros/expert-articles/7077/low-back-exercises-stuart-mcgill-s-big-three/"
+  },
+  {
+    "exercise_id": 1199,
+    "injury_id": 6,
+    "role": "rehab_early",
+    "notes": "Hip abductor weakness is a documented contributor to PFPS; clamshell is the entry-level strengthening exercise. Source: PMC12372021. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1199,
+    "injury_id": 5,
+    "role": "rehab_early",
+    "notes": "Hip abductor weakness is a documented contributor to ITBS. Source: PMC12372021. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1200,
+    "injury_id": 6,
+    "role": "rehab_early",
+    "notes": "Side-lying hip abduction named as a widely used and effective option; indicated in PFPS. Source: PMC12372021. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1200,
+    "injury_id": 5,
+    "role": "rehab_early",
+    "notes": "Indicated in ITBS. Source: PMC12372021. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1201,
+    "injury_id": 20,
+    "role": "rehab_early",
+    "notes": "McGill Big Three: spine-sparing trunk endurance for a flexion-intolerant back. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1201,
+    "injury_id": 21,
+    "role": "rehab_early",
+    "notes": "McGill Big Three for low back strain. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1201,
+    "injury_id": 52,
+    "role": "contraindicated",
+    "notes": "Weight-bearing on an extended wrist while a wrist sprain is symptomatic. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1202,
+    "injury_id": 1,
+    "role": "rehab_early",
+    "notes": "Stage 1 isometrics: five 45 s holds at 60 degrees, 70 to 80 percent MVC; reduces patellar tendon pain immediately and for at least 45 minutes. Source: PMC12259690. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1203,
+    "injury_id": 42,
+    "role": "rehab_early",
+    "notes": "High-load progressive heel raises with a towel under the toes, every second day (Rathleff 2015 RCT). Sourced, unreviewed."
   }
 ]
