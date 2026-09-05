@@ -1,0 +1,100 @@
+# Niche: Trail and ultra running (the strength side)
+
+## Community surface area
+
+- **r/trailrunning: 482K members** (verified via [thehiveindex.com/topics/running/](https://thehiveindex.com/topics/running/), page fetched 2026-09-05, page dated "Updated Jul 2026"). Description on page: "The fun begins where the road ends."
+- **Correction to the brief's assumed sub name**: the brief asked for "r/Ultramarathon." The active, sized community is actually **r/ultrarunning: 128K members** (same source, same page). No comparably sized r/Ultramarathon surfaced anywhere in research; treat r/ultrarunning as the correct target, the same class of correction STRATEGY.md already made for r/Hyrox (140K assumed vs 43,293 actual).
+- Reddit's own site and third-party trackers (subredditstats.com, frontpagemetrics.com, old.reddit.com/about.json) were all unreachable from this session (blocked or 404); the thehiveindex figures above are the only page-verified numbers, not a Reddit-native read.
+- **iRunFar (the trade press, not a sub or channel)**: 361.05K site visits in July 2026, from [cw.semrush.com/website/irunfar.com/overview](https://cw.semrush.com/website/irunfar.com/overview) (fetched 2026-09-05, page states "In July irunfar.com received 361.05K visits"). Its own YouTube channel, iRunFarMedia, is small by comparison: 28.2K subs.
+- **YouTube, verbatim from [videos.feedspot.com/ultra_running_youtube_channels/](https://videos.feedspot.com/ultra_running_youtube_channels/)** (fetched 2026-09-05): Sage Canaday's channel, Vo2maxProductions, 252K. The Ginger Runner (Ethan Newberry), 192K. Harry Runs, 72.8K. Ultra Trail World Tour, 76K. Wild Ginger Running, 30.4K. iRunFarMedia, 28.2K. Several long-tail channels (UltraRunning Magazine 3K, Trail And Ultra Running 2.7K) confirm this is a fragmented creator field, not one or two dominant names.
+- **Billy Yang**: not on the Feedspot list above. A search summary (not a direct page read) puts his channel at roughly 130K subscribers [ESTIMATE, not independently confirmed on the channel page itself]. He skews toward race-day documentary filmmaking, distinct from Canaday's and the Ginger Runner's training-and-gear content.
+- **Jason Koop / CTS**: no dedicated large YouTube channel found; his reach runs through CTS's trainright.com content hub and the book "Training Essentials for Ultrarunning," not a subscriber count. He functions as a credibility anchor for the niche, not a distribution channel by himself.
+- **UltraSignup**, the registration platform this niche runs on: its own FAQ and About pages state no total race, runner, or registration count (checked directly, [ultrasignup.com/faqs.aspx](https://ultrasignup.com/faqs.aspx) and its About page); the one number on the FAQ page is "over 60% of our events are shorter than an ultra." Any UltraSignup-wide participant total in circulation elsewhere is NOT ON PAGE and is left unverified here rather than guessed.
+- **Western States 100 lottery** (a proxy for the size of the "serious enough to chase a golden ticket" tier): **11,335 entrants, 93,140 total tickets** for the 2026 drawing, verbatim from [dasz.substack.com/p/the-annual-heartbreak-ritual-western](https://dasz.substack.com/p/the-annual-heartbreak-ritual-western) (fetched 2026-09-05). WSER's own page confirms 257 lottery spots plus 112 automatic entrants, 369 total starters, but does not itself state the applicant-pool total.
+- Net read: this is a mid-size, high-engagement niche. r/trailrunning at 482K sits well below r/running (4.3M) but is a real, active sub; the ultra-specific layer (128K sub, roughly 130-360K YouTube reach per creator, ~11K lottery-serious racers) is smaller, denser, and more obsessive than the general running population.
+
+## Existing app competition
+
+| Competitor | Price (verbatim, fetched 2026-09-05) | What it does that this app doesn't |
+|---|---|---|
+| **Vert.run** | Pro $9.90/mo billed annually ($118.80/yr) or $19.90/mo; Coaching $33/mo annual or $45/mo; Run Club $120/yr | Adaptive AI-coached RUN plans, wearable sync, live plan adjustment, AND already bundles "strength and injury prevention guidance" in the Pro tier |
+| **Uphill Athlete** | Training Library $29/mo; Personal Coaching $399/mo; Training Groups from $53/mo; a multi-discipline plan bundle (incl. trail running) at $438.75 | Named-coach authored plans, a real human-coaching ladder up to $399/mo |
+| **CTS / Jason Koop** | No public price; "currently taking athletes on a case-by-case basis" per [jasonkoop.com/coaching](https://www.jasonkoop.com/coaching) | High-touch 1:1 ultra coaching from the sport's most cited coach; sells via reputation, not a price page |
+| **TrainingPeaks** | Premium $11.25/mo annual ($134.99/yr) or $19.95/mo; Coaching Bronze $149/mo, Silver $229/mo, Gold $359/mo | The de facto data and TSS backbone nearly every serious ultrarunner and their coach already runs on |
+| **Runna** | $9.99/mo annual ($119.99/yr) or $19.99/mo; also sold bundled with Strava at $149.99/yr | Structured run-plan generation, now distributed through Strava's own subscription |
+| **Strava** | $11.99/mo or $79.99/yr; Family $139.99/yr | The social and tracking layer nearly everyone in this niche already pays for regardless of what else they buy |
+| **Coros** | Free (Training Hub plus a human-coach email line, coach@coros.com) | Free coaching advice bundled in with the watch purchase, no subscription at all |
+| **Garmin** | Connect+ $6.99/mo or $69.99/yr | Garmin Coach plans free; Connect+ layers AI insights on top for a small add-on price |
+| **Mountain Tactical** | Alpine Running plan $69 one-time; Athlete Subscription $35/mo or $379/yr (250-450+ plans) | Mountain-specific run programming sold in the one-time-purchase style this audience already trusts |
+
+**The load-bearing fact for this brief**: Vert.run, the closest direct competitor, already ships strength work inside its $9.90-19.90/mo run-plan subscription. This app cannot credibly pitch "strength for runners" as a standalone wedge against Vert without either being cheaper, being visibly better at the strength part specifically, or being explicit that it is the add-on for people who get their run plan somewhere else (TrainingPeaks, Coros, a human coach, or self-coached off Strava data) and just want the lifting handled well.
+
+## Willingness-to-pay signals
+
+- **Race entries**: UTMB 2026 entry fee is £479 (roughly $605-620 at a rough current exchange rate, [conversion is an estimate, not itself page-verified]), per [cimalp.com's UTMB registration guide](https://www.cimalp.com/en/blogs/the-cimalp-blog/how-to-register-for-the-utmb). Western States costs nothing to apply beyond a qualifier race, but 11,335 people bought lottery tickets for a shot at one free-to-enter 100-miler in 2026, which says more about obsession than about direct dollars spent.
+- **Shoes**: trail runners buy 1-3 pairs a year at roughly $140-150/pair, so $140-420/year on footwear alone, per a search-summarized industry piece (basis given, not independently page-verified). The same summary cites $72-116/year spent specifically on running tech and apps, which is the more relevant comparator for an app subscription than the shoe number.
+- **Coaching**: the range runs from $0 (Coros email coaching, Garmin's free Coach plans) up to $399/mo (Uphill Athlete 1:1), with CTS priced by private negotiation somewhere in between. TrainingPeaks' Coaching tiers ($149-359/mo) show a real, populated middle rather than a gap.
+- **Read on all of this together**: this audience already pays $10-45/mo for run-specific software (Vert, Runna, TrainingPeaks Premium) and treats $150-400/mo human coaching as unremarkable for anyone racing seriously. A strength-only companion priced at $10/mo or less, or $40-100/yr, should read as cheap by comparison rather than as a stretch purchase.
+
+## Distribution: map to the 4 channels
+
+- **Subreddit infiltration: Medium-High.** r/trailrunning (482K) and r/ultrarunning (128K) are both large enough to matter and, per their FAQ-heavy culture, tolerant of a builder posting a genuine "I built X, here's how it handles descents" thread, not tolerant of anything that reads as a Vert.run clone pitch.
+- **YouTube creator integration: Medium.** The Ginger Runner (192K) and Sage Canaday's Vo2maxProductions (252K) are mid-tier, plausibly indie-reachable creators, closer in size to Alex Leonidas (823K) than to Jeff Nippard (8.4M). Billy Yang (~130K, estimate) skews toward race-day filmmaking rather than training content, a weaker fit for a strength pitch specifically. None of the four names named in this niche's research brief currently sell or endorse a strength app, so the lane is open but unproven.
+- **iRunFar**: not a creator to sponsor so much as trade press to pitch a guest column or gear-adjacent write-up to; 361K monthly visits is real reach if an editorial angle lands (e.g. "the strength work elite ultrarunners actually do").
+- **Newsletter wedge: Low-Medium.** No dominant trail-running newsletter surfaced the way Beehiiv-style hybrid newsletters exist for HYROX; Community Trail Running (Substack) exists but its subscriber size was not independently verified in this pass.
+- **TikTok daily clips: Medium.** Downhill eccentric-quad and hip-stability content clips well and travels outside the core subreddits into general fitness TikTok, a plausible top-of-funnel that doesn't depend on this niche's own small creator roster.
+- **Cheapest first 10 users**: a "here's how Phase Training programs the strength side of a 100-mile block" post with real screenshots on r/trailrunning or r/ultrarunning, timed near a big lottery result (Western States, UTMB) when the sub's attention is already on training for a specific race.
+
+## Product fit + Path A vs Path B
+
+**The honest boundary, stated once and not softened**: this app does not build the run plan. Runners already get that from Vert, Runna, TrainingPeaks, Coros/Garmin, a human coach, or a spreadsheet. What this niche wants from Phase Training is the strength and durability half: downhill eccentric quad and hip work, single-leg stability, calf and tibialis-anterior durability, core and anti-rotation work for vest-carry, dosed so it doesn't cannibalize running recovery.
+
+**What's actually wired today, checked in this repo**: `trail-running` is already a real, plannable primary-sport slug (`PhaseTraining/Data/TrainingMemory.swift:462`, `PhaseTraining/Data/AuthoredRoutine.swift:149`), grouped with hiking-trekking and thru-hiking as "outdoor authored" sports served from the 167-routine coach.db library. But `WeeklyShape.swift` only defines a `maintenance` shape for `trail-running` (2 runs, 2 lifts, 3 rest), reusing plain running's maintenance pattern; there is no dedicated pre-season, off-season, or in-season shape for trail-running the way plain `running` has all four (`PhaseTraining/Data/WeeklyShape.swift:85-98`). Race periodization (base, peak, taper, race, recovery) that ultrarunners obsess over isn't distinctly modeled yet for this slug.
+
+**The bigger gap: the Primary/Support de-confliction feature, this app's real differentiator, is currently gated to ski/snow-primary users only** (`PLAN-primary-support.md`: "gate the row to ski/snow-primary users," "the wedge pairing"). That means a runner cannot today plug in an external run plan (from Vert, TrainingPeaks, a coach) as the thing they are actually doing and have Phase Training supply only the de-conflicted lift days around it. Setting `trail-running` as primary today means adopting this app's own run-plus-lift blend, not layering strength onto an existing external plan. Extending Support-sport pairing beyond ski/snow to a running-primary-plus-external-plan model is real, scoped engineering, not a copy change.
+
+**Non-negotiables for this niche specifically**:
+1. Downhill-specific eccentric quad and hip work, the injury-prevention block this audience searches for by name.
+2. A lift dose that visibly respects the prior day's long run or vert gain rather than a fixed weekly template.
+3. Race-date-aware periodization (taper recognition at minimum) once the WeeklyShape gap above is closed.
+4. A path for "my run plan lives elsewhere" that doesn't require abandoning Vert, TrainingPeaks, or a human coach.
+
+**Path A vs B**: Path B (a strength-and-durability programming library, no Coach) is the lower-risk fit here for the same reasons STRATEGY.md already gives for the other mountain niches: zero API cost, faster ship, and this audience already juggles enough subscriptions (Strava, TrainingPeaks, a watch app) that "a tool I bought for lifting" beats another monthly AI-coach ask. Coach-as-upsell fits later, answering questions like "should I lift today given yesterday's 20-mile long run," a real, TrainingPeaks-adjacent use case but not a v1 requirement.
+
+**Build work implied by the above**:
+1. Add pre-season/off-season/in-season `WeeklyShape` rows for `trail-running`, distinct from plain `running`, instead of reusing the single `maintenance` shape.
+2. Author or verify downhill-eccentric, single-leg, and tibialis-anterior content actually exists in coach.db for the `trail-running` / `hiking-trekking` / `thru-hiking` authored bucket (167-routine library, coverage per slug not broken out; verify before promising it).
+3. Scope extending `SupportEntitlement` / the Support-sport editor beyond `PhaseRule.skiSlugs` so a running-primary user can declare an external run plan and receive only de-conflicted lift days, mirroring the existing ski-plus-climbing wedge.
+4. A race-date field driving taper detection, at minimum a manual "race in N weeks" flag if full periodization is out of scope for a first cut.
+
+## Unit-economics check
+
+If Coach ships as a Pro upsell (Path A add-on) rather than in v1: this audience's likely use is occasional ("did I do enough posterior-chain work this week," "modify today's lift, I have DOMS from Saturday's long run"), estimated at 10-20 turns/month [LOW CONFIDENCE, no direct usage data exists for this niche]. At roughly $0.009/turn, that is $0.09-0.18/user/month. At a $9.99/mo Pro price minus a 30% Apple cut ($7 net), margin stays at 97-99%. Path B alone (no Coach) is zero marginal API cost, matching every other mountain-sport brief in this batch.
+
+## Founder/content fit
+
+Wilbur's fit here is more neutral than sharp. There's no built-in "engineer who obsesses over ultrarunning" story the way the hybrid-hyrox or tactical-barbell briefs found; this niche rewards runners who can talk convincingly about descents, vert gain, and pacing, which is a content-credibility question, not an engineering one. What does transfer is the same "I built the tool because the existing ones don't handle X" framing that worked for Alex Leonidas's audience, aimed here at "your run app doesn't program your lifting, and generic lifting apps don't know what a 20-mile vert day does to your legs." No coach-cofounder is strictly required to ship Path B, but a credible voice (a real ultrarunner tester, or a small-creator partnership) would do more work here than in the tactical or powerlifting niches, where Wilbur's own framing already carries the pitch on its own.
+
+## Path B alternative: programming planner, no Coach
+
+- **Feature set**: downhill and eccentric quad and hip-stability blocks, single-leg and ankle/tibialis-anterior durability work, core and anti-rotation work for vest-carry, a 2-lift-per-week default that respects run-day fatigue, and explicit periodization keyed to a target race date (build, peak, taper, recovery) once the WeeklyShape gap above is closed.
+- **Pricing fit**: the $40/yr or $99 lifetime frame the portfolio strategy defaulted to elsewhere reads as cheap next to Vert's $118.80-238.80/yr, TrainingPeaks Premium's $134.99-239.40/yr, or a single UTMB entry (roughly $605-620). The one-time or annual framing also matches how this audience already buys plans: Uphill Athlete and Mountain Tactical both sell one-time plans in the $69-438 range.
+- **Distribution under Path B**: a one-time or annual "I bought a tool" purchase is an easier ask for a Reddit post or a creator mention than a recurring "AI coach" subscription pitch, the same logic the alex-leonidas brief already worked out for its own anti-subscription audience.
+- **Ramp**: slower than a subscription in theory, but this niche's willingness to buy a $69-438 one-time plan (Mountain Tactical, Uphill Athlete) suggests a $40-99 one-time strength product is not a stretch purchase for anyone already training for a specific race.
+
+## Risks & landmines
+
+- **Vert.run already does both halves.** Any pitch that sounds like "strength for runners" invites the comparison "Vert already has that in Pro," and Vert is cheaper at $9.90/mo than most standalone strength apps would need to be. The wedge has to be "better strength programming for descents and durability" or "works alongside whatever run plan you already have," not "we also do strength."
+- **The Support-sport gate is real engineering, not a toggle.** Shipping the "your run plan lives elsewhere, we handle only the lifting" pitch honestly requires extending Primary/Support beyond ski/snow, which is scoped work this brief does not authorize or estimate.
+- **Race periodization is thin for this slug specifically.** `trail-running` has exactly one WeeklyShape (`maintenance`); a serious ultrarunner will notice quickly if the app can't distinguish a taper week from a base week.
+- **CTS/Koop-style credibility is earned over decades**; this niche is skeptical of software claiming to replace judgment calls a good human coach makes around taper and recovery load. Positioning as a strength companion, not a training-decision replacement, avoids that particular fight.
+- **Reddit self-promotion norms are strict** in both subs; a post that reads as an ad gets removed or downvoted, the same risk STRATEGY.md already flags for the broader lifting niches.
+- **The creator roster is thinner and more fragmented than other niches in this batch.** No single name here has the reach of a Jeff Nippard or an Alex Leonidas; a creator-led launch would likely need two or three mid-tier names (Ginger Runner plus Canaday plus a smaller voice) rather than one big swing.
+
+## Funnel napkin math: solving for $10k MRR
+
+- Addressable pool: r/trailrunning (482K) and r/ultrarunning (128K) overlap heavily; treat combined unique reach as roughly 500-600K, most of whom are casual runners who will never buy a dedicated strength app. A generous serious-enough-to-pay slice, bounded below by the Western States lottery's ~11K "will pay real money and plan a season around one race" tier and bounded above by the much larger shoe-buying population (11.9M US trail runners per one industry estimate), is genuinely wide: call the credibly reachable, non-overlapping-with-other-niches addressable pool **20,000-40,000** [ESTIMATE, wide range because no single source sizes "trail runners who would pay for a strength app" directly].
+- At $40/yr (Path B annual), $10k MRR equivalent ($120k ARR) needs **3,000 paying subs**. At 5-8% trial-to-paid conversion, in line with the other mountain briefs' assumptions, that needs **37,500-60,000 reach**, at or above the top of the addressable estimate above.
+- At $99 lifetime, 3,000 sales in a single year would need the same reach math but with a harder, one-shot conversion ask; realistic only if a creator integration (Ginger Runner or Canaday tier) lands and both subreddits stay in sustained rotation for a full year.
+- Conclusion: this niche alone likely lands short of $10k MRR on its own reach, a similar verdict to tacticalbarbell and alex-leonidas elsewhere in this batch. It reads better as a second or third channel stacked onto a mountain-sport, hybrid, or general-durability positioning than as a standalone bet.
+- The strongest case for it is not as a standalone launch niche but as validation content: "how Phase Training programs strength for a 100-mile block" is a demonstrably shareable artifact even if the direct-conversion math above stays modest.
