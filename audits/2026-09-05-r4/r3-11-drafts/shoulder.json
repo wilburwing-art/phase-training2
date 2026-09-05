@@ -1,0 +1,115 @@
+{
+  "rules": [
+    {
+      "injury_slug": "shoulder-impingement",
+      "mechanism": "The subacromial space, typically 1 to 1.5 cm in height, narrows physiologically with abduction and forward flexion.",
+      "source_url": "https://www.ncbi.nlm.nih.gov/books/NBK554518/",
+      "predicate": {
+        "patterns": ["vertical-push"],
+        "exclude_exercise_ids": [19]
+      },
+      "note": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+    },
+    {
+      "injury_slug": "shoulder-impingement",
+      "mechanism": "Pain is reproduced between approximately 70° and 120° of active shoulder abduction, with relative relief beyond 120°.",
+      "source_url": "https://www.ncbi.nlm.nih.gov/books/NBK554518/",
+      "predicate": {
+        "name_regex": "(?i)upright row"
+      },
+      "note": "Upright rows actively load the arm through exactly the 70 to 120 degree painful arc; these five catalog rows carry no pattern tag at all, so name_regex is the only way to reach them. Sourced (pain reproduced between 70 and 120 degrees of active abduction), unreviewed."
+    },
+    {
+      "injury_slug": "rotator-cuff-injury",
+      "mechanism": "It may be present with overhead activities such as lifting or reaching (e.g., serving in tennis, throwing a ball, grabbing an item out of a high cabinet).",
+      "source_url": "https://www.orthoinfo.org/en/diseases--conditions/rotator-cuff-tears-frequently-asked-questions/",
+      "predicate": {
+        "patterns": ["vertical-push"]
+      },
+      "note": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+    },
+    {
+      "injury_slug": "slap-tear",
+      "mechanism": "SLAP tears typically cause an insidious onset of progressively worsening deep shoulder pain in young athletes when the arm assumes an abducted and externally rotated position during the late-cocking phase of throwing.",
+      "source_url": "https://www.ncbi.nlm.nih.gov/books/NBK538284/",
+      "predicate": {
+        "patterns": ["vertical-push"]
+      },
+      "note": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+    },
+    {
+      "injury_slug": "slap-tear",
+      "mechanism": "Occur secondary to sudden jerking movements or after lifting heavy objects",
+      "source_url": "https://www.ncbi.nlm.nih.gov/books/NBK538284/",
+      "predicate": {
+        "name_regex": "(?i)explosive|dyno|campus|dynamic lock-off|kipping|slam"
+      },
+      "note": "Ballistic catches, dynos and slams deliver the sudden jerking traction this source names as a SLAP traction mechanism; pattern tags do not separate a static hangboard hold from a ballistic catch, so name_regex targets the explosive subset directly. Sourced (sudden jerking movements or an unexpected pull on the arm), unreviewed."
+    }
+  ],
+  "rehab_early": [
+    {
+      "injury_slug": "rotator-cuff-injury",
+      "exercise_id": 1017,
+      "source_url": "https://www.orthoinfo.org/recovery/rotator-cuff-and-shoulder-conditioning-program/",
+      "note": "This AAOS conditioning program's External Rotation exercise reads 'Keeping your elbow close to your side, slowly rotate your arm outward,' which is the same light-band external rotation as catalog exercise 1017."
+    },
+    {
+      "injury_slug": "shoulder-impingement",
+      "exercise_id": 1017,
+      "source_url": "https://www.orthoinfo.org/recovery/rotator-cuff-and-shoulder-conditioning-program/",
+      "note": "Same AAOS program is the linked conditioning resource for shoulder impingement; light-band External Rotation strengthens the cuff without loading the overhead range that reproduces impingement pain."
+    },
+    {
+      "injury_slug": "slap-tear",
+      "exercise_id": 562,
+      "source_url": "https://adamanzmd.com/rehabilitation-superior-labral-slap-repair-protocol/",
+      "note": "Phase I (weeks 0 to 6) of this SLAP repair protocol lists 'Light and non-painful isometrics for rotator cuff and deltoid' and 'Initiate scapular stabilization exercises' while elevation, shoulder extension and external rotation stay restricted; Scapular Retraction Hold is an unloaded isometric scapular-stabilization hold matching that description."
+    }
+  ],
+  "research": {
+    "fetched": [
+      {
+        "url": "https://www.orthoinfo.org/en/diseases--conditions/shoulder-impingementrotator-cuff-tendinitis/",
+        "gave": "Mechanism: 'this happens because the space between the top of your shoulder (acromion) and the rotator cuff tendons becomes smaller when you raise your arm.' Activity guidance: 'avoiding overhead activities that tend to cause your symptoms.' Risk groups: overhead-sport athletes and repetitive overhead occupations. NOT ON PAGE: internal rotation, painful-arc degrees, specific exercise names."
+      },
+      {
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK554518/",
+        "gave": "Used as the primary impingement source. 'The subacromial space, typically 1 to 1.5 cm in height, narrows physiologically with abduction and forward flexion.' 'Internal impingement occurs when the articular-sided fibers of the supraspinatus and infraspinatus tendons contact the posterosuperior glenoid rim and labrum, typically in the abducted and externally rotated position.' 'Symptoms are often exacerbated by overhead activities, reaching, lifting, or lying on the affected side.' 'Pain is reproduced between approximately 70 degrees and 120 degrees of active shoulder abduction, with relative relief beyond 120 degrees.' 'Patients are advised to avoid aggravating activities, particularly repetitive overhead motions and heavy lifting.' 'minimizing overhead or behind-the-back movements until symptoms abate.'"
+      },
+      {
+        "url": "https://www.orthoinfo.org/en/diseases--conditions/rotator-cuff-tears/",
+        "gave": "'If you fall down on your outstretched arm or lift something too heavy with a jerking motion, you can tear your rotator cuff.' 'Repeating the same shoulder motions again and again can stress your rotator cuff muscles and tendons. Baseball, tennis, rowing, and weightlifting are examples of activities that can put you at risk for overuse tears.' 'Your doctor may suggest rest and limiting overhead activities.' 'Avoid any activities that cause shoulder pain.' NOT ON PAGE: internal/external rotation named as a mechanism."
+      },
+      {
+        "url": "https://www.orthoinfo.org/en/diseases--conditions/rotator-cuff-tears-frequently-asked-questions/",
+        "gave": "'It may be present with overhead activities such as lifting or reaching (e.g., serving in tennis, throwing a ball, grabbing an item out of a high cabinet).' 'You may note weakness of your arm and difficulty with routine activities, such as combing your hair or stretching your arm behind you into a coat sleeve.' NOT ON PAGE: internal/external rotation loading, specific exercise contraindications."
+      },
+      {
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK547664/",
+        "gave": "'Macro-trauma causes an acute tear... Micro-trauma causes tendon degeneration and with insufficient healing, leads to degenerative tears.' 'Other risk factors include trauma, hypercholesterolemia, and occupations or activities requiring significant overhead activity.' NOT ON PAGE: external/internal rotation loading, hyperextension, or activity-avoidance guidance as an injury mechanism (resisted external rotation appears only as an exam maneuver, not a mechanism statement); this is why no separate loaded-rotation predicate was written for rotator-cuff-injury beyond the vertical-push rule."
+      },
+      {
+        "url": "https://www.orthoinfo.org/diseases--conditions/slap-tears/",
+        "gave": "Acute causes: 'A fall onto an outstretched arm,' 'Forceful pulling on the arm, such as when trying to catch a heavy object,' 'Rapid or forceful movement of the arm when it is above the level of the shoulder.' Repetitive cause: 'People who participate in repetitive overhead sports, such as throwing athletes or weightlifters, can experience labrum tears as a result of repeated shoulder motion.' NOT ON PAGE: specific activity restrictions for diagnosed tears."
+      },
+      {
+        "url": "https://www.ncbi.nlm.nih.gov/books/NBK538284/",
+        "gave": "Used as the primary SLAP source. Traction-type: 'Occur secondary to sudden jerking movements or after lifting heavy objects,' 'Can occur after an unexpected pull on the arm.' Peel-back: 'the force exerted by the biceps, coupled with posterior translation of the humerus, results in separation of the posterosuperior quadrant of the glenoid labrum,' 'The peel-back mechanism implicates the late-cocking phase of throwing, whereas the deceleration mechanism theoretically involves greater traction forces.' Overhead position: 'SLAP tears typically cause an insidious onset of progressively worsening deep shoulder pain in young athletes when the arm assumes an abducted and externally rotated position during the late-cocking phase of throwing.'"
+      },
+      {
+        "url": "https://adamanzmd.com/rehabilitation-superior-labral-slap-repair-protocol/",
+        "gave": "Used as a corroborating source for which movements a SLAP injury restricts. Phase I (weeks 0 to 6): 'Avoid active elbow flexion/supination or isolated biceps contraction for the first 6 weeks.' 'Avoid excessive external rotation at the shoulder and any motion that would create the peel-back mechanism.' 'No active biceps, shoulder extension, external rotation, or elevation.' Allowed in the same phase: 'Rhythmic stabilization drills for ER/IR and Pendulums,' 'Light and non-painful isometrics for rotator cuff and deltoid,' 'Initiate scapular stabilization exercises.' General restriction: 'avoid heavy lifting, pushing, or pulling for the first 4 months.' NOT ON PAGE: dips or overhead press named individually (they fall under the general heavy push/pull restriction, not a named line item)."
+      },
+      {
+        "url": "https://www.orthoinfo.org/recovery/rotator-cuff-and-shoulder-conditioning-program/",
+        "gave": "Full named exercise list including 'External Rotation': 'Keeping your elbow close to your side, slowly rotate your arm outward,' and 'Scapula Setting': 'Gently draw your shoulder blades together and down your back as far as possible.' Used to source the rehab_early picks."
+      },
+      {
+        "url": "https://www.physio-pedia.com/Subacromial_Impingement_Syndrome",
+        "gave": "NOT FETCHED. Server returned HTTP 403 to WebFetch, so NCBI Bookshelf (NBK554518) was used as the primary impingement mechanism source instead."
+      }
+    ],
+    "not_pursued": "No separate predicate was written for loaded external/internal rotation on rotator-cuff-injury: the only catalog exercise resembling that motion is 1017 (External Rotation, light band), which the literature names as the early rehab tool rather than a contraindication, and no other catalog entry carries a rotation-loading pattern distinct from vertical-push. Upright-row name_regex was scoped to shoulder-impingement only, since the 70-120 degree painful-arc quote is specific to impingement and no equivalent degree-specific quote was found for rotator-cuff-injury or slap-tear."
+  }
+}

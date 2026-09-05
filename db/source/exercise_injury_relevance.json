@@ -42,10 +42,10 @@
     "notes": "Reverse wrist curl is primary prehab for tennis elbow."
   },
   {
-    "exercise_id": 17,
+    "exercise_id": 1073,
     "injury_id": 51,
     "role": "prehab",
-    "notes": null
+    "notes": " Repointed 2026-09-05 from Reverse Wrist Curl (extensors, the tennis-elbow muscle) to the palms-up wrist curl: golfer's elbow is the flexor and pronator origin."
   },
   {
     "exercise_id": 19,
@@ -19450,5 +19450,1943 @@
     "injury_id": 2,
     "role": "contraindicated",
     "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 64,
+    "injury_id": 50,
+    "role": "contraindicated",
+    "notes": "Farmer's Carry, Farmer Carry Loaded Hike and Plate Pinch Hold all require a sustained crush or pinch grip against an external pulling load, the named provoking mechanism alongside wrist extension. Deliberately not extended to loaded-carry as a whole (Yoke Walk, Sandbag Bear Hug Carry, overhead carries load the shoulders/back and torso, not a sustained hand grip against a pull) and deliberately not extended to hangboard hangs or dead hangs, which load the finger flexor/pulley system in a fixed crimp, a different named mechanism already covered by this app's finger-pulley and trigger-finger rules; sweeping those in for tennis elbow too would repeat the over-broad grip pattern already found and fixed this week. Sourced (loaded gripping mechanism), unreviewed. Hangs and pull-ups are left to the finger-injury rules: the lateral epicondyle is the extensor origin, and the drafter's anatomical objection to sweeping flexor-loaded hangs into it stands. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 302,
+    "injury_id": 50,
+    "role": "contraindicated",
+    "notes": "Farmer's Carry, Farmer Carry Loaded Hike and Plate Pinch Hold all require a sustained crush or pinch grip against an external pulling load, the named provoking mechanism alongside wrist extension. Deliberately not extended to loaded-carry as a whole (Yoke Walk, Sandbag Bear Hug Carry, overhead carries load the shoulders/back and torso, not a sustained hand grip against a pull) and deliberately not extended to hangboard hangs or dead hangs, which load the finger flexor/pulley system in a fixed crimp, a different named mechanism already covered by this app's finger-pulley and trigger-finger rules; sweeping those in for tennis elbow too would repeat the over-broad grip pattern already found and fixed this week. Sourced (loaded gripping mechanism), unreviewed. Hangs and pull-ups are left to the finger-injury rules: the lateral epicondyle is the extensor origin, and the drafter's anatomical objection to sweeping flexor-loaded hangs into it stands. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 612,
+    "injury_id": 50,
+    "role": "contraindicated",
+    "notes": "Farmer's Carry, Farmer Carry Loaded Hike and Plate Pinch Hold all require a sustained crush or pinch grip against an external pulling load, the named provoking mechanism alongside wrist extension. Deliberately not extended to loaded-carry as a whole (Yoke Walk, Sandbag Bear Hug Carry, overhead carries load the shoulders/back and torso, not a sustained hand grip against a pull) and deliberately not extended to hangboard hangs or dead hangs, which load the finger flexor/pulley system in a fixed crimp, a different named mechanism already covered by this app's finger-pulley and trigger-finger rules; sweeping those in for tennis elbow too would repeat the over-broad grip pattern already found and fixed this week. Sourced (loaded gripping mechanism), unreviewed. Hangs and pull-ups are left to the finger-injury rules: the lateral epicondyle is the extensor origin, and the drafter's anatomical objection to sweeping flexor-loaded hangs into it stands. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 2,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 3,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 11,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 12,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 48,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 56,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 64,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 302,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 303,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 612,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 638,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 641,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 922,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 923,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 924,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1197,
+    "injury_id": 51,
+    "role": "contraindicated",
+    "notes": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 13,
+    "injury_id": 52,
+    "role": "contraindicated",
+    "notes": "Extends the existing hand-on-ground, wrist-extended, weight-bearing contraindications (Push-Up Plyo, Handstand Wall Hold, Wall Walk) to the rest of that same position family: every Push-Up variant, Bear Crawl, Renegade Row, Trapeze Plank Hold and Handstand Push Up all load a fully extended wrist under bodyweight, the exact position StatPearls names. Front-rack/goblet/Zercher/thruster and heavy curls were checked and NOT included: the wrist there is stabilizing a bar resting on the shoulders or forearm rather than bearing weight through an extended wrist joint, and no fetched source named that position or named curls for wrist sprain specifically, so including them would be wider than what was actually read. A generic 'Front Plank'/'Plank'/'Reverse Plank'/'Side Plank' entry was also left out because the catalog does not say whether it is performed on hands (wrist extended) or forearms (wrist neutral). Sourced (weight-bearing wrist extension mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 18,
+    "injury_id": 52,
+    "role": "contraindicated",
+    "notes": "Extends the existing hand-on-ground, wrist-extended, weight-bearing contraindications (Push-Up Plyo, Handstand Wall Hold, Wall Walk) to the rest of that same position family: every Push-Up variant, Bear Crawl, Renegade Row, Trapeze Plank Hold and Handstand Push Up all load a fully extended wrist under bodyweight, the exact position StatPearls names. Front-rack/goblet/Zercher/thruster and heavy curls were checked and NOT included: the wrist there is stabilizing a bar resting on the shoulders or forearm rather than bearing weight through an extended wrist joint, and no fetched source named that position or named curls for wrist sprain specifically, so including them would be wider than what was actually read. A generic 'Front Plank'/'Plank'/'Reverse Plank'/'Side Plank' entry was also left out because the catalog does not say whether it is performed on hands (wrist extended) or forearms (wrist neutral). Sourced (weight-bearing wrist extension mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 20,
+    "injury_id": 52,
+    "role": "contraindicated",
+    "notes": "Extends the existing hand-on-ground, wrist-extended, weight-bearing contraindications (Push-Up Plyo, Handstand Wall Hold, Wall Walk) to the rest of that same position family: every Push-Up variant, Bear Crawl, Renegade Row, Trapeze Plank Hold and Handstand Push Up all load a fully extended wrist under bodyweight, the exact position StatPearls names. Front-rack/goblet/Zercher/thruster and heavy curls were checked and NOT included: the wrist there is stabilizing a bar resting on the shoulders or forearm rather than bearing weight through an extended wrist joint, and no fetched source named that position or named curls for wrist sprain specifically, so including them would be wider than what was actually read. A generic 'Front Plank'/'Plank'/'Reverse Plank'/'Side Plank' entry was also left out because the catalog does not say whether it is performed on hands (wrist extended) or forearms (wrist neutral). Sourced (weight-bearing wrist extension mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 28,
+    "injury_id": 52,
+    "role": "contraindicated",
+    "notes": "Extends the existing hand-on-ground, wrist-extended, weight-bearing contraindications (Push-Up Plyo, Handstand Wall Hold, Wall Walk) to the rest of that same position family: every Push-Up variant, Bear Crawl, Renegade Row, Trapeze Plank Hold and Handstand Push Up all load a fully extended wrist under bodyweight, the exact position StatPearls names. Front-rack/goblet/Zercher/thruster and heavy curls were checked and NOT included: the wrist there is stabilizing a bar resting on the shoulders or forearm rather than bearing weight through an extended wrist joint, and no fetched source named that position or named curls for wrist sprain specifically, so including them would be wider than what was actually read. A generic 'Front Plank'/'Plank'/'Reverse Plank'/'Side Plank' entry was also left out because the catalog does not say whether it is performed on hands (wrist extended) or forearms (wrist neutral). Sourced (weight-bearing wrist extension mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 120,
+    "injury_id": 52,
+    "role": "contraindicated",
+    "notes": "Extends the existing hand-on-ground, wrist-extended, weight-bearing contraindications (Push-Up Plyo, Handstand Wall Hold, Wall Walk) to the rest of that same position family: every Push-Up variant, Bear Crawl, Renegade Row, Trapeze Plank Hold and Handstand Push Up all load a fully extended wrist under bodyweight, the exact position StatPearls names. Front-rack/goblet/Zercher/thruster and heavy curls were checked and NOT included: the wrist there is stabilizing a bar resting on the shoulders or forearm rather than bearing weight through an extended wrist joint, and no fetched source named that position or named curls for wrist sprain specifically, so including them would be wider than what was actually read. A generic 'Front Plank'/'Plank'/'Reverse Plank'/'Side Plank' entry was also left out because the catalog does not say whether it is performed on hands (wrist extended) or forearms (wrist neutral). Sourced (weight-bearing wrist extension mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 373,
+    "injury_id": 52,
+    "role": "contraindicated",
+    "notes": "Extends the existing hand-on-ground, wrist-extended, weight-bearing contraindications (Push-Up Plyo, Handstand Wall Hold, Wall Walk) to the rest of that same position family: every Push-Up variant, Bear Crawl, Renegade Row, Trapeze Plank Hold and Handstand Push Up all load a fully extended wrist under bodyweight, the exact position StatPearls names. Front-rack/goblet/Zercher/thruster and heavy curls were checked and NOT included: the wrist there is stabilizing a bar resting on the shoulders or forearm rather than bearing weight through an extended wrist joint, and no fetched source named that position or named curls for wrist sprain specifically, so including them would be wider than what was actually read. A generic 'Front Plank'/'Plank'/'Reverse Plank'/'Side Plank' entry was also left out because the catalog does not say whether it is performed on hands (wrist extended) or forearms (wrist neutral). Sourced (weight-bearing wrist extension mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 503,
+    "injury_id": 52,
+    "role": "contraindicated",
+    "notes": "Extends the existing hand-on-ground, wrist-extended, weight-bearing contraindications (Push-Up Plyo, Handstand Wall Hold, Wall Walk) to the rest of that same position family: every Push-Up variant, Bear Crawl, Renegade Row, Trapeze Plank Hold and Handstand Push Up all load a fully extended wrist under bodyweight, the exact position StatPearls names. Front-rack/goblet/Zercher/thruster and heavy curls were checked and NOT included: the wrist there is stabilizing a bar resting on the shoulders or forearm rather than bearing weight through an extended wrist joint, and no fetched source named that position or named curls for wrist sprain specifically, so including them would be wider than what was actually read. A generic 'Front Plank'/'Plank'/'Reverse Plank'/'Side Plank' entry was also left out because the catalog does not say whether it is performed on hands (wrist extended) or forearms (wrist neutral). Sourced (weight-bearing wrist extension mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 654,
+    "injury_id": 52,
+    "role": "contraindicated",
+    "notes": "Extends the existing hand-on-ground, wrist-extended, weight-bearing contraindications (Push-Up Plyo, Handstand Wall Hold, Wall Walk) to the rest of that same position family: every Push-Up variant, Bear Crawl, Renegade Row, Trapeze Plank Hold and Handstand Push Up all load a fully extended wrist under bodyweight, the exact position StatPearls names. Front-rack/goblet/Zercher/thruster and heavy curls were checked and NOT included: the wrist there is stabilizing a bar resting on the shoulders or forearm rather than bearing weight through an extended wrist joint, and no fetched source named that position or named curls for wrist sprain specifically, so including them would be wider than what was actually read. A generic 'Front Plank'/'Plank'/'Reverse Plank'/'Side Plank' entry was also left out because the catalog does not say whether it is performed on hands (wrist extended) or forearms (wrist neutral). Sourced (weight-bearing wrist extension mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 732,
+    "injury_id": 52,
+    "role": "contraindicated",
+    "notes": "Extends the existing hand-on-ground, wrist-extended, weight-bearing contraindications (Push-Up Plyo, Handstand Wall Hold, Wall Walk) to the rest of that same position family: every Push-Up variant, Bear Crawl, Renegade Row, Trapeze Plank Hold and Handstand Push Up all load a fully extended wrist under bodyweight, the exact position StatPearls names. Front-rack/goblet/Zercher/thruster and heavy curls were checked and NOT included: the wrist there is stabilizing a bar resting on the shoulders or forearm rather than bearing weight through an extended wrist joint, and no fetched source named that position or named curls for wrist sprain specifically, so including them would be wider than what was actually read. A generic 'Front Plank'/'Plank'/'Reverse Plank'/'Side Plank' entry was also left out because the catalog does not say whether it is performed on hands (wrist extended) or forearms (wrist neutral). Sourced (weight-bearing wrist extension mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 957,
+    "injury_id": 52,
+    "role": "contraindicated",
+    "notes": "Extends the existing hand-on-ground, wrist-extended, weight-bearing contraindications (Push-Up Plyo, Handstand Wall Hold, Wall Walk) to the rest of that same position family: every Push-Up variant, Bear Crawl, Renegade Row, Trapeze Plank Hold and Handstand Push Up all load a fully extended wrist under bodyweight, the exact position StatPearls names. Front-rack/goblet/Zercher/thruster and heavy curls were checked and NOT included: the wrist there is stabilizing a bar resting on the shoulders or forearm rather than bearing weight through an extended wrist joint, and no fetched source named that position or named curls for wrist sprain specifically, so including them would be wider than what was actually read. A generic 'Front Plank'/'Plank'/'Reverse Plank'/'Side Plank' entry was also left out because the catalog does not say whether it is performed on hands (wrist extended) or forearms (wrist neutral). Sourced (weight-bearing wrist extension mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1022,
+    "injury_id": 52,
+    "role": "contraindicated",
+    "notes": "Extends the existing hand-on-ground, wrist-extended, weight-bearing contraindications (Push-Up Plyo, Handstand Wall Hold, Wall Walk) to the rest of that same position family: every Push-Up variant, Bear Crawl, Renegade Row, Trapeze Plank Hold and Handstand Push Up all load a fully extended wrist under bodyweight, the exact position StatPearls names. Front-rack/goblet/Zercher/thruster and heavy curls were checked and NOT included: the wrist there is stabilizing a bar resting on the shoulders or forearm rather than bearing weight through an extended wrist joint, and no fetched source named that position or named curls for wrist sprain specifically, so including them would be wider than what was actually read. A generic 'Front Plank'/'Plank'/'Reverse Plank'/'Side Plank' entry was also left out because the catalog does not say whether it is performed on hands (wrist extended) or forearms (wrist neutral). Sourced (weight-bearing wrist extension mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1059,
+    "injury_id": 52,
+    "role": "contraindicated",
+    "notes": "Extends the existing hand-on-ground, wrist-extended, weight-bearing contraindications (Push-Up Plyo, Handstand Wall Hold, Wall Walk) to the rest of that same position family: every Push-Up variant, Bear Crawl, Renegade Row, Trapeze Plank Hold and Handstand Push Up all load a fully extended wrist under bodyweight, the exact position StatPearls names. Front-rack/goblet/Zercher/thruster and heavy curls were checked and NOT included: the wrist there is stabilizing a bar resting on the shoulders or forearm rather than bearing weight through an extended wrist joint, and no fetched source named that position or named curls for wrist sprain specifically, so including them would be wider than what was actually read. A generic 'Front Plank'/'Plank'/'Reverse Plank'/'Side Plank' entry was also left out because the catalog does not say whether it is performed on hands (wrist extended) or forearms (wrist neutral). Sourced (weight-bearing wrist extension mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 17,
+    "injury_id": 50,
+    "role": "rehab_early",
+    "notes": "Reverse Wrist Curl (Forearm Extensors) trains the exact structure named in the mechanism, the wrist extensors/ECRB. StatPearls names \"progressive eccentric strengthening of the common extensor tendon\" as the physical therapy intervention for lateral epicondylitis. This exercise already carries a prehab row for tennis-elbow in the catalog; adding rehab_early because eccentric extensor loading is the standard active-symptom treatment, not only prevention. Source: https://www.ncbi.nlm.nih.gov/books/NBK431092/"
+  },
+  {
+    "exercise_id": 1073,
+    "injury_id": 51,
+    "role": "rehab_early",
+    "notes": "Seated Palms Up Wrist Curl (Dumbbell) matches the InformedHealth.org eccentric protocol verbatim: seated, arm resting on the thigh, palm facing upward, lowering the weighted hand under control. This is the flexor-side analog of Reverse Wrist Curl and is a different exercise from the existing (and mechanistically mismatched) prehab row this injury already carries for exercise 17, which trains extensors, not the flexor-pronator origin golfer's elbow actually involves. Source: https://www.ncbi.nlm.nih.gov/books/NBK507006/"
+  },
+  {
+    "exercise_id": 876,
+    "injury_id": 30,
+    "role": "contraindicated",
+    "notes": "Forceful kicking motion loads rectus femoris eccentrically at the hip flexor. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 123,
+    "injury_id": 30,
+    "role": "contraindicated",
+    "notes": "Sprint mechanics and explosive starts drive the same eccentric hip-flexion strain as kicking. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 234,
+    "injury_id": 30,
+    "role": "contraindicated",
+    "notes": "Sprint mechanics and explosive starts drive the same eccentric hip-flexion strain as kicking. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 577,
+    "injury_id": 30,
+    "role": "contraindicated",
+    "notes": "Sprint mechanics and explosive starts drive the same eccentric hip-flexion strain as kicking. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 676,
+    "injury_id": 30,
+    "role": "contraindicated",
+    "notes": "Sprint mechanics and explosive starts drive the same eccentric hip-flexion strain as kicking. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 690,
+    "injury_id": 30,
+    "role": "contraindicated",
+    "notes": "Sprint mechanics and explosive starts drive the same eccentric hip-flexion strain as kicking. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 801,
+    "injury_id": 30,
+    "role": "contraindicated",
+    "notes": "Sprint mechanics and explosive starts drive the same eccentric hip-flexion strain as kicking. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 809,
+    "injury_id": 30,
+    "role": "contraindicated",
+    "notes": "Sprint mechanics and explosive starts drive the same eccentric hip-flexion strain as kicking. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 875,
+    "injury_id": 30,
+    "role": "contraindicated",
+    "notes": "Sprint mechanics and explosive starts drive the same eccentric hip-flexion strain as kicking. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 62,
+    "injury_id": 31,
+    "role": "contraindicated",
+    "notes": "Single-leg squat depth (pistol, split squat, deep lunge) reproduces the flexion-adduction-internal-rotation position that provokes labral pain; a two-leg squat pattern cannot express depth so is left out. Applied only to movements that are deep hip flexion by construction (pistol, skater squat, Bulgarian and rear-foot-elevated split squat); step-downs, lunges and split-stance holds sit near 90 degrees and are excluded, since the mechanism states depth. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 393,
+    "injury_id": 31,
+    "role": "contraindicated",
+    "notes": "Single-leg squat depth (pistol, split squat, deep lunge) reproduces the flexion-adduction-internal-rotation position that provokes labral pain; a two-leg squat pattern cannot express depth so is left out. Applied only to movements that are deep hip flexion by construction (pistol, skater squat, Bulgarian and rear-foot-elevated split squat); step-downs, lunges and split-stance holds sit near 90 degrees and are excluded, since the mechanism states depth. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 601,
+    "injury_id": 31,
+    "role": "contraindicated",
+    "notes": "Single-leg squat depth (pistol, split squat, deep lunge) reproduces the flexion-adduction-internal-rotation position that provokes labral pain; a two-leg squat pattern cannot express depth so is left out. Applied only to movements that are deep hip flexion by construction (pistol, skater squat, Bulgarian and rear-foot-elevated split squat); step-downs, lunges and split-stance holds sit near 90 degrees and are excluded, since the mechanism states depth. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1057,
+    "injury_id": 31,
+    "role": "contraindicated",
+    "notes": "Single-leg squat depth (pistol, split squat, deep lunge) reproduces the flexion-adduction-internal-rotation position that provokes labral pain; a two-leg squat pattern cannot express depth so is left out. Applied only to movements that are deep hip flexion by construction (pistol, skater squat, Bulgarian and rear-foot-elevated split squat); step-downs, lunges and split-stance holds sit near 90 degrees and are excluded, since the mechanism states depth. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 228,
+    "injury_id": 31,
+    "role": "contraindicated",
+    "notes": "Pivoting and cutting reproduce the turning/twisting load named on the page. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 229,
+    "injury_id": 31,
+    "role": "contraindicated",
+    "notes": "Pivoting and cutting reproduce the turning/twisting load named on the page. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 234,
+    "injury_id": 31,
+    "role": "contraindicated",
+    "notes": "Pivoting and cutting reproduce the turning/twisting load named on the page. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 358,
+    "injury_id": 31,
+    "role": "contraindicated",
+    "notes": "Pivoting and cutting reproduce the turning/twisting load named on the page. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 359,
+    "injury_id": 31,
+    "role": "contraindicated",
+    "notes": "Pivoting and cutting reproduce the turning/twisting load named on the page. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 422,
+    "injury_id": 31,
+    "role": "contraindicated",
+    "notes": "Pivoting and cutting reproduce the turning/twisting load named on the page. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 463,
+    "injury_id": 31,
+    "role": "contraindicated",
+    "notes": "Pivoting and cutting reproduce the turning/twisting load named on the page. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 464,
+    "injury_id": 31,
+    "role": "contraindicated",
+    "notes": "Pivoting and cutting reproduce the turning/twisting load named on the page. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 844,
+    "injury_id": 31,
+    "role": "contraindicated",
+    "notes": "Pivoting and cutting reproduce the turning/twisting load named on the page. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1018,
+    "injury_id": 30,
+    "role": "rehab_early",
+    "notes": "Page: 'Active hip flexion is added in the supine position, starting with the knees and hips flexed to maintain a short lever arm' (iliopsoas syndrome, early phase). Flat Knee Raise is the catalog's bent-knee, floor-lying hip flexion movement, matching the short-lever/supine description by movement, not by the page naming this catalog exercise. Sourced (mechanism), unreviewed. Source: https://pmc.ncbi.nlm.nih.gov/articles/PMC4223288/"
+  },
+  {
+    "exercise_id": 49,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 52,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 214,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 215,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 228,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 229,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 230,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 233,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 234,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 329,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 358,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 359,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 361,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 422,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 463,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 464,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 466,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 469,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 494,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 526,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 559,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 578,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 602,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 609,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 613,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 616,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 645,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 646,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 725,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 823,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 843,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 844,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1024,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1032,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1034,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1035,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1059,
+    "injury_id": 1,
+    "role": "contraindicated",
+    "notes": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 125,
+    "injury_id": 1,
+    "role": "rehab_early",
+    "notes": "Bodyweight isometric quad hold at matched knee-flexion angle is the equipment-free analog of the isometric protocol (70-80% MVIC at 60 degrees knee flexion) used for pain-limited early-stage loading. Sourced (mechanism), unreviewed. Source: https://pmc.ncbi.nlm.nih.gov/articles/PMC11570476/"
+  },
+  {
+    "exercise_id": 931,
+    "injury_id": 1,
+    "role": "rehab_early",
+    "notes": "Leg press is one of the three named heavy-slow-resistance exercises (hack squat, leg press, squat) that match eccentric training on pain and structure while raising satisfaction. Sourced (mechanism), unreviewed. Source: https://pmc.ncbi.nlm.nih.gov/articles/PMC11570476/"
+  },
+  {
+    "exercise_id": 15,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 16,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 20,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 210,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 348,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 490,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 491,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 492,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 504,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 630,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 660,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 736,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 756,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 774,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 784,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 785,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 789,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 897,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 987,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 998,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 999,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 1008,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 1022,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 1071,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 1072,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 1075,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 1076,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 1095,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 1097,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 1098,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 1101,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 1102,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 1117,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 1118,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Overhead pressing drives the same abduction and forward flexion that narrows the subacromial space; Landmine Press (19) is excluded because this catalog already carries it as impingement prehab on a shoulder-friendly angled path. Sourced (subacromial space narrows with abduction and forward flexion), unreviewed."
+  },
+  {
+    "exercise_id": 962,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Upright rows actively load the arm through exactly the 70 to 120 degree painful arc; these five catalog rows carry no pattern tag at all, so name_regex is the only way to reach them. Sourced (pain reproduced between 70 and 120 degrees of active abduction), unreviewed."
+  },
+  {
+    "exercise_id": 1152,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Upright rows actively load the arm through exactly the 70 to 120 degree painful arc; these five catalog rows carry no pattern tag at all, so name_regex is the only way to reach them. Sourced (pain reproduced between 70 and 120 degrees of active abduction), unreviewed."
+  },
+  {
+    "exercise_id": 1153,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Upright rows actively load the arm through exactly the 70 to 120 degree painful arc; these five catalog rows carry no pattern tag at all, so name_regex is the only way to reach them. Sourced (pain reproduced between 70 and 120 degrees of active abduction), unreviewed."
+  },
+  {
+    "exercise_id": 1154,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Upright rows actively load the arm through exactly the 70 to 120 degree painful arc; these five catalog rows carry no pattern tag at all, so name_regex is the only way to reach them. Sourced (pain reproduced between 70 and 120 degrees of active abduction), unreviewed."
+  },
+  {
+    "exercise_id": 1155,
+    "injury_id": 11,
+    "role": "contraindicated",
+    "notes": "Upright rows actively load the arm through exactly the 70 to 120 degree painful arc; these five catalog rows carry no pattern tag at all, so name_regex is the only way to reach them. Sourced (pain reproduced between 70 and 120 degrees of active abduction), unreviewed."
+  },
+  {
+    "exercise_id": 15,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 16,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 19,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 20,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 210,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 490,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 492,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 504,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 630,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 660,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 736,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 756,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 774,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 784,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 785,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 789,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 897,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 987,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 998,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 999,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 1008,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 1022,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 1071,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 1072,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 1075,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 1076,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 1095,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 1097,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 1098,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 1101,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 1102,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 1117,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 1118,
+    "injury_id": 10,
+    "role": "contraindicated",
+    "notes": "Overhead pressing reproduces the overhead lifting and reaching this source names as a pain trigger for a cuff tear; the companion OrthoInfo page also advises limiting overhead activities. Sourced (pain present with overhead lifting or reaching), unreviewed."
+  },
+  {
+    "exercise_id": 15,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 16,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 19,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 20,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 210,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 348,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 490,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 491,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 504,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 630,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 660,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 736,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 756,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 774,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 784,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 785,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 789,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 897,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 987,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 998,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 999,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 1008,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 1022,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 1071,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 1072,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 1075,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 1076,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 1095,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 1097,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 1098,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 1101,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 1102,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 1117,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 1118,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Overhead pressing and lockout positions place the arm in the same abducted, externally rotated (ABER) posture that loads the biceps anchor; a published SLAP repair protocol separately restricts active elevation and shoulder extension for the same reason. Sourced (arm abducted and externally rotated during late-cocking overhead throwing), unreviewed."
+  },
+  {
+    "exercise_id": 47,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Ballistic catches, dynos and slams deliver the sudden jerking traction this source names as a SLAP traction mechanism; pattern tags do not separate a static hangboard hold from a ballistic catch, so name_regex targets the explosive subset directly. Sourced (sudden jerking movements or an unexpected pull on the arm), unreviewed."
+  },
+  {
+    "exercise_id": 48,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Ballistic catches, dynos and slams deliver the sudden jerking traction this source names as a SLAP traction mechanism; pattern tags do not separate a static hangboard hold from a ballistic catch, so name_regex targets the explosive subset directly. Sourced (sudden jerking movements or an unexpected pull on the arm), unreviewed."
+  },
+  {
+    "exercise_id": 50,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Ballistic catches, dynos and slams deliver the sudden jerking traction this source names as a SLAP traction mechanism; pattern tags do not separate a static hangboard hold from a ballistic catch, so name_regex targets the explosive subset directly. Sourced (sudden jerking movements or an unexpected pull on the arm), unreviewed."
+  },
+  {
+    "exercise_id": 51,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Ballistic catches, dynos and slams deliver the sudden jerking traction this source names as a SLAP traction mechanism; pattern tags do not separate a static hangboard hold from a ballistic catch, so name_regex targets the explosive subset directly. Sourced (sudden jerking movements or an unexpected pull on the arm), unreviewed."
+  },
+  {
+    "exercise_id": 431,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Ballistic catches, dynos and slams deliver the sudden jerking traction this source names as a SLAP traction mechanism; pattern tags do not separate a static hangboard hold from a ballistic catch, so name_regex targets the explosive subset directly. Sourced (sudden jerking movements or an unexpected pull on the arm), unreviewed."
+  },
+  {
+    "exercise_id": 646,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Ballistic catches, dynos and slams deliver the sudden jerking traction this source names as a SLAP traction mechanism; pattern tags do not separate a static hangboard hold from a ballistic catch, so name_regex targets the explosive subset directly. Sourced (sudden jerking movements or an unexpected pull on the arm), unreviewed."
+  },
+  {
+    "exercise_id": 985,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Ballistic catches, dynos and slams deliver the sudden jerking traction this source names as a SLAP traction mechanism; pattern tags do not separate a static hangboard hold from a ballistic catch, so name_regex targets the explosive subset directly. Sourced (sudden jerking movements or an unexpected pull on the arm), unreviewed."
+  },
+  {
+    "exercise_id": 1037,
+    "injury_id": 12,
+    "role": "contraindicated",
+    "notes": "Ballistic catches, dynos and slams deliver the sudden jerking traction this source names as a SLAP traction mechanism; pattern tags do not separate a static hangboard hold from a ballistic catch, so name_regex targets the explosive subset directly. Sourced (sudden jerking movements or an unexpected pull on the arm), unreviewed."
+  },
+  {
+    "exercise_id": 1017,
+    "injury_id": 10,
+    "role": "rehab_early",
+    "notes": "This AAOS conditioning program's External Rotation exercise reads 'Keeping your elbow close to your side, slowly rotate your arm outward,' which is the same light-band external rotation as catalog exercise 1017. Source: https://www.orthoinfo.org/recovery/rotator-cuff-and-shoulder-conditioning-program/"
+  },
+  {
+    "exercise_id": 1017,
+    "injury_id": 11,
+    "role": "rehab_early",
+    "notes": "Same AAOS program is the linked conditioning resource for shoulder impingement; light-band External Rotation strengthens the cuff without loading the overhead range that reproduces impingement pain. Source: https://www.orthoinfo.org/recovery/rotator-cuff-and-shoulder-conditioning-program/"
+  },
+  {
+    "exercise_id": 562,
+    "injury_id": 12,
+    "role": "rehab_early",
+    "notes": "Phase I (weeks 0 to 6) of this SLAP repair protocol lists 'Light and non-painful isometrics for rotator cuff and deltoid' and 'Initiate scapular stabilization exercises' while elevation, shoulder extension and external rotation stay restricted; Scapular Retraction Hold is an unloaded isometric scapular-stabilization hold matching that description. Source: https://adamanzmd.com/rehabilitation-superior-labral-slap-repair-protocol/"
+  },
+  {
+    "exercise_id": 968,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Sit-up and crunch family load the disc in repeated loaded flexion, the exact motion flexion-intolerant herniation patients are told to stop. No pattern tag covers this family (Sit-Up, Crunch, Russian Twist, Barbell Good Morning and others carry patterns: null in the catalog), so name_regex was required. Sourced (loaded flexion mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 969,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Sit-up and crunch family load the disc in repeated loaded flexion, the exact motion flexion-intolerant herniation patients are told to stop. No pattern tag covers this family (Sit-Up, Crunch, Russian Twist, Barbell Good Morning and others carry patterns: null in the catalog), so name_regex was required. Sourced (loaded flexion mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 971,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Sit-up and crunch family load the disc in repeated loaded flexion, the exact motion flexion-intolerant herniation patients are told to stop. No pattern tag covers this family (Sit-Up, Crunch, Russian Twist, Barbell Good Morning and others carry patterns: null in the catalog), so name_regex was required. Sourced (loaded flexion mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 973,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Sit-up and crunch family load the disc in repeated loaded flexion, the exact motion flexion-intolerant herniation patients are told to stop. No pattern tag covers this family (Sit-Up, Crunch, Russian Twist, Barbell Good Morning and others carry patterns: null in the catalog), so name_regex was required. Sourced (loaded flexion mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 975,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Sit-up and crunch family load the disc in repeated loaded flexion, the exact motion flexion-intolerant herniation patients are told to stop. No pattern tag covers this family (Sit-Up, Crunch, Russian Twist, Barbell Good Morning and others carry patterns: null in the catalog), so name_regex was required. Sourced (loaded flexion mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1007,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Sit-up and crunch family load the disc in repeated loaded flexion, the exact motion flexion-intolerant herniation patients are told to stop. No pattern tag covers this family (Sit-Up, Crunch, Russian Twist, Barbell Good Morning and others carry patterns: null in the catalog), so name_regex was required. Sourced (loaded flexion mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1013,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Sit-up and crunch family load the disc in repeated loaded flexion, the exact motion flexion-intolerant herniation patients are told to stop. No pattern tag covers this family (Sit-Up, Crunch, Russian Twist, Barbell Good Morning and others carry patterns: null in the catalog), so name_regex was required. Sourced (loaded flexion mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1031,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Sit-up and crunch family load the disc in repeated loaded flexion, the exact motion flexion-intolerant herniation patients are told to stop. No pattern tag covers this family (Sit-Up, Crunch, Russian Twist, Barbell Good Morning and others carry patterns: null in the catalog), so name_regex was required. Sourced (loaded flexion mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1055,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Sit-up and crunch family load the disc in repeated loaded flexion, the exact motion flexion-intolerant herniation patients are told to stop. No pattern tag covers this family (Sit-Up, Crunch, Russian Twist, Barbell Good Morning and others carry patterns: null in the catalog), so name_regex was required. Sourced (loaded flexion mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 50,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 114,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 115,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 127,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 310,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 349,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 350,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 371,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 374,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 375,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 381,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 392,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 413,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 429,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 484,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 640,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 659,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 666,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 713,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 719,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 764,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 765,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 835,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 838,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 841,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 878,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 970,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 995,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1100,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Loaded and unloaded trunk rotation both stress an already herniated disc per AAOS and the flexion-intolerance literature. Russian Twist carries no pattern tag in the catalog (patterns: null), so name_regex covers it alongside the trunk-rotation pattern set. Sourced (rotation/twisting mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 108,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 451,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 629,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 916,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 917,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 918,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 921,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1009,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1062,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1093,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1096,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1170,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1171,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1172,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1173,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1179,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 225,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 311,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 323,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 348,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 349,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 350,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 640,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 715,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 719,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 721,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 729,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 826,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 827,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 828,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 833,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 835,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 838,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 876,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 878,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 889,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 891,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 49,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 52,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 130,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 214,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 215,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 230,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 232,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 233,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 329,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 355,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 466,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 469,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 494,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 526,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 559,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 602,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 609,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 613,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 616,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 645,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 646,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 725,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 823,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 843,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 1024,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 1032,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 1034,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 1035,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 1059,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Jarring landings transmit an impact through the trunk into the neck, echoing the acceleration-deceleration mechanism of whiplash itself. Running alone (locomotion pattern) is not included since the source names it alongside jumping/jarring, not as a standalone restriction, and locomotion covers far more than running. Sourced (jarring-impact mechanism), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 715,
+    "injury_id": 61,
+    "role": "contraindicated",
+    "notes": "The traction mechanism (shoulder driven down while the neck is forced the other way, seen in tackling/wrestling takedowns) is reproduced by the catalog's takedown-sprawl drills (Sambo takedown rehearsal and belt-grip entry, HEMA grapple-throw entry, roll and break-fall practice), all of which load the shoulder and neck together under a fall or grip contest. Sourced (traction/tackling mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 721,
+    "injury_id": 61,
+    "role": "contraindicated",
+    "notes": "The traction mechanism (shoulder driven down while the neck is forced the other way, seen in tackling/wrestling takedowns) is reproduced by the catalog's takedown-sprawl drills (Sambo takedown rehearsal and belt-grip entry, HEMA grapple-throw entry, roll and break-fall practice), all of which load the shoulder and neck together under a fall or grip contest. Sourced (traction/tackling mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 828,
+    "injury_id": 61,
+    "role": "contraindicated",
+    "notes": "The traction mechanism (shoulder driven down while the neck is forced the other way, seen in tackling/wrestling takedowns) is reproduced by the catalog's takedown-sprawl drills (Sambo takedown rehearsal and belt-grip entry, HEMA grapple-throw entry, roll and break-fall practice), all of which load the shoulder and neck together under a fall or grip contest. Sourced (traction/tackling mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 878,
+    "injury_id": 61,
+    "role": "contraindicated",
+    "notes": "The traction mechanism (shoulder driven down while the neck is forced the other way, seen in tackling/wrestling takedowns) is reproduced by the catalog's takedown-sprawl drills (Sambo takedown rehearsal and belt-grip entry, HEMA grapple-throw entry, roll and break-fall practice), all of which load the shoulder and neck together under a fall or grip contest. Sourced (traction/tackling mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1110,
+    "injury_id": 20,
+    "role": "rehab_early",
+    "notes": "AAOS: doctor or physical therapist may recommend a simple walking program while recovering. Plain Walking (not the loaded Rucking variant) matches this. Sourced (walking program), unreviewed. Source: https://www.orthoinfo.org/en/diseases--conditions/herniated-disk-in-the-lower-back/"
+  },
+  {
+    "exercise_id": 132,
+    "injury_id": 20,
+    "role": "rehab_early",
+    "notes": "McGill's side bridge/side plank is one of the Big Three, framed as building a pain-free foundation before more activity; Side Plank (anti-lateral-flexion) is the catalog match. Curl-up and bird dog are not in the 575-exercise catalog (bird dog is item 4's catalog gap), so only Side Plank is added here. Sourced (McGill Big Three, side bridge), unreviewed. Source: https://www.acefitness.org/resources/pros/expert-articles/7077/low-back-exercises-stuart-mcgill-s-big-three/"
   }
 ]

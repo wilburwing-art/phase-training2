@@ -1,0 +1,88 @@
+{
+ "rules": [
+  {
+   "injury_slug": "hip-flexor-strain",
+   "mechanism": "A kicking injury mostly involves the thigh of the kicking leg and is frequently diagnosed as a RF muscle strain, often injured during eccentric loading.",
+   "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10108758/",
+   "predicate": {
+    "name_regex": "(?i)front-kick"
+   },
+   "note": "Forceful kicking motion loads rectus femoris eccentrically at the hip flexor. Sourced (mechanism), unreviewed."
+  },
+  {
+   "injury_slug": "hip-flexor-strain",
+   "mechanism": "the remaining 20% (n = 31) were injured during sprinting",
+   "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10108758/",
+   "predicate": {
+    "name_regex": "(?i)sprint|a-skip|reactive start"
+   },
+   "note": "Sprint mechanics and explosive starts drive the same eccentric hip-flexion strain as kicking. Sourced (mechanism), unreviewed."
+  },
+  {
+   "injury_slug": "hip-labral-tear",
+   "mechanism": "The examiner passively brings the hip into flexion, adduction, and internal rotation... Reproduction of pain is considered a positive test and diagnostic of FAI.",
+   "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9076795/",
+   "predicate": {
+    "patterns": [
+     "single-leg-squat"
+    ],
+    "exclude_exercise_ids": [
+     128,
+     130,
+     227,
+     239,
+     361,
+     362,
+     477,
+     603,
+     607,
+     623,
+     629,
+     725,
+     1050,
+     1051,
+     1052,
+     1163,
+     1164
+    ]
+   },
+   "note": "Single-leg squat depth (pistol, split squat, deep lunge) reproduces the flexion-adduction-internal-rotation position that provokes labral pain; a two-leg squat pattern cannot express depth so is left out. Applied only to movements that are deep hip flexion by construction (pistol, skater squat, Bulgarian and rear-foot-elevated split squat); step-downs, lunges and split-stance holds sit near 90 degrees and are excluded, since the mechanism states depth. Sourced (mechanism), unreviewed."
+  },
+  {
+   "injury_slug": "hip-labral-tear",
+   "mechanism": "Turning, twisting, and squatting may cause a sharp, stabbing pain.",
+   "source_url": "https://www.orthoinfo.org/en/diseases--conditions/femoroacetabular-impingement/",
+   "predicate": {
+    "patterns": [
+     "cutting"
+    ]
+   },
+   "note": "Pivoting and cutting reproduce the turning/twisting load named on the page. Sourced (mechanism), unreviewed."
+  }
+ ],
+ "rehab_early": [
+  {
+   "injury_slug": "hip-flexor-strain",
+   "exercise_id": 1018,
+   "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4223288/",
+   "note": "Page: 'Active hip flexion is added in the supine position, starting with the knees and hips flexed to maintain a short lever arm' (iliopsoas syndrome, early phase). Flat Knee Raise is the catalog's bent-knee, floor-lying hip flexion movement, matching the short-lever/supine description by movement, not by the page naming this catalog exercise. Sourced (mechanism), unreviewed."
+  }
+ ],
+ "research": {
+  "hip-flexor-strain": [
+   "https://pmc.ncbi.nlm.nih.gov/articles/PMC10108758/ -- gave verbatim: '80% (n = 121) sustained RF injury as a result of kicking', 'the remaining 20% (n = 31) were injured during sprinting', 'A kicking injury mostly involves the thigh of the kicking leg and is frequently diagnosed as a RF muscle strain, often injured during eccentric loading.' Used for both rules above. It explicitly said labral tear mechanism (FADIR, pivoting, flexion mechanics) was NOT ON PAGE.",
+   "https://www.orthoinfo.org/diseases--conditions/hip-strains/ -- AAOS general hip-strain page. Gave only generic cause language ('acute injury... from a fall, a stretch injury, or a direct blow' and 'overuse... repetitive movements') and RICE-style early treatment (rest, ice, compression, crutches, NSAIDs). No forceful-flexion/sprint/kick mechanism and no specific rehab exercise; NOT ON PAGE for both.",
+   "https://pmc.ncbi.nlm.nih.gov/articles/PMC4223288/ -- soft-tissue-of-hip-and-pelvis rehab review. NOT ON PAGE for hip flexor strain injury mechanism (forceful/ballistic flexion, sprinting, kicking) and NOT ON PAGE for hip labral tear entirely. DID give the early-phase iliopsoas-syndrome quote used for the rehab_early row above, plus a core-activation quote ('Core activation exercises are initiated in the supine position, and pressure biofeedback may be used to aid the patient in learning the abdominal drawing-in maneuver') that had no matching catalog exercise (no drawing-in/bracing exercise exists in exercise-catalog.json; breathing-bracing pattern has n=0 exercises), so it was not turned into a rehab_early row.",
+   "https://www.physio-pedia.com/Hip_Flexor_Strain -- blocked, HTTP 403 on WebFetch. Not used."
+  ],
+  "hip-labral-tear": [
+   "https://pmc.ncbi.nlm.nih.gov/articles/PMC9076795/ -- gave verbatim the FADIR test description used above. Explicitly said aggravating-activity language (squatting, pivoting, plant-and-cut named as aggravators, as opposed to just the test maneuver) was NOT ON PAGE; it separately discussed squat velocity/kinematic differences in FAI patients (slower squat velocities, altered loading) but not depth as an aggravator, so that part was not used as a mechanism quote.",
+   "https://bcmj.org/articles/navigating-nonarthritic-hip-labral-tears-and-femoroacetabular-impingement -- gave verbatim: 'Patients with femoroacetabular impingement typically have insidious onset of symptoms to the anterior hip that are exacerbated with joint loading and movement, particularly hip rotation and flexion' and 'Physical therapy should incorporate core and hip-specific exercises and activity modifications to avoid positions that cause impingement (e.g., deep squats).' The second quote is the explicit deep-squat depth qualifier for hard rule 4. It names only generic 'core and hip-specific exercises' for treatment, not a specific movement, so no rehab_early row was built from it (rule 2 requires the literature to name the actual movement).",
+   "https://www.orthoinfo.org/en/diseases--conditions/femoroacetabular-impingement/ -- gave verbatim 'Turning, twisting, and squatting may cause a sharp, stabbing pain,' used for the cutting/pivot rule. Treatment section only says 'Specific exercises can improve the range of motion' with no named exercise, so NOT ON PAGE for rehab_early.",
+   "https://www.orthoinfo.org/en/diseases--conditions/snapping-hip -- (AAOS torn-hip-labrum page 404s; this is the closest live AAOS page covering labral tearing) gave verbatim 'The labrum that lines the socket of the hip can tear and cause a snapping sensation. Damaged cartilage can loosen and float in the joint causing the hip to catch or lock up.' No deep-flexion/pivot mechanism language beyond that; NOT ON PAGE for a specific aggravating movement or a rehab_early exercise.",
+   "https://www.physio-pedia.com/Acetabular_Labral_Tear -- blocked, HTTP 403 on WebFetch. Not used.",
+   "PubMed abstract pages (pubmed.ncbi.nlm.nih.gov/30614856/, /36803076/) -- WebFetch returned only a cookie-consent placeholder, no abstract text reachable; not used as a source for any quote above."
+  ],
+  "lead_note": "LEAD NOTE at merge: single-leg-squat rule narrowed from 21 to 4 exercises. The quoted mechanism is FADIR plus 'deep squats'; step-downs, lunges and split-stance isometrics do not reach that depth, and sweeping them would repeat the de Quervain's over-breadth."
+ }
+}

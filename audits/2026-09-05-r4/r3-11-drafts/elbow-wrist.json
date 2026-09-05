@@ -1,0 +1,52 @@
+{
+ "rules": [
+  {
+   "injury_slug": "tennis-elbow",
+   "mechanism": "repetitive strain caused by activities that involve loaded and repeated gripping and/or wrist extension",
+   "source_url": "https://www.ncbi.nlm.nih.gov/books/NBK431092/",
+   "predicate": {
+    "patterns": [],
+    "name_regex": "(?i)farmer.?s?\\s*carry|plate pinch hold",
+    "exclude_exercise_ids": []
+   },
+   "note": "Farmer's Carry, Farmer Carry Loaded Hike and Plate Pinch Hold all require a sustained crush or pinch grip against an external pulling load, the named provoking mechanism alongside wrist extension. Deliberately not extended to loaded-carry as a whole (Yoke Walk, Sandbag Bear Hug Carry, overhead carries load the shoulders/back and torso, not a sustained hand grip against a pull) and deliberately not extended to hangboard hangs or dead hangs, which load the finger flexor/pulley system in a fixed crimp, a different named mechanism already covered by this app's finger-pulley and trigger-finger rules; sweeping those in for tennis elbow too would repeat the over-broad grip pattern already found and fixed this week. Sourced (loaded gripping mechanism), unreviewed. Hangs and pull-ups are left to the finger-injury rules: the lateral epicondyle is the extensor origin, and the drafter's anatomical objection to sweeping flexor-loaded hangs into it stands. Sourced (mechanism), unreviewed."
+  },
+  {
+   "injury_slug": "golfers-elbow",
+   "mechanism": "The condition is strongly associated with repetitive forceful gripping, manual handling of loads greater than 20 kg (44 lb), use of vibrating tools or exposure to elbow vibration, and labor-intensive work",
+   "source_url": "https://www.ncbi.nlm.nih.gov/books/NBK519000/",
+   "predicate": {
+    "patterns": [],
+    "name_regex": "(?i)farmer.?s?\\s*carry|plate pinch hold|hangboard|dead hang|density hang|pull-?up|chin-?up|fat-grip",
+    "exclude_exercise_ids": []
+   },
+   "note": "Same grip-carry family as tennis elbow (Farmer's Carry, Farmer Carry Loaded Hike, Plate Pinch Hold): forceful gripping is named directly for medial epicondylitis too. Elbow-flexion pattern exercises (Barbell Curl, Preacher Curl, Hammer Curl and the reverse-curl/brachioradialis family) were checked and NOT included: the mechanism names the wrist flexor-pronator origin at the medial epicondyle, not the elbow-flexor group (biceps brachii/brachialis), and no fetched source named curls. Hangboard/dead-hang family excluded for the same reason as tennis elbow. Sourced (forceful gripping mechanism), unreviewed. Widened at merge to hangboard, dead hang, density hang, pull-up, chin-up and fat-grip: the medial epicondyle is the common flexor and pronator origin, which hanging and pulling load directly (the climber's elbow), and the quoted mechanism is repetitive forceful gripping. Sourced (mechanism), unreviewed."
+  },
+  {
+   "injury_slug": "wrist-sprain",
+   "mechanism": "accompanied by an inability to bear weight with the wrist extended, such as in a push-up position",
+   "source_url": "https://www.ncbi.nlm.nih.gov/books/NBK551514/",
+   "predicate": {
+    "patterns": [],
+    "name_regex": "(?i)push-?up|bear crawl|renegade row|trapeze plank|handstand push",
+    "exclude_exercise_ids": []
+   },
+   "note": "Extends the existing hand-on-ground, wrist-extended, weight-bearing contraindications (Push-Up Plyo, Handstand Wall Hold, Wall Walk) to the rest of that same position family: every Push-Up variant, Bear Crawl, Renegade Row, Trapeze Plank Hold and Handstand Push Up all load a fully extended wrist under bodyweight, the exact position StatPearls names. Front-rack/goblet/Zercher/thruster and heavy curls were checked and NOT included: the wrist there is stabilizing a bar resting on the shoulders or forearm rather than bearing weight through an extended wrist joint, and no fetched source named that position or named curls for wrist sprain specifically, so including them would be wider than what was actually read. A generic 'Front Plank'/'Plank'/'Reverse Plank'/'Side Plank' entry was also left out because the catalog does not say whether it is performed on hands (wrist extended) or forearms (wrist neutral). Sourced (weight-bearing wrist extension mechanism), unreviewed."
+  }
+ ],
+ "rehab_early": [
+  {
+   "injury_slug": "tennis-elbow",
+   "exercise_id": 17,
+   "source_url": "https://www.ncbi.nlm.nih.gov/books/NBK431092/",
+   "note": "Reverse Wrist Curl (Forearm Extensors) trains the exact structure named in the mechanism, the wrist extensors/ECRB. StatPearls names \"progressive eccentric strengthening of the common extensor tendon\" as the physical therapy intervention for lateral epicondylitis. This exercise already carries a prehab row for tennis-elbow in the catalog; adding rehab_early because eccentric extensor loading is the standard active-symptom treatment, not only prevention."
+  },
+  {
+   "injury_slug": "golfers-elbow",
+   "exercise_id": 1073,
+   "source_url": "https://www.ncbi.nlm.nih.gov/books/NBK507006/",
+   "note": "Seated Palms Up Wrist Curl (Dumbbell) matches the InformedHealth.org eccentric protocol verbatim: seated, arm resting on the thigh, palm facing upward, lowering the weighted hand under control. This is the flexor-side analog of Reverse Wrist Curl and is a different exercise from the existing (and mechanistically mismatched) prehab row this injury already carries for exercise 17, which trains extensors, not the flexor-pronator origin golfer's elbow actually involves."
+  }
+ ],
+ "research": "Tennis elbow (id 50): mechanism and the resisted-wrist-extension/ECRB detail are verbatim from StatPearls Lateral Epicondylitis, https://www.ncbi.nlm.nih.gov/books/NBK431092/ (also carried: 'Pain typically increases or is reproduced with resisted wrist extension, especially when the elbow is extended and the forearm is pronated', 'eccentric overload of the common extensor tendon at the origin of the extensor carpi radialis brevis (ECRB) tendon', 'progressive eccentric strengthening of the common extensor tendon'). AAOS OrthoInfo, https://www.orthoinfo.org/en/diseases--conditions/tennis-elbow-lateral-epicondylitis/, added 'The ECRB muscle helps stabilize the wrist when the elbow is straight' and 'repetitive and vigorous use of the forearm muscle or repetitive extension of the wrist and hand'; a specific eccentric wrist extension / reverse wrist curl exercise description was NOT ON PAGE there (it only points to a separate handout). Golfer's elbow (id 51): mechanism verbatim from StatPearls Medial Epicondylitis, https://www.ncbi.nlm.nih.gov/books/NBK519000/ ('Repetitive valgus loading and forceful wrist flexion or pronation predispose athletes to medial epicondylitis', 'Chronic, repetitive eccentric loading of the flexor-pronator musculotendinous unit during wrist and finger flexion, forearm pronation, and valgus stress at the elbow...', 'The condition is strongly associated with repetitive forceful gripping, manual handling of loads greater than 20 kg (44 lb), use of vibrating tools or exposure to elbow vibration, and labor-intensive work', 'The program then advances to strengthening, emphasizing eccentric loading of the wrist flexors and pronators'). AAOS OrthoInfo, https://www.orthoinfo.org/en/diseases--conditions/medial-epicondylitis-golfers-elbow/, added 'Repetitive motions of these muscles lead to tendon injuries...' and the general eccentric-exercise definition; a page-specific eccentric wrist flexion protocol was NOT ON PAGE there. The concrete eccentric wrist flexion protocol used for the rehab_early pick came from InformedHealth.org via NCBI Bookshelf, https://www.ncbi.nlm.nih.gov/books/NBK507006/ ('Hold a weight in your hand..., sit down, rest your arm on your thigh, with your palm facing upwards..., gradually lower the hand with the weight in it'); that page does NOT cover the cause/mechanism, only the exercise, so it was not used for the contraindication rule. Wrist sprain (id 52): mechanism verbatim from StatPearls Wrist Sprain, https://www.ncbi.nlm.nih.gov/books/NBK551514/ ('hyperextension of the wrist is a common mechanism for this type of injury', 'This results from a fall on the outstretched hand with varying structures injured depending on the position of the hand and wrist at the time of injury', 'A Scapholunate ligament injury commonly presents following a fall onto a dorsally extended and ulnar deviated hand', 'accompanied by an inability to bear weight with the wrist extended, such as in a push-up position', 'avoidance of movements that reproduce their pain'). AAOS OrthoInfo, https://www.orthoinfo.org/en/diseases--conditions/wrist-sprains/, added 'Wrist sprains are common injuries that occur when the wrist is bent or twisted forcefully' and 'most often caused by a fall onto an outstretched hand'; specific recovery exercises were NOT ON PAGE there beyond generic stretching and formal therapy. NOT FETCHABLE, tried and failed: all three ASSH handcare condition pages (tennis-elbow-lateral-epicondylitis, golfers-elbow, sprained-wrist) rendered only a client-side 'Find a Hand Surgeon' shell with no article content, so ASSH contributed nothing usable; all three Physiopedia pages (Lateral_Epicondylitis, Medial_Epicondylitis, Wrist_Sprain) returned HTTP 403 and were not read at all. orthoinfo.aaos.org URLs 301-redirect to orthoinfo.org; the orthoinfo.org versions were the ones actually fetched. No number on any rule or note was taken from anywhere other than a fetched page; where a plausible-sounding detail (front rack wrist position, heavy curls as a wrist-sprain aggravator, brachioradialis/reverse-curl overlap with tennis elbow) was not present on a fetched page, it was left out rather than inferred, and that omission is called out in the rule notes above. LEAD NOTE at merge: epicondylitis regexes widened from carries and pinches to include hangboard, dead hang, density hang, pull-up, chin-up and fat-grip. Inside the quoted mechanism (loaded and repeated gripping); the draft was narrower than its own source. LEAD NOTE at merge, revised after the drafter's objection: the epicondylitis widening is now split. Tennis elbow (extensor origin) keeps the drafted carry-and-pinch regex; hangs load the flexors and are governed by the finger-injury rules. Golfer's elbow (flexor and pronator origin) is widened to the hang and pull-up family, which loads that origin directly."
+}

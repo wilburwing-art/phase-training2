@@ -26,9 +26,14 @@ final class FilterCompositionTests: XCTestCase {
 
     private static let declaredEmptyStates = ["authored-no-fit", "no-supported-sport"]
 
-    /// Common, and each one carries real weight in `exercise_injury_relevance`.
+    /// The five common ones the grid started with, plus the twelve R3-11 gave
+    /// rule coverage to on 2026-09-05 (they had one to ten curated rows each
+    /// and nothing generated, so the filter barely fired for them before).
     private static let injuries = ["pfps", "lumbar-disc-herniation", "acl-injury",
-                                   "shoulder-impingement", "achilles-tendinopathy"]
+                                   "shoulder-impingement", "achilles-tendinopathy",
+                                   "rotator-cuff-injury", "wrist-sprain", "patellar-tendinopathy",
+                                   "slap-tear", "hip-flexor-strain", "hip-labral-tear",
+                                   "tennis-elbow", "golfers-elbow", "whiplash", "stinger-burner"]
 
     private static let gear: [[Equipment]] = [[.bodyweight], [.dumbbells], [.dumbbells, .pullUpBar]]
 
@@ -94,6 +99,6 @@ final class FilterCompositionTests: XCTestCase {
             }
         }
         print("FILTER-COMPOSITION checked \(checked) days, \(declaredEmpty) of them declared-empty")
-        XCTAssertGreaterThan(checked, 500, "grid collapsed — the fixture is not exercising what it claims")
+        XCTAssertGreaterThan(checked, 5000, "grid collapsed — the fixture is not exercising what it claims")
     }
 }

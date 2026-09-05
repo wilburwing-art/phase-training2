@@ -1,0 +1,36 @@
+{
+ "rules": [
+  {
+   "injury_slug": "patellar-tendinopathy",
+   "mechanism": "Patellar tendinopathy is an overuse injury of the knee extensor mechanism caused by repetitive mechanical stress during athletic activities that involve jumping, landing, acceleration, deceleration, and cutting.",
+   "source_url": "https://www.ncbi.nlm.nih.gov/books/NBK532969/",
+   "predicate": {
+    "patterns": [
+     "jumping-landing",
+     "deceleration",
+     "cutting"
+    ],
+    "name_regex": null,
+    "exclude_exercise_ids": [
+     355
+    ]
+   },
+   "note": "Energy storage and release loading (jumping, landing, deceleration, cutting) reproduces patellar tendon pain. Sourced (mechanism), unreviewed."
+  }
+ ],
+ "rehab_early": [
+  {
+   "injury_slug": "patellar-tendinopathy",
+   "exercise_id": 125,
+   "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11570476/",
+   "note": "Bodyweight isometric quad hold at matched knee-flexion angle is the equipment-free analog of the isometric protocol (70-80% MVIC at 60 degrees knee flexion) used for pain-limited early-stage loading. Sourced (mechanism), unreviewed."
+  },
+  {
+   "injury_slug": "patellar-tendinopathy",
+   "exercise_id": 931,
+   "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11570476/",
+   "note": "Leg press is one of the three named heavy-slow-resistance exercises (hack squat, leg press, squat) that match eccentric training on pain and structure while raising satisfaction. Sourced (mechanism), unreviewed."
+  }
+ ],
+ "research": "https://www.ncbi.nlm.nih.gov/books/NBK532969/ (StatPearls, verified against raw page text): verbatim 'Patellar tendinopathy is an overuse injury of the knee extensor mechanism caused by repetitive mechanical stress during athletic activities that involve jumping, landing, acceleration, deceleration, and cutting.' and 'Pain is typically load-related and increases during activities that require energy storage and release through the patellar tendon, particularly with higher demands on the knee extensors.' Used as the mechanism/source_url for the contraindicated rule. Also verbatim on treatment: 'Alternative training protocols may include heavy slow resistance (HSR) exercises and progressive tendon-loading exercises. HSR exercises have been shown to be as effective as eccentric exercises in reducing pain and fiber remodeling, with the added benefit of significantly higher patient satisfaction,' but this page names no specific HSR exercise (NOT ON PAGE), so the exercise picks used PMC11570476 instead. | https://pmc.ncbi.nlm.nih.gov/articles/PMC10661584/ (verified against raw page text): verbatim 'PTLE is based on progressively increasing tendon loading in a pain-limited fashion via the following four-stage exercise progression: isometric (static), isotonic (dynamic), energy storage (explosive), and sport-specific exercises.' Confirms isometric loading is the first, most pain-limited (i.e. safe-while-symptomatic) stage, which is why isometric work is rehab_early and jumping/energy-storage work is not; used for context only, not cited as a rule source_url since the other two PMC pages gave more direct verbatim support for the specific exercises picked. No dosage numbers taken from this page (NOT ON PAGE). | https://pmc.ncbi.nlm.nih.gov/articles/PMC12259690/ (verified against raw page text): verbatim, describing the Van Ark et al. 2016 trial arm, 'Isometric group (N:13) Leg extension machine: 5 sets x 45-s at 60 degrees Knee Flex at 80% MVIC,' and the review's own conclusion, 'Both protocols appear efficacious for in-season athletes to reduce pain, however, isometric contractions demonstrated significantly greater immediate analgesia throughout the 4-week trial,' and 'isometric exercises appear to provide greater benefit for short-term pain relief, particularly during athletic activity.' Basis for exercise_id 933 (Leg Extension) under rehab_early: the literature names the leg-extension machine used isometrically, in-season, i.e. while still symptomatic. No claim about wall sits or leg press on this page (NOT ON PAGE); those two used PMC11570476. | https://pmc.ncbi.nlm.nih.gov/articles/PMC11570476/ (verified against raw page text): verbatim on aggravation, 'Activities like jumping or squatting that stimulate the patellar tendon to store and release energy can exacerbate the pain considerably.' This names squatting as well as jumping but carries no depth or load qualifier (hard rule 4), so squat/hinge patterns were deliberately left out of the contraindicated predicate; only jumping-landing, deceleration and cutting (independently supported by the StatPearls mechanism sentence, which does carry the specific activity list) were used. Verbatim on isometric dosage, 'isometric training: Usually, 70-80% of the maximal voluntary contraction is used while the knee is flexed to 60 degrees.' Verbatim on HSR exercise selection, 'Training for HSR included three bilateral exercises: the hack squat, leg press, and squat,' and 'HSR typically consists of deep squats, leg presses, and huck squats, with four sets of each training, repeated 6-15 times per week.' Basis for exercise_id 931 (Leg Press) and exercise_id 125 (Wall Sit, the bodyweight isometric-quad-hold analog of the 60-degree isometric protocol) under rehab_early; hack squat has no equivalent catalog row found and was not added (item 4's scope). | https://www.physio-pedia.com/Patellar_Tendinopathy: fetch attempted, returned HTTP 403 Forbidden, not used, no content read. | Overall NOT ON PAGE note: no number (percent, minutes, weeks, reps) in this file's rules or notes was read anywhere but the cited page. 'Acceleration' is named in the StatPearls mechanism sentence but has no matching entry in movement-patterns.json (the closest, 'locomotion,' also covers walking/jogging and would be wider than the mechanism sentence per hard rule 1), so it was deliberately omitted from predicate.patterns rather than approximated. LEAD NOTE at merge: dropped the Leg Extension (933) rehab_early row. The study's protocol is an isometric hold at 60 degrees of knee flexion at 80% MVIC; the catalog's Leg Extension is a concentric machine movement, so labelling it the treatment would overstate. Wall Sit carries the isometric intent. An isometric leg-extension hold is a candidate new exercise for item 4."
+}
