@@ -534,12 +534,6 @@
     "notes": "Physio guidance: no plyometric/impact loading and no end-range calf loading while symptomatic (POGO Physio Achilles staging; London Foot & Ankle eccentric protocol). Sourced, unreviewed."
   },
   {
-    "exercise_id": 111,
-    "injury_id": 41,
-    "role": "contraindicated",
-    "notes": "Physio guidance: no plyometric/impact loading and no end-range calf loading while symptomatic (POGO Physio Achilles staging; London Foot & Ankle eccentric protocol). Sourced, unreviewed."
-  },
-  {
     "exercise_id": 112,
     "injury_id": 41,
     "role": "contraindicated",
@@ -607,12 +601,6 @@
   },
   {
     "exercise_id": 234,
-    "injury_id": 41,
-    "role": "contraindicated",
-    "notes": "Physio guidance: no plyometric/impact loading and no end-range calf loading while symptomatic (POGO Physio Achilles staging; London Foot & Ankle eccentric protocol). Sourced, unreviewed."
-  },
-  {
-    "exercise_id": 242,
     "injury_id": 41,
     "role": "contraindicated",
     "notes": "Physio guidance: no plyometric/impact loading and no end-range calf loading while symptomatic (POGO Physio Achilles staging; London Foot & Ankle eccentric protocol). Sourced, unreviewed."
@@ -1332,12 +1320,6 @@
     "notes": "Acute lateral sprain: avoid cutting, jumping and loaded inversion positions until pain-free (lateral ankle sprain management protocol, NCT03527121). Sourced, unreviewed."
   },
   {
-    "exercise_id": 329,
-    "injury_id": 40,
-    "role": "contraindicated",
-    "notes": "Acute lateral sprain: avoid cutting, jumping and loaded inversion positions until pain-free (lateral ankle sprain management protocol, NCT03527121). Sourced, unreviewed."
-  },
-  {
     "exercise_id": 355,
     "injury_id": 40,
     "role": "contraindicated",
@@ -1393,12 +1375,6 @@
   },
   {
     "exercise_id": 477,
-    "injury_id": 40,
-    "role": "contraindicated",
-    "notes": "Acute lateral sprain: avoid cutting, jumping and loaded inversion positions until pain-free (lateral ankle sprain management protocol, NCT03527121). Sourced, unreviewed."
-  },
-  {
-    "exercise_id": 494,
     "injury_id": 40,
     "role": "contraindicated",
     "notes": "Acute lateral sprain: avoid cutting, jumping and loaded inversion positions until pain-free (lateral ankle sprain management protocol, NCT03527121). Sourced, unreviewed."
@@ -4135,12 +4111,6 @@
   },
   {
     "exercise_id": 469,
-    "injury_id": 46,
-    "role": "contraindicated",
-    "notes": "First MTP hyperextension: avoid loaded toe extension and push-off (lunges, calf raises, jumping). Sourced (mechanism), unreviewed."
-  },
-  {
-    "exercise_id": 510,
     "injury_id": 46,
     "role": "contraindicated",
     "notes": "First MTP hyperextension: avoid loaded toe extension and push-off (lunges, calf raises, jumping). Sourced (mechanism), unreviewed."
@@ -5520,12 +5490,6 @@
     "notes": "Avoid knee flexion beyond ~90 degrees under load and impact while symptomatic; open-chain leg extension raises PF compression (Physiopedia PFPS; Cleveland Clinic). Sourced, unreviewed."
   },
   {
-    "exercise_id": 128,
-    "injury_id": 6,
-    "role": "contraindicated",
-    "notes": "Avoid knee flexion beyond ~90 degrees under load and impact while symptomatic; open-chain leg extension raises PF compression (Physiopedia PFPS; Cleveland Clinic). Sourced, unreviewed."
-  },
-  {
     "exercise_id": 129,
     "injury_id": 6,
     "role": "contraindicated",
@@ -5610,12 +5574,6 @@
     "notes": "Avoid knee flexion beyond ~90 degrees under load and impact while symptomatic; open-chain leg extension raises PF compression (Physiopedia PFPS; Cleveland Clinic). Sourced, unreviewed."
   },
   {
-    "exercise_id": 239,
-    "injury_id": 6,
-    "role": "contraindicated",
-    "notes": "Avoid knee flexion beyond ~90 degrees under load and impact while symptomatic; open-chain leg extension raises PF compression (Physiopedia PFPS; Cleveland Clinic). Sourced, unreviewed."
-  },
-  {
     "exercise_id": 329,
     "injury_id": 6,
     "role": "contraindicated",
@@ -5635,18 +5593,6 @@
   },
   {
     "exercise_id": 359,
-    "injury_id": 6,
-    "role": "contraindicated",
-    "notes": "Avoid knee flexion beyond ~90 degrees under load and impact while symptomatic; open-chain leg extension raises PF compression (Physiopedia PFPS; Cleveland Clinic). Sourced, unreviewed."
-  },
-  {
-    "exercise_id": 361,
-    "injury_id": 6,
-    "role": "contraindicated",
-    "notes": "Avoid knee flexion beyond ~90 degrees under load and impact while symptomatic; open-chain leg extension raises PF compression (Physiopedia PFPS; Cleveland Clinic). Sourced, unreviewed."
-  },
-  {
-    "exercise_id": 362,
     "injury_id": 6,
     "role": "contraindicated",
     "notes": "Avoid knee flexion beyond ~90 degrees under load and impact while symptomatic; open-chain leg extension raises PF compression (Physiopedia PFPS; Cleveland Clinic). Sourced, unreviewed."
@@ -9564,12 +9510,6 @@
     "notes": "Cervical strain: avoid loaded overhead and neck-loading positions and sudden twisting (fixhealth cervical guidance). Sourced, unreviewed."
   },
   {
-    "exercise_id": 301,
-    "injury_id": 25,
-    "role": "contraindicated",
-    "notes": "Cervical strain: avoid loaded overhead and neck-loading positions and sudden twisting (fixhealth cervical guidance). Sourced, unreviewed."
-  },
-  {
     "exercise_id": 348,
     "injury_id": 25,
     "role": "contraindicated",
@@ -13422,12 +13362,6 @@
     "notes": "Groin pull: same early-phase restrictions as adductor strain (Physiopedia Groin Strain). Sourced, unreviewed."
   },
   {
-    "exercise_id": 237,
-    "injury_id": 69,
-    "role": "contraindicated",
-    "notes": "Groin pull: same early-phase restrictions as adductor strain (Physiopedia Groin Strain). Sourced, unreviewed."
-  },
-  {
     "exercise_id": 310,
     "injury_id": 69,
     "role": "contraindicated",
@@ -13489,12 +13423,6 @@
   },
   {
     "exercise_id": 520,
-    "injury_id": 69,
-    "role": "contraindicated",
-    "notes": "Groin pull: same early-phase restrictions as adductor strain (Physiopedia Groin Strain). Sourced, unreviewed."
-  },
-  {
-    "exercise_id": 550,
     "injury_id": 69,
     "role": "contraindicated",
     "notes": "Groin pull: same early-phase restrictions as adductor strain (Physiopedia Groin Strain). Sourced, unreviewed."
@@ -14065,12 +13993,6 @@
   },
   {
     "exercise_id": 132,
-    "injury_id": 34,
-    "role": "contraindicated",
-    "notes": "Lateral hip compression: avoid loaded abduction, lateral lunging and side-lying compression while symptomatic. Sourced (mechanism), unreviewed."
-  },
-  {
-    "exercise_id": 226,
     "injury_id": 34,
     "role": "contraindicated",
     "notes": "Lateral hip compression: avoid loaded abduction, lateral lunging and side-lying compression while symptomatic. Sourced (mechanism), unreviewed."
@@ -16320,19 +16242,7 @@
     "notes": "Early-phase hamstring strain: avoid explosive motion, sprinting, deep hinge stretch and eccentric loading (Physiopedia Hamstring Strain; Cawley PT). Sourced, unreviewed."
   },
   {
-    "exercise_id": 102,
-    "injury_id": 65,
-    "role": "contraindicated",
-    "notes": "Early-phase hamstring strain: avoid explosive motion, sprinting, deep hinge stretch and eccentric loading (Physiopedia Hamstring Strain; Cawley PT). Sourced, unreviewed."
-  },
-  {
     "exercise_id": 103,
-    "injury_id": 65,
-    "role": "contraindicated",
-    "notes": "Early-phase hamstring strain: avoid explosive motion, sprinting, deep hinge stretch and eccentric loading (Physiopedia Hamstring Strain; Cawley PT). Sourced, unreviewed."
-  },
-  {
-    "exercise_id": 108,
     "injury_id": 65,
     "role": "contraindicated",
     "notes": "Early-phase hamstring strain: avoid explosive motion, sprinting, deep hinge stretch and eccentric loading (Physiopedia Hamstring Strain; Cawley PT). Sourced, unreviewed."
@@ -16393,12 +16303,6 @@
   },
   {
     "exercise_id": 232,
-    "injury_id": 65,
-    "role": "contraindicated",
-    "notes": "Early-phase hamstring strain: avoid explosive motion, sprinting, deep hinge stretch and eccentric loading (Physiopedia Hamstring Strain; Cawley PT). Sourced, unreviewed."
-  },
-  {
-    "exercise_id": 233,
     "injury_id": 65,
     "role": "contraindicated",
     "notes": "Early-phase hamstring strain: avoid explosive motion, sprinting, deep hinge stretch and eccentric loading (Physiopedia Hamstring Strain; Cawley PT). Sourced, unreviewed."
@@ -16465,12 +16369,6 @@
   },
   {
     "exercise_id": 420,
-    "injury_id": 65,
-    "role": "contraindicated",
-    "notes": "Early-phase hamstring strain: avoid explosive motion, sprinting, deep hinge stretch and eccentric loading (Physiopedia Hamstring Strain; Cawley PT). Sourced, unreviewed."
-  },
-  {
-    "exercise_id": 422,
     "injury_id": 65,
     "role": "contraindicated",
     "notes": "Early-phase hamstring strain: avoid explosive motion, sprinting, deep hinge stretch and eccentric loading (Physiopedia Hamstring Strain; Cawley PT). Sourced, unreviewed."

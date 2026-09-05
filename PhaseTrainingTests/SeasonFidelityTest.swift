@@ -269,6 +269,21 @@ final class SeasonFidelityTest: XCTestCase {
         }
     }
 
+    /// A movement cannot be both the rehab exercise for an injury and
+    /// contraindicated by it. The 1b rule pass generated 17 such pairs on top
+    /// of hand-curated rehab rows, and because the filter reads only
+    /// `contraindicated`, the generated row won: an achilles-tendinopathy
+    /// athlete was denied the eccentric heel drop, which is the Alfredson
+    /// protocol and the most evidence-based exercise for the condition.
+    /// A curated row is the more specific claim and wins.
+    func test_noExerciseIsBothContraindicatedAndRehabForTheSameInjury() {
+        let clashes = CoachDatabase.shared.contradictoryInjuryRoles()
+        XCTAssertTrue(clashes.isEmpty,
+                      "\(clashes.count) (exercise, injury) pairs are both contraindicated and "
+                      + "rehab/prehab; the filter reads only contraindicated, so the athlete loses "
+                      + "the exercise: \(clashes.prefix(5))")
+    }
+
     func test_pools_have_no_duplicate_exercise_ids() {
         // R3-5: driven from the database rather than a hardcoded pair, so a
         // sport added later is checked instead of silently skipped.

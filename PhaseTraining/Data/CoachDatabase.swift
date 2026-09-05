@@ -1256,6 +1256,31 @@ final class CoachDatabase {
     /// joined with its catalog exercise for name + scheme. The pool is tiny
     /// (~44 rows), so phase/variant/demand filtering happens in Swift
     /// (SportSeasonGenerator) rather than via fragile JSON-array SQL.
+    /// (exercise, injury) pairs carrying `contraindicated` AND a rehab or
+    /// prehab role at once. The injury filter reads only `contraindicated`, so
+    /// such a pair silently removes the very movement someone marked as the
+    /// rehab exercise for that injury.
+    func contradictoryInjuryRoles() -> [String] { withLock {
+        guard let db else { return [] }
+        let sql = """
+        SELECT e.name || " / " || ci.slug
+        FROM exercise_injury_relevance a
+        JOIN exercise_injury_relevance b
+          ON b.exercise_id = a.exercise_id AND b.injury_id = a.injury_id
+        JOIN exercises e ON e.id = a.exercise_id
+        JOIN common_injuries ci ON ci.id = a.injury_id
+        WHERE a.role = 'contraindicated'
+          AND b.role IN ('prehab', 'rehab_early', 'rehab_late')
+        ORDER BY 1
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        var out: [String] = []
+        while sqlite3_step(stmt) == SQLITE_ROW { if let s = text(stmt, 0) { out.append(s) } }
+        return out
+    } }
+
     /// Every sport slug that has a movement pool. Lets a test iterate the real
     /// set instead of a hardcoded list that goes stale without saying so (R3-5).
     func sportMovementSportSlugs() -> [String] { withLock {
