@@ -128,8 +128,15 @@ struct PhaseRule: Equatable {
             objective: "Deload, rehab the season's wear, restore",
             sessionsPerWeek: 2...2,
             demandWeights: [
-                .maxStrength: 0.10, .eccentricLeg: 0.05, .legEndurance: 0.05,
-                .power: 0.05, .kneeStability: 0.30, .core: 0.15,
+                // R3-8 (owner call, 2026-09-05): legEndurance and power at 0.05 were
+                // funded and never realized (8 weekly slots, both floored to 0.4
+                // and lost the remainder). A deload-and-restore block is not what
+                // either is for; the 0.10 goes to kneeStability, whose 0.30 target
+                // was realizing 0.12 because the signature guarantee kept taking
+                // its slot. The phase objective is "protect knees"; now it pays.
+
+                .maxStrength: 0.10, .eccentricLeg: 0.05, .legEndurance: 0.00,
+                .power: 0.00, .kneeStability: 0.40, .core: 0.15,
                 .hipLateral: 0.10, .prehab: 0.20,
             ],
             progression: .deload,
@@ -183,8 +190,16 @@ struct PhaseRule: Equatable {
             objective: "Max finger strength + power + lock-off + tension",
             sessionsPerWeek: 2...2,
             demandWeights: [
+                // R3-8 (owner call, 2026-09-05): prehab and core at 0.05 were funded
+                // and never realized. Pre-season is the highest finger-load phase
+                // of the year and prehab (wrist, shoulder) is what keeps a climber
+                // in it, so it goes to 0.10. core is redundant with bodyTension
+                // for climbing and goes to zero, which is exactly the 0.05 prehab
+                // needs; bodyTension stays at 0.20 (the owner's approved targets
+                // were prehab 0.10 and core 0.00, and the sum has to stay 1.0).
+
                 .pullStrength: 0.20, .fingerStrength: 0.30, .bodyTension: 0.20,
-                .contactStrength: 0.10, .antagonist: 0.10, .core: 0.05, .prehab: 0.05,
+                .contactStrength: 0.10, .antagonist: 0.10, .core: 0.00, .prehab: 0.10,
             ],
             progression: .autoregulateHold,
             sessionVolumeCap: 16,
@@ -196,8 +211,14 @@ struct PhaseRule: Equatable {
             objective: "Climb hard; gym preserves + protects (antagonist dominant)",
             sessionsPerWeek: 1...2,
             demandWeights: [
+                // R3-8 (owner call, 2026-09-05): prehab at 0.05 was funded and never
+                // realized. In-season a climber gets contact strength from climbing;
+                // the gym's job is antagonist and prehab, so prehab goes to 0.15
+                // from contactStrength (to zero) and antagonist (0.40 to 0.35, which
+                // was realizing 0.25 anyway).
+
                 .pullStrength: 0.10, .fingerStrength: 0.15, .bodyTension: 0.10,
-                .contactStrength: 0.05, .antagonist: 0.40, .core: 0.15, .prehab: 0.05,
+                .contactStrength: 0.00, .antagonist: 0.35, .core: 0.15, .prehab: 0.15,
             ],
             progression: .maintainMinimal,
             sessionVolumeCap: 10,

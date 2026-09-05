@@ -224,11 +224,8 @@ final class SeasonFidelityTest: XCTestCase {
     /// EXACTLY: fixing one without removing it here fails, and a new one fails
     /// too, so the debt can only shrink deliberately.
     static let knownInertWeights: Set<String> = [
-        "alpine-skiing/maintenance/legEndurance",
-        "alpine-skiing/maintenance/power",
-        "climbing/pre_season/prehab",
-        "climbing/pre_season/core",
-        "climbing/in_season/prehab",
+        // Emptied 2026-09-05 (R3-8): the five entries were resolved by weight
+        // changes in PhaseRule. Add a key here only with a filed backlog item.
     ]
 
     /// R3-1. `upperStrength` shipped with a 0.05 weight in ski pre-season and
