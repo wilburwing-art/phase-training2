@@ -73,11 +73,19 @@ jobs:
             | tee build/raw-test.log \
             | xcbeautify --renderer github-actions
 
-      - name: Tap budget drift (non-gating)
+      - name: Tap budget diff tests
+        # The diff script's own unit tests (gating contract, retry semantics,
+        # baseline parsing). Cheap; run before the drift step so a broken
+        # script can't mislead the report.
+        run: python3 scripts/quality/test_tap_budget_diff.py
+
+      - name: Tap budget drift
         # Parses the TAP-BUDGET-JSON markers from the test log and diffs each
-        # flow's tap count against PhaseTrainingUITests/tap-budget-baseline.json,
-        # writing a table to the run's step summary. Never fails the build —
-        # honors the track-don't-gate decision; surfaces drift for review.
+        # flow's taps/seconds against PhaseTrainingUITests/tap-budget-baseline.json,
+        # writing a table to the run's step summary. Gates ONLY on
+        # harness-broken signals (a tracked flow that stopped emitting, or a
+        # corrupt baseline); actual-vs-baseline drift stays visibility-only,
+        # honoring the track-don't-gate decision.
         if: always()
         run: python3 scripts/quality/tap_budget_diff.py build/raw-test.log
 

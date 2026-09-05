@@ -49,6 +49,12 @@
 //      accept the generated plan → land in the tabs. The activation budget.
 //  11. weekly-check-in          — auto-present the check-in → walk the steps →
 //      pick a rating → regenerate + accept. The weekly retention loop.
+//  12. build-and-start-workout  — Library → Workouts → Build a workout → add
+//      one exercise → Start. The from-scratch activation cost.
+//  13. start-saved-workout      — Library → Workouts → ▶ on a saved row. The
+//      repeat-use cost once a workout exists.
+//  14. edit-weight-mid-workout  — tap a set's weight field, type a new value,
+//      confirm. The typing cost the other log flows deliberately exclude.
 //
 // What these numbers do and do NOT capture:
 //   - They measure the INTENDED minimal-tap path. Flows 1/2/4 take the
@@ -59,6 +65,8 @@
 //   - swap-exercise (flow 3) is the NO-SEARCH floor: it accepts the first
 //     offered replacement. A swap that needs a typed search query costs more;
 //     that's deliberately out of scope (we'd be timing keyboard mechanics).
+//     The typing dimension is covered on its own by edit-weight-mid-workout
+//     (flow 14), so the two together bound the search-type + log-type costs.
 //   - The seed pre-completes set 1 on 2 of the 5 exercises, so flow 1/5 counts
 //     reflect a partially-started session (the realistic mid-workout case),
 //     not a from-scratch 15-set log.
@@ -415,6 +423,50 @@ final class TapBudgetTests: XCTestCase {
         recordTapBudget(counter, reference: 1)
     }
 
+    // MARK: - 14. Edit a set's weight mid-workout (the typing cost)
+
+    /// From LogScreen with the seeded session: tap the first UNDONE set's
+    /// weight field, clear it, type a new value, confirm. The typing cost that
+    /// flows 1/2/4/5 deliberately exclude (their happy path needs zero
+    /// typing). The seed leaves sets 2+ undone on every exercise, so
+    /// `log-set-weight-0-1` exists and is editable.
+    ///
+    /// Counted taps only — keystrokes are NOT taps and are not counted (same
+    /// policy as the swap flow's search exclusion); the flow measures how many
+    /// navigation taps editing requires around the typing. Reference:
+    /// 1 tap field + 1 confirm = 2.
+    func testTapBudget_editWeightMidWorkout() throws {
+        let app = launchInLog(suppressAutoRest: true)
+        var counter = TapCounter(app: app, flow: "edit-weight-mid-workout")
+
+        let field = app.textFields["log-set-weight-0-1"]
+        XCTAssertTrue(field.waitForExistence(timeout: 6),
+                      "an undone set's weight field should be editable")
+        field.tap()
+        counter.bump()                                // 1 — tap the weight field
+        // Clear the pre-filled value, then type. Keystrokes are not taps; only
+        // the field-tap and the keyboard-dismiss are counted. The decimal pad
+        // has no select-all that reaches this field reliably, so clear via
+        // cut from the double-tap selection: double-tap selects, Cut removes.
+        field.doubleTap()                             // selects the word
+        let cut = app.menuItems["Cut"]
+        if cut.waitForExistence(timeout: 2.5) {
+            cut.tap()
+        }
+        field.typeText("60")
+        // Dismiss the keyboard: decimal pad has no Done, so tap the same field
+        // then swipe down (the dismiss is a tap-equivalent interaction and
+        // counts).
+        app.swipeDown()
+        counter.bump()
+
+        // The edit landed: the field now shows the typed value.
+        XCTAssertEqual(field.value as? String, "60",
+                       "typed weight should stick in the field")
+
+        recordTapBudget(counter, reference: 2)
+    }
+
     // MARK: - Launch helpers
 
     /// Launch straight into LogScreen with the deterministic superset demo
@@ -556,13 +608,25 @@ final class TapBudgetTests: XCTestCase {
 
     /// Print (human + JSON marker) + attach the tap count. Per the "track,
     /// don't gate" decision this never fails on budget — it only annotates the
-    /// report and feeds the CI baseline diff.
+    /// report and feeds the CI baseline diff. `seconds` is wall-clock from the
+    /// counter's creation to the final bump: a flow can hold its tap count
+    /// while its real interaction cost (rest-card waits, picker latency) grows.
     private func recordTapBudget(_ counter: TapCounter, reference: Int) {
         let verdict = counter.count <= reference ? "within budget" : "OVER budget"
-        let line = "TAP-BUDGET | \(counter.flow): actual=\(counter.count) reference=\(reference) → \(verdict)"
+        let line = "TAP-BUDGET | \(counter.flow): actual=\(counter.count) "
+            + "reference=\(reference) → \(verdict)"
         print(line)
         // Machine-readable marker parsed by scripts/quality/tap_budget_diff.py.
-        print("TAP-BUDGET-JSON {\"flow\":\"\(counter.flow)\",\"actual\":\(counter.count),\"reference\":\(reference)}")
+        // seconds/swipes/max-gap are optional extras the report renders when
+        // present. max_gap_s is the longest single inter-tap wait; date feeds
+        // the history trend file.
+        let seconds = String(format: "%.1f", counter.elapsedSeconds)
+        let maxGap = String(format: "%.1f", counter.maxGap)
+        let iso = ISO8601DateFormatter().string(from: Date())
+        print("TAP-BUDGET-JSON {\"flow\":\"\(counter.flow)\",\"actual\":\(counter.count),"
+            + "\"reference\":\(reference),\"seconds\":\(seconds),"
+            + "\"swipes\":\(counter.swipes),\"max_gap_s\":\(maxGap),"
+            + "\"date\":\"\(iso)\"}")
         let attachment = XCTAttachment(string: line)
         attachment.name = "tap-budget-\(counter.flow)"
         attachment.lifetime = .keepAlways
@@ -578,6 +642,32 @@ struct TapCounter {
     let app: XCUIApplication
     let flow: String
     private(set) var count = 0
+    private(set) var swipes = 0
+    /// Longest single inter-tap wait, seconds. A flow can hold its tap count
+    /// while one step stalls (rest-card overlay, picker latency); max-gap
+    /// isolates that from uniformly slow taps.
+    private(set) var maxGap: TimeInterval = 0
+    private var lastTapAt: Date?
+    /// Wall-clock from counter creation (first read in `elapsedSeconds`, so a
+    /// flow that constructs the counter late — e.g. flow 13, whose setup isn't
+    /// counted — measures only the tapped portion).
+    private let start = Date()
+
+    init(app: XCUIApplication, flow: String) {
+        self.app = app
+        self.flow = flow
+    }
+
+    var elapsedSeconds: TimeInterval { Date().timeIntervalSince(start) }
+
+    private mutating func noteTap() {
+        let now = Date()
+        if let last = lastTapAt {
+            maxGap = max(maxGap, now.timeIntervalSince(last))
+        }
+        lastTapAt = now
+        count += 1
+    }
 
     /// Tap a button by accessibility id, counting it.
     mutating func tap(_ id: String, timeout: TimeInterval = 6,
@@ -603,7 +693,7 @@ struct TapCounter {
             return
         }
         el.tap()
-        count += 1
+        noteTap()
     }
 
     /// Tap a button once it exists AND becomes enabled. Used for a control that
@@ -626,20 +716,22 @@ struct TapCounter {
         }
         scrollIntoView(el)
         el.tap()
-        count += 1
+        noteTap()
     }
 
     /// Count a tap performed manually by the caller (e.g. a predicate-matched
     /// row that isn't addressable by a single id).
-    mutating func bump() { count += 1 }
+    mutating func bump() { noteTap() }
 
     /// Swipe up until the element is hittable (or we give up). Used for the
-    /// per-exercise "Log all sets" buttons that sit below the fold.
-    func scrollIntoView(_ el: XCUIElement, maxSwipes: Int = 6) {
+    /// per-exercise "Log all sets" buttons that sit below the fold. Swipe
+    /// count feeds the report's scroll-distance column.
+    mutating func scrollIntoView(_ el: XCUIElement, maxSwipes: Int = 6) {
         var tries = 0
         while !el.isHittable, tries < maxSwipes {
             app.swipeUp()
             tries += 1
+            swipes += 1
         }
     }
 }
