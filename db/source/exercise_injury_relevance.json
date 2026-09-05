@@ -18976,5 +18976,89 @@
     "injury_id": 54,
     "role": "contraindicated",
     "notes": "Sustained loaded hang. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 329,
+    "injury_id": 40,
+    "role": "contraindicated",
+    "notes": "Acute lateral sprain: avoid cutting, jumping and loaded inversion positions until pain-free (lateral ankle sprain management protocol, NCT03527121). Sourced, unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
+  },
+  {
+    "exercise_id": 494,
+    "injury_id": 40,
+    "role": "contraindicated",
+    "notes": "Acute lateral sprain: avoid cutting, jumping and loaded inversion positions until pain-free (lateral ankle sprain management protocol, NCT03527121). Sourced, unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
+  },
+  {
+    "exercise_id": 510,
+    "injury_id": 46,
+    "role": "contraindicated",
+    "notes": "First MTP hyperextension: avoid loaded toe extension and push-off (lunges, calf raises, jumping). Sourced (mechanism), unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
+  },
+  {
+    "exercise_id": 128,
+    "injury_id": 6,
+    "role": "contraindicated",
+    "notes": "Avoid knee flexion beyond ~90 degrees under load and impact while symptomatic; open-chain leg extension raises PF compression (Physiopedia PFPS; Cleveland Clinic). Sourced, unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
+  },
+  {
+    "exercise_id": 239,
+    "injury_id": 6,
+    "role": "contraindicated",
+    "notes": "Avoid knee flexion beyond ~90 degrees under load and impact while symptomatic; open-chain leg extension raises PF compression (Physiopedia PFPS; Cleveland Clinic). Sourced, unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
+  },
+  {
+    "exercise_id": 361,
+    "injury_id": 6,
+    "role": "contraindicated",
+    "notes": "Avoid knee flexion beyond ~90 degrees under load and impact while symptomatic; open-chain leg extension raises PF compression (Physiopedia PFPS; Cleveland Clinic). Sourced, unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
+  },
+  {
+    "exercise_id": 301,
+    "injury_id": 25,
+    "role": "contraindicated",
+    "notes": "Cervical strain: avoid loaded overhead and neck-loading positions and sudden twisting (fixhealth cervical guidance). Sourced, unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
+  },
+  {
+    "exercise_id": 237,
+    "injury_id": 69,
+    "role": "contraindicated",
+    "notes": "Groin pull: same early-phase restrictions as adductor strain (Physiopedia Groin Strain). Sourced, unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
+  },
+  {
+    "exercise_id": 550,
+    "injury_id": 69,
+    "role": "contraindicated",
+    "notes": "Groin pull: same early-phase restrictions as adductor strain (Physiopedia Groin Strain). Sourced, unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
+  },
+  {
+    "exercise_id": 226,
+    "injury_id": 34,
+    "role": "contraindicated",
+    "notes": "Lateral hip compression: avoid loaded abduction, lateral lunging and side-lying compression while symptomatic. Sourced (mechanism), unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
+  },
+  {
+    "exercise_id": 102,
+    "injury_id": 65,
+    "role": "contraindicated",
+    "notes": "Early-phase hamstring strain: avoid explosive motion, sprinting, deep hinge stretch and eccentric loading (Physiopedia Hamstring Strain; Cawley PT). Sourced, unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
+  },
+  {
+    "exercise_id": 108,
+    "injury_id": 65,
+    "role": "contraindicated",
+    "notes": "Early-phase hamstring strain: avoid explosive motion, sprinting, deep hinge stretch and eccentric loading (Physiopedia Hamstring Strain; Cawley PT). Sourced, unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
+  },
+  {
+    "exercise_id": 233,
+    "injury_id": 65,
+    "role": "contraindicated",
+    "notes": "Early-phase hamstring strain: avoid explosive motion, sprinting, deep hinge stretch and eccentric loading (Physiopedia Hamstring Strain; Cawley PT). Sourced, unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
+  },
+  {
+    "exercise_id": 422,
+    "injury_id": 65,
+    "role": "contraindicated",
+    "notes": "Early-phase hamstring strain: avoid explosive motion, sprinting, deep hinge stretch and eccentric loading (Physiopedia Hamstring Strain; Cawley PT). Sourced, unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
   }
 ]

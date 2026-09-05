@@ -269,19 +269,24 @@ final class SeasonFidelityTest: XCTestCase {
         }
     }
 
-    /// A movement cannot be both the rehab exercise for an injury and
-    /// contraindicated by it. The 1b rule pass generated 17 such pairs on top
-    /// of hand-curated rehab rows, and because the filter reads only
-    /// `contraindicated`, the generated row won: an achilles-tendinopathy
-    /// athlete was denied the eccentric heel drop, which is the Alfredson
-    /// protocol and the most evidence-based exercise for the condition.
-    /// A curated row is the more specific claim and wins.
+    /// A movement cannot be both `rehab_early` for an injury and
+    /// contraindicated by it: one says "this is what you do now", the other
+    /// says "do not do this", and the filter reads only the second.
+    ///
+    /// The narrow role matters and cost a round to get right. `prehab` means
+    /// the movement PREVENTS the injury and `rehab_late` means you progress TO
+    /// it; neither says it is safe while symptomatic, so pairing either with a
+    /// contraindication is coherent. A Nordic curl prevents hamstring strains
+    /// and is exactly wrong during one. Only 3 of the 17 pairs the 1b rule
+    /// pass created were true contradictions; the first version of this test
+    /// flagged all 17 and the fix following it removed 14 contraindications
+    /// that were right.
     func test_noExerciseIsBothContraindicatedAndRehabForTheSameInjury() {
         let clashes = CoachDatabase.shared.contradictoryInjuryRoles()
         XCTAssertTrue(clashes.isEmpty,
                       "\(clashes.count) (exercise, injury) pairs are both contraindicated and "
-                      + "rehab/prehab; the filter reads only contraindicated, so the athlete loses "
-                      + "the exercise: \(clashes.prefix(5))")
+                      + "rehab_early; the filter reads only contraindicated, so the athlete loses "
+                      + "the exercise that treats the injury: \(clashes.prefix(5))")
     }
 
     func test_pools_have_no_duplicate_exercise_ids() {

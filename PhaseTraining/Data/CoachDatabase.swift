@@ -1256,10 +1256,12 @@ final class CoachDatabase {
     /// joined with its catalog exercise for name + scheme. The pool is tiny
     /// (~44 rows), so phase/variant/demand filtering happens in Swift
     /// (SportSeasonGenerator) rather than via fragile JSON-array SQL.
-    /// (exercise, injury) pairs carrying `contraindicated` AND a rehab or
-    /// prehab role at once. The injury filter reads only `contraindicated`, so
-    /// such a pair silently removes the very movement someone marked as the
-    /// rehab exercise for that injury.
+    /// (exercise, injury) pairs carrying `contraindicated` AND `rehab_early`
+    /// at once. The injury filter reads only `contraindicated`, so such a pair
+    /// removes the very movement someone marked as the treatment for that
+    /// injury. Only `rehab_early` conflicts: `prehab` means the movement
+    /// prevents the injury and `rehab_late` means you progress to it, and both
+    /// sit happily beside a contraindication while symptomatic.
     func contradictoryInjuryRoles() -> [String] { withLock {
         guard let db else { return [] }
         let sql = """
@@ -1270,7 +1272,7 @@ final class CoachDatabase {
         JOIN exercises e ON e.id = a.exercise_id
         JOIN common_injuries ci ON ci.id = a.injury_id
         WHERE a.role = 'contraindicated'
-          AND b.role IN ('prehab', 'rehab_early', 'rehab_late')
+          AND b.role = 'rehab_early'
         ORDER BY 1
         """
         var stmt: OpaquePointer?
