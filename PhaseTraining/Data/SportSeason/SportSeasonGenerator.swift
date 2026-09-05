@@ -78,6 +78,17 @@ enum SportSeasonGenerator {
         // the session lands under the fatigue ceiling naturally. Building phases
         // (off / pre) don't — they chase the harder lifts.
         let preferLowFatigue = rule.deferToSport
+        // R3-2. `guaranteeSignature` returns the slots untouched when the pool
+        // can serve none of the signature demand, which is what a full injury
+        // filter produces: a carpal-tunnel climber's pre-season came back with
+        // three bodyTension slots and zero finger work under a session whose
+        // objective still read "Max finger strength". The redistribution is
+        // right; being quiet about it is not.
+        let signatureUnavailable: Bool = {
+            guard let sig = signatureDemand(athlete.sportSlug),
+                  weights[sig, default: 0] > 0 else { return false }
+            return !pool.contains { $0.serves(sig) }
+        }()
 
         var picks: [Pick] = []
         var used = Set<Int>()
@@ -181,7 +192,8 @@ enum SportSeasonGenerator {
             }
         }
         return assemble(exercises, picks: picks, athlete: athlete, rule: rule,
-                        sessionIndex: sessionIndex, lightened: rule.deferToSport && adjacentSportDay)
+                        sessionIndex: sessionIndex, lightened: rule.deferToSport && adjacentSportDay,
+                        signatureUnavailable: signatureUnavailable)
     }
 
     // MARK: - Pool
@@ -554,7 +566,8 @@ enum SportSeasonGenerator {
 
     private static func assemble(_ exercises: [GeneratedExercise], picks: [Pick],
                                  athlete: AthleteState, rule: PhaseRule,
-                                 sessionIndex: Int, lightened: Bool) -> GeneratedWorkout {
+                                 sessionIndex: Int, lightened: Bool,
+                                 signatureUnavailable: Bool = false) -> GeneratedWorkout {
         let minutes = exercises.reduce(0) { $0 + Int(ceil(Double($1.sets) * (Double($1.restSeconds) + 40) / 60)) }
         let demandMix = picks.map { $0.demand.rawValue }
         // Derived from the athlete's actual sport. Hardcoding "Ski" meant a
@@ -563,7 +576,10 @@ enum SportSeasonGenerator {
         // string also poisons PlanValidator.resolveFocus, which infers focus
         // from title text.
         let title = "\(sportTitlePrefix(for: athlete.sportSlug)) · \(athlete.season.label) — Session \(sessionIndex + 1)"
-        let summary = "\(exercises.count) movements · ~\(minutes) min"
+        var summary = "\(exercises.count) movements · ~\(minutes) min"
+        if signatureUnavailable, let sig = signatureDemand(athlete.sportSlug) {
+            summary += " · no \(sig.plainLabel) work: your injuries rule out every option"
+        }
         var prov = "\(athlete.sportSlug) · \(athlete.variant.rawValue) · \(rule.objective)"
         if lightened { prov += " · lightened (sport day adjacent)" }
         prov += " · demands: \(demandMix.joined(separator: "/"))"

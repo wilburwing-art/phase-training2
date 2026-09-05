@@ -91,8 +91,10 @@ enum WorkoutGenerator {
                AuthoredRoutineSelector.shouldServeAuthored(sportSlug: sport.slug) {
                 return GeneratedWorkout(
                     title: "Rest",
-                    summary: "No \(sport.name) routine fits your equipment and injuries yet. "
-                        + "Add gear in Profile to unlock the authored sessions.",
+                    // R3-4: "unlock" reads as a purchase in an app with a
+                    // paywall, and the control is called Equipment, not gear.
+                    summary: "No \(sport.name) session fits your equipment and "
+                        + "injuries yet · update Equipment in Profile",
                     exercises: [],
                     estimatedMinutes: 0,
                     provenance: "authored-no-fit",

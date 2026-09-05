@@ -11,11 +11,15 @@ they are trusted.
 
 ## F1 (high) — the floor test skips the failure it exists to catch
 
-Cross-reference 03 F2. `testInjuryFilterNeverLeavesASessionUnderTheMovementFloor`
-opens each case with `if w.exercises.isEmpty { continue }`, so an injury filter
-that removes everything passes. The four pairs added this session were chosen
-because the 1b rows filter the most, which is exactly the input most likely to
-produce the skipped case.
+Cross-reference 03 F2, **downgraded 2026-09-05**.
+`testInjuryFilterNeverLeavesASessionUnderTheMovementFloor` opens each case with
+`if w.exercises.isEmpty { continue }`, so an injury filter that removes
+everything would pass. Generating the worst case showed it does not empty the
+session, it fills it with the wrong demand, so this is a latent hole rather
+than an active blind spot. Still worth closing; the assertion that would have
+caught the real failure is signature coverage, not emptiness, and that one now
+exists as `test_everyFundedDemandRealizesASlot` plus the summary line 03 F2
+describes.
 
 ## F2 (medium) — `test_pools_have_no_duplicate_exercise_ids` hardcodes the sport list
 

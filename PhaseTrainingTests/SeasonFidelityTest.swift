@@ -217,6 +217,58 @@ final class SeasonFidelityTest: XCTestCase {
     /// day (Loaded Step-Up appeared twice in the ski pool after a retire-and-
     /// remap), and `Dictionary(uniqueKeysWithValues:)` in the generator
     /// crashed the whole test host on it rather than failing one test.
+    /// Weights that are funded, servable, and still buy no slot. Found by the
+    /// assertion below once `upperStrength` exposed the class; each is a
+    /// coaching call about which demand gives up a slot, so they are carried
+    /// as backlog R3-8 rather than changed under a test. The set is asserted
+    /// EXACTLY: fixing one without removing it here fails, and a new one fails
+    /// too, so the debt can only shrink deliberately.
+    static let knownInertWeights: Set<String> = [
+        "alpine-skiing/maintenance/legEndurance",
+        "alpine-skiing/maintenance/power",
+        "climbing/pre_season/prehab",
+        "climbing/pre_season/core",
+        "climbing/in_season/prehab",
+    ]
+
+    /// R3-1. `upperStrength` shipped with a 0.05 weight in ski pre-season and
+    /// in-season and realized ZERO slots in both: `allocateSlots` breaks a
+    /// remainder tie alphabetically on rawValue, and anything under
+    /// 1/weekSlots floors away. A weight the allocator cannot pay reads as
+    /// covered and is not.
+    ///
+    /// Measured against the REAL generated week rather than a reimplementation
+    /// of the allocator, so the slot budget is whatever generation actually
+    /// used. Skips a demand the pool cannot serve: that is a content gap, and
+    /// `test_check1_phase_fidelity` already owns it.
+    func test_everyFundedDemandRealizesASlot() {
+        for f in sports {
+            let pool = CoachDatabase.shared.sportMovements(
+                sport: SportSeasonGenerator.poolSlug(for: f.slug))
+            for phase in phases {
+                let rule = PhaseRule.resolve(sportSlug: f.slug, variant: f.variant, season: phase)
+                var sessions: [GeneratedWorkout] = []
+                for wk in 1...3 {
+                    sessions += SportSeasonGenerator.generateWeek(athlete(f, season: phase, weekNumber: wk))
+                }
+                let realized = slotDemandDistribution(sessions)
+                for (demand, w) in rule.demandWeights where w > 0 {
+                    guard pool.contains(where: { $0.serves(demand) }) else { continue }
+                    let key = "\(f.slug)/\(phase.rawValue)/\(demand.rawValue)"
+                    if Self.knownInertWeights.contains(key) {
+                        XCTAssertNil(realized[demand],
+                                     "\(key) now realizes — remove it from knownInertWeights")
+                        continue
+                    }
+                    XCTAssertNotNil(
+                        realized[demand],
+                        "[\(f.slug)/\(phase.rawValue)] \(demand.rawValue) carries weight \(w) and the "
+                        + "pool can serve it, but it buys no slot in three generated weeks")
+                }
+            }
+        }
+    }
+
     func test_pools_have_no_duplicate_exercise_ids() {
         for slug in ["alpine-skiing", "climbing"] {
             let ids = CoachDatabase.shared.sportMovements(sport: slug).map(\.exerciseId)

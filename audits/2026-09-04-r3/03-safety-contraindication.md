@@ -32,24 +32,39 @@ this a content gap, not a rule bug: the app needs finger work that is not a
 hang (open-hand density, no-hang device at low load) or it needs to say the
 quiet part, which is that this injury and this sport do not mix this month.
 
-## F2 (high) — the floor test cannot see the worst outcome, because it skips it
+## F2 (high, corrected 2026-09-05) — the session fills, and lies about what it is
 
-`testInjuryFilterNeverLeavesASessionUnderTheMovementFloor` asserts a served
-session holds at least 3 movements, and I extended it this session to 8
-(sport, injury) pairs. It opens each case with:
+**This entry originally predicted an empty day and that was wrong.** Generating
+it settles what actually happens. A carpal-tunnel climber (78 exercises
+excluded) gets four movements in every pre-season session:
 
-    if w.exercises.isEmpty { continue }
+    'Climbing · Pre-season — Session 1'
+    objective: "Max finger strength + power + lock-off + tension"
+    summary:   4 movements · ~35 min
+    - Medicine Ball Slam / Hollow Body Hold / Ab Wheel Rollout / Toes To Bar
+    demands:   contactStrength/bodyTension/bodyTension/bodyTension
 
-So a workout that came back EMPTY passes. Every case in F1 is exactly that
-shape: filter everything out, return nothing, skip the assertion. The test I
-added to cover the 1b rows is structurally blind to the failure the 1b rows
-make possible. The comment calls the empty case "a separate concern", which was
-true when the only way to reach it was a nil primary sport; it is not true now.
+Zero finger work, three of four slots on one demand, under an objective still
+promising max finger strength. A healthy climber's session 1 is Weighted
+Pull-Up, Hollow Body Hold, **Hangboard Max Hang**, Prone Y-T-W-L.
 
-Not confirmed dynamically this pass (report-only, and driving the generator
-needs a test edit). It is the first thing to run next sitting: assert
-`!w.exercises.isEmpty` for a plannable sport, or assert the honest empty-state
-copy is what came back.
+`guaranteeSignature` declines to force a signature demand the pool cannot serve
+(correct), and `applyInjuryRedistribution` sends the freed weight to whatever
+is left, which is why the session fills with bodyTension. Neither is a bug. The
+silence was.
+
+So the fix that follows from the original wording, asserting non-empty, would
+have caught nothing: these sessions are full and above the movement floor. What
+was needed is for the session to report the gap, which it now does:
+
+    summary: 4 movements · ~35 min · no finger work: your injuries rule out every option
+
+**The lesson is the general one:** a filter count tells you what was removed,
+never what the engine does with what remains. One `generateLift` call with the
+injury set answers it, and it took one to overturn this finding's mechanism.
+`testInjuryFilterNeverLeavesASessionUnderTheMovementFloor` still opens with
+`if w.exercises.isEmpty { continue }`, which is still worth closing, but it is
+a smaller item than this entry first claimed.
 
 ## F3 (medium) — four knee injuries each remove 46% of the ski pool
 

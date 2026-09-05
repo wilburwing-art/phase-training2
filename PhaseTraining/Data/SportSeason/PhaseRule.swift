@@ -85,7 +85,15 @@ struct PhaseRule: Equatable {
             objective: "Convert to eccentric + power + lactate; peak for opening day",
             sessionsPerWeek: 3...3,
             demandWeights: [
-                .maxStrength: 0.15, .eccentricLeg: 0.30, .upperStrength: 0.05, .legEndurance: 0.15,
+                // R3-1: upperStrength was 0.05 here and realized 0.00. Four
+                // demands tied at 0.05 with three remainder slots, and
+                // allocateSlots breaks a tie alphabetically on rawValue, so
+                // "upperStrength" lost every week. 0.10 clears the tie, funded
+                // from legEndurance (owner's call): the week trades one
+                // high-rep leg movement for one pull. legEndurance keeps a
+                // slot, and the phase's lactate work is also carried by the
+                // power and eccentric circuits.
+                .maxStrength: 0.15, .eccentricLeg: 0.30, .upperStrength: 0.10, .legEndurance: 0.10,
                 .power: 0.20, .kneeStability: 0.05, .core: 0.05,
                 .hipLateral: 0.05, .prehab: 0.00,
             ],
@@ -98,7 +106,15 @@ struct PhaseRule: Equatable {
             objective: "Preserve strength/power, minimal fatigue, protect knees",
             sessionsPerWeek: 2...2,
             demandWeights: [
-                .maxStrength: 0.15, .upperStrength: 0.05, .eccentricLeg: 0.20, .legEndurance: 0.10,
+                // R3-1: upperStrength is 0.00 here on purpose, and was 0.05.
+                // In-season is 2 sessions under a sessionVolumeCap of 10, so
+                // 0.05 of 8 weekly slots floored to 0.4 and never bought a
+                // slot. Rather than take one from knee protection, the phase
+                // spends nothing on pressing and says so. A weight the
+                // allocator cannot pay is worse than a zero: it reads as
+                // covered. The 0.05 returns to maxStrength, which is where 4b
+                // took it from, so in-season is back to its pre-4b mix.
+                .maxStrength: 0.20, .upperStrength: 0.00, .eccentricLeg: 0.20, .legEndurance: 0.10,
                 .power: 0.15, .kneeStability: 0.15, .core: 0.10,
                 .hipLateral: 0.10, .prehab: 0.00,
             ],

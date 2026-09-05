@@ -44,6 +44,19 @@ enum Demand: String, Codable, CaseIterable, Hashable {
     case contactStrength
     case pullEndurance
     case antagonist
+
+    /// Human wording for a demand, used where a session has to explain itself
+    /// to the athlete (R3-2). Only the demands that can appear in that copy
+    /// need an entry; the rest fall back to the raw value.
+    var plainLabel: String {
+        switch self {
+        case .fingerStrength: return "finger"
+        case .eccentricLeg:   return "eccentric leg"
+        case .upperStrength:  return "upper body"
+        case .maxStrength:    return "max strength"
+        default:              return rawValue
+        }
+    }
 }
 
 // MARK: - SportVariant
