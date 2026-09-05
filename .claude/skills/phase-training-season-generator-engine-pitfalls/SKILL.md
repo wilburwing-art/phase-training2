@@ -170,3 +170,39 @@ this class stops shipping. Sibling of pitfall 5 (a new INPUT must be wired into
 `intendedSlotDistribution`); this is a new OUTPUT category that is wired and
 still inert, the DEAD-signal class from
 [[phase-training-generator-eval-method-portfolio]].
+
+### 8b. Adding that gate finds five more, so ship it with an exact allowlist
+
+`test_everyFundedDemandRealizesASlot` (drive `generateWeek` for three weeks,
+parse realized demands out of provenance, assert every funded demand the pool
+can serve appears) went red on **five** more the moment it existed:
+ski maintenance `legEndurance` and `power`, climbing pre-season `prehab` and
+`core`, climbing in-season `prehab`. `upperStrength` was not special.
+
+Each is a coaching call about which demand surrenders a slot, so do not change
+five phases under a test. Pin them in a `knownInertWeights` set and assert it
+EXACTLY -- `XCTAssertNil` on a listed key, `XCTAssertNotNil` otherwise. Fixing
+one without removing it from the set fails, and a new one fails, so the debt
+can only shrink on purpose.
+
+Write the assertion against the REAL generated week, not a reimplementation of
+`allocateSlots`. My first version hardcoded `perSession: 4` and reported false
+positives on off-season, which uses 5.
+
+## 9. Run the generator before naming an injury failure mode
+
+A static count said three injuries contraindicate all four `fingerStrength`
+movements, and I wrote up the consequence as "the climber gets an empty day".
+Generating it showed something else: a carpal-tunnel climber gets four
+movements, three of them the same demand, under a session whose objective still
+reads "Max finger strength + power + lock-off + tension". Not empty, worse:
+plausible and mislabelled.
+
+`guaranteeSignature` returns slots untouched when the pool serves none of the
+signature demand, and `applyInjuryRedistribution` sends the freed weight to
+whatever is left, which is why the session fills. A fix that asserted non-empty
+would have caught nothing. The session now appends
+`· no <demand> work: your injuries rule out every option` to its summary.
+
+**A filter count tells you what was removed, never what the engine does with
+what remains.** One `generateLift` call with the injury set answers it.
