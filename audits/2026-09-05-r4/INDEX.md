@@ -33,3 +33,19 @@ rows and did not contraindicate a single jump; a snowboarder who declared an
 ACL injury was served Pogo Hops and Lateral Bounds. Fixed for ACL (+65 rows
 over the impact, cutting, deceleration, pivot and catch patterns), filed for
 the other twelve.
+
+## Shipped
+
+Build 125 tagged `v1.1.0-build125` at `a281bf2` on 2026-09-05 02:36 and
+uploaded by `release.yml` run `33955721044` (**success**, 02:40). Gate was
+`test.yml` on `cd9257e` (run `33954583727`, success), the last commit that
+touched app code; the tag sits two commits above it, over a concurrent
+session's test-only `f7369a3` and the one-line build bump.
+
+What is in it since 124: the six decisions (injury table, equipment fallback,
+hangboard cap, ski upper body, first-principles routines, sample workouts on
+the wheel), the R3 fixes (upperStrength weights, signature-gone message, copy),
+the finger content for injured climbers, the last-resort floor, four bodyweight
+routines, the ACL rule, and the injury-role corrections in both directions.
+Declared-empty days in the filter-composition grid: 315 at 124's content, 15
+now.
