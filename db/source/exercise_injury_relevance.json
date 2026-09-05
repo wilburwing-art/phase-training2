@@ -15114,18 +15114,6 @@
     "notes": "First dorsal compartment tenosynovitis: avoid heavy gripping and thumb-loaded holds. Sourced (mechanism), unreviewed."
   },
   {
-    "exercise_id": 2,
-    "injury_id": 55,
-    "role": "contraindicated",
-    "notes": "First dorsal compartment tenosynovitis: avoid heavy gripping and thumb-loaded holds. Sourced (mechanism), unreviewed."
-  },
-  {
-    "exercise_id": 3,
-    "injury_id": 55,
-    "role": "contraindicated",
-    "notes": "First dorsal compartment tenosynovitis: avoid heavy gripping and thumb-loaded holds. Sourced (mechanism), unreviewed."
-  },
-  {
     "exercise_id": 4,
     "injury_id": 55,
     "role": "contraindicated",
@@ -19048,5 +19036,47 @@
     "injury_id": 70,
     "role": "contraindicated",
     "notes": "Pec strain: avoid heavy pressing, flies and dips, especially at end range, until cleared. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1196,
+    "injury_id": 53,
+    "role": "contraindicated",
+    "notes": "Median nerve compression: grip loading is the risk factor, and the indicated exercise is unloaded gliding. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1196,
+    "injury_id": 57,
+    "role": "rehab_late",
+    "notes": "Isometric exercise for a flexed finger widens the space under the A1 pulley; brief self-regulated pulls, stop if triggering returns. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1197,
+    "injury_id": 53,
+    "role": "contraindicated",
+    "notes": "Sustained heavy grip. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1197,
+    "injury_id": 57,
+    "role": "contraindicated",
+    "notes": "Sustained gripping is the aggravator for a flexor tendon nodule. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1198,
+    "injury_id": 53,
+    "role": "rehab_early",
+    "notes": "Tendon and nerve gliding is first-line conservative management for mild to moderate CTS, alongside splinting. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1198,
+    "injury_id": 57,
+    "role": "rehab_early",
+    "notes": "Tendon gliding maintains excursion without loaded gripping. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1197,
+    "injury_id": 54,
+    "role": "contraindicated",
+    "notes": "Sustained loaded hang. Sourced, unreviewed."
   }
 ]

@@ -1403,5 +1403,63 @@
     "fatigue_cost": 2,
     "min_experience": null,
     "injury_caution": null
+  },
+  {
+    "id": 74,
+    "sport": "climbing",
+    "exercise_id": 1196,
+    "name": "Active-Recruitment Finger Pull (No-Hang)",
+    "slug": "climb-no-hang-active-recruitment-pull",
+    "demands": [
+      "fingerStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season"
+    ],
+    "allowed_variants": null,
+    "min_experience": "beginner",
+    "fatigue_cost": 2,
+    "injury_caution": "self-regulated force; stop at sharp pain"
+  },
+  {
+    "id": 75,
+    "sport": "climbing",
+    "exercise_id": 1197,
+    "name": "Density Hang (Sub-Maximal, Open Hand)",
+    "slug": "climb-density-hang-submaximal",
+    "demands": [
+      "fingerStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season"
+    ],
+    "allowed_variants": null,
+    "min_experience": "intermediate",
+    "fatigue_cost": 3,
+    "injury_caution": "open hand only; no added load"
+  },
+  {
+    "id": 76,
+    "sport": "climbing",
+    "exercise_id": 1198,
+    "name": "Tendon and Nerve Glide Sequence (Wrist and Hand)",
+    "slug": "climb-tendon-nerve-glide-sequence",
+    "demands": [
+      "prehab"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "maintenance",
+      "event_prep"
+    ],
+    "allowed_variants": null,
+    "min_experience": "beginner",
+    "fatigue_cost": 1,
+    "injury_caution": "unloaded; back off before tingling"
   }
 ]

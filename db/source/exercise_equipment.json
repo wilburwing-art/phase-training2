@@ -3838,5 +3838,20 @@
     "exercise_id": 1185,
     "equipment_id": 1,
     "is_required": 1
+  },
+  {
+    "exercise_id": 1196,
+    "equipment_id": 60,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1197,
+    "equipment_id": 60,
+    "is_required": 1
+  },
+  {
+    "exercise_id": 1198,
+    "equipment_id": 1,
+    "is_required": 1
   }
 ]
