@@ -18944,8 +18944,8 @@
   {
     "exercise_id": 1196,
     "injury_id": 57,
-    "role": "rehab_late",
-    "notes": "Isometric exercise for a flexed finger widens the space under the A1 pulley; brief self-regulated pulls, stop if triggering returns. Sourced, unreviewed."
+    "role": "rehab_early",
+    "notes": "Isometric exercise for a flexed finger widens the space under the A1 pulley (ultrasonographic study in trigger finger patients); brief self-regulated pulls, stop if triggering returns. Sourced, unreviewed."
   },
   {
     "exercise_id": 1197,
@@ -19060,5 +19060,395 @@
     "injury_id": 65,
     "role": "contraindicated",
     "notes": "Early-phase hamstring strain: avoid explosive motion, sprinting, deep hinge stretch and eccentric loading (Physiopedia Hamstring Strain; Cawley PT). Sourced, unreviewed. Kept over the prehab/late-rehab row: those say prevents-it or progress-to-it, not safe-while-symptomatic."
+  },
+  {
+    "exercise_id": 49,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 52,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 214,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 215,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 217,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 225,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: rotational-strike). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 228,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: cutting). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 229,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: cutting). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 230,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 233,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 306,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 329,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing/skating-stride). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 348,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: rotational-strike). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 349,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: rotational-strike). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 350,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: rotational-strike). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 355,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: deceleration/jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 358,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: cutting). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 361,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: deceleration). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 463,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: cutting/deceleration). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 464,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: cutting). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 466,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 494,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 526,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 532,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 536,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 539,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 540,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 559,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 578,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: deceleration). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 602,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 609,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 613,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 616,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 640,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: rotational-strike). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 645,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 646,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 715,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: takedown-sprawl). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 721,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: takedown-sprawl). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 725,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 779,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: skating-stride). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 823,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 826,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: rotational-strike). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 828,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: takedown-sprawl). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 835,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: rotational-strike). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 838,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: rotational-strike). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 843,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 844,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: cutting). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 878,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: takedown-sprawl). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 882,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 889,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: rotational-strike). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 891,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: rotational-strike). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1005,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1006,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1009,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1023,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1024,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1032,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1033,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1034,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1035,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1036,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1059,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: jumping-landing). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1060,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1085,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1096,
+    "injury_id": 2,
+    "role": "contraindicated",
+    "notes": "ACL injury: avoid plyometric landing, cutting, pivoting, rapid deceleration and loaded catch positions while symptomatic or before clearance; these load the knee in the valgus and rotational patterns that injure and re-injure the graft (rule over movement pattern: olympic-derivative). Sourced (mechanism), unreviewed."
   }
 ]

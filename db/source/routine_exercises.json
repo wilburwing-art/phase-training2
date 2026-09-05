@@ -4929,15 +4929,15 @@
   {
     "id": 1271,
     "routine_id": 302,
-    "exercise_id": 241,
+    "exercise_id": 1051,
     "position": 1,
     "superset_group": null,
-    "sets": 1,
-    "reps": "20-30 min",
-    "rest": "none",
+    "sets": 3,
+    "reps": "10 per side",
+    "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Steady zone 2 pace with a loaded pack. This is the single highest return exercise for mountaineering specific muscular endurance; keep it shorter here since it leads into the rest of the session."
+    "notes": "Slow and controlled. Step long, keep the torso tall as under a pack."
   },
   {
     "id": 1272,
