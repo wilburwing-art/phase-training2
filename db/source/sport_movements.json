@@ -16,7 +16,10 @@
     "allowed_variants": null,
     "fatigue_cost": 4,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 2,
@@ -34,7 +37,10 @@
     "allowed_variants": null,
     "fatigue_cost": 4,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 3,
@@ -52,7 +58,10 @@
     "allowed_variants": null,
     "fatigue_cost": 4,
     "min_experience": null,
-    "injury_caution": "low back"
+    "injury_caution": "low back",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 4,
@@ -71,7 +80,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": null,
-    "injury_caution": "low back"
+    "injury_caution": "low back",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 5,
@@ -91,7 +103,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 6,
@@ -110,7 +125,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 7,
@@ -131,7 +149,10 @@
     "allowed_variants": null,
     "fatigue_cost": 4,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 8,
@@ -151,7 +172,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 9,
@@ -170,7 +194,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 10,
@@ -188,7 +215,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": "intermediate",
-    "injury_caution": "quad / knee — start shallow"
+    "injury_caution": "quad / knee — start shallow",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 11,
@@ -206,7 +236,10 @@
     "allowed_variants": null,
     "fatigue_cost": 4,
     "min_experience": "intermediate",
-    "injury_caution": "high DOMS — assist eccentric first"
+    "injury_caution": "high DOMS — assist eccentric first",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 12,
@@ -226,7 +259,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 13,
@@ -244,7 +280,10 @@
     "allowed_variants": null,
     "fatigue_cost": 4,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 14,
@@ -263,7 +302,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 15,
@@ -281,7 +323,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 17,
@@ -301,7 +346,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 18,
@@ -320,7 +368,10 @@
     "allowed_variants": null,
     "fatigue_cost": 4,
     "min_experience": null,
-    "injury_caution": "never in-season — high fatigue"
+    "injury_caution": "never in-season — high fatigue",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 19,
@@ -339,7 +390,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": "land soft — requires base"
+    "injury_caution": "land soft — requires base",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 20,
@@ -358,7 +412,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 21,
@@ -375,7 +432,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": "advanced",
-    "injury_caution": "strength base required"
+    "injury_caution": "strength base required",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 22,
@@ -395,7 +455,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 23,
@@ -413,7 +476,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 24,
@@ -434,7 +500,10 @@
     ],
     "fatigue_cost": 3,
     "min_experience": "intermediate",
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 25,
@@ -455,7 +524,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 26,
@@ -477,7 +549,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": "hip / knee mobility"
+    "injury_caution": "hip / knee mobility",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 27,
@@ -497,7 +572,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 28,
@@ -517,7 +595,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 29,
@@ -536,7 +617,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 30,
@@ -558,7 +642,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": "groin — regress to short lever"
+    "injury_caution": "groin — regress to short lever",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 31,
@@ -580,7 +667,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 32,
@@ -601,7 +691,10 @@
     "allowed_variants": null,
     "fatigue_cost": 1,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 33,
@@ -622,7 +715,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 34,
@@ -643,7 +739,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 35,
@@ -664,7 +763,10 @@
     "allowed_variants": null,
     "fatigue_cost": 1,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 36,
@@ -682,7 +784,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": "low back"
+    "injury_caution": "low back",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 37,
@@ -704,7 +809,10 @@
     ],
     "fatigue_cost": 3,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 38,
@@ -725,7 +833,10 @@
     ],
     "fatigue_cost": 4,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 39,
@@ -747,7 +858,10 @@
     ],
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 40,
@@ -769,7 +883,10 @@
     ],
     "fatigue_cost": 4,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 41,
@@ -787,7 +904,10 @@
     "allowed_variants": null,
     "fatigue_cost": 1,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 42,
@@ -805,7 +925,10 @@
     "allowed_variants": null,
     "fatigue_cost": 1,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 43,
@@ -823,7 +946,10 @@
     "allowed_variants": null,
     "fatigue_cost": 1,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 44,
@@ -841,7 +967,10 @@
     "allowed_variants": null,
     "fatigue_cost": 1,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 45,
@@ -860,7 +989,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": "intermediate",
-    "injury_caution": "warm up; no acute finger injury"
+    "injury_caution": "warm up; no acute finger injury",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 46,
@@ -878,7 +1010,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": "intermediate",
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 47,
@@ -897,7 +1032,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 48,
@@ -915,7 +1053,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 49,
@@ -934,7 +1075,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 50,
@@ -953,7 +1097,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 51,
@@ -971,7 +1118,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": "scapular health"
+    "injury_caution": "scapular health",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 52,
@@ -989,7 +1139,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 53,
@@ -1006,7 +1159,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": "advanced",
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 54,
@@ -1024,7 +1180,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": "intermediate",
-    "injury_caution": "advanced regressions"
+    "injury_caution": "advanced regressions",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 55,
@@ -1045,7 +1204,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 56,
@@ -1064,7 +1226,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": "low back"
+    "injury_caution": "low back",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 57,
@@ -1084,7 +1249,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 58,
@@ -1101,7 +1269,10 @@
     "allowed_variants": null,
     "fatigue_cost": 4,
     "min_experience": "advanced",
-    "injury_caution": "finger/elbow risk; pre-season only"
+    "injury_caution": "finger/elbow risk; pre-season only",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 59,
@@ -1121,7 +1292,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": "intermediate",
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 60,
@@ -1138,7 +1312,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 61,
@@ -1159,7 +1336,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 62,
@@ -1179,7 +1359,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 63,
@@ -1199,7 +1382,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 64,
@@ -1220,7 +1406,10 @@
     "allowed_variants": null,
     "fatigue_cost": 1,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 65,
@@ -1241,7 +1430,10 @@
     "allowed_variants": null,
     "fatigue_cost": 1,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 66,
@@ -1262,7 +1454,10 @@
     "allowed_variants": null,
     "fatigue_cost": 1,
     "min_experience": null,
-    "injury_caution": "elbow (epicondylitis)"
+    "injury_caution": "elbow (epicondylitis)",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 67,
@@ -1284,7 +1479,10 @@
     "allowed_variants": null,
     "fatigue_cost": 1,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 68,
@@ -1305,7 +1503,10 @@
     "allowed_variants": null,
     "fatigue_cost": 1,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 69,
@@ -1326,7 +1527,10 @@
     "allowed_variants": null,
     "fatigue_cost": 1,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 70,
@@ -1345,7 +1549,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": "intermediate",
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 71,
@@ -1364,7 +1571,10 @@
     "allowed_variants": null,
     "fatigue_cost": 3,
     "min_experience": "intermediate",
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 72,
@@ -1383,7 +1593,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 73,
@@ -1402,7 +1615,10 @@
     "allowed_variants": null,
     "fatigue_cost": 2,
     "min_experience": null,
-    "injury_caution": null
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 74,
@@ -1421,7 +1637,10 @@
     "allowed_variants": null,
     "min_experience": "beginner",
     "fatigue_cost": 2,
-    "injury_caution": "self-regulated force; stop at sharp pain"
+    "injury_caution": "self-regulated force; stop at sharp pain",
+    "protocol_sets": 5,
+    "protocol_reps": "3-4 x 3 sec holds per hand",
+    "protocol_rest_seconds": 180
   },
   {
     "id": 75,
@@ -1439,7 +1658,10 @@
     "allowed_variants": null,
     "min_experience": "intermediate",
     "fatigue_cost": 3,
-    "injury_caution": "open hand only; no added load"
+    "injury_caution": "open hand only; no added load",
+    "protocol_sets": 3,
+    "protocol_reps": "20-40 sec",
+    "protocol_rest_seconds": 240
   },
   {
     "id": 76,
@@ -1460,7 +1682,10 @@
     "allowed_variants": null,
     "min_experience": "beginner",
     "fatigue_cost": 1,
-    "injury_caution": "unloaded; back off before tingling"
+    "injury_caution": "unloaded; back off before tingling",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 77,
@@ -1482,7 +1707,10 @@
     "allowed_variants": null,
     "min_experience": "beginner",
     "fatigue_cost": 1,
-    "injury_caution": "no pain during the hold"
+    "injury_caution": "no pain during the hold",
+    "protocol_sets": 5,
+    "protocol_reps": "45 sec hold",
+    "protocol_rest_seconds": 120
   },
   {
     "id": 78,
@@ -1504,7 +1732,10 @@
     "allowed_variants": null,
     "min_experience": "beginner",
     "fatigue_cost": 1,
-    "injury_caution": "neutral spine"
+    "injury_caution": "neutral spine",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   },
   {
     "id": 79,
@@ -1526,6 +1757,9 @@
     "allowed_variants": null,
     "min_experience": "beginner",
     "fatigue_cost": 1,
-    "injury_caution": "neutral spine"
+    "injury_caution": "neutral spine",
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   }
 ]

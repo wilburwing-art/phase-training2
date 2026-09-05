@@ -528,8 +528,12 @@ enum SportSeasonGenerator {
         let scheme = DemandScheme.scheme(for: demand, progression: rule.progression)
         let key = m.name.lowercased()
         // Sets: the strategy's intensity bias, clamped so a `push` can't run
-        // away and a `deload` can't zero the movement out.
-        let sets = max(1, Int((Double(scheme.setsMid) * strategy.intensityBias.setsMultiplier).rounded()))
+        // away and a `deload` can't zero the movement out. A movement carrying
+        // a cited protocol (R3-9) keeps its own sets, reps and rest: the
+        // no-hang finger pull is 5 sets of 3 to 4 three-second pulls and was
+        // being served as 5x8s holds from the fingerStrength scheme.
+        let sets = m.protocolSets
+            ?? max(1, Int((Double(scheme.setsMid) * strategy.intensityBias.setsMultiplier).rounded()))
         // A load target the coach named is appended to the notes rather than
         // replacing the injury caution, which is the one note that must survive.
         let loadNote = strategy.targetWeightOverrides[key].map { "target: \(Int($0.rounded())) lb" }
@@ -543,8 +547,8 @@ enum SportSeasonGenerator {
             pattern: nil,
             isCompound: m.isCompound,
             sets: sets,
-            reps: scheme.repsString,
-            restSeconds: scheme.restSeconds,
+            reps: m.protocolReps ?? scheme.repsString,
+            restSeconds: m.protocolRestSeconds ?? scheme.restSeconds,
             notes: notes.isEmpty ? nil : notes,
             rpe: strategy.rpeOverrides[key] ?? scheme.rpeString,
             tempo: strategy.tempoOverrides[key] ?? scheme.tempoString,

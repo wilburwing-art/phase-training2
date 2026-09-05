@@ -326,7 +326,15 @@ CREATE TABLE sport_movements (
   allowed_variants  TEXT,                     -- JSON array of SportVariant rawValues; NULL = all
   fatigue_cost      INTEGER NOT NULL DEFAULT 2 CHECK (fatigue_cost BETWEEN 1 AND 5),
   min_experience    TEXT,                     -- novice|intermediate|advanced; NULL = no gate
-  injury_caution    TEXT
+  injury_caution    TEXT,
+  -- Optional per-movement prescription (R3-9). The engine prescribes by DEMAND
+  -- (DemandScheme), which is right for a generic squat and wrong for a movement
+  -- that carries a cited protocol: the no-hang finger pull is a 3 s overcoming
+  -- isometric and was being served as 5x8s holds. When these are set the
+  -- scheme's sets/reps/rest yield to them; RPE and tempo still come from the scheme.
+  protocol_sets         INTEGER CHECK (protocol_sets BETWEEN 1 AND 10),
+  protocol_reps         TEXT,
+  protocol_rest_seconds INTEGER CHECK (protocol_rest_seconds BETWEEN 0 AND 600)
 );
 
 CREATE INDEX idx_sport_movements_sport         ON sport_movements(sport);

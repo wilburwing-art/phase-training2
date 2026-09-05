@@ -289,6 +289,33 @@ final class SeasonFidelityTest: XCTestCase {
                       + "the exercise that treats the injury: \(clashes.prefix(5))")
     }
 
+    /// R3-9. The engine prescribes by demand, which is right for a generic
+    /// squat and wrong for a movement that carries a cited protocol. When a
+    /// protocol movement is served, its own sets, reps and rest come through;
+    /// a movement without one still gets the scheme.
+    func test_citedProtocolSurvivesTheDemandScheme() {
+        let pool = CoachDatabase.shared.sportMovements(sport: "climbing")
+        guard let pull = pool.first(where: { $0.exerciseId == 1196 }) else { return XCTFail("no-hang pull missing from the climbing pool") }
+        XCTAssertEqual(pull.protocolSets, 5); XCTAssertEqual(pull.protocolReps, "3-4 x 3 sec holds per hand"); XCTAssertEqual(pull.protocolRestSeconds, 180)
+        XCTAssertNil(pool.first(where: { $0.exerciseId == 2 })?.protocolSets, "Max Hang has no cited protocol and must stay scheme-driven")
+        var served = 0
+        for f in sports where f.slug == "climbing" {
+            for phase in phases {
+                for wk in 1...3 {
+                    for w in SportSeasonGenerator.generateWeek(athlete(f, season: phase, weekNumber: wk)) {
+                        for ex in w.exercises where ex.exerciseId == 1196 {
+                            served += 1
+                            XCTAssertEqual(ex.sets, 5, "[\(phase.rawValue)] no-hang pull sets")
+                            XCTAssertEqual(ex.reps, "3-4 x 3 sec holds per hand", "[\(phase.rawValue)] no-hang pull reps")
+                            XCTAssertEqual(ex.restSeconds, 180, "[\(phase.rawValue)] no-hang pull rest")
+                        }
+                    }
+                }
+            }
+        }
+        XCTAssertGreaterThan(served, 0, "the no-hang pull never appeared in three generated climbing weeks; the assertion above ran on nothing")
+    }
+
     func test_pools_have_no_duplicate_exercise_ids() {
         // R3-5: driven from the database rather than a hardcoded pair, so a
         // sport added later is checked instead of silently skipped.

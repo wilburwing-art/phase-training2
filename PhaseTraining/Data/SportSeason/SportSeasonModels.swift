@@ -215,6 +215,11 @@ struct SportMovement: Hashable, Identifiable {
     // DemandScheme — so the catalog's generic sets/reps/rest/tempo are not read).
     let isCompound: Bool
     let isUnilateral: Bool
+    /// A cited protocol that overrides the demand scheme's sets, reps and rest
+    /// when present (R3-9). Nil for the ordinary movement, which is most of them.
+    var protocolSets: Int? = nil
+    var protocolReps: String? = nil
+    var protocolRestSeconds: Int? = nil
 
     var primaryDemand: Demand? { demands.first }
     func serves(_ demand: Demand) -> Bool { demands.contains(demand) }
