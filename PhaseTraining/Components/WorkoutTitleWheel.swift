@@ -42,6 +42,30 @@ struct WorkoutWheelOption: Identifiable, Equatable {
     static let samplePrefix = "sample:"
     static func sampleId(_ season: SeasonPhase) -> String { samplePrefix + season.rawValue }
     var isSample: Bool { sampleSeason != nil }
+
+    /// A session's identity for the wheel: same title and same movement set is
+    /// the same sample, whatever season produced it.
+    static func sampleSignature(_ w: GeneratedWorkout) -> String {
+        w.title + "|" + w.exercises.map(\.exerciseId).sorted().map(String.init).joined(separator: ",")
+    }
+
+    /// Keep only samples that are genuinely different sessions, in season
+    /// order, and never one identical to the planned stop. A bodyweight user of
+    /// a sport with one bodyweight routine was being shown five "seasons" that
+    /// were all that routine; two seasons whose coach.db phase labels overlap
+    /// resolve to the same authored routine even with a full gym. One honest
+    /// stop beats five copies.
+    static func distinctSamples(_ candidates: [(SeasonPhase, GeneratedWorkout)],
+                                excluding planned: GeneratedWorkout?) -> [(SeasonPhase, GeneratedWorkout)] {
+        var seen = Set<String>()
+        if let planned { seen.insert(sampleSignature(planned)) }
+        var out: [(SeasonPhase, GeneratedWorkout)] = []
+        for (season, w) in candidates where !w.exercises.isEmpty {
+            let sig = sampleSignature(w)
+            if seen.insert(sig).inserted { out.append((season, w)) }
+        }
+        return out
+    }
 }
 
 struct WorkoutTitleWheel: View {

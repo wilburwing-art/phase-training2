@@ -53,7 +53,15 @@ extension TodayScreen {
         // skipped because the planned stop already shows it.
         if out.count < Self.wheelCap, let sport = memoryStore.memory.primarySport {
             let current = memoryStore.memory.seasonsBySport[sport] ?? memoryStore.memory.defaultSeason
-            for season in SeasonPhase.allCases where season != current && out.count < Self.wheelCap {
+            // Generate first, then keep only the seasons that are genuinely
+            // different sessions from each other and from today's planned
+            // stop. Deterministic and cheap; the alternative was showing a
+            // bodyweight hiker five copies of the one routine they can equip.
+            let candidates: [(SeasonPhase, GeneratedWorkout)] = SeasonPhase.allCases
+                .filter { $0 != current }
+                .compactMap { season in sampleWorkout(for: season).map { (season, $0) } }
+            let distinct = WorkoutWheelOption.distinctSamples(candidates, excluding: todayPlan?.generatedWorkout)
+            for (season, _) in distinct where out.count < Self.wheelCap {
                 out.append(
                     WorkoutWheelOption(
                         id: WorkoutWheelOption.sampleId(season),

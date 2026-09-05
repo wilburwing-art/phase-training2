@@ -917,6 +917,55 @@ final class PlanStoreSeamsTests: XCTestCase {
         XCTAssertNil(store.overrides.customRoutineId(for: today))
     }
 
+    /// Item 6. The wheel's promise is that a new user can swipe through what
+    /// each season's training looks like. Generated raw, that promise was false
+    /// for every authored sport: a bodyweight thru-hiker got "Thru Hike
+    /// Durability Circuit" for all five seasons, and even a full-gym user gets
+    /// the same routine for two seasons whose coach.db phase labels overlap.
+    /// The wheel now runs candidates through `distinctSamples`; this pins that
+    /// what survives is pairwise distinct, for every plannable sport and for
+    /// both a full gym and a bodyweight-only profile, and that at least one
+    /// sample survives.
+    func test_wheelSamplesAreDistinctForEveryPlannableSport() {
+        let sports = SportCatalog.outdoorAuthoredSlugs.sorted() + ["alpine-skiing", "climbing"]
+        for slug in sports where SportCatalog.isPlannable(slug) {
+            for gear in [[Equipment.fullGym], [.bodyweight]] {
+                var mem = TrainingMemory()
+                mem.primarySport = Sport.resolve(slug: slug)
+                mem.equipment = gear
+                let sport = mem.primarySport!
+                let candidates: [(SeasonPhase, GeneratedWorkout)] = SeasonPhase.allCases.map { season in
+                    var m = mem; m.seasonsBySport[sport] = season; m.defaultSeason = season
+                    return (season, WorkoutGenerator.generateLift(
+                        liftIndex: 0, totalLifts: max(1, m.liftDaysPerWeek), memory: m,
+                        profile: DemographicProfile.from(m), hashSeed: "sample-\(sport.slug)-\(season.rawValue)"))
+                }
+                let distinct = WorkoutWheelOption.distinctSamples(candidates, excluding: nil)
+                let ctx = "[\(slug)/\(gear.map(\.rawValue).joined(separator: "+"))]"
+                XCTAssertGreaterThanOrEqual(distinct.count, 1, "\(ctx) no sample survives")
+                let sigs = distinct.map { WorkoutWheelOption.sampleSignature($0.1) }
+                XCTAssertEqual(Set(sigs).count, sigs.count, "\(ctx) distinctSamples left duplicates")
+                print("WHEEL-SAMPLES \(ctx) \(distinct.count) of \(candidates.count) seasons are distinct sessions")
+            }
+        }
+    }
+
+    func test_distinctSamplesDropsCopiesAndThePlannedStop() {
+        var mem = TrainingMemory()
+        mem.primarySport = Sport.resolve(slug: "climbing")
+        mem.equipment = [.fullGym]
+        let sport = mem.primarySport!
+        func gen(_ s: SeasonPhase) -> GeneratedWorkout {
+            var m = mem; m.seasonsBySport[sport] = s; m.defaultSeason = s
+            return WorkoutGenerator.generateLift(liftIndex: 0, totalLifts: 3, memory: m,
+                                                 profile: DemographicProfile.from(m), hashSeed: "sample-climbing-\(s.rawValue)")
+        }
+        let off = gen(.offSeason), inS = gen(.inSeason)
+        // a duplicate candidate collapses to one; the planned stop is never offered as a sample
+        let kept = WorkoutWheelOption.distinctSamples([(.offSeason, off), (.preSeason, off), (.inSeason, inS)], excluding: inS)
+        XCTAssertEqual(kept.map(\.0), [.offSeason])
+    }
+
     func test_sampleIsDeterministicPerSeason() {
         var mem = TrainingMemory()
         mem.primarySport = Sport.resolve(slug: "climbing")
