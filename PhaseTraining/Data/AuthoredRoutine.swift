@@ -112,12 +112,20 @@ enum AuthoredRoutineSelector {
                 // Last resort for a real outdoor sport with no content of its
                 // own: the universal cross-sport base (Easy Strength). Gated on
                 // the allowlist so an arbitrary/unknown slug still returns nil.
-                // Last resort is NOT injury- or equipment-filtered on
-                // viability: if Easy Strength is all that is left, serve what
-                // remains of it rather than nothing. `AuthoredRoutine.workout`
-                // still removes the contraindicated rows and swaps or drops
-                // the ones the user cannot equip.
-                ids = db.authoredRoutineIds(sportSlug: genericBaseSlug, phaseLabels: allPhaseLabels)
+                //
+                // The last resort used to skip the viability filter, on the
+                // reasoning that serving what remained beat serving nothing.
+                // That was written before there WAS an honest nothing. It
+                // produced 315 of 1,800 days in the filter-composition grid as
+                // one- and two-movement sessions still titled "Easy Strength —
+                // 5-Lift Base", every one of them to a user who had declared
+                // limited equipment: below the floor the app enforces
+                // everywhere else, and lying about the program on top. Since
+                // R2-05 the caller has a declared empty state that names the
+                // reason and points at Profile, so the floor applies here too
+                // and falling through is the better answer.
+                ids = viable(db.authoredRoutineIds(sportSlug: genericBaseSlug, phaseLabels: allPhaseLabels),
+                             excluding: excludedExerciseIds, allowed: allowedEquipmentSlugs)
             }
         }
         guard !ids.isEmpty else { return nil }
