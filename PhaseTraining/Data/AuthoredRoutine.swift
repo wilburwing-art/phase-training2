@@ -298,7 +298,15 @@ enum AuthoredRoutine {
             )
         }
 
-        let estMin = max(15, exercises.reduce(0) { $0 + $1.sets * 90 } / 60)
+        // R3-12: a duration-based row ("1x20 min", "2x3 flights" is not one) is
+        // its own minutes, not sets x 90 s; the rest estimate at 90 s per set.
+        let estMin = max(15, exercises.reduce(0) { acc, ex in
+            if let m = ex.reps.range(of: #"(\d+)\s*-?\s*(\d+)?\s*min"#, options: .regularExpression) {
+                let nums = ex.reps[m].split(whereSeparator: { !$0.isNumber }).compactMap { Int($0) }
+                if let top = nums.last { return acc + ex.sets * top * 60 }
+            }
+            return acc + ex.sets * 90
+        } / 60)
         let meta = db.authoredRoutineMeta(id: routineId)
         let provenance = meta?.source.map { "Authored · \($0)" } ?? "Authored program"
         return GeneratedWorkout(
