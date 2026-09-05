@@ -17,7 +17,7 @@ item's own gate below.
 | 2 | general-fitness bodyweight base + name the last 15 empty days **(done 2026-09-05: 15 -> 0)** | single | one `general-fitness` routine bodyweight-viable under all 5 test injuries; the 15 named by instrumenting the test, fixed or written down as the floor |
 | 3 | R3-8 five inert weights | single, owner answers needed | each weight change deletes its `knownInertWeights` line; `test_everyFundedDemandRealizesASlot` green |
 | 4 | catalog gaps: Clamshell, Side-Lying Hip Abduction, Bird Dog, Spanish Squat + `rehab_early` rows for epicondylitis, patellar tendinopathy, impingement, plantar fasciitis **(done 2026-09-05; item 3 awaits owner answers)** | single | CHECK pre-flight clean before build; rows sourced; `contradictoryInjuryRoles()` empty |
-| 5 | week-shape tests for thru-hiking, mountaineering, trail-running | single | one test per sport asserting the full-gym week's shape across phases |
+| 5 | week-shape tests for thru-hiking, mountaineering, trail-running **(done 2026-09-05)** | single | one test per sport asserting the full-gym week's shape across phases |
 | 6 | wheel samples differ | single | one assertion: exercise-id sets and titles distinct across a sport's samples |
 | 7 | R3-9 per-movement prescription override | single | `SportMovement` carries optional sets/reps/rest; scheme respects it; no-hang pull serves as 3 s pulls; fidelity green |
 | 8 | small items R3-12, R3-13, R3-14, 08-23 header | single | estimator parses "min"; routine 70 renamed or re-tagged; PFPS rule scoped; header count fixed |
