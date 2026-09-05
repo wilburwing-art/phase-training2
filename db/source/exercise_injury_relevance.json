@@ -21042,43 +21042,7 @@
     "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Sourced (mechanism), unreviewed."
   },
   {
-    "exercise_id": 225,
-    "injury_id": 60,
-    "role": "contraindicated",
-    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
-  },
-  {
-    "exercise_id": 311,
-    "injury_id": 60,
-    "role": "contraindicated",
-    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
-  },
-  {
     "exercise_id": 323,
-    "injury_id": 60,
-    "role": "contraindicated",
-    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
-  },
-  {
-    "exercise_id": 348,
-    "injury_id": 60,
-    "role": "contraindicated",
-    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
-  },
-  {
-    "exercise_id": 349,
-    "injury_id": 60,
-    "role": "contraindicated",
-    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
-  },
-  {
-    "exercise_id": 350,
-    "injury_id": 60,
-    "role": "contraindicated",
-    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
-  },
-  {
-    "exercise_id": 640,
     "injury_id": 60,
     "role": "contraindicated",
     "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
@@ -21097,12 +21061,6 @@
   },
   {
     "exercise_id": 721,
-    "injury_id": 60,
-    "role": "contraindicated",
-    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
-  },
-  {
-    "exercise_id": 729,
     "injury_id": 60,
     "role": "contraindicated",
     "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
@@ -21132,18 +21090,6 @@
     "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
   },
   {
-    "exercise_id": 835,
-    "injury_id": 60,
-    "role": "contraindicated",
-    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
-  },
-  {
-    "exercise_id": 838,
-    "injury_id": 60,
-    "role": "contraindicated",
-    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
-  },
-  {
     "exercise_id": 876,
     "injury_id": 60,
     "role": "contraindicated",
@@ -21151,18 +21097,6 @@
   },
   {
     "exercise_id": 878,
-    "injury_id": 60,
-    "role": "contraindicated",
-    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
-  },
-  {
-    "exercise_id": 889,
-    "injury_id": 60,
-    "role": "contraindicated",
-    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
-  },
-  {
-    "exercise_id": 891,
     "injury_id": 60,
     "role": "contraindicated",
     "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Source is a clinic page rather than a clinical reference; kept because avoiding contact and jarring impact in acute whiplash is standard first-line advice, and flagged for a reputable citation. Sourced (mechanism, weak source), unreviewed."
@@ -21430,5 +21364,101 @@
     "injury_id": 42,
     "role": "rehab_early",
     "notes": "High-load progressive heel raises with a towel under the toes, every second day (Rathleff 2015 RCT). Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 713,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Narrowed after the drafter's self-audit: the striking and rotational-strike patterns also hold golf, disc golf, water polo and shotgun-mount drills, none of them a contact sport; the predicate is now the takedown pattern plus named combat and martial-arts drills. Source is a clinic page rather than a clinical reference; kept because avoiding contact in acute whiplash is standard first-line advice. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 830,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Narrowed after the drafter's self-audit: the striking and rotational-strike patterns also hold golf, disc golf, water polo and shotgun-mount drills, none of them a contact sport; the predicate is now the takedown pattern plus named combat and martial-arts drills. Source is a clinic page rather than a clinical reference; kept because avoiding contact in acute whiplash is standard first-line advice. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 899,
+    "injury_id": 60,
+    "role": "contraindicated",
+    "notes": "Acute-phase guidance excludes contact sports outright and subacute guidance separately names football, rugby, and martial arts; the catalog's takedown-sprawl, striking, and rotational-strike patterns are the contact/combat-sport drills (Sambo takedowns, HEMA grapple entries, Krav Maga, Kendo, Karate). Whiplash's own mechanism is a forceful head snap, which contact and grappling entries directly risk reproducing. Sourced (contact/martial-arts avoidance), unreviewed. Narrowed after the drafter's self-audit: the striking and rotational-strike patterns also hold golf, disc golf, water polo and shotgun-mount drills, none of them a contact sport; the predicate is now the takedown pattern plus named combat and martial-arts drills. Source is a clinic page rather than a clinical reference; kept because avoiding contact in acute whiplash is standard first-line advice. Sourced (mechanism, weak source), unreviewed."
+  },
+  {
+    "exercise_id": 217,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Olympic-derivative floor lifts added on the drafter's point: every one is an inherently loaded barbell or kettlebell pull from the floor, with Tire Flip already contraindicated by the curated tier as precedent. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 306,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Olympic-derivative floor lifts added on the drafter's point: every one is an inherently loaded barbell or kettlebell pull from the floor, with Tire Flip already contraindicated by the curated tier as precedent. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 536,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Olympic-derivative floor lifts added on the drafter's point: every one is an inherently loaded barbell or kettlebell pull from the floor, with Tire Flip already contraindicated by the curated tier as precedent. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 539,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Olympic-derivative floor lifts added on the drafter's point: every one is an inherently loaded barbell or kettlebell pull from the floor, with Tire Flip already contraindicated by the curated tier as precedent. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 540,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Olympic-derivative floor lifts added on the drafter's point: every one is an inherently loaded barbell or kettlebell pull from the floor, with Tire Flip already contraindicated by the curated tier as precedent. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 882,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Olympic-derivative floor lifts added on the drafter's point: every one is an inherently loaded barbell or kettlebell pull from the floor, with Tire Flip already contraindicated by the curated tier as precedent. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1005,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Olympic-derivative floor lifts added on the drafter's point: every one is an inherently loaded barbell or kettlebell pull from the floor, with Tire Flip already contraindicated by the curated tier as precedent. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1006,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Olympic-derivative floor lifts added on the drafter's point: every one is an inherently loaded barbell or kettlebell pull from the floor, with Tire Flip already contraindicated by the curated tier as precedent. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1023,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Olympic-derivative floor lifts added on the drafter's point: every one is an inherently loaded barbell or kettlebell pull from the floor, with Tire Flip already contraindicated by the curated tier as precedent. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1033,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Olympic-derivative floor lifts added on the drafter's point: every one is an inherently loaded barbell or kettlebell pull from the floor, with Tire Flip already contraindicated by the curated tier as precedent. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1036,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Olympic-derivative floor lifts added on the drafter's point: every one is an inherently loaded barbell or kettlebell pull from the floor, with Tire Flip already contraindicated by the curated tier as precedent. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1060,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Olympic-derivative floor lifts added on the drafter's point: every one is an inherently loaded barbell or kettlebell pull from the floor, with Tire Flip already contraindicated by the curated tier as precedent. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1085,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Olympic-derivative floor lifts added on the drafter's point: every one is an inherently loaded barbell or kettlebell pull from the floor, with Tire Flip already contraindicated by the curated tier as precedent. Sourced (mechanism), unreviewed."
   }
 ]
