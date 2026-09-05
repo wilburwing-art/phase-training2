@@ -270,7 +270,11 @@ final class SeasonFidelityTest: XCTestCase {
     }
 
     func test_pools_have_no_duplicate_exercise_ids() {
-        for slug in ["alpine-skiing", "climbing"] {
+        // R3-5: driven from the database rather than a hardcoded pair, so a
+        // sport added later is checked instead of silently skipped.
+        let slugs = CoachDatabase.shared.sportMovementSportSlugs()
+        XCTAssertFalse(slugs.isEmpty, "no sport pools found — the query or the db is wrong")
+        for slug in slugs {
             let ids = CoachDatabase.shared.sportMovements(sport: slug).map(\.exerciseId)
             let dupes = Dictionary(grouping: ids, by: { $0 }).filter { $0.value.count > 1 }.keys
             XCTAssertTrue(dupes.isEmpty, "[\(slug)] duplicate exercise ids in pool: \(Array(dupes))")

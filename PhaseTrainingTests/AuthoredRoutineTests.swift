@@ -331,9 +331,19 @@ final class AuthoredRoutineTests: XCTestCase {
                     let w = WorkoutGenerator.generateLift(
                         liftIndex: slot, totalLifts: 3, memory: memory, profile: profile,
                         hashSeed: "floor-\(slug)-\(phase.rawValue)-\(slot)")
-                    // An empty workout is the "no supported sport" safety net and
-                    // is a separate concern; what must not happen is a SHORT one.
-                    if w.exercises.isEmpty { continue }
+                    // R3-3. This used to `continue` on an empty workout, which
+                    // made the test blind to the outcome the 1b injury rows
+                    // make possible: filter everything out and return nothing.
+                    // An empty day is allowed, but only as one of the two
+                    // DECLARED empty states, so a silent one still fails.
+                    if w.exercises.isEmpty {
+                        XCTAssertTrue(
+                            ["authored-no-fit", "no-supported-sport"].contains(w.provenance),
+                            "[\(slug)/\(injury)/\(phase.rawValue)/slot \(slot)] served an empty "
+                            + "workout with provenance '\(w.provenance)' — an empty day has to be "
+                            + "one the app declares and explains, not a filtered-to-nothing session")
+                        continue
+                    }
                     XCTAssertGreaterThanOrEqual(
                         w.exercises.count, AuthoredRoutineSelector.minimumMovements,
                         "[\(slug)/\(injury)/\(phase.rawValue)/slot \(slot)] served "
