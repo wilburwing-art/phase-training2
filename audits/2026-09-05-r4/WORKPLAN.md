@@ -15,7 +15,7 @@ item's own gate below.
 |---|---|---|---|
 | 1 | R3-11 twelve injuries, pattern rules **(done 2026-09-05)** | fan-out, 5 agents by region; lead merges | zero `contraindicated`+`rehab_early` clashes; `FilterCompositionTests` extended to the twelve and green; every row's note cites its mechanism |
 | 2 | general-fitness bodyweight base + name the last 15 empty days **(done 2026-09-05: 15 -> 0)** | single | one `general-fitness` routine bodyweight-viable under all 5 test injuries; the 15 named by instrumenting the test, fixed or written down as the floor |
-| 3 | R3-8 five inert weights | single, owner answers needed | each weight change deletes its `knownInertWeights` line; `test_everyFundedDemandRealizesASlot` green |
+| 3 | R3-8 five inert weights **(done 2026-09-05, owner approved the recommendations)** | single, owner answers needed | each weight change deletes its `knownInertWeights` line; `test_everyFundedDemandRealizesASlot` green |
 | 4 | catalog gaps: Clamshell, Side-Lying Hip Abduction, Bird Dog, Spanish Squat + `rehab_early` rows for epicondylitis, patellar tendinopathy, impingement, plantar fasciitis **(done 2026-09-05; item 3 awaits owner answers)** | single | CHECK pre-flight clean before build; rows sourced; `contradictoryInjuryRoles()` empty |
 | 5 | week-shape tests for thru-hiking, mountaineering, trail-running **(done 2026-09-05)** | single | one test per sport asserting the full-gym week's shape across phases |
 | 6 | wheel samples differ **(done 2026-09-05; found and fixed 59 duplicate pairs)** | single | one assertion: exercise-id sets and titles distinct across a sport's samples |
