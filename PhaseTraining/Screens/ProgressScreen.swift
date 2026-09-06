@@ -180,11 +180,10 @@ struct ProgressScreen: View {
 
     // MARK: - Helpers
 
+    /// Implementation lives in ProgressStats so it can be tested at its
+    /// magnitude boundaries — see ProgressFormattingTests.
     func formatBigNum(_ v: Double) -> String {
-        if v == 0 { return "0" }
-        if v < 1000 { return v.truncatingRemainder(dividingBy: 1) == 0 ? "\(Int(v))" : String(format: "%.1f", v) }
-        if v < 10_000 { return String(format: "%.1fk", v / 1000) }
-        return "\(Int(v / 1000))k"
+        ProgressStats.formatBigNum(v)
     }
 }
 

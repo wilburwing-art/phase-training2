@@ -178,3 +178,67 @@ extension ProgressStats {
         log.sorted { $0.date < $1.date }
     }
 }
+
+// MARK: - Card presentation helpers
+
+extension ProgressStats {
+
+    /// Compact number for the stat cells, PR rows and the volume read-out.
+    ///
+    /// Under 1000 renders exactly (dropping a trailing ".0"), then switches
+    /// to "k" — one decimal below 10k, whole thousands above. Weekly volume
+    /// runs to six figures, which is why the display truncates rather than
+    /// rounding to a unit: "42k" is the honest precision at that magnitude.
+    static func formatBigNum(_ v: Double) -> String {
+        if v == 0 { return "0" }
+        if v < 1000 {
+            return v.truncatingRemainder(dividingBy: 1) == 0
+                ? "\(Int(v))"
+                : String(format: "%.1f", v)
+        }
+        if v < 10_000 { return String(format: "%.1fk", v / 1000) }
+        return "\(Int(v / 1000))k"
+    }
+
+    /// Relative day label for the PR feed, feedback rows and per-exercise
+    /// PR suffixes.
+    ///
+    /// Counts whole ELAPSED days between the two instants, not calendar-date
+    /// difference: something logged 23 hours ago reads "today" even after
+    /// midnight. Anything not in the past reads "today" too.
+    static func daysAgo(_ date: Date,
+                        now: Date = Date(),
+                        calendar: Calendar = .current) -> String {
+        let days = calendar.dateComponents([.day], from: date, to: now).day ?? 0
+        if days <= 0 { return "today" }
+        if days == 1 { return "yesterday" }
+        return "\(days)d ago"
+    }
+
+    /// Whether a PR is recent enough for the per-exercise tile to flag it.
+    static func isWithinDays(_ days: Int,
+                             of date: Date?,
+                             now: Date = Date(),
+                             calendar: Calendar = .current) -> Bool {
+        guard let date else { return false }
+        let elapsed = calendar.dateComponents([.day], from: date, to: now).day ?? 999
+        return elapsed <= days
+    }
+
+    /// Scale a per-session weight series into the 0...1 range ExerciseTile's
+    /// sparkline draws in.
+    ///
+    /// A series with no spread (one point, or every session at the same
+    /// weight) has no meaningful shape, so every point renders at 0.5 — a
+    /// flat line through the middle of the tile. Mapping those to 0 would
+    /// pin the line to the bottom edge and read as a collapse in strength
+    /// rather than a plateau.
+    static func normalizedPoints(_ pts: [ProgressAggregates.SparkPoint]) -> [Double] {
+        guard let min = pts.map(\.weight).min(),
+              let max = pts.map(\.weight).max(),
+              max > min else {
+            return Array(repeating: 0.5, count: pts.count)
+        }
+        return pts.map { ($0.weight - min) / (max - min) }
+    }
+}

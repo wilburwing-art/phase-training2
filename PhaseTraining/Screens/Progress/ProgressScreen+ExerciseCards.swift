@@ -52,14 +52,10 @@ extension ProgressScreen {
     }
 
     /// Convert per-session SparkPoints (date, weight) to a normalized 0..1
-    /// series for `ExerciseTile.sparkline`. Flat series → all zeros.
+    /// series for `ExerciseTile.sparkline`. A series with no spread renders
+    /// flat through the MIDDLE of the tile, not pinned to the bottom edge.
     private func normalizedPoints(_ pts: [ProgressAggregates.SparkPoint]) -> [Double] {
-        guard let min = pts.map(\.weight).min(),
-              let max = pts.map(\.weight).max(),
-              max > min else {
-            return Array(repeating: 0.5, count: pts.count)
-        }
-        return pts.map { ($0.weight - min) / (max - min) }
+        ProgressStats.normalizedPoints(pts)
     }
 
     private func prDateSuffix(_ date: Date?) -> String {
@@ -68,9 +64,7 @@ extension ProgressScreen {
     }
 
     private func isWithin14Days(_ date: Date?) -> Bool {
-        guard let date else { return false }
-        let days = Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 999
-        return days <= 14
+        ProgressStats.isWithinDays(14, of: date, now: Date())
     }
 
     // MARK: - PR feed
@@ -268,9 +262,6 @@ extension ProgressScreen {
     // MARK: - Helpers
 
     private func daysAgo(_ date: Date) -> String {
-        let days = Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 0
-        if days <= 0 { return "today" }
-        if days == 1 { return "yesterday" }
-        return "\(days)d ago"
+        ProgressStats.daysAgo(date, now: Date())
     }
 }
