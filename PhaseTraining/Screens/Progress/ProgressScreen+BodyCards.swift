@@ -42,15 +42,13 @@ extension ProgressScreen {
     private func bodyWeightCardBody(log: [BodyWeightEntry]) -> some View {
         let imperial = memoryStore.memory.usesImperial
         let displaySeries = log.map { imperial ? BodyMetrics.kgToLb($0.weightKg) : $0.weightKg }
-        let latest = log.last?.weightKg ?? 0
+        let latest = ProgressStats.latestBodyWeightKg(in: log) ?? 0
         let latestDisplay = BodyMetrics.formatWeight(kg: latest, imperial: imperial)
-        let deltaStr: String? = {
-            guard let first = log.first?.weightKg, log.count >= 2 else { return nil }
-            let dKg = latest - first
+        let deltaStr: String? = ProgressStats.bodyWeightDeltaKg(in: log).map { dKg in
             let absDisplay = abs(imperial ? BodyMetrics.kgToLb(dKg) : dKg)
             let sign = dKg >= 0 ? "+" : "−"
             return String(format: "%@%.1f", sign, absDisplay)
-        }()
+        }
         // Pass the true min/max; the spark centers a flat series itself
         // (no dimMax-1 hack that pinned an all-equal line to the top edge).
         let dimMax = displaySeries.max() ?? 1
@@ -81,8 +79,8 @@ extension ProgressScreen {
     }
 
     private func deltaColor(log: [BodyWeightEntry]) -> Color {
-        guard let first = log.first?.weightKg, let last = log.last?.weightKg else { return .ink3 }
-        return last >= first ? .accent : .ok
+        guard let delta = ProgressStats.bodyWeightDeltaKg(in: log) else { return .ink3 }
+        return delta >= 0 ? .accent : .ok
     }
 
     // MARK: - Body-composition trend (build 103)
@@ -112,18 +110,16 @@ extension ProgressScreen {
 
     private func bodyCompositionCardBody(log: [BodyCompositionEntry]) -> some View {
         let imperial = memoryStore.memory.usesImperial
-        let bfSeries = log.compactMap(\.bodyFatPercent)
-        let leanSeries: [Double] = log.compactMap { e in
-            guard let l = e.leanMassKg else { return nil }
-            return imperial ? BodyMetrics.kgToLb(l) : l
-        }
-        // Most-recent NON-NIL value per metric — a newest entry that carries
-        // only lean (or only BF) must not blank out the other stat while its
-        // sparkline still renders from the full series.
-        let latestBF = log.last(where: { $0.bodyFatPercent != nil })?.bodyFatPercent
-        let latestLean = log.last(where: { $0.leanMassKg != nil })?.leanMassKg
-        let bfDelta = trendDelta(values: bfSeries)
-        let leanDelta = trendDelta(values: leanSeries)
+        // Series, latest-per-metric and deltas all live in ProgressStats so
+        // they can be tested — notably the most-recent NON-NIL rule, which
+        // keeps a newest lean-only (or BF-only) entry from blanking the other
+        // stat while its sparkline still renders from the full series.
+        let bfSeries = ProgressStats.bodyFatSeries(in: log)
+        let leanSeries = ProgressStats.leanMassSeries(in: log, imperial: imperial)
+        let latestBF = ProgressStats.latestBodyFatPercent(in: log)
+        let latestLean = ProgressStats.latestLeanMassKg(in: log)
+        let bfDelta = ProgressStats.trendDelta(bfSeries)
+        let leanDelta = ProgressStats.trendDelta(leanSeries)
 
         return card(title: "BODY COMPOSITION") {
             VStack(alignment: .leading, spacing: 12) {
@@ -195,13 +191,6 @@ extension ProgressScreen {
             BodyWeightSpark(points: values, minValue: minV, maxValue: maxV)
                 .frame(height: 24)
         }
-    }
-
-    /// Net change from first → last value in a series. nil for series with
-    /// fewer than 2 points (no delta to compute).
-    private func trendDelta(values: [Double]) -> Double? {
-        guard let first = values.first, let last = values.last, values.count >= 2 else { return nil }
-        return last - first
     }
 
     // MARK: - Strength ratios card
