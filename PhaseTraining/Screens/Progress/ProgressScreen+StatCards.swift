@@ -144,50 +144,25 @@ extension ProgressScreen {
 
     // MARK: - Stat helpers
     //
-    // weeklyBuckets / startOfWeek moved to ProgressAggregates (item 8). The
-    // helpers below stay here because they mix cached data with render-time
-    // inputs (current Date, weekly target).
+    // weeklyBuckets / startOfWeek moved to ProgressAggregates (item 8); the
+    // three render-time helpers moved to Data/ProgressStats.swift. They stay
+    // OUT of the aggregates cache because they mix cached data with inputs
+    // that aren’t cache-keyed (current Date, weekly target) — and they moved
+    // out of this file because, as private View methods calling `Date()`
+    // inline, they could not be tested without flaking across a Monday
+    // midnight. See ProgressStatStripTests.
+    //
+    // The wrappers below supply the one render-time input and nothing else.
 
-    /// Was a filter over savedSessions (`startTime >= weekStart`); summing
-    /// the byWeek grouping over keys >= this week's start counts exactly the
-    /// same sessions — `startOfWeek(d) >= thisWeekStart ⟺ d >= thisWeekStart`.
     private func sessionsThisWeekCount(byWeek: [Date: Int]) -> Int {
-        let cal = Calendar.current
-        let weekStart = ProgressAggregates.startOfWeek(for: Date(), calendar: cal)
-        return byWeek.reduce(0) { $0 + ($1.key >= weekStart ? $1.value : 0) }
+        ProgressStats.sessionsThisWeekCount(byWeek: byWeek, now: Date())
     }
 
-    /// Consecutive weeks (ending with the most recent week that has any
-    /// session) where session count ≥ target. Returns 0 if the most-recent
-    /// session is older than this-week-or-last-week or never met target.
     private func currentWeeklyTargetStreak(target: Int, byWeek: [Date: Int]) -> Int {
-        let cal = Calendar.current
-        let thisWeekStart = ProgressAggregates.startOfWeek(for: Date(), calendar: cal)
-
-        // Walk back from this week (or last week if this week is empty) and
-        // count consecutive weeks meeting target.
-        var streak = 0
-        var cursor = thisWeekStart
-        if (byWeek[cursor] ?? 0) < target {
-            // Allow grace: if user hasn't trained yet this week, start
-            // counting from last week instead.
-            cursor = cal.date(byAdding: .weekOfYear, value: -1, to: cursor) ?? cursor
-        }
-        // Bounded by the oldest week we actually have data for. The old loop
-        // advanced with `?? cursor`, so a nil from date arithmetic left the
-        // cursor pinned while `byWeek[cursor] >= target` stayed true — an
-        // infinite loop on the main thread, inside a body evaluation.
-        let oldestWeek = byWeek.keys.min() ?? cursor
-        while (byWeek[cursor] ?? 0) >= target, cursor >= oldestWeek {
-            streak += 1
-            guard let prev = cal.date(byAdding: .weekOfYear, value: -1, to: cursor) else { break }
-            cursor = prev
-        }
-        return streak
+        ProgressStats.currentWeeklyTargetStreak(target: target, byWeek: byWeek, now: Date())
     }
 
     private func prsInLastDays(_ days: Int, in records: [PersonalRecord]) -> Int {
-        let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-        return records.filter { $0.date >= cutoff }.count
+        ProgressStats.prsInLastDays(days, in: records, now: Date())
     }
 }
