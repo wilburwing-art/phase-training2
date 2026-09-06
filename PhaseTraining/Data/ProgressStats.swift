@@ -109,3 +109,72 @@ extension ProgressStats {
         }
     }
 }
+
+// MARK: - Body-weight / body-composition card derivations
+
+extension ProgressStats {
+
+    /// Net change from the first to the last value in a series. Nil for
+    /// series with fewer than two points — one reading is a value, not a
+    /// trend, and the card renders no delta chip for it.
+    static func trendDelta(_ values: [Double]) -> Double? {
+        guard let first = values.first, let last = values.last, values.count >= 2 else {
+            return nil
+        }
+        return last - first
+    }
+
+    /// Body-fat readings in log order, oldest first, skipping entries that
+    /// carry only lean mass. Percent units ("18.5" means 18.5%).
+    static func bodyFatSeries(in log: [BodyCompositionEntry]) -> [Double] {
+        chronological(log).compactMap(\.bodyFatPercent)
+    }
+
+    /// Lean-mass readings in log order, oldest first, skipping entries that
+    /// carry only body fat. Converted to lb when `imperial`.
+    static func leanMassSeries(in log: [BodyCompositionEntry], imperial: Bool) -> [Double] {
+        chronological(log).compactMap { entry in
+            guard let lean = entry.leanMassKg else { return nil }
+            return imperial ? BodyMetrics.kgToLb(lean) : lean
+        }
+    }
+
+    /// Most recent NON-NIL body fat reading.
+    ///
+    /// Not simply `log.last?.bodyFatPercent`: DEXA users log both metrics
+    /// while scale users log only body fat, so a newest entry carrying only
+    /// lean mass would blank out the BF stat while its sparkline still
+    /// rendered from the full series — a card showing a trend line above a
+    /// missing number.
+    static func latestBodyFatPercent(in log: [BodyCompositionEntry]) -> Double? {
+        chronological(log).last(where: { $0.bodyFatPercent != nil })?.bodyFatPercent
+    }
+
+    /// Most recent NON-NIL lean-mass reading, in kg. Mirror of
+    /// `latestBodyFatPercent` — see its note.
+    static func latestLeanMassKg(in log: [BodyCompositionEntry]) -> Double? {
+        chronological(log).last(where: { $0.leanMassKg != nil })?.leanMassKg
+    }
+
+    /// Net body-weight change across the whole log, in kg. Nil for a log
+    /// with fewer than two entries.
+    static func bodyWeightDeltaKg(in log: [BodyWeightEntry]) -> Double? {
+        trendDelta(chronological(log).map(\.weightKg))
+    }
+
+    /// Most recent logged body weight, in kg.
+    static func latestBodyWeightKg(in log: [BodyWeightEntry]) -> Double? {
+        chronological(log).last?.weightKg
+    }
+
+    // The card sorts its log before rendering; these helpers sort too, so a
+    // caller that forgets can't silently produce a "latest" reading from the
+    // middle of the log.
+    private static func chronological(_ log: [BodyCompositionEntry]) -> [BodyCompositionEntry] {
+        log.sorted { $0.date < $1.date }
+    }
+
+    private static func chronological(_ log: [BodyWeightEntry]) -> [BodyWeightEntry] {
+        log.sorted { $0.date < $1.date }
+    }
+}
