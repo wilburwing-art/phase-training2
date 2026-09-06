@@ -250,16 +250,11 @@ extension ProgressScreen {
         }
     }
 
-    /// What the tier labels mean, and which curve produced them.
+    /// What the tier labels mean, and which curve produced them. Copy lives
+    /// in ProgressStats so it can be tested against the routing it describes
+    /// (StrengthStandards.curve(for:)) — see ProgressGenderDisclosureTests.
     private var tierDisclosure: String {
-        switch memoryStore.memory.gender {
-        case .none:
-            return "Tiers are a rough directional signal, not a diagnosis. Add your gender on Profile to see them."
-        case .male, .female:
-            return "Tiers are a rough directional signal, not a diagnosis."
-        case .nonbinary, .preferNotToSay:
-            return "Tiers are a rough directional signal, not a diagnosis. Published standards only come in two curves, so these use the female thresholds."
-        }
+        ProgressStats.strengthTierDisclosure(gender: memoryStore.memory.gender)
     }
 
     private func strengthRow(_ row: StrengthStandards.LiftRow) -> some View {
