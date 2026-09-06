@@ -153,16 +153,35 @@ enum StrengthStandards {
         .pullup:   [0.60, 0.80, 1.00, 1.25, 1.50],
     ]
 
+    /// Which published curve a gender is scored against.
+    ///
+    /// Only two curves exist in the source tables, so `.nonbinary` and
+    /// `.preferNotToSay` are routed to the female thresholds. That routing is
+    /// user-visible: the Progress strength-ratios card says so in its
+    /// disclosure copy rather than labelling someone ELITE off a curve it
+    /// never named. Exposed (rather than inlined in `tier`) so the copy and
+    /// the routing can be asserted against one source of truth — see
+    /// ProgressGenderDisclosureTests.
+    enum Curve: Hashable {
+        case male, female
+    }
+
+    static func curve(for gender: Gender) -> Curve {
+        switch gender {
+        case .male:                             return .male
+        case .female, .nonbinary, .preferNotToSay: return .female
+        }
+    }
+
     /// Resolve the tier for a given (lift, ratio, gender). Returns nil when:
     /// - gender is nil (we don't pick a curve without consent)
     /// - the ratio is below the novice threshold for the curve
     static func tier(for lift: CanonicalLift, ratio: Double, gender: Gender?) -> Tier? {
         guard let gender else { return nil }
         let curve: [CanonicalLift: [Double]]
-        switch gender {
-        case .male:                  curve = maleThresholds
-        case .female, .nonbinary,
-             .preferNotToSay:        curve = femaleThresholds
+        switch Self.curve(for: gender) {
+        case .male:   curve = maleThresholds
+        case .female: curve = femaleThresholds
         }
         guard let thresholds = curve[lift], thresholds.count == Tier.allCases.count else {
             return nil

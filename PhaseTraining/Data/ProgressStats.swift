@@ -80,3 +80,32 @@ enum ProgressStats {
         return records.filter { $0.date >= cutoff }.count
     }
 }
+
+// MARK: - Strength-ratios disclosure
+
+extension ProgressStats {
+
+    /// The line under the strength-ratios card's tier labels.
+    ///
+    /// Tiers render as bare authoritative words ("ELITE") off thresholds
+    /// StrengthStandards.swift itself calls "a directional signal, not a
+    /// diagnosis", so the card says that where the user reads them. The
+    /// `.nonbinary` / `.preferNotToSay` variant additionally names the curve
+    /// those cases are routed to, because silently scoring someone against an
+    /// unnamed curve while telling them gender is what unlocks the label is
+    /// the failure this copy exists to prevent.
+    ///
+    /// Lives here, not in the View extension, so a test can assert the copy
+    /// against `StrengthStandards.curve(for:)` — the routing it describes.
+    static func strengthTierDisclosure(gender: Gender?) -> String {
+        let base = "Tiers are a rough directional signal, not a diagnosis."
+        switch gender {
+        case .none:
+            return base + " Add your gender on Profile to see them."
+        case .male, .female:
+            return base
+        case .nonbinary, .preferNotToSay:
+            return base + " Published standards only come in two curves, so these use the female thresholds."
+        }
+    }
+}
