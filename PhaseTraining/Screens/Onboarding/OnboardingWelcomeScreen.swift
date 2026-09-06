@@ -24,10 +24,13 @@ struct OnboardingWelcomeScreen: View {
                     .foregroundStyle(Color.ink)
                     .lineSpacing(-4)
                     .fixedSize(horizontal: false, vertical: true)
-                // "Eight" was wrong: OnboardingStep.total is 10 and the chrome
-                // renders "STEP X OF 10". Welcome is one of those and is not a
-                // question, so nine is the number a user can count.
-                Text("Nine quick questions. Then a plan that fits your sport, your equipment, and your week.")
+                // This count is USER-FACING and has been wrong twice ("Eight"
+                // when it was nine, "Nine" when the gate was cut to four steps).
+                // It is `OnboardingStep.total` minus welcome, which is not a
+                // question — three today. Recount it whenever a step is added
+                // or removed; a promise of "three questions" that turns into
+                // five is the one thing this screen can get wrong.
+                Text("Three quick questions, then your week is ready. Everything else we'll assume for now and you can change any of it later.")
                     .styled(.body)
                     .foregroundStyle(Color.ink2)
                     .fixedSize(horizontal: false, vertical: true)

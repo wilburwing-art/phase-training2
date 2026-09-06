@@ -619,8 +619,8 @@ enum Equipment: String, Codable, CaseIterable, Identifiable {
 
     /// Slugs unlocked specifically by THIS selection, ON TOP of the
     /// always-available set. `.bodyweight` strictly adds nothing — picking
-    /// "bodyweight only" in onboarding means no pull-up bar, no bench, no
-    /// rings. Users who own those pick the corresponding Equipment case.
+    /// "bodyweight only" (Profile → Equipment) means no pull-up bar, no bench,
+    /// no rings. Users who own those pick the corresponding Equipment case.
     var specificCoachDbSlugs: Set<String> {
         switch self {
         case .bodyweight:   return []

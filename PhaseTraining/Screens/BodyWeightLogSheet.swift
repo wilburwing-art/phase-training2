@@ -1,7 +1,7 @@
 // BodyWeightLogSheet.swift — body-weight time series editor.
 //
 // Build 103. Before this, `TrainingMemory.weightKg` was a single scalar set
-// during onboarding (or in AboutYouEditorSheet), powering strength-ratios
+// in AboutYouEditorSheet, powering strength-ratios
 // and 1RM math without any trend signal. This sheet exposes the append-only
 // `bodyWeightLog` series: log a weight, see the last 12 entries, see a
 // month-scale chart. Adding a new entry mirrors onto `weightKg` so every
@@ -69,7 +69,7 @@ struct BodyWeightLogSheet: View {
             Text("This removes the logged weight. Your history can't recover it.")
         }
         .onAppear {
-            // Seed the log from a scalar weight set during onboarding / About
+            // Seed the log from a scalar weight set in About
             // You so it shows in the trend + history (idempotent — only fires
             // when the log is empty and a scalar exists).
             store.update { $0.backfillBodyWeightLogFromScalar() }

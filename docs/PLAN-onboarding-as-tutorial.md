@@ -1,5 +1,7 @@
 # Onboarding as tutorial
 
+> Branch state, verification order and risk: `docs/HANDOFF-onboarding-as-tutorial.md`.
+
 ## The problem
 
 Onboarding is a modal `fullScreenCover` questionnaire with its own chrome

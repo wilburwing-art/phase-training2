@@ -211,8 +211,9 @@ extension PlanStore {
         recentPicks.record(exerciseIds: ids)
     }
 
-    /// Replace the current plan wholesale (used when the user accepts a
-    /// preview during onboarding).
+    /// Replace the current plan wholesale. Onboarding used to call this when
+    /// the user accepted the plan-preview step; that step is gone, so this is
+    /// now a test/preview seam for installing a fixture plan.
     func setPlan(_ p: WeekPlan) {
         self.plan = p
         savePlan()
