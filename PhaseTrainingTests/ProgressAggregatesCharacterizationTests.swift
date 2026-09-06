@@ -480,9 +480,85 @@ final class ProgressAggregatesCharacterizationTests: XCTestCase {
         XCTAssertTrue(third.strengthRows.isEmpty, "No bodyweight → no strength rows")
     }
 
-    // SCAFFOLD (item 4 of 7): the cache key carries a calendar-day component
-    // so the date-derived windows (weekly buckets, the muscle-volume 4-week
-    // cutoff) can't be served stale across midnight. Nothing varies `now`.
+    /// The memo key carries a calendar-day component precisely so the
+    /// date-derived aggregates can't be served stale across midnight: the
+    /// weekly buckets are positioned relative to `now`'s week, and
+    /// MuscleVolume.rows applies a 4-week cutoff from `now`. Sessions and
+    /// profile are unchanged here — the day alone must miss the key.
+    ///
+    /// An app left open overnight is the real case. Without the day
+    /// component the bars stay shifted one week off until something else
+    /// invalidates.
     @MainActor
-    func test_cache_recomputesAfterCalendarDayRollover() { XCTFail("scaffold") }
+    func test_cache_recomputesAfterCalendarDayRollover() {
+        let now = Date()
+        let sessions = fixtureSessions(now: now)
+        let cache = ProgressAggregatesCache()
+        var prReplays = 0
+
+        func read(now: Date) -> ProgressAggregates {
+            cache.aggregates(
+                sessions: sessions,
+                bodyweightKg: nil,
+                gender: nil,
+                weeks: 8,
+                topExerciseCount: 6,
+                recentSessionsCount: 5,
+                personalRecords: { prReplays += 1; return [] },
+                now: now
+            )
+        }
+
+        _ = read(now: now)
+        XCTAssertEqual(prReplays, 1)
+
+        // Same calendar day, later instant: still a hit.
+        let cal = Calendar.current
+        let sameDay = cal.date(byAdding: .minute, value: 1, to: cal.startOfDay(for: now))!
+        _ = read(now: sameDay)
+        XCTAssertEqual(prReplays, 1, "A later instant on the same day must stay a cache hit")
+
+        // Next calendar day, sessions untouched: must miss.
+        let tomorrow = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: now))!
+        _ = read(now: tomorrow)
+        XCTAssertEqual(prReplays, 2, "A calendar-day rollover must invalidate the memo")
+    }
+
+    /// The day component earns its place only if the aggregates it guards
+    /// actually move with the date. Crossing a WEEK boundary repositions the
+    /// buckets relative to `now`, so a stale read would render bars against
+    /// the wrong weeks.
+    ///
+    /// Deliberately a single session rather than `fixtureSessions`: one
+    /// session yields exactly one non-zero bucket whose index must drop by
+    /// one, which holds whatever weekday the suite runs on. (The shared
+    /// fixture would muddy this — its future-dated session ENTERS the window
+    /// as `now` advances, so the in-window total isn't monotonic.)
+    func test_weeklyBuckets_shiftWhenNowCrossesAWeekBoundary() {
+        let now = Date()
+        let cal = Calendar.current
+        let sessions = [
+            savedSession(offsetDays: -1, exercises: [
+                loggedExercise(name: "Barbell Bench Press", sets: [("135", "5", true, false)]),
+            ], now: now),
+        ]
+
+        let before = makeAggregates(sessions: sessions, now: now)
+        let nextWeek = cal.date(byAdding: .weekOfYear, value: 1, to: now)!
+        let after = makeAggregates(sessions: sessions, now: nextWeek)
+
+        guard let beforeIdx = before.sessionsPerWeek.firstIndex(where: { $0 > 0 }),
+              let afterIdx = after.sessionsPerWeek.firstIndex(where: { $0 > 0 }) else {
+            return XCTFail("Session one day back must land in the 8-week window from both instants")
+        }
+        XCTAssertEqual(before.sessionsPerWeek.reduce(0, +), 1)
+        XCTAssertEqual(after.sessionsPerWeek.reduce(0, +), 1)
+        XCTAssertEqual(afterIdx, beforeIdx - 1,
+                       "A week later the same session must sit one bucket further back")
+
+        // Aggregates with no date component must NOT move with `now`.
+        XCTAssertEqual(before.totalSessions, after.totalSessions)
+        XCTAssertEqual(before.recentSessions, after.recentSessions)
+        XCTAssertEqual(before.topExercises.map(\.name), after.topExercises.map(\.name))
+    }
 }
