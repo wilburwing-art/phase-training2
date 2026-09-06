@@ -479,4 +479,10 @@ final class ProgressAggregatesCharacterizationTests: XCTestCase {
         XCTAssertFalse(fourth.strengthRows.isEmpty)
         XCTAssertTrue(third.strengthRows.isEmpty, "No bodyweight → no strength rows")
     }
+
+    // SCAFFOLD (item 4 of 7): the cache key carries a calendar-day component
+    // so the date-derived windows (weekly buckets, the muscle-volume 4-week
+    // cutoff) can't be served stale across midnight. Nothing varies `now`.
+    @MainActor
+    func test_cache_recomputesAfterCalendarDayRollover() { XCTFail("scaffold") }
 }
