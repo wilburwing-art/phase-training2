@@ -44,7 +44,7 @@ extension ProgressScreen {
         let displaySeries = log.map { imperial ? BodyMetrics.kgToLb($0.weightKg) : $0.weightKg }
         let latest = ProgressStats.latestBodyWeightKg(in: log) ?? 0
         let latestDisplay = BodyMetrics.formatWeight(kg: latest, imperial: imperial)
-        let deltaStr: String? = ProgressStats.bodyWeightDeltaKg(in: log).map { dKg in
+        let deltaStr: String? = ProgressStats.bodyWeightDeltaKg(in: log).map { (dKg: Double) -> String in
             let absDisplay = abs(imperial ? BodyMetrics.kgToLb(dKg) : dKg)
             let sign = dKg >= 0 ? "+" : "−"
             return String(format: "%@%.1f", sign, absDisplay)
