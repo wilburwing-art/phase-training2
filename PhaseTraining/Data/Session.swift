@@ -21,8 +21,8 @@ struct LoggedSet: Codable, Equatable {
     var isWarmup: Bool = false
     /// Reps-in-reserve (build 103). Distinct from RPE: RIR records how many
     /// reps the user had left in the tank ("3 RIR" = could have done 3
-    /// more). The science-based era cohort speaks in RIR terms, and the
-    /// data flows directly into hypertrophy autoregulation. Stored as raw
+    /// more). RIR is the vocabulary hypertrophy autoregulation is written
+    /// in, and the data flows directly into it. Stored as raw
     /// String to match the rest of the row (TextField-friendly, "blank =
     /// unspecified" sentinel). Optional on decode so pre-build-103 sessions
     /// round-trip cleanly without migrating the JSON.

@@ -471,8 +471,7 @@ struct CoachRequestScreen: View {
             sessions: sessionStore.savedSessions,
             soreness: mem.soreness,
             feedback: mem.feedback,
-            importedWorkouts: imported,
-            cohort: profile.eraCohort
+            importedWorkouts: imported
         )
         // Map the focus back to a liftIndex/totalLifts pair that resolves
         // to it via WorkoutFocus.lift — generator preserves the override.

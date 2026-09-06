@@ -3,7 +3,7 @@
 // Detects format from the header row, dispatches to the matching parser,
 // resolves exercise names against coach.db, and persists both
 // `imported_sets` (strength) and `imported_workouts` (cardio rows) in a
-// single transaction via UserDatabase. Per the personalization-three-axes
+// single transaction via UserDatabase. Per the personalization-two-axes
 // skill, this only feeds Phase 2's data-derived readiness/peak axis — it
 // never touches the user's self-reported `ExperienceLevel`.
 //

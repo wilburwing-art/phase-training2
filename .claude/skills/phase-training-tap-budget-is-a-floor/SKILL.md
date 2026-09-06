@@ -25,7 +25,9 @@ attachment. The references are arithmetically correct — verified against sourc
 11 flows (2026-06-01, all verified passing on sim, actual==reference):
 in-workout 6 · full 10 · swap 2 · planned-full 9 · per-set 14 · add-exercise 2 ·
 edit-then-start 3 · discard 3 · log-sport 2 · onboarding 12 · weekly-check-in 6.
-(onboarding dropped 13→12 on 2026-06-27 when the goal/focus step was deleted.)
+(onboarding: 13→12 on 2026-06-27 with the goal/focus step deleted, back UP to 13
+when the consent pick was added, then 13→12 on 2026-09-06 with the era-affinity
+step deleted. It has been wrong in this file twice — read the test, not this line.)
 References derive from a `Seed` enum (not literals) + a count-invariant guard
 (`XCTAssertEqual` on what the loop drove) so a seed change fails loud. CI:
 `TAP-BUDGET-JSON` markers → `scripts/quality/tap_budget_diff.py` vs
@@ -97,8 +99,7 @@ downstream):
 ## Step add/remove desyncs the walk — invisible under unit-green (2026-06-27)
 
 The onboarding flow is `welcome → sports → sportSeasons → availability →
-equipment → experience → about → eraAffinity → constraints → coachConsent →
-planPreview`. `testTapBudget_onboardingToFirstPlan` taps `onboarding-continue-\(step)`
+equipment → experience → about → constraints → coachConsent → planPreview`. `testTapBudget_onboardingToFirstPlan` taps `onboarding-continue-\(step)`
 for each. Deleting/reordering an `OnboardingStep` (e.g. the goal/focus step,
 removed M2b) **silently leaves this UI test red** — the UITest target is separate
 and slow, so the whole unit suite stays green and CI/local "tests pass" hides it.
@@ -106,6 +107,14 @@ Fix when you change the step set: (1) remove/rename the matching `counter.tap`,
 (2) decrement the `recordTapBudget(..., reference: N)` count, (3) re-run JUST that
 test (`-only-testing:PhaseTrainingUITests/TapBudgetTests/testTapBudget_onboardingToFirstPlan`,
 ~25s). Run the UITest target after ANY onboarding-flow change.
+
+Three more places carry the same count and are easy to miss: the doc comment
+above the test, `PhaseTrainingUITests/tap-budget-baseline.json`
+(`"onboarding-to-first-plan"`), and `OnboardingPlanDetailUITests`, which walks
+the same step ids. Removing a step ALSO shifts every later `OnboardingStep`
+rawValue down by one, which strands a `pt_onboarding_step` saved by an older
+build — `OnboardingFlow.resumeStep(rawValue:)` clamps past-the-end values to the
+last step so a nearly-finished draft isn't dropped.
 
 Build/verify: session defaults may point at a `.claude/worktrees/...` project —
 build the MAIN repo explicitly (`xcodebuild build-for-testing -project

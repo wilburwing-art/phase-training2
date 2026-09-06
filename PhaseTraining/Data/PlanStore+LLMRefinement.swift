@@ -117,9 +117,9 @@ extension PlanStore {
         // accordingly. Defaulted in CoachContext.snapshot, so omitting
         // this would silently regress.
         let sportLogs = sportLogStore?.entries ?? []
-        // Resolve the Phase-1 era cohort here once so we can pass it both
-        // into the per-turn coach context AND through the rest of the
-        // refinement pass. DemographicProfile owns the resolution logic.
+        // Resolved once here and threaded through the whole refinement pass
+        // (rather than rebuilt per day) — DemographicProfile.from is a pure
+        // derivation over memory, so one call is enough.
         let profile = DemographicProfile.from(memory)
         // Phase 2 readiness — build a top-level snapshot context just to
         // get the score for the coach snapshot. We rebuild the per-day
@@ -134,8 +134,7 @@ extension PlanStore {
             feedback: memory.feedback,
             sportLogs: sportLogs,
             importedWorkouts: topImported,
-            importedPeaks: topPeaks,
-            cohort: profile.eraCohort
+            importedPeaks: topPeaks
         )
         let snapshot = CoachContext.snapshot(
             activeTab: .today,
@@ -145,7 +144,6 @@ extension PlanStore {
             recentFeedback: memory.feedback,
             recentSoreness: memory.soreness,
             recentSportLogs: sportLogs,
-            eraCohort: profile.eraCohort,
             readinessScore: topContext.hasReadinessData ? topContext.readinessScore : nil
         )
 
@@ -248,7 +246,6 @@ extension PlanStore {
             sportLogs: sportLogs,
             importedWorkouts: imported,
             importedPeaks: peaks,
-            cohort: profile.eraCohort,
             now: day.date
         )
 

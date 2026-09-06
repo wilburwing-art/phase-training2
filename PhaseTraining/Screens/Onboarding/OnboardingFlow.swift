@@ -21,11 +21,6 @@ enum OnboardingStep: Int, CaseIterable {
     case equipment          // tier-based
     case experience
     case about              // age + gender (optional)
-    /// Phase-1 era-affinity surface. Sits AFTER .about so the derived
-    /// cohort (which keys off draft.age) is populated, and BEFORE
-    /// .constraints. Three actions: accept derived / pick / skip. See
-    /// OnboardingEraAffinityScreen.
-    case eraAffinity
     case constraints
     /// Apple Guideline 5.1.2(i) consent gate for the AI Coach. Defaults to ON
     /// with explicit accept-via-Continue. If skipped on a fresh install the
@@ -84,10 +79,10 @@ struct OnboardingFlow: View {
     //
     // The flow used to hard-code "we always start fresh", so a user
     // backgrounded-and-jettisoned on step 9 — after entering sports, seasons,
-    // availability, equipment, experience, age, height, weight, era,
-    // free-text dislikes and injuries — came back to Welcome with all of it
-    // gone. For an 11-screen mandatory fullScreenCover with no skip and no
-    // exit, that is a real abandonment cliff.
+    // availability, equipment, experience, age, height, weight, free-text
+    // dislikes and injuries — came back to Welcome with all of it gone. For a
+    // mandatory fullScreenCover with no skip and no exit, that is a real
+    // abandonment cliff.
     //
     // Both keys are `pt_`-prefixed, so MemoryStore.wipeAllUserData (and
     // --ui-test-reset, which routes through it) clears them for free.
@@ -102,13 +97,27 @@ struct OnboardingFlow: View {
            // Never resume INTO the questionnaire from Welcome: a user who only
            // saw the splash has nothing worth restoring, and jumping them past
            // it would be disorienting.
-           let savedStep = OnboardingStep(rawValue: defaults.integer(forKey: Self.stepKey)),
+           let savedStep = resumeStep(rawValue: defaults.integer(forKey: Self.stepKey)),
            savedStep != .welcome {
             draft = saved
             step = savedStep
             return
         }
         draft = store.memory
+    }
+
+    /// Resolve a persisted step rawValue, clamping anything past the end of the
+    /// current step list to the last step.
+    ///
+    /// Removing a step shifts every rawValue after it down by one, so a draft
+    /// saved by an older build can name a step this build no longer has. A bare
+    /// `OnboardingStep(rawValue:)` returns nil there, which drops the whole
+    /// saved draft on the floor — the exact abandonment cliff the resume
+    /// support exists to close, and worst for the users furthest along.
+    private func resumeStep(rawValue: Int) -> OnboardingStep? {
+        if let exact = OnboardingStep(rawValue: rawValue) { return exact }
+        guard rawValue > 0 else { return nil }
+        return OnboardingStep.allCases.last
     }
 
     private func persistDraft(_ value: TrainingMemory, step: OnboardingStep) {
@@ -142,8 +151,6 @@ struct OnboardingFlow: View {
             OnboardingExperienceScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .about:
             OnboardingAboutScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
-        case .eraAffinity:
-            OnboardingEraAffinityScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .constraints:
             OnboardingConstraintsScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .coachConsent:

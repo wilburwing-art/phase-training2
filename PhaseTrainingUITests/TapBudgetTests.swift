@@ -283,7 +283,8 @@ final class TapBudgetTests: XCTestCase {
     /// main tabs. Sports is the only step with no default (must pick one);
     /// equipment ships pre-selected, so the minimal path advances on its
     /// default. The Accept button is gated on async plan generation, so it's
-    /// tapped once enabled. Reference: 11 advances + 1 sport selection = 12.
+    /// tapped once enabled. Reference: 10 advances + 1 sport selection +
+    /// 1 consent pick = 12. (Was 13 before the era-affinity step was removed.)
     func testTapBudget_onboardingToFirstPlan() throws {
         let app = XCUIApplication()
         app.launchArguments += ["--ui-test-reset"]   // NO --ui-test-onboarded
@@ -306,7 +307,6 @@ final class TapBudgetTests: XCTestCase {
         counter.tap("onboarding-continue-equipment")
         counter.tap("onboarding-continue-experience")
         counter.tap("onboarding-continue-about")
-        counter.tap("onboarding-continue-eraAffinity")
         counter.tap("onboarding-continue-constraints")
         // Consent is the second gated step (T0-5): neither option is
         // pre-selected, so Continue stays disabled until the user picks one.
@@ -318,7 +318,7 @@ final class TapBudgetTests: XCTestCase {
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 10),
                       "accepting the plan should dismiss onboarding into the main tabs")
 
-        recordTapBudget(counter, reference: 13)
+        recordTapBudget(counter, reference: 12)
     }
 
     // MARK: - 11. Weekly check-in → regenerated plan

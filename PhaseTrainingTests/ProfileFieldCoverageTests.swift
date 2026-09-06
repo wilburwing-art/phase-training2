@@ -206,22 +206,6 @@ final class ProfileFieldCoverageTests: XCTestCase {
               snapshotMarker: "ACL Sprain/Tear",
               skipReason: nil),
 
-        // Phase 1 era affinity. Override = the user's explicit cohort
-        // pick from OnboardingEraAffinityScreen; resolves through
-        // DemographicProfile.from(memory) to bias split style + rep
-        // ranges + exercise aesthetic + LLM vocabulary. Hash includes
-        // eraOverride so changing the pick triggers a regen; coach
-        // snapshot mentions the cohort displayName under the
-        // TRAINING ERA AFFINITY block.
-        Probe(name: "eraOverride",
-              mutateForHash: { $0.eraOverride = EraCohort.magazineBodybuilding.rawValue },
-              mutateForSnapshot: { m in
-                  m.age = 30   // ensures derivedCohort path resolves cleanly even without override
-                  m.eraOverride = EraCohort.magazineBodybuilding.rawValue
-              },
-              snapshotMarker: "Magazine bodybuilding era",
-              skipReason: nil),
-
         // Primary/support model. The support sport's declared weekly pattern
         // reflows the primary plan (SupportScheduler), so it's in planInputsHash
         // (WeekPlan.swift, "sup:" component). Now also surfaced in the coach

@@ -40,7 +40,7 @@ across every column) so any delta is attributable purely to the swept variable.
 - For readiness, include a `hasReadinessData=false` variant as a no-op control —
   scaling only fires when true; this proves the gate, not just the score.
 - Variables: experience, primaryFocus, age, sessionMinutes, liftDaysPerWeek,
-  equipment, soreness, eraOverride; context.readinessScore/priorBest/stagnant;
+  equipment, soreness; context.readinessScore/priorBest/stagnant;
   strategy.intensityBias/durationMinutes/focus.
 - Stored mutation closures can't capture `self` — put `makeSoreEntry` at file
   scope. Map params assigned to `Int?` fields (age, durationMinutes) get widened

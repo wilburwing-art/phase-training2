@@ -162,14 +162,13 @@ extension PlanStore {
     /// pre-build-66 so the planner output stays unchanged in those paths.
     ///
     /// Phase 2: also unions HealthKit-imported workouts (read via
-    /// `UserDatabase.shared.recentImportedWorkouts`) and resolves the
-    /// user's era cohort for readiness-norm computation. When no HK auth
-    /// has been granted, the imported list is empty and the readiness
-    /// signal still works off native sessions + sport logs alone.
+    /// `UserDatabase.shared.recentImportedWorkouts`) into the readiness
+    /// window. When no HK auth has been granted, the imported list is empty
+    /// and the readiness signal still works off native sessions + sport
+    /// logs alone.
     func buildGeneratorContext(memory: TrainingMemory, today: Date,
                                includeParkedSignals: Bool = false) -> GeneratorContext {
         guard let sessionStore else { return .empty }
-        let profile = DemographicProfile.from(memory)
         let imported = UserDatabase.shared.recentImportedWorkouts(within: 28)
         // Phase 3: lifetime peaks from CSV imports warm-start priorBest
         // for exercises the user has imported but never logged natively.
@@ -181,7 +180,6 @@ extension PlanStore {
             sportLogs: sportLogStore?.entries ?? [],
             importedWorkouts: imported,
             importedPeaks: peaks,
-            cohort: profile.eraCohort,
             exerciseAffinities: memory.exerciseAffinities,
             now: today,
             includeParkedSignals: includeParkedSignals

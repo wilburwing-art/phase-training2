@@ -29,9 +29,10 @@ Verified 2026-06-22: 99 tests, 0 failures, ~90s incl. build.
   shorter-budget-never-adds, no-dup, no-empty, dislikes/injury safety) all PASS.
   `live` is a FLOOR not a grade, but green metamorphic = direction is right.
 - **The bloat is the PROGRAM SURFACE, not the code.** The combinatorial blast is
-  6 primaryFocus × 5 SeasonPhase × 3 ExperienceLevel × 3 StartingState × 6
-  EraCohort × 216 sport_categories (+107 bundled routines) = thousands of configs
-  the owner can't hold in their head. That's the "scope too large" feeling.
+  6 primaryFocus × 5 SeasonPhase × 3 ExperienceLevel × 3 StartingState × 216
+  sport_categories (+107 bundled routines) = thousands of configs the owner
+  can't hold in their head. That's the "scope too large" feeling. (EraCohort
+  was a 6-wide factor here until it was deleted on 2026-09-06.)
 - **Half the complexity is dormant.** Phase-1 demographic generator always runs;
   Phase-2/3 adaptive (readiness/overload/stagnation/sore-filter) NO-OPs without
   logged data or HealthKit ("sophisticated, runs degraded by default"). It adds
@@ -41,8 +42,8 @@ Verified 2026-06-22: 99 tests, 0 failures, ~90s incl. build.
 1. Strip the SURFACE, not the core — don't gut Phase 1, the harnesses prove it.
 2. **HIDE in UI before DELETE in code.** Lock the app to the owner's own config
    (e.g. intermediate/hypertrophy + their equipment/days) as the default path;
-   leave era/season/sport machinery dormant. Predictable app now, tested code kept
-   for the expand phase. Deleting structural knobs (era/season/startingState)
+   leave season/sport machinery dormant. Predictable app now, tested code kept
+   for the expand phase. Deleting structural knobs (season/startingState)
    means updating the metamorphic tests that guard them — real work for code likely
    re-added.
 3. KEEP the adaptive layer — it's what makes the app theirs over time, inert anyway.
@@ -56,10 +57,12 @@ Half the perceived complexity is product surface that NEVER reaches `generateLif
   the season concept for a predictable personal plan; Planner code stays intact.
 - **StartingState (3)** — NOT in the generator path at all. Onboarding UI + CoachContext
   (LLM) + WeekPlan only. `generateLift` never reads it. → hide unless using calibration-week.
-- **EraCohort (6)** — DOES reach the generator (Phase-1 splitPreference at totalLifts≥3,
-  WG:72) but collapses to **2 split shapes**: U/L/U/L (veteran/tNation/scienceBased) vs
-  PPL-ish (magazine/currentMeta/reddit). The rest is `aestheticTags` tiebreak + LLM voice.
-  Low value-per-complexity as a USER knob → keep auto-derived from age, hide the override.
+- **EraCohort (6)** — DELETED 2026-09-06. This entry read "DOES reach the generator
+  (Phase-1 `splitPreference` at totalLifts≥3, WG:72)", which stopped being true when
+  the legacy selection engine was removed in the season-engine pivot: by deletion time
+  `splitPreference`/`repRangeBias`/`aestheticTags` had zero production readers. A
+  cautionary case for this whole skill — re-verify "DOES reach the generator" claims
+  with a fresh grep before repeating them. See [[phase-training-personalization-two-axes]].
 - **primaryFocus (6)** — only hypertrophy + general_strength are structurally distinct;
   sport_performance = same lifts as general_strength w/ power prescription;
   endurance/weight_loss/longevity = volume/time TRIMS (~5 ex/day, shorter sessions).

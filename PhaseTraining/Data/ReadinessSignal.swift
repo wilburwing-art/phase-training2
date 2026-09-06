@@ -5,11 +5,10 @@
 // so tests stay deterministic.
 //
 // The score is the SILENT axis from the
-// `phase-training-personalization-three-axes` skill. It modulates
+// `phase-training-personalization-two-axes` skill. It modulates
 // volume / intensity / `recommendedLiftDaysPerWeek` floor inside the
 // generator — it MUST NOT touch movement competency (that's the
-// self-reported ExperienceLevel axis) and MUST NOT touch era / aesthetic
-// (that's EraCohort + DemographicProfile.eraStyle).
+// self-reported ExperienceLevel axis).
 //
 // Inputs (28-day window, caller-aggregated):
 //   - imported workouts (HK in Phase 2, CSV in Phase 3)
@@ -45,7 +44,7 @@ struct ReadinessEvent: Equatable {
 /// generator only reads `score`, but the breakdown is what we look at
 /// when "why did this score change" questions come up.
 struct ReadinessBreakdown: Equatable {
-    /// 0..~1+. Ratio of (sessions/wk over last 4 wks) / (cohort norm).
+    /// 0..~1+. Ratio of (sessions/wk over last 4 wks) / `sessionsPerWeekNorm`.
     /// Clamped to [0, 1.5] before going into the geometric mean — high
     /// density shouldn't push the score above 1.0 by itself.
     let density: Double
@@ -69,22 +68,21 @@ struct ReadinessSignal: Equatable {
 
 extension ReadinessSignal {
 
-    /// Score-computation entry point. Pass the 28-day window of events,
-    /// the user's cohort (used only to pick the density norm), and the
-    /// reference date. `events` need not be sorted; we sort internally.
+    /// Score-computation entry point. Pass the 28-day window of events
+    /// and the reference date. `events` need not be sorted; we sort
+    /// internally.
     ///
     /// Returns the neutral signal (`score = 0.5`, all sub-components
     /// neutral) when no events are present — this is the unauthorized
     /// / opted-out / brand-new user case.
     static func compute(
         events: [ReadinessEvent],
-        cohort: EraCohort?,
         now: Date
     ) -> ReadinessSignal {
         guard !events.isEmpty else { return .neutral }
 
         let sorted = events.sorted { $0.startTime < $1.startTime }
-        let density = densityComponent(events: sorted, cohort: cohort, now: now)
+        let density = densityComponent(events: sorted, now: now)
         let recency = recencyComponent(events: sorted, now: now)
         let trend = trendComponent(events: sorted, now: now)
 
@@ -105,30 +103,25 @@ extension ReadinessSignal {
 
     // MARK: - Sub-components
 
-    /// Sessions/wk over the last 4 wks, normalized to the cohort's norm.
-    /// Cohort norms ladder from the older-school 3/wk magazine-bb cycle
-    /// to the higher-frequency science-based norm. Default 3/wk for
-    /// unknown cohort.
-    static func densityComponent(events: [ReadinessEvent], cohort: EraCohort?, now: Date) -> Double {
+    /// Sessions/wk over the last 4 wks, normalized to `sessionsPerWeekNorm`.
+    ///
+    /// This used to ladder the norm by the user's age-derived training-era
+    /// cohort (2.5/wk for a 70+ lifter up to 4.5/wk for the science-based
+    /// cohort). The era axis was removed, so every user now normalizes
+    /// against the flat 3.0/wk that the unknown-cohort case already used.
+    /// Practical effect: users the age table had put on a higher norm
+    /// (roughly under 40) score a touch denser than before, and 70+ users
+    /// a touch sparser.
+    static func densityComponent(events: [ReadinessEvent], now: Date) -> Double {
         let cutoff = now.addingTimeInterval(-28 * 86_400)
         let inWindow = events.filter { $0.startTime >= cutoff }
         let sessionsPerWeek = Double(inWindow.count) / 4.0
-        let norm = cohortNorm(cohort)
-        let ratio = sessionsPerWeek / norm
+        let ratio = sessionsPerWeek / sessionsPerWeekNorm
         return min(max(ratio, 0.0), 1.5)
     }
 
-    private static func cohortNorm(_ cohort: EraCohort?) -> Double {
-        switch cohort {
-        case .veteranStrength:      return 2.5   // 70+, lower training frequency
-        case .magazineBodybuilding: return 3.0   // bro split, body-part 3-4x/wk
-        case .tNationForum:         return 3.5   // 5x5 / WS-inspired upper-lower
-        case .redditFitness:        return 4.0   // PPL/531 BBB norm
-        case .scienceBased:         return 4.5   // higher-frequency hypertrophy
-        case .currentMeta:          return 4.5   // tiktok-fitness, science-leaning
-        case .none:                 return 3.0   // safe default
-        }
-    }
+    /// Sessions/week that reads as "fully trained" for the density component.
+    static let sessionsPerWeekNorm: Double = 3.0
 
     /// 1.0 if last session ≤ 3 days ago. Ramps down linearly through
     /// 0.1 at 14 days. Floors at 0.05 for ≥ 28 days. Past 28 we cap at

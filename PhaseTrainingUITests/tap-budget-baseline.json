@@ -8,7 +8,7 @@
   "edit-then-start": {"taps": 3, "seconds": 8.3},
   "discard-workout": {"taps": 4, "seconds": 15.5},
   "log-sport": {"taps": 2, "seconds": 5.8},
-  "onboarding-to-first-plan": {"taps": 13, "seconds": 26.4},
+  "onboarding-to-first-plan": {"taps": 12, "seconds": 26.4},
   "weekly-check-in": {"taps": 6, "seconds": 11.1},
   "build-and-start-workout": {"taps": 6, "seconds": 17.3},
   "start-saved-workout": {"taps": 1, "seconds": 4.5},

@@ -215,14 +215,12 @@ struct HealthWorkoutSyncSection: View {
         #if DEBUG
         // Recompute readiness off the same window — read-only diagnostic.
         let memory = store.memory
-        let profile = DemographicProfile.from(memory)
         let imported = UserDatabase.shared.recentImportedWorkouts(within: 28)
         let context = GeneratorContext.from(
             sessions: sessionStore.savedSessions,
             soreness: memory.soreness,
             feedback: memory.feedback,
-            importedWorkouts: imported,
-            cohort: profile.eraCohort
+            importedWorkouts: imported
         )
         if context.hasReadinessData {
             debugReadiness = ReadinessSignal(score: context.readinessScore, breakdown: context.readinessBreakdown)

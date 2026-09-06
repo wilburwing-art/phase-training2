@@ -62,8 +62,7 @@ struct GeneratorContext: Equatable {
     /// data → 1.0 = high training state). Computed from native sessions +
     /// imported workouts + sport logs over a 28-day window. Drives volume,
     /// RPE cap, and recommended-days floor SILENTLY in the generator — does
-    /// NOT affect movement competency (that's `ExperienceLevel`) or
-    /// aesthetic (that's `DemographicProfile.eraStyle`).
+    /// NOT affect movement competency (that's `ExperienceLevel`).
     var readinessScore: Double = 0.5
 
     /// Per-axis breakdown of `readinessScore` — surfaced only in debug
@@ -182,9 +181,6 @@ extension GeneratorContext {
     /// Phase 2 additions:
     /// - `importedWorkouts` — HK + (Phase 3) CSV history, unioned with
     ///   native sessions for readiness density/recency/trend.
-    /// - `cohort` — sets the density-component denominator. Default 3/wk
-    ///   when nil. Per the three-axes skill, cohort here drives ONLY the
-    ///   readiness norm; it does NOT touch competency.
     static func from(
         sessions: [SavedSession],
         soreness: [SorenessEntry],
@@ -205,9 +201,6 @@ extension GeneratorContext {
         // Each tuple resolves to a coach.db exercise the importer was
         // able to match by name — unmatched rows never reach here.
         importedPeaks: [(exerciseId: Int, weight: Double, reps: Int, performedAt: Date)] = [],
-        // Phase 2 — cohort for the readiness density norm. nil → default
-        // 3 sessions/wk. PlanStore resolves this from DemographicProfile.
-        cohort: EraCohort? = nil,
         // Per-exercise affinity from TrainingMemory. Defaulted so the
         // test/preview + LLM-refinement surfaces that build their own context
         // don't have to thread it; PlanStore.buildGeneratorContext passes the
@@ -236,7 +229,6 @@ extension GeneratorContext {
         )
         let signal = ReadinessSignal.compute(
             events: readinessEvents,
-            cohort: cohort,
             now: now
         )
         let hasData = !readinessEvents.isEmpty
