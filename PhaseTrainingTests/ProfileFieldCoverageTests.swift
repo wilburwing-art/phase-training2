@@ -45,6 +45,9 @@ final class ProfileFieldCoverageTests: XCTestCase {
         Probe(name: "onboardedAt", mutateForHash: nil, mutateForSnapshot: nil,
               snapshotMarker: nil,
               skipReason: "Lifecycle marker; not used in planning or coach reasoning."),
+        Probe(name: "statedFields", mutateForHash: nil, mutateForSnapshot: nil,
+              snapshotMarker: nil,
+              skipReason: "Bookkeeping over which OTHER fields the user has explicitly set vs left on a default (ProfileField.swift). Drives the Week-tab assumption chips and the Profile setup checklist. Deliberately absent from planInputsHash: it changes no generator input, and that hash doubles as the deterministicPick seed, so including it would reshuffle the whole week the first time someone opened an editor."),
 
         // Append-only history — sessions / soreness / feedback are state, not
         // config. Coach reads them via its OWN params (recentSessions,

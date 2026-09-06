@@ -53,13 +53,29 @@ struct TrainingMemory: Codable {
     var liftDaysPerWeek: Int = 3
 
     // Resources / level
-    var equipment: [Equipment] = [.bodyweight]
+    /// Defaults to a full gym rather than bodyweight-only. Under the old
+    /// mandatory equipment step every user was forced past this value, so the
+    /// conservative default was free. Now that the step is gone, a silent user
+    /// LIVES on it — and a bodyweight-only default would quietly hand a gym
+    /// member a bodyweight week forever. Defaults have to be most-likely, not
+    /// most-conservative, once nothing forces the question.
+    var equipment: [Equipment] = [.fullGym]
     var experience: ExperienceLevel = .beginner
     /// Current condition vs experience ceiling. Defaults to .freshStart for
     /// new installs — the LLM coach uses this as a permanent profile fact
     /// to dial early-session conservatism. Build 72+: no deterministic
     /// preset / time window; the coach just reads the signal and reasons.
     var startingState: StartingState = .freshStart
+
+    /// Raw values of the `ProfileField`s the user has explicitly set, as opposed
+    /// to the ones still running on their default. See ProfileField.swift — the
+    /// gate only asks sport + season now, so everything else ships defaulted and
+    /// this is what tells the two apart.
+    ///
+    /// Stored as raw strings (not `Set<ProfileField>`) so an unknown key written
+    /// by a newer build round-trips through an older one instead of failing the
+    /// decode. Deliberately NOT in `planInputsHash`.
+    var statedFields: Set<String> = []
 
     // MARK: - Sensitive (health-adjacent)
     //
@@ -148,6 +164,7 @@ struct TrainingMemory: Codable {
         case sessionMinutes, liftDaysPerWeek
         case equipment, experience
         case startingState
+        case statedFields
         case age, gender
         case heightCm, weightKg, usesImperial
         case bodyWeightLog, bodyCompositionLog
@@ -197,6 +214,13 @@ struct TrainingMemory: Codable {
         self.equipment       = (try? c.decode([Equipment].self,    forKey: .equipment))       ?? [.bodyweight]
         self.experience      = (try? c.decode(ExperienceLevel.self, forKey: .experience))     ?? .beginner
         self.startingState   = (try? c.decode(StartingState.self,  forKey: .startingState))   ?? .freshStart
+        // Absent for every save written before the gate was cut. Those users
+        // answered the full questionnaire, so treat all fields as stated —
+        // otherwise they'd be shown assumption chips for values they picked
+        // by hand. Migration is one-way and self-healing: a real edit stamps
+        // the field again.
+        self.statedFields    = (try? c.decodeIfPresent(Set<String>.self, forKey: .statedFields))
+            ?? Set(ProfileField.allCases.map(\.rawValue))
         self.age             =  try? c.decodeIfPresent(Int.self,    forKey: .age)
         self.gender          =  try? c.decodeIfPresent(Gender.self, forKey: .gender)
         self.heightCm        =  try? c.decodeIfPresent(Int.self,    forKey: .heightCm)
@@ -248,6 +272,7 @@ struct TrainingMemory: Codable {
         try c.encode(equipment,       forKey: .equipment)
         try c.encode(experience,      forKey: .experience)
         try c.encode(startingState,   forKey: .startingState)
+        try c.encode(statedFields,    forKey: .statedFields)
         try c.encodeIfPresent(age,    forKey: .age)
         try c.encodeIfPresent(gender, forKey: .gender)
         try c.encodeIfPresent(heightCm, forKey: .heightCm)

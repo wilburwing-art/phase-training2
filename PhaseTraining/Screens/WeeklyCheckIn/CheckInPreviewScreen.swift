@@ -64,7 +64,11 @@ struct CheckInPreviewScreen: View {
     }
 }
 
-// MARK: - Day row (mirrors OnboardingPlanPreviewScreen's private DayPreviewRow)
+// MARK: - Day row
+//
+// Had a twin in onboarding's plan-preview screen until that step was cut. This
+// is now the only week-preview row in the app; the onboarding reveal moved to
+// the live Week tab.
 
 private struct DayPreviewRow: View {
     let day: DayPlan

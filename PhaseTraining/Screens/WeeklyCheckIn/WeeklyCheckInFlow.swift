@@ -87,7 +87,8 @@ enum WeeklyCheckInStep: Int, CaseIterable {
     case feedback
     case preview
 
-    /// Treated like onboarding's planPreview step — hide the counter.
+    /// Post-questionnaire preview step — hide the counter. (Onboarding had the
+    /// same treatment for its own plan-preview step, before that step was cut.)
     var humanIndex: Int {
         (self == .preview || self == .missed) ? 0 : rawValue
     }

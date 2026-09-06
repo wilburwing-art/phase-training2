@@ -67,6 +67,7 @@ struct ProfileScreen: View {
     @State private var presentingPlateCalculator = false
     #if DEBUG
     @State private var presentingMuscleChipGenerator = false
+    @State private var presentingSetupChecklist = false
     #endif
 
     // Tap-to-edit alert for the two number fields (build 67). Still triggered
@@ -112,6 +113,13 @@ struct ProfileScreen: View {
                     planTuningSection
 
                     settingsGroup("TRAINING SETUP") {
+                        // Leads the group: it's the answer to "what is my plan
+                        // actually built on", and on a fresh install most of
+                        // these rows are still defaults the user never chose.
+                        SettingsRow(label: "Plan setup",
+                                    value: setupChecklistSummary,
+                                    icon: "checklist",
+                                    action: { presentingSetupChecklist = true })
                         SettingsRow(label: "Sports",
                                     value: sportsSummary,
                                     icon: "figure.run",
@@ -301,6 +309,9 @@ struct ProfileScreen: View {
                 .environmentObject(subStore)
         }
         #if DEBUG
+        .sheet(isPresented: $presentingSetupChecklist) {
+            SetupChecklistSheet().environmentObject(store)
+        }
         .sheet(isPresented: $presentingMuscleChipGenerator) {
             MuscleChipGeneratorView()
         }
@@ -520,6 +531,9 @@ struct ProfileScreen: View {
             case .sessionMinutes: mem.sessionMinutes = clamped
             case .liftDays:       mem.liftDaysPerWeek = clamped
             }
+            // Both halves of the availability assumption live behind one chip,
+            // so setting either retires it.
+            mem.markStated(.availability)
         }
     }
 

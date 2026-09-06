@@ -39,7 +39,10 @@ final class BackupManagerTests: XCTestCase {
         memoryStore.update { mem in
             mem.experience = .advanced
             mem.age = 28
-            mem.equipment = [.fullGym]
+            // Deliberately NOT the default ([.fullGym]) — a fixture equal to the
+            // default can't tell a real restore apart from a fresh memory, so the
+            // assertion below would pass on a restore that silently did nothing.
+            mem.equipment = [.dumbbells, .pullUpBar]
         }
         memoryStore.completeOnboarding()
 
@@ -75,7 +78,7 @@ final class BackupManagerTests: XCTestCase {
 
         XCTAssertEqual(restoredMemory.memory.experience, .advanced)
         XCTAssertEqual(restoredMemory.memory.age, 28)
-        XCTAssertEqual(restoredMemory.memory.equipment, [.fullGym])
+        XCTAssertEqual(restoredMemory.memory.equipment, [.dumbbells, .pullUpBar])
         XCTAssertTrue(restoredMemory.isOnboarded)
 
         XCTAssertNotNil(restoredSession.active)

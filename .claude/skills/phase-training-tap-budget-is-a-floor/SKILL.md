@@ -24,10 +24,11 @@ attachment. The references are arithmetically correct — verified against sourc
 
 11 flows (2026-06-01, all verified passing on sim, actual==reference):
 in-workout 6 · full 10 · swap 2 · planned-full 9 · per-set 14 · add-exercise 2 ·
-edit-then-start 3 · discard 3 · log-sport 2 · onboarding 12 · weekly-check-in 6.
+edit-then-start 3 · discard 3 · log-sport 2 · onboarding 6 · weekly-check-in 6.
 (onboarding: 13→12 on 2026-06-27 with the goal/focus step deleted, back UP to 13
-when the consent pick was added, then 13→12 on 2026-09-06 with the era-affinity
-step deleted. It has been wrong in this file twice — read the test, not this line.)
+when the consent pick was added, 13→12 on 2026-09-06 with era-affinity deleted,
+then 12→6 the same day when the gate was cut to sport + season. It has been
+wrong in this file twice — read the test, not this line.)
 References derive from a `Seed` enum (not literals) + a count-invariant guard
 (`XCTAssertEqual` on what the loop drove) so a seed change fails loud. CI:
 `TAP-BUDGET-JSON` markers → `scripts/quality/tap_budget_diff.py` vs
@@ -91,15 +92,17 @@ downstream):
   `onboarding-continue-\(step)` so each tap waits for the actual step.
 - **Default-selection deselect.** Tapping the "first option" of a gated step
   that ships PRE-SELECTED toggles it OFF → Continue disabled → no-op → stuck.
-  Check `TrainingMemory` defaults first: `sports=[]` (must pick), but
-  `equipment=[.bodyweight]` is pre-set — the minimal path advances on the
-  default. That's why onboarding is 12 taps (11 advances + 1 sport selection),
-  not the ~22 a naive walk assumes.
+  Check `TrainingMemory` defaults first: `sports=[]` is the only field the gate
+  still forces a pick on. Consent is the other gated step — neither option is
+  pre-selected, by design (a pre-checked consent box is not consent). That is
+  why onboarding is 6 taps: 4 advances + 1 sport selection + 1 consent pick.
 
 ## Step add/remove desyncs the walk — invisible under unit-green (2026-06-27)
 
-The onboarding flow is `welcome → sports → sportSeasons → availability →
-equipment → experience → about → constraints → coachConsent → planPreview`. `testTapBudget_onboardingToFirstPlan` taps `onboarding-continue-\(step)`
+The onboarding flow is `welcome → sports → sportSeasons → coachConsent`. That
+is the whole gate: everything else is defaulted and corrected from Profile (see
+`docs/PLAN-onboarding-as-tutorial.md`). The consent step's Continue is the
+commit — there is no plan-preview Accept after it. `testTapBudget_onboardingToFirstPlan` taps `onboarding-continue-\(step)`
 for each. Deleting/reordering an `OnboardingStep` (e.g. the goal/focus step,
 removed M2b) **silently leaves this UI test red** — the UITest target is separate
 and slow, so the whole unit suite stays green and CI/local "tests pass" hides it.
@@ -110,8 +113,8 @@ test (`-only-testing:PhaseTrainingUITests/TapBudgetTests/testTapBudget_onboardin
 
 Three more places carry the same count and are easy to miss: the doc comment
 above the test, `PhaseTrainingUITests/tap-budget-baseline.json`
-(`"onboarding-to-first-plan"`), and `OnboardingPlanDetailUITests`, which walks
-the same step ids. Removing a step ALSO shifts every later `OnboardingStep`
+(`"onboarding-to-first-plan"`), and `OnboardingLandingUITests`, which walks the
+same step ids. Removing a step ALSO shifts every later `OnboardingStep`
 rawValue down by one, which strands a `pt_onboarding_step` saved by an older
 build — `OnboardingFlow.resumeStep(rawValue:)` clamps past-the-end values to the
 last step so a nearly-finished draft isn't dropped.
