@@ -143,9 +143,10 @@ struct WeekScreen: View {
             // asks sport + season, so on a fresh install the rest of the week is
             // built on defaults; this strip admits which ones and routes each to
             // its real Profile editor. Empty (and gone) once nothing is assumed.
+            // No bottom padding here: the row owns its own trailing space so
+            // it collapses to nothing once every field is stated.
             PlanAssumptionsRow()
                 .padding(.horizontal, 16)
-                .padding(.bottom, 8)
 
             let issues = planStore.currentValidationIssues(memory: memory.memory)
             if !issues.isEmpty {

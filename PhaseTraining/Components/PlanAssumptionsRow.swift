@@ -26,8 +26,14 @@ struct PlanAssumptionsRow: View {
 
     var body: some View {
         let assumed = store.memory.assumedFields
-        if !assumed.isEmpty {
-            VStack(alignment: .leading, spacing: 6) {
+        // The container and its `.sheet` are UNCONDITIONAL; only the chips are
+        // conditional. Putting the sheet inside the `if` looked tidier and was
+        // wrong: the editors retire their own chip on write, so setting the
+        // last assumption emptied `assumed`, removed the view owning the
+        // presentation, and tore the sheet away mid-edit. An empty VStack is
+        // zero-height, so nothing is spent on the settled case.
+        VStack(alignment: .leading, spacing: 6) {
+            if !assumed.isEmpty {
                 Text("ASSUMED — TAP TO CHANGE")
                     .styled(.micro)
                     .foregroundStyle(Color.ink3)
@@ -39,12 +45,13 @@ struct PlanAssumptionsRow: View {
                     }
                     .padding(.horizontal, 1)   // keeps the stroke off the clip edge
                 }
+                Spacer().frame(height: 8)
             }
-            .accessibilityIdentifier("plan-assumptions-row")
-            .sheet(item: $editing) { field in
-                ProfileFieldEditorHost(field: field)
-                    .environmentObject(store)
-            }
+        }
+        .accessibilityIdentifier("plan-assumptions-row")
+        .sheet(item: $editing) { field in
+            ProfileFieldEditorHost(field: field)
+                .environmentObject(store)
         }
     }
 
