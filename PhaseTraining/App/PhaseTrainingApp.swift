@@ -100,6 +100,21 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-ski-primary") {
             Self.seedSkiPrimary()
         }
+        //   --seed-progress-demo → six saved sessions across five weeks with
+        //     progressing weights, plus a body-weight and a body-composition
+        //     log, so every card on the Progress tab has real data. Progress
+        //     gates PER CARD, so a seed that populates only sessions would
+        //     leave the body cards hidden and a smoke test blind to them.
+        if ProcessInfo.processInfo.arguments.contains("--seed-progress-demo") {
+            Self.seedProgressDemo()
+        }
+        //   --seed-body-only-demo → body-weight + body-composition logs and
+        //     NO saved sessions. Progress gates per card rather than per tab
+        //     precisely for this user; the whole screen used to collapse to
+        //     "Nothing yet." and hide data they had actually entered.
+        if ProcessInfo.processInfo.arguments.contains("--seed-body-only-demo") {
+            Self.seedBodyOnlyDemo()
+        }
         #endif
         // Upsize URLCache so coach.db image bytes survive across app launches.
         // The catalog serves ~555 images from raw.githubusercontent.com; the
@@ -328,6 +343,120 @@ struct PhaseTrainingApp: App {
         if let data = try? enc.encode(m) {
             UserDefaults.standard.set(data, forKey: "pt_training_memory")
         }
+    }
+
+    /// --seed-progress-demo: a populated Progress tab.
+    ///
+    /// Writes six saved sessions across the last five weeks with progressing
+    /// weights (so sessions/wk, volume/wk, top exercises, PR feed and recent
+    /// sessions all have content), a bodyweight so the strength-ratios card
+    /// un-hides, and body-weight + body-composition logs so those two cards
+    /// render as well.
+    ///
+    /// Sessions go in through the LEGACY `pt_sessions` UserDefaults key
+    /// rather than UserDatabase directly: SessionStore.init imports that blob
+    /// into user.db on first launch, and --ui-test-reset (which wipes both
+    /// stores) clears the migration flag, so the import runs. That reuses the
+    /// shipped path instead of a second write path that could drift from it.
+    ///
+    /// Exercise names resolve in coach.db so the muscle-balance and
+    /// strength-ratio cards aren't empty.
+    private static func seedProgressDemo() {
+        let cal = Calendar.current
+        let now = Date()
+
+        // (days back, bench, squat) — monotonically increasing so every
+        // session after the first lands PRs.
+        let progression: [(Int, Int, Int)] = [
+            (32, 135, 205),
+            (24, 145, 215),
+            (16, 155, 225),
+            (10, 165, 235),
+            (4,  175, 245),
+            (1,  185, 255),
+        ]
+
+        let sessions: [SavedSession] = progression.map { daysBack, bench, squat in
+            let start = cal.date(byAdding: .day, value: -daysBack, to: now) ?? now
+            return SavedSession(
+                templateId: "seed-progress",
+                name: "Upper + Lower",
+                category: "Full body",
+                startTime: start,
+                exercises: [
+                    seedLoggedExercise(name: "Barbell Bench Press", weight: bench, reps: 5, sets: 3),
+                    seedLoggedExercise(name: "Barbell Back Squat", weight: squat, reps: 5, sets: 3),
+                ],
+                feel: "Right", note: nil,
+                endTime: start.addingTimeInterval(3300), duration: 3300
+            )
+        }
+
+        let enc = JSONEncoder()
+        enc.dateEncodingStrategy = .secondsSince1970
+        if let data = try? enc.encode(sessions) {
+            UserDefaults.standard.set(data, forKey: "pt_sessions")
+            // Belt and braces: --ui-test-reset already clears this, but a run
+            // without it would otherwise skip the import and show an empty tab.
+            UserDefaults.standard.removeObject(forKey: "pt_sessions_migrated_v1")
+        }
+
+        var memory = TrainingMemory()
+        memory.liftDaysPerWeek = 3
+        memory.gender = .male
+        memory.weightKg = BodyMetrics.lbToKg(180)
+        memory.bodyWeightLog = seedBodyWeightLog()
+        memory.bodyCompositionLog = seedBodyCompositionLog()
+        writeSeedMemory(memory)
+    }
+
+    /// --seed-body-only-demo: the body logs from `seedProgressDemo` with no
+    /// saved sessions, so the Progress tab must render its body cards rather
+    /// than the empty state.
+    private static func seedBodyOnlyDemo() {
+        var memory = TrainingMemory()
+        memory.liftDaysPerWeek = 3
+        memory.bodyWeightLog = seedBodyWeightLog()
+        memory.bodyCompositionLog = seedBodyCompositionLog()
+        writeSeedMemory(memory)
+    }
+
+    private static func seedBodyWeightLog() -> [BodyWeightEntry] {
+        let cal = Calendar.current
+        let now = Date()
+        return [
+            BodyWeightEntry(date: cal.date(byAdding: .day, value: -30, to: now) ?? now, weightKg: 82.0),
+            BodyWeightEntry(date: cal.date(byAdding: .day, value: -16, to: now) ?? now, weightKg: 81.4),
+            BodyWeightEntry(date: cal.date(byAdding: .day, value: -2, to: now) ?? now, weightKg: 81.6),
+        ]
+    }
+
+    private static func seedBodyCompositionLog() -> [BodyCompositionEntry] {
+        let cal = Calendar.current
+        let now = Date()
+        return [
+            BodyCompositionEntry(date: cal.date(byAdding: .day, value: -30, to: now) ?? now,
+                                 bodyFatPercent: 19.4, leanMassKg: 66.1, method: "DEXA"),
+            // Newest reading carries lean only — the card's latest-non-nil
+            // rule must still surface the BF stat above its sparkline.
+            BodyCompositionEntry(date: cal.date(byAdding: .day, value: -2, to: now) ?? now,
+                                 leanMassKg: 66.9, method: "InBody"),
+        ]
+    }
+
+    private static func seedLoggedExercise(name: String,
+                                           weight: Int,
+                                           reps: Int,
+                                           sets: Int) -> LoggedExercise {
+        LoggedExercise(
+            id: name, name: name, type: "Barbell", unit: "lbs",
+            targetSets: sets, targetReps: reps, rest: 120,
+            sets: (1...sets).map { i in
+                LoggedSet(num: i, weight: "\(weight)", reps: "\(reps)",
+                          rpe: "8", done: true, isWarmup: false)
+            },
+            prevSets: []
+        )
     }
 
     /// --seed-ski-primary: ski-primary memory with NO support pattern, so the
