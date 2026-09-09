@@ -51,7 +51,7 @@ final class SorenessReachabilityUITests: XCTestCase {
     /// pill only in the populated branch and a new user could not reach it.
     func testSorenessCheckInIsReachableAfterASessionExists() throws {
         let app = XCUIApplication()
-        app.launchArguments += ["--ui-test-onboarded", "--ui-test-reset", "--seed-plan-demo"]
+        app.launchArguments += ["--ui-test-onboarded", "--ui-test-reset", "--seed-progress-demo"]
         app.launch()
 
         let progress = app.tabBars.buttons["Progress"]
