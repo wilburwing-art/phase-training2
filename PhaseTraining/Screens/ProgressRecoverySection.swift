@@ -32,14 +32,8 @@ struct ProgressRecoverySection: View {
     // MARK: - Top stats
 
     private func topStats(rows: [MuscleFreshness.Row]) -> some View {
-        let daysSince = daysSinceLastWorkout()
-        // Count the SAME rows the list below renders. This counted all 80
-        // muscle_groups rows — including muscles never trained, which default
-        // to freshness 1.0 — while the list is filtered to the 19 mainSlugs.
-        // The headline routinely read 70+ and was unrelated to what it labelled.
-        let freshCount = rows
-            .filter { Self.mainSlugs.contains($0.slug) && $0.freshness >= 1.0 }
-            .count
+        let daysSince = Self.daysSinceLastWorkout(sessions: store.savedSessions)
+        let freshCount = Self.freshMainMuscleCount(rows: rows)
         return HStack(spacing: 8) {
             statBlock(
                 value: daysSince.map { "\($0)" } ?? "—",
@@ -187,12 +181,7 @@ struct ProgressRecoverySection: View {
     }
 
     private func subtitleFor(row: MuscleFreshness.Row) -> String {
-        guard let days = row.daysSinceLastWorked else {
-            return "No recent exercises"
-        }
-        if days == 0 { return "Trained today" }
-        if days == 1 { return "1 day ago" }
-        return "\(days) days ago"
+        Self.subtitle(for: row)
     }
 
     private func freshnessColor(_ f: Double) -> Color {
@@ -207,6 +196,31 @@ struct ProgressRecoverySection: View {
     private func recoveryHighlights(
         from rows: [MuscleFreshness.Row]
     ) -> [String: BodyAnatomyView.HighlightIntensity] {
+        Self.highlights(from: rows)
+    }
+
+    // MARK: - Pure section math
+    //
+    // Statics, not instance methods, so ProgressRecoverySectionTests can
+    // reach them — the section had no coverage at all, including the
+    // freshMainMuscleCount filter that fixed a headline reading 70+.
+
+    /// The "FRESH MUSCLE GROUPS" headline.
+    ///
+    /// Counts the SAME rows the list below renders. It once counted all 80
+    /// muscle_groups rows — including muscles never trained, which default to
+    /// freshness 1.0 — while the list was filtered to `mainSlugs`. The
+    /// headline routinely read 70+ and was unrelated to what it labelled.
+    static func freshMainMuscleCount(rows: [MuscleFreshness.Row]) -> Int {
+        rows.filter { mainSlugs.contains($0.slug) && $0.freshness >= 1.0 }.count
+    }
+
+    /// Silhouette highlight map. Fresh muscles (`.none`) are omitted rather
+    /// than passed through, so the body renders unpainted where there's
+    /// nothing to warn about.
+    static func highlights(
+        from rows: [MuscleFreshness.Row]
+    ) -> [String: BodyAnatomyView.HighlightIntensity] {
         var out: [String: BodyAnatomyView.HighlightIntensity] = [:]
         for row in rows where row.intensity != .none {
             out[row.slug] = row.intensity
@@ -214,13 +228,27 @@ struct ProgressRecoverySection: View {
         return out
     }
 
-    private func daysSinceLastWorkout() -> Int? {
-        guard let last = store.savedSessions.map(\.startTime).max() else { return nil }
-        let cal = Calendar.current
-        let days = cal.dateComponents([.day],
-                                      from: cal.startOfDay(for: last),
-                                      to: cal.startOfDay(for: Date())).day ?? 0
+    /// Whole calendar days since the most recent session STARTED. Nil with no
+    /// history. Clamped at 0 so a future-dated session (an import, or a clock
+    /// change) reads "0 days" rather than a negative headline.
+    static func daysSinceLastWorkout(sessions: [SavedSession],
+                                     now: Date = Date(),
+                                     calendar: Calendar = .current) -> Int? {
+        guard let last = sessions.map(\.startTime).max() else { return nil }
+        let days = calendar.dateComponents([.day],
+                                           from: calendar.startOfDay(for: last),
+                                           to: calendar.startOfDay(for: now)).day ?? 0
         return max(0, days)
+    }
+
+    /// Per-muscle row subtitle.
+    static func subtitle(for row: MuscleFreshness.Row) -> String {
+        guard let days = row.daysSinceLastWorked else {
+            return "No recent exercises"
+        }
+        if days == 0 { return "Trained today" }
+        if days == 1 { return "1 day ago" }
+        return "\(days) days ago"
     }
 
     /// Which silhouette actually shows a given muscle. nil = visible from
