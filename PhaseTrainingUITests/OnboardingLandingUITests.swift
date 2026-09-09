@@ -40,10 +40,17 @@ final class OnboardingLandingUITests: XCTestCase {
                         || app.buttons["week-day-row-0"].waitForExistence(timeout: 1),
                       "the Week tab should render a generated week")
 
-        // The gate asked sport + season only, so equipment / schedule /
-        // experience are all still defaults and must be admitted as such.
-        XCTAssertTrue(app.otherElements["plan-assumptions-row"].waitForExistence(timeout: 5),
-                      "assumed defaults should be surfaced on the Week tab")
+        // Assert on the row's marker text rather than the identifier query:
+        // the identifier sits on a plain VStack, which on iOS 26 does not
+        // resolve through app.otherElements (same query-mismatch class as
+        // the body-weight sheet). The marker text is the visible thing the
+        // assertion is really about.
+        let assumedMarker = app.staticTexts["ASSUMED — TAP TO CHANGE"]
+        XCTAssertTrue(assumedMarker.waitForExistence(timeout: 5)
+                        || app.otherElements["plan-assumptions-row"].exists
+                        || app.buttons["plan-assumptions-row"].exists,
+                      "assumed defaults should be surfaced on the Week tab"
+                        + " staticTexts: \(app.staticTexts.allElementsBoundByIndex.prefix(30).map { "\($0.identifier)|\($0.label)" }.joined(separator: ", "))")
         let chip = app.buttons["assumption-chip-equipment"]
         XCTAssertTrue(chip.waitForExistence(timeout: 3), "equipment should read as assumed")
         chip.tap()
