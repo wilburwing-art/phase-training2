@@ -42,10 +42,12 @@ private struct TypeSpec {
     /// there.
     let relativeTo: Font.TextStyle
 
-    var font: Font { Font.custom(fontName, size: size, relativeTo: relativeTo) }
+    var font: Font {
+        Font.custom(fontName, size: ScreenScale.scaled(size), relativeTo: relativeTo)
+    }
 
-    /// Tracking in points (em ratio × size).
-    var tracking: CGFloat { trackingEm * size }
+    /// Tracking in points (em ratio × size, scaled with the size).
+    var tracking: CGFloat { trackingEm * ScreenScale.scaled(size) }
 }
 
 // MARK: - Type styles with tracking
@@ -88,8 +90,12 @@ enum TypeStyle {
     /// from the table, which the test would catch.
     var relativeTo: Font.TextStyle { spec.relativeTo }
 
-    /// The design size at the default content size category.
+    /// The design size at the default content size category (unscaled —
+    /// tests pin these literals; the scaled value is what the font carries).
     var designSize: CGFloat { spec.size }
+
+    /// The size after screen-width scaling — what the rendered font uses.
+    var scaledSize: CGFloat { ScreenScale.scaled(spec.size) }
 
     /// Tracking in points (em ratio × size).
     var tracking: CGFloat { spec.tracking }
@@ -102,6 +108,48 @@ enum TypeStyle {
     /// `.textCase(.uppercase)`); StyleGuidePreview reads this flag to
     /// uppercase its samples the same way.
     var isUppercase: Bool { self == .micro }
+}
+
+// MARK: - Screen-width scaling (Option 2, 2026-09-09)
+//
+// The owner asked for global device scaling: a bigger iPhone should render
+// bigger type. iOS never does this natively (a larger device is more points
+// of canvas at the same point size), so this is a deliberate departure from
+// platform convention, applied only through the token system.
+//
+// How it works: every size the token table emits is multiplied by a factor
+// derived from the device's screen width, anchored so the reference devices
+// render exactly the design sizes. The factor is CLAMPED to a narrow band —
+// text that grows much faster than the fixed boxes around it (hardcoded
+// paddings, frames, button heights) is what produces clipping, so the clamp
+// is the safety valve the audit demanded.
+//
+// Known limitation, accepted by the owner: the ~130 raw
+// `.font(.custom(...))` call sites bypass `.styled()` and therefore do NOT
+// scale. Migrating them is a separate, already-scoped task
+// (audits/2026-09-06-week-tab-device-scaling.md, Option 3).
+enum ScreenScale {
+    /// Reference width: iPhone 16 / 15 / 14 logical width. Below it, factor
+    /// shrinks proportionally (smaller devices get slightly smaller type);
+    /// above it, factor grows, clamped.
+    private static let referenceWidth: CGFloat = 393
+
+    /// Clamp band. 1.0-1.15 means a 16 Pro Max (440pt) gets at most +9% type,
+    /// and an SE (375pt) gets -4.6% — both well inside what fixed-size boxes
+    /// can absorb without clipping.
+    private static let minFactor: CGFloat = 0.95
+    private static let maxFactor: CGFloat = 1.15
+
+    /// Memoized: UIScreen.main is deprecated-ish and not cheap; read it once.
+    static let factor: CGFloat = {
+        let width = UIScreen.main.bounds.width
+        guard width > 0 else { return 1 }
+        return min(maxFactor, max(minFactor, width / referenceWidth))
+    }()
+
+    /// Scale a design size. Public so WeekScreen (the one elastic layout)
+    /// can scale its row contents consistently with the type.
+    static func scaled(_ size: CGFloat) -> CGFloat { size * factor }
 }
 
 // Font statics derived from the TypeSpec table above (sizes live there only).

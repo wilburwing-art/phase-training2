@@ -74,7 +74,7 @@ struct WeekScreen: View {
                     .styled(.micro)
                     .foregroundStyle(Color.accent)
                 Text("No plan yet.")
-                    .font(.custom("SpaceGrotesk-SemiBold", size: 32))
+                    .font(.custom("SpaceGrotesk-SemiBold", size: ScreenScale.scaled(32)))
                     .tracking(-0.025 * 32)
                     .foregroundStyle(Color.ink)
                 Text("Generate a plan from your profile to get started.")
@@ -87,9 +87,9 @@ struct WeekScreen: View {
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "sparkles")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.system(size: ScreenScale.scaled(13), weight: .semibold))
                         Text("Generate plan")
-                            .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+                            .font(.custom("SpaceGrotesk-SemiBold", size: ScreenScale.scaled(15)))
                     }
                     .foregroundStyle(Color.accentInk)
                     .padding(.horizontal, 24)
@@ -108,7 +108,7 @@ struct WeekScreen: View {
                     .styled(.micro)
                     .foregroundStyle(Color.accent)
                 Text("No plan yet.")
-                    .font(.custom("SpaceGrotesk-SemiBold", size: 32))
+                    .font(.custom("SpaceGrotesk-SemiBold", size: ScreenScale.scaled(32)))
                     .tracking(-0.025 * 32)
                     .foregroundStyle(Color.ink)
                 Text("Complete onboarding to generate your week.")
@@ -192,7 +192,7 @@ struct WeekScreen: View {
                 SeasonPhaseBadge(style: .compact, surface: "week")
             }
             Text(plan.rangeLabel)
-                .font(.custom("SpaceGrotesk-SemiBold", size: 26))
+                .font(.custom("SpaceGrotesk-SemiBold", size: ScreenScale.scaled(26)))
                 .tracking(-0.025 * 26)
                 .foregroundStyle(Color.ink)
             HStack(spacing: 8) {
@@ -241,7 +241,7 @@ struct WeekScreen: View {
         Button(action: action) {
             HStack(spacing: 5) {
                 Image(systemName: icon)
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.system(size: ScreenScale.scaled(10), weight: .semibold))
                 Text(title)
                     .styled(.monoXS)
             }
@@ -423,7 +423,7 @@ private struct DayRow: View {
                     .styled(.micro)
                     .foregroundStyle(isToday ? Color.accent : Color.ink3)
                 Text(dayNumber)
-                    .font(.custom("JetBrainsMono-SemiBold", size: 18))
+                    .font(.custom("JetBrainsMono-SemiBold", size: ScreenScale.scaled(18)))
                     .foregroundStyle(isToday ? Color.ink : Color.ink2)
             }
             .frame(width: 36)
@@ -444,7 +444,7 @@ private struct DayRow: View {
 
             if day.protected {
                 Image(systemName: "lock.fill")
-                    .font(.system(size: 10))
+                    .font(.system(size: ScreenScale.scaled(10)))
                     .foregroundStyle(Color.ink3)
             }
         }
@@ -520,7 +520,7 @@ private struct SupportBadge: View {
     var body: some View {
         HStack(spacing: 3) {
             Image(systemName: "figure.climbing")
-                .font(.system(size: 9, weight: .semibold))
+                .font(.system(size: ScreenScale.scaled(9), weight: .semibold))
             Text(shortLabel)
                 .styled(.micro)
         }
