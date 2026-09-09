@@ -6,11 +6,31 @@ first.
 
 ## Read this first
 
-**Nothing on this branch has been compiled or run.** It was authored in a Linux
-container with no Swift toolchain and no `xcodebuild`. Every claim about
-behavior is from reading the code, not from executing it.
+**(Resolved 2026-09-09.)** The branch has now been compiled and run on the
+iPhone 17 Pro simulator. The verification pass found and fixed two things,
+both committed on this branch:
 
-So the first job is not to keep building. It is:
+- `aef7973` — the branch did not compile: `c666ade` deleted
+  `OnboardingAboutScreen.swift` without noticing it was the only home of
+  `BodyMetricsEditor`, which `AboutYouEditorSheet` still instantiates. The
+  editor is extracted unchanged to its own file (also closing the 08-23
+  backlog item). BUILD SUCCEEDED; 1058/1058 unit tests pass.
+- `2cf3d7e` — one UI test asserted through `app.otherElements` on a plain
+  VStack identifier, which iOS 26 does not resolve. The row rendered and
+  its chips worked; only the query missed. Full UI suite now 42/42.
+
+Remaining unverified: the small-device squeeze risk below (needs an SE
+or a small simulator) and the TapBudget baselines, which the suite runs
+but whose calibration was authored blind. Everything else below is
+history of what the author believed before verification; the two fixes
+above supersede the "first job" instruction.
+
+**(Original text, pre-verification.)** Nothing on this branch had been
+compiled or run. It was authored in a Linux container with no Swift
+toolchain and no `xcodebuild`. Every claim about behavior was from
+reading the code, not from executing it.
+
+So the first job was not to keep building. It was:
 
 ```
 xcodegen generate      # REQUIRED: 6 files added, 14 deleted, pbxproj is gitignored
