@@ -3,12 +3,13 @@
 // Two segments:
 //   - Exercises: 7-tile LazyVGrid landing (LibraryTile cases). Tap a tile to
 //     push LibraryMuscleScreen, which owns search + secondary filters scoped
-//     to that muscle group. Replaces the prior chip-strip + flat 551-row
-//     list, which was a clutter firehose. Custom workouts stay flat
-//     (Workouts segment) per intent — they're user-built, scrolled
-//     deliberately, not browsed.
-//   - Routines:  custom routines list + manual-build CTA (coach-driven
-//                generation lives behind the bubble, not here).
+//     to that muscle group.
+//   - Workouts:  custom routines strip at top, then category tile grids that
+//                drill into WorkoutCategoryScreen — BY SPORT (tiles built at
+//                runtime from routine_sports/sport_categories) and BY GOAL
+//                (WorkoutGoalTile over routines.goal, with a catch-all
+//                Mobility & Recovery tile). Search results stay flat across
+//                both sources.
 //
 // Reads CoachDatabase.listExercises / listRoutines / goalCounts. Pure read
 // view — picking a row opens a detail sheet; no mutations.
@@ -36,6 +37,8 @@ struct LibraryScreen: View {
     @State private var query: String = ""
     @State private var detailExercise: Exercise? = nil
     @State private var editingRoutine: CustomRoutine? = nil
+    @State private var sportTiles: [WorkoutSportTile] = []
+    @State private var detailWorkoutScope: WorkoutCategoryScreen.Scope? = nil
     /// Set by the edit sheet's "Start workout" button (via onStartNow); the
     /// sheet dismisses itself and we run the start in `.sheet(onDismiss:)` so
     /// the in-progress-session alert isn't racing the sheet's dismissal.
@@ -90,6 +93,9 @@ struct LibraryScreen: View {
             .navigationDestination(for: LibraryTile.self) { tile in
                 LibraryMuscleScreen(tile: tile)
             }
+            .navigationDestination(item: $detailWorkoutScope) { scope in
+                WorkoutCategoryScreen(scope: scope)
+            }
             .sheet(item: $detailExercise) { ex in
                 ExerciseDetailSheet(exercise: ex)
             }
@@ -126,6 +132,13 @@ struct LibraryScreen: View {
                 // Exercise structs just to read `.count` off it.
                 if exerciseCount == 0 {
                     exerciseCount = CoachDatabase.shared.exerciseCount()
+                }
+                // Sport tiles for the Workouts segment grid — DB-driven so
+                // new coach.db sports surface without a Swift change.
+                if sportTiles.isEmpty {
+                    sportTiles = CoachDatabase.shared.listRoutineSports().map {
+                        WorkoutSportTile(slug: $0.slug, name: $0.name, routineCount: $0.count)
+                    }
                 }
             }
         }
@@ -362,9 +375,57 @@ struct LibraryScreen: View {
                 }
             if allCustoms.isEmpty && stockRoutines.isEmpty {
                 routinesEmptyState
+            } else if query.isEmpty {
+                // Tile landing: custom strip at top (always visible — the
+                // user's own workouts shouldn't hide behind a category),
+                // then by-sport and by-goal grids. Mirrors the Exercises
+                // segment's 7-tile design.
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 12) {
+                        if !filteredCustoms.isEmpty {
+                            workoutsSectionHeader("YOUR WORKOUTS")
+                            ForEach(filteredCustoms) { c in
+                                ExerciseTile(vm: .init(
+                                    leading: .icon(systemName: "figure.strengthtraining.traditional"),
+                                    title: c.name.isEmpty ? "Untitled workout" : c.name,
+                                    meta: customSubtitle(c),
+                                    trailing: .iconButton(
+                                        systemName: "play.fill",
+                                        accessibilityLabel: "Start workout",
+                                        onTap: { requestStart(c) }
+                                    ),
+                                    onTap: { editingRoutine = c }
+                                ))
+                                .accessibilityIdentifier("library-custom-routine-\(c.id)")
+                            }
+                        }
+                        workoutsSectionHeader("BY SPORT")
+                            .padding(.top, 12)
+                        workoutTileGrid(
+                            sportTiles.map { tile in
+                                (id: "library-tile-sport-\(tile.slug)",
+                                 label: tile.name, symbol: tile.symbol, count: tile.routineCount)
+                            },
+                            onTap: { detailWorkoutScope = .sport(sportTiles[$0]) }
+                        )
+                        workoutsSectionHeader("BY GOAL")
+                        workoutTileGrid(
+                            WorkoutGoalTile.allCases.map { tile in
+                                (id: "library-tile-goal-\(tile.rawValue)",
+                                 label: tile.label, symbol: tile.symbol, count: Int?.none)
+                            },
+                            onTap: { detailWorkoutScope = .goal(WorkoutGoalTile.allCases[$0]) }
+                        )
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                    .padding(.bottom, 32)
+                }
             } else if filteredCustoms.isEmpty && filteredStock.isEmpty {
                 searchEmptyState
             } else {
+                // Search results stay a flat list across both sources —
+                // categories are for browsing, not finding a known name.
                 ScrollView {
                     LazyVStack(spacing: 8) {
                         if !filteredCustoms.isEmpty {
@@ -405,6 +466,60 @@ struct LibraryScreen: View {
                 }
             }
         }
+    }
+
+    /// Two-column grid wrapper shared by the sport and goal tile sections.
+    /// Items carry (accessibilityID, label, symbol, optional program count)
+    /// plus a parallel action closure so the tap target wraps the tile face
+    /// in a plain Button.
+    private func workoutTileGrid(
+        _ items: [(id: String, label: String, symbol: String, count: Int?)],
+        onTap: @escaping (Int) -> Void
+    ) -> some View {
+        let columns = [
+            GridItem(.flexible(), spacing: 12),
+            GridItem(.flexible(), spacing: 12),
+        ]
+        return LazyVGrid(columns: columns, spacing: 12) {
+            ForEach(Array(items.enumerated()), id: \.element.id) { idx, item in
+                Button { onTap(idx) } label: {
+                    workoutTileFace(item.label, symbol: item.symbol, count: item.count)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier(item.id)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func workoutTileFace(_ label: String, symbol: String, count: Int?) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Image(systemName: symbol)
+                .font(.system(size: 22, weight: .regular))
+                .foregroundStyle(Color.accent)
+            Text(label)
+                .styled(.displayS)
+                .foregroundStyle(Color.ink)
+            HStack(spacing: 4) {
+                if let count {
+                    Text("\(count) \(count == 1 ? "program" : "programs")")
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                } else {
+                    Text("Browse")
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                }
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(Color.ink3)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(Color.surface)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     /// Section label between the user's own workouts and the bundled stock
@@ -501,7 +616,7 @@ struct LibraryScreen: View {
 // coach.db are reference material; the user's own copies live in
 // CustomRoutineStore. Loads the routine's exercises on appear (one indexed
 // query via CoachDatabase). Forking to a custom is a deliberate follow-up.
-private struct BundledRoutinePreviewSheet: View {
+struct BundledRoutinePreviewSheet: View {
     let row: BundledRoutineRow
     @State private var exercises: [RoutineExercise] = []
     @Environment(\.dismiss) private var dismiss

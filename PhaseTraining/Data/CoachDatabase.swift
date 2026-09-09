@@ -212,7 +212,15 @@ final class CoachDatabase {
 
     var isOpen: Bool { db != nil }
 
-    func listRoutines(search: String? = nil, goal: String? = nil) -> [BundledRoutineRow] { withLock {
+    /// - Parameters:
+    ///   - goals: pass `.some([])` for the catch-all bucket (goal IS NULL OR
+    ///     not in any tile); `.some([slugs])` for specific tiles; nil = no
+    ///     goal filter.
+    ///   - sportSlug: restricts to routines linked to that sport via
+    ///     routine_sports/sport_categories (the curated link set, not the
+    ///     free-text tags column).
+    func listRoutines(search: String? = nil, goal: String? = nil, goals: [String]? = nil,
+                      sportSlug: String? = nil) -> [BundledRoutineRow] { withLock {
         guard let db else { return [] }
         var sql = """
         SELECT r.id, r.name, r.slug, r.description, r.goal, r.difficulty, r.phase,
@@ -229,6 +237,23 @@ final class CoachDatabase {
         if goal != nil {
             clauses.append("r.goal = ?")
         }
+        if let goals {
+            if goals.isEmpty {
+                // Catch-all bucket: null goal or a goal no tile claims.
+                let known = WorkoutGoalTile.allCases.flatMap { $0.memberGoals }
+                let placeholders = known.map { _ in "?" }.joined(separator: ",")
+                clauses.append("(r.goal IS NULL OR r.goal NOT IN (\(placeholders)))")
+            } else {
+                let placeholders = goals.map { _ in "?" }.joined(separator: ",")
+                clauses.append("r.goal IN (\(placeholders))")
+            }
+        }
+        if sportSlug != nil {
+            clauses.append("""
+            r.id IN (SELECT rs.routine_id FROM routine_sports rs
+                     JOIN sport_categories s ON s.id = rs.sport_id WHERE s.slug = ?)
+            """)
+        }
         if !clauses.isEmpty { sql += " WHERE " + clauses.joined(separator: " AND ") }
         sql += " GROUP BY r.id ORDER BY r.id ASC"
 
@@ -243,6 +268,17 @@ final class CoachDatabase {
         }
         if let g = goal {
             sqlite3_bind_text(stmt, bindIdx, g, -1, SQLITE_TRANSIENT)
+            bindIdx += 1
+        }
+        if let goals {
+            let toBind = goals.isEmpty ? WorkoutGoalTile.allCases.flatMap { $0.memberGoals } : goals
+            for g in toBind {
+                sqlite3_bind_text(stmt, bindIdx, g, -1, SQLITE_TRANSIENT)
+                bindIdx += 1
+            }
+        }
+        if let sportSlug {
+            sqlite3_bind_text(stmt, bindIdx, sportSlug, -1, SQLITE_TRANSIENT)
             bindIdx += 1
         }
 
@@ -275,6 +311,34 @@ final class CoachDatabase {
         while sqlite3_step(stmt) == SQLITE_ROW {
             guard let g = text(stmt, 0) else { continue }
             out.append((g, Int(sqlite3_column_int64(stmt, 1))))
+        }
+        return out
+    } }
+
+    /// Sports that carry linked stock routines, for the Workouts segment's
+    /// "by sport" tile grid. depth <= 1 includes real sports and their
+    /// immediate parents while keeping depth-2 leaf variants (sport-lead,
+    /// bouldering-indoor) out; count >= 2 keeps singleton sports from making
+    /// orphan tiles. Ordered by routine count descending.
+    func listRoutineSports(minCount: Int = 2) -> [(slug: String, name: String, count: Int)] { withLock {
+        guard let db else { return [] }
+        let sql = """
+        SELECT s.slug, s.name, COUNT(DISTINCT rs.routine_id) AS n
+        FROM sport_categories s
+        JOIN routine_sports rs ON rs.sport_id = s.id
+        WHERE s.depth <= 1
+        GROUP BY s.id
+        HAVING n >= ?
+        ORDER BY n DESC, s.name ASC
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_int64(stmt, 1, Int64(minCount))
+        var out: [(String, String, Int)] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            guard let slug = text(stmt, 0), let name = text(stmt, 1) else { continue }
+            out.append((slug, name, Int(sqlite3_column_int64(stmt, 2))))
         }
         return out
     } }

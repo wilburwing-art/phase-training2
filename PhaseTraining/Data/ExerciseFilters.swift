@@ -301,3 +301,128 @@ struct ExerciseFilters: Hashable {
         hideOtherSports = false
     }
 }
+
+// MARK: - WorkoutTile
+
+/// Goal-grouping tiles for the Library Workouts segment's "by goal" grid.
+/// Mirrors LibraryTile's role for exercises: coarse buckets over the bundled
+/// `routines.goal` column. `other` is the catch-all — it must claim null and
+/// any goal no tile lists so no routine is orphaned (the exercise redesign
+/// hit exactly this with 19 unreachable rows).
+///
+/// The known-goal list here is duplicated inside
+/// CoachDatabase.listRoutines(goals:) when building the catch-all WHERE
+/// clause — keep the two in sync via memberGoals, which is the single source
+/// of truth for "what does a tile claim".
+enum WorkoutGoalTile: String, CaseIterable, Identifiable, Hashable {
+    case strength, prehab, power, warmUp, endurance, other
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .strength:  return String(localized: "Strength", comment: "Workout goal tile")
+        case .prehab:    return String(localized: "Prehab", comment: "Workout goal tile")
+        case .power:     return String(localized: "Power", comment: "Workout goal tile")
+        case .warmUp:    return String(localized: "Warm-up", comment: "Workout goal tile")
+        case .endurance: return String(localized: "Endurance", comment: "Workout goal tile")
+        case .other:     return String(localized: "Mobility & Recovery", comment: "Workout goal tile")
+        }
+    }
+
+    /// routines.goal values that belong to this tile. `other` claims nothing
+    /// — the DB layer expresses it as "null OR not in any tile".
+    var memberGoals: [String] {
+        switch self {
+        case .strength:  return ["strength", "direct_strength"]
+        case .prehab:    return ["prehab", "pt_rehab"]
+        case .power:     return ["power"]
+        case .warmUp:    return ["warm_up"]
+        case .endurance: return ["endurance"]
+        case .other:     return []
+        }
+    }
+
+    /// SF Symbol shown on the tile face. Same icon style across all tiles so
+    /// the grid reads as a family.
+    var symbol: String {
+        switch self {
+        case .strength:  return "dumbbell.fill"
+        case .prehab:    return "cross.case.fill"
+        case .power:     return "bolt.fill"
+        case .warmUp:    return "flame.fill"
+        case .endurance: return "heart.fill"
+        case .other:     return "leaf.fill"
+        }
+    }
+}
+
+/// "By sport" tile for the Workouts segment grid. Built at runtime from
+/// sport_categories rows that carry linked routines
+/// (CoachDatabase.listRoutineSports) — unlike WorkoutGoalTile this is NOT
+/// a static allCases enum; the slug/name come from the DB so new sports in
+/// coach.db surface without a Swift change.
+struct WorkoutSportTile: Identifiable, Hashable {
+    let slug: String
+    let name: String
+    let routineCount: Int
+
+    var id: String { slug }
+
+    /// SF Symbol per sport family. Falls back to a generic ball/figure when
+    /// no mapping matches so an unmapped sport still renders as a tile.
+    var symbol: String {
+        switch slug {
+        case "snowboarding", "alpine-skiing", "skiing":
+            return "figure.skiing.downhill"
+        case "climbing", "bouldering", "mountaineering":
+            return "figure.climbing"
+        case "tennis", "pickleball", "racquet-sports", "squash", "badminton",
+             "racquetball", "table-tennis", "padel", "beach-tennis":
+            return "figure.racquetball"
+        case "golf":
+            return "figure.golf"
+        case "soccer", "flag-football", "rugby", "lacrosse", "ultimate-frisbee",
+             "team-handball", "dodgeball-kickball", "cricket", "polo":
+            return "figure.soccer"
+        case "basketball", "volleyball", "softball", "baseball-adult":
+            return "figure.basketball"
+        case "bjj", "mma", "boxing", "judo", "karate", "muay-thai", "kickboxing",
+             "taekwondo", "wrestling":
+            return "figure.combat.sports"
+        case "running", "road-running", "trail-running", "marathon",
+             "obstacle-course-racing":
+            return "figure.run"
+        case "cycling", "road-cycling", "gravel-cycling", "mountain-biking",
+             "cyclocross":
+            return "figure.outdoor.cycle"
+        case "hiking-trekking", "backpacking", "thru-hiking", "snowshoeing":
+            return "figure.hiking"
+        case "swimming", "lap-swimming", "open-water-swimming":
+            return "figure.pool.swim"
+        case "paddle-sports", "canoeing", "kayaking", "sup", "rafting",
+             "surfing", "surf-wave-sports", "wakeboarding", "wakesurfing",
+             "kitesurfing", "wing-foiling", "bodyboarding":
+            return "figure.waterpolo"
+        case "yoga", "yoga-movement", "pilates", "tai-chi-qigong":
+            return "figure.mind.and.body"
+        case "hockey", "roller-derby", "skating-wheeled", "inline-skating":
+            return "figure.skating"
+        case "strength-fitness-sports", "powerlifting", "bodybuilding",
+             "crossfit", "olympic-weightlifting", "kettlebell-sport",
+             "strongman", "highland-games", "calisthenics":
+            return "dumbbell.fill"
+        case "equestrian", "dressage", "show-jumping", "equestrian-eventing",
+             "equestrian-trail", "equestrian-endurance", "polo":
+            return "figure.equestrian.sports"
+        case "dance-fitness", "contemporary-dance", "hip-hop-dance",
+             "ballroom-latin", "salsa-bachata", "swing-dance", "irish-dance",
+             "pole-fitness":
+            return "figure.dance"
+        case "fencing", "archery", "hang-gliding", "paragliding", "sailing-air-sports":
+            return "figure.archery"
+        default:
+            return "figure.socialsports"
+        }
+    }
+}
