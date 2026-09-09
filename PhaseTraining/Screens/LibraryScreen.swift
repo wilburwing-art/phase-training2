@@ -411,8 +411,11 @@ struct LibraryScreen: View {
                         workoutsSectionHeader("BY GOAL")
                         workoutTileGrid(
                             WorkoutGoalTile.allCases.map { tile in
-                                (id: "library-tile-goal-\(tile.rawValue)",
-                                 label: tile.label, symbol: tile.symbol, count: Int?.none)
+                                let count = tile == .other
+                                    ? CoachDatabase.shared.listRoutines(goals: []).count
+                                    : CoachDatabase.shared.listRoutines(goals: tile.memberGoals).count
+                                return (id: "library-tile-goal-\(tile.rawValue)",
+                                        label: tile.label, symbol: tile.symbol, count: count)
                             },
                             onTap: { detailWorkoutScope = .goal(WorkoutGoalTile.allCases[$0]) }
                         )
