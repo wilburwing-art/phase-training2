@@ -58,3 +58,25 @@ final class TypographyDynamicTypeTests: XCTestCase {
         }
     }
 }
+
+// MARK: - Screen-width scaling (Option 2, 2026-09-09)
+
+extension TypographyDynamicTypeTests {
+
+    /// The scale factor must stay inside the clamp band on any device, and
+    /// must be exactly 1.0 at the reference width (393pt: iPhone 16/15/14).
+    func test_screenScaleFactorIsClamped() {
+        let f = ScreenScale.factor
+        XCTAssertTrue((0.95...1.15).contains(f), "factor \(f) outside clamp band")
+    }
+
+    /// Scaled sizes derive from the design sizes: on the simulator reference
+    /// width they should be equal or close to it; on any width they must be
+    /// designSize × factor exactly (no per-style drift).
+    func test_scaledSizeTracksDesignSizeByFactor() {
+        for style in all {
+            XCTAssertEqual(style.scaledSize, style.designSize * ScreenScale.factor,
+                           accuracy: 0.01, "\(style) scaled size drifted")
+        }
+    }
+}
