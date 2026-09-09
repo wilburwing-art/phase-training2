@@ -11,6 +11,13 @@ extension ProfileScreen {
 
     // MARK: - Row summaries
 
+    /// Row value for "Plan setup" — how many plan-shaping inputs are still
+    /// running on a default rather than something the user chose.
+    var setupChecklistSummary: String {
+        let n = store.memory.assumedFields.count
+        return n == 0 ? "All set" : "\(n) assumed"
+    }
+
     var sportsSummary: String {
         let sports = store.memory.sports
         guard !sports.isEmpty else { return "None" }

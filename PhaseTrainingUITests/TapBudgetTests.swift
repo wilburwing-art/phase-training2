@@ -279,11 +279,17 @@ final class TapBudgetTests: XCTestCase {
     // MARK: - 10. Onboarding → first plan (cold launch)
 
     /// The activation budget: cold launch (no --ui-test-onboarded) → walk the
-    /// minimal valid onboarding path → accept the generated plan → land in the
-    /// main tabs. Sports is the only step with no default (must pick one);
-    /// equipment ships pre-selected, so the minimal path advances on its
-    /// default. The Accept button is gated on async plan generation, so it's
-    /// tapped once enabled. Reference: 11 advances + 1 sport selection = 12.
+    /// whole onboarding gate → land in the main tabs with a generated week.
+    ///
+    /// Reference: 4 advances (welcome, sports, sportSeasons, coachConsent)
+    /// + 1 sport selection + 1 consent pick = 6. The last step's Continue IS
+    /// the commit — there is no separate plan-preview Accept any more, so plan
+    /// generation happens behind the dismissal rather than in front of a
+    /// button the user had to tap.
+    ///
+    /// History: 13 → 12 when the era-affinity step was deleted, then 12 → 6
+    /// when the gate was cut to sport + season and the other five questions
+    /// became defaults corrected from Profile.
     func testTapBudget_onboardingToFirstPlan() throws {
         let app = XCUIApplication()
         app.launchArguments += ["--ui-test-reset"]   // NO --ui-test-onboarded
@@ -302,23 +308,18 @@ final class TapBudgetTests: XCTestCase {
         tapFirstMatching(&counter, prefix: "onboarding-sport-")     // sports (no default)
         counter.tap("onboarding-continue-sports")
         counter.tap("onboarding-continue-sportSeasons")
-        counter.tap("onboarding-continue-availability")
-        counter.tap("onboarding-continue-equipment")
-        counter.tap("onboarding-continue-experience")
-        counter.tap("onboarding-continue-about")
-        counter.tap("onboarding-continue-eraAffinity")
-        counter.tap("onboarding-continue-constraints")
         // Consent is the second gated step (T0-5): neither option is
         // pre-selected, so Continue stays disabled until the user picks one.
         // Declining keeps the walk offline and costs the same single tap.
         counter.tap("onboarding-consent-off")
-        counter.tap("onboarding-continue-coachConsent")
-        counter.tapWhenEnabled("onboarding-continue-planPreview", timeout: 15)  // Accept
+        // Last step: this Continue commits the profile, generates the week and
+        // dismisses. Generation is synchronous but not instant on a cold sim.
+        counter.tapWhenEnabled("onboarding-continue-coachConsent", timeout: 15)
 
-        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 10),
-                      "accepting the plan should dismiss onboarding into the main tabs")
+        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 15),
+                      "finishing the gate should dismiss onboarding into the main tabs")
 
-        recordTapBudget(counter, reference: 13)
+        recordTapBudget(counter, reference: 6)
     }
 
     // MARK: - 11. Weekly check-in → regenerated plan
@@ -713,11 +714,11 @@ struct TapCounter {
     }
 
     /// Tap a button once it exists AND becomes enabled. Used for a control that
-    /// is briefly disabled while an on-appear step settles — e.g. the
-    /// plan-preview Accept button, enabled once OnboardingPlanPreviewScreen's
-    /// `.onAppear` plan generation returns (synchronous, but not instant on a
-    /// cold sim). Polls within a SINGLE `timeout` budget (existence + enabled
-    /// together), so worst-case wait is `timeout`, not 2×.
+    /// is briefly disabled while a step settles — e.g. the consent step's
+    /// Continue, which commits the profile and generates the first week before
+    /// dismissing (synchronous, but not instant on a cold sim). Polls within a
+    /// SINGLE `timeout` budget (existence + enabled together), so worst-case
+    /// wait is `timeout`, not 2×.
     mutating func tapWhenEnabled(_ id: String, timeout: TimeInterval = 10,
                                  file: StaticString = #file, line: UInt = #line) {
         let el = app.buttons[id]

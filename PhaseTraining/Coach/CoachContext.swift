@@ -38,16 +38,10 @@ enum CoachContext {
         // ("you've missed Tuesday's lift 3 weeks in a row"). Recent
         // (last 14 days) entries only — older misses aren't actionable.
         missedWorkouts: [MissedWorkoutEntry] = [],
-        // Phase 1 era-affinity: pass-through of the resolved cohort
-        // (memory.eraOverride ?? derived-from-age, computed by the
-        // call site) so the coach can pick era-appropriate exercise
-        // names + cues. Defaulted nil → snapshot reads exactly like
-        // pre-Phase-1 for callers that haven't been updated yet.
-        eraCohort: EraCohort? = nil,
         // Phase 2 readiness: pass-through of the in-season readiness
         // score (0..1, 0.5 = neutral / no data) so the LLM knows
         // whether to nudge intensity up or down in its prose. Per the
-        // `phase-training-personalization-three-axes` skill, this is a
+        // `phase-training-personalization-two-axes` skill, this is a
         // SILENT signal — the coach must not surface a "you might be
         // detrained" prompt. The number lets the LLM avoid pushing 90%
         // intensity copy on a user whose deterministic prescription
@@ -112,32 +106,6 @@ enum CoachContext {
             profile.append("session length: \(memory.sessionMinutes) min")
         }
         blocks.append("USER PROFILE\n" + profile.map { "- \($0)" }.joined(separator: "\n"))
-
-        // Phase-1 era affinity. Emit a short vocabulary nudge so the
-        // model picks era-appropriate exercise names / cues. Only the
-        // affinity axis is here — competency stays in `experience` (in
-        // the USER PROFILE block above) and readiness will land as a
-        // separate `current_readiness_pct` line in Phase 2. Per the
-        // phase-training-personalization-three-axes skill, the three
-        // axes must remain orthogonal in the prompt as well as in code.
-        //
-        // Resolution: caller-supplied `eraCohort:` wins (LLM refinement
-        // path already has a DemographicProfile in hand and passes it
-        // through). Otherwise resolve from memory.eraOverride ->
-        // derived-from-age here, so CoachDrawer and tests don't have
-        // to plumb the lookup separately.
-        let resolvedEra: EraCohort? = eraCohort
-            ?? memory.eraOverride.flatMap { EraCohort(rawValue: $0) }
-            ?? EraAffinity.derivedCohort(forAge: memory.age, asOf: now)
-        if let resolvedEra {
-            let style = EraAffinity.style(for: resolvedEra)
-            var lines: [String] = []
-            lines.append("- cohort: \(style.displayName)")
-            lines.append("- style: \(style.narrativeBlurb)")
-            let vocab = style.terminologyHints.joined(separator: ", ")
-            lines.append("- vocabulary: \(vocab)")
-            blocks.append("TRAINING ERA AFFINITY (vocabulary + style nudge only — does NOT change movement competency or load)\n" + lines.joined(separator: "\n"))
-        }
 
         // Phase 2 readiness block. Emitted only when the caller computed a
         // real score (callers that don't yet thread it pass nil, and we

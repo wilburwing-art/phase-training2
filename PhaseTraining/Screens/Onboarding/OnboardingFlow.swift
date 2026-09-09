@@ -13,35 +13,37 @@ import SwiftUI
 
 // MARK: - Steps
 
+/// The irreducible gate. Everything else the app needs is defaulted and
+/// corrected in place from Profile — see docs/PLAN-onboarding-as-tutorial.md.
+///
+/// What earns a step here:
+///   - sports + sportSeasons: `WeeklyShape.resolve(primarySport:season:)` cannot
+///     run without them, and the season engine is gated on plannable sports.
+///     There is no defensible default for "what do you train for".
+///   - coachConsent: an Apple Guideline 5.1.2(i) gate, not a personalization
+///     question. Defaulting consent is not an option.
+///
+/// What used to be here and is not: availability, equipment, experience, about
+/// and constraints, all of which were duplicate implementations of a Profile
+/// editor the user could already reach; and planPreview, which asked the user to
+/// "Accept" a plan they had no basis to judge and which was not even the plan
+/// they'd get (it generated via bare `Planner.generate`, while `finish()`
+/// commits `planStore.generate(from:)` and then LLM-refines it). The plan
+/// reveal now happens on the Week tab, where it is the real committed plan and
+/// every assumption behind it is tappable.
 enum OnboardingStep: Int, CaseIterable {
     case welcome = 0
     case sports
-    case sportSeasons       // per-sport season picker (replaces single .season)
-    case availability       // days + minutes + lift target
-    case equipment          // tier-based
-    case experience
-    case about              // age + gender (optional)
-    /// Phase-1 era-affinity surface. Sits AFTER .about so the derived
-    /// cohort (which keys off draft.age) is populated, and BEFORE
-    /// .constraints. Three actions: accept derived / pick / skip. See
-    /// OnboardingEraAffinityScreen.
-    case eraAffinity
-    case constraints
+    case sportSeasons       // per-sport season picker
     /// Apple Guideline 5.1.2(i) consent gate for the AI Coach. Defaults to ON
     /// with explicit accept-via-Continue. If skipped on a fresh install the
     /// coach bubble never appears, which is the bug this step closes.
     case coachConsent
-    /// Final confirmation: shows the generated plan + Accept CTA. Not counted
-    /// in the questionnaire numerator/denominator since it's not a question.
-    case planPreview
 
     /// Numbered position shown to the user ("Step X of Y"). Welcome is step 1.
-    /// planPreview returns 0 — the scaffold hides the counter for it.
-    var humanIndex: Int {
-        self == .planPreview ? 0 : rawValue + 1
-    }
-    /// Denominator for "Step X of Y". Excludes planPreview.
-    static var total: Int { OnboardingStep.allCases.count - 1 }
+    var humanIndex: Int { rawValue + 1 }
+    /// Denominator for "Step X of Y".
+    static var total: Int { OnboardingStep.allCases.count }
 
     func next() -> OnboardingStep? { OnboardingStep(rawValue: rawValue + 1) }
     func prev() -> OnboardingStep? { OnboardingStep(rawValue: rawValue - 1) }
@@ -84,10 +86,10 @@ struct OnboardingFlow: View {
     //
     // The flow used to hard-code "we always start fresh", so a user
     // backgrounded-and-jettisoned on step 9 — after entering sports, seasons,
-    // availability, equipment, experience, age, height, weight, era,
-    // free-text dislikes and injuries — came back to Welcome with all of it
-    // gone. For an 11-screen mandatory fullScreenCover with no skip and no
-    // exit, that is a real abandonment cliff.
+    // availability, equipment, experience, age, height, weight, free-text
+    // dislikes and injuries — came back to Welcome with all of it gone. For a
+    // mandatory fullScreenCover with no skip and no exit, that is a real
+    // abandonment cliff.
     //
     // Both keys are `pt_`-prefixed, so MemoryStore.wipeAllUserData (and
     // --ui-test-reset, which routes through it) clears them for free.
@@ -102,13 +104,27 @@ struct OnboardingFlow: View {
            // Never resume INTO the questionnaire from Welcome: a user who only
            // saw the splash has nothing worth restoring, and jumping them past
            // it would be disorienting.
-           let savedStep = OnboardingStep(rawValue: defaults.integer(forKey: Self.stepKey)),
+           let savedStep = resumeStep(rawValue: defaults.integer(forKey: Self.stepKey)),
            savedStep != .welcome {
             draft = saved
             step = savedStep
             return
         }
         draft = store.memory
+    }
+
+    /// Resolve a persisted step rawValue, clamping anything past the end of the
+    /// current step list to the last step.
+    ///
+    /// Removing a step shifts every rawValue after it down by one, so a draft
+    /// saved by an older build can name a step this build no longer has. A bare
+    /// `OnboardingStep(rawValue:)` returns nil there, which drops the whole
+    /// saved draft on the floor — the exact abandonment cliff the resume
+    /// support exists to close, and worst for the users furthest along.
+    private func resumeStep(rawValue: Int) -> OnboardingStep? {
+        if let exact = OnboardingStep(rawValue: rawValue) { return exact }
+        guard rawValue > 0 else { return nil }
+        return OnboardingStep.allCases.last
     }
 
     private func persistDraft(_ value: TrainingMemory, step: OnboardingStep) {
@@ -134,25 +150,14 @@ struct OnboardingFlow: View {
             OnboardingSportsScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .sportSeasons:
             OnboardingSportSeasonsScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
-        case .availability:
-            OnboardingAvailabilityScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
-        case .equipment:
-            OnboardingEquipmentScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
-        case .experience:
-            OnboardingExperienceScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
-        case .about:
-            OnboardingAboutScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
-        case .eraAffinity:
-            OnboardingEraAffinityScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
-        case .constraints:
-            OnboardingConstraintsScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .coachConsent:
-            OnboardingCoachConsentScreen(onNext: { advance() }, onBack: { back() })
-        case .planPreview:
-            OnboardingPlanPreviewScreen(memory: draft, onAccept: finish, onBack: { back() })
+            OnboardingCoachConsentScreen(onNext: finish, onBack: { back() })
         }
     }
 
+    /// Advance one step. The LAST step calls `finish` directly rather than
+    /// advancing, so a nil `next()` here means a step wired to the wrong
+    /// callback, not the end of the flow.
     private func advance() {
         guard let next = step.next() else { return }
         withAnimation(.easeInOut(duration: 0.22)) { step = next }
@@ -164,11 +169,17 @@ struct OnboardingFlow: View {
     }
 
     private func finish() {
+        // The gate only ever asks sport + season, both of which the user picked
+        // by hand — so they're stated by definition. Everything else is left
+        // unstated on purpose: that is what puts an assumption chip on the Week
+        // tab instead of silently pretending the default was a choice.
         store.memory = draft
         store.completeOnboarding()
         clearPersistedDraft()
         // Generate + persist the plan against the just-committed memory so the
         // Today + Week tabs have something live the moment the cover dismisses.
+        // This is now the FIRST time the user sees a plan — there is no preview
+        // step ahead of it, and no second generation to diverge from.
         planStore.generate(from: store.memory)
     }
 }
@@ -285,10 +296,7 @@ struct OnboardingProgressBar: View {
     let step: OnboardingStep
 
     private var fillFraction: CGFloat {
-        // planPreview is post-questionnaire — bar shows full.
-        step == .planPreview
-            ? 1.0
-            : CGFloat(step.humanIndex) / CGFloat(OnboardingStep.total)
+        CGFloat(step.humanIndex) / CGFloat(OnboardingStep.total)
     }
 
     var body: some View {

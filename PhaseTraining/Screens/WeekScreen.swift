@@ -139,6 +139,15 @@ struct WeekScreen: View {
             // 0–2 rows by default with a "+N more" affordance; collapses
             // when there are no visible issues so the strip stays clean
             // on healthy weeks.
+            // What the plan GUESSED, ahead of what the plan says. The gate only
+            // asks sport + season, so on a fresh install the rest of the week is
+            // built on defaults; this strip admits which ones and routes each to
+            // its real Profile editor. Empty (and gone) once nothing is assumed.
+            // No bottom padding here: the row owns its own trailing space so
+            // it collapses to nothing once every field is stated.
+            PlanAssumptionsRow()
+                .padding(.horizontal, 16)
+
             let issues = planStore.currentValidationIssues(memory: memory.memory)
             if !issues.isEmpty {
                 PlanValidationBanner(

@@ -114,6 +114,7 @@ struct EquipmentEditorSheet: View {
                     mem.equipment = [.bodyweight, .dumbbells]
                 }
             }
+            mem.markStated(.equipment)
         }
     }
 
@@ -127,6 +128,46 @@ struct EquipmentEditorSheet: View {
             } else {
                 mem.equipment.append(eq)
             }
+            mem.markStated(.equipment)
+        }
+    }
+}
+
+// MARK: - Tier model
+//
+// Lived in OnboardingEquipmentScreen.swift until the onboarding gate was cut to
+// sport + season and that screen was deleted. It moved here rather than dying
+// with it: this sheet and ProfileScreen+RowSummaries are its real consumers,
+// and equipment is now a defaulted field the user corrects from Profile.
+
+enum EquipmentTier: String, CaseIterable, Identifiable {
+    case bodyweight, dumbbells, fullGym, custom
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .bodyweight: return "Body Weight"
+        case .dumbbells:  return "Dumbbells"
+        case .fullGym:    return "Full Commercial Gym"
+        case .custom:     return "Custom"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .bodyweight: return "Nothing required"
+        case .dumbbells:  return "Plus whatever's around"
+        case .fullGym:    return "Bars, racks, machines, cables"
+        case .custom:     return "Pick exactly what you have"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .bodyweight: return "figure.walk"
+        case .dumbbells:  return "dumbbell.fill"
+        case .fullGym:    return "building.2.fill"
+        case .custom:     return "slider.horizontal.3"
         }
     }
 }

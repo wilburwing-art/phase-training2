@@ -25,7 +25,7 @@ final class ReadinessSignalTests: XCTestCase {
     // MARK: - Empty / neutral case
 
     func testEmptyEventsReturnsNeutral() {
-        let s = ReadinessSignal.compute(events: [], cohort: .scienceBased, now: now())
+        let s = ReadinessSignal.compute(events: [], now: now())
         XCTAssertEqual(s.score, 0.5, accuracy: 0.0001)
         XCTAssertEqual(s, .neutral)
     }
@@ -35,7 +35,7 @@ final class ReadinessSignalTests: XCTestCase {
     func testFourPerWeekFourWeeksScoresHigh() {
         // 4/wk × 4 wks = 16 events evenly spread over 28 days.
         let events = evenlySpaced(count: 16, overDays: 28, anchor: now())
-        let s = ReadinessSignal.compute(events: events, cohort: .redditFitness, now: now())
+        let s = ReadinessSignal.compute(events: events, now: now())
         XCTAssertGreaterThanOrEqual(s.score, 0.85,
             "Expected ≥ 0.85 for 4/wk × 4wk, got \(s.score) (density=\(s.breakdown.density), recency=\(s.breakdown.recency), trend=\(s.breakdown.trend))")
     }
@@ -43,14 +43,14 @@ final class ReadinessSignalTests: XCTestCase {
     // MARK: - Zero-activity case (brief: 0 sessions/4 wks → ≤ 0.10)
 
     func testZeroSessionsScoresLow() {
-        let s = ReadinessSignal.compute(events: [], cohort: .redditFitness, now: now())
+        let s = ReadinessSignal.compute(events: [], now: now())
         // Empty case returns the neutral 0.5 sentinel — covered above.
         XCTAssertEqual(s, .neutral)
 
         // But if we have ONE old event from 30+ days ago and nothing recent,
         // density+recency should both pull hard.
         let stale = ReadinessEvent(startTime: now().addingTimeInterval(-32 * 86_400))
-        let s2 = ReadinessSignal.compute(events: [stale], cohort: .redditFitness, now: now())
+        let s2 = ReadinessSignal.compute(events: [stale], now: now())
         XCTAssertLessThanOrEqual(s2.score, 0.10,
             "Expected ≤ 0.10 for one stale event, got \(s2.score) (density=\(s2.breakdown.density), recency=\(s2.breakdown.recency), trend=\(s2.breakdown.trend))")
     }
@@ -73,31 +73,33 @@ final class ReadinessSignalTests: XCTestCase {
         // Flat: 2/wk for 4 wks = 8 evenly spread.
         let flat = evenlySpaced(count: 8, overDays: 28, anchor: now())
 
-        let sRamp = ReadinessSignal.compute(events: ramp, cohort: .redditFitness, now: now())
-        let sFlat = ReadinessSignal.compute(events: flat, cohort: .redditFitness, now: now())
+        let sRamp = ReadinessSignal.compute(events: ramp, now: now())
+        let sFlat = ReadinessSignal.compute(events: flat, now: now())
 
         XCTAssertGreaterThan(sRamp.breakdown.trend, sFlat.breakdown.trend,
             "Ramping trend should score higher than flat. ramp=\(sRamp.breakdown.trend) flat=\(sFlat.breakdown.trend)")
     }
 
-    // MARK: - Density component — cohort norm sensitivity
+    // MARK: - Density component — flat 3.0/wk norm
+    //
+    // The norm used to ladder by the user's age-derived era cohort. That axis
+    // was removed, so every user normalizes against the same 3.0/wk.
 
-    func testHigherCohortNormScoresDensityLower() {
-        // 12 events in 4 weeks = 3/wk
+    func testDensityUsesFlatNorm() {
+        // 12 events in 4 weeks = 3/wk = exactly the norm → density 1.0.
         let events = evenlySpaced(count: 12, overDays: 28, anchor: now())
-        let mb = ReadinessSignal.compute(events: events, cohort: .magazineBodybuilding, now: now())
-        let sb = ReadinessSignal.compute(events: events, cohort: .scienceBased, now: now())
-        // Same activity, but the science-based cohort norm (4.5/wk) makes
-        // 3/wk look sparser than magazine-bb's 3.0/wk norm.
-        XCTAssertGreaterThan(mb.breakdown.density, sb.breakdown.density)
+        let s = ReadinessSignal.compute(events: events, now: now())
+        XCTAssertEqual(s.breakdown.density, 1.0, accuracy: 0.0001)
     }
 
-    func testNilCohortUsesDefaultNorm() {
-        // Should not crash, should compute meaningful score
-        let events = evenlySpaced(count: 8, overDays: 28, anchor: now())
-        let s = ReadinessSignal.compute(events: events, cohort: nil, now: now())
-        XCTAssertGreaterThan(s.score, 0.0)
-        XCTAssertLessThanOrEqual(s.score, 1.0)
+    func testDensityScalesWithFrequency() {
+        // Half the norm (6 events / 4wk = 1.5/wk) reads half as dense.
+        let sparse = ReadinessSignal.compute(
+            events: evenlySpaced(count: 6, overDays: 28, anchor: now()), now: now())
+        let dense = ReadinessSignal.compute(
+            events: evenlySpaced(count: 12, overDays: 28, anchor: now()), now: now())
+        XCTAssertEqual(sparse.breakdown.density, 0.5, accuracy: 0.0001)
+        XCTAssertLessThan(sparse.breakdown.density, dense.breakdown.density)
     }
 
     // MARK: - Recency component

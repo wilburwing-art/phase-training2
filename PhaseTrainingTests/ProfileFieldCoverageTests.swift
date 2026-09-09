@@ -45,6 +45,9 @@ final class ProfileFieldCoverageTests: XCTestCase {
         Probe(name: "onboardedAt", mutateForHash: nil, mutateForSnapshot: nil,
               snapshotMarker: nil,
               skipReason: "Lifecycle marker; not used in planning or coach reasoning."),
+        Probe(name: "statedFields", mutateForHash: nil, mutateForSnapshot: nil,
+              snapshotMarker: nil,
+              skipReason: "Bookkeeping over which OTHER fields the user has explicitly set vs left on a default (ProfileField.swift). Drives the Week-tab assumption chips and the Profile setup checklist. Deliberately absent from planInputsHash: it changes no generator input, and that hash doubles as the deterministicPick seed, so including it would reshuffle the whole week the first time someone opened an editor."),
 
         // Append-only history — sessions / soreness / feedback are state, not
         // config. Coach reads them via its OWN params (recentSessions,
@@ -204,22 +207,6 @@ final class ProfileFieldCoverageTests: XCTestCase {
               mutateForHash: { $0.userInjuries = [UserInjury(slug: "acl-injury", severity: .mild)] },
               mutateForSnapshot: { $0.userInjuries = [UserInjury(slug: "acl-injury")] },
               snapshotMarker: "ACL Sprain/Tear",
-              skipReason: nil),
-
-        // Phase 1 era affinity. Override = the user's explicit cohort
-        // pick from OnboardingEraAffinityScreen; resolves through
-        // DemographicProfile.from(memory) to bias split style + rep
-        // ranges + exercise aesthetic + LLM vocabulary. Hash includes
-        // eraOverride so changing the pick triggers a regen; coach
-        // snapshot mentions the cohort displayName under the
-        // TRAINING ERA AFFINITY block.
-        Probe(name: "eraOverride",
-              mutateForHash: { $0.eraOverride = EraCohort.magazineBodybuilding.rawValue },
-              mutateForSnapshot: { m in
-                  m.age = 30   // ensures derivedCohort path resolves cleanly even without override
-                  m.eraOverride = EraCohort.magazineBodybuilding.rawValue
-              },
-              snapshotMarker: "Magazine bodybuilding era",
               skipReason: nil),
 
         // Primary/support model. The support sport's declared weekly pattern

@@ -7,7 +7,7 @@
 // through the public `from(...)` outputs:
 //
 //   - `hasReadinessData` is exactly `!readinessEvents.isEmpty`
-//   - with `cohort: nil` the density norm is 3.0/wk, so
+//   - the density norm is a flat 3.0/wk, so
 //     `readinessBreakdown.density == eventCount / 12` — inverting density
 //     recovers the deduped event COUNT.
 //   - recency reads the raw event startTime, so the "earliest event of
@@ -25,7 +25,7 @@ final class ReadinessEventsTests: XCTestCase {
 
     private func now() -> Date { Date(timeIntervalSince1970: 1_780_000_000) }
 
-    /// With `cohort: nil` → norm 3.0/wk: density = (count / 4wks) / 3.0.
+    /// Norm is a flat 3.0/wk: density = (count / 4wks) / 3.0.
     private func expectedDensity(eventCount: Int) -> Double {
         Double(eventCount) / 12.0
     }

@@ -53,13 +53,29 @@ struct TrainingMemory: Codable {
     var liftDaysPerWeek: Int = 3
 
     // Resources / level
-    var equipment: [Equipment] = [.bodyweight]
+    /// Defaults to a full gym rather than bodyweight-only. Under the old
+    /// mandatory equipment step every user was forced past this value, so the
+    /// conservative default was free. Now that the step is gone, a silent user
+    /// LIVES on it — and a bodyweight-only default would quietly hand a gym
+    /// member a bodyweight week forever. Defaults have to be most-likely, not
+    /// most-conservative, once nothing forces the question.
+    var equipment: [Equipment] = [.fullGym]
     var experience: ExperienceLevel = .beginner
     /// Current condition vs experience ceiling. Defaults to .freshStart for
     /// new installs — the LLM coach uses this as a permanent profile fact
     /// to dial early-session conservatism. Build 72+: no deterministic
     /// preset / time window; the coach just reads the signal and reasons.
     var startingState: StartingState = .freshStart
+
+    /// Raw values of the `ProfileField`s the user has explicitly set, as opposed
+    /// to the ones still running on their default. See ProfileField.swift — the
+    /// gate only asks sport + season now, so everything else ships defaulted and
+    /// this is what tells the two apart.
+    ///
+    /// Stored as raw strings (not `Set<ProfileField>`) so an unknown key written
+    /// by a newer build round-trips through an older one instead of failing the
+    /// decode. Deliberately NOT in `planInputsHash`.
+    var statedFields: Set<String> = []
 
     // MARK: - Sensitive (health-adjacent)
     //
@@ -73,19 +89,6 @@ struct TrainingMemory: Codable {
     var age: Int? = nil
     /// SENSITIVE. Optional. Onboarding "About" step + coach body section.
     var gender: Gender? = nil
-    /// Phase 1 era-affinity: user's training-culture cohort preference.
-    /// Stored as the `EraCohort` rawValue ("magazine_bodybuilding" etc.)
-    /// so this file doesn't have to depend on EraCohort directly —
-    /// mirrors the precedent set by Sport (slug stored, catalog resolved
-    /// at decode time on the consumer side). Nil = "use derived from age"
-    /// — `DemographicProfile.eraStyle` does the override-vs-derived
-    /// resolution.
-    ///
-    /// Per-PROFILE preference (long-lived), contrasted with
-    /// `WeeklyPlanOverride` (PR 7), which is per-WEEK and lives on
-    /// `PlanStore.recentPlanOverrides`. Era affinity is a stable trait of
-    /// how the user thinks about training, so it belongs here.
-    var eraOverride: String? = nil
     /// SENSITIVE. Body height in whole centimetres. Stored metric; rendered in the
     /// user's preferred unit system (see `usesImperial`). Nil = skipped.
     var heightCm: Int? = nil
@@ -161,8 +164,8 @@ struct TrainingMemory: Codable {
         case sessionMinutes, liftDaysPerWeek
         case equipment, experience
         case startingState
+        case statedFields
         case age, gender
-        case eraOverride
         case heightCm, weightKg, usesImperial
         case bodyWeightLog, bodyCompositionLog
         case dislikes, constraints
@@ -211,12 +214,15 @@ struct TrainingMemory: Codable {
         self.equipment       = (try? c.decode([Equipment].self,    forKey: .equipment))       ?? [.bodyweight]
         self.experience      = (try? c.decode(ExperienceLevel.self, forKey: .experience))     ?? .beginner
         self.startingState   = (try? c.decode(StartingState.self,  forKey: .startingState))   ?? .freshStart
+        // Absent for every save written before the gate was cut. Those users
+        // answered the full questionnaire, so treat all fields as stated —
+        // otherwise they'd be shown assumption chips for values they picked
+        // by hand. Migration is one-way and self-healing: a real edit stamps
+        // the field again.
+        self.statedFields    = (try? c.decodeIfPresent(Set<String>.self, forKey: .statedFields))
+            ?? Set(ProfileField.allCases.map(\.rawValue))
         self.age             =  try? c.decodeIfPresent(Int.self,    forKey: .age)
         self.gender          =  try? c.decodeIfPresent(Gender.self, forKey: .gender)
-        // Defaulted to nil — pre-Phase-1 saves never wrote the key, so
-        // `decodeIfPresent` returns nil and the generator keeps using the
-        // derived cohort from `age`.
-        self.eraOverride     = (try? c.decodeIfPresent(String.self, forKey: .eraOverride)) ?? nil
         self.heightCm        =  try? c.decodeIfPresent(Int.self,    forKey: .heightCm)
         self.weightKg        =  try? c.decodeIfPresent(Double.self, forKey: .weightKg)
         self.usesImperial    = (try? c.decode(Bool.self,            forKey: .usesImperial)) ?? true
@@ -266,9 +272,9 @@ struct TrainingMemory: Codable {
         try c.encode(equipment,       forKey: .equipment)
         try c.encode(experience,      forKey: .experience)
         try c.encode(startingState,   forKey: .startingState)
+        try c.encode(statedFields,    forKey: .statedFields)
         try c.encodeIfPresent(age,    forKey: .age)
         try c.encodeIfPresent(gender, forKey: .gender)
-        try c.encodeIfPresent(eraOverride, forKey: .eraOverride)
         try c.encodeIfPresent(heightCm, forKey: .heightCm)
         try c.encodeIfPresent(weightKg, forKey: .weightKg)
         try c.encode(usesImperial, forKey: .usesImperial)
@@ -613,8 +619,8 @@ enum Equipment: String, Codable, CaseIterable, Identifiable {
 
     /// Slugs unlocked specifically by THIS selection, ON TOP of the
     /// always-available set. `.bodyweight` strictly adds nothing — picking
-    /// "bodyweight only" in onboarding means no pull-up bar, no bench, no
-    /// rings. Users who own those pick the corresponding Equipment case.
+    /// "bodyweight only" (Profile → Equipment) means no pull-up bar, no bench,
+    /// no rings. Users who own those pick the corresponding Equipment case.
     var specificCoachDbSlugs: Set<String> {
         switch self {
         case .bodyweight:   return []
