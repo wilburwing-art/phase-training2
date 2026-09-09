@@ -116,10 +116,16 @@ struct ProfileScreen: View {
                         // Leads the group: it's the answer to "what is my plan
                         // actually built on", and on a fresh install most of
                         // these rows are still defaults the user never chose.
+                        // DEBUG-only: it opens presentingSetupChecklist, which
+                        // is a DEBUG-only @State (the sheet ships only in
+                        // DEBUG). Unguarded, Release archives fail to compile
+                        // (build 126's release run died here).
+                        #if DEBUG
                         SettingsRow(label: "Plan setup",
                                     value: setupChecklistSummary,
                                     icon: "checklist",
                                     action: { presentingSetupChecklist = true })
+                        #endif
                         SettingsRow(label: "Sports",
                                     value: sportsSummary,
                                     icon: "figure.run",
