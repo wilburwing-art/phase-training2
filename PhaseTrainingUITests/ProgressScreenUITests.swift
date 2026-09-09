@@ -86,8 +86,14 @@ final class ProgressScreenUITests: XCTestCase {
         let card = app.buttons["progress-body-weight-card"]
         XCTAssertTrue(scrollTo(card, in: app), "body weight card should be reachable")
         card.tap()
-        XCTAssertTrue(app.sheets.firstMatch.waitForExistence(timeout: 5),
-                      "tapping the body weight card should present its log sheet")
+        // Assert on the sheet's own content rather than the `sheets` query:
+        // on iOS 26 a presented sheet does not resolve through
+        // app.sheets.firstMatch (same reason the soreness test asserts on
+        // its marker text with the sheets query only as a fallback).
+        let sheetTitle = app.navigationBars["Body weight"]
+        let didPresent = sheetTitle.waitForExistence(timeout: 5) || app.sheets.firstMatch.exists
+        XCTAssertTrue(didPresent,
+                      "tapping the body weight card should present its log sheet" + elementDump(app))
     }
 
     // MARK: - Body data, no sessions

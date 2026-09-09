@@ -119,7 +119,11 @@ promoted to statics beside the existing `mainSlugs` / `side(forSlug:)`.
    behavior were inferred from source, never watched rendering. Failures carry
    an element dump (per `phase-training-xcuitest-recipe`) to diagnose
    missing-vs-renamed in one run.
-2. **Baseline before blaming this branch.** Five UI tests already fail on clean
+2. **Baseline before blaming this branch.** *(Resolved 2026-09-09: the full
+   UI suite was baselined on clean `main` — 43/43 pass on this machine, so the
+   "five already fail" claim below no longer holds here. The five named suites
+   presumably failed on the authoring machine's older baseline.)* Five UI tests
+   were believed to fail on clean
    `main`: `BuildAndStartWorkoutUITests`, `KettleCompleteUITests`, and three
    `TapBudgetTests`.
 3. **`MUSCLE BALANCE · 4w` and `STRENGTH RATIOS` need coach.db to resolve**
