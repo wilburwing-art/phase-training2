@@ -207,6 +207,12 @@ final class UserDatabase {
             "CREATE INDEX IF NOT EXISTS idx_imported_sets_exercise ON imported_sets(exercise_id, performed_at DESC)",
             "CREATE INDEX IF NOT EXISTS idx_imported_sets_perf     ON imported_sets(performed_at DESC)",
             "CREATE INDEX IF NOT EXISTS idx_imported_sets_source   ON imported_sets(source)"
+        ]),
+        // PR 11 — session tags. JSON-encoded [String] on the sessions row;
+        // a column beats a child table here because tags are read with the
+        // session everywhere they appear and never queried independently.
+        (2, [
+            "ALTER TABLE sessions ADD COLUMN session_tags TEXT NOT NULL DEFAULT '[]'"
         ])
     ]
 
