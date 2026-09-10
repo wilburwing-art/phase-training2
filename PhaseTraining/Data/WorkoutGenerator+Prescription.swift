@@ -36,12 +36,24 @@ extension WorkoutGenerator {
         // down. Everything else (no history, a lighter day) steps up as before.
         let decision = ProgressionDecision.decide(prior: prior,
                                                   last: ExerciseKey.lookup(context.lastAttempt, name: exercise.name))
-        let target = targetLb(
+        // PR 10B — autoregulation: fold the multi-week completion pattern
+        // in. Soften (−5%) or amplify (+5 lb) ride on top of the base
+        // decision; stepDown is never overridden (see AutoregulationEngine
+        // doc — an injury-risk signal outranks the optimistic aggregate,
+        // so `effectiveDecision` is always the base decision here and the
+        // amplify add is skipped when it fired).
+        let adjustment = AutoregulationEngine.classify(
+            ExerciseKey.lookup(context.attemptHistory, name: exercise.name) ?? []
+        )
+        var target = targetLb(
             priorWeight: prior.weight,
             priorReps: prior.reps,
             prescribedReps: prescribedReps,
             decision: decision
         )
+        if !(decision == .stepDown && adjustment.isActive) {
+            target = (target * adjustment.loadMultiplier) + adjustment.flatAddLb
+        }
         return formatTargetHint(weightLb: target, memory: memory)
     }
 
