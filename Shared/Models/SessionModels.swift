@@ -220,6 +220,31 @@ struct SavedSession: Codable, Identifiable, Equatable {
     var endTime: Date
     var duration: Int // seconds
     var healthWriter: HealthWriter? = nil
+    /// User-applied tags (`SessionTag` raw values). Anchor points on the
+    /// strength charts. Empty on sessions saved before goals shipped and on
+    /// watch-saved sessions.
+    var sessionTags: [String] = []
 
     var id: TimeInterval { startTime.timeIntervalSince1970 }
+}
+
+extension SavedSession {
+    /// Tolerant decode. Synthesized Codable throws on a missing non-optional
+    /// key, and saves made before `sessionTags` existed carry none. Declared
+    /// in an extension so the memberwise init stays available.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        templateId = try c.decode(String.self, forKey: .templateId)
+        name = try c.decode(String.self, forKey: .name)
+        category = try c.decode(String.self, forKey: .category)
+        startTime = try c.decode(Date.self, forKey: .startTime)
+        exercises = try c.decode([LoggedExercise].self, forKey: .exercises)
+        feel = try c.decodeIfPresent(String.self, forKey: .feel)
+        note = try c.decodeIfPresent(String.self, forKey: .note)
+        mood = try c.decodeIfPresent(String.self, forKey: .mood)
+        endTime = try c.decode(Date.self, forKey: .endTime)
+        duration = try c.decode(Int.self, forKey: .duration)
+        healthWriter = try c.decodeIfPresent(HealthWriter.self, forKey: .healthWriter)
+        sessionTags = (try? c.decode([String].self, forKey: .sessionTags)) ?? []
+    }
 }

@@ -262,6 +262,12 @@ final class UserDatabase {
             "ALTER TABLE session_exercises ADD COLUMN rpe TEXT",
             "ALTER TABLE session_exercises ADD COLUMN tempo TEXT",
             "ALTER TABLE session_exercises ADD COLUMN superset_group INTEGER"
+        ]),
+        // v8 — session tags (goals). JSON-encoded [String] on the sessions
+        // row; a column beats a child table because tags are read with the
+        // session everywhere they appear and never queried independently.
+        (8, [
+            "ALTER TABLE sessions ADD COLUMN session_tags TEXT NOT NULL DEFAULT '[]'"
         ])
     ]
 

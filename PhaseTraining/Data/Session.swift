@@ -38,6 +38,23 @@ extension ActiveSession {
     }
 }
 
+/// Tag vocabulary for `SavedSession.sessionTags`. A raw-value enum so the
+/// persisted strings stay stable; `label` is display-only.
+enum SessionTag: String, Codable, CaseIterable, Identifiable {
+    case testDay, maxAttempt, lightDay, techniqueFocus
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .testDay:        return "Test day"
+        case .maxAttempt:     return "Max attempt"
+        case .lightDay:       return "Light day"
+        case .techniqueFocus: return "Technique focus"
+        }
+    }
+}
+
 struct SessionStats: Equatable {
     var totalSets: Int
     var doneSets: Int

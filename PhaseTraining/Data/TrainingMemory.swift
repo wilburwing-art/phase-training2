@@ -16,6 +16,10 @@ import Foundation
 struct TrainingMemory: Codable {
     var schemaVersion: Int = 7
 
+    // Long-term goals (1-2 active). Curated templates; progress computed
+    // from existing stores (best e1RM, bodyweight log, sport history).
+    var userGoals: [UserGoal] = []
+
     // Identity / intent
     var sports: [Sport] = []
     var primarySport: Sport? = nil
@@ -177,6 +181,7 @@ struct TrainingMemory: Codable {
 
     enum CodingKeys: String, CodingKey {
         case schemaVersion, sports, primarySport
+        case userGoals
         case seasonsBySport, supportPattern, skiDiscipline, defaultSeason, peakDate
         case season                               // legacy (build 20-23) — read for migration
         case availableDays, fixedSportDays        // legacy (build 20-24) — read but dropped on encode
@@ -284,6 +289,8 @@ struct TrainingMemory: Codable {
         self.weeklyCheckIns  = (try? c.decode([WeeklyCheckIn].self, forKey: .weeklyCheckIns)) ?? []
         self.coachInsights   = (try? c.decode([CoachInsight].self, forKey: .coachInsights)) ?? []
         self.onboardedAt     =  try? c.decodeIfPresent(Date.self,  forKey: .onboardedAt)
+        // Goals: absent on older saves → empty list.
+        self.userGoals = (try? c.decode([UserGoal].self, forKey: .userGoals)) ?? []
     }
 
     func encode(to encoder: Encoder) throws {
@@ -311,6 +318,7 @@ struct TrainingMemory: Codable {
         try c.encode(usesImperial, forKey: .usesImperial)
         try c.encode(bodyWeightLog, forKey: .bodyWeightLog)
         try c.encode(bodyCompositionLog, forKey: .bodyCompositionLog)
+        try c.encode(userGoals, forKey: .userGoals)
         try c.encode(maxHangTests, forKey: .maxHangTests)
         try c.encode(skiReadinessTests, forKey: .skiReadinessTests)
         try c.encode(dislikes,        forKey: .dislikes)
