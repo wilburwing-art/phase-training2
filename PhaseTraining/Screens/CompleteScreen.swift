@@ -40,6 +40,9 @@ struct CompleteScreen: View {
 
     @State private var feel: String? = nil
     @State private var note: String = ""
+    /// PR 11 — multi-select session tags. Written into the saved record
+    /// through syncEdits (same patch path as feel/note).
+    @State private var tags: Set<SessionTag> = []
     /// Frozen at the moment this screen appears (i.e. the session completed),
     /// so DURATION doesn't keep ticking up while the user fills feel/note.
     /// The same timestamp is handed to `saveCompleted` so the stored duration
@@ -144,6 +147,10 @@ struct CompleteScreen: View {
                             .padding(.horizontal, 20)
                             .padding(.top, 20)
 
+                        tagsSection
+                            .padding(.horizontal, 20)
+                            .padding(.top, 18)
+
                         noteSection
                             .padding(.horizontal, 20)
                             .padding(.top, 18)
@@ -167,6 +174,7 @@ struct CompleteScreen: View {
         .onAppear(perform: autosaveIfNeeded)
         .onChange(of: feel) { _, _ in syncEdits() }
         .onChange(of: note) { _, _ in syncEdits() }
+        .onChange(of: tags) { _, _ in syncEdits() }
         .sheet(isPresented: $showFeedbackSheet) {
             // Optional, opt-in capture of a structured FeedbackEntry (difficulty
             // + hurt areas → memory.feedback, read by the planner). The session
@@ -350,6 +358,46 @@ struct CompleteScreen: View {
         .buttonStyle(.plain)
     }
 
+    /// PR 11 — session tags. Multi-select: a max attempt can also be a
+    /// test day. Tags are chart anchors + PR-priority signals, not
+    /// display garnish, so they persist into the saved record.
+    private var tagsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("TAG THIS SESSION (OPTIONAL)")
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            HStack(spacing: 5) {
+                ForEach(SessionTag.allCases) { tag in
+                    tagChip(tag)
+                }
+            }
+        }
+    }
+
+    private func tagChip(_ tag: SessionTag) -> some View {
+        let active = tags.contains(tag)
+        return Button {
+            if active { tags.remove(tag) } else { tags.insert(tag) }
+        } label: {
+            Text(tag.label)
+                .font(.custom("JetBrainsMono-Medium", size: 11))
+                .foregroundStyle(active ? Color.accentInk : Color.ink2)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 2)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(active ? Color.accent : Color.elevated)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(active ? Color.clear : Color.line, lineWidth: 0.5)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("tag-\(tag.rawValue)")
+    }
+
     private var noteSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("NOTE (OPTIONAL)")
@@ -399,6 +447,7 @@ struct CompleteScreen: View {
         guard !discarded, var s = saved else { return }
         s.feel = feel
         s.note = note.isEmpty ? nil : note
+        s.sessionTags = tags.map(\.rawValue).sorted()
         store.updateSession(s)
         saved = s
     }
