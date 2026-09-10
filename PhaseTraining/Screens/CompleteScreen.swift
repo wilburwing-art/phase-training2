@@ -28,6 +28,8 @@ import SwiftUI
 struct CompleteScreen: View {
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject var memoryStore: MemoryStore
+    /// PR 11 — sport-log access for the milestone hook's goal inputs.
+    @EnvironmentObject var planStore: PlanStore
     /// Coach gate — drives the feedback button's LABEL only (the button and
     /// sheet stay available to everyone; FeedbackEntry feeds the planner
     /// regardless). Same @AppStorage pairing as CoachBubble.
@@ -439,6 +441,23 @@ struct CompleteScreen: View {
         saved = store.saveCompleted(session, feel: feel,
                                     note: note.isEmpty ? nil : note,
                                     endTime: completedAt)
+        // PR 11 (commit 4) — a fresh save can tip a goal past 100% (new
+        // e1RM, logged 5k, climb-day count). Fire at most one celebratory
+        // push per crossing, gated by the PR-12 budget. Task (not
+        // async onAppear) so the screen keeps rendering while it runs.
+        Task {
+            let goals = memoryStore.memory.userGoals
+            guard !goals.isEmpty else { return }
+            let logs = planStore.sportLogStore?.entries ?? []
+            await GoalMilestoneNotifier.notifyIfCrossed(goals: goals) { goal in
+                goal.progress(
+                    bestE1RM: store.bestE1RMByExercise(),
+                    bodyweightKg: memoryStore.memory.weightKg,
+                    fastestFiveKSeconds: store.fastestFiveKSeconds(sportLogs: logs),
+                    climbsLast30Days: store.climbsLast30Days(sportLogs: logs)
+                )
+            }
+        }
     }
 
     /// Patch the auto-saved record's feel/note in place as the user edits them.

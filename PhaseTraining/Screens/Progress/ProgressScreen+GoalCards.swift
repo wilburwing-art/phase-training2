@@ -33,68 +33,18 @@ extension ProgressScreen {
         )
     }
 
-    /// Compute progress for one goal against live stores.
+    /// Compute progress for one goal against live stores. The metric
+    /// computation lives on SessionStore (SessionStore+GoalMetrics.swift)
+    /// so the CompleteScreen milestone hook and this card share one
+    /// implementation.
     private func goalProgress(_ goal: UserGoal) -> Double? {
-        goal.progress(
-            bestE1RM: bestE1RMByExercise(),
+        let logs = planStore.sportLogStore?.entries ?? []
+        return goal.progress(
+            bestE1RM: store.bestE1RMByExercise(),
             bodyweightKg: memoryStore.memory.weightKg,
-            fastestFiveKSeconds: fastestFiveKSeconds(),
-            climbsLast30Days: climbsLast30Days()
+            fastestFiveKSeconds: store.fastestFiveKSeconds(sportLogs: logs),
+            climbsLast30Days: store.climbsLast30Days(sportLogs: logs)
         )
-    }
-
-    /// Best epley-1RM per lowercased exercise name over all saved sessions.
-    /// Same math the generator context uses for priorBest — shared formula,
-    /// independent walk (this one covers ALL history, not the 4-week window).
-    private func bestE1RMByExercise() -> [String: Double] {
-        var best: [String: Double] = [:]
-        for s in store.savedSessions {
-            for ex in s.exercises {
-                var best1RM = 0.0
-                for set in ex.sets where set.done && !set.isWarmup {
-                    guard let w = set.weightValue, let r = set.repsValue,
-                          w > 0, r > 0 else { continue }
-                    let e = StrengthStandards.epley1RM(weight: w, reps: r)
-                    best1RM = max(best1RM, e)
-                }
-                if best1RM > 0 {
-                    let key = ex.name.lowercased()
-                    best[key] = max(best[key] ?? 0, best1RM)
-                }
-            }
-        }
-        return best
-    }
-
-    /// Fastest logged 5k in seconds. Sport logs don't carry distance —
-    /// a 5k shows up as a running entry with duration ≈ 25 min ± slack
-    /// and the "5k" keyword in the note. Tolerant match: nil when the
-    /// user doesn't annotate runs. (Roadmap lists 5k as a template; the
-    /// annotation-based read keeps this honest instead of guessing.)
-    private func fastestFiveKSeconds() -> Double? {
-        guard let sportLogStore = planStore.sportLogStore else { return nil }
-        let candidates = sportLogStore.entries.filter { entry in
-            entry.sport.slug == "running" || entry.sport.slug.contains("run")
-        }
-        guard !candidates.isEmpty else { return nil }
-        // Without distance fields, a "5k" is a run whose note names the
-        // distance; shortest such run wins as the best-effort signal.
-        let fives = candidates.filter {
-            ($0.note ?? "").lowercased().contains("5k")
-        }
-        guard !fives.isEmpty else { return nil }
-        return Double(fives.map(\.durationMinutes).min()! * 60)
-    }
-
-    /// Climbing sessions logged in the last 30 days. The goal's spec
-    /// language says "climbs"; the app logs sessions — one logged session
-    /// is one climb-day, which is what the log can honestly count.
-    private func climbsLast30Days() -> Int {
-        guard let sportLogStore = planStore.sportLogStore else { return 0 }
-        let cutoff = Date().addingTimeInterval(-30 * 86_400)
-        return sportLogStore.entries.filter {
-            $0.sport.slug == "climbing" && $0.date >= cutoff
-        }.count
     }
 }
 
