@@ -182,6 +182,7 @@ struct ProgressScreen: View {
                     heatmapCard
                 }
                 SorenessCheckInPill()
+                goalsCard
                 statStrip
                 sessionsCard
                 volumeCard
