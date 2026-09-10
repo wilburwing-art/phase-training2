@@ -48,6 +48,7 @@ struct ProfileScreen: View {
     @State private var presentingAboutEditor = false
     @State private var presentingDislikesEditor = false
     @State private var presentingInjuriesEditor = false
+    @State private var presentingGoalPicker = false
     @State private var presentingRemindersEditor = false
     @State private var presentingDataEditor = false
     /// Action to run once DataEditorSheet has finished dismissing — see the
@@ -134,6 +135,10 @@ struct ProfileScreen: View {
                                     value: seasonsSummary,
                                     icon: "calendar",
                                     action: { presentingSeasonsEditor = true })
+                        SettingsRow(label: "Goals",
+                                    value: goalsSummary,
+                                    icon: "target",
+                                    action: { presentingGoalPicker = true })
                         // The primary/support wedge is ski/board-primary +
                         // climbing-support, so the row appears for a ski/snow
                         // primary sport (the interference table is authored for
@@ -258,6 +263,16 @@ struct ProfileScreen: View {
         }
         .sheet(isPresented: $presentingSeasonsEditor) {
             SeasonsEditorSheet().environmentObject(store)
+        }
+        .sheet(isPresented: $presentingGoalPicker) {
+            GoalPickerSheet(
+                activeGoals: store.memory.userGoals,
+                onConfirm: { goals in
+                    store.memory.userGoals = Array(goals.prefix(2))
+                    store.save()
+                }
+            )
+            .environmentObject(store)
         }
         .sheet(isPresented: $presentingSupportEditor) {
             SupportSportEditorSheet().environmentObject(store)
