@@ -329,6 +329,22 @@ enum CoachContext {
             blocks.append("MISSED WORKOUTS (last 14 days)\n" + lines.joined(separator: "\n"))
         }
 
+        // PR 10D — skip-streak pattern (90-day window, from the full
+        // missed log). Surfaced so the chat coach can proactively offer
+        // what the planner is already doing: "you've missed Thursday's
+        // lift 4 times — want me to drop Thursday from rotation?"
+        let streaks = SkipStreakDetector.detect(missedWorkouts: missedWorkouts, now: now)
+        if let worst = streaks.first {
+            let dayName = worst.weekday.short
+            let title = worst.missedTitles.first ?? "workout"
+            blocks.append(
+                "SKIP STREAK\n" +
+                "The user has missed \(dayName)'s \(title) \(worst.missCount) times in the last 3 months. " +
+                "The planner is de-emphasizing \(dayName). Ask whether to make that permanent " +
+                "(e.g. \"want me to drop \(dayName) from your rotation?\") or move it."
+            )
+        }
+
         // PR 9: recent abandonments (last 14 days). Includes the reason
         // + completion share so the coach can connect a pain abandon to
         // a specific session without asking.
