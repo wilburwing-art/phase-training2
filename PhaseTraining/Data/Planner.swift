@@ -77,7 +77,11 @@ enum Planner {
         if deloadWeek {
             plan = applyDeload(plan: plan, calendar: calendar)
         }
-        return plan
+        // PR 10C — CNS budget: no 3+ consecutive high-CNS days. Runs on
+        // the FINISHED plan (after taper + arc) so any reshuffle those
+        // passes caused gets re-balanced. Sport/event days are protected
+        // — only planner-generated lift days are demotable.
+        return CNSBudgetEngine.balance(plan: plan)
     }
 
     /// PR 10A — transform a finished plan into a deload week.
@@ -1047,13 +1051,38 @@ enum Planner {
 
             // Promote rests one at a time, picking the rest with max distance
             // to any existing lift each round so additions spread evenly.
+            // PR 10C: a promotion that CREATES a 3+ consecutive high-CNS run
+            // is deprioritized — the CNS budget pass (see CNSBudgetEngine)
+            // would otherwise immediately demote the day right back, costing
+            // the user a lift. Ties still break toward max spacing; only
+            // run-creating candidates lose to run-free ones. The very last
+            // promotion may still need to create a run (e.g. 6 lifts in 7
+            // days is impossible run-free), so the constraint is best-effort
+            // and the CNS pass remains the backstop.
             while needed > 0 {
                 let liftPositions = result.indices.filter { result[$0] == .lift }
                 let restPositions = result.indices.filter { result[$0] == .rest }
-                guard let bestRest = restPositions.max(by: { lhs, rhs in
-                    minDistance(from: lhs, to: liftPositions) < minDistance(from: rhs, to: liftPositions)
-                }) else { break }
-                result[bestRest] = .lift
+                guard !restPositions.isEmpty else { break }
+                let ranked: [(idx: Int, distance: Int, createsRun: Bool)] = restPositions.map { idx in
+                    let d = minDistance(from: idx, to: liftPositions)
+                    // Would promoting here produce a 3-run of lifts?
+                    var trial = result
+                    trial[idx] = .lift
+                    var creates = false
+                    for i in 2..<trial.count where
+                        trial[i] == .lift && trial[i - 1] == .lift && trial[i - 2] == .lift {
+                        creates = true
+                        break
+                    }
+                    return (idx, d, creates)
+                }
+                let candidate = ranked
+                    .sorted { lhs, rhs in
+                        if lhs.createsRun != rhs.createsRun { return !lhs.createsRun }
+                        return lhs.distance < rhs.distance
+                    }
+                    .last!  // max distance among run-free; falls back to run-creating
+                result[candidate.idx] = .lift
                 needed -= 1
             }
 
