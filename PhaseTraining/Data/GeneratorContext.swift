@@ -33,6 +33,12 @@ struct GeneratorContext: Equatable {
     /// every week.
     var lastAttempt: [String: LastAttempt] = [:]
 
+    /// PR 10B — per-exercise completion history, newest-first, for the
+    /// autoregulation engine. Each entry records what fraction of the
+    /// asked sets landed and whether target reps were reached. Built for
+    /// the same 4-week window as the other history signals.
+    var attemptHistory: [String: [AutoregulationEngine.Attempt]] = [:]
+
     /// Lowercased body areas the user has reported sore or painful in the
     /// last 7 days. Slot pick excludes exercises whose primary muscle group
     /// label overlaps with this set.
@@ -254,6 +260,7 @@ extension GeneratorContext {
         return GeneratorContext(
             priorBest: buildPriorBest(sessions: sessions, importedPeaks: importedPeaks),
             lastAttempt: buildLastAttempt(sessions: sessions),
+            attemptHistory: buildAttemptHistory(sessions: sessions, now: now),
             recentSoreAreas: includeParkedSignals
                 ? buildRecentSoreAreas(soreness: soreness, feedback: feedback, cutoff: weekSoreCutoff)
                 : [],
@@ -352,11 +359,45 @@ extension GeneratorContext {
     /// a native entry — native session > imported peak. For exercises the
     /// user has imported but never logged natively, the peak warm-starts
     /// priorBest so the generator has a real baseline weight to work from.
-    /// Imported weight arrives in kg (Fitbod schema literally calls the
-    /// column `Weight(kg)`) and is converted to lb to match the native
-    /// path's convention.
-    /// Most recent session per exercise name; heaviest completed working set
-    /// and the best reps at that weight, against the session's target reps.
+    /// PR 10B — per-exercise completion history for autoregulation.
+    /// Newest-first. One Attempt per SESSION containing the exercise:
+    /// completion = done working sets / target sets for that exercise in
+    /// that session; reps = best reps at the heaviest completed weight.
+    /// Warmup sets excluded (matching the other history builders).
+    /// Window: 4 weeks, matching the other history signals.
+    static func buildAttemptHistory(sessions: [SavedSession],
+                                    now: Date = Date()) -> [String: [AutoregulationEngine.Attempt]] {
+        let cutoff = Calendar.current.date(byAdding: .weekOfYear, value: -4, to: now) ?? now
+        var perEx: [String: [(date: Date, attempt: AutoregulationEngine.Attempt)]] = [:]
+        for session in sessions where session.startTime >= cutoff {
+            for ex in session.exercises {
+                let targetSets = max(1, ex.targetSets)
+                var doneSets = 0
+                var bestW = 0.0
+                var bestR = 0
+                for set in ex.sets where set.done && !set.isWarmup {
+                    doneSets += 1
+                    let w = set.weightValue ?? 0
+                    let r = set.repsValue ?? 0
+                    if w > bestW || (w == bestW && r > bestR) {
+                        bestW = w; bestR = r
+                    }
+                }
+                guard doneSets > 0 else { continue }
+                let attempt = AutoregulationEngine.Attempt(
+                    completion: min(1.0, Double(doneSets) / Double(targetSets)),
+                    reps: bestR,
+                    targetReps: ex.targetReps
+                )
+                perEx[ex.name.lowercased(), default: []]
+                    .append((session.startTime, attempt))
+            }
+        }
+        return perEx.mapValues { list in
+            list.sorted { $0.date > $1.date }.map(\.attempt)
+        }
+    }
+
     static func buildLastAttempt(sessions: [SavedSession]) -> [String: LastAttempt] {
         var out: [String: LastAttempt] = [:]
         for session in sessions.sorted(by: { $0.startTime > $1.startTime }) {
