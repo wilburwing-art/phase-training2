@@ -7,9 +7,44 @@
 import Foundation
 
 extension PlanStore {
+    // MARK: - PR 10A — auto-arc signal
+    //
+    // The deload decision is computed fresh on every generate() from the
+    // plan-history snapshots (PR 4) + saved sessions. The last-deload
+    // marker is persisted by generate() so PlanArc's cooldown survives
+    // restarts.
+
+    /// The arc signal for the week containing `today`. `.none` when
+    /// sessionStore isn't wired (tests/previews) — the same degradation
+    /// contract as buildGeneratorContext.
+    func planArcSignal(today: Date) -> PlanArcSignal {
+        guard let sessionStore else { return .none }
+        let weekStart = today.startOfTrainingWeek()
+        let lastDeload = (defaults.object(forKey: Self.lastDeloadWeekKey) as? Double)
+            .map { Date(timeIntervalSince1970: $0) }
+        return PlanArc.signal(
+            snapshots: pastPlans,
+            sessions: sessionStore.savedSessions,
+            currentWeekStart: weekStart,
+            lastDeloadWeekStart: lastDeload
+        )
+    }
+
+    /// A generated plan reads as a deload week when it carries the
+    /// deload recovery day. Cheap + robust marker for the marker write.
+    func isDeloadPlan(_ p: WeekPlan) -> Bool {
+        p.days.contains {
+            $0.kind == .rest && $0.title == "Recovery"
+        }
+    }
+
     func generate(from memory: TrainingMemory, today: Date = Date()) -> WeekPlan {
         let routines = CoachDatabase.shared.listRoutines()
         let context = buildGeneratorContext(memory: memory, today: today)
+        // PR 10A — decide the arc for this regen BEFORE generating, so
+        // Planner.generate can apply the deload transform, and remember
+        // the decision locally for the marker write below.
+        let arcSignal = planArcSignal(today: today)
         let p = Planner.generate(
             memory: memory,
             overrides: overrides,
@@ -25,7 +60,8 @@ extension PlanStore {
             recentSportLogs: sportLogStore?.entries ?? [],
             recentlyPicked: recentPicks?.recentlyPickedIds() ?? [],
             today: today,
-            context: context
+            context: context,
+            deloadWeek: arcSignal == .deload
         )
         // Build 105: apply CustomRoutine overrides AFTER Planner.generate()
         // so the user's "use my saved leg workout for Thursday" pick
@@ -38,6 +74,13 @@ extension PlanStore {
         // PR 4: snapshot every generated plan into history (idempotent by
         // weekStart — a same-week regen replaces the prior entry).
         snapshotCurrentPlan(now: today)
+        // PR 10A — remember deload weeks so PlanArc's cooldown can't fire
+        // two deloads within 4 weeks. Persisted alongside the other plan
+        // keys; cleared by resetAll.
+        if arcSignal == .deload, isDeloadPlan(pWithCustoms) {
+            defaults.set(today.timeIntervalSince1970,
+                         forKey: Self.lastDeloadWeekKey)
+        }
         // Build 98: kick off background LLM refinement for consent-on
         // users. Deterministic plan above renders immediately; the
         // refinement task progressively replaces each lift/mobility day

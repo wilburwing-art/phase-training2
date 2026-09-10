@@ -100,6 +100,9 @@ final class PlanStore: ObservableObject {
     /// PR 9 — log of abandoned workouts (Stop early, <70% completion).
     /// Same rolling window + dedupe semantics as missedWorkoutsKey.
     static let abandonedWorkoutsKey = "pt_abandoned_workouts"
+    /// PR 10A — timestamp of the last auto-arc deload week (used as the
+    /// cooldown anchor). Set when a generate() produced a deload week.
+    static let lastDeloadWeekKey = "pt_last_deload_week"
 
     /// How many weeks of history we retain. Anything older rolls off on
     /// the next snapshot. Twelve weeks matches the coach's longest-window
@@ -437,6 +440,7 @@ final class PlanStore: ObservableObject {
         defaults.removeObject(forKey: Self.planOverridesKey)
         defaults.removeObject(forKey: Self.missedWorkoutsKey)
         defaults.removeObject(forKey: Self.abandonedWorkoutsKey)
+        defaults.removeObject(forKey: Self.lastDeloadWeekKey)
         defaults.removeObject(forKey: Self.reshuffleCountKey)
         defaults.removeObject(forKey: Self.reshuffleWeekKey)
         defaults.removeObject(forKey: Self.consolidationCountKey)
