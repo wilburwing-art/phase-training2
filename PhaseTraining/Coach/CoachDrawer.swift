@@ -378,7 +378,11 @@ struct CoachDrawer: View {
             // actually asks "why did I miss Tuesday?".
             pastPlans: planStore.pastPlans,
             planIssues: planStore.currentValidationIssues(memory: memoryStore.memory),
-            missedWorkouts: planStore.missedWorkouts
+            missedWorkouts: planStore.missedWorkouts,
+            // PR 9: the chat surface is where a user asks "why did my
+            // knee force me to stop Tuesday?" — same rationale as the
+            // T2-3 wiring above.
+            abandonedWorkouts: planStore.abandonedWorkouts
         )
 
         inflightTask = Task {

@@ -115,6 +115,13 @@ struct RootTabView: View {
             planStore.memoryStore = memoryStore
             planStore.sportLogStore = sportLogStore
             planStore.customStore = customStore
+            // PR 9 — abandoned workouts flow from SessionStore (which
+            // owns the save path) into PlanStore (which owns the log +
+            // rules-engine reactions). Closure wiring, same pattern as
+            // the store refs above: SessionStore stays plan-agnostic.
+            sessionStore.onAbandonRecorded = { [weak planStore] entry in
+                planStore?.recordAbandonment(entry)
+            }
             // These injected stores feed derived view state — e.g. the Today
             // missed-workout banner reads `sessionStore` via
             // `pendingMissedWorkouts()` — but none is individually @Published, so

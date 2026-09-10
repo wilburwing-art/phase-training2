@@ -97,6 +97,9 @@ final class PlanStore: ObservableObject {
     /// (resets on rollover, same as the reshuffle counter). Capped at 1/week.
     static let consolidationCountKey = "pt_consolidation_count"
     static let consolidationWeekKey = "pt_consolidation_week"
+    /// PR 9 — log of abandoned workouts (Stop early, <70% completion).
+    /// Same rolling window + dedupe semantics as missedWorkoutsKey.
+    static let abandonedWorkoutsKey = "pt_abandoned_workouts"
 
     /// How many weeks of history we retain. Anything older rolls off on
     /// the next snapshot. Twelve weeks matches the coach's longest-window
@@ -133,6 +136,10 @@ final class PlanStore: ObservableObject {
     /// Rolling 90-day window pruned on every detection/reshuffle so
     /// the coach doesn't get fed a year-old miss.
     @Published var missedWorkouts: [MissedWorkoutEntry]
+    /// PR 9 — log of abandoned workouts, newest-first, same 90-day
+    /// rolling window as missedWorkouts. Read by CoachContext and by
+    /// the planner's bias-against-repeatedly-abandoned-exercise path.
+    @Published var abandonedWorkouts: [AbandonedWorkoutEntry]
     /// PR 8 — count of mid-week reshuffles (missed + abandoned)
     /// applied in the current week. Resets on weekly rollover.
     /// Spec §3 rule 5 caps at 2/week.
@@ -257,6 +264,16 @@ final class PlanStore: ObservableObject {
             self.midWeekConsolidationCount = defaults.integer(forKey: Self.consolidationCountKey)
         } else {
             self.midWeekConsolidationCount = 0
+        }
+        // PR 9: load the abandonment log. Same 90-day window as misses.
+        if let data = defaults.data(forKey: Self.abandonedWorkoutsKey),
+           let list = try? Self.decoder().decode([AbandonedWorkoutEntry].self, from: data) {
+            let cutoff = today.addingTimeInterval(-Double(Self.planOverridesRetentionDays) * 86_400)
+            self.abandonedWorkouts = list
+                .filter { $0.loggedAt >= cutoff }
+                .sorted { $0.date > $1.date }
+        } else {
+            self.abandonedWorkouts = []
         }
 
         // Weekly-rollover detection: if we have an active plan that
@@ -411,6 +428,7 @@ final class PlanStore: ObservableObject {
         pastPlans = []
         recentPlanOverrides = []
         missedWorkouts = []
+        abandonedWorkouts = []
         midWeekReshuffleCount = 0
         midWeekConsolidationCount = 0
         defaults.removeObject(forKey: Self.planKey)
@@ -418,6 +436,7 @@ final class PlanStore: ObservableObject {
         defaults.removeObject(forKey: Self.pastPlansKey)
         defaults.removeObject(forKey: Self.planOverridesKey)
         defaults.removeObject(forKey: Self.missedWorkoutsKey)
+        defaults.removeObject(forKey: Self.abandonedWorkoutsKey)
         defaults.removeObject(forKey: Self.reshuffleCountKey)
         defaults.removeObject(forKey: Self.reshuffleWeekKey)
         defaults.removeObject(forKey: Self.consolidationCountKey)

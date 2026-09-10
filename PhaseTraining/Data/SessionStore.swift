@@ -19,6 +19,11 @@ final class SessionStore: ObservableObject {
 
     @Published var savedSessions: [SavedSession]
     @Published var active: ActiveSession?
+    /// PR 9 — app-level wiring: the App layer assigns this to forward
+    /// abandonment entries into PlanStore. SessionStore stays plan-agnostic
+    /// (it doesn't know PlanStore exists); a closure keeps the dependency
+    /// pointing the right way. `saveAbandoned` invokes it after persisting.
+    var onAbandonRecorded: ((AbandonedWorkoutEntry) -> Void)?
     /// Set when a completed workout failed to reach SQLite. Latches until the
     /// user acknowledges — losing a finished session silently is the worst
     /// failure this app has, so it must never be a one-frame condition.
@@ -370,6 +375,42 @@ final class SessionStore: ObservableObject {
         }
         savedSessions.insert(saved, at: 0)
         clearActive()
+        return saved
+    }
+
+    /// PR 9 — persist an abandoned session: the partial work goes
+    /// through the exact same completed path (its sets are real
+    /// history), then the plan-layer AbandonedWorkoutEntry is recorded
+    /// on PlanStore via the app-level wiring hook. `feel`/`note` carry
+    /// the abandon reason label + note so History renders them like any
+    /// other session.
+    @discardableResult
+    func saveAbandoned(_ active: ActiveSession, reason: AbandonReason,
+                       note: String?, endTime: Date = Date()) -> SavedSession {
+        var abandonNote = "Stopped early — \(reason.label)"
+        if let note, !note.isEmpty { abandonNote += ": \(note)" }
+        let saved = saveCompleted(active, feel: reason.label, note: abandonNote, endTime: endTime)
+
+        // Completion ratio: done / total across every planned set,
+        // computed at save time (spec §5 — no schema change needed).
+        let stats = stats(for: active)
+        let ratio = stats.totalSets > 0
+            ? Double(stats.doneSets) / Double(stats.totalSets)
+            : 0.0
+
+        // Only below the threshold is this an abandonment; a Stop-early
+        // tap on a ≥70% session is a completed (if short) workout.
+        if ratio < AbandonedWorkoutEntry.abandonmentThreshold {
+            onAbandonRecorded?(
+                AbandonedWorkoutEntry(
+                    date: Calendar.current.startOfDay(for: active.startTime),
+                    plannedTitle: active.name,
+                    reason: reason,
+                    completionRatio: ratio,
+                    note: note
+                )
+            )
+        }
         return saved
     }
 
