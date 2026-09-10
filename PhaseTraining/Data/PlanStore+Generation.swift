@@ -45,6 +45,12 @@ extension PlanStore {
         // Planner.generate can apply the deload transform, and remember
         // the decision locally for the marker write below.
         let arcSignal = planArcSignal(today: today)
+        // PR 10D — skip-streak: de-emphasize the weekday the user has
+        // missed 3+ times. Computed from the same log the missed-workout
+        // autopilot reads.
+        let skipStreakWeekday = SkipStreakDetector.worstStreakWeekday(
+            missedWorkouts: missedWorkouts, now: today
+        )
         let p = Planner.generate(
             memory: memory,
             overrides: overrides,
@@ -61,7 +67,8 @@ extension PlanStore {
             recentlyPicked: recentPicks?.recentlyPickedIds() ?? [],
             today: today,
             context: context,
-            deloadWeek: arcSignal == .deload
+            deloadWeek: arcSignal == .deload,
+            deEmphasizedWeekdays: skipStreakWeekday.map { [$0] } ?? []
         )
         // Build 105: apply CustomRoutine overrides AFTER Planner.generate()
         // so the user's "use my saved leg workout for Thursday" pick

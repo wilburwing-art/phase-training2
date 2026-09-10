@@ -41,7 +41,15 @@ enum Planner {
         // (×0.7) and one lift day is demoted to a recovery rest day
         // (when there are 3+ lifts, keeping ≥2). Computed by the caller
         // via PlanArc.signal — the planner stays pure and stateless.
-        deloadWeek: Bool = false
+        deloadWeek: Bool = false,
+        // PR 10D — skip-streak de-emphasis. When the user has missed the
+        // same weekday 3+ times in the window, the planner biases THIS
+        // regen away from scheduling heavy work there. The caller
+        // (PlanStore.generate) computes the weekday from the missed-
+        // workout log; defaulted so existing callers/tests are unchanged.
+        // Soft bias: at most one lift slot on that weekday converts to
+        // rest, and only when ≥2 lifts remain (spec §6.4).
+        deEmphasizedWeekdays: Set<Weekday> = []
     ) -> WeekPlan {
         let biased = applyRecentSignalBias(
             memory: memory,
@@ -81,7 +89,48 @@ enum Planner {
         // the FINISHED plan (after taper + arc) so any reshuffle those
         // passes caused gets re-balanced. Sport/event days are protected
         // — only planner-generated lift days are demotable.
-        return CNSBudgetEngine.balance(plan: plan)
+        var balanced = CNSBudgetEngine.balance(plan: plan)
+        // PR 10D — apply the skip-streak bias AFTER balancing, so the
+        // de-emphasis is the final word on the streak weekday (the CNS
+        // pass wouldn't re-add a lift there anyway, but the ordering
+        // makes the contract explicit: streak de-emphasis never loses
+        // to placement passes).
+        if !deEmphasizedWeekdays.isEmpty {
+            balanced = applySkipStreakBias(
+                plan: balanced,
+                weekdays: deEmphasizedWeekdays,
+                calendar: calendar
+            )
+        }
+        return balanced
+    }
+
+    /// PR 10D — soften the rotation on skip-streak weekdays: convert at
+    /// most ONE lift slot per de-emphasized weekday to rest, only while
+    /// ≥2 lifts remain in the week. The lift with the WORST recent
+    /// history is targeted first (its misses are why we're here).
+    static func applySkipStreakBias(plan: WeekPlan,
+                                    weekdays: Set<Weekday>,
+                                    calendar: Calendar = .current) -> WeekPlan {
+        var out = plan
+        let liftCount = out.days.filter { $0.kind == .lift }.count
+        // Never drop below 2 lifts: converting requires >2 in the week.
+        guard liftCount > 2 else { return out }
+        let candidates = out.days.indices.filter { idx in
+            let d = out.days[idx]
+            guard d.kind == .lift else { return false }
+            let wd = Weekday.from(date: d.date, calendar: calendar)
+            return weekdays.contains(wd)
+        }
+        // One demotion per call — the de-emphasis is a bias, not a purge.
+        guard let target = candidates.first else { return out }
+        out.days[target] = DayPlan(
+            date: out.days[target].date,
+            kind: .rest,
+            title: "Rest",
+            generatedReason: "Rest — this day hasn't been working for you lately"
+        )
+        return out
     }
 
     /// PR 10A — transform a finished plan into a deload week.
