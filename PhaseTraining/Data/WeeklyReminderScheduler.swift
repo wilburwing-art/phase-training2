@@ -50,6 +50,13 @@ enum WeeklyReminderScheduler {
             UserDefaults.standard.set(false, forKey: enabledKey)
             return false
         }
+        // PR 12 — the daily budget + per-class kill switch gate every
+        // non-operational push. Suppressed/disabled → schedule nothing
+        // (the flag stays false so the Profile toggle reads honestly).
+        guard NotificationBudget.authorize(cls: .weeklyPlan) else {
+            UserDefaults.standard.set(false, forKey: enabledKey)
+            return false
+        }
 
         let content = UNMutableNotificationContent()
         content.title = "Plan your week"
@@ -69,6 +76,8 @@ enum WeeklyReminderScheduler {
         center.removePendingNotificationRequests(withIdentifiers: [identifier])
         do {
             try await center.add(request)
+            // PR 12 — bookkeep the budget only on a real delivery.
+            NotificationBudget.recordDelivered(cls: .weeklyPlan)
             UserDefaults.standard.set(true, forKey: enabledKey)
             return true
         } catch {
@@ -150,6 +159,12 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         // notification's userInfo deepLink.
         let raw = WeeklyReminderScheduler.deepLink(forAction: response.actionIdentifier)
             ?? (response.notification.request.content.userInfo["deepLink"] as? String)
+        // PR 12 — a dismissal (user cleared without tapping) feeds the
+        // suppression counter for this push's class. Taps don't count —
+        // acting on the notification is engagement, not dismissal.
+        if response.actionIdentifier == UNNotificationDismissActionIdentifier {
+            NotificationBudget.recordDismissal(cls: .weeklyPlan)
+        }
         if let raw, let url = URL(string: raw) {
             DispatchQueue.main.async {
                 UIApplication.shared.open(url)
