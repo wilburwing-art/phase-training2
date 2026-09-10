@@ -54,6 +54,35 @@ struct RemindersEditorSheet: View {
                                 .font(.monoXS)
                                 .foregroundStyle(Color.danger)
                         }
+
+                        // PR 12 — per-class push governance. Toggling a
+                        // class off stops those pushes from scheduling;
+                        // the daily cap (3/day) applies regardless.
+                        Text("PUSH CATEGORIES")
+                            .styled(.micro)
+                            .foregroundStyle(Color.ink3)
+                            .padding(.top, 8)
+                        ForEach([NotificationBudget.Class.missedWorkout,
+                                 NotificationBudget.Class.coachMilestone],
+                                id: \.self) { cls in
+                            Toggle(isOn: classBinding(cls)) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(cls.label)
+                                        .styled(.body)
+                                        .foregroundStyle(Color.ink)
+                                    Text(cls == .missedWorkout
+                                         ? "When the autopilot spots a missed workout"
+                                         : "PRs, goal progress, streak celebrations")
+                                        .font(.monoXS)
+                                        .foregroundStyle(Color.ink3)
+                                }
+                            }
+                            .toggleStyle(.switch)
+                            .tint(Color.accent)
+                        }
+                        Text("Max 3 pushes a day · dismissed notifications are suppressed automatically")
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 18)
@@ -93,5 +122,19 @@ struct RemindersEditorSheet: View {
                 remindersFailed = !ok
             }
         }
+    }
+
+    // MARK: - PR 12 — per-class toggles
+
+    @State private var classStates: [NotificationBudget.Class: Bool] = [:]
+
+    private func classBinding(_ cls: NotificationBudget.Class) -> Binding<Bool> {
+        Binding(
+            get: { classStates[cls] ?? NotificationBudget.isEnabled(cls) },
+            set: { newValue in
+                classStates[cls] = newValue
+                NotificationBudget.setEnabled(newValue, for: cls)
+            }
+        )
     }
 }
