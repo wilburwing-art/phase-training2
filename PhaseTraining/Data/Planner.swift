@@ -35,7 +35,13 @@ enum Planner {
         today: Date = Date(),
         calendar: Calendar = .current,
         context: GeneratorContext = .empty,
-        strategy: GeneratorStrategy = .auto
+        strategy: GeneratorStrategy = .auto,
+        // PR 10A — auto-arc. When true, the plan is generated as a deload
+        // week: prescriptions run at the existing .deload set multiplier
+        // (×0.7) and one lift day is demoted to a recovery rest day
+        // (when there are 3+ lifts, keeping ≥2). Computed by the caller
+        // via PlanArc.signal — the planner stays pure and stateless.
+        deloadWeek: Bool = false
     ) -> WeekPlan {
         let biased = applyRecentSignalBias(
             memory: memory,
@@ -54,7 +60,7 @@ enum Planner {
         // Stacks with the readiness floor: whichever is stricter wins, since
         // each only ever lowers the count.
         let phaseCapped = applyPhaseSessionCap(memory: readinessCapped)
-        return generateUnbiased(
+        var plan = generateUnbiased(
             memory: phaseCapped,
             overrides: overrides,
             routines: routines,
@@ -64,6 +70,81 @@ enum Planner {
             context: context,
             strategy: strategy
         )
+        // PR 10A — apply the arc LAST, after every other pass has placed
+        // its slots. The deload transforms the finished plan rather than
+        // participating in placement, so it can't be undone or double-
+        // applied by the shape/override/taper passes above.
+        if deloadWeek {
+            plan = applyDeload(plan: plan, calendar: calendar)
+        }
+        return plan
+    }
+
+    /// PR 10A — transform a finished plan into a deload week.
+    ///
+    /// Two moves, both silent per spec §6.1:
+    ///   1. Prescriptions: every generated lift workout is re-generated
+    ///      with the `.deload` intensity bias (sets ×0.7, clamped ≥1 by
+    ///      the existing prescription path). The lift rotation (focus per
+    ///      index) is preserved — the deload trims VOLUME, it doesn't
+    ///      change which muscles the week trains.
+    ///   2. One lift day demoted to a recovery rest day, choosing the
+    ///      lift day whose demotion leaves the week most balanced
+    ///      (maximizes remaining inter-lift spacing). Only when 3+ lifts
+    ///      remain after demotion is disallowed... i.e. only demote when
+    ///      the week has 3+ lifts so ≥2 remain.
+    static func applyDeload(plan: WeekPlan,
+                            calendar: Calendar = .current) -> WeekPlan {
+        var out = plan
+        let liftIdxs = out.days.indices.filter { out.days[$0].kind == .lift }
+
+        // (1) demote one lift day to a recovery rest day.
+        if liftIdxs.count >= 3 {
+            // Candidate demotions: keep-2 balance score = min pairwise gap
+            // between remaining lift dates (larger min gap = more balanced).
+            // Deterministic tiebreak: latest date wins.
+            var best: (idx: Int, score: Int)? = nil
+            for drop in liftIdxs {
+                let remaining = liftIdxs.filter { $0 != drop }
+                    .map { calendar.startOfDay(for: out.days[$0].date).timeIntervalSince1970 }
+                    .sorted()
+                guard remaining.count >= 2 else { continue }
+                var gaps: [Double] = []
+                for i in 1..<remaining.count {
+                    gaps.append(remaining[i] - remaining[i - 1])
+                }
+                let minGap = Int((gaps.min() ?? 0) / 86_400)
+                if best == nil || minGap > best!.score {
+                    best = (drop, minGap)
+                }
+            }
+            if let drop = best?.idx {
+                out.days[drop] = DayPlan(
+                    date: out.days[drop].date,
+                    kind: .rest,
+                    title: "Recovery",
+                    generatedReason: "Recovery day — you've trained hard the last few weeks"
+                )
+            }
+        }
+
+        // (1) trim prescriptions on surviving lift days. Scale the
+        // ALREADY-GENERATED workouts in place rather than re-running the
+        // generator: same exercises, same order, same recipes — only the
+        // set counts shrink by the .deload multiplier (×0.7, clamped
+        // 1-8, identical to IntensityBias.deload in makePickedRow). A
+        // re-generate would shift the deterministic in-slot picks
+        // (Bench → Dumbbell Bench class swaps) and break the continuity
+        // the authored recipes are meant to provide.
+        for idx in out.days.indices where out.days[idx].kind == .lift {
+            guard var workout = out.days[idx].generatedWorkout else { continue }
+            for e in workout.exercises.indices {
+                let scaled = Int((Double(workout.exercises[e].sets) * 0.7).rounded())
+                workout.exercises[e].sets = max(1, min(8, scaled))
+            }
+            out.days[idx].generatedWorkout = workout
+        }
+        return out
     }
 
     /// Phase 2: when readinessScore < 0.3 AND we have real data, cap
