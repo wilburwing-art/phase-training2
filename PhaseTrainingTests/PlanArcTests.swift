@@ -245,6 +245,35 @@ final class PlanArcTests: XCTestCase {
         XCTAssertLessThan(deloadSets, normalSets)
     }
 
+    /// PR 10A review fix: the deload must NOT re-run the generator.
+    /// Exercise picks, order, and recipes are identical to the non-deload
+    /// plan; only set counts shrink. This is what keeps a deload week
+    /// anchored to the same authored-coach workouts the user has been
+    /// running (no "Bench → Dumbbell Bench" in-slot swaps mid-arc).
+    func test_applyDeload_preservesExerciseSelection() {
+        let normal = generatePlan(deload: false)
+        let deload = generatePlan(deload: true)
+        let cal = Calendar.current
+        for dDay in deload.days where dDay.kind == .lift {
+            guard let dWorkout = dDay.generatedWorkout else {
+                return XCTFail("deload lift day missing workout")
+            }
+            // Find the matching day in the normal plan by calendar date.
+            guard let nDay = normal.days.first(where: {
+                cal.isDate($0.date, inSameDayAs: dDay.date)
+            }), let nWorkout = nDay.generatedWorkout else {
+                return XCTFail("no matching normal-plan day for \(dDay.date)")
+            }
+            XCTAssertEqual(dWorkout.exercises.map(\.name),
+                           nWorkout.exercises.map(\.name),
+                           "deload must not change exercise selection")
+            for (d, n) in zip(dWorkout.exercises, nWorkout.exercises) {
+                XCTAssertLessThanOrEqual(d.sets, n.sets)
+                XCTAssertGreaterThanOrEqual(d.sets, 1)
+            }
+        }
+    }
+
     func test_applyDeload_nonDeloadPlanUnchanged() {
         let normal = generatePlan(deload: false)
         XCTAssertEqual(normal.days.filter { $0.title == "Recovery" }.count, 0)

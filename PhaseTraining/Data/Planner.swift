@@ -75,7 +75,7 @@ enum Planner {
         // participating in placement, so it can't be undone or double-
         // applied by the shape/override/taper passes above.
         if deloadWeek {
-            plan = applyDeload(plan: plan, memory: phaseCapped, calendar: calendar)
+            plan = applyDeload(plan: plan, calendar: calendar)
         }
         return plan
     }
@@ -93,14 +93,12 @@ enum Planner {
     ///      (maximizes remaining inter-lift spacing). Only when 3+ lifts
     ///      remain after demotion is disallowed... i.e. only demote when
     ///      the week has 3+ lifts so ≥2 remain.
-    static func applyDeload(plan: WeekPlan, memory: TrainingMemory,
+    static func applyDeload(plan: WeekPlan,
                             calendar: Calendar = .current) -> WeekPlan {
         var out = plan
-        let profile = DemographicProfile.from(memory)
         let liftIdxs = out.days.indices.filter { out.days[$0].kind == .lift }
 
-        // (2) first — regenerate AFTER demotion so we only prescribe the
-        // surviving lifts (one pass, not two).
+        // (1) demote one lift day to a recovery rest day.
         if liftIdxs.count >= 3 {
             // Candidate demotions: keep-2 balance score = min pairwise gap
             // between remaining lift dates (larger min gap = more balanced).
@@ -130,25 +128,21 @@ enum Planner {
             }
         }
 
-        // (1) re-prescribe surviving lift days at .deload.
-        let surviving = out.days.indices.filter { out.days[$0].kind == .lift }
-        let total = surviving.count
-        for (position, idx) in surviving.enumerated() {
-            let day = out.days[idx]
-            let workout = WorkoutGenerator.generateLift(
-                liftIndex: position,
-                totalLifts: total,
-                memory: memory,
-                profile: profile,
-                hashSeed: memory.planInputsHash + "-deload",
-                strategy: GeneratorStrategy(
-                    focus: nil, durationMinutes: nil,
-                    emphasizePatterns: [], deprioritizePatterns: [],
-                    targetWeightOverrides: [:], rpeOverrides: [:],
-                    tempoOverrides: [:], intensityBias: .deload)
-            )
+        // (1) trim prescriptions on surviving lift days. Scale the
+        // ALREADY-GENERATED workouts in place rather than re-running the
+        // generator: same exercises, same order, same recipes — only the
+        // set counts shrink by the .deload multiplier (×0.7, clamped
+        // 1-8, identical to IntensityBias.deload in makePickedRow). A
+        // re-generate would shift the deterministic in-slot picks
+        // (Bench → Dumbbell Bench class swaps) and break the continuity
+        // the authored recipes are meant to provide.
+        for idx in out.days.indices where out.days[idx].kind == .lift {
+            guard var workout = out.days[idx].generatedWorkout else { continue }
+            for e in workout.exercises.indices {
+                let scaled = Int((Double(workout.exercises[e].sets) * 0.7).rounded())
+                workout.exercises[e].sets = max(1, min(8, scaled))
+            }
             out.days[idx].generatedWorkout = workout
-            out.days[idx].title = workout.title
         }
         return out
     }
