@@ -18,6 +18,13 @@ extension ProfileScreen {
         return n == 0 ? "All set" : "\(n) assumed"
     }
 
+    var goalsSummary: String {
+        let goals = store.memory.userGoals
+        guard !goals.isEmpty else { return "None" }
+        let first = goals[0].templateId.label
+        return goals.count == 1 ? first : "\(first) +\(goals.count - 1)"
+    }
+
     var sportsSummary: String {
         let sports = store.memory.sports
         guard !sports.isEmpty else { return "None" }
