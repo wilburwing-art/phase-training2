@@ -38,6 +38,11 @@ enum CoachContext {
         // ("you've missed Tuesday's lift 3 weeks in a row"). Recent
         // (last 14 days) entries only — older misses aren't actionable.
         missedWorkouts: [MissedWorkoutEntry] = [],
+        // PR 9: stop-early abandonments. The coach should connect "you
+        // stopped Tuesday's session early — left knee?" to a pattern,
+        // especially repeated pain abandons on the same exercise. Last
+        // 14 days only, same window as misses.
+        abandonedWorkouts: [AbandonedWorkoutEntry] = [],
         // Phase 2 readiness: pass-through of the in-season readiness
         // score (0..1, 0.5 = neutral / no data) so the LLM knows
         // whether to nudge intensity up or down in its prose. Per the
@@ -322,6 +327,27 @@ enum CoachContext {
                 lines.append("- \(short(entry.date)) (\(weekday(entry.date))): \(title) — \(entry.resolution.summary)")
             }
             blocks.append("MISSED WORKOUTS (last 14 days)\n" + lines.joined(separator: "\n"))
+        }
+
+        // PR 9: recent abandonments (last 14 days). Includes the reason
+        // + completion share so the coach can connect a pain abandon to
+        // a specific session without asking.
+        let abandonCutoff = now.addingTimeInterval(-14 * 86_400)
+        let recentAbandoned = abandonedWorkouts
+            .filter { $0.loggedAt >= abandonCutoff }
+            .sorted { $0.date > $1.date }
+            .prefix(8)
+        if !recentAbandoned.isEmpty {
+            var lines: [String] = []
+            for entry in recentAbandoned {
+                let title = entry.plannedTitle ?? "workout"
+                var line = "- \(short(entry.date)) (\(weekday(entry.date))): \(title) stopped at \(Int((entry.completionRatio * 100).rounded()))% — reason: \(entry.reason.label)"
+                if let note = entry.note, !note.isEmpty {
+                    line += " (note: \(sanitizeFreeText(note)))"
+                }
+                lines.append(line)
+            }
+            blocks.append("ABANDONED WORKOUTS (last 14 days)\n" + lines.joined(separator: "\n"))
         }
 
         if let familiarity = familiaritySection(sessions: recentSessions, now: now) {

@@ -50,6 +50,8 @@ struct BackupEnvelope: Codable {
     var sportLogs: [SportLogEntry] = []
     /// `pt_missed_workouts` — the missed-workout log driving the autopilot.
     var missedWorkouts: [MissedWorkoutEntry] = []
+    /// PR 9 — `pt_abandoned_workouts` — the stop-early abandonment log.
+    var abandonedWorkouts: [AbandonedWorkoutEntry] = []
     /// `pt_recent_exercise_picks` — variety memory, so a restore doesn't
     /// immediately re-serve the exercises the user just cycled away from.
     var recentPicks: [String: Date] = [:]
@@ -89,6 +91,7 @@ struct BackupEnvelope: Codable {
         // v2 — absent in every v1 backup.
         sportLogs = try c.decodeIfPresent([SportLogEntry].self, forKey: .sportLogs) ?? []
         missedWorkouts = try c.decodeIfPresent([MissedWorkoutEntry].self, forKey: .missedWorkouts) ?? []
+        abandonedWorkouts = try c.decodeIfPresent([AbandonedWorkoutEntry].self, forKey: .abandonedWorkouts) ?? []
         recentPicks = try c.decodeIfPresent([String: Date].self, forKey: .recentPicks) ?? [:]
         importedWorkouts = try c.decodeIfPresent([ImportedWorkout].self, forKey: .importedWorkouts) ?? []
         importedSets = try c.decodeIfPresent([ImportedSet].self, forKey: .importedSets) ?? []
@@ -107,6 +110,7 @@ struct BackupEnvelope: Codable {
          reminderEnabled: Bool,
          sportLogs: [SportLogEntry] = [],
          missedWorkouts: [MissedWorkoutEntry] = [],
+         abandonedWorkouts: [AbandonedWorkoutEntry] = [],
          recentPicks: [String: Date] = [:],
          importedWorkouts: [ImportedWorkout] = [],
          importedSets: [ImportedSet] = []) {
@@ -122,6 +126,7 @@ struct BackupEnvelope: Codable {
         self.reminderEnabled = reminderEnabled
         self.sportLogs = sportLogs
         self.missedWorkouts = missedWorkouts
+        self.abandonedWorkouts = abandonedWorkouts
         self.recentPicks = recentPicks
         self.importedWorkouts = importedWorkouts
         self.importedSets = importedSets
@@ -186,6 +191,7 @@ enum BackupManager {
         let reminderEnabled = defaults.bool(forKey: "pt_weekly_reminder_enabled")
         let sportLogs: [SportLogEntry] = decodeIfPresent(defaults: defaults, key: "pt_sport_logs") ?? []
         let missedWorkouts: [MissedWorkoutEntry] = decodeIfPresent(defaults: defaults, key: "pt_missed_workouts") ?? []
+        let abandonedWorkouts: [AbandonedWorkoutEntry] = decodeIfPresent(defaults: defaults, key: "pt_abandoned_workouts") ?? []
         let recentPicks: [String: Date] = decodeIfPresent(defaults: defaults, key: "pt_recent_exercise_picks") ?? [:]
         return BackupEnvelope(
             memorySchemaVersion: memory?.schemaVersion,
@@ -199,6 +205,7 @@ enum BackupManager {
             reminderEnabled: reminderEnabled,
             sportLogs: sportLogs,
             missedWorkouts: missedWorkouts,
+            abandonedWorkouts: abandonedWorkouts,
             recentPicks: recentPicks,
             importedWorkouts: userDB.allImportedWorkouts(),
             importedSets: userDB.allImportedSets()
@@ -295,6 +302,7 @@ enum BackupManager {
                            "pt_weekly_reminder_enabled",
                            "pt_sessions", "pt_custom_routines",
                            "pt_sport_logs", "pt_missed_workouts",
+                           "pt_abandoned_workouts",
                            "pt_recent_exercise_picks"]
         var priorValues: [String: Any] = [:]
         for key in touchedKeys { priorValues[key] = defaults.object(forKey: key) }
@@ -306,6 +314,7 @@ enum BackupManager {
             defaults.set(envelope.reminderEnabled, forKey: "pt_weekly_reminder_enabled")
             try encodeAndWrite(envelope.sportLogs, defaults: defaults, key: "pt_sport_logs")
             try encodeAndWrite(envelope.missedWorkouts, defaults: defaults, key: "pt_missed_workouts")
+            try encodeAndWrite(envelope.abandonedWorkouts, defaults: defaults, key: "pt_abandoned_workouts")
             try encodeAndWrite(envelope.recentPicks, defaults: defaults, key: "pt_recent_exercise_picks")
             // Wipe legacy UserDefaults keys so a stale post-migration import
             // path can never resurrect them. Idempotent.

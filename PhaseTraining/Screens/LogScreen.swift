@@ -40,6 +40,7 @@ struct LogScreen: View {
 
     @EnvironmentObject private var store: SessionStore
     @EnvironmentObject private var memoryStore: MemoryStore
+    @EnvironmentObject private var conv: CoachConversationStore
     let onFinish: () -> Void
     var onCancel: (() -> Void)? = nil
 
@@ -52,6 +53,10 @@ struct LogScreen: View {
     /// user.db, streaks and planner history. Cancel already confirms; the far
     /// more destructive action did not.
     @State private var showFinishConfirm = false
+    /// PR 9 — "Stop early" is a distinct exit from Finish: it ends the
+    /// session as an abandonment (<70% completion → rules-engine
+    /// reshuffle, reason feeds the coach). nil = sheet closed.
+    @State private var showAbandonSheet = false
     /// Reached with no active session — an anomalous state, not a normal entry.
     /// LogScreen used to paper over it by creating a hardcoded "upper-1"
     /// session, silently ignoring today's plan, generated workout and any day
@@ -120,6 +125,19 @@ struct LogScreen: View {
             Text(incompleteSetCount == 1
                  ? "One set isn't logged yet. Finishing saves the workout as it stands."
                  : "\(incompleteSetCount) sets aren't logged yet. Finishing saves the workout as it stands.")
+        }
+        .sheet(isPresented: $showAbandonSheet) {
+            // PR 9 — typed abandon-reason capture. Confirm saves the
+            // partial session through the normal completed path (the
+            // logged sets are real history) and records the
+            // AbandonedWorkoutEntry the rules engine + coach read.
+            AbandonReasonSheet(
+                completionSummary: "\(store.stats(for: session).doneSets) of \(store.stats(for: session).totalSets) sets logged",
+                onConfirm: { reason, note in
+                    abandonWorkout(reason: reason, note: note)
+                },
+                onCancel: {}
+            )
         }
         .sheet(item: $swappingExIdx.exerciseSheetItem) { wrapped in
             let original = session.exercises[wrapped.index]
@@ -323,6 +341,30 @@ struct LogScreen: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("log-finish")
+
+                // PR 9 — distinct from Finish: ends the session as an
+                // ABANDONMENT (reason captured in AbandonReasonSheet) so
+                // the rules engine can reshuffle the rest of the week
+                // and the coach learns why. Only meaningful when sets
+                // remain — a fully-logged workout is just Finish.
+                if anyUndone {
+                    Button {
+                        showAbandonSheet = true
+                    } label: {
+                        Text("Stop early")
+                            .font(.custom("Inter-Regular", size: 13).weight(.medium))
+                            .tracking(-0.01 * 13)
+                            .foregroundStyle(Color.ink2)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .stroke(Color.line, lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("log-stop-early")
+                }
             }
             .padding(.horizontal, 20)
             .padding(.top, 10)
@@ -370,6 +412,26 @@ struct LogScreen: View {
     }
 
     // MARK: - Mutations
+
+    /// PR 9 — end the session as an abandonment. Saves the partial
+    /// session through the normal completed path (logged sets are real
+    /// history: PRs, volume, prior-best), then records the
+    /// AbandonedWorkoutEntry. Callback to TodayTab drops back to Start.
+    func abandonWorkout(reason: AbandonReason, note: String?) {
+        store.saveAbandoned(session, reason: reason, note: note)
+        // PR 9 — pain abandons soft-trigger a coach check-in: the
+        // drawer opens with a pre-filled question the user can edit or
+        // send. Gated on coach entitlement so a locked user isn't
+        // yanked into an upsell mid-recovery. "Soft" — dismissible, no
+        // forced chat, no notification.
+        if reason == .pain, conv.presented == false {
+            var prefill = "I stopped today's workout early because of pain"
+            if let note, !note.isEmpty { prefill += " (\(note))" }
+            prefill += ". Can you adjust the rest of my week around it?"
+            conv.present(withPrefill: prefill)
+        }
+        onFinish()
+    }
 
     /// Long-press menu hook on a set row. Flips the warmup flag, which is
     /// the single source of truth for the PR / volume / 1RM exclusion path

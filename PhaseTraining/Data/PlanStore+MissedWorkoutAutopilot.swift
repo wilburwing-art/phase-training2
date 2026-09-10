@@ -133,3 +133,71 @@ extension PlanStore {
         saveMissedWorkouts()
     }
 }
+
+// MARK: - PR 9 — Abandoned workout handling
+
+extension PlanStore {
+    /// Record an abandonment that SessionStore.saveAbandoned surfaced
+    /// through `onAbandonRecorded`. Idempotent per calendar day (a
+    /// re-record replaces the same day's entry), same 90-day window as
+    /// misses. Does NOT touch the reshuffle counter — the reactive
+    /// adjust is a separate, user-visible action.
+    func recordAbandonment(_ entry: AbandonedWorkoutEntry) {
+        var next = abandonedWorkouts.filter {
+            !Calendar.current.isDate($0.date, inSameDayAs: entry.date)
+        }
+        next.append(entry)
+        let cutoff = entry.loggedAt.addingTimeInterval(
+            -Double(Self.planOverridesRetentionDays) * 86_400
+        )
+        abandonedWorkouts = next
+            .filter { $0.loggedAt >= cutoff }
+            .sorted { $0.date > $1.date }
+        saveAbandonedWorkouts()
+    }
+
+    /// Persist the abandonment log (mirrors saveMissedWorkouts).
+    func saveAbandonedWorkouts() {
+        if let data = try? Self.encoder().encode(abandonedWorkouts) {
+            defaults.set(data, forKey: Self.abandonedWorkoutsKey)
+        }
+    }
+
+    /// PR 9 — reactive adjust for an abandonment. Same autopilot rules
+    /// as a miss (drop rule, no-stacking, user-locked days) with the
+    /// abandonment's own date as the day to relocate, sharing the
+    /// 2/week reshuffle budget (spec §3 rule 5). Returns the proposed
+    /// diff, or nil when the autopilot declines (drop rule, budget, or
+    /// no valid target) — the caller then just informs.
+    ///
+    /// Abandonments differ from misses in one respect: the session
+    /// happened, so `detect()` would never find this date on its own;
+    /// we drive from the entry instead of pending detection.
+    func proposeAbandonReshuffle(entry: AbandonedWorkoutEntry,
+                                 now: Date = Date()) -> PlanDiff? {
+        guard let plan else { return nil }
+        let remainingBudget = max(0, Self.weeklyReshuffleCap - midWeekReshuffleCount)
+        let edits = MissedWorkoutAutopilot.proposeReshuffle(
+            missedDate: entry.date,
+            plan: plan,
+            overrides: overrides,
+            remainingBudget: remainingBudget,
+            now: now
+        )
+        guard !edits.isEmpty else { return nil }
+        return propose(edits, reasoning: "Stopped early — moved to keep coverage")
+    }
+
+    /// Apply an abandonment reshuffle: applies the diff, bumps the
+    /// shared mid-week reshuffle counter, and stamps the entry's
+    /// resolution onto the log via a follow-up entry note. The
+    /// abandonment entry itself keeps its reason; the reshuffle is
+    /// recorded by the counter, matching the missed-workout path.
+    func applyAbandonReshuffle(_ diff: PlanDiff,
+                               entry: AbandonedWorkoutEntry,
+                               now: Date = Date()) {
+        apply(diff)
+        midWeekReshuffleCount += 1
+        saveReshuffleCount(now: now)
+    }
+}
