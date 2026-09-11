@@ -8,8 +8,9 @@
 //   1. Bundled `<exerciseID>.webp` shipped under Resources/ExerciseImages/
 //      (flattened to app bundle root at build time — folder reference in
 //      project.pbxproj). Loads via UIImage(named:) sync, no network.
-//      A generated start/end pair ships as `<id>.webp` (start, also the
-//      thumbnail) plus `<id>_end.webp`; only the detail hero reads the end.
+//      A generated exercise ships four: `<id>.webp` + `<id>_end.webp` (themed
+//      line art, this thumbnail flips between them) and `<id>_hero.webp` +
+//      `<id>_hero_end.webp` (mannequin renders, the detail hero).
 //   2. `urlString` via CachedAsyncImage — NSCache + URLCache disk fallback.
 //   3. SF Symbol placeholder.
 //
@@ -46,11 +47,29 @@ struct ExerciseThumbnail: View {
     var body: some View {
         Group {
             if let bundled = bundledImage {
-                Image(uiImage: bundled)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: size, height: size)
-                    .clipped()
+                if let end = bundledEndImage {
+                    // Generated start/end pair: flip between the two frames
+                    // so the row reads as the movement. TimelineView is torn
+                    // down with the row when it scrolls off a LazyVStack, so
+                    // nothing ticks for rows that are not on screen.
+                    TimelineView(.periodic(from: .now, by: Self.flipInterval)) { context in
+                        let showEnd = Int(context.date.timeIntervalSinceReferenceDate / Self.flipInterval) % 2 == 1
+                        Image(uiImage: showEnd ? end : bundled)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: size, height: size)
+                            .clipped()
+                            .id(showEnd)
+                            .transition(.opacity)
+                            .animation(.easeInOut(duration: 0.25), value: showEnd)
+                    }
+                } else {
+                    Image(uiImage: bundled)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: size, height: size)
+                        .clipped()
+                }
             } else {
                 CachedAsyncImage(
                     url: urlString.flatMap(URL.init(string:)),
@@ -97,6 +116,15 @@ struct ExerciseThumbnail: View {
         guard let exerciseID else { return nil }
         return BundledExerciseImage.shared.image(forID: exerciseID)
     }
+
+    /// Seconds each frame of a start/end pair is held. Slow enough to read
+    /// as "start, end" rather than a flicker.
+    static let flipInterval: TimeInterval = 1.2
+
+    private var bundledEndImage: UIImage? {
+        guard let exerciseID else { return nil }
+        return BundledExerciseImage.shared.endImage(forID: exerciseID)
+    }
 }
 
 /// Memoized lookup of bundled exercise WebPs. UIImage(named:) caches by name
@@ -104,10 +132,13 @@ struct ExerciseThumbnail: View {
 /// in O(1) for the long-tail exercises that don't have a bundled image.
 final class BundledExerciseImage {
     static let shared = BundledExerciseImage()
-    private let presentIDs: Set<Int>
-    private let endFrameIDs: Set<Int>
-    private var loaded: [Int: UIImage] = [:]
-    private var loadedEnd: [Int: UIImage] = [:]
+
+    /// Filename suffixes a generated exercise can ship, after the numeric id.
+    /// "" is the single image every exercise has (start frame for a pair);
+    /// the others exist only for exercises promoted by scripts/imagegen.
+    private static let suffixes = ["", "_end", "_hero", "_hero_end"]
+    private var present: [String: Set<Int>] = [:]
+    private var loaded: [String: [Int: UIImage]] = [:]
     private let lock = NSLock()
 
     private init() {
@@ -116,22 +147,20 @@ final class BundledExerciseImage {
         // the subdirectory is preserved in the .app bundle. Also enumerate
         // the bundle root as a fallback for any build that uses the older
         // hand-edited pbxproj layout (which flattens contents).
-        guard let resourcePath = Bundle.main.resourcePath else {
-            self.presentIDs = []
-            self.endFrameIDs = []
-            return
-        }
+        for suffix in Self.suffixes { present[suffix] = [] }
+        guard let resourcePath = Bundle.main.resourcePath else { return }
         let fm = FileManager.default
-        var ids: Set<Int> = []
-        var endIDs: Set<Int> = []
 
         func scan(_ names: [String]) {
             for name in names where name.hasSuffix(".webp") {
-                let stem = name.dropLast(5)
-                if let id = Int(stem) {
-                    ids.insert(id)
-                } else if stem.hasSuffix("_end"), let id = Int(stem.dropLast(4)) {
-                    endIDs.insert(id)
+                let stem = String(name.dropLast(5))
+                // Longest suffix first so "_hero_end" is not read as "_end".
+                for suffix in Self.suffixes.sorted(by: { $0.count > $1.count })
+                where stem.hasSuffix(suffix) {
+                    if let id = Int(stem.dropLast(suffix.count)) {
+                        present[suffix, default: []].insert(id)
+                    }
+                    break
                 }
             }
         }
@@ -139,28 +168,27 @@ final class BundledExerciseImage {
         if fm.fileExists(atPath: subdir) {
             scan((try? fm.contentsOfDirectory(atPath: subdir)) ?? [])
         }
-        if ids.isEmpty {
+        if present[""]?.isEmpty ?? true {
             scan((try? fm.contentsOfDirectory(atPath: resourcePath)) ?? [])
         }
-        self.presentIDs = ids
-        self.endFrameIDs = endIDs
     }
 
-    func image(forID id: Int) -> UIImage? {
-        guard presentIDs.contains(id) else { return nil }
-        return cached(id, in: &loaded, resource: "\(id)")
-    }
+    /// The single bundled image, or the START frame of a generated pair.
+    func image(forID id: Int) -> UIImage? { cached(id, suffix: "") }
 
-    /// The END frame of a generated start/end pair, or nil when the exercise
-    /// ships only a single image. `image(forID:)` is the start frame.
-    func endImage(forID id: Int) -> UIImage? {
-        guard endFrameIDs.contains(id) else { return nil }
-        return cached(id, in: &loadedEnd, resource: "\(id)_end")
-    }
+    /// END frame of a generated line-art pair; nil for single-image exercises.
+    func endImage(forID id: Int) -> UIImage? { cached(id, suffix: "_end") }
 
-    private func cached(_ id: Int, in cache: inout [Int: UIImage], resource: String) -> UIImage? {
+    /// Mannequin start frame for the detail hero; nil unless generated.
+    func heroImage(forID id: Int) -> UIImage? { cached(id, suffix: "_hero") }
+
+    /// Mannequin end frame for the detail hero; nil unless generated.
+    func heroEndImage(forID id: Int) -> UIImage? { cached(id, suffix: "_hero_end") }
+
+    private func cached(_ id: Int, suffix: String) -> UIImage? {
+        guard present[suffix]?.contains(id) == true else { return nil }
         lock.lock()
-        if let hit = cache[id] {
+        if let hit = loaded[suffix]?[id] {
             lock.unlock()
             return hit
         }
@@ -168,6 +196,7 @@ final class BundledExerciseImage {
 
         // Try the subdirectory (xcodegen folder reference) first, then the
         // bundle root (hand-edited pbxproj flat layout).
+        let resource = "\(id)\(suffix)"
         var img: UIImage?
         if let url = Bundle.main.url(forResource: resource, withExtension: "webp", subdirectory: "ExerciseImages"),
            let data = try? Data(contentsOf: url) {
@@ -180,7 +209,7 @@ final class BundledExerciseImage {
         }
         if let img {
             lock.lock()
-            cache[id] = img
+            loaded[suffix, default: [:]][id] = img
             lock.unlock()
         }
         return img
