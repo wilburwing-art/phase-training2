@@ -128,11 +128,17 @@ struct ExerciseTile: View {
         case .flat:         return 0
         }
     }
+    /// Thumbnail edge in `.thumb` rows. Raised from 48 on 2026-09-11 so the
+    /// generated line art reads without squinting; 96 was tried and read as
+    /// too big, 84 is the pick. The one-screen-workout rule that kept rows
+    /// short was relaxed for it. Composite (Today) rows use the same edge.
+    static let thumbSize: CGFloat = 84
+
     private var minHeight: CGFloat {
         switch density {
-        case .catalog:      return 76
+        case .catalog:      return ExerciseTile.thumbSize + 2 * 12
         case .compact:      return 56
-        case .presentation: return 88
+        case .presentation: return CompositeLeading.frameSize + 2 * 14
         case .flat:         return 0
         }
     }
@@ -148,7 +154,7 @@ struct ExerciseTile: View {
     @ViewBuilder private var leadingView: some View {
         switch vm.leading {
         case .thumb(let exerciseID, let url):
-            ExerciseThumbnail(exerciseID: exerciseID, urlString: url, size: 48, cornerRadius: 8)
+            ExerciseThumbnail(exerciseID: exerciseID, urlString: url, size: ExerciseTile.thumbSize, cornerRadius: 12)
 
         case .index(let n):
             Text(String(format: "%02d", n))

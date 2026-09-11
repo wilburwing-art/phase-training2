@@ -25,7 +25,7 @@ extension LogScreen {
         VStack(spacing: 0) {
             // Header row
             HStack(spacing: 8) {
-                ExerciseThumbnail(urlString: thumbnailURL(forName: ex.name), size: 32, cornerRadius: 6)
+                ExerciseThumbnail(urlString: thumbnailURL(forName: ex.name), size: 48, cornerRadius: 8)
                     .opacity(allDone ? 0.6 : 1.0)
                 if allDone {
                     ZStack {

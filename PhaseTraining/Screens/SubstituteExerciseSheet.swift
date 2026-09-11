@@ -120,7 +120,7 @@ struct SubstituteExerciseSheet: View {
                 dismiss()
             } label: {
                 HStack(alignment: .top, spacing: 12) {
-                    ExerciseThumbnail(urlString: sub.exercise.thumbnailURL ?? sub.exercise.imageURL, size: 56)
+                    ExerciseThumbnail(urlString: sub.exercise.thumbnailURL ?? sub.exercise.imageURL, size: ExerciseTile.thumbSize, cornerRadius: 12)
                     VStack(alignment: .leading, spacing: 8) {
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
                             Text(sub.exercise.name)
@@ -195,7 +195,7 @@ struct SubstituteExerciseSheet: View {
                 dismiss()
             } label: {
                 HStack(alignment: .top, spacing: 12) {
-                    ExerciseThumbnail(urlString: ex.thumbnailURL ?? ex.imageURL, size: 56)
+                    ExerciseThumbnail(urlString: ex.thumbnailURL ?? ex.imageURL, size: ExerciseTile.thumbSize, cornerRadius: 12)
                     VStack(alignment: .leading, spacing: 8) {
                         Text(ex.name)
                             .styled(.body)
