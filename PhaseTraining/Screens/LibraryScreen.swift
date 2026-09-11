@@ -300,7 +300,7 @@ struct LibraryScreen: View {
             modality: nil,
             difficulty: nil,
             environment: nil,
-            compoundOnly: false,
+            compoundOnly: nil,   // nil = no filter; false would mean isolation-only
             userSportSlugs: []
         )
     }

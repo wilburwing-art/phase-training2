@@ -90,3 +90,18 @@ obvious fallback for short plan names, and adding it is a change to overload
 generator emit canonical DB names. Do not reach for fuzzy matching here, for
 the reason in "Where broadening is safe" above, and because a wrong photo looks
 correct.
+
+## A "no filter" that filters: `compoundOnly: false` (2026-09-11)
+
+The picker overload's `compoundOnly: Bool?` is tri-state: `nil` = no clause,
+`false` = `e.is_compound = 0`. `LibraryScreen.searchResults` passed `false`
+meaning "off", so the Library tab's global search could only ever return the
+217 isolation rows; every deadlift, squat and press (363 rows) read as
+"Nothing matches" while the muscle screens, which pass `filters.compoundOnly`
+(starts `nil`), found them. Shipped that way since T1-14 (`88c39e9`).
+
+When one search screen finds a row and another does not, diff the two call
+sites argument by argument before reading the SQL; the SQL was fine. Any
+`Bool?` filter parameter needs `nil` at a "cleared" call site, and
+`CoachDatabaseSearchTests.test_librarySearch_findsCompoundLifts` now pins the
+Library's exact call shape.

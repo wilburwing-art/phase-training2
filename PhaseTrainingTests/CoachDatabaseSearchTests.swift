@@ -45,6 +45,36 @@ final class CoachDatabaseSearchTests: XCTestCase {
         XCTAssertEqual(CoachDatabase.searchTokens(""), [])
     }
 
+    // MARK: - Library global search
+
+    /// The Library tab's global search calls the picker overload with every
+    /// filter cleared. `compoundOnly` is a tri-state: nil = no filter, false =
+    /// isolation only. It shipped as `false`, so the global search could never
+    /// return a compound lift (every deadlift, squat, press). Pins the call
+    /// shape LibraryScreen.searchResults uses.
+    func test_librarySearch_findsCompoundLifts() throws {
+        try requireCoachDB()
+        let rows = CoachDatabase.shared.listExercises(
+            search: "romanian deadlift",
+            muscleSlugs: [],
+            patternSlugs: [],
+            modality: nil,
+            difficulty: nil,
+            environment: nil,
+            compoundOnly: nil,
+            userSportSlugs: []
+        )
+        XCTAssertTrue(rows.contains { $0.slug == "romanian-deadlift" },
+                      "global search must reach compound lifts; got \(rows.map(\.name))")
+    }
+
+    func test_compoundOnlyFalse_isIsolationFilter_notNoFilter() throws {
+        try requireCoachDB()
+        let isolation = CoachDatabase.shared.listExercises(
+            search: "deadlift", compoundOnly: false)
+        XCTAssertTrue(isolation.isEmpty, "every deadlift is compound, so compoundOnly:false must exclude them all")
+    }
+
     // MARK: - osaDistance
 
     private func osa(_ a: String, _ b: String) -> Int {
