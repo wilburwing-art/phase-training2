@@ -35,6 +35,8 @@ import SwiftUI
 struct ProgressScreen: View {
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject var memoryStore: MemoryStore
+    /// PR 11 — sport-log access for goal progress (5k / climb counts).
+    @EnvironmentObject var planStore: PlanStore
 
     /// Build 92: history surfaced from here via "See all sessions" on the
     /// Recent Sessions card. Previously lived as a tab off the Today screen.
@@ -137,6 +139,7 @@ struct ProgressScreen: View {
                 .padding(.horizontal, -20)
                 SeasonPhaseBadge(style: .full, surface: "progress")
                 SorenessCheckInPill()
+                goalsCard
                 statStrip
                 bodyWeightTrendCard
                 bodyCompositionTrendCard

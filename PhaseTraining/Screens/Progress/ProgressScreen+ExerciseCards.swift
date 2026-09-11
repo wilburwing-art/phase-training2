@@ -41,7 +41,8 @@ extension ProgressScreen {
                             meta: "\(formatBigNum(s.latest)) \(s.unit)\(prDateSuffix(s.lastPRDate))",
                             trailing: .sparkline(
                                 points: normalizedPoints(s.points),
-                                pr: isWithin14Days(s.lastPRDate)
+                                pr: isWithin14Days(s.lastPRDate),
+                                anchors: taggedAnchors(for: s.points)
                             )
                         ),
                         density: .flat
@@ -56,6 +57,24 @@ extension ProgressScreen {
     /// flat through the MIDDLE of the tile, not pinned to the bottom edge.
     private func normalizedPoints(_ pts: [ProgressAggregates.SparkPoint]) -> [Double] {
         ProgressStats.normalizedPoints(pts)
+    }
+
+    /// PR 11 — indices into the series whose sessions carry a tag. The
+    /// series points are per-session (same ordering as the normalized
+    /// array), so anchor matching is by session start time.
+    private func taggedAnchors(for pts: [ProgressAggregates.SparkPoint]) -> Set<Int> {
+        guard !pts.isEmpty else { return [] }
+        let taggedStartTimes = Set(
+            store.savedSessions
+                .filter { !$0.sessionTags.isEmpty }
+                .map(\.startTime)
+        )
+        guard !taggedStartTimes.isEmpty else { return [] }
+        var anchors = Set<Int>()
+        for (i, p) in pts.enumerated() where taggedStartTimes.contains(p.date) {
+            anchors.insert(i)
+        }
+        return anchors
     }
 
     private func prDateSuffix(_ date: Date?) -> String {
