@@ -8,6 +8,8 @@
 //   1. Bundled `<exerciseID>.webp` shipped under Resources/ExerciseImages/
 //      (flattened to app bundle root at build time — folder reference in
 //      project.pbxproj). Loads via UIImage(named:) sync, no network.
+//      A generated start/end pair ships as `<id>.webp` (start, also the
+//      thumbnail) plus `<id>_end.webp`; only the detail hero reads the end.
 //   2. `urlString` via CachedAsyncImage — NSCache + URLCache disk fallback.
 //   3. SF Symbol placeholder.
 //
@@ -103,7 +105,9 @@ struct ExerciseThumbnail: View {
 final class BundledExerciseImage {
     static let shared = BundledExerciseImage()
     private let presentIDs: Set<Int>
+    private let endFrameIDs: Set<Int>
     private var loaded: [Int: UIImage] = [:]
+    private var loadedEnd: [Int: UIImage] = [:]
     private let lock = NSLock()
 
     private init() {
@@ -114,31 +118,49 @@ final class BundledExerciseImage {
         // hand-edited pbxproj layout (which flattens contents).
         guard let resourcePath = Bundle.main.resourcePath else {
             self.presentIDs = []
+            self.endFrameIDs = []
             return
         }
         let fm = FileManager.default
         var ids: Set<Int> = []
+        var endIDs: Set<Int> = []
 
+        func scan(_ names: [String]) {
+            for name in names where name.hasSuffix(".webp") {
+                let stem = name.dropLast(5)
+                if let id = Int(stem) {
+                    ids.insert(id)
+                } else if stem.hasSuffix("_end"), let id = Int(stem.dropLast(4)) {
+                    endIDs.insert(id)
+                }
+            }
+        }
         let subdir = (resourcePath as NSString).appendingPathComponent("ExerciseImages")
         if fm.fileExists(atPath: subdir) {
-            let names = (try? fm.contentsOfDirectory(atPath: subdir)) ?? []
-            for name in names where name.hasSuffix(".webp") {
-                if let id = Int(name.dropLast(5)) { ids.insert(id) }
-            }
+            scan((try? fm.contentsOfDirectory(atPath: subdir)) ?? [])
         }
         if ids.isEmpty {
-            let names = (try? fm.contentsOfDirectory(atPath: resourcePath)) ?? []
-            for name in names where name.hasSuffix(".webp") {
-                if let id = Int(name.dropLast(5)) { ids.insert(id) }
-            }
+            scan((try? fm.contentsOfDirectory(atPath: resourcePath)) ?? [])
         }
         self.presentIDs = ids
+        self.endFrameIDs = endIDs
     }
 
     func image(forID id: Int) -> UIImage? {
         guard presentIDs.contains(id) else { return nil }
+        return cached(id, in: &loaded, resource: "\(id)")
+    }
+
+    /// The END frame of a generated start/end pair, or nil when the exercise
+    /// ships only a single image. `image(forID:)` is the start frame.
+    func endImage(forID id: Int) -> UIImage? {
+        guard endFrameIDs.contains(id) else { return nil }
+        return cached(id, in: &loadedEnd, resource: "\(id)_end")
+    }
+
+    private func cached(_ id: Int, in cache: inout [Int: UIImage], resource: String) -> UIImage? {
         lock.lock()
-        if let hit = loaded[id] {
+        if let hit = cache[id] {
             lock.unlock()
             return hit
         }
@@ -147,18 +169,18 @@ final class BundledExerciseImage {
         // Try the subdirectory (xcodegen folder reference) first, then the
         // bundle root (hand-edited pbxproj flat layout).
         var img: UIImage?
-        if let url = Bundle.main.url(forResource: "\(id)", withExtension: "webp", subdirectory: "ExerciseImages"),
+        if let url = Bundle.main.url(forResource: resource, withExtension: "webp", subdirectory: "ExerciseImages"),
            let data = try? Data(contentsOf: url) {
             img = UIImage(data: data)
         }
         if img == nil,
-           let url = Bundle.main.url(forResource: "\(id)", withExtension: "webp"),
+           let url = Bundle.main.url(forResource: resource, withExtension: "webp"),
            let data = try? Data(contentsOf: url) {
             img = UIImage(data: data)
         }
         if let img {
             lock.lock()
-            loaded[id] = img
+            cache[id] = img
             lock.unlock()
         }
         return img

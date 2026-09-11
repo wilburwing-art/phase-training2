@@ -273,13 +273,28 @@ private struct ExerciseDetailContent: View {
         // instantly from the bundle showed a spinner and then "Image unavailable"
         // when offline, for the 438 exercises whose image ships inside the app.
         if let bundled = BundledExerciseImage.shared.image(forID: exercise.id) {
-            Image(uiImage: bundled)
-                .resizable()
-                .scaledToFill()
+            if let end = BundledExerciseImage.shared.endImage(forID: exercise.id) {
+                // Generated start/end pair: two square frames side by side,
+                // scaled to fit so neither pose loses its head or feet, on
+                // the white the line art was drawn against.
+                HStack(spacing: 8) {
+                    Image(uiImage: bundled).resizable().scaledToFit()
+                    Image(uiImage: end).resizable().scaledToFit()
+                }
+                .padding(8)
                 .frame(maxWidth: .infinity)
                 .frame(height: 200)
-                .clipped()
+                .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            } else {
+                Image(uiImage: bundled)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 200)
+                    .clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
         } else if let urlString = exercise.imageURL, let url = URL(string: urlString) {
             VStack(alignment: .leading, spacing: 6) {
                 CachedAsyncImage(
