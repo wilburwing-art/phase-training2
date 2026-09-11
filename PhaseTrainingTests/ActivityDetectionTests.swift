@@ -365,9 +365,16 @@ final class ActivityDetectionStoreTests: XCTestCase {
         // Ski + hike detected on the same Saturday. Confirming the ski
         // writes that day's sport log, so the hike candidate must not
         // survive to double-log the day.
+        //
+        // The day is anchored to a fixed local NOON, not now-86400: at
+        // now-86400 the two workouts can straddle local midnight (run at
+        // 23:32, ski = 23:32 yesterday, hike = 00:32 today → different
+        // days → confirm correctly leaves the other day's candidate up
+        // and this assertion fails). CI hit exactly that window.
         let suite = "ActivityDetectionStoreTests.sameDay"
         let defaults = freshDefaults(suite)
-        let day = Date().addingTimeInterval(-86_400)
+        let day = Calendar.current.date(bySettingHour: 12, minute: 0, second: 0,
+                                        of: Date().addingTimeInterval(-86_400))!
 
         let fake = FakeStore()
         fake.workoutsResult = .success([
@@ -390,9 +397,12 @@ final class ActivityDetectionStoreTests: XCTestCase {
     func testDismissKeepsOtherSameDayCandidate() async {
         // "Not me" on the ski leaves the same-day hike up for review —
         // the other candidate might be the one that's real.
+        // Same-day anchor at local noon: now-86400 straddles midnight
+        // when run within an hour after it, splitting the pair.
         let suite = "ActivityDetectionStoreTests.dismissKeeps"
         let defaults = freshDefaults(suite)
-        let day = Date().addingTimeInterval(-86_400)
+        let day = Calendar.current.date(bySettingHour: 12, minute: 0, second: 0,
+                                        of: Date().addingTimeInterval(-86_400))!
 
         let fake = FakeStore()
         fake.workoutsResult = .success([
