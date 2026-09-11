@@ -9,8 +9,9 @@ Model ids and endpoint shapes were checked against each vendor's docs on
 endpoint; the two native adapters are written to the current docs but no key
 for either vendor exists on this machine, so their first call is their test.
 
-    or-google   google/gemini-3-pro-image   via OpenRouter /api/v1/images
-    or-openai   openai/gpt-5.4-image-2      via OpenRouter /api/v1/images
+    or-google   google/gemini-3-pro-image      via OpenRouter /api/v1/images
+    or-gflash   google/gemini-3.1-flash-image  via OpenRouter /api/v1/images, ~4x cheaper
+    or-openai   openai/gpt-5.4-image-2         via OpenRouter /api/v1/images
     openai      gpt-image-2.5-sunburst      native, needs OPENAI_API_KEY
     google      gemini-3-pro-image          native, needs GOOGLE_API_KEY
 
@@ -32,6 +33,7 @@ import requests
 # OpenRouter. Newest image-output model per vendor in the catalogue on 2026-09-11.
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 OPENROUTER_GOOGLE_MODEL = "google/gemini-3-pro-image"
+OPENROUTER_GOOGLE_FLASH_MODEL = "google/gemini-3.1-flash-image"
 OPENROUTER_OPENAI_MODEL = "openai/gpt-5.4-image-2"
 
 # Native OpenAI. developers.openai.com/api/docs/models lists two image models:
@@ -252,6 +254,7 @@ class GoogleImages:
 
 PROVIDERS = {
     "or-google": lambda: OpenRouterImages("or-google", OPENROUTER_GOOGLE_MODEL),
+    "or-gflash": lambda: OpenRouterImages("or-gflash", OPENROUTER_GOOGLE_FLASH_MODEL),
     "or-openai": lambda: OpenRouterImages("or-openai", OPENROUTER_OPENAI_MODEL),
     "openai": OpenAIImages,
     "google": GoogleImages,

@@ -1,0 +1,17 @@
+{
+  "barbell-back-squat": {
+    "status": "authored",
+    "start_position": "Standing tall with a loaded barbell resting across the upper traps, hands gripping the bar just outside the shoulders, elbows pointing down and back. Feet shoulder width, toes turned out about 15 degrees, knees straight but not locked. Spine neutral, chest up, eyes forward. Weight over the midfoot.",
+    "end_position": "Bottom of the squat: hips and knees bent together so the thighs are at or just below parallel to the floor, knees tracking out over the toes, shins angled forward. Torso leaning forward about 30 degrees from vertical with the spine still neutral and the chest up, no rounding at the lower back. Bar still across the upper traps, directly above the midfoot. Heels flat on the floor."
+  },
+  "push-up": {
+    "status": "authored",
+    "start_position": "High plank on the floor: hands flat under the shoulders, slightly wider than shoulder width, arms fully straight. Body in one straight line from the back of the head through the hips to the heels, toes tucked under. Hips neither sagging nor piked. Head neutral, eyes on the floor just ahead of the hands.",
+    "end_position": "Bottom of the push-up: elbows bent so the chest hovers about one inch above the floor, elbows angled roughly 45 degrees back from the torso rather than flared out to the sides. Body still one straight line from head to heels with no hip sag and no arch at the lower back. Hands and feet unmoved from the start."
+  },
+  "side-plank": {
+    "status": "authored",
+    "start_position": "Lying on the right side on the floor before the hold begins: right forearm on the floor with the right elbow directly under the right shoulder, forearm pointing forward. Legs straight and stacked, left foot on top of the right. Hips resting on the floor. Left arm resting along the left side of the body. Nothing lifted yet.",
+    "end_position": "Hips lifted off the floor so the body forms one straight line from the top of the head through the shoulder, hip and ankle. Weight supported only by the right forearm and the outside edge of the right foot, left foot still stacked on top. Left hand resting on the left hip. Hips high with no sag toward the floor, chest facing straight ahead with no rotation toward the floor."
+  }
+}

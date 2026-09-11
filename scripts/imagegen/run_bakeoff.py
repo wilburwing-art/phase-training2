@@ -33,7 +33,7 @@ import sys
 import traceback
 from pathlib import Path
 
-from prompts import BAKEOFF_EXERCISES, build_end_prompt, build_start_prompt
+from prompts import BAKEOFF_EXERCISES, build_end_prompt, build_hold_prompt, build_start_prompt
 from providers import PROVIDERS
 
 STYLES = ["line_art", "mannequin"]
@@ -44,8 +44,14 @@ POSITIONS = REPO / "db" / "source" / "exercise_positions.json"
 # coach.db keeps pattern, equipment and muscles in join tables. An exercise
 # with several patterns takes the lowest pattern id; "None (Bodyweight)" is
 # the catalogue's spelling for no equipment.
+# Equipment rows the body never touches during the movement. Listing them
+# draws them: "Squat Rack" put a rack in all four back-squat frames (run 3),
+# which is scenery in a thumbnail. Benches, bars and machines stay because
+# the figure is on or holding them.
+SCENERY = {"Squat Rack", "Wall", "Yoga Mat", "Cones", "None (Bodyweight)"}
+
 SELECT = """
-SELECT e.slug AS id, e.name,
+SELECT e.slug AS id, e.name, e.contraction_type,
   (SELECT mp.slug FROM exercise_movement_patterns emp
      JOIN movement_patterns mp ON mp.id = emp.movement_pattern_id
     WHERE emp.exercise_id = e.id ORDER BY mp.id LIMIT 1)          AS movement_pattern,
@@ -76,7 +82,9 @@ def load_from_db(db_path, limit):
         pos = positions.get(r["id"])
         if not pos or not pos.get("start_position") or not pos.get("end_position"):
             continue
-        r["equipment"] = r["equipment"].replace("None (Bodyweight)", "bodyweight only")
+        kept = [q.strip() for q in r["equipment"].split(",") if q.strip() not in SCENERY]
+        r["equipment"] = ", ".join(kept) or "bodyweight only"
+        r["isometric"] = r.pop("contraction_type") == "isometric"
         r["start_position"] = pos["start_position"]
         r["end_position"] = pos["end_position"]
         out.append(r)
@@ -95,10 +103,20 @@ def run_one(provider, style, exercise, outdir, size):
     start_path = stem.with_name(stem.name + "__start.png")
     end_path = stem.with_name(stem.name + "__end.png")
 
+    transparent = provider.native_transparency
+    if exercise.get("isometric"):
+        # A hold has one frame, the hold itself. Asked for a "before the
+        # hold" start, every model drew the hold anyway (side plank, run 3),
+        # so the second call bought an identical image.
+        if start_path.exists():
+            return slug, provider.name, style, None
+        start_path.write_bytes(provider.generate(
+            build_hold_prompt(exercise, style, transparent), size))
+        return slug, provider.name, style, None
+
     if start_path.exists() and end_path.exists():
         return slug, provider.name, style, None
 
-    transparent = provider.native_transparency
     start_png = provider.generate(
         build_start_prompt(exercise, style, transparent), size)
     start_path.write_bytes(start_png)
@@ -121,6 +139,7 @@ def build_contact_sheet(exercises, outdir, combos):
                 "label": f"{prov} / {style.replace('_', ' ')}",
                 "start": f"{stem}__start.png",
                 "end": f"{stem}__end.png",
+                "hold": bool(ex.get("isometric")),
             })
         cells.append(row)
 
@@ -131,7 +150,7 @@ def build_contact_sheet(exercises, outdir, combos):
             body.append(
                 f'<div class="cell"><div class="lbl">{html.escape(c["label"])}</div>'
                 f'<div class="pair"><img src="{c["start"]}" alt="start" loading="lazy">'
-                f'<img src="{c["end"]}" alt="end" loading="lazy"></div>'
+                + ("" if c["hold"] else f'<img src="{c["end"]}" alt="end" loading="lazy">') + '</div>'
                 f'<div class="score" data-key="{c["key"]}">'
                 f'<button data-v="pass">form ok</button>'
                 f'<button data-v="style">style drift</button>'
@@ -203,6 +222,7 @@ def main():
     ap.add_argument("--out", default=str(HERE / "out" / "run_1"))
     ap.add_argument("--db", help="path to the SQLite catalogue")
     ap.add_argument("--limit", type=int, default=10)
+    ap.add_argument("--only", help="comma list of exercise ids/slugs to run (re-rolls)")
     ap.add_argument("--size", default="1024x1024")
     ap.add_argument("--providers", default="or-google,or-openai",
                     help=f"comma list from {', '.join(PROVIDERS)}")
@@ -217,13 +237,21 @@ def main():
 
     exercises = (load_from_db(args.db, args.limit) if args.db
                  else BAKEOFF_EXERCISES[:args.limit])
+    if args.only:
+        wanted = {w.strip() for w in args.only.split(",")}
+        exercises = [ex for ex in exercises if ex["id"] in wanted]
+        if not exercises:
+            sys.exit(f"--only matched nothing in the loaded set: {sorted(wanted)}")
     prov_names = [p.strip() for p in args.providers.split(",") if p.strip()]
     styles = [s.strip() for s in args.styles.split(",") if s.strip()]
     if args.dry_run:
         n = len(prov_names) * len(styles) * len(exercises)
-        print(f"{n} pairs, {n * 2} images total")
+        per = len(prov_names) * len(styles)
+        n_images = sum(per * (1 if ex.get("isometric") else 2) for ex in exercises)
+        print(f"{n} pairs, {n_images} images total")
         for ex in exercises:
-            print(f"  {ex['id']:40s} {ex.get('movement_pattern') or '-':24s} {ex['equipment']}")
+            kind = "hold " if ex.get("isometric") else "pair "
+            print(f"  {kind}{ex['id']:40s} {ex.get('movement_pattern') or '-':24s} {ex['equipment']}")
         print("\n--- first start prompt (white background variant) ---")
         print(build_start_prompt(exercises[0], styles[0]))
         return
@@ -231,7 +259,8 @@ def main():
 
     jobs = [(providers[p], s, ex)
             for p in prov_names for s in styles for ex in exercises]
-    print(f"{len(jobs)} pairs, {len(jobs) * 2} images total")
+    n_images = sum(1 if ex.get("isometric") else 2 for _, _, ex in jobs)
+    print(f"{len(jobs)} pairs, {n_images} images total")
 
     failures = []
     with futures.ThreadPoolExecutor(max_workers=args.workers) as pool:

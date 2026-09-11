@@ -8,10 +8,12 @@ ACCENT_HEX = "#D85A30"
 
 SHARED_CONSTRAINTS = """
 Hard constraints, apply to every image:
-- Exactly one human figure. Never two figures, never a mirrored duplicate.
+- Exactly one human figure. Never two figures, never a mirrored duplicate,
+  never a second view or a ghosted copy of the same figure.
 - Full body in frame, feet and head included, even margin on all four sides.
 - Androgynous adult build, neutral proportions, approximately 7.5 head heights tall.
-- Simple facial features only. No hair styling detail, no clothing branding.
+- Simple facial features only. No hair styling detail. Plain athletic
+  shorts, no logos.
 - {background} No room, no gym, no floor, no cast shadow.
 - Equipment drawn accurately and in contact with the body where it should be.
   Nothing floating.
@@ -117,31 +119,62 @@ def camera_for(exercise):
 
 
 def build_start_prompt(exercise, style, transparent=False):
-    return f"""{STYLE_BIBLE[style]}
+    """The pose comes first: run 1 buried it under the style bible and both
+    Gemini models drew the exercise's iconic mid-rep pose as the start."""
+    return f"""Subject: the START position of the exercise "{exercise['name']}".
+This is the setup moment before any movement has happened. Nothing has been
+lifted, pulled, pressed, raised or hinged yet. If the exercise is a hold
+(plank, bridge, carry), draw the body at rest before the hold begins, not the
+hold itself.
 
-{shared_constraints(transparent)}
-
-Subject: the START position of the exercise "{exercise['name']}".
+Body position to draw, follow this precisely and do not improvise the joint
+angles:
+{exercise['start_position']}
 
 Camera: {camera_for(exercise)}. Use this exact camera for this image.
 Equipment: {exercise['equipment']}.
 Primary working muscles: {exercise['primary_muscles']}.
 
+{STYLE_BIBLE[style]}
+
+{shared_constraints(transparent)}
+"""
+
+
+def build_hold_prompt(exercise, style, transparent=False):
+    """Single frame for an isometric exercise: the hold itself, drawn from
+    the end position text (the start text describes the setup before it)."""
+    return f"""Subject: the exercise "{exercise['name']}", held in its working position.
+This is an isometric hold, so draw the position that is held, not the setup
+before it.
+
 Body position to draw, follow this precisely and do not improvise the joint
 angles:
-{exercise['start_position']}
+{exercise.get('end_position') or exercise['start_position']}
+
+Camera: {camera_for(exercise)}. Use this exact camera for this image.
+Equipment: {exercise['equipment']}.
+Primary working muscles: {exercise['primary_muscles']}.
+
+{STYLE_BIBLE[style]}
+
+{shared_constraints(transparent)}
 """
 
 
 def build_end_prompt(exercise, style, transparent=False):
     """Prompt for the second frame. Always sent with the approved start frame
-    attached as a reference image so the figure carries over."""
-    return f"""{STYLE_BIBLE[style]}
+    attached as a reference image so the figure carries over. Run 1 showed
+    the reference dominating: several end frames came back as the start
+    unchanged, so the movement is stated before the preservation rules."""
+    return f"""The attached reference image is the START position of "{exercise['name']}".
+Produce the END position of the same repetition. The end position must be
+clearly different from the reference: the joints named below have moved.
+Never return the reference pose unchanged.
 
-{shared_constraints(transparent)}
-
-The attached reference image is the START position of "{exercise['name']}".
-Produce the END position of the same repetition.
+Body position to draw, follow this precisely and do not improvise the joint
+angles:
+{exercise['end_position']}
 
 This must read as the same figure one moment later. Preserve exactly: figure
 identity, limb proportions, body scale within the frame, line weight or render
@@ -152,9 +185,9 @@ Camera: {camera_for(exercise)}. Unchanged from the reference.
 Equipment: {exercise['equipment']}.
 Primary working muscles: {exercise['primary_muscles']}.
 
-Body position to draw, follow this precisely and do not improvise the joint
-angles:
-{exercise['end_position']}
+{STYLE_BIBLE[style]}
+
+{shared_constraints(transparent)}
 """
 
 
@@ -303,6 +336,7 @@ BAKEOFF_EXERCISES = [
         "id": "copenhagen-plank",
         "name": "Copenhagen plank",
         "movement_pattern": "anti-lateral-flexion",
+        "isometric": True,
         "equipment": "one bench, top leg resting on the bench",
         "primary_muscles": "adductors and obliques",
         "start_position": (
