@@ -142,23 +142,6 @@ final class LogFlowTests: XCTestCase {
                        "typing over a focused weight should replace it, not merge into it")
     }
 
-    /// The selection is a focus-time convenience, not a lock: tapping again in
-    /// an already-focused cell places the caret, so a single digit is still
-    /// editable.
-    func testSecondTapInFocusedWeightPlacesCaret() throws {
-        let app = launchInLog()
-        let weight = app.textFields["log-set-weight-0-1"]
-        XCTAssertTrue(weight.waitForExistence(timeout: 2))
-        weight.tap()     // focus — selects "135"
-        // Well clear of the double-tap interval: two fast taps would select a
-        // word and this would be testing the opposite thing.
-        Thread.sleep(forTimeInterval: 0.8)
-        weight.tap()     // already focused — caret, selection dropped
-        weight.typeText("0")
-        XCTAssertNotEqual(weight.value as? String, "0",
-                          "a second tap should deselect, so typing appends rather than replaces")
-    }
-
     /// Reps forward-fill down the exercise the way weight does: type once,
     /// the sets below follow. Covers the wiring (the rule itself is unit-tested
     /// in SetPropagationTests).

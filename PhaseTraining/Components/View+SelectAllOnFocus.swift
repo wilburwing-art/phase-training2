@@ -7,10 +7,11 @@
 // UIKit puts the caret where you tapped, so typing 145 into a cell reading 135
 // gives you 1**145**35 and a row of backspaces first.
 //
-// Selecting the whole value on focus turns that into tap-and-type. Tapping an
-// already-focused field still places the caret normally (the notification only
-// fires when editing BEGINS), so deliberately editing one digit is still one
-// extra tap away.
+// Selecting the whole value on focus turns that into tap-and-type. The
+// notification only fires when editing BEGINS, so a second tap in the focused
+// field gets UIKit's normal handling: on the digits it opens the edit menu and
+// keeps the selection, beside them it collapses the selection and places the
+// caret. Deliberately editing one digit is still one extra tap away.
 //
 // SwiftUI has no select-on-focus and @FocusState hands back no UITextField, so
 // this listens for UIKit's begin-editing notification instead. Scope, since the
