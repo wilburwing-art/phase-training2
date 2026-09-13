@@ -1,8 +1,9 @@
 // View+SelectAllOnFocus.swift — tap a pre-filled number field and type over it.
 //
-// The log pre-fills each set's weight from the set above (propagateWeight), so
-// the common mid-workout edit is "this set is 10 lb heavier than the last one":
-// tap the cell, and the number you want to replace is already sitting in it.
+// The log pre-fills each set's weight and reps from the set above
+// (propagateForward), so the common mid-workout edit is "this set is 10 lb
+// heavier than the last one": tap the cell, and the number you want to replace
+// is already sitting in it.
 // UIKit puts the caret where you tapped, so typing 145 into a cell reading 135
 // gives you 1**145**35 and a row of backspaces first.
 //

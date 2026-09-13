@@ -54,6 +54,34 @@ struct LoggedSet: Codable, Equatable {
     }
 }
 
+extension Array where Element == LoggedSet {
+    /// Forward-fill one column after the user edits a set: copy `newValue` into
+    /// every later set that is either still blank or still carrying the value
+    /// this edit replaced.
+    ///
+    /// This is what lets straight-sets lifters type a number once into set 1
+    /// and have the rest of the sets follow, while pyramid lifters can break
+    /// the chain at any row — a set the user has already customized doesn't
+    /// match `oldValue`, so it is left alone, and so is everything they'd have
+    /// to re-type below it. Sets already marked done are never rewritten: that
+    /// work is logged history, not a prediction.
+    ///
+    /// Column-agnostic (weight, reps) so both behave identically — the only
+    /// difference between the two is which key path comes in.
+    mutating func propagateForward(_ column: WritableKeyPath<LoggedSet, String>,
+                                   from index: Int,
+                                   replacing oldValue: String,
+                                   with newValue: String) {
+        guard indices.contains(index) else { return }
+        for i in (index + 1)..<count where !self[i].done {
+            let current = self[i][keyPath: column]
+            if current.isEmpty || current == oldValue {
+                self[i][keyPath: column] = newValue
+            }
+        }
+    }
+}
+
 extension LoggedSet {
     /// Best-effort numeric load from the free-text `weight` field. The logger
     /// accepts raw text, so values arrive as "135", " 135 ", "+25", "60kg",

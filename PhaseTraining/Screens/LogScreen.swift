@@ -90,11 +90,13 @@ struct LogScreen: View {
     /// the weight column by default so reps-only sets need zero weight taps.
     @State var weightEntryExercises: Set<Int> = []
 
-    /// Debounce for downstream weight propagation, keyed by "exIdx-setIdx".
-    /// Without it propagateWeight fired on every keystroke, briefly pushing
-    /// partial values (1, 13, 135) into later sets while the user was still typing.
-    @State var weightPropagateTasks: [String: Task<Void, Never>] = [:]
-    @State var weightPropagateOld: [String: String] = [:]
+    /// Debounce for downstream weight + reps propagation, keyed by
+    /// "column-exIdx-setIdx". Without it the fill fired on every keystroke,
+    /// briefly pushing partial values (1, 13, 135) into later sets while the
+    /// user was still typing. The column prefix keeps the two independent: a
+    /// weight edit must not cancel a pending reps fill on the same row.
+    @State var setPropagateTasks: [String: Task<Void, Never>] = [:]
+    @State var setPropagateOld: [String: String] = [:]
 
     var body: some View {
         ZStack {

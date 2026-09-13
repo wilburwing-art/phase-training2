@@ -1,7 +1,7 @@
 // LogScreenHelpers.swift — Pure logic + formatters for LogScreen.
 //
 // Extracted from LogScreen.swift (Tier 3 split). Catalog lookups, weight-column
-// display rules, progression-suggestion mapping, weight propagation,
+// display rules, progression-suggestion mapping, weight + reps propagation,
 // bulk-mark-done, superset round / following-work predicates, and the static
 // time formatters. No view code.
 
@@ -73,25 +73,57 @@ extension LogScreen {
         return ProgressionPillModel(text: label, tint: tint)
     }
 
-    /// After the user edits a set's weight, copy the new value into any later
-    /// sets in the same exercise that are still empty or still matched the
-    /// previous value. Lets straight-sets users type once into set 1 and have
-    /// 2-N fill in; pyramid users can still overwrite any later row by tapping
-    /// into it (their edit propagates forward from there, or stops if the
-    /// downstream sets have already been customized).
-    func propagateWeight(exIdx: Int, fromSetIdx: Int, oldValue: String, newValue: String) {
+    /// The two set columns that forward-fill as the user types. Weight has
+    /// worked this way since the log shipped; reps joined it because the same
+    /// thing is true of them — a lifter who does 8 on set 1 is usually about to
+    /// log 8 again, and typing it into every row is the same wasted work.
+    /// The raw value namespaces the debounce keys so an edit to one column
+    /// never cancels the other's pending fill.
+    enum SetColumn: String {
+        case weight = "w"
+        case reps = "r"
+
+        var keyPath: WritableKeyPath<LoggedSet, String> {
+            switch self {
+            case .weight: return \.weight
+            case .reps:   return \.reps
+            }
+        }
+    }
+
+    /// Debounce a column's forward-fill until typing pauses, so partial values
+    /// (1, 13, 135) don't briefly land in the sets below. The pre-burst
+    /// `oldValue` is captured on the first change of a burst — by the last
+    /// keystroke the immediate `oldValue` is the user's own half-typed number,
+    /// which would match nothing downstream.
+    func schedulePropagation(exIdx: Int, setIdx: Int, column: SetColumn,
+                             oldValue: String, newValue: String) {
+        let key = "\(column.rawValue)-\(exIdx)-\(setIdx)"
+        if setPropagateTasks[key] == nil { setPropagateOld[key] = oldValue }
+        setPropagateTasks[key]?.cancel()
+        setPropagateTasks[key] = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(400))
+            if Task.isCancelled { return }
+            propagateSetColumn(exIdx: exIdx, fromSetIdx: setIdx, column: column,
+                               oldValue: setPropagateOld[key] ?? oldValue,
+                               newValue: newValue)
+            setPropagateTasks[key] = nil
+            setPropagateOld[key] = nil
+        }
+    }
+
+    /// After the user edits a set's weight or reps, copy the new value into any
+    /// later set in the same exercise that is still empty or still matched the
+    /// previous value. The rule itself lives on the set array
+    /// (`propagateForward`), so it is testable without a view.
+    func propagateSetColumn(exIdx: Int, fromSetIdx: Int, column: SetColumn,
+                            oldValue: String, newValue: String) {
         // The debounced caller can fire after an index change (delete/reorder),
         // so guard the exercise index before touching it.
         guard session.exercises.indices.contains(exIdx) else { return }
-        let count = session.exercises[exIdx].sets.count
-        guard fromSetIdx + 1 < count else { return }
-        for i in (fromSetIdx + 1)..<count {
-            let target = session.exercises[exIdx].sets[i]
-            if target.done { continue }
-            if target.weight.isEmpty || target.weight == oldValue {
-                session.exercises[exIdx].sets[i].weight = newValue
-            }
-        }
+        session.exercises[exIdx].sets.propagateForward(
+            column.keyPath, from: fromSetIdx, replacing: oldValue, with: newValue
+        )
     }
 
     /// Propagate the most-recent filled weight + reps into any empty set and

@@ -82,6 +82,12 @@ extension LogScreen {
                 .frame(maxWidth: .infinity)
                 .accessibilityIdentifier("log-set-reps-\(exIdx)-\(setIdx)")
                 .accessibilityLabel("Reps, set \(setIdx + 1)")
+                // Reps forward-fill exactly like weight: same debounce, same
+                // "empty or unchanged rows only" rule.
+                .onChange(of: session.exercises[exIdx].sets[setIdx].reps) { oldValue, newValue in
+                    schedulePropagation(exIdx: exIdx, setIdx: setIdx, column: .reps,
+                                        oldValue: oldValue, newValue: newValue)
+                }
 
                 effortCell(
                     text: $session.exercises[exIdx].sets[setIdx].rpe,
@@ -167,21 +173,8 @@ extension LogScreen {
             // that assert the raw "135". The unit goes in the label instead.
             .accessibilityLabel("Weight in \(session.exercises[exIdx].unit), set \(setIdx + 1)")
             .onChange(of: session.exercises[exIdx].sets[setIdx].weight) { oldValue, newValue in
-                // Debounce per cell: fill downstream sets only once typing
-                // pauses, so partial values (1, 13, 135) don't briefly land in
-                // later sets. Capture the pre-burst oldValue on the first change.
-                let key = "\(exIdx)-\(setIdx)"
-                if weightPropagateTasks[key] == nil { weightPropagateOld[key] = oldValue }
-                weightPropagateTasks[key]?.cancel()
-                weightPropagateTasks[key] = Task { @MainActor in
-                    try? await Task.sleep(for: .milliseconds(400))
-                    if Task.isCancelled { return }
-                    propagateWeight(exIdx: exIdx, fromSetIdx: setIdx,
-                                    oldValue: weightPropagateOld[key] ?? oldValue,
-                                    newValue: newValue)
-                    weightPropagateTasks[key] = nil
-                    weightPropagateOld[key] = nil
-                }
+                schedulePropagation(exIdx: exIdx, setIdx: setIdx, column: .weight,
+                                    oldValue: oldValue, newValue: newValue)
             }
         } else {
             bodyweightCell(exIdx: exIdx, setIdx: setIdx, done: done)

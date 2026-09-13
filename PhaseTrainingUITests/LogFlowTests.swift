@@ -159,6 +159,28 @@ final class LogFlowTests: XCTestCase {
                           "a second tap should deselect, so typing appends rather than replaces")
     }
 
+    /// Reps forward-fill down the exercise the way weight does: type once,
+    /// the sets below follow. Covers the wiring (the rule itself is unit-tested
+    /// in SetPropagationTests).
+    func testRepsFillForwardToLaterSets() throws {
+        let app = launchInLog()
+        // Seeded bench: 3 sets at 135x8, set 1 already logged.
+        let setTwoReps = app.textFields["log-set-reps-0-1"]
+        let setThreeReps = app.textFields["log-set-reps-0-2"]
+        XCTAssertTrue(setTwoReps.waitForExistence(timeout: 2))
+        XCTAssertTrue(setThreeReps.waitForExistence(timeout: 2))
+        XCTAssertEqual(setThreeReps.value as? String, "8", "precondition: set 3 carries the seeded 8")
+
+        setTwoReps.tap()
+        setTwoReps.typeText("10")
+
+        // The fill is debounced until typing pauses, so wait for the value
+        // rather than reading it straight away.
+        _ = expectation(for: NSPredicate(format: "value == %@", "10"),
+                        evaluatedWith: setThreeReps)
+        waitForExpectations(timeout: 4)
+    }
+
     // MARK: - 2. Edit logged set
 
     func testReopenSetRetainsValues() throws {
