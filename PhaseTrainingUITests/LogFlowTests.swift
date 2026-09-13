@@ -125,6 +125,40 @@ final class LogFlowTests: XCTestCase {
         )
     }
 
+    /// Weight cells are pre-filled from the set above, and going heavier is
+    /// the normal mid-workout edit — so focusing one selects the whole value
+    /// and the next keystroke replaces it.
+    func testTappingPrefilledWeightSelectsItForOverwrite() throws {
+        let app = launchInLog()
+        // Bench set 2 carries a propagated weight of 135 (see
+        // testReopenSetLeavesAdjacentSetsAlone).
+        let weight = app.textFields["log-set-weight-0-1"]
+        XCTAssertTrue(weight.waitForExistence(timeout: 2))
+        XCTAssertEqual(weight.value as? String, "135", "precondition: the cell is pre-filled")
+
+        weight.tap()
+        weight.typeText("145")
+        XCTAssertEqual(weight.value as? String, "145",
+                       "typing over a focused weight should replace it, not merge into it")
+    }
+
+    /// The selection is a focus-time convenience, not a lock: tapping again in
+    /// an already-focused cell places the caret, so a single digit is still
+    /// editable.
+    func testSecondTapInFocusedWeightPlacesCaret() throws {
+        let app = launchInLog()
+        let weight = app.textFields["log-set-weight-0-1"]
+        XCTAssertTrue(weight.waitForExistence(timeout: 2))
+        weight.tap()     // focus — selects "135"
+        // Well clear of the double-tap interval: two fast taps would select a
+        // word and this would be testing the opposite thing.
+        Thread.sleep(forTimeInterval: 0.8)
+        weight.tap()     // already focused — caret, selection dropped
+        weight.typeText("0")
+        XCTAssertNotEqual(weight.value as? String, "0",
+                          "a second tap should deselect, so typing appends rather than replaces")
+    }
+
     // MARK: - 2. Edit logged set
 
     func testReopenSetRetainsValues() throws {

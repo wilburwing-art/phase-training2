@@ -445,15 +445,10 @@ final class TapBudgetTests: XCTestCase {
                       "an undone set's weight field should be editable")
         field.tap()
         counter.bump()                                // 1 — tap the weight field
-        // Clear the pre-filled value, then type. Keystrokes are not taps; only
-        // the field-tap and the keyboard-dismiss are counted. The decimal pad
-        // has no select-all that reaches this field reliably, so clear via
-        // cut from the double-tap selection: double-tap selects, Cut removes.
-        field.doubleTap()                             // selects the word
-        let cut = app.menuItems["Cut"]
-        if cut.waitForExistence(timeout: 2.5) {
-            cut.tap()
-        }
+        // Type straight over the pre-filled value. Focusing a weight cell
+        // selects it whole (selectsAllOnFocusInNumberFields), so the first
+        // keystroke replaces it — no clearing pass, no backspaces. Keystrokes
+        // are not taps; only the field-tap and the keyboard-dismiss count.
         field.typeText("60")
         // Dismiss the keyboard: decimal pad has no Done, so tap the same field
         // then swipe down (the dismiss is a tap-equivalent interaction and
@@ -461,9 +456,10 @@ final class TapBudgetTests: XCTestCase {
         app.swipeDown()
         counter.bump()
 
-        // The edit landed: the field now shows the typed value.
+        // The edit landed whole: "60", not the typed digits merged into the
+        // pre-filled value.
         XCTAssertEqual(field.value as? String, "60",
-                       "typed weight should stick in the field")
+                       "focusing a pre-filled weight must select it, so typing replaces it")
 
         recordTapBudget(counter, reference: 2)
     }

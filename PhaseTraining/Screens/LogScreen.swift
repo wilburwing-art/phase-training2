@@ -107,6 +107,9 @@ struct LogScreen: View {
             }
         }
         .preferredColorScheme(.dark)
+        // Weight cells arrive pre-filled from the set above, so tapping one to
+        // go heavier should not start with a row of backspaces.
+        .selectsAllOnFocusInNumberFields()
         .onAppear(perform: loadIfNeeded)
         .onChange(of: session) { _, newValue in
             // Auto-save on every mutation (per README.md:286).
