@@ -131,6 +131,30 @@ final class CoachDatabase {
         return d[m][n]
     }
 
+    /// Closest this query token gets to any token of `name`, or nil if nothing
+    /// is within tolerance. Each of the token's `ExerciseSearchVocabulary`
+    /// aliases is tried too ("shoulder" also looks for "overhead"), carrying a
+    /// +1 penalty so a literal hit always outranks a synonym hit.
+    private static func tokenScore(_ token: String, against nameTokens: [[Character]]) -> Int? {
+        var best: Int?
+        for alias in ExerciseSearchVocabulary.aliases(for: token) {
+            let tol = fuzzyTolerance(forTokenLength: alias.count)
+            let penalty = alias == token.lowercased() ? 0 : 1
+            let aliasChars = Array(alias)
+            for name in nameTokens {
+                // Length-gate: tokens differing in length by more than the
+                // tolerance can't possibly be within it — skip the DP.
+                if abs(name.count - aliasChars.count) > tol { continue }
+                let dist = osaDistance(aliasChars, name)
+                guard dist <= tol else { continue }
+                let score = dist + penalty
+                if score < (best ?? Int.max) { best = score }
+                if best == 0 { return 0 }
+            }
+        }
+        return best
+    }
+
     /// Total edit-distance score for matching every token of `query` against
     /// the closest token of `name`, or nil if any query token has no name
     /// token within tolerance. Lower = closer. Order-independent (so "press
@@ -139,25 +163,58 @@ final class CoachDatabase {
     static func fuzzyNameScore(query: String, name: String) -> Int? {
         let qTokens = searchTokens(query)
         guard !qTokens.isEmpty else { return nil }
-        let nTokens = searchTokens(name)
+        let nTokens: [[Character]] = searchTokens(name).map(Array.init)
         guard !nTokens.isEmpty else { return nil }
-        let nChars = nTokens.map(Array.init)
         var total = 0
         for q in qTokens {
-            let tol = fuzzyTolerance(forTokenLength: q.count)
-            let qChars = Array(q)
-            var best = Int.max
-            for (k, n) in nTokens.enumerated() {
-                // Length-gate: tokens differing in length by more than the
-                // tolerance can't possibly be within it — skip the DP.
-                if abs(n.count - q.count) > tol { continue }
-                let dist = osaDistance(qChars, nChars[k])
-                if dist < best { best = dist; if best == 0 { break } }
-            }
-            guard best <= tol else { return nil }
-            total += best
+            guard let score = tokenScore(q, against: nTokens) else { return nil }
+            total += score
         }
         return total
+    }
+
+    /// Like `fuzzyNameScore` but tolerant of query words the name simply does
+    /// not have: how many query tokens went unmatched, and the edit distance of
+    /// the ones that did. Returns nil when fewer than half the tokens match.
+    ///
+    /// This is the last tier, for the searches that are neither typos nor
+    /// synonyms but extra description: "weighted dips" (the catalog's dips
+    /// carry no "weighted" variant), "flat bench", "rear delt fly". Requiring
+    /// every token, as `fuzzyNameScore` does, turns all three into an empty
+    /// picker. For a single-token query it is identical to the strict score —
+    /// half of one still rounds up to one — so a garbage one-word search stays
+    /// empty rather than returning the catalog.
+    /// `headMatched` is whether the LAST query word landed. English exercise
+    /// names put the movement last and the qualifiers first ("weighted dips",
+    /// "flat bench", "rear delt fly"), so among candidates that dropped the
+    /// same number of words, the one that kept the movement is the better
+    /// answer: "weighted dips" should lead with the dips, not with Weighted
+    /// Pull-Up.
+    static func partialNameScore(query: String, name: String)
+        -> (missing: Int, headMatched: Bool, distance: Int)? {
+        let qTokens = searchTokens(query)
+        guard !qTokens.isEmpty else { return nil }
+        let nTokens: [[Character]] = searchTokens(name).map(Array.init)
+        guard !nTokens.isEmpty else { return nil }
+        var matched = 0
+        var distance = 0
+        var headMatched = false
+        var matchedSubstantialWord = false
+        for (i, q) in qTokens.enumerated() {
+            guard let score = tokenScore(q, against: nTokens) else { continue }
+            matched += 1
+            distance += score
+            if i == qTokens.count - 1 { headMatched = true }
+            if q.count >= 4 { matchedSubstantialWord = true }
+        }
+        let required = (qTokens.count + 1) / 2   // ceil(n / 2)
+        guard matched >= required else { return nil }
+        // A partial match has to rest on a real word. Without this, "pull ups"
+        // half-matches every Push-Up, Sit-Up and Step-Up on the two letters
+        // "up" — which reads as a result, so nothing further down the line
+        // gets a chance to find the actual pull-ups.
+        guard matchedSubstantialWord else { return nil }
+        return (qTokens.count - matched, headMatched, distance)
     }
 
     /// Rank `candidates` by how close their names are to a (possibly typo'd)
@@ -165,6 +222,26 @@ final class CoachDatabase {
     /// Best-first; empty if nothing is close enough. Used purely as a fallback
     /// when the substring search found nothing, so it can only add results a
     /// literal match missed — never reorder or hide good substring hits.
+    /// Rank `candidates` by `partialNameScore` — the tier below `fuzzyMatches`,
+    /// run only when that came back empty. Closest first: fewest missing query
+    /// words, then the ones that kept the movement word, then smallest edit
+    /// distance, then shortest name.
+    static func partialMatches(in candidates: [Exercise], query: String) -> [Exercise] {
+        candidates
+            .compactMap { ex -> (ex: Exercise, missing: Int, headMatched: Bool, distance: Int)? in
+                guard let score = partialNameScore(query: query, name: ex.name) else { return nil }
+                return (ex, score.missing, score.headMatched, score.distance)
+            }
+            .sorted { lhs, rhs in
+                if lhs.missing != rhs.missing { return lhs.missing < rhs.missing }
+                if lhs.headMatched != rhs.headMatched { return lhs.headMatched }
+                if lhs.distance != rhs.distance { return lhs.distance < rhs.distance }
+                if lhs.ex.name.count != rhs.ex.name.count { return lhs.ex.name.count < rhs.ex.name.count }
+                return lhs.ex.name < rhs.ex.name
+            }
+            .map(\.ex)
+    }
+
     static func fuzzyMatches(in candidates: [Exercise], query: String) -> [Exercise] {
         candidates
             .compactMap { ex -> (ex: Exercise, score: Int)? in
@@ -435,6 +512,15 @@ final class CoachDatabase {
     /// — they expand to EXISTS subqueries that match if ANY member slug hits
     /// (within a bucket, the slugs are OR-ed; the bucket itself is AND-ed
     /// with other filters).
+    /// Which matching layer produced a result set, strongest first. Callers
+    /// that can widen their own query (ExerciseSearch, when a picker filter
+    /// blocks a search) need this: a `.partial` hit is a "closest we have",
+    /// and a literal match elsewhere in the catalog beats it.
+    enum SearchTier: Int, Comparable {
+        case substring, fuzzy, partial
+        static func < (lhs: SearchTier, rhs: SearchTier) -> Bool { lhs.rawValue < rhs.rawValue }
+    }
+
     func listExercises(
         search: String? = nil,
         muscleSlugs: [String] = [],
@@ -444,8 +530,31 @@ final class CoachDatabase {
         environment: String? = nil,
         compoundOnly: Bool? = nil,
         userSportSlugs: [String] = []
-    ) -> [Exercise] { withLock {
-        guard let db else { return [] }
+    ) -> [Exercise] {
+        searchExercises(
+            search: search,
+            muscleSlugs: muscleSlugs,
+            patternSlugs: patternSlugs,
+            modality: modality,
+            difficulty: difficulty,
+            environment: environment,
+            compoundOnly: compoundOnly,
+            userSportSlugs: userSportSlugs
+        ).exercises
+    }
+
+    /// `listExercises` plus the tier that answered. Same query, same order.
+    func searchExercises(
+        search: String? = nil,
+        muscleSlugs: [String] = [],
+        patternSlugs: [String] = [],
+        modality: String? = nil,
+        difficulty: String? = nil,
+        environment: String? = nil,
+        compoundOnly: Bool? = nil,
+        userSportSlugs: [String] = []
+    ) -> (exercises: [Exercise], tier: SearchTier) { withLock {
+        guard let db else { return ([], .substring) }
         // When userSportSlugs is non-empty, we order by the row's best matching
         // sport relevance_score so the most-specific exercises bubble up. We
         // still UNION exercises with zero sport_relevance rows (the ~76
@@ -454,6 +563,13 @@ final class CoachDatabase {
         // `bestRel` subquery returns the highest matching relevance (or 0
         // for the foundation rows so they sort after specific matches but
         // remain visible).
+        // One rewrite, shared by the substring query and the fallbacks below, so
+        // "db shoulder press" reaches both as "dumbbell shoulder press".
+        var searchTerm: String?
+        if let raw = search?.trimmingCharacters(in: .whitespaces), !raw.isEmpty {
+            searchTerm = ExerciseSearchVocabulary.rewrite(raw)
+        }
+
         let useSportRank = !userSportSlugs.isEmpty
         let sportSelect = useSportRank
             ? """
@@ -488,7 +604,7 @@ final class CoachDatabase {
             for slug in userSportSlugs { binds.append(.str(slug)) }
         }
 
-        if let s = search?.trimmingCharacters(in: .whitespaces), !s.isEmpty {
+        if let s = searchTerm {
             // Separator-insensitive + plural-tolerant: "pull up", "pullup",
             // "pull ups" and "pullups" all match "Pull-Up". See
             // nameNormalizeSQL / normalizeSearchTerm / singularStem.
@@ -584,7 +700,7 @@ final class CoachDatabase {
         }
 
         var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return ([], .substring) }
         defer { sqlite3_finalize(stmt) }
         for (i, b) in binds.enumerated() {
             let idx = Int32(i + 1)
@@ -599,15 +715,21 @@ final class CoachDatabase {
             out.append(decodeExercise(stmt))
         }
 
-        // Fuzzy fallback: the separator-insensitive substring query found
-        // nothing, but the user may have typo'd a name ("benhc press" →
-        // "Bench Press", "deadlfit" → "Deadlift"). Re-run with the SAME
-        // filters minus the name, then rank survivors by character-level edit
-        // distance. Fires only on an otherwise-empty result, so it can only
-        // rescue a dead-end search — never displace real substring matches.
-        // The self-call passes search:nil (so it can't recurse back into this
+        // Fallbacks: the substring query found nothing. Two tiers, tried in
+        // order, both ranked closest-first:
+        //   1. fuzzyMatches — every query word has a near-enough (or
+        //      synonymous) word in the name. Rescues typos ("benhc press") and
+        //      vocabulary ("dumbbell shoulder press" → Dumbbell Overhead
+        //      Press).
+        //   2. partialMatches — most, not all, of the query words land.
+        //      Rescues extra description the catalog doesn't carry ("weighted
+        //      dips", "flat bench").
+        // Both re-query with the SAME filters minus the name. They fire only
+        // on an otherwise-empty result, so they can only rescue a dead-end
+        // search — never displace or reorder real substring matches. The
+        // self-call passes search:nil (so it can't recurse back into this
         // branch); NSRecursiveLock makes re-entering withLock safe.
-        if out.isEmpty, let q = search?.trimmingCharacters(in: .whitespaces), !q.isEmpty {
+        if out.isEmpty, let q = searchTerm {
             let candidates = listExercises(
                 search: nil,
                 muscleSlugs: muscleSlugs,
@@ -618,9 +740,11 @@ final class CoachDatabase {
                 compoundOnly: compoundOnly,
                 userSportSlugs: userSportSlugs
             )
-            return Self.fuzzyMatches(in: candidates, query: q)
+            let fuzzy = Self.fuzzyMatches(in: candidates, query: q)
+            if !fuzzy.isEmpty { return (fuzzy, .fuzzy) }
+            return (Self.partialMatches(in: candidates, query: q), .partial)
         }
-        return out
+        return (out, .substring)
     } }
 
     func exercise(id: Int) -> Exercise? { withLock {

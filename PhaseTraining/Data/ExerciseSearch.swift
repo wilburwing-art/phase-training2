@@ -10,9 +10,10 @@
 // have it" rather than "your filters hide it".
 //
 // So a typed query that dead-ends under the current filters re-runs across the
-// whole catalog, and the sheet says it did. Filters still rank first: the
-// broadened query only ever runs when the filtered one returned nothing, so it
-// can add results, never replace or reorder real ones.
+// whole catalog, and the sheet says it did. A dead end is either no rows at
+// all, or only a `.partial` "closest we have" match that a literal hit outside
+// the filter beats. Filters still win every other time, so broadening can add
+// results, never replace or reorder real ones.
 
 import Foundation
 
@@ -39,7 +40,7 @@ enum ExerciseSearch {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         let db = CoachDatabase.shared
 
-        let filtered = db.listExercises(
+        let filtered = db.searchExercises(
             search: trimmed.isEmpty ? nil : trimmed,
             muscleSlugs: filters.bucket?.memberSlugs ?? [],
             patternSlugs: filters.category?.memberPatternSlugs ?? [],
@@ -53,16 +54,21 @@ enum ExerciseSearch {
         // Only a typed query earns the fallback. An empty result with an empty
         // search box means the filters themselves are too tight, which the
         // chips on screen already explain.
-        guard filtered.isEmpty,
-              !trimmed.isEmpty,
-              narrows(filters, userSportSlugs: userSportSlugs)
+        //
+        // A `.partial` result counts as a dead end too, even though it has
+        // rows: that tier answers with "closest we have", and the exercise the
+        // user typed may well be sitting in the catalog just outside the
+        // filter. Swapping a squat and searching "dumbbell shoulder press"
+        // partial-matches every dumbbell leg movement; the real answer is
+        // Dumbbell Overhead Press, one filter away.
+        guard !trimmed.isEmpty,
+              narrows(filters, userSportSlugs: userSportSlugs),
+              filtered.exercises.isEmpty || filtered.tier == .partial
         else {
-            return Result(exercises: filtered, broadenedPastFilters: false)
+            return Result(exercises: filtered.exercises, broadenedPastFilters: false)
         }
 
-        // Note the explicit argument list: `listExercises(search:)` alone
-        // resolves to the exact-name overload, which has no fuzzy fallback.
-        let wide = db.listExercises(
+        let wide = db.searchExercises(
             search: trimmed,
             muscleSlugs: [],
             patternSlugs: [],
@@ -72,7 +78,15 @@ enum ExerciseSearch {
             compoundOnly: nil,
             userSportSlugs: []
         )
-        return Result(exercises: wide, broadenedPastFilters: !wide.isEmpty)
+        guard !wide.exercises.isEmpty else {
+            return Result(exercises: filtered.exercises, broadenedPastFilters: false)
+        }
+        // Dropping the filters has to buy something. When the filtered rows are
+        // already as good a match as the wide ones, keep the narrower set.
+        guard filtered.exercises.isEmpty || wide.tier < filtered.tier else {
+            return Result(exercises: filtered.exercises, broadenedPastFilters: false)
+        }
+        return Result(exercises: wide.exercises, broadenedPastFilters: true)
     }
 
     /// Does this filter set actually remove rows? `hideOtherSports` only does

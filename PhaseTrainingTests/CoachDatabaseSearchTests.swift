@@ -121,6 +121,118 @@ final class CoachDatabaseSearchTests: XCTestCase {
         XCTAssertFalse(coach.listExercises(search: "squats", muscleSlugs: []).isEmpty)
     }
 
+    // MARK: - Vocabulary (abbreviations, irregular plurals, synonyms)
+
+    func test_rewrite_expandsAbbreviations() {
+        XCTAssertEqual(ExerciseSearchVocabulary.rewrite("db shoulder press"), "dumbbell shoulder press")
+        XCTAssertEqual(ExerciseSearchVocabulary.rewrite("ohp"), "overhead press")
+        XCTAssertEqual(ExerciseSearchVocabulary.rewrite("kb swing"), "kettlebell swing")
+    }
+
+    func test_rewrite_fixesIrregularPlurals() {
+        // singularStem would give "calve" / "flie" — neither is in any name.
+        XCTAssertEqual(ExerciseSearchVocabulary.rewrite("calves"), "calf")
+        XCTAssertEqual(ExerciseSearchVocabulary.rewrite("chest flies"), "chest fly")
+    }
+
+    func test_rewrite_leavesOrdinaryWordsAlone() {
+        XCTAssertEqual(ExerciseSearchVocabulary.rewrite("bench press"), "bench press")
+        XCTAssertEqual(ExerciseSearchVocabulary.rewrite("Barbell Row"), "barbell row")
+    }
+
+    func test_aliases_areSymmetric() {
+        XCTAssertTrue(ExerciseSearchVocabulary.aliases(for: "shoulder").contains("overhead"))
+        XCTAssertTrue(ExerciseSearchVocabulary.aliases(for: "overhead").contains("shoulder"))
+        XCTAssertTrue(ExerciseSearchVocabulary.aliases(for: "side").contains("lateral"))
+    }
+
+    func test_aliases_defaultToTheWordItself() {
+        XCTAssertEqual(ExerciseSearchVocabulary.aliases(for: "row"), ["row"])
+    }
+
+    /// The reported bug: the catalog calls it "Dumbbell Overhead Press", the
+    /// user calls it a dumbbell shoulder press. Not a typo — "shoulder" is six
+    /// edits from "overhead" — so only the synonym layer finds it.
+    func test_synonym_shoulderPressFindsOverheadPress() throws {
+        try requireCoachDB()
+        for query in ["dumbbell shoulder press", "db shoulder press"] {
+            let hits = CoachDatabase.shared.listExercises(search: query, muscleSlugs: [])
+            XCTAssertTrue(hits.contains { $0.name == "Dumbbell Overhead Press" },
+                          "\(query) must find Dumbbell Overhead Press; got \(hits.map(\.name))")
+        }
+    }
+
+    func test_synonym_worksInBothDirections() throws {
+        try requireCoachDB()
+        // "side raises" must reach the Lateral Raises.
+        let hits = CoachDatabase.shared.listExercises(search: "side raises", muscleSlugs: [])
+        XCTAssertFalse(hits.isEmpty)
+        XCTAssertTrue(hits.allSatisfy { $0.name.lowercased().contains("lateral") },
+                      "got \(hits.map(\.name))")
+    }
+
+    func test_abbreviations_resolveToTheRightLift() throws {
+        try requireCoachDB()
+        let coach = CoachDatabase.shared
+        XCTAssertTrue(coach.listExercises(search: "ohp", muscleSlugs: [])
+            .contains { $0.name == "Barbell Overhead Press (Strict)" })
+        XCTAssertTrue(coach.listExercises(search: "rdl", muscleSlugs: [])
+            .allSatisfy { $0.name.lowercased().contains("romanian") })
+        XCTAssertTrue(coach.listExercises(search: "kb swing", muscleSlugs: [])
+            .contains { $0.name == "Kettlebell Swing" })
+    }
+
+    func test_irregularPlural_calvesFindsCalfWork() throws {
+        try requireCoachDB()
+        let hits = CoachDatabase.shared.listExercises(search: "calves", muscleSlugs: [])
+        XCTAssertFalse(hits.isEmpty)
+        XCTAssertTrue(hits.allSatisfy { $0.name.lowercased().contains("calf") },
+                      "got \(hits.map(\.name))")
+    }
+
+    // MARK: - partialNameScore (the last tier)
+
+    func test_partial_allowsAWordTheCatalogLacks() {
+        // The catalog has no "weighted" dip variant; the dips are still the
+        // right answer.
+        XCTAssertNotNil(CoachDatabase.partialNameScore(query: "weighted dips", name: "Dips (Parallel Bar)"))
+    }
+
+    func test_partial_needsASubstantialWord() {
+        // Matching on "up" alone must not qualify, or every Push-Up answers a
+        // search for pull-ups.
+        XCTAssertNil(CoachDatabase.partialNameScore(query: "pull ups", name: "Push-Up"))
+        XCTAssertNotNil(CoachDatabase.partialNameScore(query: "pull ups", name: "Pull-Up"))
+    }
+
+    func test_partial_singleTokenQueryStaysStrict() {
+        // Half of one word rounds up to one, so a one-word miss stays a miss.
+        XCTAssertNil(CoachDatabase.partialNameScore(query: "zzzxqwvk", name: "Pull-Up"))
+    }
+
+    func test_partialMatches_ranksTheMovementWordFirst() {
+        let dip = Exercise.stub(name: "Chest Dip")
+        let pullUp = Exercise.stub(name: "Weighted Pull-Up")
+        let ranked = CoachDatabase.partialMatches(in: [pullUp, dip], query: "weighted dips")
+        XCTAssertEqual(ranked.first?.name, "Chest Dip",
+                       "the dips answer \"weighted dips\"; Weighted Pull-Up only shares the qualifier")
+    }
+
+    // MARK: - Search tiers
+
+    func test_tier_reportsWhichLayerAnswered() throws {
+        try requireCoachDB()
+        let coach = CoachDatabase.shared
+        XCTAssertEqual(coach.searchExercises(search: "bench press").tier, .substring)
+        XCTAssertEqual(coach.searchExercises(search: "benhc press").tier, .fuzzy)
+        XCTAssertEqual(coach.searchExercises(search: "weighted dips").tier, .partial)
+    }
+
+    func test_tier_ordersStrongestFirst() {
+        XCTAssertLessThan(CoachDatabase.SearchTier.substring, CoachDatabase.SearchTier.fuzzy)
+        XCTAssertLessThan(CoachDatabase.SearchTier.fuzzy, CoachDatabase.SearchTier.partial)
+    }
+
     // MARK: - ExerciseSearch broadening
 
     /// The swap picker opens pre-filtered to "similar exercises". A typed name
@@ -147,6 +259,33 @@ final class CoachDatabaseSearchTests: XCTestCase {
         let outcome = ExerciseSearch.run(query: "bench press", filters: filters)
         XCTAssertFalse(outcome.exercises.isEmpty)
         XCTAssertFalse(outcome.broadenedPastFilters)
+    }
+
+    /// A filtered query that only half-matches is still a dead end: the
+    /// exercise the user named is in the catalog, one filter away. Swapping a
+    /// squat, "dumbbell shoulder press" partial-matches the dumbbell leg work;
+    /// the right answer is Dumbbell Overhead Press.
+    func test_search_broadensPastAPartialFilteredMatch() throws {
+        try requireCoachDB()
+        var filters = ExerciseFilters()
+        filters.bucket = .quads
+        filters.category = .legs
+        let outcome = ExerciseSearch.run(query: "dumbbell shoulder press", filters: filters)
+        XCTAssertTrue(outcome.broadenedPastFilters)
+        XCTAssertTrue(outcome.exercises.contains { $0.name == "Dumbbell Overhead Press" },
+                      "got \(outcome.exercises.map(\.name))")
+    }
+
+    /// ...but a partial match the filters actually fit is kept. Dips are chest
+    /// push work, so a chest-filtered "weighted dips" stays narrow.
+    func test_search_keepsAPartialMatchTheFiltersFit() throws {
+        try requireCoachDB()
+        var filters = ExerciseFilters()
+        filters.bucket = .chest
+        filters.category = .push
+        let outcome = ExerciseSearch.run(query: "weighted dips", filters: filters)
+        XCTAssertFalse(outcome.broadenedPastFilters)
+        XCTAssertTrue(outcome.exercises.contains { $0.name.lowercased().contains("dip") })
     }
 
     /// An empty search box with tight filters is the filters' own story — the
