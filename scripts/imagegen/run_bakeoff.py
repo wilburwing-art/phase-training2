@@ -128,6 +128,56 @@ def run_one(provider, style, exercise, outdir, size):
     return slug, provider.name, style, None
 
 
+def export_prompts(exercises, styles, outdir):
+    """One .txt per prompt under <dir>/<slug>/<style>/, for pasting into a
+    web UI (gemini.com, chatgpt.com) that generates for free. Files that
+    come back are named for `promote.py --provider manual`."""
+    outdir.mkdir(parents=True, exist_ok=True)
+    n = 0
+    for ex in exercises:
+        for style in styles:
+            d = outdir / ex["id"] / style
+            d.mkdir(parents=True, exist_ok=True)
+            if ex.get("isometric"):
+                (d / "hold.txt").write_text(build_hold_prompt(ex, style))
+                n += 1
+            else:
+                (d / "1-start.txt").write_text(build_start_prompt(ex, style))
+                (d / "2-end.txt").write_text(build_end_prompt(ex, style))
+                n += 2
+    (outdir / "README.md").write_text(MANUAL_README)
+    print(f"{n} prompts for {len(exercises)} exercises under {outdir}")
+
+
+MANUAL_README = """# Hand-generated frames
+
+Each exercise folder holds one prompt per frame per style. In the web UI:
+
+1. Paste `1-start.txt` as the whole message. Save the PNG.
+2. In the SAME chat, attach that PNG and paste `2-end.txt`. The prompt calls
+   it "the attached reference image". If the reply is the start pose again,
+   say "the joints must move; draw the end position" and retry once or twice.
+3. A `hold.txt` exercise gets one image, no second step.
+
+Save files next to this README, named exactly:
+
+    manual__<style>__<slug>__start.png
+    manual__<style>__<slug>__end.png      (pairs only)
+
+e.g. `manual__line_art__goblet-squat__start.png`. Then:
+
+    uv run scripts/imagegen/promote.py --run <this dir> --provider manual --only goblet-squat
+    uv run scripts/db/build_db.py
+
+The line art must be black on white with the orange accent as prompted;
+that is the generator's job. Matching the app (ink lines, lime accent,
+transparent ground) happens in post, in promote.py via theme.py. To see how
+a file will look in the app before promoting it:
+
+    uv run scripts/imagegen/theme.py manual__line_art__goblet-squat__start.png preview.png --preview
+"""
+
+
 def build_contact_sheet(exercises, outdir, combos):
     cells = []
     for ex in exercises:
@@ -230,6 +280,8 @@ def main():
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--dry-run", action="store_true",
                     help="list the jobs and print the first start prompt, call nothing")
+    ap.add_argument("--export-prompts", type=Path, metavar="DIR",
+                    help="write every prompt as a text file for hand-feeding a web UI, call nothing")
     args = ap.parse_args()
 
     outdir = Path(args.out)
@@ -244,6 +296,9 @@ def main():
             sys.exit(f"--only matched nothing in the loaded set: {sorted(wanted)}")
     prov_names = [p.strip() for p in args.providers.split(",") if p.strip()]
     styles = [s.strip() for s in args.styles.split(",") if s.strip()]
+    if args.export_prompts:
+        export_prompts(exercises, styles, args.export_prompts)
+        return
     if args.dry_run:
         n = len(prov_names) * len(styles) * len(exercises)
         per = len(prov_names) * len(styles)

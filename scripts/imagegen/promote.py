@@ -116,40 +116,50 @@ def main():
             (style, frame): frame_path(args.run, args.provider, style, run_id, frame)
             for style in ("line_art", "mannequin") for frame in ("start", "end")
         }
-        # A hold (isometric) run has start frames only; a pair has all four.
+        # A hold (isometric) run has start frames only; a pair has both.
+        # Each style is promoted on its own when its frames are complete, so
+        # a hand-generated batch with only the mannequin pair still lands
+        # (the hero uses it; the thumbnail keeps whatever image it had).
         hold = not frames[("line_art", "end")].exists() and not frames[("mannequin", "end")].exists()
-        needed = [k for k in frames if hold and k[1] == "start" or not hold]
-        missing = [f"{s}/{fr}" for (s, fr) in needed if not frames[(s, fr)].exists()]
-        if missing:
+        wanted = ["start"] if hold else ["start", "end"]
+        complete = {style for style in ("line_art", "mannequin")
+                    if all(frames[(style, fr)].exists() for fr in wanted)}
+        if not complete:
+            missing = [f"{st}/{fr}" for st in ("line_art", "mannequin") for fr in wanted if not frames[(st, fr)].exists()]
             print(f"skip {run_id}: missing {', '.join(missing)}")
             continue
 
         ex_id = row["id"]
-        outputs = {
-            IMAGES / f"{ex_id}.webp": to_webp(crop_to_content(theme_line_art(Image.open(frames[("line_art", "start")]))), True),
-            IMAGES / f"{ex_id}_hero.webp": to_webp(Image.open(frames[("mannequin", "start")]), False),
-        }
+        outputs = {}
         stale = []
-        if hold:
-            # No flip and no second hero frame; clear any pair a previous
-            # promote left behind so the app does not show an old end.
-            stale = [IMAGES / f"{ex_id}_end.webp", IMAGES / f"{ex_id}_hero_end.webp"]
-        else:
-            outputs[IMAGES / f"{ex_id}_end.webp"] = to_webp(crop_to_content(theme_line_art(Image.open(frames[("line_art", "end")]))), True)
-            outputs[IMAGES / f"{ex_id}_hero_end.webp"] = to_webp(Image.open(frames[("mannequin", "end")]), False)
+        if "line_art" in complete:
+            outputs[IMAGES / f"{ex_id}.webp"] = to_webp(crop_to_content(theme_line_art(Image.open(frames[("line_art", "start")]))), True)
+            if hold:
+                stale.append(IMAGES / f"{ex_id}_end.webp")
+            else:
+                outputs[IMAGES / f"{ex_id}_end.webp"] = to_webp(crop_to_content(theme_line_art(Image.open(frames[("line_art", "end")]))), True)
+        if "mannequin" in complete:
+            outputs[IMAGES / f"{ex_id}_hero.webp"] = to_webp(Image.open(frames[("mannequin", "start")]), False)
+            if hold:
+                stale.append(IMAGES / f"{ex_id}_hero_end.webp")
+            else:
+                outputs[IMAGES / f"{ex_id}_hero_end.webp"] = to_webp(Image.open(frames[("mannequin", "end")]), False)
         total = sum(len(b) for b in outputs.values())
-        print(f"{run_id} -> {slug} (id {ex_id}): {'hold, ' if hold else ''}{len(outputs)} files, {total/1024:.0f} KB")
+        print(f"{run_id} -> {slug} (id {ex_id}): {'hold, ' if hold else ''}{'+'.join(sorted(complete))}, {len(outputs)} files, {total/1024:.0f} KB")
         if args.dry_run:
             continue
         for path, data in outputs.items():
             path.write_bytes(data)
         for path in stale:
             path.unlink(missing_ok=True)
-        row["image_url"] = None
-        row["thumbnail_url"] = None
-        row["image_source"] = "generated"
-        row["image_license"] = None
-        row["image_attribution"] = MODEL_LABEL
+        if "line_art" in complete:
+            # The row's image_* fields describe <id>.webp, the thumbnail.
+            # A mannequin-only promote leaves that file and its source alone.
+            row["image_url"] = None
+            row["thumbnail_url"] = None
+            row["image_source"] = "generated"
+            row["image_license"] = None
+            row["image_attribution"] = MODEL_LABEL
         promoted.append(slug)
 
     if promoted and not args.dry_run:
