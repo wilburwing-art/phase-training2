@@ -75,6 +75,100 @@ final class CoachDatabaseSearchTests: XCTestCase {
         XCTAssertTrue(isolation.isEmpty, "every deadlift is compound, so compoundOnly:false must exclude them all")
     }
 
+    // MARK: - singularStem / plural queries
+
+    func test_singularStem_stripsPlurals() {
+        XCTAssertEqual(CoachDatabase.singularStem("pullups"), "pullup")
+        XCTAssertEqual(CoachDatabase.singularStem("squats"), "squat")
+        XCTAssertEqual(CoachDatabase.singularStem("lunges"), "lunge")
+        XCTAssertEqual(CoachDatabase.singularStem("rows"), "row")
+    }
+
+    func test_singularStem_stripsSibilantES() {
+        XCTAssertEqual(CoachDatabase.singularStem("presses"), "press")
+        XCTAssertEqual(CoachDatabase.singularStem("crunches"), "crunch")
+    }
+
+    func test_singularStem_leavesSingularsAlone() {
+        // "-ss" is not a plural, and short terms must not be truncated: "abs"
+        // becoming "ab" would match "stability", "cable", "abduction"...
+        XCTAssertEqual(CoachDatabase.singularStem("press"), "press")
+        XCTAssertEqual(CoachDatabase.singularStem("abs"), "abs")
+        XCTAssertEqual(CoachDatabase.singularStem("deadlift"), "deadlift")
+    }
+
+    /// The reported bug: typing the name the way a lifter says it found
+    /// nothing. Catalog names are singular and hyphenated ("Pull-Up"), so
+    /// "pull ups" normalized to "pullups" — which is not a substring of
+    /// "pullup" — and the picker looked empty.
+    func test_pluralQuery_findsSingularCatalogName() throws {
+        try requireCoachDB()
+        let coach = CoachDatabase.shared
+        for query in ["pull ups", "pullups", "pull-ups", "Pull Ups"] {
+            let hits = coach.listExercises(search: query, muscleSlugs: [])
+            XCTAssertTrue(hits.contains { $0.name == "Pull-Up" },
+                          "\(query) must find Pull-Up; got \(hits.map(\.name))")
+        }
+    }
+
+    func test_pluralQuery_findsOtherStaples() throws {
+        try requireCoachDB()
+        let coach = CoachDatabase.shared
+        XCTAssertTrue(coach.listExercises(search: "push ups", muscleSlugs: [])
+            .contains { $0.name == "Push-Up" })
+        XCTAssertTrue(coach.listExercises(search: "chin ups", muscleSlugs: [])
+            .contains { $0.name == "Chin-Up" })
+        XCTAssertFalse(coach.listExercises(search: "squats", muscleSlugs: []).isEmpty)
+    }
+
+    // MARK: - ExerciseSearch broadening
+
+    /// The swap picker opens pre-filtered to "similar exercises". A typed name
+    /// the filter excludes must still be findable — otherwise the library
+    /// looks like it doesn't have the exercise.
+    func test_search_broadensPastFiltersWhenQueryDeadEnds() throws {
+        try requireCoachDB()
+        var filters = ExerciseFilters()
+        filters.bucket = .chest
+        filters.category = .push
+        let outcome = ExerciseSearch.run(query: "pull ups", filters: filters)
+        XCTAssertTrue(outcome.broadenedPastFilters,
+                      "a dead-end query under filters must fall back to the full catalog")
+        XCTAssertTrue(outcome.exercises.contains { $0.name == "Pull-Up" },
+                      "got \(outcome.exercises.map(\.name))")
+    }
+
+    /// Broadening is a last resort: it must not fire, or reorder anything,
+    /// when the filtered query already has results.
+    func test_search_keepsFiltersWhenQueryMatches() throws {
+        try requireCoachDB()
+        var filters = ExerciseFilters()
+        filters.bucket = .chest
+        let outcome = ExerciseSearch.run(query: "bench press", filters: filters)
+        XCTAssertFalse(outcome.exercises.isEmpty)
+        XCTAssertFalse(outcome.broadenedPastFilters)
+    }
+
+    /// An empty search box with tight filters is the filters' own story — the
+    /// chips are on screen and the user set them. No silent broadening.
+    func test_search_emptyQueryNeverBroadens() throws {
+        try requireCoachDB()
+        var filters = ExerciseFilters()
+        filters.bucket = .chest
+        filters.category = .core
+        let outcome = ExerciseSearch.run(query: "   ", filters: filters)
+        XCTAssertFalse(outcome.broadenedPastFilters)
+    }
+
+    /// Nothing to broaden past: an unfiltered miss stays a miss rather than
+    /// re-running the same query and claiming it widened the search.
+    func test_search_unfilteredMissDoesNotClaimBroadening() throws {
+        try requireCoachDB()
+        let outcome = ExerciseSearch.run(query: "zzzxqwvk", filters: ExerciseFilters())
+        XCTAssertTrue(outcome.exercises.isEmpty)
+        XCTAssertFalse(outcome.broadenedPastFilters)
+    }
+
     // MARK: - osaDistance
 
     private func osa(_ a: String, _ b: String) -> Int {

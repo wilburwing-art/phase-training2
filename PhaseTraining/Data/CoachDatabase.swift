@@ -50,6 +50,39 @@ final class CoachDatabase {
         return expr
     }
 
+    /// Drop a plural suffix from an already-`normalizeSearchTerm`-ed query so
+    /// lifters can type the catalog name the way they say it. Names in coach.db
+    /// are singular ("Pull-Up", "Barbell Row", "Standing Calf Raise") but people
+    /// search "pull ups", "rows", "presses" — and a plural query is the one
+    /// shape separator-stripping alone can't rescue: "pullups" is not a
+    /// substring of "pullup", so the LIKE found nothing and the picker read as
+    /// "we don't have pull-ups."
+    ///
+    /// Safe by construction for substring matching: the stem is always a
+    /// PREFIX of the input, so anything the full term would have matched the
+    /// stem still matches. It can only widen the result set, never drop a row.
+    ///
+    /// Conservative on purpose:
+    ///  - terms shorter than 4 characters are left alone ("abs" must not
+    ///    become "ab", which appears inside "stability", "cable", ...),
+    ///  - "-ss" endings are left alone ("press" is already singular),
+    ///  - "-es" is only stripped after a sibilant ("presses" → "press",
+    ///    "crunches" → "crunch"), otherwise the plain "-s" rule applies
+    ///    ("lunges" → "lunge").
+    static func singularStem(_ term: String) -> String {
+        guard term.count >= 4 else { return term }
+        let lower = term.lowercased()
+        guard lower.hasSuffix("s"), !lower.hasSuffix("ss") else { return term }
+        if lower.hasSuffix("es"), term.count >= 6 {
+            let stem = String(term.dropLast(2))
+            let stemLower = stem.lowercased()
+            for sibilant in ["s", "x", "z", "ch", "sh"] where stemLower.hasSuffix(sibilant) {
+                return stem
+            }
+        }
+        return String(term.dropLast())
+    }
+
     /// Lowercase + split on `searchSeparators` (and any whitespace), dropping
     /// empties. Tokenizing on these keeps "Pull-Up", "pull up", and "pull,up"
     /// all yielding [pull, up], so the fuzzy matcher compares word-by-word.
@@ -456,10 +489,11 @@ final class CoachDatabase {
         }
 
         if let s = search?.trimmingCharacters(in: .whitespaces), !s.isEmpty {
-            // Separator-insensitive: "pull up" / "pullup" both match "Pull-Up".
-            // See nameNormalizeSQL / normalizeSearchTerm.
+            // Separator-insensitive + plural-tolerant: "pull up", "pullup",
+            // "pull ups" and "pullups" all match "Pull-Up". See
+            // nameNormalizeSQL / normalizeSearchTerm / singularStem.
             clauses.append("\(Self.nameNormalizeSQL("e.name")) LIKE ?")
-            binds.append(.str("%\(Self.normalizeSearchTerm(s))%"))
+            binds.append(.str("%\(Self.singularStem(Self.normalizeSearchTerm(s)))%"))
         }
         if let m = modality {
             clauses.append("e.modality = ?")

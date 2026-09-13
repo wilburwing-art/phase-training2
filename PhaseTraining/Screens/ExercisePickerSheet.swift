@@ -36,20 +36,20 @@ struct ExercisePickerSheet: View {
     /// listExercises on every render. Same caching pattern as
     /// LibraryScreen's stockRoutines/exerciseCount.
     @State private var results: [Exercise] = []
+    /// True when `results` came from the full catalog because the typed query
+    /// found nothing under the current filters — see ExerciseSearch.run. The
+    /// banner tells the user, so results outside the visible filter chips
+    /// don't look like a bug.
+    @State private var broadenedPastFilters = false
 
     private func reloadResults() {
-        results = CoachDatabase.shared.listExercises(
-            search: query.isEmpty ? nil : query,
-            muscleSlugs: filters.bucket?.memberSlugs ?? [],
-            patternSlugs: filters.category?.memberPatternSlugs ?? [],
-            modality: filters.modality,
-            difficulty: filters.difficulty,
-            environment: filters.environment,
-            compoundOnly: filters.compoundOnly,
-            userSportSlugs: filters.hideOtherSports
-                ? memoryStore.memory.sports.map(\.slug)
-                : []
+        let outcome = ExerciseSearch.run(
+            query: query,
+            filters: filters,
+            userSportSlugs: memoryStore.memory.sports.map(\.slug)
         )
+        results = outcome.exercises
+        broadenedPastFilters = outcome.broadenedPastFilters
     }
 
     var body: some View {
@@ -63,11 +63,14 @@ struct ExercisePickerSheet: View {
                     ScrollView {
                         LazyVStack(spacing: 8) {
                             if results.isEmpty {
-                                Text("No exercises match these filters.")
+                                Text(emptyStateMessage)
                                     .font(.monoXS)
                                     .foregroundStyle(Color.ink3)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 16)
                                     .padding(.top, 40)
                             } else {
+                                if broadenedPastFilters { broadenedBanner }
                                 ForEach(results) { ex in row(ex) }
                             }
                         }
@@ -102,6 +105,35 @@ struct ExercisePickerSheet: View {
     }
 
     // MARK: - Pieces
+
+    /// Empty list copy. A typed query that found nothing anywhere is a
+    /// different problem from filters that are too tight, and saying "these
+    /// filters" when the user has none set sends them hunting for a filter to
+    /// clear.
+    private var emptyStateMessage: String {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return "No exercises match these filters." }
+        return "Nothing in the library matches \u{201C}\(trimmed)\u{201D}."
+    }
+
+    private var broadenedBanner: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Color.ink3)
+            Text("No match under the current filters. Showing results from the whole library.")
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.surface)
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityIdentifier("picker-broadened-banner")
+    }
 
     private var searchBar: some View {
         HStack(spacing: 8) {
