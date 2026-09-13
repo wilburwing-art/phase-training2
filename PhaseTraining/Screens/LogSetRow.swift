@@ -233,12 +233,19 @@ extension LogScreen {
         }
     }
 
-    private static let effortOptions = ["6", "7", "8", "9", "10"]
+    /// RPE options for the per-set effort menu. The floor is 5 rather than 6
+    /// because the generator itself prescribes RPE 5-6 for prehab work
+    /// (DemandScheme.base[.prehab]) — the logger has to be able to record what
+    /// the plan asks for. It also lines up the two ways of logging the same
+    /// thing: `rirOptions` already runs to "5+", which is about RPE 5.
+    /// Nothing below 5 is offered; five or more reps in reserve is a warmup,
+    /// and the row has a "W" pill for that.
+    static let effortOptions = ["5", "6", "7", "8", "9", "10"]
 
     /// Reps-in-reserve (build 103). Wired to the per-set contextMenu Menu.
     /// Stored as a free-text String to match RPE; "0" through "5+" are the
     /// canonical options but the field accepts whatever the user picks.
-    private static let rirOptions = ["0", "1", "2", "3", "4", "5+"]
+    static let rirOptions = ["0", "1", "2", "3", "4", "5+"]
 
     @ViewBuilder
     private func effortCell(text: Binding<String>, done: Bool, active: Bool) -> some View {
