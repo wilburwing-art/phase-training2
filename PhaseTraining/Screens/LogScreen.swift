@@ -346,30 +346,9 @@ struct LogScreen: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("log-finish")
-
-                // PR 9 — distinct from Finish: ends the session as an
-                // ABANDONMENT (reason captured in AbandonReasonSheet) so
-                // the rules engine can reshuffle the rest of the week
-                // and the coach learns why. Only meaningful when sets
-                // remain — a fully-logged workout is just Finish.
-                if anyUndone {
-                    Button {
-                        showAbandonSheet = true
-                    } label: {
-                        Text("Stop early")
-                            .font(.custom("Inter-Regular", size: 13).weight(.medium))
-                            .tracking(-0.01 * 13)
-                            .foregroundStyle(Color.ink2)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .stroke(Color.line, lineWidth: 1)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("log-stop-early")
-                }
+                // "Stop early" lives in the title block, not here: three
+                // padded text buttons plus the timer overflowed a 393pt
+                // header and wrapped every label onto two lines.
             }
             .padding(.horizontal, 20)
             .padding(.top, 10)
@@ -402,13 +381,36 @@ struct LogScreen: View {
 
     private var titleBlock: some View {
         let stats = store.stats(for: session)
+        let anyUndone = stats.doneSets < stats.totalSets
         return VStack(alignment: .leading, spacing: 4) {
             Text(session.name)
                 .styled(.displayM)
                 .foregroundStyle(Color.ink)
-            Text("\(session.exercises.count) exercises · \(stats.doneSets)/\(stats.totalSets) sets logged")
-                .styled(.body)
-                .foregroundStyle(Color.ink3)
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text("\(session.exercises.count) exercises · \(stats.doneSets)/\(stats.totalSets) sets logged")
+                    .styled(.body)
+                    .foregroundStyle(Color.ink3)
+                Spacer(minLength: 0)
+                // PR 9 — distinct from Finish: ends the session as an
+                // ABANDONMENT (reason captured in AbandonReasonSheet) so
+                // the rules engine can reshuffle the rest of the week
+                // and the coach learns why. Only meaningful when sets
+                // remain — a fully-logged workout is just Finish. Sits
+                // here rather than in the sticky header because the
+                // header row has no room for a third button.
+                if anyUndone {
+                    Button {
+                        showAbandonSheet = true
+                    } label: {
+                        Text("Stop early")
+                            .styled(.body)
+                            .foregroundStyle(Color.ink2)
+                            .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("log-stop-early")
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
