@@ -25,7 +25,12 @@ extension LogScreen {
         VStack(spacing: 0) {
             // Header row
             HStack(spacing: 8) {
-                ExerciseThumbnail(urlString: thumbnailURL(forName: ex.name), size: 48, cornerRadius: 8)
+                // Bundle-first, same as the Today and preview rows: a generated
+                // exercise has no URL at all, so a URL-only lookup drew the
+                // placeholder icon for exactly the rows that carry the new art.
+                ExerciseThumbnail(exerciseID: ExerciseLookupCache.shared.exerciseID(forName: ex.name),
+                                  urlString: ExerciseLookupCache.shared.thumbnailURL(forName: ex.name),
+                                  size: 48, cornerRadius: 8)
                     .opacity(allDone ? 0.6 : 1.0)
                 if allDone {
                     ZStack {

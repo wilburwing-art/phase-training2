@@ -1,6 +1,6 @@
 // LogScreenHelpers.swift — Pure logic + formatters for LogScreen.
 //
-// Extracted from LogScreen.swift (Tier 3 split). Catalog lookups, weight-column
+// Extracted from LogScreen.swift (Tier 3 split). Weight-column
 // display rules, progression-suggestion mapping, weight + reps propagation,
 // bulk-mark-done, superset round / following-work predicates, and the static
 // time formatters. No view code.
@@ -8,17 +8,6 @@
 import SwiftUI
 
 extension LogScreen {
-    /// Coach.db image lookup by exercise name. Used for the row thumbnail —
-    /// LoggedExercise only carries name (not the original exerciseId), so we
-    /// resolve via case-insensitive name match. Returns nil for exercises
-    /// without media or whose name doesn't match a catalog row.
-    func thumbnailURL(forName name: String) -> String? {
-        CoachDatabase.shared
-            .listExercises(search: name)
-            .first { $0.name.caseInsensitiveCompare(name) == .orderedSame }
-            .flatMap { $0.thumbnailURL ?? $0.imageURL }
-    }
-
     /// Whether the weight column shows an editable number field for this
     /// exercise. Always true for weighted exercises. Bodyweight exercises
     /// collapse to a "BW" label unless the user opted into weight entry or a
