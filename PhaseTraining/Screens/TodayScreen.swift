@@ -140,7 +140,7 @@ struct TodayScreen: View {
                             // Rest day — Mr Kettle takes a stretch. A calm beat
                             // for a screen that has no session to start.
                             KettleView(pose: .stretch)
-                                .frame(height: 132)
+                                .frame(height: ScreenScale.scaled(132))
                                 .frame(maxWidth: .infinity)
                                 .padding(.top, 14)
                                 .accessibilityHidden(true)
@@ -149,7 +149,7 @@ struct TodayScreen: View {
                             // Mr Kettle does the user's actual sport — carve for
                             // snow, climb for climbing, pedal for MTB, else flex.
                             KettleView(pose: .forSport(sport.slug))
-                                .frame(height: 132)
+                                .frame(height: ScreenScale.scaled(132))
                                 .frame(maxWidth: .infinity)
                                 .padding(.top, 10)
                                 .accessibilityHidden(true)

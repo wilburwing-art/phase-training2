@@ -113,18 +113,20 @@ struct ExerciseTile: View {
     }
 
     // MARK: layout tokens
+    // Scaled with the thumbnail and the type so the row keeps its proportions
+    // on a wider screen instead of holding a larger picture in the same gutter.
     private var horizontalPadding: CGFloat {
         switch density {
-        case .catalog, .compact: return 14
-        case .presentation:      return 16
+        case .catalog, .compact: return ScreenScale.scaled(14)
+        case .presentation:      return ScreenScale.scaled(16)
         case .flat:              return 0
         }
     }
     private var verticalPadding: CGFloat {
         switch density {
-        case .catalog:      return 12
-        case .compact:      return 10
-        case .presentation: return 14
+        case .catalog:      return ScreenScale.scaled(12)
+        case .compact:      return ScreenScale.scaled(10)
+        case .presentation: return ScreenScale.scaled(14)
         case .flat:         return 0
         }
     }
@@ -132,13 +134,15 @@ struct ExerciseTile: View {
     /// generated line art reads without squinting; 96 was tried and read as
     /// too big, 84 is the pick. The one-screen-workout rule that kept rows
     /// short was relaxed for it. Composite (Today) rows use the same edge.
-    static let thumbSize: CGFloat = 84
+    /// Scales with the screen-width factor like the type beside it (80 on a
+    /// 17e, 94 on a Pro Max); the 480px line-art asset covers 160pt at 3x.
+    static let thumbSize: CGFloat = ScreenScale.scaled(84)
 
     private var minHeight: CGFloat {
         switch density {
-        case .catalog:      return ExerciseTile.thumbSize + 2 * 12
-        case .compact:      return 56
-        case .presentation: return CompositeLeading.frameSize + 2 * 14
+        case .catalog:      return ExerciseTile.thumbSize + 2 * verticalPadding
+        case .compact:      return ScreenScale.scaled(56)
+        case .presentation: return CompositeLeading.frameSize + 2 * verticalPadding
         case .flat:         return 0
         }
     }

@@ -286,7 +286,7 @@ private struct ExerciseDetailContent: View {
         }
         .padding(8)
         .frame(maxWidth: .infinity)
-        .frame(height: 200)
+        .frame(height: ScreenScale.scaled(200))
         .background(opaque ? Color.white : Color.surface)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
@@ -317,7 +317,7 @@ private struct ExerciseDetailContent: View {
                     .resizable()
                     .scaledToFill()
                     .frame(maxWidth: .infinity)
-                    .frame(height: 200)
+                    .frame(height: ScreenScale.scaled(200))
                     .clipped()
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
