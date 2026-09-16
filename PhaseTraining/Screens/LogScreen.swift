@@ -75,6 +75,15 @@ struct LogScreen: View {
     /// Rest timer state (view-local, intentionally non-persistent per spec).
     @State var rest = RestTimerState()
 
+    /// What Apple Music is playing, for the card above the tab bar. The
+    /// simulator has no Music app, so `--ui-test-fake-now-playing` swaps in
+    /// a fake that is playing and authorised (layout proof for the UI test).
+    @StateObject private var nowPlaying = NowPlayingModel(
+        player: ProcessInfo.processInfo.arguments.contains("--ui-test-fake-now-playing")
+            ? FakeMusicPlayer(playbackState: .playing, authorization: .authorized,
+                              track: NowPlayingTrack(title: "Blinding Lights", artist: "The Weeknd", artwork: nil))
+            : MPMusicPlayerWrapper())
+
     /// Long-press driven "swap exercise" sheet. nil = closed. Keys by index
     /// into session.exercises so we can mutate it on pick.
     @State var swappingExIdx: Int? = nil
@@ -267,6 +276,19 @@ struct LogScreen: View {
                 }
             }
             .scrollDismissesKeyboard(.interactively)
+            .safeAreaInset(edge: .bottom) {
+                // Media card, like Google Maps during navigation: change the
+                // track without leaving the workout. Comes and goes with
+                // playback; the ScrollView's own bottom clearance still
+                // covers the tab bar underneath.
+                if nowPlaying.state != .hidden {
+                    NowPlayingCard(model: nowPlaying)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 8)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(.easeInOut(duration: 0.25), value: nowPlaying.state)
         }
     }
 

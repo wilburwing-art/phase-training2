@@ -122,6 +122,12 @@ targets:
         # "Missing purpose string" (killed builds 116 + 117). The string is
         # honest: we never write.
         NSHealthUpdateUsageDescription: "PhaseTraining does not write to Apple Health — it only reads your workout and body-metric data. iOS requires this permission whenever an app includes HealthKit; PhaseTraining never adds, edits, or deletes anything in Health."
+        # Log-screen media card (build 133). MPMediaLibrary authorisation is
+        # what lets MPMusicPlayerController.systemMusicPlayer report the
+        # now-playing item; without this key the request cannot be made.
+        # Same reviewer-facing voice as the Health strings: name the
+        # behaviour, and say what is NOT done.
+        NSAppleMusicUsageDescription: "PhaseTraining shows the track Apple Music is playing while you log a workout, with pause and skip, so you can change songs without leaving the app. It never reads or changes your library and never starts music on its own."
         # NSPrivacyCollectedDataTypes used to live here. Apple reads the
         # privacy manifest from PhaseTraining/PrivacyInfo.xcprivacy, not from
         # Info.plist, so declaring it here meant the app shipped without one.
