@@ -10,7 +10,7 @@
 //      project.pbxproj). Loads via UIImage(named:) sync, no network.
 //      A generated exercise ships four: `<id>.webp` + `<id>_end.webp` (themed
 //      line art, this thumbnail flips between them) and `<id>_hero.webp` +
-//      `<id>_hero_end.webp` (mannequin renders, the detail hero).
+//      `<id>_hero_end.webp` (the same art at 720px for LineArtHero below).
 //   2. `urlString` via CachedAsyncImage — NSCache + URLCache disk fallback.
 //   3. SF Symbol placeholder.
 //
@@ -184,10 +184,10 @@ final class BundledExerciseImage {
     /// END frame of a generated line-art pair; nil for single-image exercises.
     func endImage(forID id: Int) -> UIImage? { cached(id, suffix: "_end") }
 
-    /// Mannequin start frame for the detail hero; nil unless generated.
+    /// Hero-size (720px) start frame; nil unless generated.
     func heroImage(forID id: Int) -> UIImage? { cached(id, suffix: "_hero") }
 
-    /// Mannequin end frame for the detail hero; nil unless generated.
+    /// Hero-size end frame; nil for a hold or a single-image exercise.
     func heroEndImage(forID id: Int) -> UIImage? { cached(id, suffix: "_hero_end") }
 
     /// Whether the start image carries an alpha channel. Themed line art is
@@ -229,5 +229,45 @@ final class BundledExerciseImage {
             lock.unlock()
         }
         return img
+    }
+}
+
+/// The detail-page hero for generated line art: one figure at ~240pt on the
+/// surface colour, start and end frames crossfading. Same mechanism as the
+/// thumbnail flip, held longer so the two positions read as a movement
+/// rather than a flicker at this size. A hold (no end frame) is static.
+struct LineArtHero: View {
+    let start: UIImage
+    let end: UIImage?
+
+    /// Seconds each position is held; the fade takes `fade` of that.
+    static let hold: TimeInterval = 1.6
+    static let fade: TimeInterval = 0.4
+    static let height: CGFloat = 240
+
+    var body: some View {
+        Group {
+            if let end {
+                TimelineView(.periodic(from: .now, by: Self.hold)) { context in
+                    let showEnd = Int(context.date.timeIntervalSinceReferenceDate / Self.hold) % 2 == 1
+                    Image(uiImage: showEnd ? end : start)
+                        .resizable()
+                        .scaledToFit()
+                        .id(showEnd)
+                        .transition(.opacity)
+                        .animation(.easeInOut(duration: Self.fade), value: showEnd)
+                }
+            } else {
+                Image(uiImage: start)
+                    .resizable()
+                    .scaledToFit()
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity)
+        .frame(height: ScreenScale.scaled(Self.height))
+        .background(Color.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .accessibilityHidden(true)
     }
 }

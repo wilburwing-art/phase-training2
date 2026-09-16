@@ -39,7 +39,11 @@ final class ImageSlotScalingUITests: XCTestCase {
         rollout.tap()
         let done = app.buttons["Done"].firstMatch
         XCTAssertTrue(done.waitForExistence(timeout: 5), "detail sheet should open")
-        attach(app, "detail-hero")
+        // Two shots a hold apart so both frames of the hero crossfade land
+        // in the attachments (LineArtHero holds each position 1.6 s).
+        attach(app, "detail-hero-a")
+        Thread.sleep(forTimeInterval: 1.7)
+        attach(app, "detail-hero-b")
         done.tap()
     }
 

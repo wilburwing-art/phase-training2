@@ -64,8 +64,8 @@ private struct ExerciseDetailContent: View {
             VStack(alignment: .leading, spacing: 20) {
                 header
                 metaBadges
-                anatomySection
                 heroImage
+                anatomySection
                 if let desc = exercise.description, !desc.isEmpty {
                     section(title: "Overview") {
                         Text(desc)
@@ -265,32 +265,6 @@ private struct ExerciseDetailContent: View {
         }
     }
 
-    private func pairHero(_ start: UIImage, _ end: UIImage?) -> some View {
-        // A mannequin render keeps its own white ground. Themed line art is
-        // ink-coloured strokes with alpha, so on white it vanishes (the two
-        // exercises with line art and no mannequin, single-leg RDL and trap
-        // bar deadlift, showed only their green accent); it sits on the
-        // surface colour like the thumbnail does.
-        let opaque: Bool = {
-            guard let cg = start.cgImage else { return true }
-            switch cg.alphaInfo {
-            case .none, .noneSkipLast, .noneSkipFirst: return true
-            default: return false
-            }
-        }()
-        return HStack(spacing: 8) {
-            Image(uiImage: start).resizable().scaledToFit()
-            if let end {
-                Image(uiImage: end).resizable().scaledToFit()
-            }
-        }
-        .padding(8)
-        .frame(maxWidth: .infinity)
-        .frame(height: ScreenScale.scaled(200))
-        .background(opaque ? Color.white : Color.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-    }
-
     @ViewBuilder
     private var heroImage: some View {
         // Bundle first, network second — the offline-first order ExerciseThumbnail
@@ -300,18 +274,16 @@ private struct ExerciseDetailContent: View {
         // when offline, for the 438 exercises whose image ships inside the app.
         let store = BundledExerciseImage.shared
         if let heroStart = store.heroImage(forID: exercise.id) {
-            // Generated mannequin: start and end side by side, or the single
-            // held position for an isometric exercise. Scaled to fit so no
-            // pose loses its head or feet; the render's own white ground is
-            // kept, since keying a shaded figure is not clean.
-            if let heroEnd = store.heroEndImage(forID: exercise.id) {
-                pairHero(heroStart, heroEnd)
-            } else {
-                pairHero(heroStart, nil)
-            }
+            // Generated line art at hero size (720px), start and end frames
+            // crossfading in one figure, on the surface colour: the same
+            // drawing the thumbnail showed, larger and slower. The mannequin
+            // hero that used to sit here, a grey render on its own white
+            // ground, was retired 2026-09-16.
+            LineArtHero(start: heroStart, end: store.heroEndImage(forID: exercise.id))
         } else if let bundled = store.image(forID: exercise.id) {
-            if let end = store.endImage(forID: exercise.id) {
-                pairHero(bundled, end)
+            if store.isTransparent(forID: exercise.id) {
+                // Thumbnail-size line art only (no hero export yet): same view.
+                LineArtHero(start: bundled, end: store.endImage(forID: exercise.id))
             } else {
                 Image(uiImage: bundled)
                     .resizable()

@@ -47,9 +47,14 @@ STROKE_PT_AT_THUMB = 1.5
 THUMB_PT = 84
 
 
-def stroke_target_px(stroke_pt: float, out_dim: int = LINE_ART_DIM) -> float:
-    """Points at the 84pt slot -> pixels in an out_dim asset."""
-    return stroke_pt * out_dim / THUMB_PT
+# The detail-page hero: one figure, animated, at ~240pt. 720px is 1:1 at 3x
+# for that slot and keeps a lossy-alpha WebP near 30 KB.
+HERO_DIM, HERO_SLOT_PT = 720, 240
+
+
+def stroke_target_px(stroke_pt: float, out_dim: int = LINE_ART_DIM, slot_pt: float = THUMB_PT) -> float:
+    """Points on screen in a slot_pt slot -> pixels in an out_dim asset."""
+    return stroke_pt * out_dim / slot_pt
 
 
 def measure_stroke_px(mask: np.ndarray) -> float:
@@ -84,12 +89,8 @@ def content_box(alpha: np.ndarray, pad: float = 0.06) -> tuple[int, int, int, in
     return left, top, left + side, top + side
 
 
-def theme_line_art(img: Image.Image, stroke_pt: float = STROKE_PT_AT_THUMB,
-                   out_dim: int = LINE_ART_DIM) -> Image.Image:
-    """Black-on-white line art with one saturated accent -> themed RGBA,
-    cropped to content, strokes widened so they measure `stroke_pt` at the
-    84pt thumbnail once the caller resizes to `out_dim`. Returned at source
-    resolution: dilating before the downscale keeps the edges soft."""
+def _ink(img: Image.Image) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Line alpha, accent mask and saturation for a black-on-white frame."""
     a = np.asarray(img.convert("RGB")).astype(np.float32)
     r, g, b = a[..., 0], a[..., 1], a[..., 2]
     lum = 0.299 * r + 0.587 * g + 0.114 * b
@@ -101,15 +102,42 @@ def theme_line_art(img: Image.Image, stroke_pt: float = STROKE_PT_AT_THUMB,
     line_alpha[line_alpha < 0.08] = 0
     sat = (a.max(axis=-1) - a.min(axis=-1)) / 255
     accent = (sat > 0.25) & (r > g) & (r > b)
+    return line_alpha, accent, sat
+
+
+def pair_box(frames: list[Image.Image]) -> tuple[int, int, int, int]:
+    """One crop box for a start/end pair: the union of both frames' ink.
+    Cropping each frame to its own content rescales the figure between the
+    two (a rollout's extended frame is wider, so its figure came out
+    smaller), and the flip read as a zoom. Both frames are generated at
+    one camera, so a shared box keeps the figure the same size and the
+    movement is the only thing that changes."""
+    union = np.zeros(np.asarray(frames[0].convert("L")).shape, np.float32)
+    for f in frames:
+        la, _, _ = _ink(f)
+        if la.shape == union.shape:
+            union = np.maximum(union, la)
+    return content_box(union * 255)
+
+
+def theme_line_art(img: Image.Image, stroke_pt: float = STROKE_PT_AT_THUMB,
+                   out_dim: int = LINE_ART_DIM, slot_pt: float = THUMB_PT,
+                   box: tuple[int, int, int, int] | None = None) -> Image.Image:
+    """Black-on-white line art with one saturated accent -> themed RGBA,
+    cropped to content (or to `box`, see pair_box), strokes widened so they
+    measure `stroke_pt` on screen in a `slot_pt` slot once the caller
+    resizes to `out_dim`. Returned at source resolution: dilating before
+    the downscale keeps the edges soft."""
+    line_alpha, accent, sat = _ink(img)
 
     # Crop on the undilated ink, then size the dilation to the crop: the
     # resize factor is what varied per figure, so the target is expressed in
     # output pixels and divided back into source pixels here.
-    x0, y0, x1, y1 = content_box(line_alpha * 255)
+    x0, y0, x1, y1 = box or content_box(line_alpha * 255)
     line_alpha = line_alpha[y0:y1, x0:x1]
     accent = accent[y0:y1, x0:x1]
     resize = out_dim / (x1 - x0)
-    target = stroke_target_px(stroke_pt, out_dim)
+    target = stroke_target_px(stroke_pt, out_dim, slot_pt)
     # Grow at source, measure on the OUTPUT-sized alpha, grow again. The
     # number the knob names is the stroke in the shipped asset, and the
     # downscale plus the alpha threshold shifts it by a pixel or two from
