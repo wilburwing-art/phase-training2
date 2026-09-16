@@ -33,6 +33,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>PhaseTraining shows the track Apple Music is playing while you log a workout, with pause and skip, so you can change songs without leaving the app. It never reads or changes your library and never starts music on its own.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>PhaseTraining reads recent workout history to gauge your current training readiness, match generated workouts to how active you've actually been, and offer to log outdoor sessions it finds (like a ski day or a climb) so your training week can adjust. With your separate permission, it can also import body weight, body-fat %, and lean-mass readings to populate your training log.</string>
 	<key>NSHealthUpdateUsageDescription</key>
