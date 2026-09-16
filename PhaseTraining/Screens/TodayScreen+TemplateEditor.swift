@@ -18,16 +18,17 @@ extension TodayScreen {
     /// Today's exercise list as a directly-editable card: tap a row to
     /// open the action sheet (adjust, swap, inspect, remove). The Add
     /// Exercise row appends to the end. All mutations flow through
-    /// `editableTemplate` so Start consumes the edited shape. The List is
-    /// height-bounded so it doesn't scroll independently inside the page's
-    /// outer ScrollView.
+    /// `editableTemplate` so Start consumes the edited shape.
+    ///
+    /// A plain stack, sized by its rows. Until build 134 this was a
+    /// scroll-disabled `List` inside a `.frame(height: count * 88 + 64)`,
+    /// a constant from when a row was 88pt; the row has been 120pt since
+    /// the 84pt thumbnail (2026-09-11) and scales with the screen since
+    /// build 132, so the card clipped its last rows and, once anything
+    /// nudged the inner List, its first ones too (owner's phone,
+    /// 2026-09-16). The List bought nothing but separators.
     func inlineExerciseCard(_ tmpl: WorkoutTemplate) -> some View {
-        // Height: ~88pt per ExerciseTile (.presentation density min) + ~56pt
-        // add-row + ~8pt list padding. Slight overshoot is fine; rows just
-        // sit at their intrinsic size.
-        let listHeight = CGFloat(tmpl.exercises.count) * 88 + 56 + 8
-
-        return VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text("TODAY'S EXERCISES")
                     .styled(.micro)
@@ -41,24 +42,13 @@ extension TodayScreen {
             .padding(.top, 12)
             .padding(.bottom, 8)
 
-            List {
-                Section {
-                    ForEach(Array(tmpl.exercises.enumerated()), id: \.element.id) { idx, ex in
-                        todayExerciseTile(ex, position: idx + 1)
-                            .listRowBackground(Color.surface)
-                            .listRowSeparatorTint(Color.lineSoft)
-                            .listRowInsets(EdgeInsets())
-                    }
-                    inlineAddExerciseRow
-                        .listRowBackground(Color.surface)
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets())
-                }
+            ForEach(Array(tmpl.exercises.enumerated()), id: \.element.id) { idx, ex in
+                todayExerciseTile(ex, position: idx + 1)
+                Rectangle()
+                    .fill(Color.lineSoft)
+                    .frame(height: 0.5)
             }
-            .scrollContentBackground(.hidden)
-            .listStyle(.plain)
-            .scrollDisabled(true)
-            .frame(height: listHeight)
+            inlineAddExerciseRow
         }
         .background(Color.surface)
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
