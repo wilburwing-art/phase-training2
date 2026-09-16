@@ -1,7 +1,7 @@
 #!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["pillow", "numpy"]
+# dependencies = ["pillow", "numpy", "scipy"]
 # ///
 """Promote generated frames from a run directory into the app bundle.
 
@@ -25,6 +25,16 @@ Bake-off ids differ from catalogue slugs; map them with
 `--alias barbell-romanian-deadlift=romanian-deadlift`. `--scores scores.json`
 (the contact sheet export) promotes only pairs scored "pass" in BOTH styles.
 Nothing is deleted: a slug not promoted keeps whatever it had.
+
+Theme change (palette, stroke weight): re-theme every promoted exercise's
+line art from its source frames without touching heroes or exercises.json:
+
+    uv run scripts/imagegen/promote.py --refresh-line-art \
+        --runs run_4,run_3,run_2,manual --alias barbell-romanian-deadlift=romanian-deadlift
+
+`--runs` is a search order, first hit wins; an exercise generated in two
+runs must be listed so the run that was actually promoted comes first
+(goblet-squat: run_4, not manual, checked against the bundle 2026-09-15).
 """
 
 import argparse
@@ -35,18 +45,19 @@ from pathlib import Path
 
 from PIL import Image
 
-from theme import crop_to_content, theme_line_art
+from theme import LINE_ART_DIM, STROKE_PT_AT_THUMB, theme_line_art
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent.parent
 IMAGES = REPO / "PhaseTraining" / "Resources" / "ExerciseImages"
 EXERCISES_JSON = REPO / "db" / "source" / "exercises.json"
 
-# Line art is thumbnail-only now (88pt at 3x = 264px), the mannequin is the
+# Line art is thumbnail-only now (84pt at 3x = 252px), the mannequin is the
 # hero at half width (190pt at 3x = 570px). Sized to fit 575 x 4 files in a
 # ~30 MB bundle: measured 15 KB per themed line-art frame at 480px with lossy
-# alpha, 10 KB per mannequin frame at 640px.
-LINE_ART_DIM, LINE_ART_QUALITY, LINE_ART_ALPHA_QUALITY = 480, 85, 50
+# alpha, 10 KB per mannequin frame at 640px. The line-art edge lives in
+# theme.py, which sizes the stroke against it.
+LINE_ART_QUALITY, LINE_ART_ALPHA_QUALITY = 85, 50
 HERO_DIM, HERO_QUALITY = 640, 80
 MODEL_LABEL = "generated: openai/gpt-5.4-image-2 via OpenRouter"
 
@@ -80,9 +91,55 @@ def passing_ids(scores_path: Path, provider: str) -> set[str]:
     return {rid for rid, styles in ok.items() if {"line_art", "mannequin"} <= styles}
 
 
+def refresh_line_art(runs: list[Path], alias: dict[str, str], stroke_pt: float, dry_run: bool) -> None:
+    """Re-theme <id>.webp and <id>_end.webp for every `generated` row from
+    the first run in `runs` that holds its line-art start frame."""
+    rows = json.loads(EXERCISES_JSON.read_text())
+    run_id_for = {v: k for k, v in alias.items()}  # slug -> bake-off id
+    done, missing = 0, []
+    for row in rows:
+        if row.get("image_source") != "generated":
+            continue
+        slug = row["slug"]
+        hit = None
+        for run in runs:
+            for rid in (slug, run_id_for.get(slug)):
+                if rid is None:
+                    continue
+                starts = sorted(run.glob(f"*__line_art__{rid}__start.png"))
+                if starts:
+                    hit = (run, starts[0])
+                    break
+            if hit:
+                break
+        if hit is None:
+            missing.append(slug)
+            continue
+        run, start = hit
+        end = start.with_name(start.name.replace("__start.png", "__end.png"))
+        ex_id = row["id"]
+        outputs = {IMAGES / f"{ex_id}.webp": to_webp(theme_line_art(Image.open(start), stroke_pt=stroke_pt), True)}
+        if end.exists():
+            outputs[IMAGES / f"{ex_id}_end.webp"] = to_webp(theme_line_art(Image.open(end), stroke_pt=stroke_pt), True)
+        total = sum(len(b) for b in outputs.values())
+        print(f"{slug} (id {ex_id}) <- {run.name}: {len(outputs)} files, {total/1024:.0f} KB")
+        if not dry_run:
+            for path, data in outputs.items():
+                path.write_bytes(data)
+        done += 1
+    print(f"\nre-themed {done}" + (f"; NO SOURCE FRAME for {missing}" if missing else ""))
+    if missing:
+        sys.exit(1)
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--run", type=Path, required=True)
+    ap.add_argument("--run", type=Path, help="run directory to promote from")
+    ap.add_argument("--refresh-line-art", action="store_true",
+                    help="re-theme every promoted exercise's line art from --runs; heroes untouched")
+    ap.add_argument("--runs", help="comma list of run dirs (under out/ or paths), searched in order")
+    ap.add_argument("--stroke-pt", type=float, default=STROKE_PT_AT_THUMB,
+                    help="line-art stroke weight in points at the 84pt thumbnail")
     ap.add_argument("--provider", default="or-openai")
     ap.add_argument("--only", help="comma list of run ids (bake-off ids or slugs)")
     ap.add_argument("--scores", type=Path, help="contact sheet scores.json; promote pass/pass only")
@@ -92,6 +149,17 @@ def main():
     args = ap.parse_args()
 
     alias = dict(a.split("=", 1) for a in args.alias)
+    if args.refresh_line_art:
+        if not args.runs:
+            sys.exit("--refresh-line-art needs --runs")
+        runs = [(p if p.is_dir() else HERE / "out" / p) for p in (Path(r.strip()) for r in args.runs.split(","))]
+        for r in runs:
+            if not r.is_dir():
+                sys.exit(f"no such run dir: {r}")
+        refresh_line_art(runs, alias, args.stroke_pt, args.dry_run)
+        return
+    if args.run is None:
+        sys.exit("--run is required (or --refresh-line-art)")
     rows = json.loads(EXERCISES_JSON.read_text())
     by_slug = {r["slug"]: r for r in rows}
 
@@ -133,11 +201,11 @@ def main():
         outputs = {}
         stale = []
         if "line_art" in complete:
-            outputs[IMAGES / f"{ex_id}.webp"] = to_webp(crop_to_content(theme_line_art(Image.open(frames[("line_art", "start")]))), True)
+            outputs[IMAGES / f"{ex_id}.webp"] = to_webp(theme_line_art(Image.open(frames[("line_art", "start")]), stroke_pt=args.stroke_pt), True)
             if hold:
                 stale.append(IMAGES / f"{ex_id}_end.webp")
             else:
-                outputs[IMAGES / f"{ex_id}_end.webp"] = to_webp(crop_to_content(theme_line_art(Image.open(frames[("line_art", "end")]))), True)
+                outputs[IMAGES / f"{ex_id}_end.webp"] = to_webp(theme_line_art(Image.open(frames[("line_art", "end")]), stroke_pt=args.stroke_pt), True)
         if "mannequin" in complete:
             outputs[IMAGES / f"{ex_id}_hero.webp"] = to_webp(Image.open(frames[("mannequin", "start")]), False)
             if hold:
