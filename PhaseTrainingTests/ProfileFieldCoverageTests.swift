@@ -227,6 +227,15 @@ final class ProfileFieldCoverageTests: XCTestCase {
               },
               snapshotMarker: "support sport:",
               skipReason: nil),
+
+        // PR 11 — long-term goals. UI-only state (Progress tab progress
+        // bars); not in planInputsHash and not in the coach snapshot, so
+        // nil mutators with a skipReason.
+        Probe(name: "userGoals",
+              mutateForHash: nil,
+              mutateForSnapshot: nil,
+              snapshotMarker: nil,
+              skipReason: "UI-only goal selection (Progress tab progress bars); does not feed plan hash or coach snapshot."),
     ]
 
     // MARK: - Tests

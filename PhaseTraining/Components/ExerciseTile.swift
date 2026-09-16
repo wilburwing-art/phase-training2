@@ -37,7 +37,7 @@ struct ExerciseTileVM {
     enum Trailing {
         case chevron
         case setsReps(sets: Int, reps: Int, unit: String, lastWeight: Double?)
-        case sparkline(points: [Double], pr: Bool)
+        case sparkline(points: [Double], pr: Bool, anchors: Set<Int> = [])
         case controls(onInfo: () -> Void, onSwap: () -> Void)
         case summary(text: String, rpe: String?, isPR: Bool)
         case duration(String)
@@ -209,10 +209,10 @@ struct ExerciseTile: View {
             }
             .frame(minWidth: 72, alignment: .trailing)
 
-        case .sparkline(let points, let pr):
+        case .sparkline(let points, let pr, let anchors):
             HStack(spacing: 8) {
                 if pr { PRPill() }
-                SparklineView(points: points)
+                SparklineView(points: points, anchors: anchors)
                     .frame(width: 80, height: 28)
             }
 
@@ -309,6 +309,9 @@ struct PRPill: View {
 
 private struct SparklineView: View {
     let points: [Double] // normalized 0..1
+    /// Indices of points that came from tagged sessions (PR 11) — drawn
+    /// as small ink dots above the line so test/max days are findable.
+    var anchors: Set<Int> = []
 
     var body: some View {
         Canvas { ctx, size in
@@ -330,6 +333,12 @@ private struct SparklineView: View {
                 let ly = size.height - CGFloat(last) * size.height
                 let dot = Path(ellipseIn: CGRect(x: lx - 2, y: ly - 2, width: 4, height: 4))
                 ctx.fill(dot, with: .color(.accent))
+            }
+            for i in anchors where i < points.count {
+                let x = CGFloat(i) / CGFloat(points.count - 1) * size.width
+                let y = size.height - CGFloat(points[i]) * size.height
+                let dot = Path(ellipseIn: CGRect(x: x - 1.5, y: y - 1.5, width: 3, height: 3))
+                ctx.fill(dot, with: .color(.ink2))
             }
         }
     }

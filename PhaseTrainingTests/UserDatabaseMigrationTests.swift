@@ -1,12 +1,12 @@
 // UserDatabaseMigrationTests — characterize the PRAGMA user_version
 // migration runner in UserDatabase.
 //
-// Two paths matter:
-//  1. Fresh install: v1 creates the full current schema (is_warmup in the
-//     CREATE) and stamps user_version = 1.
+//  Two paths matter:
+//  1. Fresh install: the latest migration (v2, PR 11 session_tags) stamps
+//     user_version = 2; session_sets carries is_warmup from the v1 CREATE.
 //  2. Pre-versioning upgrade: a legacy user.db (user_version = 0, session_sets
 //     WITHOUT is_warmup) gets the column via the explicit existence check,
-//     then v1 no-ops over the live schema and stamps 1.
+//     then the migrations run up to the latest and stamp it.
 //
 // Uses a temp FILE path (not :memory:) so a second raw-SQLite connection can
 // inspect what UserDatabase wrote — and so the legacy fixture can be staged
@@ -68,7 +68,7 @@ final class UserDatabaseMigrationTests: XCTestCase {
         let db = UserDatabase(path: path)
         XCTAssertTrue(db.isOpen)
 
-        XCTAssertEqual(userVersion(), 1, "fresh install must stamp user_version = 1")
+        XCTAssertEqual(userVersion(), 2, "fresh install must stamp user_version = 2 (latest migration)")
         let cols = sessionSetsColumns()
         XCTAssertTrue(cols.contains("is_warmup"),
                       "v1 CREATE must include is_warmup; got \(cols)")
@@ -105,7 +105,7 @@ final class UserDatabaseMigrationTests: XCTestCase {
         let db = UserDatabase(path: path)
         XCTAssertTrue(db.isOpen)
 
-        XCTAssertEqual(userVersion(), 1, "upgrade must stamp user_version = 1")
+        XCTAssertEqual(userVersion(), 2, "upgrade must stamp user_version = 2 (latest migration)")
         XCTAssertTrue(sessionSetsColumns().contains("is_warmup"),
                       "legacy session_sets must gain is_warmup via the existence check")
 
@@ -122,12 +122,12 @@ final class UserDatabaseMigrationTests: XCTestCase {
 
     // MARK: - Re-open is a no-op
 
-    func test_reopen_atVersion1_staysAtVersion1() {
-        _ = UserDatabase(path: path)          // fresh install → v1
-        XCTAssertEqual(userVersion(), 1)
+    func test_reopen_atLatestVersion_staysAtLatestVersion() {
+        _ = UserDatabase(path: path)          // fresh install → v2
+        XCTAssertEqual(userVersion(), 2)
         let again = UserDatabase(path: path)  // re-open: migrations skip
         XCTAssertTrue(again.isOpen)
-        XCTAssertEqual(userVersion(), 1)
+        XCTAssertEqual(userVersion(), 2)
     }
 
     // MARK: - FK cascade (session_sets follow their exercises)

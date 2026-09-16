@@ -185,8 +185,62 @@ struct SavedSession: Codable, Identifiable, Equatable {
     var note: String?
     var endTime: Date
     var duration: Int // seconds
+    /// PR 11 — user-applied tags (Test day / Max attempt / Light day /
+    /// Technique focus). Anchor points on strength charts; PR detection
+    /// reads them as intentional-max signals. Empty for sessions logged
+    /// before the feature.
+    var sessionTags: [String]
 
     var id: TimeInterval { startTime.timeIntervalSince1970 }
+
+    init(templateId: String, name: String, category: String,
+         startTime: Date, exercises: [LoggedExercise], feel: String?,
+         note: String?, endTime: Date, duration: Int,
+         sessionTags: [String] = []) {
+        self.templateId = templateId
+        self.name = name
+        self.category = category
+        self.startTime = startTime
+        self.exercises = exercises
+        self.feel = feel
+        self.note = note
+        self.endTime = endTime
+        self.duration = duration
+        self.sessionTags = sessionTags
+    }
+
+    /// Tolerant decode: pre-PR-11 saves carry no `sessionTags` key, but
+    /// the synthesized Codable contract would throw on the missing key.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        templateId = try c.decode(String.self, forKey: .templateId)
+        name = try c.decode(String.self, forKey: .name)
+        category = try c.decode(String.self, forKey: .category)
+        startTime = try c.decode(Date.self, forKey: .startTime)
+        exercises = try c.decode([LoggedExercise].self, forKey: .exercises)
+        feel = try c.decodeIfPresent(String.self, forKey: .feel)
+        note = try c.decodeIfPresent(String.self, forKey: .note)
+        endTime = try c.decode(Date.self, forKey: .endTime)
+        duration = try c.decode(Int.self, forKey: .duration)
+        sessionTags = (try? c.decode([String].self, forKey: .sessionTags)) ?? []
+    }
+}
+
+/// PR 11 — tag vocabulary for SavedSession.sessionTags. A raw-value enum
+/// so the persisted strings stay stable; `label` is display-only.
+enum SessionTag: String, Codable, CaseIterable, Identifiable {
+    case testDay, maxAttempt, lightDay, techniqueFocus
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .testDay:        return "Test day"
+        case .maxAttempt:     return "Max attempt"
+        case .lightDay:       return "Light day"
+        case .techniqueFocus: return "Technique focus"
+        }
+    }
 }
 
 struct SessionStats: Equatable {

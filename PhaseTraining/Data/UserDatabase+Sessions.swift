@@ -15,13 +15,20 @@ extension UserDatabase {
     /// All saved sessions, newest first. Materializes the full nested tree
     /// (sessions → exercises → sets) for the @Published cache that
     /// SwiftUI screens bind to.
+    /// PR 11 — decode the JSON session_tags column ('[]' / NULL → []).
+    private func decodeTags(_ raw: String?) -> [String] {
+        guard let raw, let data = raw.data(using: .utf8),
+              let tags = try? JSONDecoder().decode([String].self, from: data) else { return [] }
+        return tags
+    }
+
     func listSavedSessions() -> [SavedSession] { withLock {
         guard let db else { return [] }
-        let sql = "SELECT start_time, template_id, name, category, end_time, duration, feel, note FROM sessions ORDER BY start_time DESC"
+        let sql = "SELECT start_time, template_id, name, category, end_time, duration, feel, note, session_tags FROM sessions ORDER BY start_time DESC"
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
         defer { sqlite3_finalize(stmt) }
-        var rows: [(start: Int64, tpl: String, name: String, cat: String, end: Int64, dur: Int, feel: String?, note: String?)] = []
+        var rows: [(start: Int64, tpl: String, name: String, cat: String, end: Int64, dur: Int, feel: String?, note: String?, tags: [String])] = []
         while sqlite3_step(stmt) == SQLITE_ROW {
             rows.append((
                 sqlite3_column_int64(stmt, 0),
@@ -31,7 +38,8 @@ extension UserDatabase {
                 sqlite3_column_int64(stmt, 4),
                 Int(sqlite3_column_int64(stmt, 5)),
                 text(stmt, 6),
-                text(stmt, 7)
+                text(stmt, 7),
+                decodeTags(text(stmt, 8))
             ))
         }
         return rows.map { r in
@@ -44,7 +52,8 @@ extension UserDatabase {
                 feel: r.feel,
                 note: r.note,
                 endTime: Date(timeIntervalSince1970: TimeInterval(r.end)),
-                duration: r.dur
+                duration: r.dur,
+                sessionTags: r.tags
             )
         }
     } }
@@ -57,7 +66,7 @@ extension UserDatabase {
     /// Replaces the O(N) scan in SessionStore.getPreviousSession.
     func previousSession(templateId: String) -> SavedSession? { withLock {
         guard let db else { return nil }
-        let sql = "SELECT start_time, template_id, name, category, end_time, duration, feel, note FROM sessions WHERE template_id = ? ORDER BY start_time DESC LIMIT 1"
+        let sql = "SELECT start_time, template_id, name, category, end_time, duration, feel, note, session_tags FROM sessions WHERE template_id = ? ORDER BY start_time DESC LIMIT 1"
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return nil }
         defer { sqlite3_finalize(stmt) }
@@ -73,7 +82,8 @@ extension UserDatabase {
             feel: text(stmt, 6),
             note: text(stmt, 7),
             endTime: Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(stmt, 4))),
-            duration: Int(sqlite3_column_int64(stmt, 5))
+            duration: Int(sqlite3_column_int64(stmt, 5)),
+            sessionTags: decodeTags(text(stmt, 8))
         )
     } }
 
@@ -234,8 +244,8 @@ extension UserDatabase {
         sqlite3_finalize(clrEx)
 
         let sessSQL = """
-        INSERT INTO sessions(start_time, template_id, name, category, end_time, duration, feel, note)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO sessions(start_time, template_id, name, category, end_time, duration, feel, note, session_tags)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(start_time) DO UPDATE SET
           template_id = excluded.template_id,
           name = excluded.name,
@@ -243,7 +253,8 @@ extension UserDatabase {
           end_time = excluded.end_time,
           duration = excluded.duration,
           feel = excluded.feel,
-          note = excluded.note
+          note = excluded.note,
+          session_tags = excluded.session_tags
         """
         var s: OpaquePointer?
         if sqlite3_prepare_v2(db, sessSQL, -1, &s, nil) == SQLITE_OK {
@@ -255,6 +266,10 @@ extension UserDatabase {
             sqlite3_bind_int64(s, 6, Int64(session.duration))
             if let f = session.feel { sqlite3_bind_text(s, 7, f, -1, SQLITE_TRANSIENT_USER) } else { sqlite3_bind_null(s, 7) }
             if let n = session.note { sqlite3_bind_text(s, 8, n, -1, SQLITE_TRANSIENT_USER) } else { sqlite3_bind_null(s, 8) }
+            // PR 11 — tags as a JSON array string; '[]' when empty.
+            let tagsJSON = (try? JSONEncoder().encode(session.sessionTags))
+                .flatMap { String(data: $0, encoding: .utf8) } ?? "[]"
+            sqlite3_bind_text(s, 9, tagsJSON, -1, SQLITE_TRANSIENT_USER)
             if sqlite3_step(s) != SQLITE_DONE { ok = false }
         } else {
             ok = false

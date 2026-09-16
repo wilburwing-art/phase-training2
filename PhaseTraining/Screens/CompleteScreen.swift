@@ -28,6 +28,8 @@ import SwiftUI
 struct CompleteScreen: View {
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject var memoryStore: MemoryStore
+    /// PR 11 — sport-log access for the milestone hook's goal inputs.
+    @EnvironmentObject var planStore: PlanStore
     /// Coach gate — drives the feedback button's LABEL only (the button and
     /// sheet stay available to everyone; FeedbackEntry feeds the planner
     /// regardless). Same @AppStorage pairing as CoachBubble.
@@ -40,6 +42,9 @@ struct CompleteScreen: View {
 
     @State private var feel: String? = nil
     @State private var note: String = ""
+    /// PR 11 — multi-select session tags. Written into the saved record
+    /// through syncEdits (same patch path as feel/note).
+    @State private var tags: Set<SessionTag> = []
     /// Frozen at the moment this screen appears (i.e. the session completed),
     /// so DURATION doesn't keep ticking up while the user fills feel/note.
     /// The same timestamp is handed to `saveCompleted` so the stored duration
@@ -144,6 +149,10 @@ struct CompleteScreen: View {
                             .padding(.horizontal, 20)
                             .padding(.top, 20)
 
+                        tagsSection
+                            .padding(.horizontal, 20)
+                            .padding(.top, 18)
+
                         noteSection
                             .padding(.horizontal, 20)
                             .padding(.top, 18)
@@ -167,6 +176,7 @@ struct CompleteScreen: View {
         .onAppear(perform: autosaveIfNeeded)
         .onChange(of: feel) { _, _ in syncEdits() }
         .onChange(of: note) { _, _ in syncEdits() }
+        .onChange(of: tags) { _, _ in syncEdits() }
         .sheet(isPresented: $showFeedbackSheet) {
             // Optional, opt-in capture of a structured FeedbackEntry (difficulty
             // + hurt areas → memory.feedback, read by the planner). The session
@@ -350,6 +360,46 @@ struct CompleteScreen: View {
         .buttonStyle(.plain)
     }
 
+    /// PR 11 — session tags. Multi-select: a max attempt can also be a
+    /// test day. Tags are chart anchors + PR-priority signals, not
+    /// display garnish, so they persist into the saved record.
+    private var tagsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("TAG THIS SESSION (OPTIONAL)")
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            HStack(spacing: 5) {
+                ForEach(SessionTag.allCases) { tag in
+                    tagChip(tag)
+                }
+            }
+        }
+    }
+
+    private func tagChip(_ tag: SessionTag) -> some View {
+        let active = tags.contains(tag)
+        return Button {
+            if active { tags.remove(tag) } else { tags.insert(tag) }
+        } label: {
+            Text(tag.label)
+                .font(.custom("JetBrainsMono-Medium", size: 11))
+                .foregroundStyle(active ? Color.accentInk : Color.ink2)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 2)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(active ? Color.accent : Color.elevated)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(active ? Color.clear : Color.line, lineWidth: 0.5)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("tag-\(tag.rawValue)")
+    }
+
     private var noteSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("NOTE (OPTIONAL)")
@@ -391,6 +441,23 @@ struct CompleteScreen: View {
         saved = store.saveCompleted(session, feel: feel,
                                     note: note.isEmpty ? nil : note,
                                     endTime: completedAt)
+        // PR 11 (commit 4) — a fresh save can tip a goal past 100% (new
+        // e1RM, logged 5k, climb-day count). Fire at most one celebratory
+        // push per crossing, gated by the PR-12 budget. Task (not
+        // async onAppear) so the screen keeps rendering while it runs.
+        Task {
+            let goals = memoryStore.memory.userGoals
+            guard !goals.isEmpty else { return }
+            let logs = planStore.sportLogStore?.entries ?? []
+            await GoalMilestoneNotifier.notifyIfCrossed(goals: goals) { goal in
+                goal.progress(
+                    bestE1RM: store.bestE1RMByExercise(),
+                    bodyweightKg: memoryStore.memory.weightKg,
+                    fastestFiveKSeconds: store.fastestFiveKSeconds(sportLogs: logs),
+                    climbsLast30Days: store.climbsLast30Days(sportLogs: logs)
+                )
+            }
+        }
     }
 
     /// Patch the auto-saved record's feel/note in place as the user edits them.
@@ -399,6 +466,7 @@ struct CompleteScreen: View {
         guard !discarded, var s = saved else { return }
         s.feel = feel
         s.note = note.isEmpty ? nil : note
+        s.sessionTags = tags.map(\.rawValue).sorted()
         store.updateSession(s)
         saved = s
     }
