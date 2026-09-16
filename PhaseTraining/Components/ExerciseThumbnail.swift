@@ -26,17 +26,12 @@ struct ExerciseThumbnail: View {
     var size: CGFloat = 44
     var cornerRadius: CGFloat = 8
 
-    /// Original URL-only init kept for existing call sites that don't have
-    /// an exerciseID resolved (Library / SubstituteExerciseSheet / LogScreen).
-    init(urlString: String?, size: CGFloat = 44, cornerRadius: CGFloat = 8) {
-        self.exerciseID = nil
-        self.urlString = urlString
-        self.size = size
-        self.cornerRadius = cornerRadius
-    }
-
-    /// Bundle-first init for composite leading slots. Falls through to the
-    /// URL path if no bundled WebP exists for this id.
+    /// Bundle-first. Falls through to the URL path if no bundled WebP exists
+    /// for this id. There is no URL-only init on purpose: promoting an
+    /// exercise clears its URL, so a call site that passed only the URL drew
+    /// the placeholder for exactly the rows carrying generated art (the Log
+    /// header did, until build 130). Resolve the id, through
+    /// ExerciseLookupCache when only a name is in hand.
     init(exerciseID: Int?, urlString: String?, size: CGFloat = 44, cornerRadius: CGFloat = 8) {
         self.exerciseID = exerciseID
         self.urlString = urlString
