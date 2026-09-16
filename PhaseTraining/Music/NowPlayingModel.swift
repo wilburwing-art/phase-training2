@@ -65,6 +65,14 @@ final class MPMusicPlayerWrapper: SystemMusicPlayerInterface {
                 self?.subject.send()
             })
         }
+        // The system player "takes on the current Music app state" on
+        // instantiation and then follows notifications; a track started in
+        // the Music app while this app was in the background can arrive
+        // late or not at all, so coming back to the foreground re-reads.
+        observers.append(center.addObserver(forName: UIApplication.didBecomeActiveNotification,
+                                            object: nil, queue: .main) { [weak self] _ in
+            self?.subject.send()
+        })
     }
 
     deinit {
@@ -139,6 +147,12 @@ final class NowPlayingModel: ObservableObject {
             .sink { [weak self] in self?.refresh() }
     }
 
+    /// Shown while music is playing but the player has no item to report
+    /// yet: transport works regardless, and the title fills in on the next
+    /// notification. (Build 133 hid the card in that state, which is what
+    /// the owner saw right after granting access.)
+    static let untitled = NowPlayingTrack(title: "Apple Music", artist: "", artwork: nil)
+
     func refresh() {
         let playback = player.playbackState
         guard playback != .stopped else { state = .hidden; return }
@@ -148,17 +162,16 @@ final class NowPlayingModel: ObservableObject {
         case .notDetermined:
             state = .needsPermission
         case .authorized:
-            if let track = player.nowPlaying() {
-                state = .track(track, isPlaying: playback == .playing)
-            } else {
-                state = .hidden
-            }
+            state = .track(player.nowPlaying() ?? Self.untitled, isPlaying: playback == .playing)
         }
     }
 
     func requestAccess() {
         Task {
             _ = await player.requestAuthorization()
+            refresh()
+            // The item can lag the grant by a beat; read once more.
+            try? await Task.sleep(for: .seconds(1))
             refresh()
         }
     }

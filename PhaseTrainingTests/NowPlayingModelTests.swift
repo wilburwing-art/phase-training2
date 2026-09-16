@@ -68,8 +68,19 @@ final class NowPlayingModelTests: XCTestCase {
         XCTAssertEqual(player.nextCalls, 1)
     }
 
-    func test_authorizedButNothingQueued_isHidden() {
-        let model = NowPlayingModel(player: FakeMusicPlayer(playbackState: .playing, authorization: .authorized, track: nil))
+    func test_authorizedAndPlayingWithNoItemYet_showsAnUntitledCard() {
+        // Transport still works, and the title fills in on the next
+        // notification; hiding here is what the owner hit right after
+        // granting access on build 133.
+        let player = FakeMusicPlayer(playbackState: .playing, authorization: .authorized, track: nil)
+        let model = NowPlayingModel(player: player)
+        XCTAssertEqual(model.state, .track(NowPlayingModel.untitled, isPlaying: true))
+        player.track = song; player.emit()
+        XCTAssertEqual(model.state, .track(song, isPlaying: true))
+    }
+
+    func test_stoppedAndAuthorized_isHidden() {
+        let model = NowPlayingModel(player: FakeMusicPlayer(playbackState: .stopped, authorization: .authorized, track: song))
         XCTAssertEqual(model.state, .hidden)
     }
 }
