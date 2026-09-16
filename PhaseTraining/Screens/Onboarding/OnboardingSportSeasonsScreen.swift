@@ -53,7 +53,7 @@ struct OnboardingSportSeasonsScreen: View {
                 .styled(.micro)
                 .foregroundStyle(Color.accent)
             Text("If you climb through your ski off-season, tell us your weekly rhythm and we'll plan your ski training around it. Optional, and you can change it anytime.")
-                .font(.custom("Inter-Regular", size: 13))
+                .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink2)
                 .fixedSize(horizontal: false, vertical: true)
             SupportPatternEditor(pattern: $draft.supportPattern, showBlurb: false)

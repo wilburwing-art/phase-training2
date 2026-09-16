@@ -90,7 +90,7 @@ struct BodyWeightLogSheet: View {
                 TextField(unitLabel, text: $weightText)
                     .focused($weightFocused)
                     .keyboardType(.decimalPad)
-                    .font(.custom("JetBrainsMono-SemiBold", size: 22))
+                    .font(.scaled("JetBrainsMono-SemiBold", size: 22))
                     .foregroundStyle(Color.ink)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 12)
@@ -106,7 +106,7 @@ struct BodyWeightLogSheet: View {
                     .foregroundStyle(Color.ink3)
             }
             TextField("Note (optional)", text: $noteText)
-                .font(.custom("Inter-Regular", size: 13))
+                .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
@@ -121,7 +121,7 @@ struct BodyWeightLogSheet: View {
                     Image(systemName: "checkmark")
                         .font(.system(size: 12, weight: .semibold))
                     Text("Log weight")
-                        .font(.custom("SpaceGrotesk-SemiBold", size: 14))
+                        .font(.scaled("SpaceGrotesk-SemiBold", size: 14))
                 }
                 .foregroundStyle(canLog ? Color.accentInk : Color.ink3)
                 .frame(maxWidth: .infinity)
@@ -202,7 +202,7 @@ struct BodyWeightLogSheet: View {
         VStack(alignment: .leading, spacing: 8) {
             sectionLabel("RECENT")
             Text("No weights logged yet. Log one above to start a trend.")
-                .font(.custom("Inter-Regular", size: 13))
+                .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink2)
         }
         .padding(14)
@@ -230,7 +230,7 @@ struct BodyWeightLogSheet: View {
                 .foregroundStyle(Color.ink3)
                 .frame(width: 56, alignment: .leading)
             Text(BodyMetrics.formatWeight(kg: entry.weightKg, imperial: store.memory.usesImperial))
-                .font(.custom("JetBrainsMono-SemiBold", size: 14))
+                .font(.scaled("JetBrainsMono-SemiBold", size: 14))
                 .foregroundStyle(Color.ink)
             Spacer(minLength: 8)
             if let note = entry.note, !note.isEmpty {

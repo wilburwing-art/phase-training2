@@ -75,14 +75,14 @@ struct CheckInFeedbackScreen: View {
                     .stroke(Color.line, lineWidth: 0.5)
                 if text.wrappedValue.isEmpty {
                     Text(placeholder)
-                        .font(.custom("Inter-Regular", size: 13))
+                        .font(.scaled("Inter-Regular", size: 13))
                         .foregroundStyle(Color.ink3)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 12)
                         .allowsHitTesting(false)
                 }
                 TextEditor(text: text)
-                    .font(.custom("Inter-Regular", size: 13))
+                    .font(.scaled("Inter-Regular", size: 13))
                     .foregroundStyle(Color.ink)
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)

@@ -52,7 +52,7 @@ struct ProgressRecoverySection: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(value)
-                    .font(.custom("SpaceGrotesk-SemiBold", size: 32))
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 32))
                     .tracking(-0.025 * 32)
                     .foregroundStyle(Color.ink)
                 if let unit {

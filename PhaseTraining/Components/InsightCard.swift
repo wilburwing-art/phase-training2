@@ -62,7 +62,7 @@ struct InsightCard: View {
             // Body — Inter for readability. monoXS was correct for a small
             // caption; for a card-sized surface it felt undersized.
             Text(text)
-                .font(.custom("Inter-Regular", size: 14))
+                .font(.scaled("Inter-Regular", size: 14))
                 .foregroundStyle(Color.ink)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)

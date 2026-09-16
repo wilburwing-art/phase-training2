@@ -79,4 +79,26 @@ extension TypographyDynamicTypeTests {
                            accuracy: 0.01, "\(style) scaled size drifted")
         }
     }
+
+    /// `Font.scaled(_:size:)` carries the off-table sites (123 raw
+    /// `.custom(` sites migrated 2026-09-15). Every size those sites use, 9
+    /// through 38, must land on a Dynamic Type curve whose default is within
+    /// 25% of it, the same bound the token table is held to above.
+    func test_offTableSizesPinToAProportionalCurve() {
+        let defaults: [Font.TextStyle: CGFloat] = [
+            .largeTitle: 34, .title: 28, .title2: 22, .headline: 17,
+            .body: 17, .footnote: 13, .caption2: 11,
+        ]
+        for size in stride(from: CGFloat(9), through: 38, by: 1) {
+            let ts = ScreenScale.textStyle(for: size)
+            let base = defaults[ts] ?? 0
+            XCTAssertGreaterThan(base, 0, "size \(size) mapped to an unlisted style")
+            XCTAssertTrue((0.75...1.25).contains(size / base),
+                          "size \(size) pinned to \(ts) (default \(base)) will scale disproportionately")
+        }
+        // The two sizes the table itself uses map to the table's own choices.
+        XCTAssertEqual(ScreenScale.textStyle(for: 13), .footnote)
+        XCTAssertEqual(ScreenScale.textStyle(for: 34), .largeTitle)
+        _ = Font.scaled("Inter-Regular", size: 13)
+    }
 }

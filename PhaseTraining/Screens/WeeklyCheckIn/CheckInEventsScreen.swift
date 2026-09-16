@@ -83,7 +83,7 @@ struct CheckInEventsScreen: View {
                     .styled(.micro)
                     .foregroundStyle(Color.ink3)
                 Text(dayNumber(date))
-                    .font(.custom("JetBrainsMono-SemiBold", size: 18))
+                    .font(.scaled("JetBrainsMono-SemiBold", size: 18))
                     .foregroundStyle(Color.ink)
             }
             .frame(maxWidth: .infinity)

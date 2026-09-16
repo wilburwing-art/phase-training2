@@ -19,7 +19,7 @@ struct OnboardingWelcomeScreen: View {
                     .styled(.micro)
                     .foregroundStyle(Color.accent)
                 Text("Your week,\nplanned around\nwhat you do.")
-                    .font(.custom("SpaceGrotesk-SemiBold", size: 38))
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 38))
                     .tracking(-0.025 * 38)
                     .foregroundStyle(Color.ink)
                     .lineSpacing(-4)

@@ -139,14 +139,14 @@ struct PostWorkoutFeedbackSheet: View {
 
                 if notes.isEmpty {
                     Text("Anything to remember?")
-                        .font(.custom("Inter-Regular", size: 13))
+                        .font(.scaled("Inter-Regular", size: 13))
                         .foregroundStyle(Color.ink3)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 12)
                         .allowsHitTesting(false)
                 }
                 TextEditor(text: $notes)
-                    .font(.custom("Inter-Regular", size: 13))
+                    .font(.scaled("Inter-Regular", size: 13))
                     .foregroundStyle(Color.ink)
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)
@@ -195,7 +195,7 @@ struct PostWorkoutFeedbackSheet: View {
     private func chip(label: String, active: Bool, onTap: @escaping () -> Void) -> some View {
         Button(action: onTap) {
             Text(label)
-                .font(.custom("JetBrainsMono-Medium", size: 11))
+                .font(.scaled("JetBrainsMono-Medium", size: 11))
                 .foregroundStyle(active ? Color.accentInk : Color.ink2)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)

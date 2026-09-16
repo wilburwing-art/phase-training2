@@ -26,7 +26,7 @@ struct LiftFocusPickerSheet: View {
                         .styled(.micro)
                         .foregroundStyle(Color.accent)
                     Text("What kind of lift day?")
-                        .font(.custom("SpaceGrotesk-SemiBold", size: 24))
+                        .font(.scaled("SpaceGrotesk-SemiBold", size: 24))
                         .tracking(-0.025 * 24)
                         .foregroundStyle(Color.ink)
 

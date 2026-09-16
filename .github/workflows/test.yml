@@ -28,6 +28,9 @@ jobs:
       - name: coach.db in sync with db/source (N1 drift guard)
         run: bash scripts/db/verify_coachdb_sync.sh
 
+      - name: No raw Font.custom outside the token table
+        run: bash scripts/quality/verify_font_tokens.sh
+
       - name: Install xcodegen + xcbeautify
         run: brew install xcodegen xcbeautify
 

@@ -261,7 +261,7 @@ struct InjuriesEditorSheet: View {
     private func chip(label: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
-                .font(.custom("Inter-Regular", size: 12))
+                .font(.scaled("Inter-Regular", size: 12))
                 .foregroundStyle(isSelected ? Color.accentInk : Color.ink2)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
@@ -277,7 +277,7 @@ struct InjuriesEditorSheet: View {
     private func legacyChip(_ item: String) -> some View {
         HStack(spacing: 6) {
             Text(item)
-                .font(.custom("Inter-Regular", size: 13))
+                .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink)
             Button {
                 store.update { $0.constraints.removeAll { $0 == item } }

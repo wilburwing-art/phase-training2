@@ -265,7 +265,7 @@ struct SorenessCheckInSheet: View {
     private func chip(label: String, active: Bool, onTap: @escaping () -> Void) -> some View {
         Button(action: onTap) {
             Text(label)
-                .font(.custom("JetBrainsMono-Medium", size: 11))
+                .font(.scaled("JetBrainsMono-Medium", size: 11))
                 .foregroundStyle(active ? Color.accentInk : Color.ink2)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 8)

@@ -173,7 +173,7 @@ extension TodayScreen {
                     .foregroundStyle(Color.accent)
                     .frame(width: 14)
                 Text("Add exercise")
-                    .font(.custom("Inter-Regular", size: 14))
+                    .font(.scaled("Inter-Regular", size: 14))
                     .foregroundStyle(Color.accent)
                 Spacer(minLength: 0)
             }

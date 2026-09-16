@@ -39,7 +39,7 @@ extension ProgressScreen {
                 .foregroundStyle(Color.ink3)
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(value)
-                    .font(.custom("SpaceGrotesk-SemiBold", size: 26))
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 26))
                     .tracking(-0.025 * 26)
                     .foregroundStyle(emphasised ? Color.accent : Color.ink)
                 if let sub {

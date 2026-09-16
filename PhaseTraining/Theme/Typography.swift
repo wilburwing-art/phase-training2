@@ -148,8 +148,31 @@ enum ScreenScale {
     }()
 
     /// Scale a design size. Public so WeekScreen (the one elastic layout)
-    /// can scale its row contents consistently with the type.
+    /// can scale its row contents consistently with the type, and so the
+    /// image slots (`ExerciseTile.thumbSize`, the detail hero) grow with it.
     static func scaled(_ size: CGFloat) -> CGFloat { size * factor }
+
+    /// The system text style whose default size is nearest `size`, so a
+    /// font pinned to it scales with Dynamic Type on a proportional curve
+    /// (the same "within 25%" rule the `TypeSpec` table is held to).
+    static func textStyle(for size: CGFloat) -> Font.TextStyle {
+        let defaults: [(Font.TextStyle, CGFloat)] = [
+            (.largeTitle, 34), (.title, 28), (.title2, 22), (.headline, 17),
+            (.footnote, 13), (.caption2, 11),
+        ]
+        return defaults.min { abs($0.1 - size) < abs($1.1 - size) }!.0
+    }
+}
+
+extension Font {
+    /// A named font at a design size that scales with BOTH device width and
+    /// Dynamic Type, for the sites that sit outside the `TypeStyle` table.
+    /// `Font.custom(_:size:)` alone is frozen at its literal size; 123 such
+    /// sites bypassed the table until 2026-09-15, a third of the app's type.
+    /// `scripts/quality/verify_font_tokens.sh` fails CI on a new one.
+    static func scaled(_ name: String, size: CGFloat) -> Font {
+        Font.custom(name, size: ScreenScale.scaled(size), relativeTo: ScreenScale.textStyle(for: size))
+    }
 }
 
 // Font statics derived from the TypeSpec table above (sizes live there only).

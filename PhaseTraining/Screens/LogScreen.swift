@@ -316,7 +316,7 @@ struct LogScreen: View {
                 if anyUndone {
                     Button(action: logAllSetsAllExercises) {
                         Text("Log all")
-                            .font(.custom("Inter-Regular", size: 13).weight(.bold))
+                            .font(.scaled("Inter-Regular", size: 13).weight(.bold))
                             .tracking(-0.01 * 13)
                             .foregroundStyle(Color.accent)
                             .padding(.horizontal, 14)
@@ -336,7 +336,7 @@ struct LogScreen: View {
                     if incompleteSetCount > 0 { showFinishConfirm = true } else { onFinish() }
                 }) {
                     Text("Finish")
-                        .font(.custom("Inter-Regular", size: 13).weight(.bold))
+                        .font(.scaled("Inter-Regular", size: 13).weight(.bold))
                         .tracking(-0.01 * 13)
                         .foregroundStyle(Color.accentInk)
                         .padding(.horizontal, 20)
@@ -625,15 +625,15 @@ struct LogScreen: View {
                 .font(.system(size: 34))
                 .foregroundStyle(Color.ink3)
             Text("No workout in progress")
-                .font(.custom("Inter-Regular", size: 15).weight(.bold))
+                .font(.scaled("Inter-Regular", size: 15).weight(.bold))
                 .foregroundStyle(Color.ink)
             Text("Start today's session from the Today tab.")
-                .font(.custom("Inter-Regular", size: 13))
+                .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink2)
                 .multilineTextAlignment(.center)
             if onCancel != nil {
                 Button("Back to Today") { onCancel?() }
-                    .font(.custom("Inter-Regular", size: 13).weight(.bold))
+                    .font(.scaled("Inter-Regular", size: 13).weight(.bold))
                     .foregroundStyle(Color.accent)
                     .padding(.top, 4)
             }

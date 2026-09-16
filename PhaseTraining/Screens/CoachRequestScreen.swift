@@ -181,7 +181,7 @@ struct CoachRequestScreen: View {
             // neither. Say what is true until the strategy the coach builds
             // actually reaches the generator.
             Text("Pick a focus and a length and we'll build a session from your plan, keeping clear of anything your injuries rule out. Re-roll if you don't like it.")
-                .font(.custom("Inter-Regular", size: 12))
+                .font(.scaled("Inter-Regular", size: 12))
                 .foregroundStyle(Color.ink3)
                 .padding(.top, 4)
         }
@@ -201,7 +201,7 @@ struct CoachRequestScreen: View {
                             .foregroundStyle(Color.accent)
                             .padding(.top, 2)
                         Text(reasoning)
-                            .font(.custom("Inter-Regular", size: 13))
+                            .font(.scaled("Inter-Regular", size: 13))
                             .foregroundStyle(Color.ink2)
                             .multilineTextAlignment(.leading)
                     }
@@ -217,7 +217,7 @@ struct CoachRequestScreen: View {
                         .styled(.micro)
                         .foregroundStyle(Color.accent)
                     Text("\(preview.exercises.count) movements · ~\(preview.estimatedMinutes) min")
-                        .font(.custom("Inter-Regular", size: 13))
+                        .font(.scaled("Inter-Regular", size: 13))
                         .foregroundStyle(Color.ink2)
                 }
 
@@ -288,7 +288,7 @@ struct CoachRequestScreen: View {
                         Text(generating
                              ? (coachEnabled ? "Coach is thinking…" : "Generating…")
                              : (coachEnabled ? "Ask coach to build" : "Generate"))
-                        .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+                        .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                         .foregroundStyle(Color.accentInk)
                     }
                     .frame(maxWidth: .infinity)
@@ -323,7 +323,7 @@ struct CoachRequestScreen: View {
 
                     Button { save(startNow: false) } label: {
                         Text("Save")
-                            .font(.custom("SpaceGrotesk-SemiBold", size: 14))
+                            .font(.scaled("SpaceGrotesk-SemiBold", size: 14))
                             .foregroundStyle(Color.ink)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
@@ -336,7 +336,7 @@ struct CoachRequestScreen: View {
                 }
                 Button { save(startNow: true) } label: {
                     Text("Save & start workout")
-                        .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+                        .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                         .foregroundStyle(Color.accentInk)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)

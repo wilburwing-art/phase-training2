@@ -129,7 +129,7 @@ struct SubstituteExerciseSheet: View {
                                 .multilineTextAlignment(.leading)
                             Spacer(minLength: 6)
                             Text("\(sub.matchPercent)%")
-                                .font(.custom("JetBrainsMono-SemiBold", size: 12))
+                                .font(.scaled("JetBrainsMono-SemiBold", size: 12))
                                 .foregroundStyle(matchColor(sub.matchPercent))
                         }
                         if !sub.exercise.modalityLabel.isEmpty || !sub.exercise.difficultyLabel.isEmpty {
@@ -142,7 +142,7 @@ struct SubstituteExerciseSheet: View {
                         }
                         if let notes = sub.notes, !notes.isEmpty {
                             Text(notes)
-                                .font(.custom("Inter-Regular", size: 12))
+                                .font(.scaled("Inter-Regular", size: 12))
                                 .foregroundStyle(Color.ink2)
                                 .multilineTextAlignment(.leading)
                         }

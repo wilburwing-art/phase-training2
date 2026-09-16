@@ -228,7 +228,7 @@ struct DayWorkoutPreviewSheet: View {
                 .styled(.micro)
                 .foregroundStyle(Color.accent)
             Text(summaryLine(template))
-                .font(.custom("Inter-Regular", size: 13))
+                .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink2)
         }
     }
@@ -325,7 +325,7 @@ struct DayWorkoutPreviewSheet: View {
                     .foregroundStyle(Color.accent)
                     .frame(width: 18, alignment: .leading)
                 Text("Add exercise")
-                    .font(.custom("Inter-Regular", size: 14))
+                    .font(.scaled("Inter-Regular", size: 14))
                     .foregroundStyle(Color.accent)
                 Spacer(minLength: 0)
             }
@@ -363,7 +363,7 @@ struct DayWorkoutPreviewSheet: View {
                     Image(systemName: didSave ? "checkmark" : "tray.and.arrow.down")
                         .font(.system(size: 13, weight: .semibold))
                     Text(didSave ? "Saved" : "Save to library")
-                        .font(.custom("SpaceGrotesk-SemiBold", size: 14))
+                        .font(.scaled("SpaceGrotesk-SemiBold", size: 14))
                 }
                 .foregroundStyle(didSave ? Color.ok : Color.ink)
                 .frame(maxWidth: .infinity)
@@ -379,7 +379,7 @@ struct DayWorkoutPreviewSheet: View {
             if isToday {
                 Button(action: start) {
                     Text("Start workout")
-                        .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+                        .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                         .foregroundStyle(Color.accentInk)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)

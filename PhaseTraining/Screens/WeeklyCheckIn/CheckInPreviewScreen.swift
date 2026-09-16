@@ -77,7 +77,7 @@ private struct DayPreviewRow: View {
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             Text(weekdayShort)
-                .font(.custom("JetBrainsMono-SemiBold", size: 14))
+                .font(.scaled("JetBrainsMono-SemiBold", size: 14))
                 .foregroundStyle(isToday ? Color.accent : Color.ink2)
                 .frame(width: 32, alignment: .leading)
             kindBadge

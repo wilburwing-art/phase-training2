@@ -55,14 +55,14 @@ struct CheckInIntentScreen: View {
                     .stroke(Color.line, lineWidth: 0.5)
                 if draft.intentText.isEmpty {
                     Text("Press into bench, ease off squats…")
-                        .font(.custom("Inter-Regular", size: 13))
+                        .font(.scaled("Inter-Regular", size: 13))
                         .foregroundStyle(Color.ink3)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 12)
                         .allowsHitTesting(false)
                 }
                 TextEditor(text: $draft.intentText)
-                    .font(.custom("Inter-Regular", size: 13))
+                    .font(.scaled("Inter-Regular", size: 13))
                     .foregroundStyle(Color.ink)
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)

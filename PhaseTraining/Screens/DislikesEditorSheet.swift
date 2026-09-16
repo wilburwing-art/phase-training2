@@ -115,7 +115,7 @@ struct DislikesEditorSheet: View {
                     ForEach(items, id: \.self) { item in
                         HStack(spacing: 6) {
                             Text(item)
-                                .font(.custom("Inter-Regular", size: 13))
+                                .font(.scaled("Inter-Regular", size: 13))
                                 .foregroundStyle(Color.ink)
                             Button { onRemove(item) } label: {
                                 Image(systemName: "xmark")

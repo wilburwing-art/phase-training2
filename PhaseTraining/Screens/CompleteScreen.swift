@@ -333,7 +333,7 @@ struct CompleteScreen: View {
             feel = active ? nil : option
         } label: {
             Text(option)
-                .font(.custom("JetBrainsMono-Medium", size: 11))
+                .font(.scaled("JetBrainsMono-Medium", size: 11))
                 .foregroundStyle(active ? Color.accentInk : Color.ink2)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
@@ -363,7 +363,7 @@ struct CompleteScreen: View {
 
                 if note.isEmpty {
                     Text("Tap to add a note...")
-                        .font(.custom("Inter-Regular", size: 13))
+                        .font(.scaled("Inter-Regular", size: 13))
                         .foregroundStyle(Color.ink3)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 12)
@@ -371,7 +371,7 @@ struct CompleteScreen: View {
                 }
 
                 TextEditor(text: $note)
-                    .font(.custom("Inter-Regular", size: 13))
+                    .font(.scaled("Inter-Regular", size: 13))
                     .foregroundStyle(Color.ink)
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)
@@ -407,7 +407,7 @@ struct CompleteScreen: View {
         Button(action: onSave) {
             HStack(spacing: 8) {
                 Text("Done")
-                    .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                     .foregroundStyle(Color.accentInk)
                 Image(systemName: "checkmark")
                     .font(.system(size: 16, weight: .bold))
@@ -435,7 +435,7 @@ struct CompleteScreen: View {
             showFeedbackSheet = true
         } label: {
             Text(coachUnlocked ? "Add details for your coach" : "Log how this felt")
-                .font(.custom("Inter-Regular", size: 13).weight(.medium))
+                .font(.scaled("Inter-Regular", size: 13).weight(.medium))
                 .foregroundStyle(Color.accent)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
@@ -449,7 +449,7 @@ struct CompleteScreen: View {
             showDiscardConfirm = true
         } label: {
             Text("Discard workout")
-                .font(.custom("JetBrainsMono-Medium", size: 11))
+                .font(.scaled("JetBrainsMono-Medium", size: 11))
                 .tracking(0.14 * 11)
                 .textCase(.uppercase)
                 .foregroundStyle(Color.ink2)

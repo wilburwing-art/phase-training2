@@ -53,7 +53,7 @@ struct PlanDiffSheet: View {
                 .styled(.micro)
                 .foregroundStyle(Color.accent)
             Text(diff.isNoop ? "No change" : "Review edit")
-                .font(.custom("SpaceGrotesk-SemiBold", size: 26))
+                .font(.scaled("SpaceGrotesk-SemiBold", size: 26))
                 .tracking(-0.025 * 26)
                 .foregroundStyle(Color.ink)
         }
@@ -119,7 +119,7 @@ struct PlanDiffSheet: View {
 
             Button(action: onApply) {
                 Text("Apply")
-                    .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                     .foregroundStyle(Color.accentInk)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)

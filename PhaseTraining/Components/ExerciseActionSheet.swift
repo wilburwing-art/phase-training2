@@ -152,7 +152,7 @@ struct ExerciseActionSheet: View {
                     .foregroundStyle(tint == Color.ink ? Color.ink2 : tint)
                     .frame(width: 24, alignment: .center)
                 Text(label)
-                    .font(.custom("Inter-Regular", size: 15))
+                    .font(.scaled("Inter-Regular", size: 15))
                     .foregroundStyle(tint)
                 Spacer(minLength: 0)
             }

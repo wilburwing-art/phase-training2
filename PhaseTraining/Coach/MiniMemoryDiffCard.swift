@@ -54,7 +54,7 @@ struct MiniMemoryDiffCard: View {
     private func row(_ op: MemoryOp) -> some View {
         HStack(spacing: 6) {
             Text(prefix(for: op.op))
-                .font(.custom("JetBrainsMono-SemiBold", size: 10))
+                .font(.scaled("JetBrainsMono-SemiBold", size: 10))
                 .foregroundStyle(color(for: op.op))
                 .frame(width: 34, alignment: .leading)
             Text(op.value)

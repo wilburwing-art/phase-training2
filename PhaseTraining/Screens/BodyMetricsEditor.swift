@@ -123,7 +123,7 @@ struct BodyMetricsEditor: View {
                         .keyboardType(.numberPad)
                         .submitLabel(.next)
                         .onSubmit { focus = .heightInches }
-                        .font(.custom("JetBrainsMono-SemiBold", size: 26))
+                        .font(.scaled("JetBrainsMono-SemiBold", size: 26))
                         .foregroundStyle(Color.ink)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
@@ -139,7 +139,7 @@ struct BodyMetricsEditor: View {
                         .keyboardType(.numberPad)
                         .submitLabel(.done)
                         .onSubmit { focus = nil }
-                        .font(.custom("JetBrainsMono-SemiBold", size: 26))
+                        .font(.scaled("JetBrainsMono-SemiBold", size: 26))
                         .foregroundStyle(Color.ink)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
@@ -159,7 +159,7 @@ struct BodyMetricsEditor: View {
                     .keyboardType(.numberPad)
                     .submitLabel(.done)
                     .onSubmit { focus = nil }
-                    .font(.custom("JetBrainsMono-SemiBold", size: 26))
+                    .font(.scaled("JetBrainsMono-SemiBold", size: 26))
                     .foregroundStyle(Color.ink)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
@@ -193,7 +193,7 @@ struct BodyMetricsEditor: View {
                     TextField("—", text: $weightText)
                         .focused($focus, equals: .weight)
                         .keyboardType(.decimalPad)
-                        .font(.custom("JetBrainsMono-SemiBold", size: 26))
+                        .font(.scaled("JetBrainsMono-SemiBold", size: 26))
                         .foregroundStyle(Color.ink)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)

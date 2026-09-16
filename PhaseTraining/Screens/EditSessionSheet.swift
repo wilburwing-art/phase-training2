@@ -95,7 +95,7 @@ struct EditSessionSheet: View {
     private func exerciseBlock(exIdx: Int, ex: LoggedExercise) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(ex.name)
-                .font(.custom("SpaceGrotesk-SemiBold", size: 14))
+                .font(.scaled("SpaceGrotesk-SemiBold", size: 14))
                 .foregroundColor(.ink)
 
             ForEach(Array(ex.sets.enumerated()), id: \.offset) { setIdx, _ in

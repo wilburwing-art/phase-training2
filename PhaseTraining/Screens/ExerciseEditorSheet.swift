@@ -188,7 +188,7 @@ struct ExerciseEditorSheet: View {
             .disabled(!canDecrement)
 
             Text("\(value)\(suffix)")
-                .font(.custom("SpaceGrotesk-SemiBold", size: 22))
+                .font(.scaled("SpaceGrotesk-SemiBold", size: 22))
                 .foregroundStyle(Color.ink)
                 .frame(minWidth: 70)
                 .multilineTextAlignment(.center)
@@ -214,7 +214,7 @@ struct ExerciseEditorSheet: View {
             dismiss()
         } label: {
             Text("Save")
-                .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+                .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                 .foregroundStyle(Color.accentInk)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)

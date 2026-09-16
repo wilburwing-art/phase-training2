@@ -156,7 +156,7 @@ struct HistoryScreen: View {
     private func statCard(value: String, label: String) -> some View {
         VStack(spacing: 4) {
             Text(value)
-                .font(.custom("SpaceGrotesk-SemiBold", size: 20))
+                .font(.scaled("SpaceGrotesk-SemiBold", size: 20))
                 .foregroundColor(.ink)
             Text(label)
                 .styled(.micro)
@@ -301,7 +301,7 @@ struct HistoryScreen: View {
         return VStack(alignment: .leading, spacing: 3) {
             HStack(alignment: .firstTextBaseline) {
                 Text(ex.name)
-                    .font(.custom("SpaceGrotesk-SemiBold", size: 13))
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 13))
                     .foregroundColor(.ink)
                 Spacer(minLength: 8)
                 if let rpeRange = rpeRangeLabel(doneSets) {

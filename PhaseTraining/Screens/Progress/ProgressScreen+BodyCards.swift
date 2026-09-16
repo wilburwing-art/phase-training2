@@ -57,7 +57,7 @@ extension ProgressScreen {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(latestDisplay)
-                        .font(.custom("JetBrainsMono-SemiBold", size: 22))
+                        .font(.scaled("JetBrainsMono-SemiBold", size: 22))
                         .foregroundStyle(Color.ink)
                     if let deltaStr {
                         Text(deltaStr)
@@ -166,7 +166,7 @@ extension ProgressScreen {
                 .foregroundStyle(Color.ink3)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(value)
-                    .font(.custom("JetBrainsMono-SemiBold", size: 18))
+                    .font(.scaled("JetBrainsMono-SemiBold", size: 18))
                     .foregroundStyle(Color.ink)
                 if let delta {
                     Text(delta)
@@ -257,7 +257,7 @@ extension ProgressScreen {
         return HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(row.lift.label)
-                    .font(.custom("Inter-Regular", size: 13))
+                    .font(.scaled("Inter-Regular", size: 13))
                     .foregroundStyle(Color.ink)
                     .lineLimit(1)
                 Text("est 1RM \(oneRmDisplay) · from \(bestDisplay)")
@@ -268,7 +268,7 @@ extension ProgressScreen {
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 3) {
                 Text(String(format: "%.2f× BW", row.ratio))
-                    .font(.custom("JetBrainsMono-SemiBold", size: 14))
+                    .font(.scaled("JetBrainsMono-SemiBold", size: 14))
                     .foregroundStyle(Color.accent)
                 if let tier = row.tier {
                     Text(tier.label)

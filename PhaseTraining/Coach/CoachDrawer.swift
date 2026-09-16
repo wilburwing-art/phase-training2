@@ -119,7 +119,7 @@ struct CoachDrawer: View {
         VStack(alignment: .leading, spacing: 12) {
             Spacer().frame(height: 12)
             Text("Ask about today's plan.")
-                .font(.custom("SpaceGrotesk-SemiBold", size: 22))
+                .font(.scaled("SpaceGrotesk-SemiBold", size: 22))
                 .tracking(-0.025 * 22)
                 .foregroundStyle(Color.ink)
             Text("The coach reads your week, recent sessions, and feedback, and can edit your plan or put a session on a day. You approve every change. Try:")
@@ -193,7 +193,7 @@ struct CoachDrawer: View {
                 if message.isUser { Spacer(minLength: 32) }
                 if !suppressPlaceholder {
                     Text(message.text.isEmpty && !message.isUser ? "…" : message.text)
-                        .font(.custom("Inter-Regular", size: 14))
+                        .font(.scaled("Inter-Regular", size: 14))
                         .foregroundStyle(message.isUser ? Color.accentInk : Color.ink)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 10)
@@ -233,7 +233,7 @@ struct CoachDrawer: View {
                 // dragging between medium/large detents could pin the main
                 // thread long enough to crash the app.
                 TextField("Ask the coach…", text: $input)
-                    .font(.custom("Inter-Regular", size: 14))
+                    .font(.scaled("Inter-Regular", size: 14))
                     .foregroundStyle(Color.ink)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 10)
@@ -632,7 +632,7 @@ struct CoachHistorySheet: View {
                 ForEach(messages) { m in
                     VStack(alignment: m.isUser ? .trailing : .leading, spacing: 2) {
                         Text(m.text)
-                            .font(.custom("Inter-Regular", size: 14))
+                            .font(.scaled("Inter-Regular", size: 14))
                             .foregroundStyle(m.isUser ? Color.accentInk : Color.ink)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 10)

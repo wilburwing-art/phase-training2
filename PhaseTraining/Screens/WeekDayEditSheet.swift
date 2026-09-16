@@ -161,7 +161,7 @@ struct WeekDayEditSheet: View {
                 .styled(.micro)
                 .foregroundStyle(Color.accent)
             Text(dateLabel)
-                .font(.custom("SpaceGrotesk-SemiBold", size: 26))
+                .font(.scaled("SpaceGrotesk-SemiBold", size: 26))
                 .tracking(-0.025 * 26)
                 .foregroundStyle(Color.ink)
             if let dayPlan {

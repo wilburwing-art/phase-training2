@@ -95,7 +95,7 @@ extension ProgressScreen {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(pr.exerciseName)
-                    .font(.custom("Inter-Regular", size: 13))
+                    .font(.scaled("Inter-Regular", size: 13))
                     .foregroundStyle(Color.ink)
                     .lineLimit(1)
                 HStack(spacing: 6) {
@@ -166,7 +166,7 @@ extension ProgressScreen {
                 }
                 if let n = entry.notes, !n.isEmpty {
                     Text(n)
-                        .font(.custom("Inter-Regular", size: 12))
+                        .font(.scaled("Inter-Regular", size: 12))
                         .foregroundStyle(Color.ink2)
                         .lineLimit(2)
                 }
@@ -248,7 +248,7 @@ extension ProgressScreen {
                 .foregroundStyle(Color.ink3)
                 .frame(width: 56, alignment: .leading)
             Text(session.name)
-                .font(.custom("Inter-Regular", size: 13))
+                .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink)
                 .lineLimit(1)
             Spacer(minLength: 6)

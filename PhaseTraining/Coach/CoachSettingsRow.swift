@@ -131,7 +131,7 @@ struct CoachSettingsRow: View {
                             .font(.system(size: 12, weight: .semibold))
                     }
                     Text(pendingPing ? "Pinging…" : "Test ping")
-                        .font(.custom("SpaceGrotesk-SemiBold", size: 13))
+                        .font(.scaled("SpaceGrotesk-SemiBold", size: 13))
                 }
                 .foregroundStyle(Color.accentInk)
                 .padding(.horizontal, 14)

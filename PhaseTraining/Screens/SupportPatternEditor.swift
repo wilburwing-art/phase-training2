@@ -36,7 +36,7 @@ struct SupportPatternEditor: View {
 
     private var blurb: some View {
         Text("Serious about two sports? Tell us your in-season sport's weekly rhythm and we'll build your primary sport's plan around it, so a hard climb day never lands under heavy legs.")
-            .font(.custom("Inter-Regular", size: 13))
+            .font(.scaled("Inter-Regular", size: 13))
             .foregroundStyle(Color.ink2)
             .fixedSize(horizontal: false, vertical: true)
     }
@@ -60,7 +60,7 @@ struct SupportPatternEditor: View {
     private func dayRow(_ day: Weekday) -> some View {
         HStack(alignment: .center, spacing: 8) {
             Text(day.short)
-                .font(.custom("SpaceGrotesk-Medium", size: 13))
+                .font(.scaled("SpaceGrotesk-Medium", size: 13))
                 .foregroundStyle(Color.ink)
                 .frame(width: 34, alignment: .leading)
             WrappingFlow(spacing: 6) {
@@ -78,7 +78,7 @@ struct SupportPatternEditor: View {
         Text(dayCount == 0
              ? "Pick at least one day to activate the reflow."
              : "\(dayCount) \(dayCount == 1 ? "day" : "days") set. Your primary plan will shift heavy sessions away from big days and trim volume when the combined load is high.")
-            .font(.custom("Inter-Regular", size: 12))
+            .font(.scaled("Inter-Regular", size: 12))
             .foregroundStyle(Color.ink3)
             .fixedSize(horizontal: false, vertical: true)
     }

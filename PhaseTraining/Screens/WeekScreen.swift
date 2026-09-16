@@ -74,7 +74,7 @@ struct WeekScreen: View {
                     .styled(.micro)
                     .foregroundStyle(Color.accent)
                 Text("No plan yet.")
-                    .font(.custom("SpaceGrotesk-SemiBold", size: ScreenScale.scaled(32)))
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 32))
                     .tracking(-0.025 * 32)
                     .foregroundStyle(Color.ink)
                 Text("Generate a plan from your profile to get started.")
@@ -89,7 +89,7 @@ struct WeekScreen: View {
                         Image(systemName: "sparkles")
                             .font(.system(size: ScreenScale.scaled(13), weight: .semibold))
                         Text("Generate plan")
-                            .font(.custom("SpaceGrotesk-SemiBold", size: ScreenScale.scaled(15)))
+                            .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                     }
                     .foregroundStyle(Color.accentInk)
                     .padding(.horizontal, 24)
@@ -108,7 +108,7 @@ struct WeekScreen: View {
                     .styled(.micro)
                     .foregroundStyle(Color.accent)
                 Text("No plan yet.")
-                    .font(.custom("SpaceGrotesk-SemiBold", size: ScreenScale.scaled(32)))
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 32))
                     .tracking(-0.025 * 32)
                     .foregroundStyle(Color.ink)
                 Text("Complete onboarding to generate your week.")
@@ -192,7 +192,7 @@ struct WeekScreen: View {
                 SeasonPhaseBadge(style: .compact, surface: "week")
             }
             Text(plan.rangeLabel)
-                .font(.custom("SpaceGrotesk-SemiBold", size: ScreenScale.scaled(26)))
+                .font(.scaled("SpaceGrotesk-SemiBold", size: 26))
                 .tracking(-0.025 * 26)
                 .foregroundStyle(Color.ink)
             HStack(spacing: 8) {
@@ -423,7 +423,7 @@ private struct DayRow: View {
                     .styled(.micro)
                     .foregroundStyle(isToday ? Color.accent : Color.ink3)
                 Text(dayNumber)
-                    .font(.custom("JetBrainsMono-SemiBold", size: ScreenScale.scaled(18)))
+                    .font(.scaled("JetBrainsMono-SemiBold", size: 18))
                     .foregroundStyle(isToday ? Color.ink : Color.ink2)
             }
             .frame(width: 36)
@@ -651,7 +651,7 @@ private struct WeekTonePickerSheet: View {
                         .styled(.micro)
                         .foregroundStyle(Color.accent)
                     Text("How's this week shaping up?")
-                        .font(.custom("SpaceGrotesk-SemiBold", size: 24))
+                        .font(.scaled("SpaceGrotesk-SemiBold", size: 24))
                         .tracking(-0.025 * 24)
                         .foregroundStyle(Color.ink)
 

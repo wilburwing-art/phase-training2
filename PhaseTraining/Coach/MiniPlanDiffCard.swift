@@ -75,7 +75,7 @@ struct MiniPlanDiffCard: View {
     private func row(before: DayPlan?, after: DayPlan) -> some View {
         HStack(spacing: 8) {
             Text(weekday(after.date))
-                .font(.custom("JetBrainsMono-SemiBold", size: 11))
+                .font(.scaled("JetBrainsMono-SemiBold", size: 11))
                 .foregroundStyle(Color.ink2)
                 .frame(width: 28, alignment: .leading)
             if let before {

@@ -130,7 +130,7 @@ struct AboutYouEditorSheet: View {
                 .keyboardType(.numberPad)
                 .submitLabel(.done)
                 .onSubmit { ageFocused = false }
-                .font(.custom("JetBrainsMono-SemiBold", size: 28))
+                .font(.scaled("JetBrainsMono-SemiBold", size: 28))
                 .foregroundStyle(Color.ink)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)

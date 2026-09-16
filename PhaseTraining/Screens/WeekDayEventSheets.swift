@@ -169,7 +169,7 @@ struct EventEditorSheet: View {
                     Spacer()
                     Button(action: save) {
                         Text("Save event")
-                            .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+                            .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                             .foregroundStyle(canSave ? Color.accentInk : Color.ink3)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)

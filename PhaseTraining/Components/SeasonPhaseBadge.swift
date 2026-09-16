@@ -82,7 +82,7 @@ struct SeasonPhaseBadge: View {
                     }
                 }
                 Text(metaLine)
-                    .font(.custom("Inter-Regular", size: 13))
+                    .font(.scaled("Inter-Regular", size: 13))
                     .foregroundStyle(Color.ink2)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)

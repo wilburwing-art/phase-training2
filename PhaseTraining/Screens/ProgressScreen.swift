@@ -98,7 +98,7 @@ struct ProgressScreen: View {
                 .styled(.micro)
                 .foregroundStyle(Color.accent)
             Text("Nothing yet.")
-                .font(.custom("SpaceGrotesk-SemiBold", size: 32))
+                .font(.scaled("SpaceGrotesk-SemiBold", size: 32))
                 .tracking(-0.025 * 32)
                 .foregroundStyle(Color.ink)
             Text("Log a session and trends show up here.")

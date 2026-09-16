@@ -470,7 +470,7 @@ struct TodayScreen: View {
                 showTrainAnyway = true
             } label: {
                 Text("Train anyway")
-                    .font(.custom("Inter-Regular", size: 13).weight(.bold))
+                    .font(.scaled("Inter-Regular", size: 13).weight(.bold))
                     .foregroundStyle(Color.ink2)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
@@ -498,7 +498,7 @@ struct TodayScreen: View {
                     .foregroundStyle(Color.accent)
             }
             Text(note)
-                .font(.custom("Inter-Regular", size: 14))
+                .font(.scaled("Inter-Regular", size: 14))
                 .foregroundStyle(Color.ink)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -522,7 +522,7 @@ struct TodayScreen: View {
                 Image(systemName: todaySportLog == nil ? "checkmark.circle" : "pencil.circle")
                     .font(.system(size: 14, weight: .semibold))
                 Text(todaySportLog == nil ? "Log session" : "Edit log")
-                    .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
             }
             .foregroundStyle(Color.accentInk)
             .frame(maxWidth: .infinity)
@@ -538,7 +538,7 @@ struct TodayScreen: View {
         Button(action: startWorkout) {
             HStack(spacing: 6) {
                 Text(store.active == nil ? "Start workout" : "Resume workout")
-                    .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))
             }

@@ -390,7 +390,7 @@ struct ProfileScreen: View {
                 .styled(.micro)
                 .foregroundStyle(Color.accent)
             Text("You.")
-                .font(.custom("SpaceGrotesk-SemiBold", size: 38))
+                .font(.scaled("SpaceGrotesk-SemiBold", size: 38))
                 .tracking(-0.025 * 38)
                 .foregroundStyle(Color.ink)
             if let onboarded = store.memory.onboardedAt {
@@ -446,7 +446,7 @@ struct ProfileScreen: View {
                             .styled(.body)
                             .foregroundStyle(Color.ink3)
                         Text(line)
-                            .font(.custom("Inter-Regular", size: 12))
+                            .font(.scaled("Inter-Regular", size: 12))
                             .foregroundStyle(Color.ink2)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -469,7 +469,7 @@ struct ProfileScreen: View {
                 .foregroundStyle(Color.ink3)
                 .frame(width: 88, alignment: .leading)
             Text(value)
-                .font(.custom("JetBrainsMono-SemiBold", size: 13))
+                .font(.scaled("JetBrainsMono-SemiBold", size: 13))
                 .foregroundStyle(Color.ink)
             Spacer()
             if let actualHint {

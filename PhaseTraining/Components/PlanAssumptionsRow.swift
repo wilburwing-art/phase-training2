@@ -180,7 +180,7 @@ struct AvailabilityEditorSheet: View {
                 Spacer(minLength: 0)
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(value)
-                        .font(.custom("JetBrainsMono-SemiBold", size: 30))
+                        .font(.scaled("JetBrainsMono-SemiBold", size: 30))
                         .foregroundStyle(Color.ink)
                     Text(unit)
                         .styled(.micro)

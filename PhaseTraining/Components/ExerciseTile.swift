@@ -74,8 +74,8 @@ struct ExerciseTile: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(vm.title)
                     .font(density == .presentation
-                          ? .custom("SpaceGrotesk-SemiBold", size: 17)
-                          : .custom("Inter-Regular", size: 14))
+                          ? .scaled("SpaceGrotesk-SemiBold", size: 17)
+                          : .scaled("Inter-Regular", size: 14))
                     .tracking(density == .presentation ? -0.02 * 17 : 0)
                     .foregroundStyle(Color.ink)
                     .lineLimit(2)
@@ -83,7 +83,7 @@ struct ExerciseTile: View {
                 if let meta = vm.meta {
                     Text(meta)
                         .font(density == .presentation
-                              ? .custom("JetBrainsMono-Regular", size: 12)
+                              ? .scaled("JetBrainsMono-Regular", size: 12)
                               : .monoXS)
                         .foregroundStyle(density == .presentation ? Color.ink2 : Color.ink3)
                         .lineLimit(1)
@@ -158,7 +158,7 @@ struct ExerciseTile: View {
 
         case .index(let n):
             Text(String(format: "%02d", n))
-                .font(.custom("JetBrainsMono-Medium", size: 11))
+                .font(.scaled("JetBrainsMono-Medium", size: 11))
                 .foregroundStyle(Color.ink3)
                 .monospacedDigit()
                 .frame(width: 18, alignment: .leading)
@@ -199,11 +199,11 @@ struct ExerciseTile: View {
         case .setsReps(let sets, let reps, let unit, let lastWeight):
             VStack(alignment: .trailing, spacing: 2) {
                 Text("\(sets)×\(reps)")
-                    .font(.custom("JetBrainsMono-Medium", size: 13))
+                    .font(.scaled("JetBrainsMono-Medium", size: 13))
                     .foregroundStyle(Color.ink)
                     .monospacedDigit()
                 Text(lastWeight.map { "\(formattedWeight($0)) \(unit)" } ?? "—")
-                    .font(.custom("JetBrainsMono-Regular", size: 10))
+                    .font(.scaled("JetBrainsMono-Regular", size: 10))
                     .foregroundStyle(Color.ink3)
                     .monospacedDigit()
             }
@@ -241,12 +241,12 @@ struct ExerciseTile: View {
             VStack(alignment: .trailing, spacing: 3) {
                 if isPR { PRPill() }
                 Text(text)
-                    .font(.custom("JetBrainsMono-Regular", size: 11))
+                    .font(.scaled("JetBrainsMono-Regular", size: 11))
                     .foregroundStyle(Color.ink2)
                     .monospacedDigit()
                 if let rpe {
                     Text(rpe)
-                        .font(.custom("JetBrainsMono-Regular", size: 10))
+                        .font(.scaled("JetBrainsMono-Regular", size: 10))
                         .foregroundStyle(Color.ink3)
                 }
             }
@@ -295,7 +295,7 @@ struct ExerciseTile: View {
 struct PRPill: View {
     var body: some View {
         Text("PR")
-            .font(.custom("JetBrainsMono-SemiBold", size: 9))
+            .font(.scaled("JetBrainsMono-SemiBold", size: 9))
             .tracking(0.14 * 9)
             .foregroundStyle(Color.accentInk)
             .padding(.horizontal, 6)
@@ -621,7 +621,7 @@ private func slotLabel(title: String, body: String, width: CGFloat?) -> some Vie
             .styled(.micro)
             .foregroundStyle(Color.accent)
         Text(body)
-            .font(.custom("JetBrainsMono-Regular", size: 10))
+            .font(.scaled("JetBrainsMono-Regular", size: 10))
             .foregroundStyle(Color.ink3)
             .lineLimit(2)
             .fixedSize(horizontal: false, vertical: true)

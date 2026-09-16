@@ -103,7 +103,7 @@ struct SportLogSheet: View {
     private var sportRow: some View {
         HStack(spacing: 10) {
             Text(sport.name.uppercased())
-                .font(.custom("SpaceGrotesk-SemiBold", size: 13))
+                .font(.scaled("SpaceGrotesk-SemiBold", size: 13))
                 .tracking(1.2)
                 .foregroundStyle(Color.ink3)
             Spacer()
@@ -133,7 +133,7 @@ struct SportLogSheet: View {
                     editingDuration = true
                 } label: {
                     Text("\(durationMinutes) min")
-                        .font(.custom("SpaceGrotesk-SemiBold", size: 22))
+                        .font(.scaled("SpaceGrotesk-SemiBold", size: 22))
                         .foregroundStyle(Color.ink)
                         .frame(minWidth: 110)
                         .multilineTextAlignment(.center)
@@ -180,7 +180,7 @@ struct SportLogSheet: View {
             intensity = option
         } label: {
             Text(option.label)
-                .font(.custom("SpaceGrotesk-SemiBold", size: 14))
+                .font(.scaled("SpaceGrotesk-SemiBold", size: 14))
                 .foregroundStyle(selected ? Color.accentInk : Color.ink2)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
@@ -216,7 +216,7 @@ struct SportLogSheet: View {
 
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
-            .font(.custom("SpaceGrotesk-SemiBold", size: 11))
+            .font(.scaled("SpaceGrotesk-SemiBold", size: 11))
             .tracking(1.2)
             .foregroundStyle(Color.ink3)
     }
@@ -228,7 +228,7 @@ struct SportLogSheet: View {
             dismiss()
         } label: {
             Text(existing == nil ? "Save log" : "Update log")
-                .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+                .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                 .foregroundStyle(Color.accentInk)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)

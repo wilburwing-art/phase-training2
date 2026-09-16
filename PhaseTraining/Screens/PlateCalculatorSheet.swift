@@ -141,7 +141,7 @@ struct PlateCalculatorSheet: View {
             HStack(spacing: 8) {
                 let field = TextField(placeholder, text: text)
                     .keyboardType(.decimalPad)
-                    .font(.custom("JetBrainsMono-SemiBold", size: 22))
+                    .font(.scaled("JetBrainsMono-SemiBold", size: 22))
                     .foregroundStyle(Color.ink)
                 if let focused {
                     field.focused(focused)
@@ -181,11 +181,11 @@ struct PlateCalculatorSheet: View {
                     HStack(spacing: 12) {
                         plateGlyph(weight: row.plate)
                         Text(String(format: "%g %@", row.plate, unitSuffix))
-                            .font(.custom("JetBrainsMono-SemiBold", size: 14))
+                            .font(.scaled("JetBrainsMono-SemiBold", size: 14))
                             .foregroundStyle(Color.ink)
                         Spacer()
                         Text("× \(row.count)")
-                            .font(.custom("JetBrainsMono-SemiBold", size: 16))
+                            .font(.scaled("JetBrainsMono-SemiBold", size: 16))
                             .foregroundStyle(Color.accent)
                     }
                     .padding(.vertical, 6)
@@ -201,7 +201,7 @@ struct PlateCalculatorSheet: View {
                     .foregroundStyle(Color.ink3)
                 Spacer()
                 Text(String(format: "%g %@", result.achieved, unitSuffix))
-                    .font(.custom("JetBrainsMono-SemiBold", size: 16))
+                    .font(.scaled("JetBrainsMono-SemiBold", size: 16))
                     .foregroundStyle(result.remainder > 0.01 ? Color.ink2 : Color.accent)
             }
         }
@@ -295,7 +295,7 @@ struct PlateCalculatorSheet: View {
                 .styled(.micro)
                 .foregroundStyle(Color.danger)
             Text("Target needs to be at least the bar weight. Empty bar is \(String(format: "%g", barWeight)) \(unitSuffix).")
-                .font(.custom("Inter-Regular", size: 13))
+                .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink2)
         }
         .padding(14)
@@ -314,7 +314,7 @@ struct PlateCalculatorSheet: View {
                 .styled(.micro)
                 .foregroundStyle(Color.ink3)
             Text("Enter your target weight and we'll show the greedy plate stack, biggest plates outside. Using the standard \(imperial ? "45/35/25/10/5/2.5 lb" : "25/20/15/10/5/2.5/1.25 kg") plate set.")
-                .font(.custom("Inter-Regular", size: 13))
+                .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink2)
                 .fixedSize(horizontal: false, vertical: true)
         }

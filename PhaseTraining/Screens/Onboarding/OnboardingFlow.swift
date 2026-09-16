@@ -343,7 +343,7 @@ struct OnboardingPrimaryButton: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 Text(label)
-                    .font(.custom("SpaceGrotesk-SemiBold", size: 15))
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))
             }
@@ -370,7 +370,7 @@ struct OnboardingChip: View {
     var body: some View {
         Button(action: action) {
             Text(label)
-                .font(.custom("Inter-Regular", size: 13))
+                .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(selected ? Color.accentInk : Color.ink)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 9)

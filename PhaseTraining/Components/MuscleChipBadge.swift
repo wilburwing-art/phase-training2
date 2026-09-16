@@ -73,7 +73,7 @@ struct MuscleChipBadge: View {
             ForEach(MuscleBucket.allCases) { bucket in
                 HStack(spacing: 12) {
                     Text(bucket.label)
-                        .font(.custom("Inter-Regular", size: 13))
+                        .font(.scaled("Inter-Regular", size: 13))
                         .foregroundStyle(Color.ink2)
                         .frame(width: 100, alignment: .leading)
                     MuscleChipBadge(group: bucket, side: .front)

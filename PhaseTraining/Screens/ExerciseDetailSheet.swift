@@ -245,7 +245,7 @@ private struct ExerciseDetailContent: View {
                         Image(systemName: "play.rectangle.fill")
                             .font(.system(size: 14, weight: .semibold))
                         Text("Watch demo")
-                            .font(.custom("SpaceGrotesk-SemiBold", size: 14))
+                            .font(.scaled("SpaceGrotesk-SemiBold", size: 14))
                         Spacer()
                         Image(systemName: "arrow.up.right.square")
                             .font(.system(size: 12, weight: .medium))

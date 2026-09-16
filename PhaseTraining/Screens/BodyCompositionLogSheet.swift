@@ -86,7 +86,7 @@ struct BodyCompositionLogSheet: View {
             fieldRow(label: "BODY FAT", placeholder: "% (e.g. 18.5)", text: $bfText, suffix: "%")
             fieldRow(label: "LEAN MASS", placeholder: "(optional)", text: $leanText, suffix: massUnit)
             TextField("Method (DEXA, InBody, calipers…)", text: $methodText)
-                .font(.custom("Inter-Regular", size: 13))
+                .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
@@ -97,7 +97,7 @@ struct BodyCompositionLogSheet: View {
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             TextField("Note (optional)", text: $noteText)
-                .font(.custom("Inter-Regular", size: 13))
+                .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
@@ -112,7 +112,7 @@ struct BodyCompositionLogSheet: View {
                     Image(systemName: "checkmark")
                         .font(.system(size: 12, weight: .semibold))
                     Text("Log reading")
-                        .font(.custom("SpaceGrotesk-SemiBold", size: 14))
+                        .font(.scaled("SpaceGrotesk-SemiBold", size: 14))
                 }
                 .foregroundStyle(canLog ? Color.accentInk : Color.ink3)
                 .frame(maxWidth: .infinity)
@@ -135,7 +135,7 @@ struct BodyCompositionLogSheet: View {
             HStack(spacing: 8) {
                 TextField(placeholder, text: text)
                     .keyboardType(.decimalPad)
-                    .font(.custom("JetBrainsMono-SemiBold", size: 18))
+                    .font(.scaled("JetBrainsMono-SemiBold", size: 18))
                     .foregroundStyle(Color.ink)
                 Text(suffix)
                     .font(.monoXS)
@@ -250,7 +250,7 @@ struct BodyCompositionLogSheet: View {
         VStack(alignment: .leading, spacing: 8) {
             sectionLabel("RECENT")
             Text("No readings logged yet. Log a body-fat % above to start a trend.")
-                .font(.custom("Inter-Regular", size: 13))
+                .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink2)
         }
         .padding(14)
@@ -281,12 +281,12 @@ struct BodyCompositionLogSheet: View {
                 HStack(spacing: 8) {
                     if let bf = entry.bodyFatPercent {
                         Text(String(format: "%.1f%%", bf))
-                            .font(.custom("JetBrainsMono-SemiBold", size: 14))
+                            .font(.scaled("JetBrainsMono-SemiBold", size: 14))
                             .foregroundStyle(Color.ink)
                     }
                     if let lean = entry.leanMassKg {
                         Text(String(format: "%.1f %@", displayMass(kg: lean), massUnit))
-                            .font(.custom("JetBrainsMono-SemiBold", size: 14))
+                            .font(.scaled("JetBrainsMono-SemiBold", size: 14))
                             .foregroundStyle(Color.ink2)
                     }
                 }
