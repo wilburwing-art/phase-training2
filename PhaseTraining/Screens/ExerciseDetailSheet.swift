@@ -266,7 +266,19 @@ private struct ExerciseDetailContent: View {
     }
 
     private func pairHero(_ start: UIImage, _ end: UIImage?) -> some View {
-        HStack(spacing: 8) {
+        // A mannequin render keeps its own white ground. Themed line art is
+        // ink-coloured strokes with alpha, so on white it vanishes (the two
+        // exercises with line art and no mannequin, single-leg RDL and trap
+        // bar deadlift, showed only their green accent); it sits on the
+        // surface colour like the thumbnail does.
+        let opaque: Bool = {
+            guard let cg = start.cgImage else { return true }
+            switch cg.alphaInfo {
+            case .none, .noneSkipLast, .noneSkipFirst: return true
+            default: return false
+            }
+        }()
+        return HStack(spacing: 8) {
             Image(uiImage: start).resizable().scaledToFit()
             if let end {
                 Image(uiImage: end).resizable().scaledToFit()
@@ -275,7 +287,7 @@ private struct ExerciseDetailContent: View {
         .padding(8)
         .frame(maxWidth: .infinity)
         .frame(height: 200)
-        .background(Color.white)
+        .background(opaque ? Color.white : Color.surface)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 

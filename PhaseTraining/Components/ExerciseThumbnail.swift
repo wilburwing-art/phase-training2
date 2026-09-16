@@ -98,10 +98,20 @@ struct ExerciseThumbnail: View {
         }
         .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-        .overlay(
-            RoundedRectangle(cornerRadius: cornerRadius)
-                .stroke(Color.line, lineWidth: 0.5)
-        )
+        .overlay {
+            // The hairline frames a photo's edge against the card. Themed
+            // line art has no edge: it is ink on the card's own surface,
+            // and the frame read as a box drawn around the figure.
+            if !isTransparentArt {
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(Color.line, lineWidth: 0.5)
+            }
+        }
+    }
+
+    private var isTransparentArt: Bool {
+        guard let exerciseID else { return false }
+        return BundledExerciseImage.shared.isTransparent(forID: exerciseID)
     }
 
     /// Look up the bundled WebP for `exerciseID`. Returns nil for missing ids
@@ -179,6 +189,17 @@ final class BundledExerciseImage {
 
     /// Mannequin end frame for the detail hero; nil unless generated.
     func heroEndImage(forID id: Int) -> UIImage? { cached(id, suffix: "_hero_end") }
+
+    /// Whether the start image carries an alpha channel. Themed line art is
+    /// RGBA ink over nothing; photos and the free-exercise-db drawings are
+    /// opaque. Callers use it to decide what sits behind the image.
+    func isTransparent(forID id: Int) -> Bool {
+        guard let cg = image(forID: id)?.cgImage else { return false }
+        switch cg.alphaInfo {
+        case .none, .noneSkipLast, .noneSkipFirst: return false
+        default: return true
+        }
+    }
 
     private func cached(_ id: Int, suffix: String) -> UIImage? {
         guard present[suffix]?.contains(id) == true else { return nil }
