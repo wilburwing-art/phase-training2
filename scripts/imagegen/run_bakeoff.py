@@ -94,7 +94,7 @@ def load_from_db(db_path, limit):
     if unknown:
         print(f"warning: {len(unknown)} slugs in {POSITIONS.name} are not in the "
               f"catalogue: {', '.join(unknown[:5])}{'...' if len(unknown) > 5 else ''}")
-    return out[:limit]
+    return out[:limit] if limit else out
 
 
 def run_one(provider, style, exercise, outdir, size):
@@ -271,7 +271,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=str(HERE / "out" / "run_1"))
     ap.add_argument("--db", help="path to the SQLite catalogue")
-    ap.add_argument("--limit", type=int, default=10)
+    ap.add_argument("--limit", type=int, default=None, help="cap the run at N exercises (default: all)")
     ap.add_argument("--only", help="comma list of exercise ids/slugs to run (re-rolls)")
     ap.add_argument("--size", default="1024x1024")
     ap.add_argument("--providers", default="or-google,or-openai",
@@ -287,13 +287,19 @@ def main():
     outdir = Path(args.out)
     outdir.mkdir(parents=True, exist_ok=True)
 
-    exercises = (load_from_db(args.db, args.limit) if args.db
-                 else BAKEOFF_EXERCISES[:args.limit])
+    # --only narrows BEFORE --limit slices. The other order applied the limit
+    # to the whole positioned catalogue (sorted by slug) and then filtered,
+    # so once exercise_positions.json passed the limit a tranche silently
+    # lost every member past that point alphabetically (124 of 242 loaded,
+    # tranche 3, 2026-09-17).
+    exercises = (load_from_db(args.db, None) if args.db else list(BAKEOFF_EXERCISES))
     if args.only:
         wanted = {w.strip() for w in args.only.split(",")}
         exercises = [ex for ex in exercises if ex["id"] in wanted]
         if not exercises:
             sys.exit(f"--only matched nothing in the loaded set: {sorted(wanted)}")
+    if args.limit:
+        exercises = exercises[:args.limit]
     prov_names = [p.strip() for p in args.providers.split(",") if p.strip()]
     styles = [s.strip() for s in args.styles.split(",") if s.strip()]
     if args.export_prompts:
