@@ -10,7 +10,7 @@ SHARED_CONSTRAINTS = """
 Hard constraints, apply to every image:
 - Exactly one human figure. Never two figures, never a mirrored duplicate,
   never a second view or a ghosted copy of the same figure.
-- Full body in frame, feet and head included, even margin on all four sides.
+- {framing}
 - Androgynous adult build, neutral proportions, approximately 7.5 head heights tall.
 - Simple facial features only. No hair styling detail. Plain athletic
   shorts, no logos.
@@ -33,8 +33,14 @@ BACKGROUND_WHITE = ("Plain solid pure white background, #FFFFFF everywhere "
                     "transparency pattern.")
 
 
-def shared_constraints(transparent):
+FRAMING_FULL = "Full body in frame, feet and head included, even margin on all four sides."
+FRAMING_LOWER_LEG = ("Lower legs only in frame, from the knees down to the floor; nothing above "
+                     "the knee is drawn, even margin on all four sides.")
+
+
+def shared_constraints(transparent, framing=FRAMING_FULL):
     return SHARED_CONSTRAINTS.format(
+        framing=framing,
         background=BACKGROUND_TRANSPARENT if transparent else BACKGROUND_WHITE)
 
 
@@ -63,6 +69,11 @@ _SIDE_CHEST = "direct side view, sagittal plane, camera at chest height"
 _SIDE_FLOOR = "direct side view, sagittal plane, camera at floor height"
 _FRONT_CHEST = "direct front view, frontal plane, camera at chest height"
 _TQ_CHEST = "three-quarter front view, camera at chest height"
+# Ankle work: at full-body scale a heel-up and a heel-down frame are the same
+# picture (run 4 lost three calf raises to that). Frame the lower leg only.
+_SIDE_LOWER_LEG = ("direct side view, sagittal plane, camera at knee height, framed from the "
+                   "knees down to the floor so the calves, ankles and feet fill the frame; "
+                   "nothing above the knee is drawn")
 
 CAMERA_BY_PATTERN = {
     # lower body, sagittal
@@ -71,7 +82,7 @@ CAMERA_BY_PATTERN = {
     "single-leg-squat": _SIDE_HIP,
     "step-up": _SIDE_HIP,
     "hip-flexion": _SIDE_HIP,
-    "calf-raise": _SIDE_HIP,
+    "calf-raise": _SIDE_LOWER_LEG,
     "jumping-landing": _SIDE_HIP,
     "olympic-derivative": _SIDE_HIP,
     "ground-to-standing": _SIDE_HIP,
@@ -114,8 +125,23 @@ CAMERA_BY_PATTERN = {
 DEFAULT_CAMERA = _TQ_CHEST
 
 
+# Per-exercise overrides for the few where the pattern's camera is wrong for
+# the body's orientation: a supine squeeze drawn "front view at chest height"
+# is a figure seen from the feet.
+CAMERA_BY_SLUG = {
+    "adductor-ball-squeeze": _SIDE_FLOOR,
+    "rider-wall-sit-squeeze": _FRONT_CHEST,
+}
+
+
 def camera_for(exercise):
+    if exercise.get("id") in CAMERA_BY_SLUG:
+        return CAMERA_BY_SLUG[exercise["id"]]
     return CAMERA_BY_PATTERN.get(exercise.get("movement_pattern"), DEFAULT_CAMERA)
+
+
+def framing_for(exercise):
+    return FRAMING_LOWER_LEG if camera_for(exercise) == _SIDE_LOWER_LEG else FRAMING_FULL
 
 
 def build_start_prompt(exercise, style, transparent=False):
@@ -137,7 +163,7 @@ Primary working muscles: {exercise['primary_muscles']}.
 
 {STYLE_BIBLE[style]}
 
-{shared_constraints(transparent)}
+{shared_constraints(transparent, framing_for(exercise))}
 """
 
 
@@ -158,7 +184,7 @@ Primary working muscles: {exercise['primary_muscles']}.
 
 {STYLE_BIBLE[style]}
 
-{shared_constraints(transparent)}
+{shared_constraints(transparent, framing_for(exercise))}
 """
 
 
@@ -187,7 +213,7 @@ Primary working muscles: {exercise['primary_muscles']}.
 
 {STYLE_BIBLE[style]}
 
-{shared_constraints(transparent)}
+{shared_constraints(transparent, framing_for(exercise))}
 """
 
 
