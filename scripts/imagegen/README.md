@@ -74,7 +74,11 @@ without joint angles the model invents them. Writing those two paragraphs for
 575 exercises is the real work of this project. They also become coaching cue
 text in the app, and they give an asset-coverage test something to assert
 against. Write them the way the ten in `prompts.py` are written: name the joint
-angles, name what stays fixed, name what must not happen.
+angles, name what stays fixed, name what must not happen. Write them from
+what the exercise NAME denotes, not from `instructions`: several rows carry
+a neighbour's text (the Barbell Bulgarian Split Squat row describes a goblet
+squat, Dumbbell Front Squat says "set the bar in a front rack"), found while
+authoring tranche 2 on 2026-09-16.
 
 ## Scoring
 

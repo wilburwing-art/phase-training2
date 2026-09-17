@@ -613,5 +613,505 @@
     "status": "authored",
     "start_position": "Standing tall under a loaded yoke, a steel frame with a crossbar resting on the upper traps and weight plates on both uprights, hands gripping the crossbar either side of the head, feet hip width, knees slightly bent, torso braced and upright, eyes forward. The yoke's feet are just clear of the ground.",
     "end_position": "One short step into the walk to the viewer's right: the right foot forward with the heel down, left foot behind on the toe, knees still slightly bent, torso still upright and braced, the yoke level on the shoulders with its feet clear of the ground. Same grip, same posture."
+  },
+  "around-the-world": {
+    "status": "authored",
+    "start_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. A dumbbell in each hand resting at hip height beside the thighs, arms straight and low, palms up.",
+    "end_position": "Both straight arms swept out to the sides and overhead in a wide semicircle so the dumbbells now meet above the head, level with the bench behind it, palms still up, elbows slightly bent. Body on the bench unchanged."
+  },
+  "back-extension-45": {
+    "status": "authored",
+    "start_position": "Face down on a 45 degree back extension bench: thighs on the pad, hips at the top edge of the pad, ankles hooked under the foot rollers. Torso hinged down at the hips so the trunk hangs toward the floor at roughly 90 degrees to the legs, spine long and straight, arms crossed over the chest, head neutral.",
+    "end_position": "Same bench and foot position. Torso raised so the trunk is one straight line with the legs along the 45 degree slope of the bench, shoulders, hips and ankles aligned. Spine neutral, not arched past straight, arms crossed over the chest, head in line with the spine."
+  },
+  "arch-body-hold": {
+    "status": "authored",
+    "start_position": "Lying face down on a mat, both arms extended straight overhead along the floor with the palms down, legs straight together with the toes pointed. Chest, arms and legs lifted a few inches off the mat at the same time so the body forms a shallow reverse banana with only the hips and belly touching the floor, glutes squeezed, head neutral with the eyes down.",
+    "end_position": "Lying face down on a mat, both arms extended straight overhead along the floor with the palms down, legs straight together with the toes pointed. Chest, arms and legs lifted a few inches off the mat at the same time so the body forms a shallow reverse banana with only the hips and belly touching the floor, glutes squeezed, head neutral with the eyes down."
+  },
+  "no-hang-active-recruitment-pull": {
+    "status": "authored",
+    "start_position": "Standing tall beneath a hangboard edge mounted at head height, both feet flat on the floor taking the body's weight. Four fingers of the right hand set on the edge in a half-crimp, thumb off, the arm bent and pulling down hard on the edge without lifting the body. Left arm hanging at the side. Shoulders down, torso still.",
+    "end_position": "Standing tall beneath a hangboard edge mounted at head height, both feet flat on the floor taking the body's weight. Four fingers of the right hand set on the edge in a half-crimp, thumb off, the arm bent and pulling down hard on the edge without lifting the body. Left arm hanging at the side. Shoulders down, torso still."
+  },
+  "agility-ladder-in-out": {
+    "status": "authored",
+    "start_position": "Standing at one end of a flat agility ladder laid on the floor, viewed from the side with the ladder running to the viewer's right. Both feet together inside the first square, knees bent about 30 degrees, on the balls of the feet, arms bent at the sides, eyes down the ladder.",
+    "end_position": "One pattern later: both feet outside the ladder straddling the second square, feet wide either side of the rails, knees bent, on the balls of the feet, torso leaning slightly forward, arms bent. Moving to the viewer's right."
+  },
+  "ab-wheel": {
+    "status": "authored",
+    "start_position": "Kneeling on the floor with the knees hip width, shins on the floor and toes pointed back. Both hands gripping the handles of an ab wheel on the floor directly below the shoulders, arms straight, hips bent so the torso angles down from the hips to the hands, spine neutral, eyes on the floor.",
+    "end_position": "Rolled forward: the wheel a long way out in front, arms straight and extended overhead in line with the torso, hips fully extended so the body is one straight line from the knees through the hips to the hands, ribs down and lower back flat, chest a few inches above the floor. Knees still on the floor."
+  },
+  "barbell-bench-press": {
+    "status": "authored",
+    "start_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. A barbell held in both hands with a grip a little wider than the shoulders, the bar at the chest: elbows bent to about 90 degrees and angled about 45 degrees from the torso, forearms vertical, the load level with the sternum.",
+    "end_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. Arms fully extended straight up over the chest, elbows locked, wrists straight, the bar directly above the shoulders. Only the arms have moved."
+  },
+  "archer-draw-iso": {
+    "status": "authored",
+    "start_position": "Standing tall side-on to the viewer, left arm extended straight out in front at shoulder height holding one end of a resistance band, the other end drawn back by the right hand to the side of the jaw with the right elbow high and level with the shoulder, like a bow at full draw. Band taut between the hands. Feet shoulder width, torso upright, eyes along the left arm.",
+    "end_position": "Standing tall side-on to the viewer, left arm extended straight out in front at shoulder height holding one end of a resistance band, the other end drawn back by the right hand to the side of the jaw with the right elbow high and level with the shoulder, like a bow at full draw. Band taut between the hands. Feet shoulder width, torso upright, eyes along the left arm."
+  },
+  "archer-pull-up": {
+    "status": "authored",
+    "start_position": "Dead hang from a pull-up bar with a wide grip, hands well outside the shoulders, palms forward, arms fully straight, shoulders engaged. Legs hanging straight down together, toes pointed.",
+    "end_position": "Pulled up toward the right hand: the right elbow fully bent and the chin above the bar beside the right hand, the left arm kept completely straight and sliding along the bar out to the side so the body is off-centre under the right hand. Legs still hanging straight together."
+  },
+  "agility-ladder-icky-shuffle": {
+    "status": "authored",
+    "start_position": "Standing beside a flat agility ladder laid on the floor, viewed from the side with the ladder running to the viewer's right. Both feet inside the first square, knees bent about 30 degrees, on the balls of the feet, arms bent at the sides, eyes down the ladder.",
+    "end_position": "One step later: the right foot planted inside the next square and the left foot stepped out to the left side of the ladder, hips shifted left, knees bent, on the balls of the feet, arms bent. Moving to the viewer's right."
+  },
+  "bench-dip": {
+    "status": "authored",
+    "start_position": "Sitting on the front edge of a flat bench with both hands gripping the edge beside the hips, fingers forward. Hips lifted just off the bench and shifted forward, arms straight and locked, legs extended out in front with the heels on the floor and the knees nearly straight, torso upright.",
+    "end_position": "Lowered: elbows bent to about 90 degrees pointing straight back, hips dropped down in front of the bench so the shoulders are level with the elbows, torso still upright and close to the bench, hands still on the edge, heels still on the floor with the legs straight."
+  },
+  "archery-draw-hold": {
+    "status": "authored",
+    "start_position": "Standing tall side-on to a band anchored at chest height in front, the left arm extended straight toward the anchor holding the band, the right hand drawn back to the jaw with the right elbow high and level with the shoulder, like a bow at full draw. Band taut. Feet shoulder width, torso upright, eyes along the left arm.",
+    "end_position": "Standing tall side-on to a band anchored at chest height in front, the left arm extended straight toward the anchor holding the band, the right hand drawn back to the jaw with the right elbow high and level with the shoulder, like a bow at full draw. Band taut. Feet shoulder width, torso upright, eyes along the left arm."
+  },
+  "b-skip-drill": {
+    "status": "authored",
+    "start_position": "Standing tall on the left leg, right knee driven up to hip height with the thigh horizontal and the knee bent to 90 degrees, right toes pulled up toward the shin. Left arm forward with a 90 degree elbow, right arm back. Torso upright. Moving to the viewer's right.",
+    "end_position": "The right leg kicked out: right knee now straight with the leg extended forward at hip height, foot flexed, about to be pulled back down under the hip. Standing on the left leg, arms in the same opposite swing, torso upright. Moving to the viewer's right."
+  },
+  "bench-press-cable": {
+    "status": "authored",
+    "start_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. The bench sits between two cable columns set at chest height; a handle in each hand at the sides of the chest, elbows bent to about 90 degrees and flared about 45 degrees from the torso, forearms vertical, palms forward, cables running out to each column.",
+    "end_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. Both handles pressed up and slightly together until the arms are fully extended above the chest, hands close together over the sternum, cables angled in from the columns. Only the arms have moved."
+  },
+  "arnold-press": {
+    "status": "authored",
+    "start_position": "Seated tall on an upright bench, feet flat. A dumbbell in each hand held in front of the shoulders at chin height with the palms facing the face, elbows bent and pointing down in front of the torso, forearms vertical.",
+    "end_position": "Both dumbbells pressed straight overhead, arms fully extended with the biceps beside the ears, palms now rotated to face forward, wrists straight. Torso upright on the bench, ribs down. The palms have turned through the press."
+  },
+  "barbell-bulgarian-split-squat": {
+    "status": "authored",
+    "start_position": "Split squat stance with a barbell across the upper back and shoulders, hands gripping the bar outside the shoulders. Rear (left) foot laced on top of a flat bench behind, front (right) foot flat on the floor about two feet ahead of the bench. Front knee straight but not locked, hips tall, torso upright, eyes forward.",
+    "end_position": "Lowered into the split squat: front knee bent to about 90 degrees tracking over the front foot, rear knee dropped to just above the floor, hips down, torso upright with a slight forward lean, barbell still on the upper back. Rear foot still on the bench."
+  },
+  "bench-press-smith-machine": {
+    "status": "authored",
+    "start_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. The bench sits under the bar of a Smith machine, a barbell running on two vertical guide rails. Both hands on the bar a little wider than the shoulders, bar lowered to the mid chest, elbows bent to about 90 degrees and angled 45 degrees from the torso.",
+    "end_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. Arms fully extended straight up, the Smith bar at the top of its rails directly over the shoulders, elbows locked, wrists straight. Only the arms have moved."
+  },
+  "band-tricep-pushdown": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. A resistance band anchored high above and in front, a straight bar attached to its lower end held in both hands with an overhand grip at upper chest height, elbows bent fully and pinned at the sides, forearms angled up, band taut from the anchor.",
+    "end_position": "Both forearms pressed down until the arms are fully straight, the bar at the front of the thighs, elbows still pinned at the sides and not drifting forward, wrists straight, band stretched taut. Torso upright. Only the elbows have moved."
+  },
+  "barbell-step-up": {
+    "status": "authored",
+    "start_position": "Standing tall facing a knee-high plyo box with a barbell across the upper back and shoulders, hands gripping the bar outside the shoulders. Right foot placed flat on top of the box with the right knee bent to about 90 degrees, left foot flat on the floor, torso upright.",
+    "end_position": "Standing tall on top of the box on the right leg, right knee straight, the left foot lifted and hanging just beside the box with the knee slightly bent, barbell still on the upper back, torso upright, hips level."
+  },
+  "ball-slams": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. A slam ball held overhead in both hands, arms fully extended straight up, torso tall and slightly extended, on the balls of the feet.",
+    "end_position": "Hinged hard at the hips and knees into a deep squat, torso leaning forward, both arms straight and driven down so the hands are just above the floor between the feet, the ball on the floor between the feet at the moment of impact. Back flat, eyes on the ball."
+  },
+  "bench-press-wide-grip-barbell": {
+    "status": "authored",
+    "start_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. A barbell held with a very wide grip, hands about one and a half times shoulder width apart, the bar at the chest: elbows bent to about 90 degrees and angled about 45 degrees from the torso, forearms vertical, the load level with the sternum.",
+    "end_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. Arms fully extended straight up over the chest, elbows locked, wrists straight, the bar directly above the shoulders. Only the arms have moved."
+  },
+  "barbell-walking-lunge": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. A barbell across the upper back and shoulders, hands gripping the bar outside the shoulders. Moving to the viewer's right.",
+    "end_position": "Stepped forward with the right foot into a lunge: right knee bent to 90 degrees directly over the right foot, left knee lowered to just above the floor behind, left heel up, torso upright, barbell on the upper back. Feet in a long split stance."
+  },
+  "barbell-glute-bridge": {
+    "status": "authored",
+    "start_position": "Lying on the back on the floor, knees bent to about 90 degrees with the feet flat hip width apart. A barbell resting across the crease of the hips, held steady with both hands on the bar either side of the hips. Hips down on the floor, head down, chin tucked.",
+    "end_position": "Hips driven up so the torso and thighs form one straight line from the shoulders to the knees, shins vertical, weight through the heels, glutes squeezed, the barbell lifted on the hips. Shoulders and head still on the floor, ribs down."
+  },
+  "board-pop-up-foam": {
+    "status": "authored",
+    "start_position": "Lying face down on a soft foam pad, hands flat on the pad beside the chest, elbows bent, legs straight together, toes pointed, head lifted slightly looking forward.",
+    "end_position": "Popped up into a surf stance on the pad: standing sideways with the feet wide and staggered, knees bent about 45 degrees, hips low, torso leaning slightly forward, arms out for balance, eyes forward. Feet on the pad."
+  },
+  "back-extension-machine": {
+    "status": "authored",
+    "start_position": "Seated in a back extension machine: hips against the seat, feet on the footplate, a padded roller resting against the upper back. Torso curled forward at the hips to about 45 degrees against the pad, arms crossed over the chest.",
+    "end_position": "Torso pressed back against the pad into a slight extension, so the trunk is upright and a few degrees past vertical, the pad pushed back with it. Hips and feet unchanged, arms crossed."
+  },
+  "barbell-chest-supported-row": {
+    "status": "authored",
+    "start_position": "Lying face down on a chest-supported row bench inclined about 30 degrees, chest and belly on the pad, feet on the floor behind. A barbell held below the bench in both hands with an overhand grip, arms hanging straight down, shoulders relaxed toward the floor.",
+    "end_position": "The barbell rowed up until it touches the underside of the bench beneath the chest: elbows bent and driven up and back past the torso, shoulder blades squeezed together. Chest still on the pad, feet unchanged. Only the arms and shoulder blades have moved."
+  },
+  "row-erg-aerobic": {
+    "status": "authored",
+    "start_position": "Seated on a rowing ergometer at the catch: knees fully bent with the shins vertical, feet strapped to the footplates, torso leaning forward from the hips about 30 degrees, arms straight reaching forward holding the handle near the flywheel, head neutral.",
+    "end_position": "The finish of the stroke: legs fully straight, seat slid to the back of the rail, torso leaning back about 15 degrees past vertical, the handle pulled to the lower ribs with the elbows bent and drawn back past the torso, wrists flat."
+  },
+  "battle-ropes": {
+    "status": "authored",
+    "start_position": "Standing in a quarter squat facing away from the viewer's left toward an anchor point on the floor, knees bent about 45 degrees, hips back, torso leaning slightly forward. One end of a thick battle rope in each hand, both arms raised to shoulder height with the ropes rising in a wave toward the anchor.",
+    "end_position": "Both arms driven down so the hands are at hip height, the ropes slammed into a low wave along the floor toward the anchor. Same quarter squat, same lean, feet unchanged. Only the arms and the rope have moved."
+  },
+  "burpee": {
+    "status": "authored",
+    "start_position": "Standing tall on flat ground, feet hip width, arms at the sides, eyes forward.",
+    "end_position": "Plank at the bottom of the burpee: hands flat on the floor under the shoulders, arms straight, feet together with the toes on the floor, body one straight line from head to heels, head neutral."
+  },
+  "barbell-front-raise": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. A barbell held in both hands with an overhand grip at shoulder width, resting against the front of the thighs, arms straight.",
+    "end_position": "The barbell raised straight out in front to shoulder height with both arms straight and parallel to the floor, wrists straight, palms down. Torso upright with no lean back, shoulders down. Only the arms have moved."
+  },
+  "barbell-curl": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. A barbell held in both hands with a supinated grip at shoulder width held at the front of the thighs with the arms fully straight, elbows at the sides, palms facing forward.",
+    "end_position": "Elbows fully bent so the forearms are vertical and the bar is at the front of the shoulders, elbows still pinned at the sides and not drifting forward, upper arms vertical. Torso upright, no lean back. Only the elbows have moved."
+  },
+  "box-jump-over": {
+    "status": "authored",
+    "start_position": "Standing on the floor facing a knee-high plyo box about two feet away, loaded into a quarter squat: knees bent about 45 degrees, hips back, torso leaning forward about 30 degrees, both arms swung straight back behind the hips, eyes on the box.",
+    "end_position": "Landed on the far side of the box, the box now behind the figure: both feet flat, knees bent about 45 degrees absorbing the landing, hips slightly back, torso upright, arms out in front for balance. Facing away from the box."
+  },
+  "beach-tennis-lateral-lunge": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. Facing the viewer, a tennis racquet held in the right hand with the arm relaxed at the side.",
+    "end_position": "Stepped wide to the viewer's right into a deep lateral lunge: right knee bent to about 90 degrees over the right foot, hips back, left leg straight with the foot flat, torso leaning forward with a flat back, the racquet swung low across the body with the right arm extended toward the bent knee."
+  },
+  "cable-chest-fly": {
+    "status": "authored",
+    "start_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. The bench sits between two low cable columns; a handle in each hand with the arms out wide to the sides at chest level, elbows slightly bent, palms up, cables running down and out to each column.",
+    "end_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. Both arms brought together in an arc so the hands meet directly above the chest, elbows still slightly bent at the same angle, cables angled in from the columns. Only the shoulders have moved."
+  },
+  "barbell-overhead-tricep-extension": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. A barbell held overhead in both hands with a shoulder-width grip, arms fully extended straight up, upper arms beside the ears, elbows locked, ribs down.",
+    "end_position": "The barbell lowered behind the head by bending only at the elbows to about 90 degrees, forearms angled down behind the head, upper arms still vertical beside the ears and not flaring out. Ribs down, spine neutral, torso still upright."
+  },
+  "box-jump-stick": {
+    "status": "authored",
+    "start_position": "Standing on the floor facing a knee-high plyo box about two feet away, loaded into a quarter squat: knees bent about 45 degrees, hips back, torso leaning forward about 30 degrees, both arms swung straight back behind the hips, eyes on the box top.",
+    "end_position": "Landed on top of the box in an athletic stance: both feet flat on the box top, knees bent about 45 degrees, hips back, torso leaning slightly forward with a flat back, arms out in front for balance. Holding still, fully on the box."
+  },
+  "bicycle-crunch": {
+    "status": "authored",
+    "start_position": "Lying on the back on the floor, fingertips at the temples with the elbows out wide, shoulders lifted a few inches off the floor. Right knee pulled in toward the chest with the thigh vertical, left leg extended straight and held a few inches above the floor, toes pointed.",
+    "end_position": "Torso rotated so the left elbow reaches across to touch the right knee, the right knee still pulled in and the left leg still extended above the floor, shoulders lifted, hands at the temples. The rotation is the only change."
+  },
+  "cable-crossover": {
+    "status": "authored",
+    "start_position": "Standing centred between two high cable pulleys, one foot staggered forward, torso leaning forward about 20 degrees. A handle in each hand with the arms out wide and up at shoulder height, elbows slightly bent, palms facing forward and down, cables running up and out to each pulley.",
+    "end_position": "Both arms swept down and together in a hugging arc so the hands meet in front of the hips, elbows still slightly bent, palms facing each other, cables angled in from the high pulleys. Stance and lean unchanged."
+  },
+  "barbell-good-morning": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. A barbell across the upper back and shoulders, hands gripping the bar outside the shoulders, knees softly bent about 15 degrees.",
+    "end_position": "Hips pushed back and the torso hinged forward until it is nearly parallel to the floor, spine neutral and long, knees still at the same soft bend, barbell still on the upper back, head in line with the spine, eyes on the floor ahead."
+  },
+  "barbell-wrist-curl": {
+    "status": "authored",
+    "start_position": "Seated on the end of a flat bench, both forearms resting flat along the tops of the thighs with the wrists hanging just past the knees, palms up. A barbell held in both hands with the wrists dropped so the hands hang down below the knees, fingers curled around the bar.",
+    "end_position": "The wrists curled up so the hands point up and the barbell is lifted as high as the wrists allow, forearms still flat on the thighs, elbows unchanged. Only the wrists have moved."
+  },
+  "box-squat": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. A barbell across the upper back and shoulders, hands gripping the bar outside the shoulders, feet a little wider than the shoulders with the toes out, a knee-high box on the floor directly behind the hips.",
+    "end_position": "Seated on the box at the bottom of the squat: hips pushed well back and resting on the box, knees bent about 90 degrees with the shins vertical, torso leaning forward about 30 degrees with a tight neutral spine, barbell on the upper back, feet flat."
+  },
+  "cable-punch": {
+    "status": "authored",
+    "start_position": "Staggered stance with the left foot forward, facing away from a cable column set at chest height behind the figure's right side. The cable handle held in the right hand at the right shoulder, elbow bent and back, torso turned slightly toward the column, cable taut behind.",
+    "end_position": "The right arm punched straight forward and across the body to full extension at shoulder height, torso and hips rotated to the left with the right heel pivoted up, cable stretched taut from the column behind. Left arm at the side, feet in the same stance."
+  },
+  "barbell-shrug": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. A barbell held in both hands with an overhand grip at shoulder width, hanging at the front of the thighs with the arms straight, shoulders relaxed down.",
+    "end_position": "Both shoulders shrugged straight up toward the ears as high as they go, arms still straight, the bar lifted a few inches with them, head level and not tilted. Only the shoulders have moved."
+  },
+  "box-step-downhill-eccentric": {
+    "status": "authored",
+    "start_position": "Standing on one foot (the left) on a knee-high box wearing a weighted backpack, left knee straight, hips level, right leg hanging beside the box, torso upright, arms out to the sides for balance.",
+    "end_position": "The standing (left) knee bent to about 60 degrees and the hips lowered so the right heel just touches the floor beside the box, right leg straight, hips still level, torso leaning slightly forward with a neutral spine, pack on the back. Arms out for balance."
+  },
+  "cable-crunch": {
+    "status": "authored",
+    "start_position": "Kneeling on the floor facing a high cable pulley, a rope attachment held in both hands with the hands beside the temples and the rope running up over the head to the pulley. Torso upright with the hips over the knees, spine long, cable taut.",
+    "end_position": "Torso curled down toward the floor by flexing the spine, elbows driven down toward the thighs, head bowed, rope still at the temples and the cable pulled down with it. Hips still over the knees. Only the spine has curled."
+  },
+  "chest-dip": {
+    "status": "authored",
+    "start_position": "Support position at the top of a pair of parallel dip bars: both arms straight and locked with the hands on the bars, torso leaning forward about 30 degrees, knees bent with the feet crossed behind, shoulders down away from the ears.",
+    "end_position": "Bottom of the dip: elbows bent so the upper arms are parallel to the floor, torso leaning forward about 30 degrees, chest lowered between the bars, knees still bent with the feet crossed behind. Hands still on the bars."
+  },
+  "cable-high-to-low-chop": {
+    "status": "authored",
+    "start_position": "Standing side-on with a high cable pulley to the figure's left, feet wider than the shoulders, knees slightly bent. Both hands gripping the handle up beside the left shoulder, arms slightly bent, torso rotated toward the pulley, cable taut running up to it.",
+    "end_position": "The handle chopped down and across the body to beside the right hip: arms slightly bent, torso and hips rotated to the right, left heel pivoted up, cable stretched taut from the high pulley. Feet in the same stance."
+  },
+  "chest-dip-assisted": {
+    "status": "authored",
+    "start_position": "Support position at the top of a pair of parallel dip bars with a thick resistance band looped across the two bars and the left knee resting on it: both arms straight and locked, hands on the bars, torso leaning forward about 30 degrees, right foot crossed behind the left, shoulders down.",
+    "end_position": "Bottom of the dip: elbows bent so the upper arms are parallel to the floor, chest lowered between the bars, torso leaning forward, the left knee still on the stretched band. Hands still on the bars."
+  },
+  "bent-over-one-arm-row-dumbbell": {
+    "status": "authored",
+    "start_position": "Hinged at the hips with a flat back, torso nearly parallel to the floor, left hand and left knee braced on a flat bench, right foot flat on the floor beside it. A dumbbell in the right hand hanging straight down below the shoulder with a neutral grip, arm straight.",
+    "end_position": "The dumbbell rowed up to the lower ribs: right elbow bent and driven back and up past the torso, hand at the ribs, shoulder blade pulled back. Torso still flat and square to the floor, left hand and knee still on the bench. Only the right arm has moved."
+  },
+  "cable-low-to-high-chop": {
+    "status": "authored",
+    "start_position": "Standing side-on with a low cable pulley to the figure's left, feet wider than the shoulders, knees bent about 30 degrees. Both hands gripping the handle down beside the left hip, arms slightly bent, torso rotated toward the pulley, cable taut running down to it.",
+    "end_position": "The handle driven up and across the body to above the right shoulder: arms nearly straight and extended up to the right, torso and hips rotated to the right, left heel pivoted up, knees straighter, cable stretched taut from the low pulley."
+  },
+  "chest-fly": {
+    "status": "authored",
+    "start_position": "Seated upright in a pec deck machine, back against the pad, feet flat. Forearms or hands on the machine's two arm pads out wide at the sides at chest height, elbows bent to about 90 degrees, chest open.",
+    "end_position": "Both arm pads brought together in an arc in front of the chest until they meet, elbows still bent at the same angle, chest squeezed. Torso still against the pad, feet flat. Only the shoulders have moved."
+  },
+  "bent-over-row-underhand-barbell": {
+    "status": "authored",
+    "start_position": "Feet hip width, knees softly bent about 15 degrees, hips pushed back and the torso hinged forward to about 45 degrees above horizontal with a flat neutral back, head in line with the spine. A barbell held in both hands with an underhand grip at shoulder width, arms hanging straight down below the shoulders, palms facing forward.",
+    "end_position": "The barbell rowed to the lower abdomen: elbows bent and driven back behind the torso, the bar touching the body just below the navel, shoulder blades squeezed together. Hinge angle and knees unchanged. Only the arms have moved."
+  },
+  "clean-and-jerk": {
+    "status": "authored",
+    "start_position": "Set-up over a barbell loaded with plates on the floor: feet hip width, the bar over mid-foot, hips hinged back and higher than the knees, knees bent about 45 degrees, flat back angled about 45 degrees above horizontal, arms straight with the hands gripping the bar just outside the knees, shoulders over the bar.",
+    "end_position": "The bar locked out overhead in a split jerk: arms fully extended straight up with the bar directly over the shoulders and the head pushed slightly forward under it, front (left) foot forward with the knee bent, rear (right) foot back on the toe with the knee slightly bent, torso vertical."
+  },
+  "cable-low-to-high-lift": {
+    "status": "authored",
+    "start_position": "Standing side-on with a low cable pulley to the figure's left, feet wider than the shoulders, knees bent about 30 degrees. Both hands gripping the handle down beside the left hip, arms nearly straight, torso rotated toward the pulley, cable taut running down to it.",
+    "end_position": "The handle lifted up and across the body to above the right shoulder with both arms nearly straight, torso and hips rotated to the right, left heel pivoted up, knees straighter, cable stretched taut from the low pulley."
+  },
+  "chest-fly-band": {
+    "status": "authored",
+    "start_position": "Standing with a resistance band anchored behind at chest height, one end in each hand, one foot staggered forward, torso upright. Both arms out wide to the sides at chest height, elbows slightly bent, palms forward, the two band halves taut running back to the anchor.",
+    "end_position": "Both arms brought together in an arc so the hands meet in front of the chest at shoulder height, elbows still slightly bent, the band stretched taut from the anchor behind. Stance unchanged. Only the shoulders have moved."
+  },
+  "bent-arm-bar-hang": {
+    "status": "authored",
+    "start_position": "Hanging from a pull-up bar with the chin above the bar: both hands on the bar shoulder width, palms forward, elbows fully bent and pulled down, the bar at the upper chest. Legs hanging straight down together, toes pointed, body still.",
+    "end_position": "Hanging from a pull-up bar with the chin above the bar: both hands on the bar shoulder width, palms forward, elbows fully bent and pulled down, the bar at the upper chest. Legs hanging straight down together, toes pointed, body still."
+  },
+  "clean-barbell": {
+    "status": "authored",
+    "start_position": "Set-up over a barbell loaded with plates on the floor: feet hip width, the bar over mid-foot, hips hinged back and higher than the knees, knees bent about 45 degrees, flat back angled about 45 degrees above horizontal, arms straight with the hands gripping the bar just outside the knees, shoulders over the bar.",
+    "end_position": "Caught in the front rack at the bottom of a front squat: the bar resting across the front of the shoulders and collarbones, elbows driven up and forward so the upper arms are parallel to the floor, hands loosely under the bar. Hips and knees bent deep with the thighs below parallel, torso upright, feet flat."
+  },
+  "chest-fly-dumbbell": {
+    "status": "authored",
+    "start_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. A dumbbell in each hand with the arms out wide to the sides at chest level, elbows slightly bent, palms facing up, the dumbbells level with the bench.",
+    "end_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. Both arms brought together in an arc so the dumbbells meet directly above the chest, elbows still slightly bent at the same angle, palms facing each other. Only the shoulders have moved."
+  },
+  "bent-over-reverse-fly": {
+    "status": "authored",
+    "start_position": "Feet hip width, knees softly bent about 15 degrees, hips pushed back and the torso hinged forward to about 45 degrees above horizontal with a flat neutral back, head in line with the spine. A dumbbell in each hand hanging straight down below the shoulders, palms facing each other, elbows slightly bent.",
+    "end_position": "Both arms raised out to the sides to shoulder height in the plane of the torso, elbows still slightly bent, dumbbells level with the shoulders, shoulder blades squeezed together. Hinge angle and knees unchanged. Only the arms have moved."
+  },
+  "cone-t-drill": {
+    "status": "authored",
+    "start_position": "Sprinting to the viewer's right toward a cone on the floor ahead: torso leaning forward, drive knee high, rear leg extended behind, arms pumping with 90 degree elbows. Two more cones visible on the floor.",
+    "end_position": "Shuffling sideways beside the cones facing the viewer: feet wide in a low athletic stance, knees bent about 45 degrees, hips low, the right foot reaching out to the right and the left pushing off, arms bent at the sides."
+  },
+  "cable-twist": {
+    "status": "authored",
+    "start_position": "Standing side-on with a cable column at chest height to the figure's left, feet wider than the shoulders, knees slightly bent. Both hands gripping the handle with the arms extended straight out in front of the chest toward the column, torso rotated slightly toward it, cable taut.",
+    "end_position": "Torso rotated 90 degrees away from the column to the right, arms still straight and extended in front of the chest so the handle has swept across in an arc, hips turned with the torso and the left heel pivoted up, cable stretched taut. Feet in the same stance."
+  },
+  "chest-press-band": {
+    "status": "authored",
+    "start_position": "Standing with a resistance band anchored behind at chest height, one end in each hand, left foot staggered forward, torso upright. Hands at the sides of the chest with the elbows bent to 90 degrees and back, palms down, band taut running back to the anchor.",
+    "end_position": "Both arms pressed straight forward to full extension at shoulder height, hands together in front of the chest, elbows locked, band stretched taut from the anchor behind. Stance unchanged. Only the arms have moved."
+  },
+  "db-lateral-raise-myoreps": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. A dumbbell in each hand hanging at the sides with the palms facing the thighs, elbows slightly bent, shoulders down.",
+    "end_position": "Both arms raised out to the sides to shoulder height, elbows leading and still slightly bent, dumbbells level with the shoulders, palms facing down. Shoulders down away from the ears, no shrug, torso upright. Only the arms have moved."
+  },
+  "chest-press-machine": {
+    "status": "authored",
+    "start_position": "Seated upright in a chest press machine, back against the pad, feet flat. Both hands on the handles at the sides of the mid chest, elbows bent to about 90 degrees and back, forearms horizontal.",
+    "end_position": "Both handles pressed straight forward to full arm extension at chest height, elbows locked, hands in front of the chest. Torso still against the pad, feet flat. Only the arms have moved."
+  },
+  "bird-dog": {
+    "status": "authored",
+    "start_position": "On hands and knees on a mat: hands under the shoulders, knees under the hips, back flat. The left arm extended straight forward at shoulder height and the right leg extended straight back at hip height, both parallel to the floor, hips level and square, head neutral with the eyes on the floor. Right hand and left knee on the mat.",
+    "end_position": "On hands and knees on a mat: hands under the shoulders, knees under the hips, back flat. The left arm extended straight forward at shoulder height and the right leg extended straight back at hip height, both parallel to the floor, hips level and square, head neutral with the eyes on the floor. Right hand and left knee on the mat."
+  },
+  "deceleration-drop-step": {
+    "status": "authored",
+    "start_position": "Jogging to the viewer's right toward a cone on the floor ahead: torso upright with a slight lean, one knee lifted mid-stride, arms swinging with bent elbows.",
+    "end_position": "Stopped at the cone in a drop step: the outside (right) foot dropped back behind, both knees bent with the hips sunk low and back, torso leaning slightly forward with a flat back, weight loaded on the back foot, arms bent, facing the viewer and turned to go back the other way."
+  },
+  "cross-body-crunch": {
+    "status": "authored",
+    "start_position": "Lying on the back on the floor, both knees bent with the feet flat, fingertips at the temples with the elbows out wide, head and shoulders resting on the floor.",
+    "end_position": "Crunched up and across: the shoulders lifted off the floor and the torso rotated so the right elbow reaches toward the left knee, which is pulled up toward the chest with the thigh vertical, the right foot still flat on the floor. Hands at the temples."
+  },
+  "close-grip-bench-press": {
+    "status": "authored",
+    "start_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. A barbell held with a narrow grip, hands at shoulder width or a little inside, the bar at the lower chest, elbows bent to about 90 degrees and tucked close to the sides of the torso, forearms vertical.",
+    "end_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. Arms fully extended straight up over the chest, elbows locked, wrists straight, the bar directly above the shoulders. Only the arms have moved."
+  },
+  "block-pull-deadlift": {
+    "status": "authored",
+    "start_position": "Set-up over a barbell whose plates rest on two low blocks about four inches high: feet hip width, the bar over mid-foot, hips hinged back and higher than the knees, knees bent about 30 degrees, flat back angled about 45 degrees above horizontal, arms straight with the hands gripping the bar just outside the knees, shoulders over the bar.",
+    "end_position": "Standing tall at lockout with the barbell hanging at the front of the thighs on straight arms, hips and knees fully extended, shoulders back, spine neutral, the blocks on the floor below the plates."
+  },
+  "bicep-curl-machine": {
+    "status": "authored",
+    "start_position": "Seated at a biceps curl machine with the chest against the pad and both upper arms resting flat along the sloped arm pad, elbows at the bottom of the pad. Both hands gripping the handles with the arms nearly straight, palms up.",
+    "end_position": "The handles curled up until the forearms are vertical and the hands are near the shoulders, elbows still pinned on the pad, upper arms unchanged. Torso still against the chest pad. Only the elbows have moved."
+  },
+  "deficit-deadlift": {
+    "status": "authored",
+    "start_position": "Set-up over a barbell loaded with plates while standing on a low platform about two inches high: feet hip width, the bar over mid-foot with its plates on the floor below the platform's level, hips hinged back, knees bent more than a normal deadlift at about 60 degrees, flat back angled about 45 degrees above horizontal, arms straight with the hands gripping the bar just outside the knees, shoulders over the bar.",
+    "end_position": "Standing tall on the platform at lockout with the barbell hanging at the front of the thighs on straight arms, hips and knees fully extended, shoulders back, spine neutral."
+  },
+  "crunch": {
+    "status": "authored",
+    "start_position": "Lying on the back on the floor, knees bent with the feet flat hip width apart, fingertips at the temples with the elbows out wide, head and shoulders resting on the floor.",
+    "end_position": "The upper torso curled up so the shoulder blades are a few inches off the floor, the chin toward the chest, lower back still pressed into the floor, hands at the temples not pulling on the head, feet flat. Only the upper spine has curled."
+  },
+  "close-grip-dumbbell-bench-press": {
+    "status": "authored",
+    "start_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. A dumbbell in each hand at the lower chest with the palms facing each other, elbows bent to about 90 degrees and tucked close to the sides of the torso, forearms vertical, the dumbbells touching each other.",
+    "end_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. Both dumbbells pressed straight up over the chest with the arms fully extended and the dumbbells still touching, palms facing each other, elbows locked. Only the arms have moved."
+  },
+  "cable-reverse-fly": {
+    "status": "authored",
+    "start_position": "Standing centred between two cable columns set at shoulder height, arms crossed in front of the chest with the right hand holding the left column's handle and the left hand holding the right column's handle, elbows slightly bent, cables crossed and taut. Feet hip width, torso upright.",
+    "end_position": "Both arms opened out to the sides at shoulder height, uncrossed, elbows still slightly bent, palms facing forward, shoulder blades squeezed together, the two cables stretched taut and crossing in front of the chest. Feet unchanged."
+  },
+  "cable-front-raise": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. Facing away from a low cable pulley behind the feet, both hands gripping a straight bar attached to the cable, resting against the front of the thighs with the arms straight, cable running back between the legs to the pulley.",
+    "end_position": "The bar raised straight out in front to shoulder height with both arms straight and parallel to the floor, palms down, cable stretched taut from the low pulley behind. Torso upright with no lean back, shoulders down. Only the arms have moved."
+  },
+  "bb-paused-curl": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. A dumbbell in each hand held at the front of the thighs with the arms fully straight, elbows at the sides, palms facing forward.",
+    "end_position": "Elbows fully bent so the forearms are vertical and each dumbbell is at the front of the shoulders, elbows still pinned at the sides and not drifting forward, upper arms vertical. Torso upright, no lean back. Only the elbows have moved. Held still at the top."
+  },
+  "depth-jump": {
+    "status": "authored",
+    "start_position": "Standing tall on top of a knee-high plyo box, feet hip width, knees straight, arms at the sides. The leading foot has just stepped forward off the edge, the trailing foot still on the box, the figure beginning to drop.",
+    "end_position": "In the air above the floor in front of the box at the top of a vertical jump: body fully extended in one straight line, hips and knees straight, ankles pointed, both arms reaching straight overhead, feet well clear of the floor. The box is behind and below."
+  },
+  "close-grip-push-up": {
+    "status": "authored",
+    "start_position": "High plank with the hands close together directly under the sternum, thumbs and index fingers nearly touching, arms straight, feet together with the toes on the floor, body one straight line from head to heels, head neutral.",
+    "end_position": "Lowered: elbows bent and tucked tight against the sides of the torso pointing straight back, chest an inch above the hands, body still one straight line from head to heels with no hip sag. Hands unchanged."
+  },
+  "cable-romanian-deadlift": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. Facing away from a low cable pulley behind the feet, both hands gripping a straight bar attached to the cable, resting against the front of the thighs with the arms straight, knees softly bent about 15 degrees, cable running back between the legs to the pulley.",
+    "end_position": "Hips pushed back and the torso hinged forward to about 45 degrees above horizontal with a neutral spine, knees still at the same soft bend, arms straight with the bar hanging close against the shins at mid-shin height, cable taut back to the pulley. Head in line with the spine."
+  },
+  "cable-concentration-curl": {
+    "status": "authored",
+    "start_position": "Seated on the end of a flat bench, feet wide, torso leaning forward, the right elbow braced against the inside of the right thigh. Right hand gripping a single cable handle with the arm hanging nearly straight down toward a low pulley in front, palm up, cable taut. Left hand resting on the left thigh.",
+    "end_position": "The handle curled up to the right shoulder, forearm vertical, elbow still braced against the inside of the thigh, palm up, cable stretched taut from the low pulley. Torso and legs unchanged. Only the elbow has moved."
+  },
+  "dumbbell-front-squat": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. A dumbbell in each hand held in the front rack: one end of each dumbbell resting on the front of the shoulder, elbows high and pointing forward, palms facing in. Feet shoulder width with the toes slightly out.",
+    "end_position": "Bottom of the squat: hips and knees bent so the thighs are at or just below parallel, knees tracking out over the toes, heels flat, torso upright, elbows still high with the dumbbells resting on the front of the shoulders. Spine neutral."
+  },
+  "decline-crunch": {
+    "status": "authored",
+    "start_position": "Lying back on a decline bench with the head lower than the hips, feet hooked under the ankle pads at the top of the bench, knees bent. Fingertips at the temples with the elbows out wide, head and upper back resting on the bench.",
+    "end_position": "Curled up so the shoulders and upper back are lifted off the bench and the torso is bent toward the hips, chin toward the chest, hands at the temples. Feet still hooked, lower back on the bench. Only the upper spine has curled."
+  },
+  "close-grip-smith-machine-bench-press": {
+    "status": "authored",
+    "start_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. The bench sits under the bar of a Smith machine, a barbell running on two vertical guide rails. Both hands on the bar at shoulder width, bar lowered to the lower chest, elbows bent to about 90 degrees and tucked close to the sides of the torso.",
+    "end_position": "Lying on the back on a flat bench, feet flat on the floor, head and hips on the bench, shoulder blades pulled down and together. Arms fully extended straight up, the Smith bar at the top of its rails directly over the shoulders, elbows locked. Only the arms have moved."
+  },
+  "cable-row-single-arm": {
+    "status": "authored",
+    "start_position": "Standing facing a low cable pulley in a staggered stance with the left foot forward, knees slightly bent, torso leaning forward slightly with a flat back. The right arm extended straight forward toward the pulley holding a single handle at hip height, shoulder reaching forward, cable taut.",
+    "end_position": "The handle rowed to the right side of the rib cage: right elbow bent and driven straight back past the torso, hand at the ribs, shoulder blade pulled back, cable stretched taut from the pulley. Stance and lean unchanged. Only the right arm has moved."
+  },
+  "cable-lateral-raise": {
+    "status": "authored",
+    "start_position": "Standing side-on with a low cable pulley to the figure's left, feet hip width, torso upright. The right (outside) hand holding a single handle in front of the body at the left hip with the arm straight and crossing slightly in front, cable taut running down to the pulley.",
+    "end_position": "The right arm raised straight out to the side to shoulder height, elbow slightly bent, palm down, the cable stretched taut across the body from the low pulley. Torso upright, shoulder down, no lean. Only the right arm has moved."
+  },
+  "cable-curl": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. Facing a low cable pulley, both hands gripping a straight bar attached to the cable with a supinated grip at shoulder width, arms fully straight, the bar at the front of the thighs, elbows at the sides, cable taut down to the pulley.",
+    "end_position": "Elbows fully bent so the forearms are vertical and the bar is at the front of the shoulders, elbows still pinned at the sides, cable stretched taut from the low pulley. Torso upright, no lean back. Only the elbows have moved."
+  },
+  "dumbbell-reverse-lunge": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. A dumbbell in each hand hanging at the sides.",
+    "end_position": "Stepped backward with the left foot into a lunge: the right (front) knee bent to 90 degrees directly over the right foot, the left knee lowered to just above the floor behind, left heel up, torso upright, dumbbells hanging at the sides. Feet in a long split stance."
+  },
+  "decline-bench-press-barbell": {
+    "status": "authored",
+    "start_position": "Lying on a decline bench with the head lower than the hips, feet hooked under the ankle pads, shoulder blades pulled down and together. A barbell held in both hands a little wider than the shoulders at the lower chest, elbows bent to about 90 degrees and angled 45 degrees from the torso.",
+    "end_position": "Same decline bench and foot position. Arms fully extended straight up, the bar directly over the shoulders, elbows locked, wrists straight. Only the arms have moved."
+  },
+  "cable-shoulder-press": {
+    "status": "authored",
+    "start_position": "Seated upright on a bench between two cable columns set low behind the shoulders, feet flat. A cable handle in each hand at shoulder height with the elbows bent and pointing down, palms forward, cables running down and back to the columns.",
+    "end_position": "Both handles pressed straight overhead, arms fully extended with the biceps beside the ears, cables angled down behind to the columns. Torso upright on the bench, ribs down. Only the arms have moved."
+  },
+  "cable-hammer-curl": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. Facing a low cable pulley, both hands gripping a rope attachment with the palms facing each other, arms fully straight, the rope at the front of the thighs, elbows at the sides, cable taut down to the pulley.",
+    "end_position": "Elbows fully bent so the forearms are vertical and the rope ends are at the front of the shoulders, palms still facing each other, elbows pinned at the sides, cable stretched taut from the low pulley. Torso upright. Only the elbows have moved."
+  },
+  "disc-golf-pivot-throw": {
+    "status": "authored",
+    "start_position": "Standing side-on with a heavy resistance band anchored at chest height to the figure's left, feet wider than the shoulders, knees slightly bent. Both hands holding the band end at the left side of the chest, elbows bent, torso rotated toward the anchor, band taut.",
+    "end_position": "Torso and hips rotated to the right with the left heel pivoted up, both arms extended straight out to the right at chest height so the band is stretched across the body, hands together at the end of the arc. Feet in the same wide stance."
+  },
+  "decline-bench-press-dumbbell": {
+    "status": "authored",
+    "start_position": "Lying on a decline bench with the head lower than the hips, feet hooked under the ankle pads, shoulder blades pulled down and together. A dumbbell in each hand at the sides of the lower chest, elbows bent to about 90 degrees and angled 45 degrees from the torso, forearms vertical, palms forward.",
+    "end_position": "Same decline bench and foot position. Both dumbbells pressed straight up over the chest with the arms fully extended, dumbbells directly above the shoulders, elbows locked. Only the arms have moved."
+  },
+  "cable-shrug": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. Facing a low cable pulley, both hands gripping a straight bar attached to the cable with an overhand grip at shoulder width, hanging at the front of the thighs with the arms straight, shoulders relaxed down, cable taut.",
+    "end_position": "Both shoulders shrugged straight up toward the ears as high as they go, arms still straight, the bar lifted a few inches with them, cable stretched taut, head level. Only the shoulders have moved."
+  },
+  "decline-bench-press-smith-machine": {
+    "status": "authored",
+    "start_position": "Lying on a decline bench with the head lower than the hips, feet hooked under the ankle pads, the bench positioned under the bar of a Smith machine running on two vertical guide rails. Both hands on the bar a little wider than the shoulders, bar lowered to the lower chest, elbows bent to about 90 degrees.",
+    "end_position": "Same decline bench and foot position. Arms fully extended straight up, the Smith bar at the top of its rails directly over the shoulders, elbows locked. Only the arms have moved."
+  },
+  "cable-straight-arm-pulldown": {
+    "status": "authored",
+    "start_position": "Standing facing a cable machine with the pulley set high, feet hip width, knees slightly bent, torso hinged forward about 20 degrees. Both hands gripping a straight bar at shoulder width with the arms straight and raised overhead in front, cable running up to the pulley, shoulders down.",
+    "end_position": "The bar pulled down in an arc with the arms kept straight until it touches the front of the thighs, hands at hip height, shoulders down and back, lats squeezed. Torso still hinged 20 degrees, knees still slightly bent, elbows straight throughout."
+  },
+  "cable-upright-row": {
+    "status": "authored",
+    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. Facing a low cable pulley, both hands gripping a straight bar attached to the cable with an overhand grip at hip width, hanging at the front of the thighs with the arms straight, cable taut down to the pulley.",
+    "end_position": "The bar pulled straight up the front of the body to mid-chest height, elbows bent and driven up and out so they lead above the hands, wrists below the elbows, cable stretched taut from the low pulley. Torso upright. Only the arms have moved."
+  },
+  "cable-preacher-curl": {
+    "status": "authored",
+    "start_position": "Seated at a preacher bench facing a low cable pulley, chest against the top of the sloped pad, both upper arms draped over the pad with the elbows resting on it. Both hands gripping a straight bar attached to the cable with a supinated grip, arms nearly straight down the slope of the pad, cable taut.",
+    "end_position": "The bar curled up until the forearms are vertical and the hands are near the shoulders, elbows still pinned on the pad, upper arms unchanged, cable stretched taut from the pulley. Only the elbows have moved."
+  },
+  "flutter-kick-hollow": {
+    "status": "authored",
+    "start_position": "Lying on the back on a mat, lower back pressed into the floor, head and shoulders lifted slightly, arms straight at the sides with the hands just off the floor. Both legs straight and together, lifted a few inches above the floor, toes pointed.",
+    "end_position": "Same hollow position with the legs scissored: the right leg lifted to about a foot above the floor and the left leg lowered to a few inches above it, both straight with the toes pointed, lower back still pressed into the floor, head and shoulders still lifted."
+  },
+  "cable-pull-through": {
+    "status": "authored",
+    "start_position": "Standing facing away from a low cable pulley with a rope attachment held in both hands between the legs, feet a little wider than the shoulders, knees softly bent. Hips pushed back and the torso hinged forward to about 45 degrees with a flat back, arms straight with the hands down between the knees, cable running back between the legs to the pulley.",
+    "end_position": "Standing tall at lockout: hips driven forward and fully extended, knees straight, torso upright, glutes squeezed, arms straight with the rope held at the front of the hips, cable taut back between the legs to the pulley."
+  },
+  "dolphin-kick-dryland": {
+    "status": "authored",
+    "start_position": "Lying face down along a flat bench with the hips at the end of the bench and both legs extended straight out past the end, unsupported and held level with the bench, toes pointed together, arms folded under the chin.",
+    "end_position": "The legs swept down together in a dolphin kick: hips flexed slightly and both legs angled down below the level of the bench with the knees slightly bent and the toes pointed, still together. Torso on the bench unchanged."
   }
 }
