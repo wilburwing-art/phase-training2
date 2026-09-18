@@ -9,6 +9,7 @@
 // OnboardingPickRow + OnboardingButton) used by every step screen so each
 // step is just title + subtitle + a content block.
 
+import HealthKit
 import SwiftUI
 
 // MARK: - Steps
@@ -35,6 +36,11 @@ enum OnboardingStep: Int, CaseIterable {
     case welcome = 0
     case sports
     case sportSeasons       // per-sport season picker
+    /// Apple Health read access, asked here since 2026-09-18. It used to be
+    /// opt-in behind Profile > Health & Imports > Sync, which a new install
+    /// never found, so readiness and activity detection ran on nothing.
+    /// Skipped by `advance()`/`back()` where HealthKit is unavailable (iPad).
+    case health
     /// Apple Guideline 5.1.2(i) consent gate for the AI Coach. Defaults to ON
     /// with explicit accept-via-Continue. If skipped on a fresh install the
     /// coach bubble never appears, which is the bug this step closes.
@@ -150,6 +156,8 @@ struct OnboardingFlow: View {
             OnboardingSportsScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
         case .sportSeasons:
             OnboardingSportSeasonsScreen(draft: $draft, onNext: { advance() }, onBack: { back() })
+        case .health:
+            OnboardingHealthScreen(onNext: { advance() }, onBack: { back() })
         case .coachConsent:
             OnboardingCoachConsentScreen(onNext: finish, onBack: { back() })
         }
@@ -159,14 +167,19 @@ struct OnboardingFlow: View {
     /// advancing, so a nil `next()` here means a step wired to the wrong
     /// callback, not the end of the flow.
     private func advance() {
-        guard let next = step.next() else { return }
+        guard var next = step.next() else { return }
+        if next == .health && !Self.healthAvailable, let after = next.next() { next = after }
         withAnimation(.easeInOut(duration: 0.22)) { step = next }
     }
 
     private func back() {
-        guard let prev = step.prev() else { return }
+        guard var prev = step.prev() else { return }
+        if prev == .health && !Self.healthAvailable, let before = prev.prev() { prev = before }
         withAnimation(.easeInOut(duration: 0.18)) { step = prev }
     }
+
+    /// iPad has no Health app; the step would offer a sheet that cannot appear.
+    private static let healthAvailable = HKHealthStore.isHealthDataAvailable()
 
     private func finish() {
         // The gate only ever asks sport + season, both of which the user picked

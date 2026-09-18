@@ -281,7 +281,7 @@ final class TapBudgetTests: XCTestCase {
     /// The activation budget: cold launch (no --ui-test-onboarded) → walk the
     /// whole onboarding gate → land in the main tabs with a generated week.
     ///
-    /// Reference: 4 advances (welcome, sports, sportSeasons, coachConsent)
+    /// Reference: 5 advances (welcome, sports, sportSeasons, health, coachConsent)
     /// + 1 sport selection + 1 consent pick = 6. The last step's Continue IS
     /// the commit — there is no separate plan-preview Accept any more, so plan
     /// generation happens behind the dismissal rather than in front of a
@@ -308,6 +308,8 @@ final class TapBudgetTests: XCTestCase {
         tapFirstMatching(&counter, prefix: "onboarding-sport-")     // sports (no default)
         counter.tap("onboarding-continue-sports")
         counter.tap("onboarding-continue-sportSeasons")
+        counter.tap("onboarding-health-off")                      // health (gated, no sheet)
+        counter.tap("onboarding-continue-health")
         // Consent is the second gated step (T0-5): neither option is
         // pre-selected, so Continue stays disabled until the user picks one.
         // Declining keeps the walk offline and costs the same single tap.
@@ -319,7 +321,8 @@ final class TapBudgetTests: XCTestCase {
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 15),
                       "finishing the gate should dismiss onboarding into the main tabs")
 
-        recordTapBudget(counter, reference: 6)
+        // 8 since 2026-09-18: the Health step is one pick + one Continue.
+        recordTapBudget(counter, reference: 8)
     }
 
     // MARK: - 11. Weekly check-in → regenerated plan

@@ -27,6 +27,13 @@ final class OnboardingLandingUITests: XCTestCase {
         sport.tap()
         step(app, "onboarding-continue-sports")
         step(app, "onboarding-continue-sportSeasons")
+        // Health is gated the same way; Not now keeps Apple's sheet out of CI.
+        step(app, "onboarding-health-off")
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "onboarding-health"
+        shot.lifetime = .keepAlways
+        add(shot)
+        step(app, "onboarding-continue-health")
         // Consent is gated (T0-5): pick an option or Continue never enables.
         step(app, "onboarding-consent-off")
         // Last step of the gate — its Continue commits and dismisses.
