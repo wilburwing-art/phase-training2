@@ -45,6 +45,15 @@ final class ImageSlotScalingUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 1.7)
         attach(app, "detail-hero-b")
         done.tap()
+
+        // A row still on a photo (the drills are the last to be drawn), so
+        // the page's non-art layout is in the attachments too.
+        let skip = app.staticTexts["A-Skip Running Drill"].firstMatch
+        XCTAssertTrue(skip.waitForExistence(timeout: 5))
+        skip.tap()
+        XCTAssertTrue(done.waitForExistence(timeout: 5), "photo exercise's detail sheet should open")
+        attach(app, "detail-photo")
+        done.tap()
     }
 
     private func attach(_ app: XCUIApplication, _ name: String) {

@@ -53,9 +53,9 @@ private struct ExerciseDetailContent: View {
     /// for the same reason as `substitutes` — see comment above.
     @State private var adjacency: (easier: Exercise?, harder: Exercise?) = (nil, nil)
 
-    /// `(slug, role, label)` muscle relations feeding the anatomy
-    /// silhouettes. Cached once per pushed instance alongside `substitutes`
-    /// and `adjacency` — see comment above.
+    /// `(slug, role, label)` muscle relations feeding the muscle chip row.
+    /// Cached once per pushed instance alongside `substitutes` and
+    /// `adjacency` — see comment above.
     @State private var muscles: [(slug: String, role: String, label: String)] = []
 
     var body: some View {
@@ -65,7 +65,7 @@ private struct ExerciseDetailContent: View {
                 header
                 metaBadges
                 heroImage
-                anatomySection
+                muscleChips
                 if let desc = exercise.description, !desc.isEmpty {
                     section(title: "Overview") {
                         Text(desc)
@@ -146,64 +146,52 @@ private struct ExerciseDetailContent: View {
         }
     }
 
-    // MARK: - Anatomy
+    // MARK: - Muscles
 
-    /// Pair of front/back silhouettes with this exercise's primary /
-    /// secondary / stabilizer muscles shaded. Sits below the meta-badge row
-    /// and above the hero image; this is supplementary to (not a replacement
-    /// for) the textual cue / instruction sections below. Hidden when the
-    /// exercise has no muscle relations on file (mostly cardio / mobility).
+    /// What the exercise works, as chips under the hero. Replaced the
+    /// front/back anatomy silhouettes on 2026-09-17: the line-art hero
+    /// already carries the accent on the primary group, so the diagram was
+    /// the same fact in a third palette, and the 154 exercises still on
+    /// photos get their muscle information from the same row. Primary
+    /// chips take the accent to match the hero; secondary chips are plain.
+    /// Stabilisers are left out, keeping the 2026-05-25 call that accessory
+    /// groups were noise on this page. Hidden when no muscle rows exist.
     @ViewBuilder
-    private var anatomySection: some View {
-        if !muscles.isEmpty {
-            let highlights = anatomyHighlights(from: muscles)
-            VStack(spacing: 8) {
-                HStack(alignment: .top, spacing: 16) {
-                    BodyAnatomyView(highlights: highlights, side: .front)
-                        .frame(width: 120, height: 220)
-                    BodyAnatomyView(highlights: highlights, side: .back)
-                        .frame(width: 120, height: 220)
-                }
-                .frame(maxWidth: .infinity, alignment: .center)
-                anatomyLegend
+    private var muscleChips: some View {
+        let rows = muscles
+            .filter { $0.role == "primary" || $0.role == "secondary" }
+            .sorted { a, b in
+                if a.role != b.role { return a.role == "primary" }
+                return a.label < b.label
             }
-            .padding(.vertical, 4)
+        if !rows.isEmpty {
+            section(title: "Muscles") {
+                WrappingFlow(spacing: 6) {
+                    ForEach(rows, id: \.slug) { row in
+                        if row.role == "primary" {
+                            primaryChip(row.label)
+                        } else {
+                            badge(row.label)
+                        }
+                    }
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Muscles: " + rows.map {
+                    $0.role == "primary" ? "\($0.label) (primary)" : $0.label
+                }.joined(separator: ", "))
+            }
         }
     }
 
-    private var anatomyLegend: some View {
-        HStack(spacing: 14) {
-            legendDot(color: BodyAnatomyView.HighlightIntensity.primary.color, label: "Primary")
-        }
-        .frame(maxWidth: .infinity, alignment: .center)
-    }
-
-    private func legendDot(color: Color?, label: String) -> some View {
-        HStack(spacing: 5) {
-            Circle()
-                .fill(color ?? Color.ink3)
-                .frame(width: 8, height: 8)
-            Text(label)
-                .styled(.micro)
-                .foregroundStyle(Color.ink3)
-        }
-    }
-
-    /// Collapse the `(slug, role, label)` rows from CoachDatabase into the
-    /// slug → intensity dict BodyAnatomyView consumes. Highest role wins
-    /// when a single slug appears under multiple roles (shouldn't happen
-    /// given the PK, but defensive).
-    private func anatomyHighlights(
-        from muscles: [(slug: String, role: String, label: String)]
-    ) -> [String: BodyAnatomyView.HighlightIntensity] {
-        var map: [String: BodyAnatomyView.HighlightIntensity] = [:]
-        for row in muscles {
-            // Only show primary muscles. Secondary + stabilizer were
-            // accessory-group noise that Wilbur audited out 2026-05-25.
-            guard row.role == "primary" else { continue }
-            map[row.slug] = .primary
-        }
-        return map
+    private func primaryChip(_ label: String) -> some View {
+        Text(label)
+            .styled(.micro)
+            .foregroundStyle(Color.accent)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(Color.accentWash)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+            .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.accentDim, lineWidth: 0.5))
     }
 
     // MARK: - Pieces
