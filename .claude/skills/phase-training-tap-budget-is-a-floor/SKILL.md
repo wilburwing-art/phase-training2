@@ -122,3 +122,14 @@ last step so a nearly-finished draft isn't dropped.
 Build/verify: session defaults may point at a `.claude/worktrees/...` project —
 build the MAIN repo explicitly (`xcodebuild build-for-testing -project
 PhaseTraining.xcodeproj ...`), then `test-without-building -only-testing:...`.
+
+## The reference lives in TWO places (2026-09-18)
+
+Adding the Health step to onboarding: `tap-budget-baseline.json` was
+updated 6 -> 8 and the run still printed `actual=8 reference=6 -> OVER
+budget`. The printed reference is the literal passed to
+`recordTapBudget(counter, reference:)` in `TapBudgetTests.swift`; the JSON
+is the drift baseline the diff script reads. Change both, and add the new
+step's gated pick + Continue to `OnboardingLandingUITests` and the tap
+budget walk, or both tests sit on the new step until they time out.
+
