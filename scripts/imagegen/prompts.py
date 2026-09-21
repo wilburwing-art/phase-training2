@@ -36,6 +36,8 @@ BACKGROUND_WHITE = ("Plain solid pure white background, #FFFFFF everywhere "
 FRAMING_FULL = "Full body in frame, feet and head included, even margin on all four sides."
 FRAMING_LOWER_LEG = ("Lower legs only in frame, from the knees down to the floor; nothing above "
                      "the knee is drawn, even margin on all four sides.")
+FRAMING_FOREARM = ("One forearm and hand only in frame, from the elbow to the fingertips; "
+                   "nothing else of the body is drawn, even margin on all four sides.")
 
 
 def shared_constraints(transparent, framing=FRAMING_FULL):
@@ -74,6 +76,11 @@ _TQ_CHEST = "three-quarter front view, camera at chest height"
 _SIDE_LOWER_LEG = ("direct side view, sagittal plane, camera at knee height, framed from the "
                    "knees down to the floor so the calves, ankles and feet fill the frame; "
                    "nothing above the knee is drawn")
+# Prone scapular work: from the side a T and a W are the same silhouette.
+_TOP_DOWN = "view from directly above, camera looking straight down at the floor"
+# Hand rehab: the whole figure is the wrong scale for a hook fist.
+_FRONT_FOREARM = ("close view of one forearm and hand, palm toward the viewer, framed from "
+                  "the elbow to the fingertips; nothing else of the body is drawn")
 
 CAMERA_BY_PATTERN = {
     # lower body, sagittal
@@ -131,7 +138,47 @@ DEFAULT_CAMERA = _TQ_CHEST
 CAMERA_BY_SLUG = {
     "adductor-ball-squeeze": _SIDE_FLOOR,
     "rider-wall-sit-squeeze": _FRONT_CHEST,
+    # tranche 4 (2026-09-20): floor work whose first pattern is not a floor one
+    "judo-bridge-hip-escape": _SIDE_FLOOR,
+    "plyo-push-up": _SIDE_FLOOR,
+    "plyo-pushup-wrist-prep": _SIDE_FLOOR,
+    "scapular-push-up": _SIDE_FLOOR,
+    # prone scapular letters read only from above
+    "prone-snow-angel": _TOP_DOWN,
+    "prone-t-raise": _TOP_DOWN,
+    "prone-w-raise": _TOP_DOWN,
+    "prone-ytwl-complex": _TOP_DOWN,
+    "tendon-nerve-glide-sequence": _FRONT_FOREARM,
+    # frontal-plane movements filed under a sagittal pattern
+    "deep-water-fall-entry": _FRONT_CHEST,
+    "double-under": _FRONT_CHEST,
+    "double-unders-ski": _FRONT_CHEST,
+    "jump-rope": _FRONT_CHEST,
+    "jumping-jack": _FRONT_CHEST,
+    "parkour-dyno": _FRONT_CHEST,
+    "rope-skip-speed": _FRONT_CHEST,
+    "scapular-wall-slide": _FRONT_CHEST,
+    "skate-edge-lateral-pushes": _FRONT_CHEST,
+    # stances and blocks read from three-quarter, a pack hike from the side
+    "karate-kata-flow": _TQ_CHEST,
+    "krav-maga-360-defense": _TQ_CHEST,
+    "stance-transition-drill": _TQ_CHEST,
+    "casting-practice-drill": _SIDE_CHEST,
+    "weighted-pack-hike": _SIDE_HIP,
+    # Olympic lifts with no movement pattern row
+    "hang-clean": _SIDE_HIP,
+    "push-jerk": _SIDE_HIP,
+    "push-press": _SIDE_HIP,
+    # The model draws an overhead-squat catch and a high pull from the front
+    # whatever the start frame's camera (run 8, twice each); give it the
+    # front for both frames.
+    "deadlift-high-pull-barbell": _FRONT_CHEST,
+    "power-snatch": _FRONT_CHEST,
+    "snatch": _FRONT_CHEST,
+    "sumo-deadlift-high-pull-barbell": _FRONT_CHEST,
 }
+
+FRAMING_BY_CAMERA = {_SIDE_LOWER_LEG: FRAMING_LOWER_LEG, _FRONT_FOREARM: FRAMING_FOREARM}
 
 
 def camera_for(exercise):
@@ -141,7 +188,7 @@ def camera_for(exercise):
 
 
 def framing_for(exercise):
-    return FRAMING_LOWER_LEG if camera_for(exercise) == _SIDE_LOWER_LEG else FRAMING_FULL
+    return FRAMING_BY_CAMERA.get(camera_for(exercise), FRAMING_FULL)
 
 
 def build_start_prompt(exercise, style, transparent=False):

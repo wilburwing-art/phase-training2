@@ -84,7 +84,11 @@ def load_from_db(db_path, limit):
             continue
         kept = [q.strip() for q in r["equipment"].split(",") if q.strip() not in SCENERY]
         r["equipment"] = ", ".join(kept) or "bodyweight only"
-        r["isometric"] = r.pop("contraction_type") == "isometric"
+        # A hold has one frame. Isometric rows are holds; so is any row whose
+        # two positions read the same (a treadmill run, a sled push), which
+        # the authoring marks by repeating the text.
+        r["isometric"] = (r.pop("contraction_type") == "isometric"
+                          or pos["start_position"] == pos["end_position"])
         r["start_position"] = pos["start_position"]
         r["end_position"] = pos["end_position"]
         out.append(r)

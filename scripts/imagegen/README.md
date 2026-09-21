@@ -80,6 +80,11 @@ a neighbour's text (the Barbell Bulgarian Split Squat row describes a goblet
 squat, Dumbbell Front Squat says "set the bar in a front rack"), found while
 authoring tranche 2 on 2026-09-16.
 
+A hold gets one frame. Isometric rows are holds by contraction type; a row
+whose two positions are the same text is a hold too (a treadmill run, a sled
+push, a kata stance), which is how the authoring marks a movement with no
+useful second frame. `promote.py` then writes no `_end` files for it.
+
 ## Scoring
 
 Score the pair, not the individual image. Three buttons:
