@@ -336,8 +336,8 @@
   },
   "dynamic-lock-off": {
     "status": "authored",
-    "start_position": "Chest-to-bar lock-off on a pull-up bar: both hands on the bar shoulder width, palms forward, elbows fully bent and pulled down and back so the bar is at the upper chest, chin above the bar. Legs hanging straight down together, toes pointed.",
-    "end_position": "Same lock-off height with the left arm, elbow fully bent and the bar at the upper chest, while the right hand has released the bar and is reaching down to re-catch it lower: right arm straight, hand open just below the bar. Chin still above bar height, legs still hanging straight. Only the right arm has moved."
+    "start_position": "Chest-to-bar lock-off on a pull-up bar, viewed from the front: both hands on the bar shoulder width, palms forward, elbows fully bent and pulled down so the bar is at the upper chest, chin above the bar, legs hanging straight down together, toes pointed.",
+    "end_position": "Same lock-off height held on the left arm, its elbow fully bent with the bar at the upper chest, while the right hand has released the bar and reaches straight down beside the body, the right arm straight with the hand open well below the bar. Chin still above the bar, legs still, torso hanging from the left hand."
   },
   "eccentric-squat-ski": {
     "status": "authored",
@@ -506,8 +506,8 @@
   },
   "rider-wall-sit-squeeze": {
     "status": "authored",
-    "start_position": "Wall sit: back flat against a wall, hips and knees both bent to 90 degrees so the thighs are parallel to the floor and the shins vertical, feet flat hip width apart. A medicine ball the size of a soccer ball held between the knees with the inner knees pressing into it. Arms hanging at the sides or resting on the thighs, head against the wall, eyes forward.",
-    "end_position": "Wall sit: back flat against a wall, hips and knees both bent to 90 degrees so the thighs are parallel to the floor and the shins vertical, feet flat hip width apart. A medicine ball the size of a soccer ball held between the knees with the inner knees pressing into it. Arms hanging at the sides or resting on the thighs, head against the wall, eyes forward."
+    "start_position": "Wall sit with a ball squeeze against a tall wall drawn as one straight vertical line. A medicine ball the size of a soccer ball is clamped between the knees and clearly visible, the knees held apart by the width of the ball and pressing inward on it. The whole back, the shoulders and the head flat against the wall, hips and knees both bent to exactly 90 degrees so the thighs are parallel to the floor and the shins vertical, feet flat and a ball's width apart. Arms hanging at the sides with the hands beside the hips, eyes forward. A seated shape against the wall with the ball between the knees.",
+    "end_position": "Wall sit with a ball squeeze against a tall wall drawn as one straight vertical line. A medicine ball the size of a soccer ball is clamped between the knees and clearly visible, the knees held apart by the width of the ball and pressing inward on it. The whole back, the shoulders and the head flat against the wall, hips and knees both bent to exactly 90 degrees so the thighs are parallel to the floor and the shins vertical, feet flat and a ball's width apart. Arms hanging at the sides with the hands beside the hips, eyes forward. A seated shape against the wall with the ball between the knees."
   },
   "ring-dip": {
     "status": "authored",
@@ -726,7 +726,7 @@
   },
   "barbell-glute-bridge": {
     "status": "authored",
-    "start_position": "Lying on the back on the floor, knees bent to about 90 degrees with the feet flat hip width apart. A barbell resting across the crease of the hips, held steady with both hands on the bar either side of the hips. Hips down on the floor, head down, chin tucked.",
+    "start_position": "Set-up on the floor, nothing lifted yet: lying flat on the back with the hips and the lower back resting on the floor, knees bent to about 90 degrees with the feet flat hip width apart, a barbell resting across the crease of the hips at floor level with both hands steadying it either side. Head down, chin tucked, hips resting on the floor.",
     "end_position": "Hips driven up so the torso and thighs form one straight line from the shoulders to the knees, shins vertical, weight through the heels, glutes squeezed, the barbell lifted on the hips. Shoulders and head still on the floor, ribs down."
   },
   "board-pop-up-foam": {
@@ -796,8 +796,8 @@
   },
   "bicycle-crunch": {
     "status": "authored",
-    "start_position": "Lying on the back on the floor, fingertips at the temples with the elbows out wide, shoulders lifted a few inches off the floor. Right knee pulled in toward the chest with the thigh vertical, left leg extended straight and held a few inches above the floor, toes pointed.",
-    "end_position": "Torso rotated so the left elbow reaches across to touch the right knee, the right knee still pulled in and the left leg still extended above the floor, shoulders lifted, hands at the temples. The rotation is the only change."
+    "start_position": "Bicycle crunch on a mat, Viewed from directly above. Face-up with the fingertips at the temples and the elbows out wide, shoulders raised a little off the mat. Right knee bent and drawn up over the belly, left leg extended straight and held just above the mat, toes pointed.",
+    "end_position": "Torso turned so the left elbow reaches across to touch the right knee, the right knee still drawn up, the left leg still extended straight just above the mat, shoulders raised, hands at the temples. Viewed from directly above. The turn of the torso is the only change."
   },
   "cable-crossover": {
     "status": "authored",
@@ -916,8 +916,8 @@
   },
   "cable-twist": {
     "status": "authored",
-    "start_position": "Standing side-on with a cable column at chest height to the figure's left, feet wider than the shoulders, knees slightly bent. Both hands gripping the handle with the arms extended straight out in front of the chest toward the column, torso rotated slightly toward it, cable taut.",
-    "end_position": "Torso rotated 90 degrees away from the column to the right, arms still straight and extended in front of the chest so the handle has swept across in an arc, hips turned with the torso and the left heel pivoted up, cable stretched taut. Feet in the same stance."
+    "start_position": "Standing facing the viewer, a cable column at chest height at the right edge of the frame, feet wider than the shoulders, knees slightly bent. Both hands gripping a single handle with the arms extended straight toward the column at chest height, torso turned toward the column, cable taut.",
+    "end_position": "Torso rotated through 90 degrees away from the column so the straight arms now point out to the left side of the frame, the handle swept across the body in an arc with the cable stretched taut from the column across the chest, hips turned with the torso, the right heel pivoted up. Feet in the same stance."
   },
   "chest-press-band": {
     "status": "authored",
@@ -946,8 +946,8 @@
   },
   "cross-body-crunch": {
     "status": "authored",
-    "start_position": "Lying on the back on the floor, both knees bent with the feet flat, fingertips at the temples with the elbows out wide, head and shoulders resting on the floor.",
-    "end_position": "Crunched up and across: the shoulders lifted off the floor and the torso rotated so the right elbow reaches toward the left knee, which is pulled up toward the chest with the thigh vertical, the right foot still flat on the floor. Hands at the temples."
+    "start_position": "Crunch on a mat, Viewed from directly above. Face-up on the mat with both knees bent and the feet flat, fingertips at the temples with the elbows out wide, shoulders resting on the mat, eyes up.",
+    "end_position": "Crunched up and across: the shoulders raised off the mat and the torso turned so the right elbow reaches across to touch the raised left knee, the left knee bent and brought up over the belly, the right foot still flat on the mat, hands at the temples. Viewed from directly above."
   },
   "close-grip-bench-press": {
     "status": "authored",
@@ -1266,8 +1266,8 @@
   },
   "external-rotation": {
     "status": "authored",
-    "start_position": "Standing tall, feet hip width, knees straight but not locked, spine neutral, eyes forward. A light band anchored at elbow height to the figure's left, the right hand holding the band end in front of the belly with the right elbow pinned against the right side and bent to 90 degrees, forearm pointing forward across the body, band taut.",
-    "end_position": "The right forearm rotated outward to the right through about 60 degrees, hand now pointing out to the right side, elbow still pinned against the ribs and still bent to 90 degrees, band stretched taut across the body. Only the forearm has rotated."
+    "start_position": "Standing facing the viewer, feet hip width, knees soft. A resistance band anchored at elbow height at the right edge of the frame; the hand nearer the viewer's left holds the band end in front of the belly with that elbow pinned against the ribs and bent to 90 degrees, the forearm across the body, the band running across the belly to the anchor.",
+    "end_position": "That forearm rotated outward through about 60 degrees so the hand is now out beside the hip on the viewer's left, pointing away from the anchor, elbow still pinned at the ribs and still bent to 90 degrees, band stretched taut across the belly to the anchor. Only the forearm has rotated."
   },
   "ez-bar-curl": {
     "status": "authored",
@@ -1697,7 +1697,7 @@
   "oblique-crunch": {
     "status": "authored",
     "start_position": "Lying on the back on the floor with both knees bent and dropped over to the left side so the legs rest on the floor stacked, shoulders flat on the floor, fingertips at the temples with the elbows out wide.",
-    "end_position": "The upper torso curled straight up so the shoulder blades are a few inches off the floor, chin toward the chest, hands at the temples, knees still dropped to the left and resting on the floor. Only the upper spine has curled."
+    "end_position": "The upper torso curled up and across so the shoulders are well off the floor and the trunk is at about 30 degrees to the floor, chin toward the chest, elbows still wide with the hands at the temples, knees still dropped to the left and resting on the floor. Only the upper body has curled."
   },
   "oly-split-jerk-position": {
     "status": "authored",
@@ -1866,8 +1866,8 @@
   },
   "russian-twist": {
     "status": "authored",
-    "start_position": "Seated on the floor with the knees bent and the feet lifted just off the ground, torso leaned back to about 45 degrees with a straight back, both hands together holding a medicine ball in front of the chest, torso rotated to the left so the ball is beside the left hip.",
-    "end_position": "Torso rotated to the right so the ball is now beside the right hip, hands still together on the ball, lean and leg position unchanged, feet still off the floor. Only the trunk has rotated."
+    "start_position": "Russian twist, Viewed from directly above. Seated on a mat with the knees bent and the feet held just off the floor, torso leaned back with a straight back, both hands together holding a medicine ball with the arms extended and swung to the left so the ball is out beside the left hip, head turned toward the ball.",
+    "end_position": "Torso rotated to the right so the arms and the ball are now out beside the right hip, hands still together on the ball, legs unchanged with the feet off the floor, head turned toward the ball. Viewed from directly above. Only the trunk has rotated."
   },
   "sab-push-up-stability": {
     "status": "authored",
@@ -2532,7 +2532,7 @@
   "jumping-switch-lunge-tkd": {
     "status": "authored",
     "start_position": "Split-stance lunge with the right foot forward: right knee bent to 90 degrees over the right foot, left knee lowered to just above the floor behind, left heel up, torso upright, arms bent at the sides.",
-    "end_position": "Landed in the opposite lunge after switching in the air: left foot now forward with the left knee bent to 90 degrees over the left foot, right knee lowered to just above the floor behind, right heel up, torso upright, arms bent at the sides."
+    "end_position": "Mid-air at the top of the switch: both feet off the floor with the legs scissoring past each other, knees bent, the left leg swinging forward and the right leg swinging back, torso upright and tall, arms bent at the sides driving up. Neither foot touching the floor."
   },
   "karate-kata-flow": {
     "status": "authored",
@@ -2863,5 +2863,15 @@
     "status": "authored",
     "start_position": "Mid-stride uphill on a slope rising to the viewer's right: torso leaning forward into the slope, right foot planted flat ahead on the higher ground with the knee bent, left leg behind with the heel lifting, arms swinging opposite to the legs. A large full backpack on the back with both shoulder straps and a hip belt drawn, torso leaning into the slope under the load, hands holding the shoulder straps at the chest.",
     "end_position": "Mid-stride uphill on a slope rising to the viewer's right: torso leaning forward into the slope, right foot planted flat ahead on the higher ground with the knee bent, left leg behind with the heel lifting, arms swinging opposite to the legs. A large full backpack on the back with both shoulder straps and a hip belt drawn, torso leaning into the slope under the load, hands holding the shoulder straps at the chest."
+  },
+  "dog-line-running-drill": {
+    "status": "authored",
+    "start_position": "Canicross running to the viewer's right: the runner mid-stride with the torso leaning slightly forward, right knee driven up, left leg extended behind, arms bent and swinging, a wide padded belt around the runner's waist. A single medium-sized dog in a pulling harness running ahead of the runner at the right side of the frame, and a taut bungee line drawn as one straight line from the dog's harness back to the front of the runner's belt. One human and one dog.",
+    "end_position": "Canicross running to the viewer's right: the runner mid-stride with the torso leaning slightly forward, right knee driven up, left leg extended behind, arms bent and swinging, a wide padded belt around the runner's waist. A single medium-sized dog in a pulling harness running ahead of the runner at the right side of the frame, and a taut bungee line drawn as one straight line from the dog's harness back to the front of the runner's belt. One human and one dog."
+  },
+  "dog-pull-harness-walk": {
+    "status": "authored",
+    "start_position": "Walking to the viewer's right, mid-stride with the torso upright and leaning slightly back against a pull, right heel just touching down ahead, left foot pushing off behind, arms relaxed, a wide padded belt around the walker's waist. A single medium-sized dog in a pulling harness walking ahead at the right side of the frame, a taut leash drawn as one straight line from the dog's harness back to the front of the belt. One human and one dog.",
+    "end_position": "Walking to the viewer's right, mid-stride with the torso upright and leaning slightly back against a pull, right heel just touching down ahead, left foot pushing off behind, arms relaxed, a wide padded belt around the walker's waist. A single medium-sized dog in a pulling harness walking ahead at the right side of the frame, a taut leash drawn as one straight line from the dog's harness back to the front of the belt. One human and one dog."
   }
 }

@@ -71,6 +71,7 @@ _SIDE_CHEST = "direct side view, sagittal plane, camera at chest height"
 _SIDE_FLOOR = "direct side view, sagittal plane, camera at floor height"
 _FRONT_CHEST = "direct front view, frontal plane, camera at chest height"
 _TQ_CHEST = "three-quarter front view, camera at chest height"
+_TQ_HIP = "three-quarter front view, camera at hip height"
 # Ankle work: at full-body scale a heel-up and a heel-down frame are the same
 # picture (run 4 lost three calf raises to that). Frame the lower leg only.
 _SIDE_LOWER_LEG = ("direct side view, sagittal plane, camera at knee height, framed from the "
@@ -137,7 +138,21 @@ DEFAULT_CAMERA = _TQ_CHEST
 # is a figure seen from the feet.
 CAMERA_BY_SLUG = {
     "adductor-ball-squeeze": _SIDE_FLOOR,
-    "rider-wall-sit-squeeze": _FRONT_CHEST,
+    # run 5 drew the wall sit from the front as a standing half-squat with no
+    # wall; the seat and the wall only read from an angle at hip height
+    "rider-wall-sit-squeeze": _TQ_HIP,
+    # run 9 (2026-09-21): demoted pairs re-rolled on the camera that shows the
+    # movement. A twist or a cross-body reach is invisible from the side.
+    "bicycle-crunch": _TOP_DOWN,
+    "cross-body-crunch": _TOP_DOWN,
+    "russian-twist": _TOP_DOWN,
+    "cable-twist": _FRONT_CHEST,
+    "dynamic-lock-off": _FRONT_CHEST,
+    "external-rotation": _FRONT_CHEST,
+    "kitesurf-edge-drop": _FRONT_CHEST,
+    "barbell-glute-bridge": _SIDE_FLOOR,
+    "oblique-crunch": _SIDE_FLOOR,
+    "tibialis-raise": _SIDE_LOWER_LEG,
     # tranche 4 (2026-09-20): floor work whose first pattern is not a floor one
     "judo-bridge-hip-escape": _SIDE_FLOOR,
     "plyo-push-up": _SIDE_FLOOR,
