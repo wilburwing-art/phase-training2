@@ -37,6 +37,11 @@ final class SubscriptionStore: ObservableObject {
     ]
 
     @Published private(set) var products: [Product] = []
+    /// Product id -> whether this Apple ID can still take the product's
+    /// introductory offer. Read at refresh; the paywall shows the trial line
+    /// only when true, so a lapsed subscriber is not promised a second free
+    /// week.
+    @Published private(set) var introOfferEligible: [String: Bool] = [:]
     @Published private(set) var isPro: Bool = false
     @Published var purchaseInFlight: Bool = false
     @Published var lastError: String? = nil
@@ -63,6 +68,12 @@ final class SubscriptionStore: ObservableObject {
         do {
             let fetched = try await Product.products(for: Self.allProductIDs)
             self.products = fetched.sorted { $0.price < $1.price }
+            var eligible: [String: Bool] = [:]
+            for product in fetched {
+                guard let sub = product.subscription, sub.introductoryOffer != nil else { continue }
+                eligible[product.id] = await sub.isEligibleForIntroOffer
+            }
+            self.introOfferEligible = eligible
         } catch {
             self.lastError = "Couldn't load subscription options: \(error.localizedDescription)"
         }
@@ -101,6 +112,67 @@ final class SubscriptionStore: ObservableObject {
         } catch {
             self.lastError = error.localizedDescription
         }
+    }
+
+    // MARK: - Subscription terms (pure, testable)
+
+    /// The facts about one product's terms that the paywall has to state
+    /// before purchase (App Review guideline 3.1.2): the price per period
+    /// and, when the buyer is eligible, the free-trial length. Lifted out of
+    /// StoreKit's `Product` so the wording is unit-testable.
+    struct Terms: Equatable {
+        let displayPrice: String
+        let period: Period
+        /// Free-trial length, nil when there is no trial or the buyer is not
+        /// eligible for it.
+        let freeTrial: Period?
+
+        struct Period: Equatable {
+            enum Unit { case day, week, month, year }
+            let value: Int
+            let unit: Unit
+
+            /// "month", "2 weeks", "year".
+            var phrase: String {
+                let name: String
+                switch unit {
+                case .day: name = "day"
+                case .week: name = "week"
+                case .month: name = "month"
+                case .year: name = "year"
+                }
+                return value == 1 ? name : "\(value) \(name)s"
+            }
+
+            /// "1 week", "2 weeks": the count is always spoken for a trial
+            /// length, where "week free" reads as a typo.
+            var counted: String { value == 1 ? "1 \(phrase)" : phrase }
+        }
+
+        /// "$6.99 / month", or "1 week free, then $6.99 / month".
+        var line: String {
+            let price = "\(displayPrice) / \(period.phrase)"
+            guard let freeTrial else { return price }
+            return "\(freeTrial.counted) free, then \(price)"
+        }
+    }
+
+    nonisolated static func terms(displayPrice: String,
+                      period: Product.SubscriptionPeriod?,
+                      trial: Product.SubscriptionPeriod?,
+                      introEligible: Bool) -> Terms? {
+        guard let period, let p = Terms.Period(period) else { return nil }
+        let t = introEligible ? trial.flatMap(Terms.Period.init) : nil
+        return Terms(displayPrice: displayPrice, period: p, freeTrial: t)
+    }
+
+    func terms(for product: Product) -> Terms? {
+        let sub = product.subscription
+        let intro = sub?.introductoryOffer
+        return Self.terms(displayPrice: product.displayPrice,
+                          period: sub?.subscriptionPeriod,
+                          trial: intro?.paymentMode == .freeTrial ? intro?.period : nil,
+                          introEligible: introOfferEligible[product.id] ?? false)
     }
 
     // MARK: - Entitlement decision (pure, testable)
@@ -159,5 +231,19 @@ final class SubscriptionStore: ObservableObject {
         guard case .verified(let txn) = transactionResult else { return }
         await txn.finish()
         await refreshEntitlement()
+    }
+}
+
+extension SubscriptionStore.Terms.Period {
+    init?(_ period: Product.SubscriptionPeriod) {
+        let unit: Unit
+        switch period.unit {
+        case .day: unit = .day
+        case .week: unit = .week
+        case .month: unit = .month
+        case .year: unit = .year
+        @unknown default: return nil
+        }
+        self.init(value: period.value, unit: unit)
     }
 }

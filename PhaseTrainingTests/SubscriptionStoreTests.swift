@@ -3,6 +3,7 @@
 // this exercises the verified/revoked/expired/foreign-product matrix directly
 // with no live StoreKit, which is where the actual decision lives.
 
+import StoreKit
 import XCTest
 @testable import PhaseTraining
 
@@ -61,5 +62,48 @@ final class SubscriptionStoreTests: XCTestCase {
         let expired = candidate(expires: now.addingTimeInterval(-1))
         let valid = candidate()
         XCTAssertTrue(SubscriptionStore.isEntitled(by: [expired, valid], now: now))
+    }
+}
+
+// MARK: - Subscription terms (guideline 3.1.2 wording)
+
+final class SubscriptionTermsTests: XCTestCase {
+
+    private typealias Period = SubscriptionStore.Terms.Period
+
+    func test_monthly_noTrial_readsPricePerMonth() {
+        let t = SubscriptionStore.Terms(displayPrice: "$6.99", period: Period(value: 1, unit: .month), freeTrial: nil)
+        XCTAssertEqual(t.line, "$6.99 / month")
+    }
+
+    func test_yearly_withTrial_readsTrialThenPrice() {
+        let t = SubscriptionStore.Terms(displayPrice: "$49.99", period: Period(value: 1, unit: .year), freeTrial: Period(value: 1, unit: .week))
+        XCTAssertEqual(t.line, "1 week free, then $49.99 / year")
+    }
+
+    func test_pluralPeriods() {
+        XCTAssertEqual(Period(value: 3, unit: .month).phrase, "3 months")
+        XCTAssertEqual(Period(value: 14, unit: .day).phrase, "14 days")
+    }
+
+    func test_ineligibleBuyer_seesNoTrial() {
+        let t = SubscriptionStore.terms(displayPrice: "$6.99", period: .monthly, trial: .weekly, introEligible: false)
+        XCTAssertEqual(t?.line, "$6.99 / month")
+    }
+
+    func test_eligibleBuyer_seesTrial() {
+        let t = SubscriptionStore.terms(displayPrice: "$6.99", period: .monthly, trial: .weekly, introEligible: true)
+        XCTAssertEqual(t?.line, "1 week free, then $6.99 / month")
+    }
+
+    func test_noPeriod_isNotASubscription() {
+        XCTAssertNil(SubscriptionStore.terms(displayPrice: "$6.99", period: nil, trial: nil, introEligible: true))
+    }
+
+    func test_renewalTerms_nameTheThreeFacts() {
+        let s = PaywallView.renewalTerms
+        XCTAssertTrue(s.contains("Apple ID"))
+        XCTAssertTrue(s.contains("renews automatically"))
+        XCTAssertTrue(s.contains("cancel"))
     }
 }

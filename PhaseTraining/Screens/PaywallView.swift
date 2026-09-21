@@ -126,6 +126,11 @@ struct PaywallView: View {
                     Text(product.displayName)
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(Color.ink)
+                    // Price per period and any trial the buyer is eligible
+                    // for, stated on the button itself (guideline 3.1.2).
+                    Text(subStore.terms(for: product)?.line ?? product.displayPrice)
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.ink2)
                     Text(product.description)
                         .font(.system(size: 12))
                         .foregroundStyle(Color.ink3)
@@ -144,6 +149,15 @@ struct PaywallView: View {
         .disabled(subStore.purchaseInFlight)
         .accessibilityIdentifier("paywall-buy-\(product.id)")
     }
+
+    /// Apple's standard EULA covers the app; the listing's Terms of Use
+    /// field points at the same page.
+    static let termsOfUseURL = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
+
+    /// The renewal statement App Review expects beside the purchase
+    /// buttons: charged to the Apple ID, renews unless cancelled a day
+    /// before the period ends, managed in Settings.
+    static let renewalTerms = "Payment is charged to your Apple ID at confirmation. The subscription renews automatically at the same price and period unless you cancel at least 24 hours before the current period ends. Manage or cancel it in your Apple ID settings."
 
     /// Build instructions belong in a debug build, not in front of a
     /// TestFlight tester who tapped Upgrade.
@@ -191,16 +205,22 @@ struct PaywallView: View {
                 .foregroundStyle(Color.accent)
                 .accessibilityIdentifier("paywall-retry")
             }
-            Text("Auto-renews until cancelled.")
+            Text(Self.renewalTerms)
                 .font(.system(size: 11))
                 .foregroundStyle(Color.ink3)
                 .fixedSize(horizontal: false, vertical: true)
-            Button("Manage subscription") {
-                managingSubscriptions = true
+            HStack(spacing: 14) {
+                Link("Terms of Use", destination: Self.termsOfUseURL)
+                    .accessibilityIdentifier("paywall-terms")
+                Link("Privacy Policy", destination: CoachConsent.privacyPolicyURL)
+                    .accessibilityIdentifier("paywall-privacy")
+                Button("Manage subscription") {
+                    managingSubscriptions = true
+                }
+                .accessibilityIdentifier("paywall-manage")
             }
             .font(.system(size: 11, weight: .medium))
             .foregroundStyle(Color.ink2)
-            .accessibilityIdentifier("paywall-manage")
         }
     }
 }

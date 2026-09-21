@@ -26,5 +26,19 @@ final class PaywallHeroUITests: XCTestCase {
         // The Pro paywall (two-Kettle hero) presents without crashing.
         XCTAssertTrue(app.staticTexts["Phase Training Pro"].waitForExistence(timeout: 5),
                       "paywall should present with its mascot hero")
+
+        // Guideline 3.1.2: the terms a buyer must see before purchase. The
+        // scheme's StoreKit configuration supplies the two products, so the
+        // price-per-period line renders on each button.
+        let monthly = app.buttons["paywall-buy-com.phasetraining.app.pro_monthly"]
+        XCTAssertTrue(monthly.waitForExistence(timeout: 8), "monthly product should load from the StoreKit config")
+        XCTAssertTrue(monthly.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] '/ month'")).firstMatch.exists,
+                      "monthly button should state its price per period")
+        for id in ["paywall-terms", "paywall-privacy", "paywall-manage", "paywall-restore"] {
+            XCTAssertTrue(app.descendants(matching: .any)[id].exists, "\(id) should be on the paywall")
+        }
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "paywall-terms"; shot.lifetime = .keepAlways
+        add(shot)
     }
 }
