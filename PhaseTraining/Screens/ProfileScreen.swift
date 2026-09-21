@@ -22,6 +22,7 @@ import UniformTypeIdentifiers
 struct ProfileScreen: View {
     // `store` + `subStore` are internal (not private) so the RowSummaries
     // extension file can read them.
+    @Environment(\.openURL) private var openURL
     @EnvironmentObject var store: MemoryStore
     @EnvironmentObject private var planStore: PlanStore
     @EnvironmentObject var subStore: SubscriptionStore
@@ -236,6 +237,10 @@ struct ProfileScreen: View {
                                     value: "Backup / Restore",
                                     icon: "externaldrive",
                                     action: { presentingDataEditor = true })
+                        SettingsRow(label: "Privacy Policy",
+                                    value: "What the app reads and sends",
+                                    icon: "hand.raised",
+                                    action: { openURL(CoachConsent.privacyPolicyURL) })
                         #if DEBUG
                         SettingsRow(label: "Regenerate muscle chips",
                                     value: "DEBUG",

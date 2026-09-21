@@ -4,7 +4,7 @@ title: Phase Training — Privacy Policy
 
 # Phase Training — Privacy Policy
 
-_Effective 2026-05-17_
+_Effective 2026-09-21_ (previous version 2026-05-17)
 
 Phase Training is a personal workout-logging iOS app. By default it runs entirely on your device. Optional features that send data to a third party are listed below and require your explicit consent before any transmission.
 
@@ -18,9 +18,13 @@ Workout sessions you record (exercises, sets, weights, reps, RPE, notes, feel ra
 
 ## Apple Health (optional, read-only)
 
-If you grant access, Phase Training reads from Apple Health on your device: recent workouts (activity type, date, duration, and calories) and, with a separate permission, body weight, body-fat percentage, and lean-mass readings. This data is used to gauge your training readiness, to match generated workouts to your real activity, and to offer to log outdoor sessions the app finds (for example a ski day or a climb) so your training week can adjust. It is stored locally alongside the rest of your log and never leaves your device on its own.
+Phase Training asks for Apple Health access once, as a step of the first-run setup, with a "Not now" choice that skips it. If you skip it you can connect later in Profile → Health & Imports, and the app works fully without it. If you grant access, Phase Training reads from Apple Health on your device: recent workouts (activity type, date, duration, and calories) and, with a separate permission, body weight, body-fat percentage, and lean-mass readings. This data is used to gauge your training readiness, to match generated workouts to your real activity, and to offer to log outdoor sessions the app finds (for example a ski day or a climb) so your training week can adjust. It is stored locally alongside the rest of your log and never leaves your device on its own.
 
 Phase Training never writes to Apple Health, and Health data is never used for advertising or shared with data brokers. If you enable the AI Coach below, summaries of your logged activity, which can include sessions you confirmed from Health, may be part of the coach's context; nothing is sent unless the AI Coach is on. You can revoke Health access at any time in iOS Settings → Health → Data Access & Devices.
+
+## Apple Music (optional, transport controls only)
+
+The Log screen can show the track Apple Music is playing, with pause and skip, so you can change songs without leaving the app. Showing that card needs iOS's media-library permission. When music is playing and permission has not been given, the Log screen offers a "Show controls" button; the permission prompt appears only if you tap it, and if you decline, the card stays hidden. Phase Training only reads the currently playing item's title, artist and artwork while the Log screen is open. It never reads your library, playlists or listening history, never changes your library, never starts playback on its own, and stores nothing about what you played. Nothing from Apple Music is included in the AI Coach's context. You can revoke access at any time in iOS Settings → Privacy & Security → Media & Apple Music.
 
 ## AI Coach (optional, off by default)
 
@@ -41,8 +45,16 @@ Anthropic's processing is governed by their [Commercial Terms](https://www.anthr
 
 ## Third parties
 
-Phase Training contains no analytics, advertising, or tracking SDKs. The only third-party network destination is the AI Coach's gateway, and only when you've toggled the AI Coach on.
+Phase Training contains no analytics, advertising, or tracking SDKs. The only third-party network destination is the AI Coach's gateway, and only when you've toggled the AI Coach on. Exercise images and the exercise catalogue ship inside the app; nothing is fetched to display them.
+
+## Subscriptions
+
+Phase Training Pro is an auto-renewing subscription sold through Apple. Purchases are handled by the App Store; Phase Training never sees your payment details, and receives from Apple only whether a subscription is active. Manage or cancel it in your Apple ID subscription settings.
+
+## Changes
+
+This page is updated when the app asks for a new permission or sends data somewhere new. The effective date at the top changes with it.
 
 ## Contact
 
-Questions or concerns: open an issue on the [GitHub repository](https://github.com/wilburwing-art/phase-training2).
+Questions or concerns: open an issue on the [GitHub repository](https://github.com/wilburwing-art/phase-training2) or email wilburwing@gmail.com.
