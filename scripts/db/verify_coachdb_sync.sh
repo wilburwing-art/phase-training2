@@ -63,4 +63,29 @@ if [ "$committed_digest" != "$rebuilt_digest" ]; then
     exit 1
 fi
 
-echo "coach.db is in sync with db/source ✓ (compared logical content)"
+# The image folder ships whole (a folder reference in Project.yml), so a file
+# for an exercise that has left the catalogue rides along in every build
+# unseen: 181 photo-era thumbnails, 2 MB, found in the 2026-09-21 audit. Every
+# file must belong to a catalogue id, and every `generated` row must have its
+# thumbnail and hero.
+python3 - <<'PY'
+import sqlite3, sys
+from pathlib import Path
+d = Path("PhaseTraining/Resources/ExerciseImages")
+con = sqlite3.connect("file:PhaseTraining/Resources/coach.db?mode=ro", uri=True)
+rows = con.execute("select id, slug, image_source from exercises").fetchall()
+ids = {r[0] for r in rows}
+files = {p.name for p in d.iterdir() if p.suffix == ".webp"}
+orphans = sorted(f for f in files if int(f.split("_")[0].split(".")[0]) not in ids)
+missing = sorted(f"{slug} ({f})" for i, slug, src in rows if src == "generated"
+                 for f in (f"{i}.webp", f"{i}_hero.webp") if f not in files)
+if orphans:
+    print(f"::error::{len(orphans)} files in ExerciseImages belong to no catalogue row: "
+          f"{', '.join(orphans[:6])}{'...' if len(orphans) > 6 else ''}", file=sys.stderr)
+if missing:
+    print(f"::error::{len(missing)} generated rows lack a thumbnail or hero: "
+          f"{', '.join(missing[:6])}{'...' if len(missing) > 6 else ''}", file=sys.stderr)
+sys.exit(1 if orphans or missing else 0)
+PY
+
+echo "coach.db is in sync with db/source ✓ (compared logical content); ExerciseImages matches the catalogue ✓"
