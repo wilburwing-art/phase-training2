@@ -20,7 +20,7 @@
         {
           "adHocOffers" : [],
           "codeOffers" : [],
-          "displayPrice" : "6.99",
+          "displayPrice" : "2.99",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "ECA35825-C25A-4742-B121-C771D03F2DD4",
@@ -31,7 +31,7 @@
           },
           "localizations" : [
             {
-              "description" : "Plan your primary sport around a second one, plus the AI coach.",
+              "description" : "Two-sport planning and the AI coach",
               "displayName" : "Pro Monthly",
               "locale" : "en_US"
             }
@@ -45,7 +45,7 @@
         {
           "adHocOffers" : [],
           "codeOffers" : [],
-          "displayPrice" : "49.99",
+          "displayPrice" : "24.99",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "ECA35825-C25A-4742-B121-C771D03F2DD5",
@@ -56,7 +56,7 @@
           },
           "localizations" : [
             {
-              "description" : "Plan your primary sport around a second one, plus the AI coach. Best value.",
+              "description" : "Two-sport planning, AI coach, best value",
               "displayName" : "Pro Annual",
               "locale" : "en_US"
             }
