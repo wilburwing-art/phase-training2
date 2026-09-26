@@ -114,6 +114,11 @@ struct GeneratedWorkout: Codable, Hashable {
     /// non-lift generations (bodyweight/outOfTown templates, hardcoded
     /// templates) and for plans saved before this field existed.
     var focus: WorkoutFocus? = nil
+    /// The coach.db routine an authored session was served from
+    /// (`AuthoredRoutine.workout`); nil for season-engine and custom sessions.
+    /// Lets DayOutcome and SpineAggregates count per spine. Older plans decode
+    /// with nil.
+    var authoredRoutineId: Int? = nil
 }
 
 /// Why this exercise ended up in the workout. Default is `.recipe` — the

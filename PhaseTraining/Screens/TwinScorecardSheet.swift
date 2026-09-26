@@ -44,6 +44,21 @@ struct TwinScorecardSheet: View {
                         }
                     }
                 }
+                let spines = SpineAggregates.make(outcomes: planStore.dayOutcomes)
+                if !spines.isEmpty {
+                    Section("Spines (upload schema, on device only)") {
+                        ForEach(spines) { a in
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(CoachDatabase.shared.authoredRoutineMeta(id: a.routineId)?.name ?? "Routine \(a.routineId)")
+                                Text(String(format: "%d sessions · %.0f%% as planned · first drop at %@ · %d swaps",
+                                            a.sessions, a.completionRate * 100,
+                                            a.medianFirstDropPosition.map { String(format: "#%.0f", $0 + 1) } ?? "none",
+                                            a.substitutions.reduce(0) { $0 + $1.count }))
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
                 if !sig.zeroResultQueries28d.isEmpty {
                     Section("Searches that found nothing (catalog gaps)") {
                         ForEach(sig.zeroResultQueries28d, id: \.self) { Text($0) }

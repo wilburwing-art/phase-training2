@@ -316,7 +316,8 @@ enum AuthoredRoutine {
             estimatedMinutes: estMin,
             provenance: provenance,
             refinedByLLMAt: nil,
-            focus: focus
+            focus: focus,
+            authoredRoutineId: routineId
         )
     }
 

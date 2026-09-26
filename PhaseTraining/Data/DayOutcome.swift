@@ -52,6 +52,11 @@ struct DayOutcome: Codable, Identifiable, Hashable {
     // What the plan said
     var plannedDayKind: DayKind?
     var plannedTitle: String?
+    /// The authored coach.db routine the planner scheduled (the displaced
+    /// original on a switched day), or the routine the user pinned to the day.
+    /// Nil for season-engine and custom sessions, and on outcomes recorded
+    /// before 2026-09-26.
+    var plannedRoutineId: Int? = nil
     /// The planner's own exercises. When the day was switched this is the
     /// DISPLACED original, not the workout the switch put there.
     var plannedExercises: [String]
@@ -100,6 +105,8 @@ extension DayOutcome {
         let plannedList = original?.exercises ?? []
         let plannedKind = displaced?.kind ?? plannedDay?.kind
         let plannedTitle = displaced?.title ?? plannedDay?.title
+        let plannedRoutine: Int? = displaced.map { $0.workout?.authoredRoutineId ?? $0.routineId }
+            ?? (plannedDay?.generatedWorkout?.authoredRoutineId ?? plannedDay?.routineId)
 
         let completed = session.exercises.reduce(0) { total, ex in
             total + ex.sets.filter { $0.done && !$0.isWarmup }.count
@@ -111,6 +118,7 @@ extension DayOutcome {
             kind: .unplanned,
             plannedDayKind: plannedKind,
             plannedTitle: plannedTitle,
+            plannedRoutineId: plannedRoutine,
             plannedExercises: plannedList.map(\.name),
             plannedWorkingSets: plannedList.reduce(0) { $0 + $1.sets },
             plannedMinutes: original?.estimatedMinutes,
