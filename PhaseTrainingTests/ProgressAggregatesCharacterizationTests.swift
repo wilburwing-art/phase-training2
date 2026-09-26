@@ -401,10 +401,11 @@ final class ProgressAggregatesCharacterizationTests: XCTestCase {
         // Date()). The aggregate pins `now` but is otherwise the same call.
         let agg = makeAggregates(sessions: sessions, now: now)
         let direct = MuscleVolume.rows(from: sessions, now: now)
-        // MuscleVolume.rows sorts by volume only (MuscleVolume.swift:89), so
-        // EQUAL-volume rows land in dictionary-iteration order — legacy code
-        // itself isn't call-to-call stable for ties. Normalize ties by slug
-        // before comparing; content and volume ordering are what's pinned.
+        // MuscleVolume.rows breaks volume ties by slug before the limit, so
+        // both sides are deterministic. Build 145's squat merge put Core and
+        // Hamstrings at equal volume on the 8th (last) row, which exposed the
+        // old volume-only sort choosing the survivor by dictionary order.
+        // The tie-stable sort stays as a belt-and-braces normalizer.
         func tieStable(_ rows: [MuscleVolume.Row]) -> [MuscleVolume.Row] {
             rows.sorted { $0.volume == $1.volume ? $0.slug < $1.slug : $0.volume > $1.volume }
         }

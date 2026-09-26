@@ -4,6 +4,9 @@ import SwiftUI
 
 struct CheckInPreviewScreen: View {
     let plan: WeekPlan?
+    /// 3b: per-day chance each planned session happens, from the last 90
+    /// days. Informational only; nothing moves because of it.
+    var likelihoods: [SessionLikelihood] = []
     let onAccept: () -> Void
     let onBack: () -> Void
     /// Escape hatch. Steps 2-5 passed nil, so CheckInScaffold rendered a blank
@@ -28,8 +31,16 @@ struct CheckInPreviewScreen: View {
                     Divider().background(Color.lineSoft)
                     VStack(spacing: 8) {
                         ForEach(plan.days) { day in
-                            DayPreviewRow(day: day, isToday: Calendar.current.isDateInToday(day.date))
+                            DayPreviewRow(day: day, isToday: Calendar.current.isDateInToday(day.date),
+                                          likelihood: likelihood(for: day))
                         }
+                    }
+                    if plan.days.contains(where: { likelihood(for: $0) != nil }) {
+                        Text("The percentages show how often sessions like these happened for you in the last 90 days. A heads-up only; nothing moves on its own.")
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
+                            .padding(.top, 8)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     Text("Tweak any day from the Week tab once accepted.")
                         .font(.monoXS)
@@ -43,6 +54,16 @@ struct CheckInPreviewScreen: View {
                     .frame(maxWidth: .infinity)
                     .padding(.top, 40)
             }
+        }
+    }
+
+    /// Shown only once there is enough history to mean something; with a
+    /// handful of days every row would read the prior.
+    static let minSamplesToShow = 6
+
+    private func likelihood(for day: DayPlan) -> SessionLikelihood? {
+        likelihoods.first {
+            Calendar.current.isDate($0.date, inSameDayAs: day.date) && $0.samples >= Self.minSamplesToShow
         }
     }
 
@@ -73,6 +94,7 @@ struct CheckInPreviewScreen: View {
 private struct DayPreviewRow: View {
     let day: DayPlan
     let isToday: Bool
+    var likelihood: SessionLikelihood? = nil
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
@@ -86,6 +108,12 @@ private struct DayPreviewRow: View {
                 .foregroundStyle(Color.ink)
                 .lineLimit(1)
             Spacer(minLength: 0)
+            if let likelihood {
+                Text(verbatim: "\(likelihood.percent)%")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+                    .accessibilityLabel("About \(likelihood.percent) percent likely to happen")
+            }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)

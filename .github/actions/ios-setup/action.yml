@@ -1,0 +1,48 @@
+name: iOS setup
+description: >
+  Shared setup for the test workflow's jobs: repo guards, xcodegen, the empty
+  CoachSecrets.swift, project generation, and a booted-simulator pick.
+outputs:
+  udid:
+    description: UDID of the first available iPhone simulator
+    value: ${{ steps.sim.outputs.udid }}
+runs:
+  using: composite
+  steps:
+    - name: Show Xcode version
+      shell: bash
+      run: xcodebuild -version
+
+    - name: coach.db in sync with db/source (N1 drift guard)
+      shell: bash
+      run: bash scripts/db/verify_coachdb_sync.sh
+
+    - name: No raw Font.custom outside the token table
+      shell: bash
+      run: bash scripts/quality/verify_font_tokens.sh
+
+    - name: Install xcodegen + xcbeautify
+      shell: bash
+      run: brew install xcodegen xcbeautify
+
+    - name: Generate CoachSecrets.swift (empty token, tests don't hit the gateway)
+      shell: bash
+      run: ./scripts/generate-coach-secrets.sh
+
+    - name: Generate project
+      shell: bash
+      run: xcodegen generate
+
+    - name: Pick a simulator
+      id: sim
+      shell: bash
+      run: |
+        UDID=$(xcrun simctl list devices available --json \
+          | jq -r '[.devices | to_entries[] | .value[] | select(.name | test("iPhone")) | .udid] | first')
+        if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
+          echo "No iPhone simulator available. Listing all devices:" >&2
+          xcrun simctl list devices available >&2
+          exit 1
+        fi
+        echo "Using simulator UDID: $UDID"
+        echo "udid=$UDID" >> "$GITHUB_OUTPUT"

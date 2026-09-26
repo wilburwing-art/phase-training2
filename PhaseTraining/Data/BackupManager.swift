@@ -54,6 +54,10 @@ struct BackupEnvelope: Codable {
     var abandonedWorkouts: [AbandonedWorkoutEntry] = []
     /// A2 — `pt_day_outcomes` — planned-vs-actual per saved session.
     var dayOutcomes: [DayOutcome] = []
+    /// 3c — `pt_session_places` — coarse session-start points. In the backup
+    /// because the user carries it to a new phone; the file only leaves the
+    /// device when the user shares it.
+    var sessionPlaces: [SessionPlacePoint] = []
     /// `pt_past_plans` — 12 weeks of plan snapshots. The coach's multi-week
     /// pattern summary and the Week tab's "use last week's shape" read it.
     var pastPlans: [WeekPlanSnapshot] = []
@@ -74,6 +78,10 @@ struct BackupEnvelope: Codable {
     var importedWorkouts: [ImportedWorkout] = []
     /// `imported_sets` rows — thousands, spanning years.
     var importedSets: [ImportedSet] = []
+    /// Build 145 — `pt_physiology_nights`, nightly HRV / resting HR / sleep
+    /// summaries from Apple Health. The capture switch itself is not carried:
+    /// the Health grant is per device, so a new phone asks again on tap.
+    var physiologyNights: [PhysiologyNight] = []
 
     /// True when the embedded memory predates the app's current
     /// TrainingMemory schema — fields added since were decoded as defaults,
@@ -108,6 +116,7 @@ struct BackupEnvelope: Codable {
         missedWorkouts = try c.decodeIfPresent([MissedWorkoutEntry].self, forKey: .missedWorkouts) ?? []
         abandonedWorkouts = try c.decodeIfPresent([AbandonedWorkoutEntry].self, forKey: .abandonedWorkouts) ?? []
         dayOutcomes = try c.decodeIfPresent([DayOutcome].self, forKey: .dayOutcomes) ?? []
+        sessionPlaces = try c.decodeIfPresent([SessionPlacePoint].self, forKey: .sessionPlaces) ?? []
         pastPlans = try c.decodeIfPresent([WeekPlanSnapshot].self, forKey: .pastPlans) ?? []
         planOverrides = try c.decodeIfPresent([WeeklyPlanOverride].self, forKey: .planOverrides) ?? []
         pendingPlan = try c.decodeIfPresent(WeekPlan.self, forKey: .pendingPlan)
@@ -116,6 +125,7 @@ struct BackupEnvelope: Codable {
         recentPicks = try c.decodeIfPresent([String: Date].self, forKey: .recentPicks) ?? [:]
         importedWorkouts = try c.decodeIfPresent([ImportedWorkout].self, forKey: .importedWorkouts) ?? []
         importedSets = try c.decodeIfPresent([ImportedSet].self, forKey: .importedSets) ?? []
+        physiologyNights = try c.decodeIfPresent([PhysiologyNight].self, forKey: .physiologyNights) ?? []
     }
 
     /// Memberwise init, restored because declaring `init(from:)` suppresses it.
@@ -133,6 +143,7 @@ struct BackupEnvelope: Codable {
          missedWorkouts: [MissedWorkoutEntry] = [],
          abandonedWorkouts: [AbandonedWorkoutEntry] = [],
          dayOutcomes: [DayOutcome] = [],
+         sessionPlaces: [SessionPlacePoint] = [],
          pastPlans: [WeekPlanSnapshot] = [],
          planOverrides: [WeeklyPlanOverride] = [],
          pendingPlan: WeekPlan? = nil,
@@ -140,7 +151,8 @@ struct BackupEnvelope: Codable {
          lastDeloadWeekStart: Double? = nil,
          recentPicks: [String: Date] = [:],
          importedWorkouts: [ImportedWorkout] = [],
-         importedSets: [ImportedSet] = []) {
+         importedSets: [ImportedSet] = [],
+         physiologyNights: [PhysiologyNight] = []) {
         self.schemaVersion = schemaVersion
         self.memorySchemaVersion = memorySchemaVersion
         self.exportedAt = exportedAt
@@ -155,6 +167,7 @@ struct BackupEnvelope: Codable {
         self.missedWorkouts = missedWorkouts
         self.abandonedWorkouts = abandonedWorkouts
         self.dayOutcomes = dayOutcomes
+        self.sessionPlaces = sessionPlaces
         self.pastPlans = pastPlans
         self.planOverrides = planOverrides
         self.pendingPlan = pendingPlan
@@ -163,6 +176,7 @@ struct BackupEnvelope: Codable {
         self.recentPicks = recentPicks
         self.importedWorkouts = importedWorkouts
         self.importedSets = importedSets
+        self.physiologyNights = physiologyNights
     }
 }
 
@@ -226,12 +240,14 @@ enum BackupManager {
         let missedWorkouts: [MissedWorkoutEntry] = decodeIfPresent(defaults: defaults, key: "pt_missed_workouts") ?? []
         let abandonedWorkouts: [AbandonedWorkoutEntry] = decodeIfPresent(defaults: defaults, key: "pt_abandoned_workouts") ?? []
         let dayOutcomes: [DayOutcome] = decodeIfPresent(defaults: defaults, key: "pt_day_outcomes") ?? []
+        let sessionPlaces: [SessionPlacePoint] = decodeIfPresent(defaults: defaults, key: PlanStore.sessionPlacesKey) ?? []
         let pastPlans: [WeekPlanSnapshot] = decodeIfPresent(defaults: defaults, key: PlanStore.pastPlansKey) ?? []
         let planOverrides: [WeeklyPlanOverride] = decodeIfPresent(defaults: defaults, key: PlanStore.planOverridesKey) ?? []
         let pendingPlan: WeekPlan? = decodeIfPresent(defaults: defaults, key: PlanStore.pendingPlanKey)
         let pendingOverrides: WeekOverrides? = decodeIfPresent(defaults: defaults, key: PlanStore.pendingOverridesKey)
         let lastDeload = defaults.object(forKey: PlanStore.lastDeloadWeekKey) as? Double
         let recentPicks: [String: Date] = decodeIfPresent(defaults: defaults, key: "pt_recent_exercise_picks") ?? [:]
+        let physiologyNights: [PhysiologyNight] = decodeIfPresent(defaults: defaults, key: PhysiologyStore.nightsKey) ?? []
         return BackupEnvelope(
             memorySchemaVersion: memory?.schemaVersion,
             exportedAt: exportedAt,
@@ -246,6 +262,7 @@ enum BackupManager {
             missedWorkouts: missedWorkouts,
             abandonedWorkouts: abandonedWorkouts,
             dayOutcomes: dayOutcomes,
+            sessionPlaces: sessionPlaces,
             pastPlans: pastPlans,
             planOverrides: planOverrides,
             pendingPlan: pendingPlan,
@@ -253,7 +270,8 @@ enum BackupManager {
             lastDeloadWeekStart: lastDeload,
             recentPicks: recentPicks,
             importedWorkouts: userDB.allImportedWorkouts(),
-            importedSets: userDB.allImportedSets()
+            importedSets: userDB.allImportedSets(),
+            physiologyNights: physiologyNights
         )
     }
 
@@ -348,10 +366,11 @@ enum BackupManager {
                            "pt_sessions", "pt_custom_routines",
                            "pt_sport_logs", "pt_missed_workouts",
                            "pt_abandoned_workouts", "pt_day_outcomes",
+                           PlanStore.sessionPlacesKey,
                            PlanStore.pastPlansKey, PlanStore.planOverridesKey,
                            PlanStore.pendingPlanKey, PlanStore.pendingOverridesKey,
                            PlanStore.lastDeloadWeekKey,
-                           "pt_recent_exercise_picks"]
+                           "pt_recent_exercise_picks", PhysiologyStore.nightsKey]
         var priorValues: [String: Any] = [:]
         for key in touchedKeys { priorValues[key] = defaults.object(forKey: key) }
         do {
@@ -364,6 +383,7 @@ enum BackupManager {
             try encodeAndWrite(envelope.missedWorkouts, defaults: defaults, key: "pt_missed_workouts")
             try encodeAndWrite(envelope.abandonedWorkouts, defaults: defaults, key: "pt_abandoned_workouts")
             try encodeAndWrite(envelope.dayOutcomes, defaults: defaults, key: "pt_day_outcomes")
+            try encodeAndWrite(envelope.sessionPlaces, defaults: defaults, key: PlanStore.sessionPlacesKey)
             try encodeAndWrite(envelope.pastPlans, defaults: defaults, key: PlanStore.pastPlansKey)
             try encodeAndWrite(envelope.planOverrides, defaults: defaults, key: PlanStore.planOverridesKey)
             try encodeAndWrite(envelope.pendingPlan, defaults: defaults, key: PlanStore.pendingPlanKey)
@@ -374,6 +394,7 @@ enum BackupManager {
                 defaults.removeObject(forKey: PlanStore.lastDeloadWeekKey)
             }
             try encodeAndWrite(envelope.recentPicks, defaults: defaults, key: "pt_recent_exercise_picks")
+            try encodeAndWrite(envelope.physiologyNights, defaults: defaults, key: PhysiologyStore.nightsKey)
             // Wipe legacy UserDefaults keys so a stale post-migration import
             // path can never resurrect them. Idempotent.
             defaults.removeObject(forKey: "pt_sessions")

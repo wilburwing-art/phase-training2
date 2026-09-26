@@ -47,8 +47,9 @@ enum StrengthStandards {
             case .squat:
                 // No LEADING SPACE on the bare fragment. " squat" could never
                 // match a name that *begins* with the word — and the shipped
-                // catalog's plain barbell squat is "Squat (Barbell)", so a user
-                // whose program uses it got no Squat row on the card at all.
+                // catalog's plain barbell squat was "Squat (Barbell)" (now an
+                // alias of Barbell Back Squat, and still in logged history), so a
+                // user whose program used it got no Squat row on the card at all.
                 return ["back squat", "barbell squat", "squat"]
             case .deadlift:
                 return ["deadlift"]

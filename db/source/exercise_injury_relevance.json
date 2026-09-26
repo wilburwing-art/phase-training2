@@ -4950,12 +4950,6 @@
     "notes": "Avoid deep squats/lunges, twisting under load, jumping, and open-chain leg extension (Strickland; NY Bone & Joint; sports-injury-physio). Sourced, unreviewed."
   },
   {
-    "exercise_id": 1087,
-    "injury_id": 4,
-    "role": "contraindicated",
-    "notes": "Avoid deep squats/lunges, twisting under load, jumping, and open-chain leg extension (Strickland; NY Bone & Joint; sports-injury-physio). Sourced, unreviewed."
-  },
-  {
     "exercise_id": 1088,
     "injury_id": 4,
     "role": "contraindicated",
@@ -5988,12 +5982,6 @@
     "notes": "Avoid knee flexion beyond ~90 degrees under load and impact while symptomatic; open-chain leg extension raises PF compression (Physiopedia PFPS; Cleveland Clinic). Sourced, unreviewed."
   },
   {
-    "exercise_id": 1087,
-    "injury_id": 6,
-    "role": "contraindicated",
-    "notes": "Avoid knee flexion beyond ~90 degrees under load and impact while symptomatic; open-chain leg extension raises PF compression (Physiopedia PFPS; Cleveland Clinic). Sourced, unreviewed."
-  },
-  {
     "exercise_id": 1089,
     "injury_id": 6,
     "role": "contraindicated",
@@ -6673,12 +6661,6 @@
   },
   {
     "exercise_id": 1086,
-    "injury_id": 7,
-    "role": "contraindicated",
-    "notes": "Patellar cartilage compression: same restrictions as PFPS (Physiopedia PFPS). Sourced, unreviewed."
-  },
-  {
-    "exercise_id": 1087,
     "injury_id": 7,
     "role": "contraindicated",
     "notes": "Patellar cartilage compression: same restrictions as PFPS (Physiopedia PFPS). Sourced, unreviewed."
@@ -7717,12 +7699,6 @@
   },
   {
     "exercise_id": 1086,
-    "injury_id": 8,
-    "role": "contraindicated",
-    "notes": "Posterior effusion: avoid deep loaded knee flexion and impact while swollen. Sourced (mechanism: joint effusion), unreviewed."
-  },
-  {
-    "exercise_id": 1087,
     "injury_id": 8,
     "role": "contraindicated",
     "notes": "Posterior effusion: avoid deep loaded knee flexion and impact while swollen. Sourced (mechanism: joint effusion), unreviewed."
@@ -12990,12 +12966,6 @@
     "notes": "Femoroacetabular impingement: avoid deep loaded hip flexion (deep squat, high step-up, pistol, hanging leg raise). Sourced (mechanism), unreviewed."
   },
   {
-    "exercise_id": 1087,
-    "injury_id": 32,
-    "role": "contraindicated",
-    "notes": "Femoroacetabular impingement: avoid deep loaded hip flexion (deep squat, high step-up, pistol, hanging leg raise). Sourced (mechanism), unreviewed."
-  },
-  {
     "exercise_id": 1088,
     "injury_id": 32,
     "role": "contraindicated",
@@ -13861,12 +13831,6 @@
   },
   {
     "exercise_id": 1086,
-    "injury_id": 33,
-    "role": "contraindicated",
-    "notes": "Piriformis: avoid running and deep loaded hip flexion/rotation while symptomatic. Sourced (mechanism), unreviewed."
-  },
-  {
-    "exercise_id": 1087,
     "injury_id": 33,
     "role": "contraindicated",
     "notes": "Piriformis: avoid running and deep loaded hip flexion/rotation while symptomatic. Sourced (mechanism), unreviewed."

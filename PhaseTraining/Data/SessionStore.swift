@@ -29,6 +29,11 @@ final class SessionStore: ObservableObject {
     /// records the planned-vs-actual DayOutcome from it. Closure wiring keeps
     /// SessionStore plan-agnostic, same as `onAbandonRecorded`.
     var onSessionSaved: ((SavedSession, _ abandoned: Bool) -> Void)?
+    /// 3c capture — fired once when a NEW active session begins (a start time
+    /// not seen before, within the last few minutes), never for autosaves of
+    /// the same session or a session restored on launch. The App layer hangs
+    /// the one-shot coarse location fix off it. Closure wiring, same as above.
+    var onSessionStarted: ((ActiveSession) -> Void)?
     /// Set when a completed workout failed to reach SQLite. Latches until the
     /// user acknowledges — losing a finished session silently is the worst
     /// failure this app has, so it must never be a one-frame condition.
@@ -103,6 +108,8 @@ final class SessionStore: ObservableObject {
     }
 
     func saveActive(_ session: ActiveSession) {
+        let isNewStart = active?.startTime != session.startTime
+            && abs(session.startTime.timeIntervalSinceNow) < 5 * 60
         active = session
         if let data = try? Self.encoder().encode(session) {
             defaults.set(data, forKey: Self.activeKey)
@@ -110,6 +117,7 @@ final class SessionStore: ObservableObject {
         // Reset the "forgot to finish" reminder clock on every mutation.
         // The 30-min trigger fires only if no further activity follows.
         InactivityReminderScheduler.scheduleForActiveSession()
+        if isNewStart { onSessionStarted?(session) }
     }
 
     func clearActive() {

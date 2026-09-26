@@ -35,6 +35,21 @@ struct TwinScorecardSheet: View {
                     row("  that converted", "\(sig.exploreConverted28d)")
                     row("Suggestions applied / dismissed", "\(sig.decisionsApplied) / \(sig.decisionsDismissed)")
                 }
+                // 3c capture clock: coarse session-start points, clustered.
+                let places = PlaceClusterer.cluster(planStore.sessionPlaces)
+                Section("Places (on device only)") {
+                    row("Session-start points", "\(planStore.sessionPlaces.count)")
+                    row("Places clustered", "\(places.count)")
+                    row("Top place visits", places.first.map { "\($0.visitCount)" } ?? "none")
+                }
+                // Build 145 clock: physiology capture (HRV, resting HR, sleep).
+                let phys = PhysiologyCaptureSummary.make(PhysiologyStore().loadNights())
+                Section("Physiology (Apple Health, on device)") {
+                    row("Capture on", PhysiologyStore().isEnabled ? "yes" : "no")
+                    row("Nights captured", "\(phys.nights)")
+                    row("Last night", phys.lastNight.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? "none")
+                    row("  with HRV / RHR / sleep", "\(phys.daysWithHRV) / \(phys.daysWithRestingHR) / \(phys.daysWithSleep)")
+                }
                 Section("Check-in would ask today") {
                     if sig.suggestionsToday.isEmpty { Text("Nothing yet.").foregroundStyle(.secondary) }
                     ForEach(sig.suggestionsToday) { s in
@@ -57,6 +72,36 @@ struct TwinScorecardSheet: View {
                                     .font(.caption).foregroundStyle(.secondary)
                             }
                         }
+                    }
+                }
+                if let plan = planStore.plan {
+                    // 2a: the largest-impact alternative for the current plan, on ReadinessSignal.
+                    let cfNow = Date()
+                    let cf = Counterfactual.evaluate(
+                        plan: plan,
+                        history: GeneratorContext.buildReadinessEvents(
+                            sessions: sessionStore.savedSessions,
+                            importedWorkouts: UserDatabase.shared.recentImportedWorkouts(within: 28),
+                            sportLogs: planStore.sportLogStore?.entries ?? [],
+                            now: cfNow),
+                        savedRoutines: UserDatabase.shared.listRoutines(),
+                        now: cfNow)
+                    Section("Counterfactual (2a)") {
+                        if let top = cf.largestImpact, let sat = cf.sportDay {
+                            Text(Counterfactual.summary(top, sportDay: sat))
+                        } else {
+                            Text(cf.sportDay == nil ? "No sport day ahead in this plan." : "No alternative moves readiness.")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                // 3b: will today happen? One row per clock, per PLAN-next-gen build 145.
+                Section("Will today happen? (3b)") {
+                    if let l = planStore.todaySessionLikelihood() {
+                        row("Today", "\(l.percent)% · \(l.samples) planned days")
+                        ForEach(l.reasons, id: \.self) { Text($0).font(.caption).foregroundStyle(.secondary) }
+                    } else {
+                        Text("No lift or sport session planned today.").foregroundStyle(.secondary)
                     }
                 }
                 if !sig.zeroResultQueries28d.isEmpty {

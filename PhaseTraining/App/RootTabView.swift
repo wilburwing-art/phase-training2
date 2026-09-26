@@ -126,6 +126,15 @@ struct RootTabView: View {
             sessionStore.onSessionSaved = { [weak planStore] saved, abandoned in
                 planStore?.recordOutcome(for: saved, abandoned: abandoned)
             }
+            // 3c capture — one coarse point per session start, kept on device.
+            // Fire-and-forget: starting the workout never waits on it.
+            sessionStore.onSessionStarted = { [weak planStore] session in
+                SessionLocationCapture.shared.captureAtSessionStart(
+                    sessionId: session.startTime.timeIntervalSince1970
+                ) { point in
+                    planStore?.recordSessionPlace(point)
+                }
+            }
             // These injected stores feed derived view state — e.g. the Today
             // missed-workout banner reads `sessionStore` via
             // `pendingMissedWorkouts()` — but none is individually @Published, so

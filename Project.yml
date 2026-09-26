@@ -47,7 +47,7 @@ settings:
     DEVELOPMENT_TEAM: A2Z2RXR65P
     SWIFT_VERSION: "5.9"
     MARKETING_VERSION: "1.1.0"
-    CURRENT_PROJECT_VERSION: "144"
+    CURRENT_PROJECT_VERSION: "145"
     ENABLE_USER_SCRIPT_SANDBOXING: NO
 
 packages:
@@ -115,14 +115,17 @@ targets:
         # Apple App Review rejects generic copy here, so name the actual
         # behavior (read workouts → drive readiness signal → match
         # generated workout difficulty to real activity).
-        NSHealthShareUsageDescription: "PhaseTraining reads recent workout history to gauge your current training readiness, match generated workouts to how active you've actually been, and offer to log outdoor sessions it finds (like a ski day or a climb) so your training week can adjust. With your separate permission, it can also import body weight, body-fat %, and lean-mass readings to populate your training log."
+        NSHealthShareUsageDescription: "PhaseTraining reads recent workout history to gauge your current training readiness, match generated workouts to how active you've actually been, and offer to log outdoor sessions it finds (like a ski day or a climb) so your training week can adjust. With your separate permission, it can also import body weight, body-fat %, and lean-mass readings to populate your training log. Only if you tap Capture recovery data, it also reads nightly heart rate variability, resting heart rate and sleep and keeps a nightly summary on your device, to learn how recovery relates to your training. That recovery data never leaves your device."
         # Required by App Store validation whenever the HealthKit entitlement is
         # present, EVEN THOUGH this app is read-only (requestAuthorization passes
         # toShare: []). Without this key, altool rejects the upload with a 409
         # "Missing purpose string" (killed builds 116 + 117). The string is
         # honest: we never write.
         NSCalendarsFullAccessUsageDescription: "Only when you tap Find travel in the weekly check-in, PhaseTraining reads next week's calendar events on your device to spot trips (hotel stays, flights, multi-day trips away) and mark those days as travel days. Event titles and locations are not stored and never leave your device."
-        NSHealthUpdateUsageDescription: "PhaseTraining does not write to Apple Health — it only reads your workout and body-metric data. iOS requires this permission whenever an app includes HealthKit; PhaseTraining never adds, edits, or deletes anything in Health."
+        # 3c capture (build 145). One coarse fix at session start only,
+        # asked at the first session start; see SessionLocationCapture.swift.
+        NSLocationWhenInUseUsageDescription: "When you start a workout, PhaseTraining takes one approximate location (to about 100 meters) so it can learn the places you train, like your gym or the crag, and later offer the right version of a session there. It never tracks you in the background or while you train, and the location stays on your device."
+        NSHealthUpdateUsageDescription: "PhaseTraining does not write to Apple Health. It only reads your workout, body-metric and recovery data. iOS requires this permission whenever an app includes HealthKit; PhaseTraining never adds, edits, or deletes anything in Health."
         # Log-screen media card (build 133). MPMediaLibrary authorisation is
         # what lets MPMusicPlayerController.systemMusicPlayer report the
         # now-playing item; without this key the request cannot be made.

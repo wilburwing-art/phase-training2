@@ -119,6 +119,8 @@ struct WeeklyCheckInFlow: View {
     @State private var step: WeeklyCheckInStep = .intent
     @State private var draft = WeeklyCheckInDraft()
     @State private var previewPlan: WeekPlan?
+    /// 3b: per-day likelihood for the preview, computed with the plan.
+    @State private var previewLikelihoods: [SessionLikelihood] = []
     /// Computed once on entry so accepting one card does not reshuffle the rest.
     @State private var suggestions: [Suggestion] = []
 
@@ -181,6 +183,7 @@ struct WeeklyCheckInFlow: View {
         case .preview:
             CheckInPreviewScreen(
                 plan: previewPlan,
+                likelihoods: previewLikelihoods,
                 onAccept: accept,
                 onBack: back,
                 onClose: onDismiss
@@ -249,6 +252,10 @@ struct WeeklyCheckInFlow: View {
             // that every PlanStore regen path applies. Thread the real context.
             context: planStore.makeGeneratorContext(memory: memoryStore.memory)
         )
+        previewLikelihoods = previewPlan.map {
+            SessionLikelihoodEngine.week(plan: $0, events: draft.events,
+                                         history: planStore.sessionLikelihoodHistory(), now: Date())
+        } ?? []
         advance()
     }
 

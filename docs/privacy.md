@@ -4,7 +4,7 @@ title: Phase Training — Privacy Policy
 
 # Phase Training — Privacy Policy
 
-_Effective 2026-09-21_ (previous version 2026-05-17)
+_Effective 2026-09-26_ (previous version 2026-09-21)
 
 Phase Training is a personal workout-logging iOS app. By default it runs entirely on your device. Optional features that send data to a third party are listed below and require your explicit consent before any transmission.
 
@@ -22,6 +22,12 @@ Phase Training asks for Apple Health access once, as a step of the first-run set
 
 Phase Training never writes to Apple Health, and Health data is never used for advertising or shared with data brokers. If you enable the AI Coach below, summaries of your logged activity, which can include sessions you confirmed from Health, may be part of the coach's context; nothing is sent unless the AI Coach is on. You can revoke Health access at any time in iOS Settings → Health → Data Access & Devices.
 
+## Apple Health recovery data (optional, separate permission, only when you ask)
+
+Profile → Health & Imports has a "Capture recovery data" button. It asks for its own Apple Health permission, separate from workouts and body metrics, and that permission prompt appears only if you tap it; the app never asks at launch or during setup, and works fully without it. If you grant it, Phase Training reads heart rate variability (HRV), resting heart rate and sleep analysis from Apple Health, on your device, and keeps one short summary per night: the date, the average overnight HRV, the day's resting heart rate, the minutes asleep, and how many readings each came from. It does not keep the raw readings, sleep stage timelines, or which device recorded them. While capture is on, the app refreshes the summaries when you open it, at most once an hour, without asking again. Summaries older than a year are deleted.
+
+In this version the summaries are only stored, so a later version can learn how your recovery relates to your training. They never leave your device: they are not part of the AI Coach's context, even when the coach is on, and are not sent anywhere else. They are included in a backup file only when you export one yourself. "Stop and delete recovery data" on the same screen turns capture off and deletes every stored summary; "Erase all my data" deletes them too. You can revoke the permission itself at any time in iOS Settings → Health → Data Access & Devices.
+
 ## Apple Music (optional, transport controls only)
 
 The Log screen can show the track Apple Music is playing, with pause and skip, so you can change songs without leaving the app. Showing that card needs iOS's media-library permission. When music is playing and permission has not been given, the Log screen offers a "Show controls" button; the permission prompt appears only if you tap it, and if you decline, the card stays hidden. Phase Training only reads the currently playing item's title, artist and artwork while the Log screen is open. It never reads your library, playlists or listening history, never changes your library, never starts playback on its own, and stores nothing about what you played. Nothing from Apple Music is included in the AI Coach's context. You can revoke access at any time in iOS Settings → Privacy & Security → Media & Apple Music.
@@ -31,6 +37,12 @@ The Log screen can show the track Apple Music is playing, with pause and skip, s
 The weekly check-in has a "Find travel in my calendar" button. The calendar permission prompt appears only if you tap it, and the app works fully without it. When you tap it, Phase Training reads the events in your calendars for the week being planned, on your device, to spot trips: hotel or rental stays, flights, and multi-day events away. Each day it finds is added to that week's plan as a day titled "Travel", which you can remove before accepting the week.
 
 Event titles, locations, attendees and notes are not stored, and nothing read from your calendar leaves your device. Only the resulting travel dates are kept, and those carry the generic title "Travel", so no calendar content reaches the AI Coach even when the coach is on. Phase Training never adds, edits or deletes calendar events. You can revoke access at any time in iOS Settings → Privacy & Security → Calendars.
+
+## Location (optional, one approximate point per workout, on device)
+
+The first time you start a workout, iOS asks whether Phase Training may use your location while you are using the app. The app works fully without it, and if you decline you are never asked again and no location is recorded. If you allow it, each time you start a workout Phase Training asks iOS once for an approximate location (accurate to about 100 meters), and stores it rounded to about 100 meters together with the workout's start time and the reported accuracy. It never follows your location during a workout, never uses it in the background, and never sets up geofences.
+
+These points are used on your device to learn the places you train, such as your gym, a crag or a trailhead, by grouping points that fall within about 150 meters of each other, so the app can later offer the version of a session that fits the place. Location is never sent anywhere and is not part of the AI Coach's context, even when the coach is on. It is included in a backup file only when you export one yourself, and "Erase all my data" deletes it. You can revoke access at any time in iOS Settings → Privacy & Security → Location Services.
 
 ## AI Coach (optional, off by default)
 
@@ -45,7 +57,7 @@ If you enable the AI Coach in Profile → AI Coach, the app sends a snapshot of 
 - dislikes and constraints you have written;
 - derived figures the app computes from the above: estimated strength numbers, muscle balance, movement-pattern frequency, exercise familiarity, recovery trend, and week adherence.
 
-No name, email, or device identifier is sent. The data is used only to generate the coach's response and is not used to train any model.
+Recovery data from Apple Health (heart rate variability, resting heart rate and sleep) is not part of this snapshot. No name, email, or device identifier is sent. The data is used only to generate the coach's response and is not used to train any model.
 
 Anthropic's processing is governed by their [Commercial Terms](https://www.anthropic.com/legal/commercial-terms) and [Privacy Policy](https://www.anthropic.com/legal/privacy). You can disable the AI Coach at any time from the same screen — once off, no further data leaves your device.
 

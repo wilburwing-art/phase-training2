@@ -75,6 +75,19 @@ predicted adaptation before the next sport day.
 - **1c. Physiology inputs.** Decision 1. About 2 weeks. HRV, resting HR and
   sleep from HealthKit joined to the soreness check-ins the app already has.
   Gate to 1d: the error on those clustered days drops.
+  **Physiology capture: built 2026-09-26, for build 145.** Capture and store
+  only. "Capture recovery data" in Health & Imports is the only place the
+  HRV / resting HR / sleep grant is asked, separate from workouts and body
+  metrics. `PhysiologySummariser` (pure) keeps one `PhysiologyNight` per wake
+  day: mean SDNN from 18:00 the evening before to 12:00, the day's resting HR,
+  and minutes asleep as the union of core, deep, REM and unspecified (in bed
+  and awake excluded, overlapping sources counted once), with sample counts.
+  30 nights on the first read, then incremental on foreground at most hourly,
+  never prompting; stored under `pt_physiology_nights` (365-day window), in
+  the backup, swept by the erase. Not in the coach snapshot; the privacy
+  policy says so, and the App Store label is unchanged because nothing leaves
+  the device (`docs/store/LISTING.md`). The Signals sheet shows nights and
+  days with each signal. The reader waits for 6+ weeks of nights.
 - **1d. Overreach risk and the adaptation ranking.** About 2 weeks. A per-week
   risk flag and a ranking of the authored sessions that fit the slot by
   predicted adaptation recoverable before the next sport day. Surfaces in the
@@ -97,7 +110,16 @@ where a seven-day consequence belongs.
   runs each planned day under skip, move, shorter, and a saved routine, and
   reports the readiness delta on the next sport day. Tested against synthetic
   weeks. It reads whichever readiness source is live, so it is useful even
-  under the kill rule above.
+  under the kill rule above. **2a: built 2026-09-26.** `Counterfactual`
+  (pure) takes the week plan and the same events the live score is built
+  from (`GeneratorContext.buildReadinessEvents`, now internal), projects each
+  planned lift day before the next sport day, and scores the sport day under
+  skip, move to each open rest day, half length, and each saved routine.
+  It edits the plan's days rather than calling `Planner.generate`: the
+  signal reads only timing, and a regen would reshuffle the week around the
+  one change. On `ReadinessSignal` shorter and saved routine are honestly 0,
+  since it ignores duration and content; the twin can fill them in. Tested on
+  synthetic weeks; the DEBUG Signals sheet shows the largest-impact line.
 - **2b. The surface.** About 2 weeks. Week tab first: each day carries its
   alternatives and the delta. The Today wheel showing "Saturday drops to
   0.63" is a seven-day consequence on a one-day screen, so it is a separate
@@ -114,10 +136,34 @@ Goal: know whether today's session will happen and pre-swap it.
   the missed log, DayOutcome history, weekday skip streaks, calendar travel,
   and time of day. Feeds the coach block and the check-in. Nothing
   auto-moves.
+  **3b: built 2026-09-26, for build 145.** `SessionLikelihoodEngine` (pure):
+  a 90-day pooled rate of planned lift and sport days that happened
+  (DayOutcome) versus were missed (missed log), Beta(3, 1) prior so no history
+  reads 75%; the weekday's rate shrunk toward it by 4 pseudo-days; then x0.85
+  for a weekday skip streak, x0.7 for a `.outOfTown` travel day, and, today
+  only, a loss of 12% per hour past the usual start (median of the last 90
+  days' session starts, 5+ needed) after a 1-hour grace, floored at 25%. Each
+  step adds a plain reason. Feeds a TODAY'S SESSION LIKELIHOOD block in the
+  coach drawer (context only, not quoted unprompted) and a quiet per-day
+  percent in the check-in preview once 6+ planned days exist. Not on Today.
+  The Debug Signals sheet shows today's estimate, its reasons and sample
+  count. The constants are priors, to be checked against the eval-rig fleet.
 - **3c. Location.** Decision 2. About 2 weeks. Home gym learned from where
   sessions were logged, geofences for gym, crag, trailhead. A session started
   away from the home gym gets the equipment-swapped version offered, on the
   existing substitution path.
+  **Location capture: built 2026-09-26, ships in 145.** When a new session starts,
+  `SessionLocationCapture` asks for one fix at `kCLLocationAccuracyHundredMeters`
+  (`requestLocation`, 20 s timeout, never blocks the start). "While using" is asked at
+  the first session start only; declined means nothing is captured and nothing is asked
+  again. Each point (session id, time, lat/lon rounded to 3 decimals, accuracy) lands in
+  `pt_session_places` on PlanStore, 365-day window, in the backup and swept by the wipe,
+  never in the coach snapshot. `PlaceClusterer` (pure) groups points within 150 m into
+  places with centroid, visit count and first/last seen; fixes vaguer than 1 km are
+  skipped. The Signals sheet shows points, places and the top place's visits. Usage
+  string and a Location section in the privacy policy; not declared in the privacy
+  manifest because nothing leaves the device. The reader (home gym, swaps) waits for
+  places to accrue.
 - **3d. Weather and snow.** Decision 3. About 1 week after the route exists.
   A powder day at the user's resort offers mobility; a storm day at the crag
   offers the gym session.
@@ -219,3 +265,94 @@ for SUP (0 against a floor of 5).
 
 Calendar time runs longer than build time throughout, because the twin, the physiology
 reader and the classifier all wait on data that accrues at the pace of real training.
+
+## Next work after build 145 (written 2026-09-26)
+
+Build 145 state: 3b, 2a, physiology capture, location capture and the housekeeping
+(squat merge with alias, 6 SUP antagonists) are on `claude/elegant-brahmagupta-7ecbou`,
+written without a local Swift toolchain. The privacy-label reasoning (on-device data is
+not "collected") was confirmed by Wilbur on 2026-09-26. The eval-rig fleet is the one 145
+item not started.
+
+### 1. Land 145 (about 1 day)
+
+- CI green on the branch (first compile of all four Swift slices).
+- Simulator pass on the two new prompts, which no one has seen yet: the recovery-data grant
+  from Health & Imports, and "while using" location at the first session start (decline
+  path included: no second ask, nothing captured).
+- Merge to main, bump the build number, tag. The Signals sheet should show five clocks.
+
+### 2. Synthetic-athlete fleet (about 1 week, the last 145 item)
+
+The contract stays JSON on disk, as both repos already require. The old adapter
+(`EvalRigExporter` and its smoke test) is gone from phase-training2, so eval-rig's
+ROADMAP "adapter: built" is stale; this replaces it.
+
+- **eval-rig, personas.** `personas/*.json`, each with planted truths: per-weekday
+  attendance rates, travel weeks, an overrun habit, one exercise that always gets dropped,
+  a strength trajectory with noise, and clean control personas with no habits.
+- **eval-rig, simulator.** `eval fleet simulate --personas N --weeks 26 --seed S` writes one
+  JSON per athlete: planned weeks, saved sessions, DayOutcomes, the missed log and travel
+  events, in the app's own Codable shapes. A shared JSON Schema plus a contract test on each
+  side pins the shapes so Swift and TypeScript cannot drift silently.
+- **phase-training2, replay.** `FleetReplayTest` (XCTest, reads the run directory from an
+  environment variable, skips when unset so CI is unaffected) walks each athlete week by week
+  through `PatternEngine`, the twin, `SessionLikelihood` and `Counterfactual`, and writes
+  `predictions.json`.
+- **eval-rig, scoring.** `eval fleet score <run>` reports: 3b Brier score and calibration by
+  decile against the planted rates; PatternEngine recall on planted habits and its false
+  suggestion rate on the clean personas; twin MAE and direction accuracy against
+  last-value; 2a sign agreement with the simulator's own readiness rule.
+- **Payoff.** Tune the 3b priors (75% start, streak 15%, travel 30%, 12% an hour late, the
+  6-day check-in floor) from the calibration table, and set PatternEngine thresholds from
+  false-positive rates instead of guesses.
+- **Readiness truth: fitness-fatigue (Wilbur, 2026-09-26).** The simulator's
+  `true_readiness` is a fitness-fatigue model, so a lighter few days before a sport day (a
+  taper) raises it. The app's `ReadinessSignal` counts recency and density only, so a skip
+  always lowers or holds it. The fleet treats fitness-fatigue as correct: 2a's
+  disagreement on skip rows is scored as a real `ReadinessSignal` flaw, not tolerated as a
+  model difference. Consequence: that disagreement rate is the first number 1b (per-pattern
+  load in the silent readiness path) has to bring down, which argues for starting 1b before
+  the 2026-10-24 review rather than after it.
+
+**How to run the fleet.** The contract is eval-rig's `fleet/CONTRACT.md`; the replay lives
+in `PhaseTrainingTests/Fleet/` (test target only, nothing ships).
+
+1. In eval-rig: `npm run eval -- fleet simulate --athletes 50 --weeks 26 --seed 42`. It
+   writes `fleet/runs/<run-id>/manifest.json` and `athletes/*.json`.
+2. In phase-training2 (`xcodegen generate` first if the project is stale), with the run
+   directory as an absolute path:
+   ```
+   TEST_RUNNER_FLEET_RUN_DIR=/abs/path/to/eval-rig/fleet/runs/<run-id> \
+     xcodebuild test -project PhaseTraining.xcodeproj -scheme PhaseTraining \
+     -destination 'platform=iOS Simulator,name=iPhone 16' \
+     -only-testing:PhaseTrainingTests/FleetReplayTests/testReplayRunDirectory \
+     CODE_SIGNING_ALLOWED=NO
+   ```
+   xcodebuild strips the `TEST_RUNNER_` prefix, so the test sees `FLEET_RUN_DIR`; without
+   it the test skips, which is why CI is unaffected. It writes `predictions/<id>.json`
+   (engine_build "145") next to `athletes/`.
+3. In eval-rig: `npm run eval -- fleet score <run-id>`, which writes `report.md`.
+
+### 3. Review on 2026-10-24 (unchanged)
+
+Size and direction on 100+ in-app pairs. Physiology is not judged; its clock has run under
+four weeks.
+
+### 4. Build 146, the watch (target mid-November)
+
+4a and 4b together, as ordered above. One item to decide before it starts: 4a writes the
+workout to HealthKit, and today the app is read-only, with a usage string and policy that
+say it never writes. That needs a new `NSHealthUpdateUsageDescription`, a policy edit and a
+write grant. It is the same class of change as decision 1, so it is flagged rather than
+assumed.
+
+### 5. Small follow-ups found during 145
+
+- `validate_coverage.py` still flags rowing and paddle-sports at 0 antagonists, and several
+  sports under the floor of 5. Same fix as SUP, one pass through the pipeline.
+- `ReadinessEventsTests.swift` header still calls `buildReadinessEvents` private (2a made it
+  internal).
+- `scripts/db/draft_variant_additions.py` uses the merged exercise 1087 as a template id.
+- The 2a summary test assumes English weekday names; pin the calendar's locale in the test.
+- Track 5b: licensing outreach drafts in the repo for Wilbur to send. Nothing drafted yet.
