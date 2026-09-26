@@ -9017,7 +9017,7 @@
   },
   {
     "exercise_id": 1070,
-    "substitute_id": 1087,
+    "substitute_id": 57,
     "context": "equipment_swap",
     "similarity_score": 0.68,
     "notes": "Free barbell squat when you want the same pattern plus trunk and spinal loading."
@@ -9556,7 +9556,7 @@
   },
   {
     "exercise_id": 1086,
-    "substitute_id": 1087,
+    "substitute_id": 57,
     "context": "equipment_swap",
     "similarity_score": 0.65,
     "notes": "Barbell back squat when you have rack access and want true progressive loading."
@@ -9583,49 +9583,49 @@
     "notes": "DB squat for a heavier loaded version of the same squat pattern."
   },
   {
-    "exercise_id": 1087,
+    "exercise_id": 57,
     "substitute_id": 537,
     "context": "equipment_swap",
     "similarity_score": 0.75,
     "notes": "Belt squat loads the same pattern with zero spinal compression — useful on heavy weeks."
   },
   {
-    "exercise_id": 1087,
+    "exercise_id": 57,
     "substitute_id": 537,
     "context": "lower_recovery",
     "similarity_score": 0.75,
     "notes": "Belt squat loads the same pattern with zero spinal compression — useful on heavy weeks."
   },
   {
-    "exercise_id": 1087,
+    "exercise_id": 57,
     "substitute_id": 538,
     "context": "age_friendly",
     "similarity_score": 0.9,
     "notes": "Safety-bar squat when shoulders or wrists won't tolerate the back-rack position."
   },
   {
-    "exercise_id": 1087,
+    "exercise_id": 57,
     "substitute_id": 1070,
     "context": "equipment_swap",
     "similarity_score": 0.62,
     "notes": "Leg press keeps quad and glute volume without spinal load or setup fatigue."
   },
   {
-    "exercise_id": 1087,
+    "exercise_id": 57,
     "substitute_id": 1070,
     "context": "lower_recovery",
     "similarity_score": 0.62,
     "notes": "Leg press keeps quad and glute volume without spinal load or setup fatigue."
   },
   {
-    "exercise_id": 1087,
+    "exercise_id": 57,
     "substitute_id": 1089,
     "context": "equipment_swap",
     "similarity_score": 0.7,
     "notes": "DB squat when racks are taken; same movement at lighter absolute loads."
   },
   {
-    "exercise_id": 1087,
+    "exercise_id": 57,
     "substitute_id": 1091,
     "context": "equipment_swap",
     "similarity_score": 0.8,
@@ -9696,7 +9696,7 @@
   },
   {
     "exercise_id": 1089,
-    "substitute_id": 1087,
+    "substitute_id": 57,
     "context": "equipment_swap",
     "similarity_score": 0.75,
     "notes": "Barbell back squat when you outgrow the dumbbell rack."
@@ -9731,7 +9731,7 @@
   },
   {
     "exercise_id": 1090,
-    "substitute_id": 1087,
+    "substitute_id": 57,
     "context": "equipment_swap",
     "similarity_score": 0.68,
     "notes": "Free-bar squat for full stabilizer involvement; expect more spinal load."
@@ -9794,7 +9794,7 @@
   },
   {
     "exercise_id": 1091,
-    "substitute_id": 1087,
+    "substitute_id": 57,
     "context": "equipment_swap",
     "similarity_score": 0.72,
     "notes": "Free barbell squat once you're ready to own the bar path yourself."

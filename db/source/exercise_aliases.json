@@ -926,5 +926,13 @@
     "source": "common_name",
     "notes": "UI shorthand; dumbbell is the unqualified gym default",
     "created_at": "2026-08-29 16:59:27"
+  },
+  {
+    "id": 117,
+    "exercise_id": 57,
+    "alias": "Squat (Barbell)",
+    "source": "historical",
+    "notes": "Duplicate row 1087 merged into Barbell Back Squat (build 145); keeps logged history resolvable",
+    "created_at": "2026-09-26 00:00:00"
   }
 ]

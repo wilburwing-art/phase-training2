@@ -7080,27 +7080,12 @@
     "role": "secondary"
   },
   {
-    "exercise_id": 1087,
+    "exercise_id": 57,
     "muscle_group_id": 3,
     "role": "secondary"
   },
   {
-    "exercise_id": 1087,
-    "muscle_group_id": 65,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1087,
-    "muscle_group_id": 70,
-    "role": "secondary"
-  },
-  {
-    "exercise_id": 1087,
-    "muscle_group_id": 74,
-    "role": "primary"
-  },
-  {
-    "exercise_id": 1087,
+    "exercise_id": 57,
     "muscle_group_id": 82,
     "role": "secondary"
   },

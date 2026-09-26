@@ -156,6 +156,9 @@ final class StrengthStandardsTests: XCTestCase {
         let cases: [(name: String, expected: StrengthStandards.CanonicalLift?)] = [
             // Squat — the plain barbell squat is the one the old " squat"
             // fragment (leading space) could never match.
+            ("Barbell Back Squat",           .squat),
+            // Merged into Barbell Back Squat in build 145; still an alias, so
+            // logged history under this name must keep matching.
             ("Squat (Barbell)",              .squat),
             ("Back Squat",                   .squat),
             ("Barbell Squat",                .squat),
@@ -201,7 +204,7 @@ final class StrengthStandardsTests: XCTestCase {
     /// the shipped catalog — otherwise the test passes against a name no user
     /// can ever log.
     func test_canonicalMatchTable_namesExistInCatalog() {
-        let mustExist = ["Squat (Barbell)", "Barbell Bench Press", "Hack Squat (Machine)",
+        let mustExist = ["Barbell Back Squat", "Barbell Bench Press", "Hack Squat (Machine)",
                          "Front Squat (Barbell)", "Dumbbell Bench Press",
                          "Incline Barbell Bench Press", "Close-Grip Bench Press"]
         let catalog = Set(CoachDatabase.shared.listExercises().map(\.name))
