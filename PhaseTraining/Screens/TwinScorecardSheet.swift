@@ -59,6 +59,15 @@ struct TwinScorecardSheet: View {
                         }
                     }
                 }
+                // 3b: will today happen? One row per clock, per PLAN-next-gen build 145.
+                Section("Will today happen? (3b)") {
+                    if let l = planStore.todaySessionLikelihood() {
+                        row("Today", "\(l.percent)% · \(l.samples) planned days")
+                        ForEach(l.reasons, id: \.self) { Text($0).font(.caption).foregroundStyle(.secondary) }
+                    } else {
+                        Text("No lift or sport session planned today.").foregroundStyle(.secondary)
+                    }
+                }
                 if !sig.zeroResultQueries28d.isEmpty {
                     Section("Searches that found nothing (catalog gaps)") {
                         ForEach(sig.zeroResultQueries28d, id: \.self) { Text($0) }

@@ -114,6 +114,18 @@ Goal: know whether today's session will happen and pre-swap it.
   the missed log, DayOutcome history, weekday skip streaks, calendar travel,
   and time of day. Feeds the coach block and the check-in. Nothing
   auto-moves.
+  **3b: built 2026-09-26, for build 145.** `SessionLikelihoodEngine` (pure):
+  a 90-day pooled rate of planned lift and sport days that happened
+  (DayOutcome) versus were missed (missed log), Beta(3, 1) prior so no history
+  reads 75%; the weekday's rate shrunk toward it by 4 pseudo-days; then x0.85
+  for a weekday skip streak, x0.7 for a `.outOfTown` travel day, and, today
+  only, a loss of 12% per hour past the usual start (median of the last 90
+  days' session starts, 5+ needed) after a 1-hour grace, floored at 25%. Each
+  step adds a plain reason. Feeds a TODAY'S SESSION LIKELIHOOD block in the
+  coach drawer (context only, not quoted unprompted) and a quiet per-day
+  percent in the check-in preview once 6+ planned days exist. Not on Today.
+  The Debug Signals sheet shows today's estimate, its reasons and sample
+  count. The constants are priors, to be checked against the eval-rig fleet.
 - **3c. Location.** Decision 2. About 2 weeks. Home gym learned from where
   sessions were logged, geofences for gym, crag, trailhead. A session started
   away from the home gym gets the equipment-swapped version offered, on the
