@@ -1,0 +1,152 @@
+# Predictive workout recommendations from user behavior
+
+Written 2026-09-25. Two parts. Part A is what the app captures today and the
+near-term work that consumes it. Part B is the full idea list under an
+unlimited-resources framing, kept here so nothing is lost when Part A ships.
+
+Iteration starts on A1: the app already captures most of the behavior signal,
+and the generator reads none of it.
+
+---
+
+## Part A: grounded plan
+
+### The controlling fact
+
+`TrainingMemory.exerciseAffinities` is written by three surfaces: the
+mid-workout swap (`LogScreen`), the template-editor swap
+(`TodayScreen+TemplateEditor`), and the action sheet's recommend more / less
+rows (`ExerciseActionSheet`). `GeneratorContext.from` zeroes it unless
+`includeParkedSignals` is true, and no production caller passes true. The T2-11
+comment at `GeneratorContext.swift:244` records this as the parked adaptive
+layer. `recentSoreAreas` and `stagnantExercises` are parked the same way.
+
+So the first recommendation costs no new capture. It is a switch plus the
+pool-weighting mechanic in `phase-training-generator-bias-weight-pool-not-reorder`.
+
+### Signal inventory, by strength
+
+| Tier | Signal | Where it lives | Consumed by | What it predicts |
+|---|---|---|---|---|
+| Did | Completed sessions, sets, loads | `SavedSession` (SQLite) | priorBest, lastAttempt, coach | Which exercises and loads stick; PR and progression |
+| Did | Abandoned workout + typed reason | `pt_abandoned_workouts`, 90-day window | coach only | Sessions too long, wrong equipment, pain avoidance |
+| Did | Missed workout + resolution | `pt_missed_workouts`, `SkipStreakDetector` | planner softens rotation, coach | Weekdays that never work |
+| Chose | Swap away from X into Y | `exerciseAffinities`, `swapAwayCounts` | nothing in production | Exercises the user rejects and what they substitute |
+| Chose | Wheel or override switch to a saved or sample workout | `overrides.customRoutineByDate` | plan application only | Plan rejection for that slot |
+| Chose | Hand-built routines | `pt_custom_routines` | wheel options only | The strongest statement of what the user wants |
+| Looked | Search terms, browsing, detail opens, routine previews | nowhere (`query` and `previewingStock` are `@State`) | nothing | Intent that never converted |
+
+The Looked tier is the weakest signal and the only one with zero capture. A
+search for "pull ups" during a bench swap may be a library-existence check.
+Explore behavior earns weight when it converts: search, then detail open, then
+add to routine or start session. Log the funnel and weight conversion.
+
+### Where recommendations land
+
+The recorded direction is authored spines with the engine as a within-program
+assist. That rules out generating a predicted workout. Three surfaces fit:
+
+1. **Which authored routine or session next.** 118 routines, 441 sport links in
+   coach.db. Rank by fit as `AuthoredRoutineSelector` does, then by behavior:
+   high-adherence completions up, previewed-never-started down, routines
+   containing negative-affinity exercises down.
+2. **Which substitution first.** `SubstituteExerciseSheet` ranks 1,795 curated
+   rows by context tag. Re-rank with the user's swap history so their past
+   swap target sits on top.
+3. **Which days and how long.** Skip streaks already soften rotation. An
+   abandon reason of `timeOut` predicts `sessionMinutes` is too high for that
+   weekday. The coach asks; the planner does not act on its own.
+
+### Mechanics
+
+No backend, no analytics SDK, SENSITIVE fields never logged (`MemoryStore.swift`
+header). Everything is on-device. Per-user N is a few sessions a week, so the
+learning artifact is counts and rules. Recency-weighted counters with a 28-day
+half-life over a small typed event log. Elimination rules over scores: "never
+offer an exercise swapped away three times" is learnable from three events.
+
+### The densest label: planned versus actual
+
+Every day has a planned session and sometimes a `SavedSession`. The diff (same
+template, switched, exercises dropped, sets cut, load changed) arrives the same
+day. `CoachContext+LoadBlocks.weekAdherenceSection` computes it as prose.
+Persisting it per day as a structured record is the highest-value addition,
+because it gives every other signal an outcome to be checked against.
+
+### Traps (each already recorded in a skill)
+
+- Bias the pool by multiplicity. `deterministicPick` is a uniform hash index,
+  so a preferred-first sort does nothing.
+- Keep behavior-derived preferences out of `planInputsHash`, or every swap
+  rebuilds the current week.
+- Wire both paths: `pickForSlot` and the accessory picker read the same
+  `context` field.
+- Never derive `experience` from behavior. Competency and readiness stay
+  separate axes (`phase-training-personalization-two-axes`).
+- Sample sessions on the wheel are demos. A switch onto one counts as plan
+  rejection and never as preference for the sample's contents.
+- Flipping `includeParkedSignals` costs regen time: `buildStagnantExercises`
+  walks four weeks of sessions computing Epley 1RMs per regenerate. Measure
+  before flipping; consider computing affinities alone.
+
+### Order of work
+
+- **A1. DONE 2026-09-25.** Affinities reach the season engine through
+  `AthleteState.exerciseAffinities` (no parked flag needed). Comparator: a
+  liked movement wins ties inside its recency tier; affinity <= -2 sinks below
+  recent movements but never drops a demand it alone serves. The swap picker
+  lists past choices first when the search box is empty. The substitute sheet
+  was skipped: only the coach screen reaches it. Authored routines are
+  untouched. The old consume tests had been skipping on an empty day and
+  asserted nothing; replaced.
+- **A2.** Persist a structured planned-vs-actual record per day.
+- **A3.** On-device explore-funnel event table, 90-day window, matching the
+  missed and abandoned logs.
+- **A4.** Decide surface: coach asks versus planner acts. Default to asking.
+
+---
+
+## Part B: next-gen ideas, unlimited resources
+
+Ranked. 2, 3 and 5 run on top of 1.
+
+1. **Athlete digital twin.** A per-user fitness-fatigue model fitted per
+   movement pattern to logged sets, HealthKit HRV, sleep, resting HR, and
+   soreness check-ins. Predicts tomorrow's readiness, per-lift 1RM trajectory,
+   overreach risk. Recommendation becomes the session with the best predicted
+   adaptation recoverable by the next sport day. Needs the existing HealthKit
+   import plus a fitting service. Estimate: 6 weeks to a calibrated first
+   version.
+2. **Counterfactual planner.** Run every planned day under its alternatives
+   (skip, move, swap routine, cut to 30 minutes) through the twin and show the
+   delta on the next sport day's readiness. The wheel becomes a comparison of
+   futures. Needs 1. Estimate: 3 weeks after it.
+3. **Context-aware pre-adaptation.** Location (gym, crag, hotel, trailhead),
+   calendar travel, weather and snow at the user's resort via snow-almanac,
+   live watch HR. Predict whether today's session happens at all and pre-swap
+   it: hotel gym gets the equipment-swapped version, a powder day gets
+   mobility. Needs a small on-device context engine. Estimate: 4 weeks,
+   independent of 1.
+4. **Zero-friction logging from sensors.** Watch motion classifies exercise
+   and counts sets; camera reads bar speed for velocity-based autoregulation
+   so load updates mid-set. Makes the Did tier ten times denser. Needs Core ML
+   models and labeled reps. Estimate: 3 months.
+5. **Cross-user learning over a licensed spine library.** Never generate, never
+   blend. License hundreds of real coaches' programs (the MTN Tactical and
+   Uphill Athlete archive already holds 277 sessions) and aggregate across
+   users with privacy preserved: which spines similar athletes complete, where
+   they abandon, which substitutions they accept. New users get ranked spines
+   from their cohort on day one. Needs a backend and licensing. Estimate: a
+   quarter, mostly deals.
+
+Lower priority, kept:
+
+- **Sport-outcome optimization.** Optimize for ski vertical, sends, Strava
+  rides rather than gym numbers; correlate blocks with the following season.
+- **Synthetic-athlete fleet.** Run recommender policies against simulated
+  users on eval-rig before shipping.
+- **Catalog embeddings.** Semantic search and "more like this" over exercises
+  and routines.
+- **Coach-mediated intent.** Repeated searches or previews become a question
+  the coach asks ("you looked at hangboard protocols three times, want a
+  climbing block?") rather than a change the planner makes.

@@ -1,8 +1,23 @@
 ---
 name: phase-training-generator-bias-weight-pool-not-reorder
-description: Two mechanics for adding a NEW exercise-selection bias to phase-training2's WorkoutGenerator slot picker. (1) deterministicPick is a UNIFORM hash-index into the candidate pool, so a preference biases by SHRINKING or WEIGHTING the pool (multiplicity), never by reordering — applyEraAesthetic's `preferred + rest` reorder is effectively a no-op under uniform indexing. (2) A signal that AFFECTS generation but must NOT auto-rebuild the week stays OUT of planInputsHash, because that hash is BOTH the auto-regen trigger (RootTabView "drift silently rebuilds the week") AND the deterministicPick seed. Trigger when adding a preference/affinity/ranking bias to pickForSlot, when wiring a TrainingMemory signal into the generator, or when a "preferred" exercise doesn't show up more often despite the bias being applied. Skip for prescription (sets/reps) changes — see phase-training-prescription-precedence-and-dual-path.
+description: Adding an exercise-selection bias to phase-training2. CURRENT (2026-09-25): the live season engine sorts candidates with a comparator in SportSeasonGenerator.generateSession, so a bias is a comparator key (see the status note; exerciseAffinities is wired this way via AthleteState). HISTORY: the deleted legacy slot picker used a uniform deterministicPick, where only pool weighting worked. Still true for both: a signal that affects generation but must not auto-rebuild the week stays OUT of planInputsHash. Trigger when adding a preference/affinity/ranking bias to exercise selection, wiring a TrainingMemory signal into the generator, or when a preferred exercise does not show up more often. Skip for prescription (sets/reps) changes, see phase-training-prescription-precedence-and-dual-path.
 when-to-use: Adding any new candidate-selection bias to WorkoutGenerator.pickForSlot, or deciding whether a generation-affecting TrainingMemory field belongs in planInputsHash.
 ---
+
+> **Status 2026-09-25: the mechanics below describe the DELETED legacy picker.**
+> `pickForSlot`, `pickAccessoryByName` and uniform `deterministicPick` went with
+> the legacy generator. The live season engine
+> (`SportSeasonGenerator.generateSession`) SORTS candidates with a comparator and
+> takes `prefix(count)`, so reordering IS the mechanic there. Affinity is
+> consumed as: primary-demand match, then `rotationTier` (0 fresh, 1 recent,
+> 2 affinity <= `AthleteState.affinitySinkThreshold`), then low fatigue, then
+> affinity descending, then djb2. It reaches the engine via
+> `AthleteState.exerciseAffinities` straight from `TrainingMemory`, not via
+> `GeneratorContext`, so `includeParkedSignals` is irrelevant. Mechanic 2 (keep
+> it out of `planInputsHash`) still holds. The old consume tests passed by
+> XCTSkip on an empty "Rest" day; the replacements in `ExerciseSwapMemoryTests`
+> XCTUnwrap their fixture instead.
+
 
 # Biasing the phase-training2 slot picker
 

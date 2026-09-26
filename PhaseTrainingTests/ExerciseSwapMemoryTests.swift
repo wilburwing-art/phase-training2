@@ -1,7 +1,8 @@
 // ExerciseSwapMemoryTests.swift — the swap-memory feature: capture (a swap
-// writes a preference into TrainingMemory) and consume (the generator weights
-// its picks by that preference). See the slot picker's applyAffinityWeighting
-// and MemoryStore.recordSwap.
+// writes a preference into TrainingMemory) and consume (the season engine's
+// candidate comparator ranks by it, and the swap picker lists past choices
+// first). See MemoryStore.recordSwap, AthleteState.exerciseAffinities,
+// SportSeasonGenerator.rotationTier and ExerciseSearch.preferenceOrdered.
 
 import XCTest
 @testable import PhaseTraining
@@ -60,70 +61,115 @@ final class ExerciseSwapMemoryTests: XCTestCase {
         XCTAssertEqual(decoded.exerciseAffinities["Front Squat"], 3)
     }
 
-    // MARK: - Consume (generator weights picks by affinity)
+    // MARK: - Consume (season engine ranks candidates by affinity)
+    //
+    // The previous consume tests drove WorkoutGenerator.generateLift with no
+    // primary sport, which returns an empty "Rest" day, so every run hit
+    // XCTSkip and nothing was ever asserted. These drive the live engine and
+    // fail instead of skipping when the fixture finds no target.
 
-    private func liftMemory() -> TrainingMemory {
+    private let slug = "alpine-skiing"
+    private let season: SeasonPhase = .offSeason
+
+    private func skier(week: Int, affinities: [String: Int]) -> AthleteState {
         var m = TrainingMemory()
+        let sport = Sport(slug: slug, name: "Alpine Skiing")
+        m.primarySport = sport
+        m.seasonsBySport = [sport: season]
+        m.defaultSeason = season
         m.experience = .intermediate
         m.equipment = [.fullGym]
-        m.sessionMinutes = 60
-        return m
+        m.liftDaysPerWeek = 3
+        m.exerciseAffinities = affinities
+        return AthleteState.from(m, variant: .inbounds, weekNumber: week)
     }
 
-    /// Generate a push day across `seeds` distinct seeds and tally how often
-    /// each exercise name is picked. Affinity flows through the context exactly
-    /// as PlanStore.buildGeneratorContext wires it in production.
-    private func pickFrequencies(memory: TrainingMemory,
-                                 affinities: [String: Int],
-                                 seeds: Int) -> [String: Int] {
-        let profile = DemographicProfile.from(memory)
-        var ctx = GeneratorContext.empty
-        ctx.exerciseAffinities = affinities
-        var freq: [String: Int] = [:]
-        for i in 0..<seeds {
-            let w = WorkoutGenerator.generateLift(
-                liftIndex: 0, totalLifts: 3,
-                memory: memory, profile: profile,
-                hashSeed: "swap-consume-\(i)", context: ctx)
-            for ex in w.exercises { freq[ex.name, default: 0] += 1 }
+    /// Tally movement picks over 30 weeks x 3 sessions, keyed by exercise id.
+    private func pickFrequencies(affinities: [String: Int]) -> [Int: Int] {
+        var freq: [Int: Int] = [:]
+        for week in 1...30 {
+            let a = skier(week: week, affinities: affinities)
+            for s in SportSeasonGenerator.generateWeek(a) {
+                for ex in s.exercises { freq[ex.exerciseId, default: 0] += 1 }
+            }
         }
         return freq
     }
 
-    /// Pick a deterministic target that appears in some-but-not-all seeds —
-    /// `freq < seeds` guarantees its slot has alternatives to gain/lose share
-    /// from. Highest such frequency wins (most statistical power), ties by name.
-    private func partiallyPicked(in freq: [String: Int], seeds: Int, min: Int) -> String? {
-        freq.filter { $0.value >= min && $0.value < seeds }
-            .sorted { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key }
-            .first?.key
+    private var pool: [SportMovement] {
+        CoachDatabase.shared.sportMovements(sport: slug).filter { $0.allowedPhases.contains(season) }
     }
 
-    func test_boostingExercise_increasesItsPickFrequency() throws {
-        let m = liftMemory()
-        let seeds = 30
-        let baseline = pickFrequencies(memory: m, affinities: [:], seeds: seeds)
-        guard let target = partiallyPicked(in: baseline, seeds: seeds, min: 1) else {
-            throw XCTSkip("No partially-picked exercise to boost in this catalog slice")
-        }
-        let boosted = pickFrequencies(memory: m, affinities: [target: 3], seeds: seeds)
-        XCTAssertGreaterThan(boosted[target] ?? 0, baseline[target] ?? 0,
-            "Boosting \(target) should raise its pick frequency across \(seeds) seeds " +
-            "(\(baseline[target] ?? 0) → \(boosted[target] ?? 0))")
+    /// A movement whose primary demand has other primary movements competing
+    /// for it, picked in some samples but not all: its share can move.
+    private func contestedMovement(in freq: [Int: Int]) -> SportMovement? {
+        let maxFreq = freq.values.max() ?? 0
+        return pool.filter { m in
+            let rivals = pool.filter { $0.primaryDemand == m.primaryDemand && $0.exerciseId != m.exerciseId }
+            let f = freq[m.exerciseId] ?? 0
+            return !rivals.isEmpty && f > 0 && f < maxFreq
+        }.max { (freq[$0.exerciseId] ?? 0, $1.name) < (freq[$1.exerciseId] ?? 0, $0.name) }
     }
 
-    func test_stronglyDemotingExercise_dropsItsPickFrequency() throws {
-        let m = liftMemory()
-        let seeds = 30
-        let baseline = pickFrequencies(memory: m, affinities: [:], seeds: seeds)
-        guard let target = partiallyPicked(in: baseline, seeds: seeds, min: 2) else {
-            throw XCTSkip("No partially-picked exercise to demote in this catalog slice")
+    func test_positiveAffinity_raisesPickFrequency() throws {
+        let baseline = pickFrequencies(affinities: [:])
+        let target = try XCTUnwrap(contestedMovement(in: baseline),
+                                   "fixture found no contested movement; the test would assert nothing")
+        let boosted = pickFrequencies(affinities: [target.name: 3])
+        XCTAssertGreaterThan(boosted[target.exerciseId] ?? 0, baseline[target.exerciseId] ?? 0,
+            "Boosting \(target.name) should raise its picks " +
+            "(\(baseline[target.exerciseId] ?? 0) to \(boosted[target.exerciseId] ?? 0))")
+    }
+
+    func test_rejectedMovement_isNotPickedWhenRivalsExist() throws {
+        let baseline = pickFrequencies(affinities: [:])
+        let target = try XCTUnwrap(contestedMovement(in: baseline),
+                                   "fixture found no contested movement; the test would assert nothing")
+        let rejected = pickFrequencies(affinities: [target.name: AthleteState.affinitySinkThreshold])
+        XCTAssertLessThan(rejected[target.exerciseId] ?? 0, baseline[target.exerciseId] ?? 0,
+            "Rejecting \(target.name) should cut its picks " +
+            "(\(baseline[target.exerciseId] ?? 0) to \(rejected[target.exerciseId] ?? 0))")
+    }
+
+    func test_rejectedSoleMovement_stillServesItsDemand() throws {
+        let baseline = pickFrequencies(affinities: [:])
+        let sole = try XCTUnwrap(pool.first { m in
+            (baseline[m.exerciseId] ?? 0) > 0
+                && !pool.contains { $0.primaryDemand == m.primaryDemand && $0.exerciseId != m.exerciseId }
+        }, "fixture found no sole-primary movement; the test would assert nothing")
+        let rejected = pickFrequencies(affinities: [sole.name: -5])
+        XCTAssertEqual(rejected[sole.exerciseId] ?? 0, baseline[sole.exerciseId] ?? 0,
+            "\(sole.name) is the only primary movement for its demand; rejecting it must not drop the demand")
+    }
+
+    func test_affinitiesForUnknownNames_changeNothing() {
+        for week in 1...5 {
+            let plain = SportSeasonGenerator.generateWeek(skier(week: week, affinities: [:]))
+            let noisy = SportSeasonGenerator.generateWeek(skier(week: week, affinities: ["Not A Real Lift": 4]))
+            XCTAssertEqual(plain, noisy, "week \(week): an affinity matching no movement changed the session")
         }
-        // ≤ -2 sinks the candidate entirely; since its slot has alternatives
-        // (freq < seeds), it should disappear from the picks.
-        let demoted = pickFrequencies(memory: m, affinities: [target: -3], seeds: seeds)
-        XCTAssertLessThan(demoted[target] ?? 0, baseline[target] ?? 0,
-            "Strongly demoting \(target) should lower its pick frequency " +
-            "(\(baseline[target] ?? 0) → \(demoted[target] ?? 0))")
+    }
+
+    func test_affinityKeys_foldCase() {
+        let a = skier(week: 1, affinities: ["Goblet Squat": 1, "goblet squat": 2])
+        XCTAssertEqual(a.affinity(for: "GOBLET SQUAT"), 3)
+    }
+
+    // MARK: - Consume (swap picker browse order)
+
+    func test_preferenceOrdered_floatsChosenExercisesAndKeepsTieOrder() {
+        let all = CoachDatabase.shared.searchExercises(
+            search: nil, muscleSlugs: [], patternSlugs: [], modality: nil, difficulty: nil,
+            environment: nil, compoundOnly: nil, userSportSlugs: []).exercises
+        XCTAssertGreaterThan(all.count, 10)
+        let favorite = all[7], liked = all[3], disliked = all[0]
+        let out = ExerciseSearch.preferenceOrdered(
+            all, affinities: [favorite.name: 3, liked.name: 1, disliked.name: -4])
+        XCTAssertEqual(out[0].id, favorite.id)
+        XCTAssertEqual(out[1].id, liked.id)
+        XCTAssertEqual(out.count, all.count)
+        let rest = out.dropFirst(2).map(\.id)
+        let expected = all.map(\.id).filter { $0 != favorite.id && $0 != liked.id }
+        XCTAssertEqual(rest, expected, "ties, including negatives, keep catalog order")
     }
 }

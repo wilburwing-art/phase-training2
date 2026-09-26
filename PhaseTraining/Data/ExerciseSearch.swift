@@ -89,6 +89,22 @@ enum ExerciseSearch {
         return Result(exercises: wide.exercises, broadenedPastFilters: true)
     }
 
+    /// Browse order for an EMPTY search box: exercises the user has chosen
+    /// before (positive affinity, mostly from swaps) float to the top, highest
+    /// first. Stable, so ties keep catalog order. A typed query never goes
+    /// through this: relevance beats preference once the user names something.
+    static func preferenceOrdered(_ exercises: [Exercise],
+                                  affinities: [String: Int]) -> [Exercise] {
+        let scores = AthleteState.lowercasedAffinities(affinities)
+        guard scores.values.contains(where: { $0 > 0 }) else { return exercises }
+        return exercises.enumerated().sorted { l, r in
+            let ls = max(0, scores[l.element.name.lowercased()] ?? 0)
+            let rs = max(0, scores[r.element.name.lowercased()] ?? 0)
+            if ls != rs { return ls > rs }
+            return l.offset < r.offset
+        }.map(\.element)
+    }
+
     /// Does this filter set actually remove rows? `hideOtherSports` only does
     /// when the caller has sports to pass, so it doesn't count on its own.
     static func narrows(_ filters: ExerciseFilters, userSportSlugs: [String]) -> Bool {

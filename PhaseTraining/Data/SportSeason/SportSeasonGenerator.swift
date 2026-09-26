@@ -136,12 +136,20 @@ enum SportSeasonGenerator {
                     // served.
                     let lp = lhs.primaryDemand == demand, rp = rhs.primaryDemand == demand
                     if lp != rp { return lp }
-                    let lr = athlete.recentMovementIDs.contains(lhs.exerciseId)
-                    let rr = athlete.recentMovementIDs.contains(rhs.exerciseId)
-                    if lr != rr { return !lr }                               // not-recent first
+                    // Rotation tier: 0 fresh, 1 recent, 2 rejected by the user
+                    // (affinity <= sink threshold). A rejected movement still
+                    // ranks inside its primary-demand group, so a demand whose
+                    // only movement the user dislikes is still served.
+                    let lt = rotationTier(lhs, athlete), rt = rotationTier(rhs, athlete)
+                    if lt != rt { return lt < rt }
                     if preferLowFatigue && lhs.fatigueCost != rhs.fatigueCost {
                         return lhs.fatigueCost < rhs.fatigueCost             // lighter first
                     }
+                    // Preference breaks ties INSIDE a tier, so a favorite
+                    // returns each time it rotates out of the recent window
+                    // without defeating rotation.
+                    let la = athlete.affinity(for: lhs.name), ra = athlete.affinity(for: rhs.name)
+                    if la != ra { return la > ra }
                     return djb2("\(seed)-\(demand.rawValue)-\(lhs.exerciseId)")
                          < djb2("\(seed)-\(demand.rawValue)-\(rhs.exerciseId)")
                 }
@@ -163,7 +171,13 @@ enum SportSeasonGenerator {
             let byWeight = rule.demandWeights.sorted { $0.value > $1.value }.map(\.key)
             outer: for demand in byWeight {
                 for m in pool.filter({ $0.serves(demand) && !used.contains($0.exerciseId) })
-                    .sorted(by: { djb2("\(seed)-backfill-\($0.exerciseId)") < djb2("\(seed)-backfill-\($1.exerciseId)") }) {
+                    .sorted(by: {
+                        // Backfill only sinks rejected movements; it does not
+                        // chase favorites, which would bypass rotation.
+                        let l = isRejected($0, athlete), r = isRejected($1, athlete)
+                        if l != r { return !l }
+                        return djb2("\(seed)-backfill-\($0.exerciseId)") < djb2("\(seed)-backfill-\($1.exerciseId)")
+                    }) {
                     picks.append(Pick(movement: m, demand: demand))
                     used.insert(m.exerciseId)
                     shortfall -= 1
@@ -477,6 +491,16 @@ enum SportSeasonGenerator {
     }
 
     // MARK: - Deterministic tiebreak
+
+    /// 0 fresh, 1 recently picked, 2 rejected by the user's affinity.
+    static func rotationTier(_ m: SportMovement, _ athlete: AthleteState) -> Int {
+        if isRejected(m, athlete) { return 2 }
+        return athlete.recentMovementIDs.contains(m.exerciseId) ? 1 : 0
+    }
+
+    static func isRejected(_ m: SportMovement, _ athlete: AthleteState) -> Bool {
+        athlete.affinity(for: m.name) <= AthleteState.affinitySinkThreshold
+    }
 
     private static func djb2(_ s: String) -> UInt64 {
         var h: UInt64 = 5381

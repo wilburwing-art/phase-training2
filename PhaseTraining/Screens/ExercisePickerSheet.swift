@@ -48,7 +48,10 @@ struct ExercisePickerSheet: View {
             filters: filters,
             userSportSlugs: memoryStore.memory.sports.map(\.slug)
         )
-        results = outcome.exercises
+        results = query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? ExerciseSearch.preferenceOrdered(outcome.exercises,
+                                               affinities: memoryStore.memory.exerciseAffinities)
+            : outcome.exercises
         broadenedPastFilters = outcome.broadenedPastFilters
     }
 

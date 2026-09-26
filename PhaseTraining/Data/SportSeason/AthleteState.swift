@@ -71,6 +71,22 @@ struct AthleteState: Equatable {
     /// (SPEC `recentMovementIDs`). Threaded in by the caller; [] in eval.
     let recentMovementIDs: Set<Int>
 
+    /// Per-movement preference from swaps and "recommend more / less"
+    /// (`TrainingMemory.exerciseAffinities`), keyed by LOWERCASED exercise name.
+    /// Positive breaks ties inside the recency tier; <= `affinitySinkThreshold`
+    /// sinks a movement below every recent one. Defaulted empty so hand-built
+    /// states (tests, eval) keep today's selection exactly. Deliberately not in
+    /// `planInputsHash`: a swap biases the NEXT generation without rebuilding
+    /// the current week.
+    var exerciseAffinities: [String: Int] = [:]
+
+    /// Affinity at or below which a movement is treated as rejected.
+    static let affinitySinkThreshold = -2
+
+    func affinity(for movementName: String) -> Int {
+        exerciseAffinities[movementName.lowercased()] ?? 0
+    }
+
     /// Exercise ids contraindicated by the athlete's injuries (already resolved
     /// by `DemographicProfile`) — subtracted from every pool.
     let contraindicatedExerciseIDs: Set<Int>
@@ -108,9 +124,20 @@ struct AthleteState: Equatable {
             targetObjectiveDate: memory.peakDate,
             weekNumber: weekNumber,
             recentMovementIDs: recentMovementIDs,
+            exerciseAffinities: lowercasedAffinities(memory.exerciseAffinities),
             contraindicatedExerciseIDs: profile.excludedExerciseIds,
             flaggedDemands: [],
             profile: profile
         )
+    }
+
+    /// Fold case so "Goblet Squat" and "goblet squat" written by different
+    /// surfaces count as one exercise.
+    static func lowercasedAffinities(_ raw: [String: Int]) -> [String: Int] {
+        var out: [String: Int] = [:]
+        for (name, score) in raw where score != 0 {
+            out[name.lowercased(), default: 0] += score
+        }
+        return out
     }
 }
