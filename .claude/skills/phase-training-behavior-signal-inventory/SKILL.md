@@ -73,3 +73,12 @@ corner) on 39 holdout pairs. By the pre-registered rule B1b (twin-driven readine
 start. Before proposing readiness or "predictive load" work: re-run that replay on a NEWER
 export or on accrued in-app `DayOutcome.twin` pairs. Do not re-tune the grid against the same
 export until it says GO; that is fitting the test.
+
+**Diagnosed 2026-09-26 (`TwinDiagnosisTests`, defaults, 811 walk-forward pairs):** a tie on
+size (37.91 vs 38.04 lb), real signal on DIRECTION (58.1% over 752 moved pairs, ~4.4 SE). The
+39-pair holdout could not decide either way, so "NO-GO" meant "undecided on a thin sample".
+Two criteria are registered for the 2026-10-24 review (size, and direction on 100+ in-app
+pairs with gap <= 7 d); if only direction passes, 1b is a direction signal, never a load.
+Lesson for any small-sample verdict here: slice the full walk-forward history and test
+direction before calling a model dead, and register any new criterion BEFORE the data that
+will judge it exists.

@@ -178,24 +178,44 @@ Goal: a new user gets ranked spines from their cohort on day one.
   the agent). The fleet drives `PatternEngine`, the twin and 2a as pure
   functions.
 
-## Order of work
+## Order of work (re-sequenced 2026-09-26: capture first)
 
-Each line is one build or one review. Dates are estimates.
+The first version of this order put every capture step behind its owner decision. All
+five decisions are now yes, so the order follows a different rule: **start every data
+clock now, build the readers once the data has accrued.** The slow parts of this roadmap
+are not build time. The twin needs in-app pairs, the physiology step needs weeks of sleep
+and HRV beside sessions, the classifier needs thousands of labeled reps, and place
+learning needs sessions logged at known places. None of those clocks starts until its
+collector ships.
 
-1. **Now to 2026-10-03: build 144.** Calendar travel, embeddings, 1a-2
-   diagnosis, 5a on-device aggregates.
-2. **2026-10-24: review.** Twin re-ask on in-app pairs plus any new export;
-   suggestion decisions; zero-result searches. Decides 1b, and whether the
-   kill rule fires.
-3. **November 2026: build 145.** 1b if GO, 3b session likelihood, 2a engine on
-   fixtures, eval-rig fleet if the remote exists.
-4. **December 2026 to January 2027.** 1c and 3c if decided, 2b on the Week tab.
-5. **Q1 2027.** 1d adaptation ranking, 4a watch companion if decided, 3d and
-   3e as their decisions allow.
-6. **Q2 2027.** 4b accrual, 4d bar speed, then 4c classifier.
-7. **H2 2027.** Track 5 only if the backend posture, licensing and user count
-   all exist.
+1. **Build 144 (shipped 2026-09-26).** Calendar travel, "more like this", twin diagnosis,
+   on-device spine aggregates, and the validated fixes.
+2. **Build 145, target 2026-10-17: start the data clocks.** Each item captures and stores
+   only; the Debug Signals sheet gets a row per clock.
+   - Physiology capture: nightly HRV, resting heart rate and sleep from Apple Health, a
+     separate skippable grant, with the policy lines and privacy label.
+   - Location capture: a coarse (~100 m) point at session start only, "while using"
+     permission asked at the first session start, clustered offline into places.
+   - 3b "will today happen?" likelihood, feeding the coach block and the check-in.
+   - 2a counterfactual engine on fixtures, on `ReadinessSignal` until the twin earns it.
+   - The eval-rig fleet (eval-rig now has a remote), driving `PatternEngine`, the twin, 3b
+     and 2a on thousands of simulated weeks.
+   About 4 weeks of work, so it may land after the review; the review then runs on 144.
+3. **2026-10-24 review.** Criteria unchanged (size, and direction on 100+ in-app pairs).
+   Physiology is not judged yet; its clock will have run under two weeks.
+4. **Build 146, target mid-November: the watch.** 4a watch companion and 4b labeled motion
+   capture in the same build, so the rep-labeling clock starts with the watch.
+5. **Then, as data allows.** 1b per the review; the 1c reader after 6+ weeks of physiology;
+   the 3c reader once places cluster; 3d weather via WeatherKit, then snow-almanac; 2b on the
+   Week tab; 4d bar speed on the phone camera; 4c once the top 20 exercises each have enough
+   labeled reps.
+6. **Track 5 on calendar time, starting now.** 5b licensing drafts land in the repo for
+   Wilbur to send (nothing is sent without his go). 5c backend waits for an answer to 5b and
+   for user count.
 
-Total build time about 9 months of work if every decision is yes and every
-gate passes. Calendar time runs longer than that, because the twin and the
-classifier both wait on data that only accrues at the pace of real training.
+Housekeeping to fold into 145: check the possible duplicate "Squat (Barbell)" beside
+"Barbell Back Squat" and merge through the pipeline with an alias; add antagonist exercises
+for SUP (0 against a floor of 5).
+
+Calendar time runs longer than build time throughout, because the twin, the physiology
+reader and the classifier all wait on data that accrues at the pace of real training.
