@@ -253,15 +253,7 @@ final class PlanStore: ObservableObject {
         // gets reset whenever the persisted weekStart no longer matches
         // the current training-week Monday.
         let thisWeekStart = today.startOfTrainingWeek()
-        if let data = defaults.data(forKey: Self.missedWorkoutsKey),
-           let list = try? Self.decoder().decode([MissedWorkoutEntry].self, from: data) {
-            let cutoff = today.addingTimeInterval(-Double(Self.planOverridesRetentionDays) * 86_400)
-            self.missedWorkouts = list
-                .filter { $0.loggedAt >= cutoff }
-                .sorted { $0.date > $1.date }
-        } else {
-            self.missedWorkouts = []
-        }
+        self.missedWorkouts = Self.loadMissedWorkouts(defaults, today: today)
         if let savedWeek = defaults.object(forKey: Self.reshuffleWeekKey) as? Date,
            Calendar.current.isDate(savedWeek, inSameDayAs: thisWeekStart) {
             self.midWeekReshuffleCount = defaults.integer(forKey: Self.reshuffleCountKey)
@@ -275,22 +267,8 @@ final class PlanStore: ObservableObject {
             self.midWeekConsolidationCount = 0
         }
         // PR 9: load the abandonment log. Same 90-day window as misses.
-        if let data = defaults.data(forKey: Self.abandonedWorkoutsKey),
-           let list = try? Self.decoder().decode([AbandonedWorkoutEntry].self, from: data) {
-            let cutoff = today.addingTimeInterval(-Double(Self.planOverridesRetentionDays) * 86_400)
-            self.abandonedWorkouts = list
-                .filter { $0.loggedAt >= cutoff }
-                .sorted { $0.date > $1.date }
-        } else {
-            self.abandonedWorkouts = []
-        }
-        if let data = defaults.data(forKey: Self.dayOutcomesKey),
-           let list = try? Self.decoder().decode([DayOutcome].self, from: data) {
-            let cutoff = today.addingTimeInterval(-Double(Self.planOverridesRetentionDays) * 86_400)
-            self.dayOutcomes = list
-                .filter { $0.recordedAt >= cutoff }
-                .sorted { $0.date > $1.date }
-        }
+        self.abandonedWorkouts = Self.loadAbandonedWorkouts(defaults, today: today)
+        self.dayOutcomes = Self.loadDayOutcomes(defaults, today: today)
 
         // Weekly-rollover detection: if we have an active plan that
         // belongs to a prior week and we haven't snapshotted it yet,
@@ -398,14 +376,42 @@ final class PlanStore: ObservableObject {
         } else {
             overrides = WeekOverrides(weekStart: thisWeek)
         }
-        // Without this a restored outcome log sits in UserDefaults while the
-        // stale in-memory copy is what the next recordOutcome writes back.
-        if let data = defaults.data(forKey: Self.dayOutcomesKey),
-           let list = try? Self.decoder().decode([DayOutcome].self, from: data) {
-            dayOutcomes = list.sorted { $0.date > $1.date }
-        } else {
-            dayOutcomes = []
-        }
+        // The logs are re-read too. BackupCoordinator calls this after a
+        // restore; a log left out keeps its stale in-memory copy, and the next
+        // recordMiss / recordAbandonment / recordOutcome writes that copy back
+        // over the restored data.
+        missedWorkouts = Self.loadMissedWorkouts(defaults, today: today)
+        abandonedWorkouts = Self.loadAbandonedWorkouts(defaults, today: today)
+        dayOutcomes = Self.loadDayOutcomes(defaults, today: today)
+    }
+
+    // MARK: - Log loading (shared by init and reloadFromDefaults)
+
+    /// Decode a rolling log, keep the retention window by `stamp`, newest
+    /// `date` first. A missing or undecodable key reads as empty.
+    private static func loadLog<T: Decodable>(_ type: T.Type, key: String,
+                                              defaults: UserDefaults, today: Date,
+                                              stamp: (T) -> Date,
+                                              date: (T) -> Date) -> [T] {
+        guard let data = defaults.data(forKey: key),
+              let list = try? decoder().decode([T].self, from: data) else { return [] }
+        let cutoff = today.addingTimeInterval(-Double(planOverridesRetentionDays) * 86_400)
+        return list.filter { stamp($0) >= cutoff }.sorted { date($0) > date($1) }
+    }
+
+    static func loadMissedWorkouts(_ defaults: UserDefaults, today: Date) -> [MissedWorkoutEntry] {
+        loadLog(MissedWorkoutEntry.self, key: missedWorkoutsKey, defaults: defaults, today: today,
+                stamp: \.loggedAt, date: \.date)
+    }
+
+    static func loadAbandonedWorkouts(_ defaults: UserDefaults, today: Date) -> [AbandonedWorkoutEntry] {
+        loadLog(AbandonedWorkoutEntry.self, key: abandonedWorkoutsKey, defaults: defaults, today: today,
+                stamp: \.loggedAt, date: \.date)
+    }
+
+    static func loadDayOutcomes(_ defaults: UserDefaults, today: Date) -> [DayOutcome] {
+        loadLog(DayOutcome.self, key: dayOutcomesKey, defaults: defaults, today: today,
+                stamp: \.recordedAt, date: \.date)
     }
 
     // MARK: - Memory-drift auto-regen

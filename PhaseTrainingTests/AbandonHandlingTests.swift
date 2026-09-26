@@ -227,4 +227,38 @@ final class AbandonHandlingTests: XCTestCase {
         XCTAssertEqual(env.abandonedWorkouts.count, 1)
         XCTAssertEqual(env.abandonedWorkouts.first?.note, "knee")
     }
+
+    // MARK: - Restore reload
+
+    /// BackupCoordinator restores into UserDefaults and then calls
+    /// reloadFromDefaults. Before 2026-09-26 that re-read only plan and
+    /// overrides, so the next recordMiss / recordAbandonment wrote the stale
+    /// in-memory log back over the restored one.
+    func test_reloadFromDefaults_rereadsMissedAndAbandonedLogs_soTheNextWriteKeepsThem() throws {
+        let suite = "abandon-restore-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defaults.removePersistentDomain(forName: suite)
+        let today = monday()
+        let store = PlanStore(defaults: defaults, today: today)
+        XCTAssertTrue(store.missedWorkouts.isEmpty && store.abandonedWorkouts.isEmpty)
+
+        let day = { (n: Int) in Calendar.current.date(byAdding: .day, value: -n, to: today)! }
+        let missed = [MissedWorkoutEntry(date: day(3), plannedKind: .lift, plannedTitle: "Lower",
+                                         resolution: .dropped, loggedAt: day(2))]
+        let abandoned = [AbandonedWorkoutEntry(date: day(5), plannedTitle: "Upper", reason: .pain,
+                                               completionRatio: 0.3, loggedAt: day(5))]
+        defaults.set(try PlanStore.encoder().encode(missed), forKey: PlanStore.missedWorkoutsKey)
+        defaults.set(try PlanStore.encoder().encode(abandoned), forKey: PlanStore.abandonedWorkoutsKey)
+
+        store.reloadFromDefaults(today: today)
+        XCTAssertEqual(store.missedWorkouts.map(\.plannedTitle), ["Lower"])
+        XCTAssertEqual(store.abandonedWorkouts.map(\.plannedTitle), ["Upper"])
+
+        // The write that used to clobber the restore.
+        store.recordAbandonment(AbandonedWorkoutEntry(date: day(1), plannedTitle: "Full", reason: .timeOut,
+                                                      completionRatio: 0.2, loggedAt: today))
+        let reopened = PlanStore(defaults: defaults, today: today)
+        XCTAssertEqual(Set(reopened.abandonedWorkouts.compactMap(\.plannedTitle)), ["Upper", "Full"])
+        XCTAssertEqual(reopened.missedWorkouts.count, 1)
+    }
 }

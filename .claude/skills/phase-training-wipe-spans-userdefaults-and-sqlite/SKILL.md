@@ -51,6 +51,7 @@ removal in `clear()`, the `BackupEnvelope` field (property, `decodeIfPresent` in
 decoder, memberwise init, `snapshot`, restore `touchedKeys` + write), and a re-read in
 `PlanStore.reloadFromDefaults`. That last one is what `BackupCoordinator` calls after a
 restore, and it re-reads only plan + overrides. A log missing from it keeps its stale
-in-memory copy, and the next insert writes that copy back over the restored data. As of
-2026-09-25 `pt_day_outcomes` is re-read there; `missedWorkouts` and `abandonedWorkouts` are
-NOT (open bug).
+in-memory copy, and the next insert writes that copy back over the restored data. Fixed
+2026-09-26: all three logs load through shared `PlanStore.load*` helpers called from both
+`init` and `reloadFromDefaults`. A new log adds one loader and calls it in both places;
+`AbandonHandlingTests.test_reloadFromDefaults_*` shows the regression shape.
