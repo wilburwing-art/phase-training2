@@ -265,3 +265,67 @@ for SUP (0 against a floor of 5).
 
 Calendar time runs longer than build time throughout, because the twin, the physiology
 reader and the classifier all wait on data that accrues at the pace of real training.
+
+## Next work after build 145 (written 2026-09-26)
+
+Build 145 state: 3b, 2a, physiology capture, location capture and the housekeeping
+(squat merge with alias, 6 SUP antagonists) are on `claude/elegant-brahmagupta-7ecbou`,
+written without a local Swift toolchain. The privacy-label reasoning (on-device data is
+not "collected") was confirmed by Wilbur on 2026-09-26. The eval-rig fleet is the one 145
+item not started.
+
+### 1. Land 145 (about 1 day)
+
+- CI green on the branch (first compile of all four Swift slices).
+- Simulator pass on the two new prompts, which no one has seen yet: the recovery-data grant
+  from Health & Imports, and "while using" location at the first session start (decline
+  path included: no second ask, nothing captured).
+- Merge to main, bump the build number, tag. The Signals sheet should show five clocks.
+
+### 2. Synthetic-athlete fleet (about 1 week, the last 145 item)
+
+The contract stays JSON on disk, as both repos already require. The old adapter
+(`EvalRigExporter` and its smoke test) is gone from phase-training2, so eval-rig's
+ROADMAP "adapter: built" is stale; this replaces it.
+
+- **eval-rig, personas.** `personas/*.json`, each with planted truths: per-weekday
+  attendance rates, travel weeks, an overrun habit, one exercise that always gets dropped,
+  a strength trajectory with noise, and clean control personas with no habits.
+- **eval-rig, simulator.** `eval fleet simulate --personas N --weeks 26 --seed S` writes one
+  JSON per athlete: planned weeks, saved sessions, DayOutcomes, the missed log and travel
+  events, in the app's own Codable shapes. A shared JSON Schema plus a contract test on each
+  side pins the shapes so Swift and TypeScript cannot drift silently.
+- **phase-training2, replay.** `FleetReplayTest` (XCTest, reads the run directory from an
+  environment variable, skips when unset so CI is unaffected) walks each athlete week by week
+  through `PatternEngine`, the twin, `SessionLikelihood` and `Counterfactual`, and writes
+  `predictions.json`.
+- **eval-rig, scoring.** `eval fleet score <run>` reports: 3b Brier score and calibration by
+  decile against the planted rates; PatternEngine recall on planted habits and its false
+  suggestion rate on the clean personas; twin MAE and direction accuracy against
+  last-value; 2a sign agreement with the simulator's own readiness rule.
+- **Payoff.** Tune the 3b priors (75% start, streak 15%, travel 30%, 12% an hour late, the
+  6-day check-in floor) from the calibration table, and set PatternEngine thresholds from
+  false-positive rates instead of guesses.
+
+### 3. Review on 2026-10-24 (unchanged)
+
+Size and direction on 100+ in-app pairs. Physiology is not judged; its clock has run under
+four weeks.
+
+### 4. Build 146, the watch (target mid-November)
+
+4a and 4b together, as ordered above. One item to decide before it starts: 4a writes the
+workout to HealthKit, and today the app is read-only, with a usage string and policy that
+say it never writes. That needs a new `NSHealthUpdateUsageDescription`, a policy edit and a
+write grant. It is the same class of change as decision 1, so it is flagged rather than
+assumed.
+
+### 5. Small follow-ups found during 145
+
+- `validate_coverage.py` still flags rowing and paddle-sports at 0 antagonists, and several
+  sports under the floor of 5. Same fix as SUP, one pass through the pipeline.
+- `ReadinessEventsTests.swift` header still calls `buildReadinessEvents` private (2a made it
+  internal).
+- `scripts/db/draft_variant_additions.py` uses the merged exercise 1087 as a template id.
+- The 2a summary test assumes English weekday names; pin the calendar's locale in the test.
+- Track 5b: licensing outreach drafts in the repo for Wilbur to send. Nothing drafted yet.
