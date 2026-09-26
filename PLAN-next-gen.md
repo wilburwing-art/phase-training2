@@ -306,11 +306,19 @@ ROADMAP "adapter: built" is stale; this replaces it.
 - **Payoff.** Tune the 3b priors (75% start, streak 15%, travel 30%, 12% an hour late, the
   6-day check-in floor) from the calibration table, and set PatternEngine thresholds from
   false-positive rates instead of guesses.
+- **Readiness truth: fitness-fatigue (Wilbur, 2026-09-26).** The simulator's
+  `true_readiness` is a fitness-fatigue model, so a lighter few days before a sport day (a
+  taper) raises it. The app's `ReadinessSignal` counts recency and density only, so a skip
+  always lowers or holds it. The fleet treats fitness-fatigue as correct: 2a's
+  disagreement on skip rows is scored as a real `ReadinessSignal` flaw, not tolerated as a
+  model difference. Consequence: that disagreement rate is the first number 1b (per-pattern
+  load in the silent readiness path) has to bring down, which argues for starting 1b before
+  the 2026-10-24 review rather than after it.
 
 **How to run the fleet.** The contract is eval-rig's `fleet/CONTRACT.md`; the replay lives
 in `PhaseTrainingTests/Fleet/` (test target only, nothing ships).
 
-1. In eval-rig: `npm run eval -- fleet simulate --personas 50 --weeks 26 --seed 42`. It
+1. In eval-rig: `npm run eval -- fleet simulate --athletes 50 --weeks 26 --seed 42`. It
    writes `fleet/runs/<run-id>/manifest.json` and `athletes/*.json`.
 2. In phase-training2 (`xcodegen generate` first if the project is stale), with the run
    directory as an absolute path:
