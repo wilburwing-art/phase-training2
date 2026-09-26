@@ -57,6 +57,10 @@ private struct ExerciseDetailContent: View {
     /// Cached once per pushed instance alongside `substitutes` and
     /// `adjacency` — see comment above.
     @State private var muscles: [(slug: String, role: String, label: String)] = []
+    /// "More like this" (on-device embeddings). Empty until computed, and stays
+    /// empty when the system has no embedding asset, which hides the section.
+    @State private var similar: [Exercise] = []
+    @EnvironmentObject private var memoryStore: MemoryStore
 
     var body: some View {
         let adj = adjacency
@@ -116,6 +120,15 @@ private struct ExerciseDetailContent: View {
                         }
                     }
                 }
+                if !similar.isEmpty {
+                    section(title: "More like this") {
+                        VStack(spacing: 8) {
+                            ForEach(similar) { ex in
+                                similarLink(ex)
+                            }
+                        }
+                    }
+                }
                 if adj.easier != nil || adj.harder != nil {
                     section(title: "Difficulty chain") {
                         VStack(spacing: 8) {
@@ -144,6 +157,48 @@ private struct ExerciseDetailContent: View {
                 muscles = CoachDatabase.shared.musclesForExercise(exercise.id)
             }
         }
+        .task(id: exercise.id) {
+            let target = exercise
+            let allowed = DemographicProfile.from(memoryStore.memory).allowedEquipmentSlugs
+            let found = await Task.detached(priority: .utility) { () -> [Exercise] in
+                guard let index = ExerciseEmbeddings.shared() else { return [] }
+                return index.similar(to: target, allowedEquipment: allowed)
+            }.value
+            similar = found
+        }
+    }
+
+    private func similarLink(_ peer: Exercise) -> some View {
+        NavigationLink {
+            ExerciseDetailContent(exercise: peer)
+                .navigationTitle("Exercise")
+                .navigationBarTitleDisplayMode(.inline)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.ink3)
+                    .frame(width: 18)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(peer.name)
+                        .styled(.body)
+                        .foregroundStyle(Color.ink)
+                        .multilineTextAlignment(.leading)
+                    Text(peer.difficultyLabel)
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                }
+                Spacer(minLength: 4)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Color.ink3)
+            }
+            .padding(12)
+            .background(Color.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("detail-similar-\(peer.id)")
     }
 
     // MARK: - Muscles
