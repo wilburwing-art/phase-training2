@@ -49,6 +49,10 @@ enum CoachContext {
         // list of what the coach receives, and search text never is.
         dayOutcomes: [DayOutcome] = [],
         openSuggestions: [Suggestion] = [],
+        // 3b: the chance today's planned session happens (SessionLikelihood).
+        // Context for the coach only, never a Today-screen number. Defaulted
+        // nil so the insight and refinement passes stay as they are.
+        sessionLikelihood: SessionLikelihood? = nil,
         // Phase 2 readiness: pass-through of the in-season readiness
         // score (0..1, 0.5 = neutral / no data) so the LLM knows
         // whether to nudge intensity up or down in its prose. Per the
@@ -376,6 +380,10 @@ enum CoachContext {
             blocks.append(patterns)
         }
 
+        if let likelihood = sessionLikelihoodSection(sessionLikelihood) {
+            blocks.append(likelihood)
+        }
+
         if let familiarity = familiaritySection(sessions: recentSessions, now: now) {
             blocks.append(familiarity)
         }
@@ -471,6 +479,20 @@ enum CoachContext {
             lines.append("- Open suggestion: \(s.title) \(s.evidence) Offered action: \(s.acceptLabel).")
         }
         return "PATTERNS\n" + lines.joined(separator: "\n")
+    }
+
+    /// 3b: today's session likelihood with its reasons. Framed as a quiet
+    /// prior like readiness: the coach may use it to offer a shorter or moved
+    /// session when the user raises time or energy, never to tell them the app
+    /// expects a skip. Nothing moves on its own.
+    static func sessionLikelihoodSection(_ l: SessionLikelihood?) -> String? {
+        guard let l else { return nil }
+        var lines: [String] = []
+        lines.append("- estimate: \(l.percent)% (from \(l.samples) planned day\(l.samples == 1 ? "" : "s") in the last \(SessionLikelihoodEngine.windowDays) days)")
+        for r in l.reasons { lines.append("- \(r)") }
+        lines.append("- use: if it is low and the user mentions time, energy or travel, offer a shorter session or a move; do not bring it up unprompted")
+        return "TODAY'S SESSION LIKELIHOOD (context only; do not quote the number or say the app expects a skip)\n"
+            + lines.joined(separator: "\n")
     }
 
     // MARK: - Shared helpers (used across the section-builder extensions)

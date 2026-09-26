@@ -385,7 +385,9 @@ struct CoachDrawer: View {
             abandonedWorkouts: planStore.abandonedWorkouts,
             // A4: same chat-only rationale. The insight pass stays lean.
             dayOutcomes: planStore.dayOutcomes,
-            openSuggestions: planStore.currentSuggestions()
+            openSuggestions: planStore.currentSuggestions(),
+            // 3b: same chat-only rationale as A4.
+            sessionLikelihood: planStore.todaySessionLikelihood()
         )
 
         inflightTask = Task {
