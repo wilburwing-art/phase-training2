@@ -68,6 +68,7 @@ struct ProfileScreen: View {
     @State private var presentingPlateCalculator = false
     #if DEBUG
     @State private var presentingMuscleChipGenerator = false
+    @State private var presentingTwinScorecard = false
     @State private var presentingSetupChecklist = false
     #endif
 
@@ -246,6 +247,10 @@ struct ProfileScreen: View {
                                     value: "DEBUG",
                                     icon: "figure.strengthtraining.traditional",
                                     action: { presentingMuscleChipGenerator = true })
+                        SettingsRow(label: "Shadow twin scorecard",
+                                    value: "DEBUG",
+                                    icon: "waveform.path.ecg",
+                                    action: { presentingTwinScorecard = true })
                         #endif
                     }
 
@@ -325,6 +330,11 @@ struct ProfileScreen: View {
         }
         .sheet(isPresented: $presentingMuscleChipGenerator) {
             MuscleChipGeneratorView()
+        }
+        .sheet(isPresented: $presentingTwinScorecard) {
+            TwinScorecardSheet()
+                .environmentObject(planStore)
+                .environmentObject(sessionStore)
         }
         #endif
         // iOS-level surfaces — owned by the parent screen so they survive

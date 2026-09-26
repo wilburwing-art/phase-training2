@@ -15,13 +15,19 @@ extension PlanStore {
         let displaced = overrides.displacedPlanByDate?.first {
             cal.isDate($0.key, inSameDayAs: dayStart)
         }?.value
-        let outcome = DayOutcome.derive(
+        var outcome = DayOutcome.derive(
             session: session,
             plannedDay: plannedDay,
             displaced: displaced,
             abandoned: abandoned,
             targetMinutes: memoryStore?.memory.sessionMinutes,
             now: now)
+        // B1a — shadow twin. History excludes this session; the model adds it
+        // back only to read the actual it is scored against.
+        let history = TwinInputs.sets(from: (sessionStore?.savedSessions ?? []).filter { $0.id != session.id })
+            + TwinInputs.sets(from: importedSetsProvider())
+        outcome.twin = TwinInputs.predict(session: session, plannedExercises: outcome.plannedExercises,
+                                          history: history)
         insertOutcome(outcome, now: now)
     }
 

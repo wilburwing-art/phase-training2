@@ -135,6 +135,47 @@ because it gives every other signal an outcome to be checked against.
 
 ## Part B: next-gen ideas, unlimited resources
 
+### Roadmap and gates (2026-09-26)
+
+What each idea needs that the app lacks today:
+
+| Idea | Lacks | Owner decision |
+|---|---|---|
+| 1 digital twin | HRV, sleep, resting HR (HealthKit reads only workouts and body composition) | Only for the physiology step (B1c) |
+| 2 counterfactuals | A twin that predicts | None |
+| 3 context | Location, calendar, a route for snow-almanac data into the app | New permissions |
+| 4 sensors | A watchOS target, Core ML models, labeled reps | Add a target |
+| 5 cross-user | A backend, a new privacy posture, licensing | Backend and posture |
+
+Order: B1a shadow twin (no decisions), B1b calibrated readiness only if B1a
+beats the last-value baseline, B1c physiology inputs only if B1b's errors
+cluster where physiology would explain them, then 2, 3, 4, 5.
+
+### B1a result: NO-GO (2026-09-26)
+
+Built: `TrainingLoadModel` (Banister fitness and fatigue per movement pattern
+from working sets), a `TwinPrediction` frozen on every `DayOutcome`, a
+`TwinScorecard`, a walk-forward `TwinReplay`, and a DEBUG-only scorecard in
+Profile. Nothing user-facing.
+
+Replay over the owner's Fitbod history (`workout-plan/data/fitbod-history.csv`,
+5,013 loaded sets, 252 training days), fit on the 16 weeks before the final 8,
+scored on the final 8 predicting each day from earlier data only:
+
+| Predictor | Mean abs. error, top-set e1RM (lb) |
+|---|---|
+| Last value | 12.20 |
+| Twin, default parameters | 12.36 |
+| Twin, fitted | 13.41 |
+
+Holdout pairs: 39. The fit chose (τF 28, τG 4, w 3, k 0.08), a corner of the
+grid, which reads as fitting noise. By the rule written before the run, B1b
+does not start. The frozen predictions keep accruing on real sessions, so the
+question can be re-asked with in-app data; re-run the replay when a new
+export exists rather than re-tuning against this one.
+
+### Original idea list
+
 Ranked. 2, 3 and 5 run on top of 1.
 
 1. **Athlete digital twin.** A per-user fitness-fatigue model fitted per

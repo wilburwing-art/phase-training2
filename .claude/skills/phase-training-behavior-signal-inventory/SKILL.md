@@ -62,3 +62,14 @@ target, so accepting minted a new id and the same old sessions re-fired it). The
 re-run on events after an accept, so give each suggestion its event dates. Accept goes through
 `PlanStore.acceptSuggestion` using an existing seam. Anything browse-derived stays out of
 `CoachContext.patternsSection` unless docs/privacy.md is changed first.
+
+## Shadow twin (B1a, 2026-09-26): built, and NO-GO
+
+`Data/Twin/TrainingLoadModel.swift` (Banister fitness/fatigue per movement pattern) freezes a
+`TwinPrediction` on every `DayOutcome.twin`; a DEBUG-only Profile row shows the scorecard.
+`TrainingLoadModelTests.test_replay_realFitbodHistory` replays `workout-plan/data/fitbod-history.csv`
+walk-forward: last-value baseline 12.20 lb MAE, twin 12.36 (defaults) / 13.41 (fitted, grid
+corner) on 39 holdout pairs. By the pre-registered rule B1b (twin-driven readiness) does not
+start. Before proposing readiness or "predictive load" work: re-run that replay on a NEWER
+export or on accrued in-app `DayOutcome.twin` pairs. Do not re-tune the grid against the same
+export until it says GO; that is fitting the test.

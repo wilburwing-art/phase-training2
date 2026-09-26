@@ -155,6 +155,11 @@ final class PlanStore: ObservableObject {
     var exploreSessionsSince: (Date) -> [ExploreSession] = { since in
         UserDatabase.defaultStore().listExploreSessions(since: since)
     }
+    /// B1a — imported history (Fitbod, Hevy) the shadow twin reads alongside
+    /// native sessions. Same default-store rule as `exploreSessionsSince`.
+    var importedSetsProvider: () -> [ImportedSet] = {
+        UserDatabase.defaultStore().allImportedSets()
+    }
     /// PR 8 — count of mid-week reshuffles (missed + abandoned)
     /// applied in the current week. Resets on weekly rollover.
     /// Spec §3 rule 5 caps at 2/week.

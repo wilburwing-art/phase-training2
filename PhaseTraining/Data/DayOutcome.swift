@@ -73,6 +73,10 @@ struct DayOutcome: Codable, Identifiable, Hashable {
     var added: [String]
 
     var recordedAt: Date
+
+    /// B1a — the shadow twin's prediction, frozen at save from history before
+    /// this session. Nil on outcomes recorded before 2026-09-26.
+    var twin: TwinPrediction? = nil
 }
 
 extension DayOutcome {
