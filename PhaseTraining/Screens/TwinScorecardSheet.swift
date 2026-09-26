@@ -42,6 +42,14 @@ struct TwinScorecardSheet: View {
                     row("Places clustered", "\(places.count)")
                     row("Top place visits", places.first.map { "\($0.visitCount)" } ?? "none")
                 }
+                // Build 145 clock: physiology capture (HRV, resting HR, sleep).
+                let phys = PhysiologyCaptureSummary.make(PhysiologyStore().loadNights())
+                Section("Physiology (Apple Health, on device)") {
+                    row("Capture on", PhysiologyStore().isEnabled ? "yes" : "no")
+                    row("Nights captured", "\(phys.nights)")
+                    row("Last night", phys.lastNight.map { $0.formatted(date: .abbreviated, time: .omitted) } ?? "none")
+                    row("  with HRV / RHR / sleep", "\(phys.daysWithHRV) / \(phys.daysWithRestingHR) / \(phys.daysWithSleep)")
+                }
                 Section("Check-in would ask today") {
                     if sig.suggestionsToday.isEmpty { Text("Nothing yet.").foregroundStyle(.secondary) }
                     ForEach(sig.suggestionsToday) { s in

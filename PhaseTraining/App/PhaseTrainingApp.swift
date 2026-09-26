@@ -621,6 +621,12 @@ struct PhaseTrainingApp: App {
                                 await activityDetection.scan(sportLogs: sportLog.entries)
                             }
                         }
+                        // Physiology capture (build 145): silent, at most
+                        // hourly, and a no-op unless the user tapped
+                        // "Capture recovery data". Never prompts.
+                        if memory.isOnboarded {
+                            Task { await PhysiologyCapture.refreshIfEnabled() }
+                        }
                     }
                 }
                 .onOpenURL { url in

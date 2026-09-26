@@ -86,6 +86,7 @@ The yearly price is a proposal (about seven months of monthly); the owner asked 
 Collected data, all "used for App Functionality", "not linked to the user", "not used for tracking":
 
 - Health & Fitness → Health: workouts, body weight, body fat, lean mass, read from Apple Health with permission.
+- Not declared, and why (build 145): heart rate variability, resting heart rate and sleep read from Apple Health behind their own tap-only permission. They are summarised and stored on device only, never sent to the AI Coach or anywhere else, so under Apple's definition they are not "collected" and the label does not change. If a later build puts them in the coach snapshot or uploads them, add them under Health & Fitness → Health before that build ships.
 - Health & Fitness → Fitness: logged workouts, sets, RPE, soreness.
 - Sensitive Info: none. Contact Info: none. Identifiers: none. Usage Data: none. Diagnostics: none.
 
@@ -94,6 +95,8 @@ Third party: when the user turns on the AI Coach, the training context is sent t
 ## App Review notes
 
 > Phase Training works fully without Apple Health, Apple Music or a subscription; choose "Not now" on the Health step of setup to skip the permission sheet.
+>
+> Recovery data (heart rate variability, resting heart rate, sleep) has its own read-only Health permission, requested only when the tester taps "Capture recovery data" in Profile → Health & Imports. The nightly summaries stay on the device.
 >
 > Apple Health is read-only. The `NSHealthUpdateUsageDescription` string is present only because iOS requires it whenever the HealthKit entitlement is included; the app calls requestAuthorization with an empty share set and never writes.
 >

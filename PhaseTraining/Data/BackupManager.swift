@@ -78,6 +78,10 @@ struct BackupEnvelope: Codable {
     var importedWorkouts: [ImportedWorkout] = []
     /// `imported_sets` rows — thousands, spanning years.
     var importedSets: [ImportedSet] = []
+    /// Build 145 — `pt_physiology_nights`, nightly HRV / resting HR / sleep
+    /// summaries from Apple Health. The capture switch itself is not carried:
+    /// the Health grant is per device, so a new phone asks again on tap.
+    var physiologyNights: [PhysiologyNight] = []
 
     /// True when the embedded memory predates the app's current
     /// TrainingMemory schema — fields added since were decoded as defaults,
@@ -121,6 +125,7 @@ struct BackupEnvelope: Codable {
         recentPicks = try c.decodeIfPresent([String: Date].self, forKey: .recentPicks) ?? [:]
         importedWorkouts = try c.decodeIfPresent([ImportedWorkout].self, forKey: .importedWorkouts) ?? []
         importedSets = try c.decodeIfPresent([ImportedSet].self, forKey: .importedSets) ?? []
+        physiologyNights = try c.decodeIfPresent([PhysiologyNight].self, forKey: .physiologyNights) ?? []
     }
 
     /// Memberwise init, restored because declaring `init(from:)` suppresses it.
@@ -146,7 +151,8 @@ struct BackupEnvelope: Codable {
          lastDeloadWeekStart: Double? = nil,
          recentPicks: [String: Date] = [:],
          importedWorkouts: [ImportedWorkout] = [],
-         importedSets: [ImportedSet] = []) {
+         importedSets: [ImportedSet] = [],
+         physiologyNights: [PhysiologyNight] = []) {
         self.schemaVersion = schemaVersion
         self.memorySchemaVersion = memorySchemaVersion
         self.exportedAt = exportedAt
@@ -170,6 +176,7 @@ struct BackupEnvelope: Codable {
         self.recentPicks = recentPicks
         self.importedWorkouts = importedWorkouts
         self.importedSets = importedSets
+        self.physiologyNights = physiologyNights
     }
 }
 
@@ -240,6 +247,7 @@ enum BackupManager {
         let pendingOverrides: WeekOverrides? = decodeIfPresent(defaults: defaults, key: PlanStore.pendingOverridesKey)
         let lastDeload = defaults.object(forKey: PlanStore.lastDeloadWeekKey) as? Double
         let recentPicks: [String: Date] = decodeIfPresent(defaults: defaults, key: "pt_recent_exercise_picks") ?? [:]
+        let physiologyNights: [PhysiologyNight] = decodeIfPresent(defaults: defaults, key: PhysiologyStore.nightsKey) ?? []
         return BackupEnvelope(
             memorySchemaVersion: memory?.schemaVersion,
             exportedAt: exportedAt,
@@ -262,7 +270,8 @@ enum BackupManager {
             lastDeloadWeekStart: lastDeload,
             recentPicks: recentPicks,
             importedWorkouts: userDB.allImportedWorkouts(),
-            importedSets: userDB.allImportedSets()
+            importedSets: userDB.allImportedSets(),
+            physiologyNights: physiologyNights
         )
     }
 
@@ -361,7 +370,7 @@ enum BackupManager {
                            PlanStore.pastPlansKey, PlanStore.planOverridesKey,
                            PlanStore.pendingPlanKey, PlanStore.pendingOverridesKey,
                            PlanStore.lastDeloadWeekKey,
-                           "pt_recent_exercise_picks"]
+                           "pt_recent_exercise_picks", PhysiologyStore.nightsKey]
         var priorValues: [String: Any] = [:]
         for key in touchedKeys { priorValues[key] = defaults.object(forKey: key) }
         do {
@@ -385,6 +394,7 @@ enum BackupManager {
                 defaults.removeObject(forKey: PlanStore.lastDeloadWeekKey)
             }
             try encodeAndWrite(envelope.recentPicks, defaults: defaults, key: "pt_recent_exercise_picks")
+            try encodeAndWrite(envelope.physiologyNights, defaults: defaults, key: PhysiologyStore.nightsKey)
             // Wipe legacy UserDefaults keys so a stale post-migration import
             // path can never resurrect them. Idempotent.
             defaults.removeObject(forKey: "pt_sessions")
