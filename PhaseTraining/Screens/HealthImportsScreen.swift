@@ -2,11 +2,13 @@
 // subscreen. Presented from ProfileScreen's APP section as a sheet so
 // it composes with the existing Settings row pattern.
 //
-// Thin shell: the three features live in Screens/HealthImports/ as
+// Thin shell: the four features live in Screens/HealthImports/ as
 // section views that each own their state —
 //   - HealthWorkoutSyncSection: auth status row, last-sync summary,
 //     "Sync from Health" CTA, debug-only readiness breakdown.
 //   - BodyMetricsSyncSection: weight / body-fat / lean-mass sync.
+//   - PhysiologyCaptureSection: nightly HRV / resting HR / sleep capture,
+//     its own permission, on tap only (build 145).
 //   - CSVImportSection: Phase 3 CSV import + import-history management.
 // The only cross-section seam is `workoutDataVersion`: the CSV importer
 // can write cardio rows to imported_workouts, so it bumps the token and
@@ -31,6 +33,7 @@ struct HealthImportsScreen: View {
                     VStack(alignment: .leading, spacing: 28) {
                         HealthWorkoutSyncSection(importer: importer, refreshToken: workoutDataVersion)
                         BodyMetricsSyncSection(importer: importer)
+                        PhysiologyCaptureSection()
                         CSVImportSection(onImportedWorkoutsChanged: { workoutDataVersion += 1 })
                         Spacer().frame(height: 40)
                     }

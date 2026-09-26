@@ -75,6 +75,19 @@ predicted adaptation before the next sport day.
 - **1c. Physiology inputs.** Decision 1. About 2 weeks. HRV, resting HR and
   sleep from HealthKit joined to the soreness check-ins the app already has.
   Gate to 1d: the error on those clustered days drops.
+  **Physiology capture: built 2026-09-26, for build 145.** Capture and store
+  only. "Capture recovery data" in Health & Imports is the only place the
+  HRV / resting HR / sleep grant is asked, separate from workouts and body
+  metrics. `PhysiologySummariser` (pure) keeps one `PhysiologyNight` per wake
+  day: mean SDNN from 18:00 the evening before to 12:00, the day's resting HR,
+  and minutes asleep as the union of core, deep, REM and unspecified (in bed
+  and awake excluded, overlapping sources counted once), with sample counts.
+  30 nights on the first read, then incremental on foreground at most hourly,
+  never prompting; stored under `pt_physiology_nights` (365-day window), in
+  the backup, swept by the erase. Not in the coach snapshot; the privacy
+  policy says so, and the App Store label is unchanged because nothing leaves
+  the device (`docs/store/LISTING.md`). The Signals sheet shows nights and
+  days with each signal. The reader waits for 6+ weeks of nights.
 - **1d. Overreach risk and the adaptation ranking.** About 2 weeks. A per-week
   risk flag and a ranking of the authored sessions that fit the slot by
   predicted adaptation recoverable before the next sport day. Surfaces in the

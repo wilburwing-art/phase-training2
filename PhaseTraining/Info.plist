@@ -38,9 +38,9 @@
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>Only when you tap Find travel in the weekly check-in, PhaseTraining reads next week's calendar events on your device to spot trips (hotel stays, flights, multi-day trips away) and mark those days as travel days. Event titles and locations are not stored and never leave your device.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>PhaseTraining reads recent workout history to gauge your current training readiness, match generated workouts to how active you've actually been, and offer to log outdoor sessions it finds (like a ski day or a climb) so your training week can adjust. With your separate permission, it can also import body weight, body-fat %, and lean-mass readings to populate your training log.</string>
+	<string>PhaseTraining reads recent workout history to gauge your current training readiness, match generated workouts to how active you've actually been, and offer to log outdoor sessions it finds (like a ski day or a climb) so your training week can adjust. With your separate permission, it can also import body weight, body-fat %, and lean-mass readings to populate your training log. Only if you tap Capture recovery data, it also reads nightly heart rate variability, resting heart rate and sleep and keeps a nightly summary on your device, to learn how recovery relates to your training. That recovery data never leaves your device.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>PhaseTraining does not write to Apple Health — it only reads your workout and body-metric data. iOS requires this permission whenever an app includes HealthKit; PhaseTraining never adds, edits, or deletes anything in Health.</string>
+	<string>PhaseTraining does not write to Apple Health. It only reads your workout, body-metric and recovery data. iOS requires this permission whenever an app includes HealthKit; PhaseTraining never adds, edits, or deletes anything in Health.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>SpaceGrotesk-Regular.ttf</string>
