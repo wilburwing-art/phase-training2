@@ -121,6 +121,7 @@ targets:
         # toShare: []). Without this key, altool rejects the upload with a 409
         # "Missing purpose string" (killed builds 116 + 117). The string is
         # honest: we never write.
+        NSCalendarsFullAccessUsageDescription: "Only when you tap Find travel in the weekly check-in, PhaseTraining reads next week's calendar events on your device to spot trips (hotel stays, flights, multi-day trips away) and mark those days as travel days. Event titles and locations are not stored and never leave your device."
         NSHealthUpdateUsageDescription: "PhaseTraining does not write to Apple Health — it only reads your workout and body-metric data. iOS requires this permission whenever an app includes HealthKit; PhaseTraining never adds, edits, or deletes anything in Health."
         # Log-screen media card (build 133). MPMediaLibrary authorisation is
         # what lets MPMusicPlayerController.systemMusicPlayer report the

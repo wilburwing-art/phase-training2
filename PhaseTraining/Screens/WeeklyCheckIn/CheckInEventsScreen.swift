@@ -24,6 +24,9 @@ struct CheckInEventsScreen: View {
     let onClose: () -> Void
 
     @State private var pickingDate: Date? = nil
+    /// B3 — result line under the calendar button; nil until the first tap.
+    @State private var calendarNote: String? = nil
+    @State private var readingCalendar = false
 
     var body: some View {
         CheckInScaffold(
@@ -37,6 +40,7 @@ struct CheckInEventsScreen: View {
             onClose: onClose
         ) {
             VStack(alignment: .leading, spacing: 18) {
+                calendarSection
                 dayPickerSection
                 if !draft.events.isEmpty {
                     eventList
@@ -61,6 +65,73 @@ struct CheckInEventsScreen: View {
     }
 
     // MARK: - Sections
+
+    /// B3 — find travel in next week's calendar. The tap is the only place the
+    /// calendar permission prompt can appear. Found days land in the draft as
+    /// "Travel" events the user can still remove; nothing commits until the
+    /// check-in's own accept.
+    private var calendarSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Button {
+                findTravel()
+            } label: {
+                Label(readingCalendar ? "Checking your calendar…" : "Find travel in my calendar",
+                      systemImage: "airplane.departure")
+                    .styled(.monoXS)
+                    .foregroundStyle(Color.ink)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.surface)
+                    .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.line, lineWidth: 0.5))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .disabled(readingCalendar)
+            .accessibilityIdentifier("checkin-find-travel")
+            if let calendarNote {
+                Text(calendarNote)
+                    .styled(.monoXS)
+                    .foregroundStyle(Color.ink2)
+                    .accessibilityIdentifier("checkin-find-travel-result")
+            }
+        }
+    }
+
+    private func findTravel() {
+        readingCalendar = true
+        Task { @MainActor in
+            defer { readingCalendar = false }
+            switch await CalendarTravelReader.findTravel(weekStart: weekStart) {
+            case .denied:
+                calendarNote = "Calendar access is off. You can turn it on in iOS Settings, or add travel days below."
+            case .failed:
+                calendarNote = "Couldn't read your calendar. Add travel days below."
+            case .found(let days):
+                let added = CalendarTravelDetector.events(for: days, existing: draft.events)
+                draft.events.append(contentsOf: added)
+                calendarNote = Self.summary(added: added, found: days.count)
+            }
+        }
+    }
+
+    /// "Added Tue to Thu from your calendar." Consecutive days read as a range.
+    static func summary(added: [WeekEvent], found: Int) -> String {
+        guard !added.isEmpty else {
+            return found == 0 ? "No travel found next week." : "Travel days next week already have events."
+        }
+        let f = DateFormatter()
+        f.dateFormat = "EEE"
+        let dates = added.map(\.date).sorted()
+        let cal = Calendar.current
+        let consecutive = zip(dates, dates.dropFirst()).allSatisfy {
+            cal.dateComponents([.day], from: $0, to: $1).day == 1
+        }
+        let label = dates.count == 1 ? f.string(from: dates[0])
+            : consecutive ? "\(f.string(from: dates.first!)) to \(f.string(from: dates.last!))"
+            : dates.map { f.string(from: $0) }.joined(separator: ", ")
+        return "Added \(label) from your calendar. Remove any that are wrong."
+    }
 
     private var dayPickerSection: some View {
         VStack(alignment: .leading, spacing: 8) {

@@ -26,6 +26,12 @@ Phase Training never writes to Apple Health, and Health data is never used for a
 
 The Log screen can show the track Apple Music is playing, with pause and skip, so you can change songs without leaving the app. Showing that card needs iOS's media-library permission. When music is playing and permission has not been given, the Log screen offers a "Show controls" button; the permission prompt appears only if you tap it, and if you decline, the card stays hidden. Phase Training only reads the currently playing item's title, artist and artwork while the Log screen is open. It never reads your library, playlists or listening history, never changes your library, never starts playback on its own, and stores nothing about what you played. Nothing from Apple Music is included in the AI Coach's context. You can revoke access at any time in iOS Settings → Privacy & Security → Media & Apple Music.
 
+## Calendar (optional, read-only, only when you ask)
+
+The weekly check-in has a "Find travel in my calendar" button. The calendar permission prompt appears only if you tap it, and the app works fully without it. When you tap it, Phase Training reads the events in your calendars for the week being planned, on your device, to spot trips: hotel or rental stays, flights, and multi-day events away. Each day it finds is added to that week's plan as a day titled "Travel", which you can remove before accepting the week.
+
+Event titles, locations, attendees and notes are not stored, and nothing read from your calendar leaves your device. Only the resulting travel dates are kept, and those carry the generic title "Travel", so no calendar content reaches the AI Coach even when the coach is on. Phase Training never adds, edits or deletes calendar events. You can revoke access at any time in iOS Settings → Privacy & Security → Calendars.
+
 ## AI Coach (optional, off by default)
 
 If you enable the AI Coach in Profile → AI Coach, the app sends a snapshot of your training context to Anthropic (Claude) via our Cloudflare AI Gateway proxy each turn. That snapshot is assembled fresh per message and can include:

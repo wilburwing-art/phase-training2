@@ -174,6 +174,35 @@ does not start. The frozen predictions keep accruing on real sessions, so the
 question can be re-asked with in-app data; re-run the replay when a new
 export exists rather than re-tuning against this one.
 
+### Next: ship, accrue, review on 2026-10-24
+
+Everything above reaches no data until a build carrying it is on the phone.
+Build 143 ships A1 to B1a plus a DEBUG "Signals & shadow twin" readout in
+Profile. Review four weeks after install, from a backup export:
+
+- **Twin re-ask:** score `DayOutcome.twin` pairs (plus a fresh Fitbod export
+  if one exists). GO needs the twin to beat last-value on at least 30 pairs;
+  otherwise B1 is shelved here in writing.
+- **Suggestions:** read `suggestionDecisions`. Cards fired, share applied. None
+  fired in four weeks means the thresholds are too strict for one person's
+  volume.
+- **Explore:** zero-result queries are the catalog-gap list for the coachdb
+  source pipeline.
+
+Build 143 (`v1.1.0-build143`, 2026-09-26) carries A1 to B1a and the Signals
+readout.
+
+**B3 calendar slice: built 2026-09-26, after build 143** (owner approved the
+calendar permission). The check-in's events step has "Find travel in my
+calendar": on tap only, it reads next week on device, and hotel or rental
+stays across a night, 2+ day all-day events with a location, 20+ hour timed
+events across a night, and flights become `.outOfTown` days titled "Travel",
+which the Planner already turns into a bodyweight session. Calendar text is
+never stored or sent; the privacy policy has a Calendar section. Ships in the
+build after 143.
+
+Still parked: B1c behind B1b, B4 and B5 until single-user value is shown.
+
 ### Original idea list
 
 Ranked. 2, 3 and 5 run on top of 1.
