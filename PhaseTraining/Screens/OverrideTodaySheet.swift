@@ -35,6 +35,8 @@ struct OverrideTodaySheet: View {
     var targetDate: Date? = nil
 
     @State private var showingCoachRequest = false
+    /// A3 explore log. No search box here: records opens and switches.
+    @State private var recorder = ExploreRecorder(surface: .overrideToday)
     @State private var editingRoutine: CustomRoutine? = nil
 
     var body: some View {
@@ -112,6 +114,10 @@ struct OverrideTodaySheet: View {
         .sheet(item: $editingRoutine) { routine in
             CustomRoutineEditSheet(routine: routine)
         }
+        .onChange(of: editingRoutine) { _, routine in
+            if let routine { recorder.opened(.customRoutine, id: routine.id, name: routine.name) }
+        }
+        .onDisappear { recorder.flush() }
     }
 
     // MARK: - Custom row
@@ -199,6 +205,7 @@ struct OverrideTodaySheet: View {
     /// Bridge the picked custom routine into the active-session runtime and
     /// fire the start callback so the host surface can dismiss itself.
     private func startSession(with custom: CustomRoutine) {
+        recorder.converted(.switchToday, itemKind: .customRoutine, id: custom.id, name: custom.name)
         let template = custom.toWorkoutTemplate()
         sessionStore.saveActive(sessionStore.createSession(from: template))
         dismiss()
@@ -212,6 +219,7 @@ struct OverrideTodaySheet: View {
     /// (on the day-of) both pick up the new workout via standard plan re-
     /// render — no special wiring needed at the host surface.
     private func scheduleOverride(custom: CustomRoutine, for date: Date) {
+        recorder.converted(.switchToday, itemKind: .customRoutine, id: custom.id, name: custom.name)
         let key = Calendar.current.startOfDay(for: date)
         planStore.updateOverrides(memory: memoryStore.memory) { o in
             o.customRoutineByDate[key] = custom.id

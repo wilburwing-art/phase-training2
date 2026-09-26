@@ -75,6 +75,7 @@ struct DayWorkoutPreviewSheet: View {
                 ExercisePickerSheet(
                     title: "Replace \(originalName)",
                     initialFilters: initial,
+                    conversion: .swapIn,
                     onPick: { picked in
                         swapExercise(at: wrapped.index, with: picked)
                     }
@@ -106,6 +107,7 @@ struct DayWorkoutPreviewSheet: View {
                 // the current workout.
                 ExercisePickerSheet(
                     title: "Add exercise",
+                    conversion: .addToSession,
                     onPick: { picked in appendExercise(picked) }
                 )
             }

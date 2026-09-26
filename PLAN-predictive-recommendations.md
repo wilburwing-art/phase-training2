@@ -107,8 +107,15 @@ because it gives every other signal an outcome to be checked against.
   read-time sources decay: the week snapshot is replaced on every capture and
   the displaced original is cleared every Monday. Missed days stay in the
   missed log. No reader yet.
-- **A3.** On-device explore-funnel event table, 90-day window, matching the
-  missed and abandoned logs.
+- **A3. DONE 2026-09-26.** One `ExploreSession` per visit to a browse surface
+  (swap/add picker, Library, muscle list, workout category, override sheet),
+  written on disappear only when the visit showed intent. Holds the last query
+  (normalised, 60 chars), result count and search tier, opens and conversions
+  each stamped with the query in force. `UserDatabase` table
+  `explore_sessions` (migration v2), pruned to 90 days on open, wiped by
+  `wipeAll`, not in backups, never leaves the device. Every picker caller
+  states its conversion kind. Verified in the simulator: a Library search plus
+  detail open and a Today swap each wrote one correct row. No reader yet.
 - **A4.** Decide surface: coach asks versus planner acts. Default to asking.
 
 ---

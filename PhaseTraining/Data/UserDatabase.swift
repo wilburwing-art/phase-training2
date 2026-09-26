@@ -55,6 +55,7 @@ final class UserDatabase {
             return
         }
         runMigrations()
+        if unavailableReason == nil { pruneExploreSessions() }
     }
 
     deinit { if let db { sqlite3_close(db) } }
@@ -207,8 +208,31 @@ final class UserDatabase {
             "CREATE INDEX IF NOT EXISTS idx_imported_sets_exercise ON imported_sets(exercise_id, performed_at DESC)",
             "CREATE INDEX IF NOT EXISTS idx_imported_sets_perf     ON imported_sets(performed_at DESC)",
             "CREATE INDEX IF NOT EXISTS idx_imported_sets_source   ON imported_sets(source)"
+        ]),
+        // v2 — A3 browse sessions (ExploreSession.swift). One row per visit to a
+        // browse surface; opens and conversions are small JSON arrays.
+        (2, [
+            """
+            CREATE TABLE IF NOT EXISTS explore_sessions (
+              id                TEXT PRIMARY KEY,
+              surface           TEXT NOT NULL,
+              started_at        REAL NOT NULL,
+              ended_at          REAL NOT NULL,
+              query             TEXT,
+              result_count      INTEGER,
+              tier              INTEGER,
+              broadened         INTEGER NOT NULL DEFAULT 0,
+              opens_json        TEXT NOT NULL DEFAULT '[]',
+              conversions_json  TEXT NOT NULL DEFAULT '[]'
+            )
+            """,
+            "CREATE INDEX IF NOT EXISTS idx_explore_sessions_started ON explore_sessions(started_at DESC)"
         ])
     ]
+
+    /// The version a fully migrated database stamps. Tests assert against
+    /// this rather than a literal, so appending a migration does not break them.
+    static var latestSchemaVersion: Int32 { migrations.last?.version ?? 0 }
 
     private func runMigrations() {
         guard let db else { return }

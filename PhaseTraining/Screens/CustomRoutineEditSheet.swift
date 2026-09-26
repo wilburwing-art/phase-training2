@@ -56,7 +56,7 @@ struct CustomRoutineEditSheet: View {
                 }
             }
             .sheet(isPresented: $showingPicker) {
-                ExercisePickerSheet(title: "Add exercise") { ex in
+                ExercisePickerSheet(title: "Add exercise", conversion: .addToRoutine) { ex in
                     addExercise(ex)
                 }
             }
@@ -73,7 +73,8 @@ struct CustomRoutineEditSheet: View {
                 // workout dropped the user somewhere the identical action on
                 // Today would not.
                 ExercisePickerSheet(title: "Replace \(name)",
-                                    initialFilters: .similar(toExerciseNamed: name)) { picked in
+                                    initialFilters: .similar(toExerciseNamed: name),
+                                    conversion: .swapIn) { picked in
                     if let i = draft.exercises.firstIndex(where: { $0.id == wrapped.id }) {
                         draft.exercises[i].exerciseId = picked.id
                         draft.exercises[i].name = picked.name

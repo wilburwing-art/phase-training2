@@ -165,6 +165,7 @@ struct LogScreen: View {
             ExercisePickerSheet(
                 title: "Replace \(original.name)",
                 initialFilters: .similar(toExerciseNamed: original.name),
+                conversion: .swapIn,
                 onPick: { picked in
                     swapExercise(at: wrapped.index, with: picked)
                 }
@@ -179,6 +180,7 @@ struct LogScreen: View {
             // so we open the picker wide and let them search.
             ExercisePickerSheet(
                 title: "Add exercise",
+                conversion: .addToSession,
                 onPick: { picked in
                     appendExerciseFromPicker(picked)
                 }

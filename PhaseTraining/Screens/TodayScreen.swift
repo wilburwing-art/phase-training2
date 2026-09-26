@@ -223,12 +223,14 @@ struct TodayScreen: View {
             ExercisePickerSheet(
                 title: "Replace \(originalName)",
                 initialFilters: initial,
+                conversion: .swapIn,
                 onPick: { picked in swapExercise(at: wrapped.index, with: picked) }
             )
         }
         .sheet(isPresented: $addingExercise) {
             ExercisePickerSheet(
                 title: "Add exercise",
+                conversion: .addToSession,
                 onPick: { picked in appendExercise(picked) }
             )
         }

@@ -23,6 +23,8 @@ struct LibraryMuscleScreen: View {
     @State private var filters = ExerciseFilters()
     @State private var showingFilterSheet = false
     @State private var detailExercise: Exercise? = nil
+    /// A3 explore log for this visit (ExploreSession.swift).
+    @State private var recorder = ExploreRecorder(surface: .libraryMuscle)
     /// Cached catalog query results — refreshed on appear and whenever a
     /// query input (search / sub-bucket / filters) changes, instead of
     /// re-running listExercises on every render. Same caching pattern as
@@ -53,6 +55,7 @@ struct LibraryMuscleScreen: View {
         .onChange(of: query) { _, _ in reloadRows() }
         .onChange(of: subBucket) { _, _ in reloadRows() }
         .onChange(of: filters) { _, _ in reloadRows() }
+        .onDisappear { recorder.flush() }
         .preferredColorScheme(.dark)
     }
 
@@ -201,7 +204,10 @@ struct LibraryMuscleScreen: View {
                             title: ex.name,
                             meta: ex.metaLabel(),
                             trailing: .chevron,
-                            onTap: { detailExercise = ex }
+                            onTap: {
+                                recorder.opened(.exercise, id: String(ex.id), name: ex.name)
+                                detailExercise = ex
+                            }
                         ))
                     }
                 }
@@ -234,5 +240,6 @@ struct LibraryMuscleScreen: View {
                 ? memoryStore.memory.sports.map(\.slug)
                 : []
         )
+        recorder.query(query, results: rows.count)
     }
 }

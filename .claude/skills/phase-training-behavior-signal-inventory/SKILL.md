@@ -1,6 +1,6 @@
 ---
 name: phase-training-behavior-signal-inventory
-description: Map of every user-behavior signal phase-training2 captures (did / chose / looked), where each lives, and which are consumed by anything. Trigger when scoping recommendations, personalization, "predict what the user wants", "learn from what they search or swap", or any feature that reads user behavior into the planner or coach. Records that the explore tier (search, browse, detail opens, routine previews) has ZERO capture, the affinity tier feeds the season engine comparator (A1), and planned-vs-actual is frozen per session as DayOutcome (A2) with no reader yet. Skip for generator inertness questions (phase-training-season-engine-sidelines-adaptive-layer) or how to bias the slot picker (phase-training-generator-bias-weight-pool-not-reorder).
+description: Map of every user-behavior signal phase-training2 captures (did / chose / looked), where each lives, and which are consumed by anything. Trigger when scoping recommendations, personalization, "predict what the user wants", "learn from what they search or swap", or any feature that reads user behavior into the planner or coach. Records that the explore tier is captured per browse visit as ExploreSession (A3), the affinity tier feeds the season engine comparator (A1), and planned-vs-actual is frozen per session as DayOutcome (A2) with no reader yet. Skip for generator inertness questions (phase-training-season-engine-sidelines-adaptive-layer) or how to bias the slot picker (phase-training-generator-bias-weight-pool-not-reorder).
 when-to-use: Before designing any behavior-driven recommendation or ranking in phase-training2, so the scan of what is already captured is not redone from scratch.
 ---
 
@@ -18,7 +18,7 @@ work is wiring, and the one tier with no capture is the weakest signal.
 | Chose | Swap away X into Y | `TrainingMemory.exerciseAffinities`, `swapAwayCounts` (writers: `LogScreen`, `TodayScreen+TemplateEditor`, `ExerciseActionSheet`) | **nothing in production** |
 | Chose | Wheel / override switch to saved or sample workout | `overrides.customRoutineByDate` | plan application only, never read as a preference |
 | Chose | Hand-built routines | `pt_custom_routines` | wheel options; never read as a preference |
-| Looked | Search terms, library browse, detail opens, routine previews | **nowhere**: `query` is `@State`, `previewingStock` is `@State` | nothing |
+| Looked | Search terms, library browse, detail opens, routine previews, and what converted | `explore_sessions` in `UserDatabase` (A3, 2026-09-26): one `ExploreSession` per surface visit via `ExploreRecorder` | nothing yet (A4) |
 
 ## Facts that change the design
 
@@ -35,7 +35,11 @@ work is wiring, and the one tier with no capture is the weakest signal.
 - **Sample sessions on the wheel are demos.** A switch onto one is plan rejection, never a
   preference for that sample's contents. Filter them before counting wheel switches.
 - **Explore intent converts or it does not count.** A search while swapping may be a
-  library-existence check. Log the funnel (search -> detail -> add/start) and weight conversion.
+  library-existence check. `ExploreSession.conversions` carries the conversion with the query
+  in force; weight those, and treat zero-result or partial-tier queries as catalog-gap reports.
+  A new browse surface adds one `@State ExploreRecorder`, calls it at reload / open / pick,
+  and flushes in `.onDisappear`; `ExercisePickerSheet` REQUIRES a `conversion:` kind so a new
+  caller cannot mislabel picks. Under XCTest and Previews the default sink is nil.
 - **Privacy posture forbids fan-out.** `MemoryStore.swift` header: no backend, no analytics
   SDK, SENSITIVE fields never logged. Any event log is on-device with a rolling window
   (match the 90-day missed/abandoned convention).

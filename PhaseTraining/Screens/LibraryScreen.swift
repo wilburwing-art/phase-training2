@@ -52,6 +52,8 @@ struct LibraryScreen: View {
     /// expects when fired on every render. Tap a row → read-only preview.
     @State private var stockRoutines: [BundledRoutineRow] = []
     @State private var previewingStock: BundledRoutineRow? = nil
+    /// A3 explore log for this tab visit (ExploreSession.swift).
+    @State private var recorder = ExploreRecorder(surface: .library)
     /// Unfiltered catalog exercise count for the eyebrow trailing slot.
     /// Cached once on appear like `stockRoutines` — the count is a full
     /// 551-row catalog query and the bundled catalog never changes
@@ -141,8 +143,29 @@ struct LibraryScreen: View {
                     }
                 }
             }
+            .onChange(of: query) { _, _ in recordQuery() }
+            .onChange(of: segment) { _, _ in recordQuery() }
+            .onDisappear { recorder.flush() }
         }
         .preferredColorScheme(.dark)
+    }
+
+    /// Record the query against whichever segment it is filtering. The
+    /// exercise segment goes through the tiered search, so the tier is kept;
+    /// the workouts segment filters in memory by name.
+    private func recordQuery() {
+        switch segment {
+        case .exercises:
+            let r = CoachDatabase.shared.searchExercises(search: query)
+            recorder.query(query, results: r.exercises.count, tier: r.tier.rawValue)
+        case .routines:
+            let customs = customStore.routines.filter { $0.name.localizedCaseInsensitiveContains(query) }
+            let stock = stockRoutines.filter {
+                $0.name.localizedCaseInsensitiveContains(query)
+                    || ($0.description ?? "").localizedCaseInsensitiveContains(query)
+            }
+            recorder.query(query, results: customs.count + stock.count)
+        }
     }
 
     /// Counts for the eyebrow trailing slot — exercise total comes from the
@@ -281,7 +304,10 @@ struct LibraryScreen: View {
                             title: ex.name,
                             meta: ex.metaLabel(),
                             trailing: .chevron,
-                            onTap: { detailExercise = ex }
+                            onTap: {
+                                recorder.opened(.exercise, id: String(ex.id), name: ex.name)
+                                detailExercise = ex
+                            }
                         ))
                     }
                 }
@@ -394,7 +420,10 @@ struct LibraryScreen: View {
                                         accessibilityLabel: "Start workout",
                                         onTap: { requestStart(c) }
                                     ),
-                                    onTap: { editingRoutine = c }
+                                    onTap: {
+                                        recorder.opened(.customRoutine, id: c.id, name: c.name)
+                                        editingRoutine = c
+                                    }
                                 ))
                                 .accessibilityIdentifier("library-custom-routine-\(c.id)")
                             }
@@ -443,7 +472,10 @@ struct LibraryScreen: View {
                                         accessibilityLabel: "Start workout",
                                         onTap: { requestStart(c) }
                                     ),
-                                    onTap: { editingRoutine = c }
+                                    onTap: {
+                                        recorder.opened(.customRoutine, id: c.id, name: c.name)
+                                        editingRoutine = c
+                                    }
                                 ))
                                 .accessibilityIdentifier("library-custom-routine-\(c.id)")
                             }
@@ -457,7 +489,10 @@ struct LibraryScreen: View {
                                     title: row.name,
                                     meta: stockSubtitle(row),
                                     trailing: .chevron,
-                                    onTap: { previewingStock = row }
+                                    onTap: {
+                                        recorder.opened(.routine, id: String(row.id), name: row.name)
+                                        previewingStock = row
+                                    }
                                 ))
                                 .accessibilityIdentifier("library-stock-routine-\(row.id)")
                             }
@@ -605,6 +640,7 @@ struct LibraryScreen: View {
     /// Bridge the routine into the active-session runtime and jump to the
     /// Today tab, where TodayTab routes a fresh active session to the log.
     private func performStart(_ custom: CustomRoutine) {
+        recorder.converted(.startRoutine, itemKind: .customRoutine, id: custom.id, name: custom.name)
         sessionStore.saveActive(sessionStore.createSession(from: custom.toWorkoutTemplate()))
         trampleTarget = nil
         tabSelection.selected = .today

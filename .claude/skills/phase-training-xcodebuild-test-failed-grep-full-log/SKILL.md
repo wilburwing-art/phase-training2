@@ -136,3 +136,14 @@ CI log needs that `##[error]` pattern; the `Test Case '-[...]' failed` form
 used above matches only raw local output and returns empty here.
 
 Full recipe in the global `attribute-red-tests-to-ci-baseline` skill.
+
+## `** TEST SUCCEEDED **` with zero tests executed (2026-09-26)
+
+A run with eleven `-only-testing:PhaseTrainingTests/<Class>` flags, built from
+`ls PhaseTrainingTests | sed`, printed `** TEST SUCCEEDED **` and exit 0 while
+the `Selected tests` suite reported `Executed 0 tests`. The same classes passed
+with one or two flags, and the full `-only-testing:PhaseTrainingTests` run
+executed 1,312. Never read exit 0 or TEST SUCCEEDED as a pass on a filtered
+run: grep `Test Suite 'Selected tests'` plus the next line, and require a
+non-zero `Executed N tests`. If it is zero, run the whole target instead of
+debugging the filter.

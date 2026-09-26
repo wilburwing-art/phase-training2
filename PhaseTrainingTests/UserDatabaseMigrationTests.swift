@@ -64,11 +64,12 @@ final class UserDatabaseMigrationTests: XCTestCase {
 
     // MARK: - Fresh install
 
-    func test_freshInstall_stampsVersion1_withWarmupInCreate() {
+    func test_freshInstall_stampsLatestVersion_withWarmupInCreate() {
         let db = UserDatabase(path: path)
         XCTAssertTrue(db.isOpen)
 
-        XCTAssertEqual(userVersion(), 1, "fresh install must stamp user_version = 1")
+        XCTAssertEqual(userVersion(), UserDatabase.latestSchemaVersion,
+                       "fresh install must run every migration")
         let cols = sessionSetsColumns()
         XCTAssertTrue(cols.contains("is_warmup"),
                       "v1 CREATE must include is_warmup; got \(cols)")
@@ -105,7 +106,8 @@ final class UserDatabaseMigrationTests: XCTestCase {
         let db = UserDatabase(path: path)
         XCTAssertTrue(db.isOpen)
 
-        XCTAssertEqual(userVersion(), 1, "upgrade must stamp user_version = 1")
+        XCTAssertEqual(userVersion(), UserDatabase.latestSchemaVersion,
+                       "a pre-versioning file must be upgraded through every migration")
         XCTAssertTrue(sessionSetsColumns().contains("is_warmup"),
                       "legacy session_sets must gain is_warmup via the existence check")
 
@@ -122,12 +124,12 @@ final class UserDatabaseMigrationTests: XCTestCase {
 
     // MARK: - Re-open is a no-op
 
-    func test_reopen_atVersion1_staysAtVersion1() {
-        _ = UserDatabase(path: path)          // fresh install → v1
-        XCTAssertEqual(userVersion(), 1)
+    func test_reopen_atLatestVersion_staysThere() {
+        _ = UserDatabase(path: path)          // fresh install → latest
+        XCTAssertEqual(userVersion(), UserDatabase.latestSchemaVersion)
         let again = UserDatabase(path: path)  // re-open: migrations skip
         XCTAssertTrue(again.isOpen)
-        XCTAssertEqual(userVersion(), 1)
+        XCTAssertEqual(userVersion(), UserDatabase.latestSchemaVersion)
     }
 
     // MARK: - FK cascade (session_sets follow their exercises)

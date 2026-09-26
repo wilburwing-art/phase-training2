@@ -23,6 +23,9 @@ struct ExercisePickerSheet: View {
     /// move, show me alternatives." Defaults to empty (no pre-filter), which
     /// is what the Add-exercise + custom-routine-edit flows want.
     var initialFilters: ExerciseFilters = .init()
+    /// What a pick means here, for the A3 explore log. Required so every
+    /// caller states it rather than inheriting a wrong default.
+    let conversion: ExploreConversionKind
     let onPick: (Exercise) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -30,6 +33,7 @@ struct ExercisePickerSheet: View {
     @State private var query: String = ""
     @State private var filters = ExerciseFilters()
     @State private var detailExercise: Exercise? = nil
+    @State private var recorder = ExploreRecorder(surface: .exercisePicker)
     @State private var showingFilterSheet = false
     /// Cached catalog query results — refreshed on appear and whenever a
     /// query input (search / filters) changes, instead of re-running
@@ -53,6 +57,8 @@ struct ExercisePickerSheet: View {
                                                affinities: memoryStore.memory.exerciseAffinities)
             : outcome.exercises
         broadenedPastFilters = outcome.broadenedPastFilters
+        recorder.query(query, results: results.count, tier: outcome.tier?.rawValue,
+                       broadened: outcome.broadenedPastFilters)
     }
 
     var body: some View {
@@ -105,6 +111,12 @@ struct ExercisePickerSheet: View {
         }
         .onChange(of: query) { _, _ in reloadResults() }
         .onChange(of: filters) { _, _ in reloadResults() }
+        .onDisappear { recorder.flush() }
+    }
+
+    private func showDetail(_ ex: Exercise) {
+        recorder.opened(.exercise, id: String(ex.id), name: ex.name)
+        detailExercise = ex
     }
 
     // MARK: - Pieces
@@ -229,6 +241,7 @@ struct ExercisePickerSheet: View {
     private func row(_ ex: Exercise) -> some View {
         HStack(alignment: .center, spacing: 8) {
             Button {
+                recorder.converted(conversion, itemKind: .exercise, id: String(ex.id), name: ex.name)
                 onPick(ex)
                 dismiss()
             } label: {
@@ -252,14 +265,14 @@ struct ExercisePickerSheet: View {
             .buttonStyle(.plain)
             .contextMenu {
                 Button {
-                    detailExercise = ex
+                    showDetail(ex)
                 } label: {
                     Label("Show details", systemImage: "info.circle")
                 }
             }
 
             Button {
-                detailExercise = ex
+                showDetail(ex)
             } label: {
                 Image(systemName: "info.circle")
                     .font(.system(size: 16))

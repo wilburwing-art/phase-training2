@@ -26,6 +26,10 @@ enum ExerciseSearch {
     struct Result {
         var exercises: [Exercise]
         var broadenedPastFilters: Bool
+        /// Which search tier answered, recorded by A3's explore log so a
+        /// partial-only result reads as a dead end. Defaulted for callers
+        /// that build a Result by hand.
+        var tier: CoachDatabase.SearchTier? = nil
     }
 
     /// Run `query` under `filters`, falling back to the unfiltered catalog when
@@ -65,7 +69,7 @@ enum ExerciseSearch {
               narrows(filters, userSportSlugs: userSportSlugs),
               filtered.exercises.isEmpty || filtered.tier == .partial
         else {
-            return Result(exercises: filtered.exercises, broadenedPastFilters: false)
+            return Result(exercises: filtered.exercises, broadenedPastFilters: false, tier: filtered.tier)
         }
 
         let wide = db.searchExercises(
@@ -79,14 +83,14 @@ enum ExerciseSearch {
             userSportSlugs: []
         )
         guard !wide.exercises.isEmpty else {
-            return Result(exercises: filtered.exercises, broadenedPastFilters: false)
+            return Result(exercises: filtered.exercises, broadenedPastFilters: false, tier: filtered.tier)
         }
         // Dropping the filters has to buy something. When the filtered rows are
         // already as good a match as the wide ones, keep the narrower set.
         guard filtered.exercises.isEmpty || wide.tier < filtered.tier else {
-            return Result(exercises: filtered.exercises, broadenedPastFilters: false)
+            return Result(exercises: filtered.exercises, broadenedPastFilters: false, tier: filtered.tier)
         }
-        return Result(exercises: wide.exercises, broadenedPastFilters: true)
+        return Result(exercises: wide.exercises, broadenedPastFilters: true, tier: wide.tier)
     }
 
     /// Browse order for an EMPTY search box: exercises the user has chosen

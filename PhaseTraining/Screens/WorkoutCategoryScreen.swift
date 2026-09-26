@@ -26,6 +26,9 @@ struct WorkoutCategoryScreen: View {
 
     @State private var query: String = ""
     @State private var previewingStock: BundledRoutineRow? = nil
+    /// A3 explore log for this visit. Previews here are read-only, so this
+    /// surface records looks, never conversions.
+    @State private var recorder = ExploreRecorder(surface: .workoutCategory)
     /// Cached query results — refreshed on appear and on query change,
     /// same pattern as LibraryMuscleScreen.rows.
     @State private var rows: [BundledRoutineRow] = []
@@ -45,6 +48,7 @@ struct WorkoutCategoryScreen: View {
         }
         .onAppear { reloadRows() }
         .onChange(of: query) { _, _ in reloadRows() }
+        .onDisappear { recorder.flush() }
         .preferredColorScheme(.dark)
     }
 
@@ -143,7 +147,10 @@ struct WorkoutCategoryScreen: View {
                             title: row.name,
                             meta: metaLine(row),
                             trailing: .chevron,
-                            onTap: { previewingStock = row }
+                            onTap: {
+                                recorder.opened(.routine, id: String(row.id), name: row.name)
+                                previewingStock = row
+                            }
                         ))
                         .accessibilityIdentifier("workout-category-routine-\(row.id)")
                     }
@@ -176,5 +183,6 @@ struct WorkoutCategoryScreen: View {
             // `.other` claims null + unclaimed goals; pass [] for that.
             rows = CoachDatabase.shared.listRoutines(search: search, goals: tile.memberGoals)
         }
+        recorder.query(query, results: rows.count)
     }
 }
