@@ -307,6 +307,25 @@ ROADMAP "adapter: built" is stale; this replaces it.
   6-day check-in floor) from the calibration table, and set PatternEngine thresholds from
   false-positive rates instead of guesses.
 
+**How to run the fleet.** The contract is eval-rig's `fleet/CONTRACT.md`; the replay lives
+in `PhaseTrainingTests/Fleet/` (test target only, nothing ships).
+
+1. In eval-rig: `npm run eval -- fleet simulate --personas 50 --weeks 26 --seed 42`. It
+   writes `fleet/runs/<run-id>/manifest.json` and `athletes/*.json`.
+2. In phase-training2 (`xcodegen generate` first if the project is stale), with the run
+   directory as an absolute path:
+   ```
+   TEST_RUNNER_FLEET_RUN_DIR=/abs/path/to/eval-rig/fleet/runs/<run-id> \
+     xcodebuild test -project PhaseTraining.xcodeproj -scheme PhaseTraining \
+     -destination 'platform=iOS Simulator,name=iPhone 16' \
+     -only-testing:PhaseTrainingTests/FleetReplayTests/testReplayRunDirectory \
+     CODE_SIGNING_ALLOWED=NO
+   ```
+   xcodebuild strips the `TEST_RUNNER_` prefix, so the test sees `FLEET_RUN_DIR`; without
+   it the test skips, which is why CI is unaffected. It writes `predictions/<id>.json`
+   (engine_build "145") next to `athletes/`.
+3. In eval-rig: `npm run eval -- fleet score <run-id>`, which writes `report.md`.
+
 ### 3. Review on 2026-10-24 (unchanged)
 
 Size and direction on 100+ in-app pairs. Physiology is not judged; its clock has run under
