@@ -60,14 +60,17 @@ extension ExerciseFilters {
     /// the first pattern slug that maps (patterns carry no role concept).
     /// Returns empty filters when the name can't be resolved in coach.db
     /// (custom routines without a backing exerciseId).
+    ///
+    /// Resolved through ExerciseLookupCache (name, slug, then alias). An
+    /// exact-name match used to be the only path, so a plan row carrying an
+    /// alias ("Bench Press" is an alias of Barbell Bench Press) resolved to
+    /// nothing and "Replace Bench Press" opened on the whole catalog with
+    /// ski squats first.
     static func similar(toExerciseNamed name: String) -> ExerciseFilters {
         var filters = ExerciseFilters()
-        guard let dbEx = CoachDatabase.shared
-                .listExercises(search: name)
-                .first(where: { $0.name.caseInsensitiveCompare(name) == .orderedSame })
-        else { return filters }
+        guard let exerciseId = ExerciseLookupCache.shared.exerciseID(forName: name) else { return filters }
 
-        let muscles = CoachDatabase.shared.musclesForExercise(dbEx.id).sorted { lhs, rhs in
+        let muscles = CoachDatabase.shared.musclesForExercise(exerciseId).sorted { lhs, rhs in
             let rank: (String) -> Int = { r in r == "primary" ? 0 : (r == "secondary" ? 1 : 2) }
             return rank(lhs.role) < rank(rhs.role)
         }
@@ -77,7 +80,7 @@ extension ExerciseFilters {
                 break
             }
         }
-        for slug in CoachDatabase.shared.patternsForExercise(dbEx.id) {
+        for slug in CoachDatabase.shared.patternsForExercise(exerciseId) {
             if let cat = MovementCategory.category(forSlug: slug) {
                 filters.category = cat
                 break
