@@ -59,6 +59,27 @@ struct TwinScorecardSheet: View {
                         }
                     }
                 }
+                if let plan = planStore.plan {
+                    // 2a: the largest-impact alternative for the current plan, on ReadinessSignal.
+                    let cfNow = Date()
+                    let cf = Counterfactual.evaluate(
+                        plan: plan,
+                        history: GeneratorContext.buildReadinessEvents(
+                            sessions: sessionStore.savedSessions,
+                            importedWorkouts: UserDatabase.shared.recentImportedWorkouts(within: 28),
+                            sportLogs: planStore.sportLogStore?.entries ?? [],
+                            now: cfNow),
+                        savedRoutines: UserDatabase.shared.listRoutines(),
+                        now: cfNow)
+                    Section("Counterfactual (2a)") {
+                        if let top = cf.largestImpact, let sat = cf.sportDay {
+                            Text(Counterfactual.summary(top, sportDay: sat))
+                        } else {
+                            Text(cf.sportDay == nil ? "No sport day ahead in this plan." : "No alternative moves readiness.")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
                 if !sig.zeroResultQueries28d.isEmpty {
                     Section("Searches that found nothing (catalog gaps)") {
                         ForEach(sig.zeroResultQueries28d, id: \.self) { Text($0) }

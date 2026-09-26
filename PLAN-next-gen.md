@@ -97,7 +97,16 @@ where a seven-day consequence belongs.
   runs each planned day under skip, move, shorter, and a saved routine, and
   reports the readiness delta on the next sport day. Tested against synthetic
   weeks. It reads whichever readiness source is live, so it is useful even
-  under the kill rule above.
+  under the kill rule above. **2a: built 2026-09-26.** `Counterfactual`
+  (pure) takes the week plan and the same events the live score is built
+  from (`GeneratorContext.buildReadinessEvents`, now internal), projects each
+  planned lift day before the next sport day, and scores the sport day under
+  skip, move to each open rest day, half length, and each saved routine.
+  It edits the plan's days rather than calling `Planner.generate`: the
+  signal reads only timing, and a regen would reshuffle the week around the
+  one change. On `ReadinessSignal` shorter and saved routine are honestly 0,
+  since it ignores duration and content; the twin can fill them in. Tested on
+  synthetic weeks; the DEBUG Signals sheet shows the largest-impact line.
 - **2b. The surface.** About 2 weeks. Week tab first: each day carries its
   alternatives and the delta. The Today wheel showing "Saturday drops to
   0.63" is a seven-day consequence on a one-day screen, so it is a separate
