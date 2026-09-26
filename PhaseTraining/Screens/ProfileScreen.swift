@@ -247,7 +247,7 @@ struct ProfileScreen: View {
                                     value: "DEBUG",
                                     icon: "figure.strengthtraining.traditional",
                                     action: { presentingMuscleChipGenerator = true })
-                        SettingsRow(label: "Shadow twin scorecard",
+                        SettingsRow(label: "Signals & shadow twin",
                                     value: "DEBUG",
                                     icon: "waveform.path.ecg",
                                     action: { presentingTwinScorecard = true })
@@ -335,6 +335,7 @@ struct ProfileScreen: View {
             TwinScorecardSheet()
                 .environmentObject(planStore)
                 .environmentObject(sessionStore)
+                .environmentObject(store)
         }
         #endif
         // iOS-level surfaces — owned by the parent screen so they survive

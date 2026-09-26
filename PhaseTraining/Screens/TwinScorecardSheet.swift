@@ -1,4 +1,5 @@
-// TwinScorecardSheet.swift — B1a DEBUG-only readout of the shadow twin.
+// TwinScorecardSheet.swift — DEBUG-only "Signals" readout: what the app has
+// collected since A2 (SignalsReadout), then the B1a shadow twin.
 //
 // Two numbers answer the B1b go/no-go: the frozen predictions scored against
 // what was logged, and a walk-forward replay over all native plus imported
@@ -10,6 +11,7 @@ import SwiftUI
 struct TwinScorecardSheet: View {
     @EnvironmentObject private var planStore: PlanStore
     @EnvironmentObject private var sessionStore: SessionStore
+    @EnvironmentObject private var memoryStore: MemoryStore
     @Environment(\.dismiss) private var dismiss
 
     @State private var replay: TwinReplay.Report?
@@ -19,6 +21,34 @@ struct TwinScorecardSheet: View {
     var body: some View {
         NavigationStack {
             List {
+                let sig = SignalsReadout.make(
+                    outcomes: planStore.dayOutcomes,
+                    explore: planStore.exploreSessionsSince(Date().addingTimeInterval(-28 * 86_400)),
+                    suggestions: planStore.currentSuggestions(),
+                    decisions: memoryStore.memory.suggestionDecisions)
+                Section("Collected") {
+                    row("Session outcomes", "\(sig.outcomesTotal)")
+                    ForEach(DayOutcomeKind.allCases, id: \.self) { kind in
+                        if let n = sig.outcomesByKind[kind] { row("  \(kind.rawValue)", "\(n)") }
+                    }
+                    row("Browse visits, 28 days", "\(sig.exploreVisits28d)")
+                    row("  that converted", "\(sig.exploreConverted28d)")
+                    row("Suggestions applied / dismissed", "\(sig.decisionsApplied) / \(sig.decisionsDismissed)")
+                }
+                Section("Check-in would ask today") {
+                    if sig.suggestionsToday.isEmpty { Text("Nothing yet.").foregroundStyle(.secondary) }
+                    ForEach(sig.suggestionsToday) { s in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(s.title)
+                            Text(s.evidence).font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                if !sig.zeroResultQueries28d.isEmpty {
+                    Section("Searches that found nothing (catalog gaps)") {
+                        ForEach(sig.zeroResultQueries28d, id: \.self) { Text($0) }
+                    }
+                }
                 let card = TwinScorecard.from(planStore.dayOutcomes)
                 Section("Frozen predictions") {
                     row("Scored pairs", "\(card.pairs.n)")
@@ -49,7 +79,7 @@ struct TwinScorecardSheet: View {
                     }
                 }
             }
-            .navigationTitle("Shadow twin")
+            .navigationTitle("Signals")
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
         }
     }
