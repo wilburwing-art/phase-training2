@@ -356,3 +356,81 @@ assumed.
 - `scripts/db/draft_variant_additions.py` uses the merged exercise 1087 as a template id.
 - The 2a summary test assumes English weekday names; pin the calendar's locale in the test.
 - Track 5b: licensing outreach drafts in the repo for Wilbur to send. Nothing drafted yet.
+
+## Next work after build 145 shipped (written 2026-09-26, second pass)
+
+Build 145 is phase-training2#62 (merged 2026-09-26) plus eval-rig#1: the four data clocks, the housekeeping,
+the fleet (contract, simulator, scorer, app replay), and the CI split. Every Swift slice
+passed CI on its first compile; one real bug surfaced on the PR (the squat merge put Core and Hamstrings at equal volume on the muscle-balance card's last row, and a volume-only sort picked the survivor by dictionary order) and is fixed with a slug tie-break. The fleet's readiness truth is fitness-fatigue (Wilbur,
+2026-09-26). Status of the list above: items 1 and 2 are done except the prompt check and
+the first scored run, which lead the list below.
+
+### 1. Close out 145 (1 to 2 days)
+
+- **Prompt check before external TestFlight.** The recovery-data grant (Health & Imports)
+  and "while using" location at the first session start, including decline (no second ask,
+  nothing captured). Neither is covered by a test. A UI test can drive both with the
+  simulator's privacy reset (`simctl privacy <udid> reset all`), so the next time it is
+  not a manual step.
+- **Merge eval-rig#1.**
+
+### 2. First scored fleet run (about 2 days)
+
+- **Where the replay runs.** It needs Xcode. Two options: Wilbur runs the three commands in
+  the fleet section on his Mac, or a manual `fleet.yml` workflow checks out both repos,
+  simulates, replays, scores, and uploads `report.md`. The workflow needs read access to
+  the private eval-rig from phase-training2's Actions, which means a fine-grained token
+  stored as a secret (`EVAL_RIG_READ_TOKEN`, contents: read, eval-rig only). **Decision
+  for Wilbur:** add the secret, or keep the run on the Mac.
+- **Read the report** at 50 athletes × 26 weeks, seed 42, and record the baseline numbers
+  in this file: 3b Brier against the running-attendance baseline, PatternEngine recall and
+  false suggestions per athlete-month, twin MAE and direction, 2a skip and move agreement.
+
+### 3. Tune from the report (about 3 days)
+
+- **3b priors.** Replace the 75% start, the 15% streak and 30% travel cuts, the 12% an hour
+  late decay and the 6-day check-in floor with values fitted on the fleet. Hold out a
+  second seed to confirm the gain is not fitted noise. Gate: Brier beats the
+  running-attendance baseline on the holdout seed.
+- **PatternEngine thresholds.** Set `dropsNeeded`, `overrunSessionsNeeded` and the rest
+  from the false-suggestion rate on steady and grinder. Gate: under 1 false suggestion per
+  athlete per quarter, recall not lower than today.
+
+### 4. Track 1b, pulled forward (about 1 week)
+
+The fitness-fatigue decision makes 2a's skip disagreement a flaw in `ReadinessSignal`, and
+1b is the fix: per-pattern load with a fitness and a fatigue term, behind the existing
+silent path (`AthleteState.readinessScore`). No UI. Built on fixtures and the fleet first.
+- **Gate to ship:** on the fleet, 2a skip and move agreement rises to at least 80%, and
+  3b and the twin do not get worse. The live readiness changes silently for every user,
+  so it ships only with the fleet numbers written here, and the 2026-10-24 review still
+  judges the twin on in-app pairs.
+
+### 5. Review on 2026-10-24 (unchanged)
+
+Size and direction on 100+ in-app pairs. Physiology is not judged; its clock has run under
+four weeks. Add the fleet numbers from 2 and 4 as context.
+
+### 6. Build 146, the watch (target mid-November)
+
+4a watch companion plus 4b labeled motion capture. **Decision for Wilbur before it
+starts:** 4a writes workouts to Apple Health, and the app is read-only today (usage
+string and policy say it never writes). Yes means a new usage string, a write grant, and
+policy and label updates in 146.
+
+### 7. Readers that wait on data (no build time until the data exists)
+
+- 1c physiology reader: after 6+ weeks of nights for the owner.
+- 3c place-aware swaps: once places cluster (3+ visits at 2+ places).
+- 3d weather and snow: WeatherKit route, decision 3 already yes; about 1 week, can start
+  any time after 146.
+- 4c classifier: once the top 20 exercises each have enough labeled reps from 4b.
+
+### 8. Small follow-ups (fold into whichever build is next)
+
+- Rowing and paddle-sports have 0 antagonists and several sports sit under the floor of 5
+  (`validate_coverage.py`). One pipeline pass.
+- `ReadinessEventsTests.swift` header still calls `buildReadinessEvents` private.
+- `scripts/db/draft_variant_additions.py` uses the merged exercise 1087 as a template.
+- Pin the calendar locale in the 2a summary test.
+- Track 5b: licensing outreach drafts in the repo for Wilbur to send.
