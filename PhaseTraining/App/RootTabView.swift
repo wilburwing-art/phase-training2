@@ -122,6 +122,10 @@ struct RootTabView: View {
             sessionStore.onAbandonRecorded = { [weak planStore] entry in
                 planStore?.recordAbandonment(entry)
             }
+            // A2 — planned-vs-actual outcome for every saved session.
+            sessionStore.onSessionSaved = { [weak planStore] saved, abandoned in
+                planStore?.recordOutcome(for: saved, abandoned: abandoned)
+            }
             // These injected stores feed derived view state — e.g. the Today
             // missed-workout banner reads `sessionStore` via
             // `pendingMissedWorkouts()` — but none is individually @Published, so

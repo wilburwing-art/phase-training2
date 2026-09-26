@@ -43,3 +43,14 @@ they can't drift):
   `.shared` in prod, fresh in-memory under UI-test/preview.
 - `.derived/` (this repo's DerivedData dir) is NOT in `.gitignore` by default — only
   `DerivedData/` is. `git add -A` will sweep in ~6000 artifact files. Add `.derived/`.
+
+## Adding a new PlanStore log: four places, and restore is the one people miss (2026-09-25)
+
+A new `pt_*` log on PlanStore (missed, abandoned, `pt_day_outcomes`) needs: load in `init`,
+removal in `clear()`, the `BackupEnvelope` field (property, `decodeIfPresent` in the explicit
+decoder, memberwise init, `snapshot`, restore `touchedKeys` + write), and a re-read in
+`PlanStore.reloadFromDefaults`. That last one is what `BackupCoordinator` calls after a
+restore, and it re-reads only plan + overrides. A log missing from it keeps its stale
+in-memory copy, and the next insert writes that copy back over the restored data. As of
+2026-09-25 `pt_day_outcomes` is re-read there; `missedWorkouts` and `abandonedWorkouts` are
+NOT (open bug).

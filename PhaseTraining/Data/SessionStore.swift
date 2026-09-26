@@ -24,6 +24,11 @@ final class SessionStore: ObservableObject {
     /// (it doesn't know PlanStore exists); a closure keeps the dependency
     /// pointing the right way. `saveAbandoned` invokes it after persisting.
     var onAbandonRecorded: ((AbandonedWorkoutEntry) -> Void)?
+    /// A2 — fired exactly once per saved session (completed or stopped early),
+    /// with `abandoned` true only below the abandonment threshold. PlanStore
+    /// records the planned-vs-actual DayOutcome from it. Closure wiring keeps
+    /// SessionStore plan-agnostic, same as `onAbandonRecorded`.
+    var onSessionSaved: ((SavedSession, _ abandoned: Bool) -> Void)?
     /// Set when a completed workout failed to reach SQLite. Latches until the
     /// user acknowledges — losing a finished session silently is the worst
     /// failure this app has, so it must never be a one-frame condition.
@@ -354,6 +359,15 @@ final class SessionStore: ObservableObject {
     /// @Published cache, clear active.
     @discardableResult
     func saveCompleted(_ active: ActiveSession, feel: String?, note: String?, endTime: Date = Date()) -> SavedSession {
+        let saved = commitCompleted(active, feel: feel, note: note, endTime: endTime)
+        onSessionSaved?(saved, false)
+        return saved
+    }
+
+    /// The write itself, with no hook. `saveAbandoned` goes through here so
+    /// the outcome hook fires once, after the abandonment verdict is known.
+    private func commitCompleted(_ active: ActiveSession, feel: String?, note: String?,
+                                 endTime: Date) -> SavedSession {
         let duration = max(0, Int(endTime.timeIntervalSince(active.startTime)))
         let saved = SavedSession(
             templateId: active.templateId,
@@ -389,7 +403,7 @@ final class SessionStore: ObservableObject {
                        note: String?, endTime: Date = Date()) -> SavedSession {
         var abandonNote = "Stopped early — \(reason.label)"
         if let note, !note.isEmpty { abandonNote += ": \(note)" }
-        let saved = saveCompleted(active, feel: reason.label, note: abandonNote, endTime: endTime)
+        let saved = commitCompleted(active, feel: reason.label, note: abandonNote, endTime: endTime)
 
         // Completion ratio: done / total across every planned set,
         // computed at save time (spec §5 — no schema change needed).
@@ -400,7 +414,9 @@ final class SessionStore: ObservableObject {
 
         // Only below the threshold is this an abandonment; a Stop-early
         // tap on a ≥70% session is a completed (if short) workout.
-        if ratio < AbandonedWorkoutEntry.abandonmentThreshold {
+        let isAbandonment = ratio < AbandonedWorkoutEntry.abandonmentThreshold
+        defer { onSessionSaved?(saved, isAbandonment) }
+        if isAbandonment {
             onAbandonRecorded?(
                 AbandonedWorkoutEntry(
                     date: Calendar.current.startOfDay(for: active.startTime),

@@ -100,6 +100,9 @@ final class PlanStore: ObservableObject {
     /// PR 9 — log of abandoned workouts (Stop early, <70% completion).
     /// Same rolling window + dedupe semantics as missedWorkoutsKey.
     static let abandonedWorkoutsKey = "pt_abandoned_workouts"
+    /// A2 — planned-vs-actual outcome per saved session (DayOutcome.swift).
+    /// Same rolling window as the missed and abandoned logs.
+    static let dayOutcomesKey = "pt_day_outcomes"
     /// PR 10A — timestamp of the last auto-arc deload week (used as the
     /// cooldown anchor). Set when a generate() produced a deload week.
     static let lastDeloadWeekKey = "pt_last_deload_week"
@@ -143,6 +146,9 @@ final class PlanStore: ObservableObject {
     /// rolling window as missedWorkouts. Read by CoachContext and by
     /// the planner's bias-against-repeatedly-abandoned-exercise path.
     @Published var abandonedWorkouts: [AbandonedWorkoutEntry]
+    /// A2 — planned-vs-actual per saved session, newest-first, 90-day window.
+    /// Written by `recordOutcome`; no production reader yet (A4).
+    @Published var dayOutcomes: [DayOutcome] = []
     /// PR 8 — count of mid-week reshuffles (missed + abandoned)
     /// applied in the current week. Resets on weekly rollover.
     /// Spec §3 rule 5 caps at 2/week.
@@ -278,6 +284,13 @@ final class PlanStore: ObservableObject {
         } else {
             self.abandonedWorkouts = []
         }
+        if let data = defaults.data(forKey: Self.dayOutcomesKey),
+           let list = try? Self.decoder().decode([DayOutcome].self, from: data) {
+            let cutoff = today.addingTimeInterval(-Double(Self.planOverridesRetentionDays) * 86_400)
+            self.dayOutcomes = list
+                .filter { $0.recordedAt >= cutoff }
+                .sorted { $0.date > $1.date }
+        }
 
         // Weekly-rollover detection: if we have an active plan that
         // belongs to a prior week and we haven't snapshotted it yet,
@@ -385,6 +398,14 @@ final class PlanStore: ObservableObject {
         } else {
             overrides = WeekOverrides(weekStart: thisWeek)
         }
+        // Without this a restored outcome log sits in UserDefaults while the
+        // stale in-memory copy is what the next recordOutcome writes back.
+        if let data = defaults.data(forKey: Self.dayOutcomesKey),
+           let list = try? Self.decoder().decode([DayOutcome].self, from: data) {
+            dayOutcomes = list.sorted { $0.date > $1.date }
+        } else {
+            dayOutcomes = []
+        }
     }
 
     // MARK: - Memory-drift auto-regen
@@ -432,6 +453,7 @@ final class PlanStore: ObservableObject {
         recentPlanOverrides = []
         missedWorkouts = []
         abandonedWorkouts = []
+        dayOutcomes = []
         midWeekReshuffleCount = 0
         midWeekConsolidationCount = 0
         defaults.removeObject(forKey: Self.planKey)
@@ -440,6 +462,7 @@ final class PlanStore: ObservableObject {
         defaults.removeObject(forKey: Self.planOverridesKey)
         defaults.removeObject(forKey: Self.missedWorkoutsKey)
         defaults.removeObject(forKey: Self.abandonedWorkoutsKey)
+        defaults.removeObject(forKey: Self.dayOutcomesKey)
         defaults.removeObject(forKey: Self.lastDeloadWeekKey)
         defaults.removeObject(forKey: Self.reshuffleCountKey)
         defaults.removeObject(forKey: Self.reshuffleWeekKey)

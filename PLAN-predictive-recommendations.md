@@ -99,7 +99,14 @@ because it gives every other signal an outcome to be checked against.
   was skipped: only the coach screen reaches it. Authored routines are
   untouched. The old consume tests had been skipping on an empty day and
   asserted nothing; replaced.
-- **A2.** Persist a structured planned-vs-actual record per day.
+- **A2. DONE 2026-09-25.** `DayOutcome` is frozen at every session save
+  (`SessionStore.onSessionSaved`, fired once per save) and kept on PlanStore
+  under `pt_day_outcomes`, 90-day window, in backups. Classes: asPlanned,
+  modified, switched, unplanned, abandoned, with swap pairs, drops, additions,
+  and planned versus completed working sets. Frozen at save because both
+  read-time sources decay: the week snapshot is replaced on every capture and
+  the displaced original is cleared every Monday. Missed days stay in the
+  missed log. No reader yet.
 - **A3.** On-device explore-funnel event table, 90-day window, matching the
   missed and abandoned logs.
 - **A4.** Decide surface: coach asks versus planner acts. Default to asking.
