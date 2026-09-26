@@ -108,6 +108,12 @@ Third party: when the user turns on the AI Coach, the training context is sent t
 
 ## Before submitting
 
+- **Open decision: does the coach ship at all in the first release?** See
+  `DECISION-coach-at-launch.md`. Every install shares one gateway token that
+  bills one Anthropic account, with no per-user metering. If the answer is
+  "not yet", cut the PHASE TRAINING PRO coach wording above, the coach
+  paragraph in the review notes, and the AI Coach line from the subscription
+  descriptions.
 - Both Pro gates ship "held open" (`CoachEntitlement`, `SupportEntitlement`, `proRequired` false) so everything is free until the products exist. Decide whether the first store build charges for Pro; if yes, flip both gates in the same build that ships the products, or the subscription sells nothing.
 - Reshoot `02-week.png` on a real plan (see docs/store/README.md).
 - Re-run the paywall UI test against the live products once they exist in App Store Connect.
