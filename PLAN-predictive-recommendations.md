@@ -174,6 +174,41 @@ does not start. The frozen predictions keep accruing on real sessions, so the
 question can be re-asked with in-app data; re-run the replay when a new
 export exists rather than re-tuning against this one.
 
+### 1a-2 diagnosis (2026-09-26): the twin ties on size, carries signal on direction
+
+`TwinDiagnosisTests.test_diagnose_realFitbodHistory`, default parameters, no fitting,
+walk-forward from each day's earlier data only.
+
+| Slice | Pairs | Twin MAE (lb) | Last-value MAE (lb) |
+|---|---|---|---|
+| All history after a 16-week warm-up | 811 | 37.91 | 38.04 |
+| The 8-week holdout B1a was judged on | 39 | 12.36 | 12.20 |
+
+Findings:
+
+- **On the size of the change it is a tie** (+0.3% over 811 pairs). The holdout's -1.4%
+  sits on 39 pairs, too few to tell apart from noise in either direction.
+- **On the direction of the change it carries signal.** Where both the twin and the
+  lifter moved off the last value, they moved the same way 58.1% of the time over 752
+  pairs, about 4.4 standard errors above the 50% of chance. On the holdout it was 45.9%
+  over 37 pairs, a standard error of about 8 points, so no read either way.
+- **The export is mostly gaps.** 686 of 811 pairs come 22+ days after the last session of
+  that exercise, where last-value error doubles (41 lb against 20 lb within a week). The
+  model assumes continuous training; the history rarely is.
+- **Fitbod carries no RPE or RIR** (0 of 5,013 sets), so effort can only come from
+  in-app logging.
+
+Hypothesis for 1b, NOT a result: the twin's usable output is a direction (up, flat, down)
+for the next session of a lift, not a load. Registered now, before any in-app data exists,
+as a second criterion for the 2026-10-24 review alongside the original one:
+
+- **Original, unchanged:** twin MAE below last-value MAE on 30+ in-app pairs.
+- **Added:** direction agreement above 50% by more than two standard errors on 100+
+  in-app moved pairs with a gap of 7 days or less.
+
+If only the direction criterion passes, 1b ships as a direction signal (the check-in says
+"expect squat to be up this week") and never as a predicted load.
+
 ### Next: ship, accrue, review on 2026-10-24
 
 Everything above reaches no data until a build carrying it is on the phone.

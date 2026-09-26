@@ -75,8 +75,9 @@ final class TrainingLoadModel {
     let params: TwinParams
     private let patternFor: (String) -> String
 
-    /// exercise -> ascending (day, topE1RM) for days with a loaded set.
-    private var topByDay: [String: [(day: Int, top: Double)]] = [:]
+    /// exercise -> ascending (day, topE1RM, reps of that top set) for days
+    /// with a loaded set. Reps are bookkeeping for diagnostics only.
+    private var topByDay: [String: [(day: Int, top: Double, reps: Int)]] = [:]
     /// pattern -> ascending (day, raw impulse).
     private var impulses: [String: [(day: Int, impulse: Double)]] = [:]
 
@@ -92,7 +93,7 @@ final class TrainingLoadModel {
         let ordered = sets.filter { $0.reps > 0 }.sorted { $0.date < $1.date }
         var bestBefore: [String: Double] = [:]      // best e1RM from days strictly before
         var dayImpulse: [String: [Int: Double]] = [:]
-        var dayTop: [String: [Int: Double]] = [:]
+        var dayTop: [String: [Int: (e1RM: Double, reps: Int)]] = [:]
         var i = 0
         while i < ordered.count {
             let d = Self.day(ordered[i].date)
@@ -112,7 +113,9 @@ final class TrainingLoadModel {
                 }
                 dayImpulse[pattern, default: [:]][d, default: 0] += impulse
                 if s.weight > 0 {
-                    dayTop[key, default: [:]][d] = max(dayTop[key]?[d] ?? 0, s.e1RM)
+                    if s.e1RM > (dayTop[key]?[d]?.e1RM ?? 0) {
+                        dayTop[key, default: [:]][d] = (s.e1RM, s.reps)
+                    }
                     bestToday[key] = max(bestToday[key] ?? 0, s.e1RM)
                 }
                 j += 1
@@ -121,7 +124,9 @@ final class TrainingLoadModel {
             i = j
         }
         impulses = dayImpulse.mapValues { $0.map { (day: $0.key, impulse: $0.value) }.sorted { $0.day < $1.day } }
-        topByDay = dayTop.mapValues { $0.map { (day: $0.key, top: $0.value) }.sorted { $0.day < $1.day } }
+        topByDay = dayTop.mapValues {
+            $0.map { (day: $0.key, top: $0.value.e1RM, reps: $0.value.reps) }.sorted { $0.day < $1.day }
+        }
     }
 
     // MARK: - State
@@ -209,6 +214,31 @@ final class TrainingLoadModel {
             if best == nil || s.maeModel < best!.1 { best = (p, s.maeModel) }
         }
         return best?.0 ?? .defaults
+    }
+
+    /// One scored prediction, for diagnostics.
+    struct ScoredPair: Equatable {
+        var exercise: String
+        var day: Int
+        var lastDay: Int
+        var predicted: Double
+        var baseline: Double
+        var actual: Double
+        var actualReps: Int
+    }
+
+    /// Every walk-forward pair in `range`, each predicted from earlier days only.
+    func scoredPairs(days range: ClosedRange<Int>) -> [ScoredPair] {
+        var out: [ScoredPair] = []
+        for (exercise, days) in topByDay {
+            for (i, entry) in days.enumerated() where range.contains(entry.day) && i > 0 {
+                guard let p = predict(exercise: exercise, day: entry.day) else { continue }
+                out.append(ScoredPair(exercise: exercise, day: entry.day, lastDay: days[i - 1].day,
+                                      predicted: p.predicted, baseline: p.baseline,
+                                      actual: entry.top, actualReps: entry.reps))
+            }
+        }
+        return out.sorted { ($0.day, $0.exercise) < ($1.day, $1.exercise) }
     }
 
     /// Every day that has at least one loaded set, ascending.

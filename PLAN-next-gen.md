@@ -63,7 +63,10 @@ predicted adaptation before the next sport day.
   try predicting the direction of change rather than the magnitude; use RPE
   and RIR where the source has them. Gate to 1b: the twin beats the baseline
   on at least 30 pairs in a dense stretch, or the review on 2026-10-24 does
-  with in-app pairs.
+  with in-app pairs. **Done 2026-09-26:** a tie on size over 811 pairs, real
+  signal on direction (58.1% over 752, about 4.4 standard errors). A direction
+  criterion was registered for the review before any in-app data exists; see
+  `PLAN-predictive-recommendations.md`.
 - **1b. Silent readiness from the twin.** About 1 week. Replace
   `ReadinessSignal`'s unweighted session count with per-pattern load, behind
   the existing silent path (`AthleteState.readinessScore`). No UI. Gate to
