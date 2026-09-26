@@ -284,7 +284,10 @@ extension GeneratorContext {
     /// distinct calendar day so the same date hit by both a native session
     /// AND an HK record (the user logged in-app AND HK detected it from
     /// the watch) doesn't double-count.
-    private static func buildReadinessEvents(
+    ///
+    /// Internal (not private) since 2a: `Counterfactual` projects planned days
+    /// on top of exactly these events, so its baseline matches the live score.
+    static func buildReadinessEvents(
         sessions: [SavedSession],
         importedWorkouts: [ImportedWorkout],
         sportLogs: [SportLogEntry],
