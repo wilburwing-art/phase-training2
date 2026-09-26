@@ -32,6 +32,12 @@ The weekly check-in has a "Find travel in my calendar" button. The calendar perm
 
 Event titles, locations, attendees and notes are not stored, and nothing read from your calendar leaves your device. Only the resulting travel dates are kept, and those carry the generic title "Travel", so no calendar content reaches the AI Coach even when the coach is on. Phase Training never adds, edits or deletes calendar events. You can revoke access at any time in iOS Settings → Privacy & Security → Calendars.
 
+## Location (optional, one approximate point per workout, on device)
+
+The first time you start a workout, iOS asks whether Phase Training may use your location while you are using the app. The app works fully without it, and if you decline you are never asked again and no location is recorded. If you allow it, each time you start a workout Phase Training asks iOS once for an approximate location (accurate to about 100 meters), and stores it rounded to about 100 meters together with the workout's start time and the reported accuracy. It never follows your location during a workout, never uses it in the background, and never sets up geofences.
+
+These points are used on your device to learn the places you train, such as your gym, a crag or a trailhead, by grouping points that fall within about 150 meters of each other, so the app can later offer the version of a session that fits the place. Location is never sent anywhere and is not part of the AI Coach's context, even when the coach is on. It is included in a backup file only when you export one yourself, and "Erase all my data" deletes it. You can revoke access at any time in iOS Settings → Privacy & Security → Location Services.
+
 ## AI Coach (optional, off by default)
 
 If you enable the AI Coach in Profile → AI Coach, the app sends a snapshot of your training context to Anthropic (Claude) via our Cloudflare AI Gateway proxy each turn. That snapshot is assembled fresh per message and can include:

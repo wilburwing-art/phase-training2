@@ -118,6 +118,18 @@ Goal: know whether today's session will happen and pre-swap it.
   sessions were logged, geofences for gym, crag, trailhead. A session started
   away from the home gym gets the equipment-swapped version offered, on the
   existing substitution path.
+  **Location capture: built 2026-09-26, ships in 145.** When a new session starts,
+  `SessionLocationCapture` asks for one fix at `kCLLocationAccuracyHundredMeters`
+  (`requestLocation`, 20 s timeout, never blocks the start). "While using" is asked at
+  the first session start only; declined means nothing is captured and nothing is asked
+  again. Each point (session id, time, lat/lon rounded to 3 decimals, accuracy) lands in
+  `pt_session_places` on PlanStore, 365-day window, in the backup and swept by the wipe,
+  never in the coach snapshot. `PlaceClusterer` (pure) groups points within 150 m into
+  places with centroid, visit count and first/last seen; fixes vaguer than 1 km are
+  skipped. The Signals sheet shows points, places and the top place's visits. Usage
+  string and a Location section in the privacy policy; not declared in the privacy
+  manifest because nothing leaves the device. The reader (home gym, swaps) waits for
+  places to accrue.
 - **3d. Weather and snow.** Decision 3. About 1 week after the route exists.
   A powder day at the user's resort offers mobility; a storm day at the crag
   offers the gym session.

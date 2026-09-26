@@ -103,6 +103,10 @@ final class PlanStore: ObservableObject {
     /// A2 — planned-vs-actual outcome per saved session (DayOutcome.swift).
     /// Same rolling window as the missed and abandoned logs.
     static let dayOutcomesKey = "pt_day_outcomes"
+    /// 3c capture — one coarse point per session start (PlaceClusterer.swift).
+    /// A year's window, not 90 days: places are learned from repeat visits.
+    static let sessionPlacesKey = "pt_session_places"
+    static let sessionPlacesRetentionDays = 365
     /// PR 10A — timestamp of the last auto-arc deload week (used as the
     /// cooldown anchor). Set when a generate() produced a deload week.
     static let lastDeloadWeekKey = "pt_last_deload_week"
@@ -149,6 +153,10 @@ final class PlanStore: ObservableObject {
     /// A2 — planned-vs-actual per saved session, newest-first, 90-day window.
     /// Written by `recordOutcome`; no production reader yet (A4).
     @Published var dayOutcomes: [DayOutcome] = []
+    /// 3c capture — coarse session-start points, newest-first, 365-day window.
+    /// Written by `recordSessionPlace`; read only by the DEBUG Signals sheet.
+    /// Never part of the coach snapshot.
+    @Published var sessionPlaces: [SessionPlacePoint] = []
     /// A4 — where PatternEngine reads browse sessions from. The real database
     /// in the app; an in-memory one under XCTest and Previews
     /// (UserDatabase.defaultStore), and tests may replace it.
@@ -269,6 +277,7 @@ final class PlanStore: ObservableObject {
         // PR 9: load the abandonment log. Same 90-day window as misses.
         self.abandonedWorkouts = Self.loadAbandonedWorkouts(defaults, today: today)
         self.dayOutcomes = Self.loadDayOutcomes(defaults, today: today)
+        self.sessionPlaces = Self.loadSessionPlaces(defaults, today: today)
 
         // Weekly-rollover detection: if we have an active plan that
         // belongs to a prior week and we haven't snapshotted it yet,
@@ -377,6 +386,7 @@ final class PlanStore: ObservableObject {
         missedWorkouts = Self.loadMissedWorkouts(defaults, today: today)
         abandonedWorkouts = Self.loadAbandonedWorkouts(defaults, today: today)
         dayOutcomes = Self.loadDayOutcomes(defaults, today: today)
+        sessionPlaces = Self.loadSessionPlaces(defaults, today: today)
         pastPlans = Self.loadPastPlans(defaults)
         recentPlanOverrides = Self.loadPlanOverrides(defaults, today: today)
         pendingPlan = Self.decode(WeekPlan.self, defaults, Self.pendingPlanKey)
@@ -477,6 +487,7 @@ final class PlanStore: ObservableObject {
         missedWorkouts = []
         abandonedWorkouts = []
         dayOutcomes = []
+        sessionPlaces = []
         midWeekReshuffleCount = 0
         midWeekConsolidationCount = 0
         defaults.removeObject(forKey: Self.planKey)
@@ -486,6 +497,7 @@ final class PlanStore: ObservableObject {
         defaults.removeObject(forKey: Self.missedWorkoutsKey)
         defaults.removeObject(forKey: Self.abandonedWorkoutsKey)
         defaults.removeObject(forKey: Self.dayOutcomesKey)
+        defaults.removeObject(forKey: Self.sessionPlacesKey)
         defaults.removeObject(forKey: Self.lastDeloadWeekKey)
         defaults.removeObject(forKey: Self.reshuffleCountKey)
         defaults.removeObject(forKey: Self.reshuffleWeekKey)

@@ -35,6 +35,13 @@ struct TwinScorecardSheet: View {
                     row("  that converted", "\(sig.exploreConverted28d)")
                     row("Suggestions applied / dismissed", "\(sig.decisionsApplied) / \(sig.decisionsDismissed)")
                 }
+                // 3c capture clock: coarse session-start points, clustered.
+                let places = PlaceClusterer.cluster(planStore.sessionPlaces)
+                Section("Places (on device only)") {
+                    row("Session-start points", "\(planStore.sessionPlaces.count)")
+                    row("Places clustered", "\(places.count)")
+                    row("Top place visits", places.first.map { "\($0.visitCount)" } ?? "none")
+                }
                 Section("Check-in would ask today") {
                     if sig.suggestionsToday.isEmpty { Text("Nothing yet.").foregroundStyle(.secondary) }
                     ForEach(sig.suggestionsToday) { s in

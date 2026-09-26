@@ -122,6 +122,9 @@ targets:
         # "Missing purpose string" (killed builds 116 + 117). The string is
         # honest: we never write.
         NSCalendarsFullAccessUsageDescription: "Only when you tap Find travel in the weekly check-in, PhaseTraining reads next week's calendar events on your device to spot trips (hotel stays, flights, multi-day trips away) and mark those days as travel days. Event titles and locations are not stored and never leave your device."
+        # 3c capture (build 145). One coarse fix at session start only,
+        # asked at the first session start; see SessionLocationCapture.swift.
+        NSLocationWhenInUseUsageDescription: "When you start a workout, PhaseTraining takes one approximate location (to about 100 meters) so it can learn the places you train, like your gym or the crag, and later offer the right version of a session there. It never tracks you in the background or while you train, and the location stays on your device."
         NSHealthUpdateUsageDescription: "PhaseTraining does not write to Apple Health — it only reads your workout and body-metric data. iOS requires this permission whenever an app includes HealthKit; PhaseTraining never adds, edits, or deletes anything in Health."
         # Log-screen media card (build 133). MPMediaLibrary authorisation is
         # what lets MPMusicPlayerController.systemMusicPlayer report the

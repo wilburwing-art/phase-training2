@@ -54,6 +54,10 @@ struct BackupEnvelope: Codable {
     var abandonedWorkouts: [AbandonedWorkoutEntry] = []
     /// A2 — `pt_day_outcomes` — planned-vs-actual per saved session.
     var dayOutcomes: [DayOutcome] = []
+    /// 3c — `pt_session_places` — coarse session-start points. In the backup
+    /// because the user carries it to a new phone; the file only leaves the
+    /// device when the user shares it.
+    var sessionPlaces: [SessionPlacePoint] = []
     /// `pt_past_plans` — 12 weeks of plan snapshots. The coach's multi-week
     /// pattern summary and the Week tab's "use last week's shape" read it.
     var pastPlans: [WeekPlanSnapshot] = []
@@ -108,6 +112,7 @@ struct BackupEnvelope: Codable {
         missedWorkouts = try c.decodeIfPresent([MissedWorkoutEntry].self, forKey: .missedWorkouts) ?? []
         abandonedWorkouts = try c.decodeIfPresent([AbandonedWorkoutEntry].self, forKey: .abandonedWorkouts) ?? []
         dayOutcomes = try c.decodeIfPresent([DayOutcome].self, forKey: .dayOutcomes) ?? []
+        sessionPlaces = try c.decodeIfPresent([SessionPlacePoint].self, forKey: .sessionPlaces) ?? []
         pastPlans = try c.decodeIfPresent([WeekPlanSnapshot].self, forKey: .pastPlans) ?? []
         planOverrides = try c.decodeIfPresent([WeeklyPlanOverride].self, forKey: .planOverrides) ?? []
         pendingPlan = try c.decodeIfPresent(WeekPlan.self, forKey: .pendingPlan)
@@ -133,6 +138,7 @@ struct BackupEnvelope: Codable {
          missedWorkouts: [MissedWorkoutEntry] = [],
          abandonedWorkouts: [AbandonedWorkoutEntry] = [],
          dayOutcomes: [DayOutcome] = [],
+         sessionPlaces: [SessionPlacePoint] = [],
          pastPlans: [WeekPlanSnapshot] = [],
          planOverrides: [WeeklyPlanOverride] = [],
          pendingPlan: WeekPlan? = nil,
@@ -155,6 +161,7 @@ struct BackupEnvelope: Codable {
         self.missedWorkouts = missedWorkouts
         self.abandonedWorkouts = abandonedWorkouts
         self.dayOutcomes = dayOutcomes
+        self.sessionPlaces = sessionPlaces
         self.pastPlans = pastPlans
         self.planOverrides = planOverrides
         self.pendingPlan = pendingPlan
@@ -226,6 +233,7 @@ enum BackupManager {
         let missedWorkouts: [MissedWorkoutEntry] = decodeIfPresent(defaults: defaults, key: "pt_missed_workouts") ?? []
         let abandonedWorkouts: [AbandonedWorkoutEntry] = decodeIfPresent(defaults: defaults, key: "pt_abandoned_workouts") ?? []
         let dayOutcomes: [DayOutcome] = decodeIfPresent(defaults: defaults, key: "pt_day_outcomes") ?? []
+        let sessionPlaces: [SessionPlacePoint] = decodeIfPresent(defaults: defaults, key: PlanStore.sessionPlacesKey) ?? []
         let pastPlans: [WeekPlanSnapshot] = decodeIfPresent(defaults: defaults, key: PlanStore.pastPlansKey) ?? []
         let planOverrides: [WeeklyPlanOverride] = decodeIfPresent(defaults: defaults, key: PlanStore.planOverridesKey) ?? []
         let pendingPlan: WeekPlan? = decodeIfPresent(defaults: defaults, key: PlanStore.pendingPlanKey)
@@ -246,6 +254,7 @@ enum BackupManager {
             missedWorkouts: missedWorkouts,
             abandonedWorkouts: abandonedWorkouts,
             dayOutcomes: dayOutcomes,
+            sessionPlaces: sessionPlaces,
             pastPlans: pastPlans,
             planOverrides: planOverrides,
             pendingPlan: pendingPlan,
@@ -348,6 +357,7 @@ enum BackupManager {
                            "pt_sessions", "pt_custom_routines",
                            "pt_sport_logs", "pt_missed_workouts",
                            "pt_abandoned_workouts", "pt_day_outcomes",
+                           PlanStore.sessionPlacesKey,
                            PlanStore.pastPlansKey, PlanStore.planOverridesKey,
                            PlanStore.pendingPlanKey, PlanStore.pendingOverridesKey,
                            PlanStore.lastDeloadWeekKey,
@@ -364,6 +374,7 @@ enum BackupManager {
             try encodeAndWrite(envelope.missedWorkouts, defaults: defaults, key: "pt_missed_workouts")
             try encodeAndWrite(envelope.abandonedWorkouts, defaults: defaults, key: "pt_abandoned_workouts")
             try encodeAndWrite(envelope.dayOutcomes, defaults: defaults, key: "pt_day_outcomes")
+            try encodeAndWrite(envelope.sessionPlaces, defaults: defaults, key: PlanStore.sessionPlacesKey)
             try encodeAndWrite(envelope.pastPlans, defaults: defaults, key: PlanStore.pastPlansKey)
             try encodeAndWrite(envelope.planOverrides, defaults: defaults, key: PlanStore.planOverridesKey)
             try encodeAndWrite(envelope.pendingPlan, defaults: defaults, key: PlanStore.pendingPlanKey)
