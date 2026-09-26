@@ -4,6 +4,15 @@ Forward-looking items beyond the current phase plans (`PLAN.md`, `PLAN-routines.
 
 ---
 
+## Next-gen recommendations (specced)
+
+Specced in `PLAN-next-gen.md` (2026-09-26): the twin, counterfactual planner,
+context pre-adaptation, sensor logging, and cross-user learning, ordered by
+dependency with gates and the owner decisions each one waits on. Status of the
+shipped foundations is in `PLAN-predictive-recommendations.md`.
+
+---
+
 ## Voice coach check-ins (AirPods, walking into the gym)
 
 **Context.** Pre-workout window — leaving the car, walking through the parking lot, AirPods in. Hands occupied, phone in pocket. The user wants to talk to the coach instead of unlocking and tapping into the app.

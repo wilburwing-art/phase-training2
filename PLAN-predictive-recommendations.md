@@ -203,6 +203,11 @@ build after 143.
 
 Still parked: B1c behind B1b, B4 and B5 until single-user value is shown.
 
+### Full roadmap
+
+The dependency-ordered plan to finish everything in Part B, with the owner
+decisions each track waits on, is `PLAN-next-gen.md` (2026-09-26).
+
 ### Original idea list
 
 Ranked. 2, 3 and 5 run on top of 1.
