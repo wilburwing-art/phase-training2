@@ -28,6 +28,12 @@ enum MissResolution: Codable, Hashable {
     /// as `dropped` for plan state, but logged separately so the coach
     /// can tell "user chose to skip" from "autopilot couldn't fit it".
     case userDismissed
+    /// The missed session's work was folded into the week's remaining lift
+    /// days (`PlanStore.consolidateWeekDetailed`). Until 2026-09-26 this was
+    /// logged as `.dropped`, so the coach could not tell "folded in" from
+    /// "could not fit". Older builds cannot decode this case; it only exists
+    /// in logs written by this build onward.
+    case consolidated
 }
 
 extension MissResolution {
@@ -40,6 +46,7 @@ extension MissResolution {
             return "moved to \(f.string(from: date))"
         case .dropped:        return "dropped"
         case .userDismissed:  return "dismissed by user"
+        case .consolidated:   return "folded into the rest of the week"
         }
     }
 }

@@ -44,6 +44,22 @@ final class StoreResetTests: XCTestCase {
         XCTAssertEqual(reloaded.turnsToday, 0)
     }
 
+    /// The erase-all sweep deletes by `pt_` prefix, so an unprefixed key
+    /// survived it: the authored-routines kill-switch and the plate
+    /// calculator's bar weight.
+    func test_wipeAllUserData_alsoClearsTheUnprefixedKeys() {
+        let d = fresh()
+        d.set(false, forKey: AuthoredRoutineSelector.enabledKey)
+        d.set("35", forKey: "plateCalculator.barText")
+        d.set(1, forKey: "pt_anything")
+        d.set("keep", forKey: "com.apple.not-ours")
+        MemoryStore.wipeAllUserData(defaults: d, userDB: UserDatabase(path: ":memory:"))
+        XCTAssertNil(d.object(forKey: AuthoredRoutineSelector.enabledKey))
+        XCTAssertNil(d.object(forKey: "plateCalculator.barText"))
+        XCTAssertNil(d.object(forKey: "pt_anything"))
+        XCTAssertEqual(d.string(forKey: "com.apple.not-ours"), "keep", "keys the app does not own stay")
+    }
+
     func test_activityDetection_resetClearsStateAndRestoresTheDefaultToggle() {
         let d = fresh()
         d.set(["u1": 1.0], forKey: "pt_detected_activity_seen")

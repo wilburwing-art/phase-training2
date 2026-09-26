@@ -54,6 +54,19 @@ struct BackupEnvelope: Codable {
     var abandonedWorkouts: [AbandonedWorkoutEntry] = []
     /// A2 — `pt_day_outcomes` — planned-vs-actual per saved session.
     var dayOutcomes: [DayOutcome] = []
+    /// `pt_past_plans` — 12 weeks of plan snapshots. The coach's multi-week
+    /// pattern summary and the Week tab's "use last week's shape" read it.
+    var pastPlans: [WeekPlanSnapshot] = []
+    /// `pt_plan_overrides` — dismissed plan-issue log that self-suppresses a
+    /// rule the user keeps dismissing.
+    var planOverrides: [WeeklyPlanOverride] = []
+    /// `pt_pending_week_plan` / `pt_pending_week_overrides` — next week as
+    /// staged by the weekly check-in, promoted when that week begins.
+    var pendingPlan: WeekPlan? = nil
+    var pendingOverrides: WeekOverrides? = nil
+    /// `pt_last_deload_week` — cooldown anchor for the automatic deload week,
+    /// stored as seconds since 1970.
+    var lastDeloadWeekStart: Double? = nil
     /// `pt_recent_exercise_picks` — variety memory, so a restore doesn't
     /// immediately re-serve the exercises the user just cycled away from.
     var recentPicks: [String: Date] = [:]
@@ -95,6 +108,11 @@ struct BackupEnvelope: Codable {
         missedWorkouts = try c.decodeIfPresent([MissedWorkoutEntry].self, forKey: .missedWorkouts) ?? []
         abandonedWorkouts = try c.decodeIfPresent([AbandonedWorkoutEntry].self, forKey: .abandonedWorkouts) ?? []
         dayOutcomes = try c.decodeIfPresent([DayOutcome].self, forKey: .dayOutcomes) ?? []
+        pastPlans = try c.decodeIfPresent([WeekPlanSnapshot].self, forKey: .pastPlans) ?? []
+        planOverrides = try c.decodeIfPresent([WeeklyPlanOverride].self, forKey: .planOverrides) ?? []
+        pendingPlan = try c.decodeIfPresent(WeekPlan.self, forKey: .pendingPlan)
+        pendingOverrides = try c.decodeIfPresent(WeekOverrides.self, forKey: .pendingOverrides)
+        lastDeloadWeekStart = try c.decodeIfPresent(Double.self, forKey: .lastDeloadWeekStart)
         recentPicks = try c.decodeIfPresent([String: Date].self, forKey: .recentPicks) ?? [:]
         importedWorkouts = try c.decodeIfPresent([ImportedWorkout].self, forKey: .importedWorkouts) ?? []
         importedSets = try c.decodeIfPresent([ImportedSet].self, forKey: .importedSets) ?? []
@@ -115,6 +133,11 @@ struct BackupEnvelope: Codable {
          missedWorkouts: [MissedWorkoutEntry] = [],
          abandonedWorkouts: [AbandonedWorkoutEntry] = [],
          dayOutcomes: [DayOutcome] = [],
+         pastPlans: [WeekPlanSnapshot] = [],
+         planOverrides: [WeeklyPlanOverride] = [],
+         pendingPlan: WeekPlan? = nil,
+         pendingOverrides: WeekOverrides? = nil,
+         lastDeloadWeekStart: Double? = nil,
          recentPicks: [String: Date] = [:],
          importedWorkouts: [ImportedWorkout] = [],
          importedSets: [ImportedSet] = []) {
@@ -132,6 +155,11 @@ struct BackupEnvelope: Codable {
         self.missedWorkouts = missedWorkouts
         self.abandonedWorkouts = abandonedWorkouts
         self.dayOutcomes = dayOutcomes
+        self.pastPlans = pastPlans
+        self.planOverrides = planOverrides
+        self.pendingPlan = pendingPlan
+        self.pendingOverrides = pendingOverrides
+        self.lastDeloadWeekStart = lastDeloadWeekStart
         self.recentPicks = recentPicks
         self.importedWorkouts = importedWorkouts
         self.importedSets = importedSets
@@ -198,6 +226,11 @@ enum BackupManager {
         let missedWorkouts: [MissedWorkoutEntry] = decodeIfPresent(defaults: defaults, key: "pt_missed_workouts") ?? []
         let abandonedWorkouts: [AbandonedWorkoutEntry] = decodeIfPresent(defaults: defaults, key: "pt_abandoned_workouts") ?? []
         let dayOutcomes: [DayOutcome] = decodeIfPresent(defaults: defaults, key: "pt_day_outcomes") ?? []
+        let pastPlans: [WeekPlanSnapshot] = decodeIfPresent(defaults: defaults, key: PlanStore.pastPlansKey) ?? []
+        let planOverrides: [WeeklyPlanOverride] = decodeIfPresent(defaults: defaults, key: PlanStore.planOverridesKey) ?? []
+        let pendingPlan: WeekPlan? = decodeIfPresent(defaults: defaults, key: PlanStore.pendingPlanKey)
+        let pendingOverrides: WeekOverrides? = decodeIfPresent(defaults: defaults, key: PlanStore.pendingOverridesKey)
+        let lastDeload = defaults.object(forKey: PlanStore.lastDeloadWeekKey) as? Double
         let recentPicks: [String: Date] = decodeIfPresent(defaults: defaults, key: "pt_recent_exercise_picks") ?? [:]
         return BackupEnvelope(
             memorySchemaVersion: memory?.schemaVersion,
@@ -213,6 +246,11 @@ enum BackupManager {
             missedWorkouts: missedWorkouts,
             abandonedWorkouts: abandonedWorkouts,
             dayOutcomes: dayOutcomes,
+            pastPlans: pastPlans,
+            planOverrides: planOverrides,
+            pendingPlan: pendingPlan,
+            pendingOverrides: pendingOverrides,
+            lastDeloadWeekStart: lastDeload,
             recentPicks: recentPicks,
             importedWorkouts: userDB.allImportedWorkouts(),
             importedSets: userDB.allImportedSets()
@@ -310,6 +348,9 @@ enum BackupManager {
                            "pt_sessions", "pt_custom_routines",
                            "pt_sport_logs", "pt_missed_workouts",
                            "pt_abandoned_workouts", "pt_day_outcomes",
+                           PlanStore.pastPlansKey, PlanStore.planOverridesKey,
+                           PlanStore.pendingPlanKey, PlanStore.pendingOverridesKey,
+                           PlanStore.lastDeloadWeekKey,
                            "pt_recent_exercise_picks"]
         var priorValues: [String: Any] = [:]
         for key in touchedKeys { priorValues[key] = defaults.object(forKey: key) }
@@ -323,6 +364,15 @@ enum BackupManager {
             try encodeAndWrite(envelope.missedWorkouts, defaults: defaults, key: "pt_missed_workouts")
             try encodeAndWrite(envelope.abandonedWorkouts, defaults: defaults, key: "pt_abandoned_workouts")
             try encodeAndWrite(envelope.dayOutcomes, defaults: defaults, key: "pt_day_outcomes")
+            try encodeAndWrite(envelope.pastPlans, defaults: defaults, key: PlanStore.pastPlansKey)
+            try encodeAndWrite(envelope.planOverrides, defaults: defaults, key: PlanStore.planOverridesKey)
+            try encodeAndWrite(envelope.pendingPlan, defaults: defaults, key: PlanStore.pendingPlanKey)
+            try encodeAndWrite(envelope.pendingOverrides, defaults: defaults, key: PlanStore.pendingOverridesKey)
+            if let deload = envelope.lastDeloadWeekStart {
+                defaults.set(deload, forKey: PlanStore.lastDeloadWeekKey)
+            } else {
+                defaults.removeObject(forKey: PlanStore.lastDeloadWeekKey)
+            }
             try encodeAndWrite(envelope.recentPicks, defaults: defaults, key: "pt_recent_exercise_picks")
             // Wipe legacy UserDefaults keys so a stale post-migration import
             // path can never resurrect them. Idempotent.

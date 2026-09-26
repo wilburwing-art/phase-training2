@@ -157,11 +157,18 @@ final class MemoryStore: ObservableObject {
     /// Callers holding live @Published stores must reset those separately
     /// (ProfileScreen.eraseAllData does; `--ui-test-reset` runs at launch
     /// before the stores are built, so disk state is all that matters there).
+    /// Keys the app writes WITHOUT the `pt_` prefix, which the sweep above
+    /// would miss. Name any new unprefixed key here, or better, prefix it.
+    /// `authored_routines_enabled` is a developer kill-switch; the plate
+    /// calculator's bar weight is an @AppStorage preference.
+    static let unprefixedKeys = [AuthoredRoutineSelector.enabledKey, "plateCalculator.barText"]
+
     static func wipeAllUserData(defaults: UserDefaults = .standard,
                                 userDB: UserDatabase? = nil) {
         for key in defaults.dictionaryRepresentation().keys where key.hasPrefix("pt_") {
             defaults.removeObject(forKey: key)
         }
+        for key in unprefixedKeys { defaults.removeObject(forKey: key) }
         (userDB ?? UserDatabase.defaultStore()).wipeAll()
         // EVERY pending notification, not just the weekly one. The doc comment
         // above claims this wipe covers "any pending local notification", but

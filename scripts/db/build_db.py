@@ -73,9 +73,48 @@ JSON_ARRAY_COLUMNS = {
 }
 
 
-def build():
+def renamed_without_alias(shipped_db, source_dir):
+    """Exercises whose name changed since the shipped coach.db, with no alias
+    row keeping the old name.
+
+    The app keys a user's history by exercise NAME: previous sets, PRs,
+    affinities and swap counts (session_exercises has no exercise_id). A
+    rename therefore splits a user's history in two and resets their PRs for
+    that lift. scripts/rename-exercises.sh renamed 39 at once with nothing to
+    stop it. Keeping the old name as an exercise_aliases row at least keeps
+    it searchable and resolvable (ExerciseLookupCache walks aliases); the
+    history split itself needs the name-keyed lookups made alias-aware.
+
+    Returns a list of (exercise_id, old_name, new_name).
+    """
+    if not Path(shipped_db).exists():
+        return []
+    conn = sqlite3.connect(shipped_db)
+    try:
+        old = dict(conn.execute("SELECT id, name FROM exercises").fetchall())
+    finally:
+        conn.close()
+    new = {r["id"]: r["name"] for r in json.loads((Path(source_dir) / "exercises.json").read_text())}
+    aliases = {(a["exercise_id"], a["alias"].lower())
+               for a in json.loads((Path(source_dir) / "exercise_aliases.json").read_text())}
+    return [(i, old[i], new[i]) for i in sorted(old)
+            if i in new and old[i] != new[i] and (i, old[i].lower()) not in aliases]
+
+
+def build(allow_renames=False):
     if not SCHEMA_FILE.exists():
         sys.exit(f"schema not found: {SCHEMA_FILE}\nRun extract_to_source.py first.")
+
+    # 0. Rename guard, against the coach.db the app currently ships.
+    renamed = renamed_without_alias(APP_DB, SOURCE_DIR)
+    if renamed and not allow_renames:
+        lines = "\n".join(f"  {i}: {o!r} -> {n!r}" for i, o, n in renamed)
+        sys.exit(
+            f"Refusing to build: {len(renamed)} shipped exercise(s) renamed with no alias for the old name.\n"
+            f"{lines}\n"
+            "User history (previous sets, PRs, affinities) is keyed by name, so a rename splits it.\n"
+            "Add each old name to db/source/exercise_aliases.json, or pass --allow-renames to accept the split."
+        )
 
     if DEST_DB.exists():
         DEST_DB.unlink()
@@ -135,4 +174,4 @@ def build():
 
 
 if __name__ == "__main__":
-    build()
+    build(allow_renames="--allow-renames" in sys.argv[1:])

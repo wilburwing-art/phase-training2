@@ -108,6 +108,22 @@ extension PlanStore {
                    resolution: asDropped ? .dropped : .userDismissed, now: now)
     }
 
+    /// Consolidate the week around a missed day and log the miss by what
+    /// actually happened: `.consolidated` when the fold succeeded, `.dropped`
+    /// when it declined. Returns the decline reason, nil on success.
+    @discardableResult
+    func consolidateMissed(date: Date, memory: TrainingMemory,
+                           now: Date = Date()) -> ConsolidationDecline? {
+        guard let day = plan?.days.first(where: {
+            Calendar.current.isDate($0.date, inSameDayAs: date)
+        }) else { return nil }
+        let (kind, title, dayDate) = (day.kind, day.title, day.date)
+        let decline = consolidateWeekDetailed(memory: memory, today: now)
+        recordMiss(date: dayDate, kind: kind, title: title,
+                   resolution: decline == nil ? .consolidated : .dropped, now: now)
+        return decline
+    }
+
     /// Persist a MissedWorkoutEntry. Removes any existing entry for
     /// the same date (idempotent on re-detection).
     private func recordMiss(date: Date,

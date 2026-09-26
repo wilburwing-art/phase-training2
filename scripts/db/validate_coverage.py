@@ -34,7 +34,7 @@ APP_SPORT_SLUGS = [
     "hiking-trekking", "trail-running",
     "yoga", "pilates", "crossfit", "powerlifting", "olympic-weightlifting",
     "bodybuilding", "martial-arts", "bjj", "boxing", "muay-thai",
-    "rowing", "paddle-sports", "stand-up-paddleboarding",
+    "rowing", "paddle-sports", "sup",
     "obstacle-course-racing",
 ]
 

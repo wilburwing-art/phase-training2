@@ -238,6 +238,32 @@ final class PlanStoreMissedWorkoutTests: XCTestCase {
                       "GATE 3 — no clean slot + 3 future focus-tagged lifts → offer consolidate")
     }
 
+    /// A successful consolidation used to be logged `.dropped`, the same as a
+    /// declined one, so the coach could not tell "folded in" from "could not fit".
+    func test_consolidateMissed_logsConsolidatedOnSuccess_andDroppedOnDecline() {
+        let mon = monday()
+        let store = freshStore(today: mon)
+        store.sessionStore = SessionStore(defaults: UserDefaults(suiteName: "consol-log-\(UUID())")!)
+        let days = [focusedLiftDay(-2, .push), restDay(-1), focusedLiftDay(0, .pull),
+                    restDay(1), focusedLiftDay(2, .legs), focusedLiftDay(3, .upper), restDay(4)]
+        store.setPlan(WeekPlan(days: days, generatedAt: Date(), inputsHash: "seed"))
+
+        XCTAssertNil(store.consolidateMissed(date: Calendar.current.date(byAdding: .day, value: -2, to: mon)!, memory: hypertrophyMemory(), now: mon))
+        XCTAssertEqual(store.missedWorkouts.first?.resolution, .consolidated)
+        XCTAssertEqual(store.missedWorkouts.first?.resolution.summary, "folded into the rest of the week")
+
+        // Second attempt hits the 1-a-week cap: logged as dropped, with a reason.
+        XCTAssertEqual(store.consolidateMissed(date: Calendar.current.date(byAdding: .day, value: -2, to: mon)!, memory: hypertrophyMemory(), now: mon), .weeklyCapMet)
+        XCTAssertEqual(store.missedWorkouts.map(\.resolution), [.dropped], "one entry per date, replaced")
+    }
+
+    func test_consolidatedResolution_roundTripsThroughCoding() throws {
+        let entry = MissedWorkoutEntry(date: monday(), plannedKind: .lift, plannedTitle: "Push",
+                                       resolution: .consolidated)
+        let back = try JSONDecoder().decode(MissedWorkoutEntry.self, from: JSONEncoder().encode(entry))
+        XCTAssertEqual(back.resolution, .consolidated)
+    }
+
     func test_consolidateWeek_respectsOneWeekCap() {
         let mon = monday()
         let store = freshStore(today: mon)

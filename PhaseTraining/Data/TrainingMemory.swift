@@ -434,8 +434,20 @@ struct Sport: Codable, Hashable, Identifiable {
     /// hyphenated form coach.db uses. Falls back to a synthetic entry with a
     /// prettified name when the slug matches no catalog row — so an
     /// off-catalog sport (e.g. "mountain-biking") still yields a usable Sport.
+    /// Catalog slugs that were renamed to match `sport_categories.slug`. A
+    /// saved memory still carrying the old slug maps to the new one here;
+    /// without it the old slug would miss the catalog and fall to the
+    /// synthetic-Sport branch, which joins nothing in coach.db.
+    static let renamedSlugs: [String: String] = [
+        // 2026-09-26: onboarding shipped "stand-up-paddleboarding" while the
+        // coach.db row is "sup", so SUP matched 0 of its 14 tagged exercises
+        // and got the fallback icon.
+        "stand-up-paddleboarding": "sup",
+    ]
+
     static func resolve(slug raw: String) -> Sport {
-        let normalized = raw.replacingOccurrences(of: "_", with: "-")
+        let dashed = raw.replacingOccurrences(of: "_", with: "-")
+        let normalized = renamedSlugs[dashed] ?? dashed
         if let known = catalog.first(where: { $0.slug == normalized }) { return known }
         if let known = catalog.first(where: { $0.slug == raw }) { return known }
         return Sport(slug: normalized, name: raw.replacingOccurrences(of: "_", with: " ")
@@ -449,9 +461,11 @@ struct Sport: Codable, Hashable, Identifiable {
     }
 
     /// Curated subset of coach.db sport_categories — the ones onboarding offers.
-    /// Slugs are hyphenated to match `coach.db` exactly so the Planner can
-    /// join on `sport_categories.slug`. "general-fitness" is synthetic (no DB
-    /// row) — the planner falls back to a default WeeklyShape when seen.
+    /// Slugs match `coach.db` `sport_categories.slug` exactly so the Planner can
+    /// join on it (`SportCatalogSlugTests` fails on any drift). "general-fitness"
+    /// is a real row (755) with no sport-relevance tags on purpose: it is the
+    /// universal base pool (`AuthoredRoutine.genericBaseSlug`), serving Easy
+    /// Strength and Bodyweight Base.
     static let catalog: [Sport] = [
         Sport(slug: "general-fitness",        name: "General Fitness"),
         Sport(slug: "climbing",               name: "Climbing"),
@@ -486,7 +500,7 @@ struct Sport: Codable, Hashable, Identifiable {
         Sport(slug: "muay-thai",              name: "Muay Thai"),
         Sport(slug: "rowing",                 name: "Rowing"),
         Sport(slug: "paddle-sports",          name: "Paddle Sports"),
-        Sport(slug: "stand-up-paddleboarding", name: "Stand-Up Paddleboarding"),
+        Sport(slug: "sup",                    name: "Stand-Up Paddleboarding"),
         Sport(slug: "obstacle-course-racing", name: "Obstacle Course Racing")
     ]
 }

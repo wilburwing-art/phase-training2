@@ -242,23 +242,12 @@ final class PlanStore: ObservableObject {
         // sorted on save, but defensively re-trim on load in case the
         // persisted blob predates the cap rule (forward-compat with
         // future cap increases too).
-        if let data = defaults.data(forKey: Self.pastPlansKey),
-           let list = try? Self.decoder().decode([WeekPlanSnapshot].self, from: data) {
-            self.pastPlans = WeekPlanSnapshot.trim(list, limit: Self.pastPlansLimit)
-        } else {
-            self.pastPlans = []
-        }
+        self.pastPlans = Self.loadPastPlans(defaults)
 
         // PR 7: load validation-override log. Trim to the 90-day window
         // on load so an old blob from a fresh install doesn't carry
         // stale entries forward indefinitely.
-        if let data = defaults.data(forKey: Self.planOverridesKey),
-           let list = try? Self.decoder().decode([WeeklyPlanOverride].self, from: data) {
-            let cutoff = today.addingTimeInterval(-Double(Self.planOverridesRetentionDays) * 86_400)
-            self.recentPlanOverrides = list.filter { $0.loggedAt >= cutoff }
-        } else {
-            self.recentPlanOverrides = []
-        }
+        self.recentPlanOverrides = Self.loadPlanOverrides(defaults, today: today)
 
         // PR 8: load missed-workout log + reshuffle counter. The counter
         // gets reset whenever the persisted weekStart no longer matches
@@ -293,14 +282,8 @@ final class PlanStore: ObservableObject {
         // promote it if that week has since begun. Order matters: promotion
         // must run AFTER captureRolloverIfNeeded so the outgoing week is
         // snapshotted into pastPlans before the staged plan replaces it.
-        if let data = defaults.data(forKey: Self.pendingPlanKey),
-           let p = try? Self.decoder().decode(WeekPlan.self, from: data) {
-            self.pendingPlan = p
-        }
-        if let data = defaults.data(forKey: Self.pendingOverridesKey),
-           let o = try? Self.decoder().decode(WeekOverrides.self, from: data) {
-            self.pendingOverrides = o
-        }
+        self.pendingPlan = Self.decode(WeekPlan.self, defaults, Self.pendingPlanKey)
+        self.pendingOverrides = Self.decode(WeekOverrides.self, defaults, Self.pendingOverridesKey)
         promotePendingIfDue(today: today)
     }
 
@@ -394,6 +377,13 @@ final class PlanStore: ObservableObject {
         missedWorkouts = Self.loadMissedWorkouts(defaults, today: today)
         abandonedWorkouts = Self.loadAbandonedWorkouts(defaults, today: today)
         dayOutcomes = Self.loadDayOutcomes(defaults, today: today)
+        pastPlans = Self.loadPastPlans(defaults)
+        recentPlanOverrides = Self.loadPlanOverrides(defaults, today: today)
+        pendingPlan = Self.decode(WeekPlan.self, defaults, Self.pendingPlanKey)
+        pendingOverrides = Self.decode(WeekOverrides.self, defaults, Self.pendingOverridesKey)
+        // A restored staged week may already have begun; promote it exactly as
+        // launch does.
+        promotePendingIfDue(today: today)
     }
 
     // MARK: - Log loading (shared by init and reloadFromDefaults)
@@ -408,6 +398,22 @@ final class PlanStore: ObservableObject {
               let list = try? decoder().decode([T].self, from: data) else { return [] }
         let cutoff = today.addingTimeInterval(-Double(planOverridesRetentionDays) * 86_400)
         return list.filter { stamp($0) >= cutoff }.sorted { date($0) > date($1) }
+    }
+
+    static func decode<T: Decodable>(_ type: T.Type, _ defaults: UserDefaults, _ key: String) -> T? {
+        guard let data = defaults.data(forKey: key) else { return nil }
+        return try? decoder().decode(T.self, from: data)
+    }
+
+    /// Re-trimmed on load in case the blob predates the cap rule.
+    static func loadPastPlans(_ defaults: UserDefaults) -> [WeekPlanSnapshot] {
+        WeekPlanSnapshot.trim(decode([WeekPlanSnapshot].self, defaults, pastPlansKey) ?? [], limit: pastPlansLimit)
+    }
+
+    /// Trimmed to the 90-day window so an old blob carries no stale entries.
+    static func loadPlanOverrides(_ defaults: UserDefaults, today: Date) -> [WeeklyPlanOverride] {
+        let cutoff = today.addingTimeInterval(-Double(planOverridesRetentionDays) * 86_400)
+        return (decode([WeeklyPlanOverride].self, defaults, planOverridesKey) ?? []).filter { $0.loggedAt >= cutoff }
     }
 
     static func loadMissedWorkouts(_ defaults: UserDefaults, today: Date) -> [MissedWorkoutEntry] {

@@ -82,10 +82,9 @@ struct CheckInMissedScreen: View {
     }
 
     private func consolidate(_ day: DayPlan) {
-        // consolidateWeekDetailed reports which constraint blocked a no-op.
-        // Don't pretend it worked; say the miss was dropped and why.
-        let decline = planStore.consolidateWeekDetailed(memory: memoryStore.memory)
-        planStore.dismissMissed(date: day.date, asDropped: true)
+        // Logs .consolidated on success and .dropped with a reason on a
+        // decline, so the coach's history can tell the two apart.
+        let decline = planStore.consolidateMissed(date: day.date, memory: memoryStore.memory)
         if let decline {
             consolidationDecline = decline
             showConsolidationNoop = true
