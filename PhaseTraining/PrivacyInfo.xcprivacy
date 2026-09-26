@@ -31,7 +31,12 @@
 	     injuries and derived strength estimates alongside the plan and session
 	     history, so Health and Fitness belong here and not only Other User
 	     Content. Nothing is linked to an identity (no name, email or device id
-	     is sent) and nothing is used for tracking. -->
+	     is sent) and nothing is used for tracking.
+	     Calendar events (travel check) and the coarse session-start location
+	     (3c capture) are read and kept on device only and never transmitted,
+	     not even in the coach snapshot, so under Apple's definition they are
+	     not collected and are not declared here. Declare Coarse Location the
+	     day any of it leaves the device. -->
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>
 		<dict>
