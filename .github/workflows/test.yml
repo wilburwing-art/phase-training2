@@ -1,12 +1,37 @@
 name: test
 
+# Two jobs (split 2026-09-26):
+#   test     build + unit tests (PhaseTrainingTests). Every push to main or an
+#            agent branch, every PR, manual runs. About 10 minutes. This is the
+#            only compiler agent sessions have, so it runs on every code push.
+#   ui-tests the XCUITest suite plus the tap-budget report. PRs, pushes to
+#            main, nightly, and manual runs with ui=true. About 30+ minutes,
+#            which is why it no longer gates every push.
+# Docs-only pushes skip both (paths-ignore). A newer push to the same ref
+# cancels the older run.
+
 on:
   push:
-    branches: [main]
+    branches: [main, 'claude/**']
+    paths-ignore: ['**.md', 'docs/**', 'audits/**', 'handoff/**']
   pull_request:
+    paths-ignore: ['**.md', 'docs/**', 'audits/**', 'handoff/**']
+  schedule:
+    # Nightly UI pass at 09:17 UTC (about 3am Mountain), so a UI regression
+    # that slipped past branch pushes surfaces within a day.
+    - cron: '17 9 * * *'
   # Manual runs so a feature branch can be validated without opening a PR
-  # (e.g. agent sessions that can't build locally).
+  # (e.g. agent sessions that can't build locally). ui=true adds the UI suite.
   workflow_dispatch:
+    inputs:
+      ui:
+        description: Also run the UI test suite
+        type: boolean
+        default: false
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -15,6 +40,46 @@ jobs:
     # behavior in UI tests — rest-card preset Menu items rendered differently
     # between iOS 18 and iOS 26, making LogFlowTests unfixable on both.
     runs-on: macos-26
+    # The nightly schedule is for the UI suite only.
+    if: github.event_name != 'schedule'
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup
+        id: setup
+        uses: ./.github/actions/ios-setup
+
+      - name: Build and run unit tests
+        # No retries here: the retry flags exist for the XCUITest cold-boot
+        # tap flake, and a unit test that needs a retry is a real bug.
+        run: |
+          set -o pipefail
+          mkdir -p build
+          xcodebuild test \
+            -project PhaseTraining.xcodeproj \
+            -scheme PhaseTraining \
+            -destination "platform=iOS Simulator,id=${{ steps.setup.outputs.udid }}" \
+            -only-testing:PhaseTrainingTests \
+            -resultBundlePath build/UnitTestResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee build/raw-unit-test.log \
+            | xcbeautify --renderer github-actions
+
+      - name: Upload xcresult on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: UnitTestResults.xcresult
+          path: build/UnitTestResults.xcresult
+
+  ui-tests:
+    runs-on: macos-26
+    if: >-
+      github.event_name == 'pull_request' ||
+      github.event_name == 'schedule' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.ui)
     # 45, not 20: every run since #307 (2026-08-27) was killed at exactly
     # the 20-minute mark mid-UI-suite — the suite has outgrown the old
     # budget on these runners, so CI could never reach a verdict.
@@ -22,38 +87,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Show Xcode version
-        run: xcodebuild -version
+      - name: Setup
+        id: setup
+        uses: ./.github/actions/ios-setup
 
-      - name: coach.db in sync with db/source (N1 drift guard)
-        run: bash scripts/db/verify_coachdb_sync.sh
-
-      - name: No raw Font.custom outside the token table
-        run: bash scripts/quality/verify_font_tokens.sh
-
-      - name: Install xcodegen + xcbeautify
-        run: brew install xcodegen xcbeautify
-
-      - name: Generate CoachSecrets.swift (empty token — tests don't hit the gateway)
-        run: ./scripts/generate-coach-secrets.sh
-
-      - name: Generate project
-        run: xcodegen generate
-
-      - name: Pick a simulator
-        id: sim
-        run: |
-          UDID=$(xcrun simctl list devices available --json \
-            | jq -r '[.devices | to_entries[] | .value[] | select(.name | test("iPhone")) | .udid] | first')
-          if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
-            echo "No iPhone simulator available. Listing all devices:" >&2
-            xcrun simctl list devices available >&2
-            exit 1
-          fi
-          echo "Using simulator UDID: $UDID"
-          echo "udid=$UDID" >> "$GITHUB_OUTPUT"
-
-      - name: Run tests
+      - name: Run UI tests
         # -retry-tests-on-failure + -test-iterations 3: retry only the
         # individual failing test cases (not the whole suite), up to 2
         # retries each. Absorbs the macos-26 cold-boot XCUITest rig flake
@@ -68,7 +106,8 @@ jobs:
           xcodebuild test \
             -project PhaseTraining.xcodeproj \
             -scheme PhaseTraining \
-            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
+            -destination "platform=iOS Simulator,id=${{ steps.setup.outputs.udid }}" \
+            -only-testing:PhaseTrainingUITests \
             -resultBundlePath build/TestResults.xcresult \
             -retry-tests-on-failure \
             -test-iterations 3 \
