@@ -116,7 +116,20 @@ because it gives every other signal an outcome to be checked against.
   `wipeAll`, not in backups, never leaves the device. Every picker caller
   states its conversion kind. Verified in the simulator: a Library search plus
   detail open and a Today swap each wrote one correct row. No reader yet.
-- **A4.** Decide surface: coach asks versus planner acts. Default to asking.
+- **A4. DONE 2026-09-26.** The coach asks; the planner never acts alone.
+  `PatternEngine` (pure) turns 28 days of behavior into at most three
+  suggestions for a new uncounted weekly-check-in pre-step, `.patterns`:
+  sessions overrunning or stopped for time (accept plans shorter sessions),
+  a planned exercise dropped 3+ times (accept sinks its affinity, reversible),
+  a bundled routine opened on 3+ visits (accept saves it to the user's
+  workouts). Decisions persist in `TrainingMemory.suggestionDecisions`; a
+  dismissal is quiet for 8 weeks, an accept returns only if the evidence
+  rebuilds from newer events. The coach drawer gets a PATTERNS block of
+  outcome counts, top drops and swaps, and open suggestions, leaving browse
+  data and search text out (not on the privacy policy). The insight pass is
+  deliberately not fed, matching how it skips the missed and abandoned
+  blocks. Verified in the simulator: seeded sessions produced both cards,
+  accept set 30 minutes, dismiss recorded, and neither card returned.
 
 ---
 

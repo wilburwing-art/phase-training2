@@ -81,6 +81,9 @@ enum WeeklyCheckInStep: Int, CaseIterable {
     /// next one. Conditional: shown only when a miss is pending, and skipped
     /// entirely otherwise, so it sits OUTSIDE the counted flow like .preview.
     case missed = 0
+    /// A4 — suggestions from repeated behavior (PatternEngine). Conditional
+    /// and uncounted, like .missed: shown only when there is something to ask.
+    case patterns
     case intent
     case constraints
     case events
@@ -90,10 +93,15 @@ enum WeeklyCheckInStep: Int, CaseIterable {
     /// Post-questionnaire preview step — hide the counter. (Onboarding had the
     /// same treatment for its own plan-preview step, before that step was cut.)
     var humanIndex: Int {
-        (self == .preview || self == .missed) ? 0 : rawValue
+        switch self {
+        case .missed, .patterns, .preview: return 0
+        // 1-based from .intent, so the conditional pre-steps ahead of it
+        // never shift the visible count.
+        default: return rawValue - WeeklyCheckInStep.intent.rawValue + 1
+        }
     }
-    /// Excludes the two uncounted steps (.missed, .preview).
-    static var total: Int { WeeklyCheckInStep.allCases.count - 2 }
+    /// Excludes the three uncounted steps (.missed, .patterns, .preview).
+    static var total: Int { WeeklyCheckInStep.allCases.count - 3 }
 
     func next() -> WeeklyCheckInStep? { WeeklyCheckInStep(rawValue: rawValue + 1) }
     func prev() -> WeeklyCheckInStep? { WeeklyCheckInStep(rawValue: rawValue - 1) }
@@ -111,6 +119,8 @@ struct WeeklyCheckInFlow: View {
     @State private var step: WeeklyCheckInStep = .intent
     @State private var draft = WeeklyCheckInDraft()
     @State private var previewPlan: WeekPlan?
+    /// Computed once on entry so accepting one card does not reshuffle the rest.
+    @State private var suggestions: [Suggestion] = []
 
     var body: some View {
         ZStack {
@@ -128,6 +138,13 @@ struct WeeklyCheckInFlow: View {
         case .missed:
             CheckInMissedScreen(
                 onNext: advance,
+                onClose: onDismiss
+            )
+        case .patterns:
+            CheckInPatternsScreen(
+                suggestions: $suggestions,
+                onNext: advance,
+                onBack: planStore.pendingMissedWorkouts().isEmpty ? nil : back,
                 onClose: onDismiss
             )
         case .intent:
@@ -178,7 +195,9 @@ struct WeeklyCheckInFlow: View {
         draft.hydrated = true
         // The missed step is a pre-step: enter on it when the finished week
         // left something unresolved, otherwise begin at .intent as before.
+        suggestions = planStore.currentSuggestions()
         if !planStore.pendingMissedWorkouts().isEmpty { step = .missed }
+        else if !suggestions.isEmpty { step = .patterns }
         draft.unavailableDays = planStore.overrides.unavailableDays
         draft.events = planStore.overrides.events
     }
@@ -186,15 +205,18 @@ struct WeeklyCheckInFlow: View {
     private func advance() {
         guard var next = step.next() else { return }
         if next == .missed { next = next.next() ?? next }
+        if next == .patterns, suggestions.isEmpty { next = next.next() ?? next }
         withAnimation(.easeInOut(duration: 0.22)) { step = next }
     }
 
     private func back() {
-        guard let prev = step.prev() else { return }
-        // Backing out of .intent lands on .missed, which is empty once the
-        // user has resolved everything. Stay put rather than showing a step
-        // with nothing on it.
+        guard var prev = step.prev() else { return }
+        // Backing out of .intent lands on the pre-steps, which may be empty
+        // once the user has resolved everything. Skip an empty one, and stay
+        // put rather than showing a step with nothing on it.
+        if prev == .patterns, suggestions.isEmpty { prev = prev.prev() ?? prev }
         if prev == .missed, planStore.pendingMissedWorkouts().isEmpty { return }
+        if prev == .patterns, suggestions.isEmpty { return }
         withAnimation(.easeInOut(duration: 0.18)) { step = prev }
     }
 

@@ -129,6 +129,12 @@ struct TrainingMemory: Codable {
     /// raw counts — the demotion they produce in `exerciseAffinities` is the
     /// durable signal the generator consumes.
     var swapAwayCounts: [String: Int] = [:]
+    /// A4 — the user's accept / dismiss on each weekly-check-in suggestion
+    /// (PatternEngine). A dismissed suggestion stays quiet for 8 weeks; an
+    /// accepted one returns only if its evidence rebuilds from newer events.
+    /// 26-week window. Not in `planInputsHash`: the ACTION an accept performs
+    /// (sessionMinutes, an affinity) is what changes the plan.
+    var suggestionDecisions: [SuggestionDecision] = []
     /// Legacy + free-text injury notes ("bad ankle", or pre-build-87 saves that
     /// wrote injury slugs into this list). New structured injuries live in
     /// `userInjuries`; this stays as a fall-through for the keyword-filter path.
@@ -169,7 +175,7 @@ struct TrainingMemory: Codable {
         case heightCm, weightKg, usesImperial
         case bodyWeightLog, bodyCompositionLog
         case dislikes, constraints
-        case exerciseAffinities, swapAwayCounts
+        case exerciseAffinities, swapAwayCounts, suggestionDecisions
         case userInjuries
         case feedback, soreness, weeklyCheckIns
         case coachInsights
@@ -232,6 +238,7 @@ struct TrainingMemory: Codable {
         self.constraints     = (try? c.decode([String].self,       forKey: .constraints))     ?? []
         self.exerciseAffinities = (try? c.decode([String: Int].self, forKey: .exerciseAffinities)) ?? [:]
         self.swapAwayCounts  = (try? c.decode([String: Int].self, forKey: .swapAwayCounts)) ?? [:]
+        self.suggestionDecisions = (try? c.decode([SuggestionDecision].self, forKey: .suggestionDecisions)) ?? []
         // userInjuries decode + one-shot migration. New saves write the typed
         // list directly. Older saves wrote injury slugs into constraints[]; on
         // first decode any constraints entry whose slug matches a coach.db
@@ -284,6 +291,7 @@ struct TrainingMemory: Codable {
         try c.encode(constraints,     forKey: .constraints)
         try c.encode(exerciseAffinities, forKey: .exerciseAffinities)
         try c.encode(swapAwayCounts,  forKey: .swapAwayCounts)
+        try c.encode(suggestionDecisions, forKey: .suggestionDecisions)
         try c.encode(userInjuries,    forKey: .userInjuries)
         try c.encode(feedback,        forKey: .feedback)
         try c.encode(soreness,        forKey: .soreness)

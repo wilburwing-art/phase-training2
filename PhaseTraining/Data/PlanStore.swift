@@ -149,6 +149,12 @@ final class PlanStore: ObservableObject {
     /// A2 — planned-vs-actual per saved session, newest-first, 90-day window.
     /// Written by `recordOutcome`; no production reader yet (A4).
     @Published var dayOutcomes: [DayOutcome] = []
+    /// A4 — where PatternEngine reads browse sessions from. The real database
+    /// in the app; an in-memory one under XCTest and Previews
+    /// (UserDatabase.defaultStore), and tests may replace it.
+    var exploreSessionsSince: (Date) -> [ExploreSession] = { since in
+        UserDatabase.defaultStore().listExploreSessions(since: since)
+    }
     /// PR 8 — count of mid-week reshuffles (missed + abandoned)
     /// applied in the current week. Resets on weekly rollover.
     /// Spec §3 rule 5 caps at 2/week.

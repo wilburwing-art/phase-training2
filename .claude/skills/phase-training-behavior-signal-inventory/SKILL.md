@@ -1,6 +1,6 @@
 ---
 name: phase-training-behavior-signal-inventory
-description: Map of every user-behavior signal phase-training2 captures (did / chose / looked), where each lives, and which are consumed by anything. Trigger when scoping recommendations, personalization, "predict what the user wants", "learn from what they search or swap", or any feature that reads user behavior into the planner or coach. Records that the explore tier is captured per browse visit as ExploreSession (A3), the affinity tier feeds the season engine comparator (A1), and planned-vs-actual is frozen per session as DayOutcome (A2) with no reader yet. Skip for generator inertness questions (phase-training-season-engine-sidelines-adaptive-layer) or how to bias the slot picker (phase-training-generator-bias-weight-pool-not-reorder).
+description: Map of every user-behavior signal phase-training2 captures (did / chose / looked), where each lives, and which are consumed by anything. Trigger when scoping recommendations, personalization, "predict what the user wants", "learn from what they search or swap", or any feature that reads user behavior into the planner or coach. Records that the explore tier is captured per browse visit as ExploreSession (A3), the affinity tier feeds the season engine comparator (A1), planned-vs-actual is frozen per session as DayOutcome (A2), and PatternEngine (A4) reads them into weekly-check-in suggestions. Skip for generator inertness questions (phase-training-season-engine-sidelines-adaptive-layer) or how to bias the slot picker (phase-training-generator-bias-weight-pool-not-reorder).
 when-to-use: Before designing any behavior-driven recommendation or ranking in phase-training2, so the scan of what is already captured is not redone from scratch.
 ---
 
@@ -13,12 +13,12 @@ work is wiring, and the one tier with no capture is the weakest signal.
 |---|---|---|---|
 | Did | Completed sessions, sets, loads | `SavedSession` (SQLite via `UserDatabase+Sessions`) | priorBest / lastAttempt, coach context |
 | Did | Abandoned workout + typed `AbandonReason` | `pt_abandoned_workouts`, 90-day window | coach context only |
-| Did | Planned vs actual per saved session (`DayOutcome`: asPlanned / modified / switched / unplanned / abandoned, swap pairs, drops, sets) | `pt_day_outcomes` on PlanStore, 90-day window, since 2026-09-25 | nothing yet (A4) |
+| Did | Planned vs actual per saved session (`DayOutcome`: asPlanned / modified / switched / unplanned / abandoned, swap pairs, drops, sets) | `pt_day_outcomes` on PlanStore, 90-day window, since 2026-09-25 | `PatternEngine` (A4): session-length and dropped-exercise rules; coach PATTERNS block |
 | Did | Missed workout + `MissResolution` | `pt_missed_workouts`; `SkipStreakDetector` | Planner softens rotation; coach |
 | Chose | Swap away X into Y | `TrainingMemory.exerciseAffinities`, `swapAwayCounts` (writers: `LogScreen`, `TodayScreen+TemplateEditor`, `ExerciseActionSheet`) | **nothing in production** |
 | Chose | Wheel / override switch to saved or sample workout | `overrides.customRoutineByDate` | plan application only, never read as a preference |
 | Chose | Hand-built routines | `pt_custom_routines` | wheel options; never read as a preference |
-| Looked | Search terms, library browse, detail opens, routine previews, and what converted | `explore_sessions` in `UserDatabase` (A3, 2026-09-26): one `ExploreSession` per surface visit via `ExploreRecorder` | nothing yet (A4) |
+| Looked | Search terms, library browse, detail opens, routine previews, and what converted | `explore_sessions` in `UserDatabase` (A3, 2026-09-26): one `ExploreSession` per surface visit via `ExploreRecorder` | `PatternEngine` viewed-routine rule (A4); never sent to the coach |
 
 ## Facts that change the design
 
@@ -53,3 +53,12 @@ Pairs with [[phase-training-generator-bias-weight-pool-not-reorder]] (how to con
 [[scorer-outcome-feedback-loop]] (at personal N, rules and counts beat weights).
 
 Full plan and the next-gen idea list: `PLAN-predictive-recommendations.md` (Part A grounded, Part B unlimited-resources). Iteration order A1 to A4 lives there; do not restate it here.
+
+## Adding a suggestion rule (A4)
+
+Add a candidate builder in `PatternEngine` returning `(Suggestion, qualifier)`. The id must be
+stable and must NOT include a value the accept changes (the session-length id once carried the
+target, so accepting minted a new id and the same old sessions re-fired it). The qualifier is
+re-run on events after an accept, so give each suggestion its event dates. Accept goes through
+`PlanStore.acceptSuggestion` using an existing seam. Anything browse-derived stays out of
+`CoachContext.patternsSection` unless docs/privacy.md is changed first.

@@ -40,6 +40,31 @@ struct CustomRoutineExercise: Codable, Identifiable, Hashable {
 
 extension CustomRoutine {
     /// Empty starter for the "+ Create custom workout" entry point.
+    /// A4 — copy a bundled coach.db routine into an editable saved workout,
+    /// keeping each row's exercise id, prescription and superset group. Rows
+    /// come from `CoachDatabase.exercises(forRoutineId:)`; order follows
+    /// their `position`.
+    static func from(bundledName name: String, exercises rows: [RoutineExercise],
+                     now: Date = Date()) -> CustomRoutine {
+        let ordered = rows.sorted { $0.position < $1.position }
+        return CustomRoutine(
+            id: UUID().uuidString,
+            name: name,
+            exercises: ordered.enumerated().map { idx, row in
+                CustomRoutineExercise(
+                    id: UUID().uuidString,
+                    exerciseId: row.exerciseId,
+                    name: row.name,
+                    position: idx,
+                    sets: row.sets,
+                    reps: row.reps,
+                    rest: row.rest,
+                    notes: row.notes,
+                    supersetGroup: row.supersetGroup)
+            },
+            createdAt: now)
+    }
+
     static func makeBlank() -> CustomRoutine {
         CustomRoutine(
             id: UUID().uuidString,

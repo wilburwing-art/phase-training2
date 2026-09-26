@@ -382,7 +382,10 @@ struct CoachDrawer: View {
             // PR 9: the chat surface is where a user asks "why did my
             // knee force me to stop Tuesday?" — same rationale as the
             // T2-3 wiring above.
-            abandonedWorkouts: planStore.abandonedWorkouts
+            abandonedWorkouts: planStore.abandonedWorkouts,
+            // A4: same chat-only rationale. The insight pass stays lean.
+            dayOutcomes: planStore.dayOutcomes,
+            openSuggestions: planStore.currentSuggestions()
         )
 
         inflightTask = Task {

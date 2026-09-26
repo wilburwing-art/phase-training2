@@ -43,6 +43,12 @@ enum CoachContext {
         // especially repeated pain abandons on the same exercise. Last
         // 14 days only, same window as misses.
         abandonedWorkouts: [AbandonedWorkoutEntry] = [],
+        // A4: planned-vs-actual per saved session (DayOutcome) and the open
+        // weekly-check-in suggestions. Browse-derived suggestions are dropped
+        // in `patternsSection`: browse history is not on the privacy policy's
+        // list of what the coach receives, and search text never is.
+        dayOutcomes: [DayOutcome] = [],
+        openSuggestions: [Suggestion] = [],
         // Phase 2 readiness: pass-through of the in-season readiness
         // score (0..1, 0.5 = neutral / no data) so the LLM knows
         // whether to nudge intensity up or down in its prose. Per the
@@ -366,6 +372,10 @@ enum CoachContext {
             blocks.append("ABANDONED WORKOUTS (last 14 days)\n" + lines.joined(separator: "\n"))
         }
 
+        if let patterns = patternsSection(outcomes: dayOutcomes, suggestions: openSuggestions, now: now) {
+            blocks.append(patterns)
+        }
+
         if let familiarity = familiaritySection(sessions: recentSessions, now: now) {
             blocks.append(familiarity)
         }
@@ -426,6 +436,42 @@ enum CoachContext {
     // by training what that slug meant; it also couldn't say "I dropped Back
     // Squat because of your ACL" because the exclusion happened silently at
     // the SQL boundary.
+
+    // MARK: - A4 patterns
+
+    /// Last 14 days of planned-vs-actual, the exercises most often dropped or
+    /// swapped, and the open suggestions the check-in will ask about. Nil when
+    /// there is nothing to say.
+    static func patternsSection(outcomes: [DayOutcome], suggestions: [Suggestion],
+                                now: Date) -> String? {
+        let cutoff = now.addingTimeInterval(-14 * 86_400)
+        let recent = outcomes.filter { $0.date >= cutoff }
+        let shareable = suggestions.filter { $0.rule != .viewedRoutine }
+        guard !recent.isEmpty || !shareable.isEmpty else { return nil }
+
+        var lines: [String] = []
+        if !recent.isEmpty {
+            let counts = DayOutcomeKind.allCases.compactMap { kind -> String? in
+                let n = recent.filter { $0.kind == kind }.count
+                return n > 0 ? "\(kind.rawValue) \(n)" : nil
+            }
+            lines.append("- Sessions vs plan (last 14 days): " + counts.joined(separator: ", "))
+            func top(_ names: [String]) -> String {
+                var tally: [String: Int] = [:]
+                for n in names { tally[n, default: 0] += 1 }
+                return tally.sorted { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key }
+                    .prefix(3).map { "\($0.key) ×\($0.value)" }.joined(separator: ", ")
+            }
+            let dropped = recent.filter { $0.kind != .abandoned }.flatMap(\.dropped)
+            if !dropped.isEmpty { lines.append("- Most dropped: " + top(dropped)) }
+            let swaps = recent.flatMap(\.swaps).map { "\($0.planned) → \($0.logged)" }
+            if !swaps.isEmpty { lines.append("- Most swapped: " + top(swaps)) }
+        }
+        for s in shareable {
+            lines.append("- Open suggestion: \(s.title) \(s.evidence) Offered action: \(s.acceptLabel).")
+        }
+        return "PATTERNS\n" + lines.joined(separator: "\n")
+    }
 
     // MARK: - Shared helpers (used across the section-builder extensions)
 
