@@ -86,7 +86,10 @@ enum MuscleVolume {
 
         return volumeBySlug
             .map { Row(slug: $0.key, label: labelBySlug[$0.key] ?? $0.key, volume: $0.value) }
-            .sorted { $0.volume > $1.volume }
+            // Ties break by slug BEFORE the prefix: with a volume-only sort,
+            // which of two equal rows survives the cut depended on dictionary
+            // iteration order, so the list could change between two renders.
+            .sorted { $0.volume == $1.volume ? $0.slug < $1.slug : $0.volume > $1.volume }
             .prefix(limit)
             .map { $0 }
     }
