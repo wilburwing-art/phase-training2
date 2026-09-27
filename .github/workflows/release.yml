@@ -120,6 +120,30 @@ jobs:
           echo "Resolved profile name: $PROFILE_NAME"
           echo "PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
 
+      - name: Install watch provisioning profile
+        # The embedded watch app (build 146, PLAN-watch.md step 4) signs with
+        # its own App Store profile. Missing secret fails here, in words,
+        # instead of an "no profiles for com.phasetraining.app.watchkitapp"
+        # archive error twenty minutes later.
+        env:
+          BUILD_WATCH_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_WATCH_PROVISION_PROFILE_BASE64 }}
+        run: |
+          if [ -z "$BUILD_WATCH_PROVISION_PROFILE_BASE64" ]; then
+            echo "::error::BUILD_WATCH_PROVISION_PROFILE_BASE64 is not set. Create an App Store profile for com.phasetraining.app.watchkitapp named 'PhaseTraining Watch App Store' and store it base64-encoded as that repo secret (PLAN-watch.md, step 4)."
+            exit 1
+          fi
+          PROFILE_PATH=$RUNNER_TEMP/build_watch_pp.mobileprovision
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          echo "$BUILD_WATCH_PROVISION_PROFILE_BASE64" | base64 --decode > "$PROFILE_PATH"
+          mkdir -p "$PROFILES_DIR"
+          cp "$PROFILE_PATH" "$PROFILES_DIR/"
+          WATCH_PROFILE_NAME=$(security cms -D -i "$PROFILE_PATH" | plutil -extract Name xml1 -o - - | sed -n 's/.*<string>\(.*\)<\/string>.*/\1/p')
+          echo "Resolved watch profile name: $WATCH_PROFILE_NAME"
+          if [ "$WATCH_PROFILE_NAME" != "PhaseTraining Watch App Store" ]; then
+            echo "::warning::Watch profile name '$WATCH_PROFILE_NAME' differs from Project.yml's pinned 'PhaseTraining Watch App Store'."
+          fi
+          echo "WATCH_PROFILE_NAME=$WATCH_PROFILE_NAME" >> "$GITHUB_ENV"
+
       - name: Write ExportOptions.plist
         run: |
           mkdir -p build
@@ -142,6 +166,8 @@ jobs:
               <dict>
                   <key>com.phasetraining.app</key>
                   <string>${PROFILE_NAME}</string>
+                  <key>com.phasetraining.app.watchkitapp</key>
+                  <string>${WATCH_PROFILE_NAME}</string>
               </dict>
               <key>destination</key>
               <string>export</string>

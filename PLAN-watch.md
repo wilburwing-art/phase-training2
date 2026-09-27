@@ -184,6 +184,15 @@ The phone stays the source of truth for the session (`SessionStore.saveActive` a
 4. **Release (3 days).** Second profile secret and `ExportOptions.plist` mapping in
    `release.yml`, watch app icon, manual check list on a real watch, tag
    `v1.1.0-build146`.
+   *Prepared 2026-09-27:* the watch target carries the phone's 1024 icon (no alpha,
+   masked round by the system), Release signing pinned to a profile named
+   **"PhaseTraining Watch App Store"**, and `release.yml` installs it from
+   `BUILD_WATCH_PROVISION_PROFILE_BASE64` and maps it in `ExportOptions.plist`. The
+   workflow fails in words at the profile step when the secret is missing, so **no tag
+   can ship until Wilbur adds it**: App ID `com.phasetraining.app.watchkitapp` with
+   HealthKit, an App Store profile for it named exactly as above, then
+   `base64 -i <file>.mobileprovision | gh secret set BUILD_WATCH_PROVISION_PROFILE_BASE64 -R wilburwing-art/phase-training2`.
+   Not written: the real-watch check list, which waits on the step 0 hardware answers.
 
 About 4 weeks of build, in line with Track 4's estimate for 4a plus 4b.
 
