@@ -434,6 +434,29 @@ silent path (`AthleteState.readinessScore`). No UI. Built on fixtures and the fl
   so it ships only with the fleet numbers written here, and the 2026-10-24 review still
   judges the twin on in-app pairs.
 
+**Built 2026-09-26 as a split, not a replacement (Wilbur's call).** `ReadinessSignal`
+measures training state and sizes sets (`lerp(0.6, 1.0, score)`) and the RPE cap; form
+sits near 0.5 for a steady lifter and high after a layoff. So replacing one with the other
+would have cut a consistent user's sets by about a fifth and raised volume after a layoff
+(estimated from the formulas, not measured), and the gate above would not have seen it,
+since 3b and the twin do not read readiness. What landed instead:
+- `FormModel` (pure): fitness-fatigue form, 42/7-day terms, gain 3, 120-day window,
+  starting at half an hour a day. Nothing in the generator reads it.
+- `GeneratorContext.buildLoadEvents`: one event per day carrying minutes. Hard sport days
+  count. On each day it takes the largest of in-app, Health and sport-log totals, so a
+  workout seen by two sources is not counted twice. `buildReadinessEvents` also dropped
+  every duration, so live load had no minutes at all until this builder existed.
+- `Counterfactual` scores with form. `liveScore` and its test are gone, since the 2a
+  baseline no longer equals the generator's score.
+- Not built: per-pattern load. The fleet has no per-pattern truth to score it against.
+
+Fleet, same 50 athletes × 26 weeks, seed 42, replayed locally: **2a sign agreement 100%
+on skip (3,370), move (7,332) and shorter (3,380)**, up from 0%. The 3b and twin sections
+of the report are byte-identical to the baseline. The 100% is by construction, because
+form uses the fleet truth's own constants, so it proves the implementation and says
+nothing about whether 42/7 fits real lifters. The in-app review is where that gets
+judged.
+
 ### 5. Review on 2026-10-24 (unchanged)
 
 Size and direction on 100+ in-app pairs. Physiology is not judged; its clock has run under

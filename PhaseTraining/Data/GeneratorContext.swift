@@ -330,6 +330,43 @@ extension GeneratorContext {
         return Array(byDay.values)
     }
 
+    /// Training load for `FormModel`: one event per day carrying that day's
+    /// minutes, over `FormModel.windowDays`. Unlike `buildReadinessEvents`,
+    /// duration is the point here, and hard sport days count (they are the
+    /// fatigue the model exists to see). A workout logged in-app and also
+    /// recorded to Health, or a sport log with its watch workout, is one
+    /// workout seen twice, so each day takes the largest of the three
+    /// sources' totals rather than their sum.
+    static func buildLoadEvents(
+        sessions: [SavedSession],
+        importedWorkouts: [ImportedWorkout],
+        sportLogs: [SportLogEntry],
+        now: Date,
+        calendar: Calendar = .current
+    ) -> [ReadinessEvent] {
+        let today = calendar.startOfDay(for: now)
+        guard let cutoff = calendar.date(byAdding: .day, value: -FormModel.windowDays, to: today) else {
+            return []
+        }
+        func totals(_ items: [(Date, TimeInterval)]) -> [Date: TimeInterval] {
+            var out: [Date: TimeInterval] = [:]
+            for (start, seconds) in items where start >= cutoff && start < now {
+                out[calendar.startOfDay(for: start), default: 0] += max(seconds, 0)
+            }
+            return out
+        }
+        let sources = [
+            totals(sessions.map { ($0.startTime, TimeInterval($0.duration)) }),
+            totals(importedWorkouts.map { ($0.startTime, $0.duration) }),
+            totals(sportLogs.map { ($0.date, TimeInterval($0.durationMinutes * 60)) }),
+        ]
+        var byDay: [Date: TimeInterval] = [:]
+        for source in sources {
+            for (day, seconds) in source { byDay[day] = max(byDay[day] ?? 0, seconds) }
+        }
+        return byDay.map { ReadinessEvent(startTime: $0.key, duration: $0.value) }
+    }
+
     // MARK: - recentHardSportDays
 
     /// Count distinct calendar days within the 7-day window that have at

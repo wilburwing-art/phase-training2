@@ -14,13 +14,10 @@
 //     (planned exercises from S's DayOutcome, history = sessions before S).
 //     Only rows with an actual are written: the logged working exercises.
 //   - counterfactual (2a): each week start W, `Counterfactual.evaluate` on that
-//     week's plan with the readiness events `GeneratorContext` builds from
-//     sessions before W. Every alternative it returns.
+//     week's plan with the load events `GeneratorContext.buildLoadEvents`
+//     builds from sessions before W. Every alternative it returns.
 //
-// All dates go through the UTC calendar. One gap: `buildReadinessEvents`
-// buckets by `Calendar.current` internally (it takes no calendar), so on a
-// machine far from UTC two sessions within a few hours across UTC midnight
-// could merge. The fleet logs at most one session a day, so it does not bite.
+// All dates go through the UTC calendar.
 
 import Foundation
 @testable import PhaseTraining
@@ -130,11 +127,12 @@ enum FleetReplay {
     static func counterfactual(_ h: FleetHistory, calendar: Calendar) -> [FleetCounterfactualRow] {
         h.weeks.flatMap { week -> [FleetCounterfactualRow] in
             guard let start = week.days.first?.date else { return [] }
-            let events = GeneratorContext.buildReadinessEvents(
+            let events = GeneratorContext.buildLoadEvents(
                 sessions: h.sessions.filter { $0.startTime < start },
                 importedWorkouts: [],
                 sportLogs: [],
-                now: start)
+                now: start,
+                calendar: calendar)
             let report = Counterfactual.evaluate(plan: week, history: events, savedRoutines: [],
                                                  now: start, calendar: calendar)
             guard let sportDay = report.sportDay else { return [] }

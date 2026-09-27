@@ -5,33 +5,27 @@
 // for a saved routine? Pure: the week plan, the history events and `now` go
 // in, a report comes out. No I/O, no UI (2b is a later build).
 //
-// Readiness source. This reads whichever readiness source is live, which
-// today is `ReadinessSignal` (the twin has not earned 1b). The caller passes
-// the same events the live score is built from
-// (`GeneratorContext.buildReadinessEvents`), so with nothing projected the
-// engine's score at `now` IS the live `readinessScore`. Planned lift days are
-// projected on top as one event each at the start of their day, and the score
-// is read at the start of the sport day.
+// Readiness source: `FormModel` (fitness-fatigue form), not the generator's
+// `ReadinessSignal` (Wilbur, 2026-09-26: two numbers, two jobs). The caller
+// passes `GeneratorContext.buildLoadEvents`, one event per day carrying that
+// day's minutes. Planned lift days are projected on top as one event each at
+// the start of their day with their planned minutes, and form is read at the
+// start of the sport day.
 //
 // Why no `Planner.generate`. The plan is already deterministic output of the
-// planner, and `ReadinessSignal` depends only on WHEN sessions happen, never
-// on what they contain. Re-running the planner per alternative would reshuffle
-// the rest of the week (rotation, consolidation, skip-streak bias) and blur
-// the one change being measured. So each alternative edits the existing
-// plan's days directly. Revisit when the readiness source reads content
-// (the twin's per-pattern load), since then the substituted workout matters.
+// planner. Re-running it per alternative would reshuffle the rest of the week
+// (rotation, consolidation, skip-streak bias) and blur the one change being
+// measured, so each alternative edits the existing plan's days directly.
 //
-// What each alternative can and cannot show under `ReadinessSignal`:
-// - skip: removes the day's event. Lowers or keeps the score (density and
-//   recency can only fall).
-// - move(to:): same event on a rest day in the window. Changes recency, so
-//   moving closer to the sport day raises the score and moving earlier lowers
-//   it. Only rest days with nothing logged are offered as targets.
-// - shorter: half the planned minutes. `ReadinessSignal` ignores duration
-//   (`ReadinessEvent.duration` is carried but unread), so the delta is 0
-//   today. Kept so the twin can fill it in without a shape change.
-// - savedRoutine: the user's saved workout in the same slot, same timing.
-//   Also 0 today for the same reason.
+// What each alternative shows under form:
+// - skip: removes the day's load. In the last days before the sport day this
+//   usually RAISES form (less fresh fatigue); further back it lowers it.
+// - move(to:): same load on a rest day in the window. Moving it closer to the
+//   sport day adds fatigue there, so form usually drops. Only rest days with
+//   nothing logged are offered as targets.
+// - shorter: half the planned minutes, so less fatigue and usually higher form.
+// - savedRoutine: the user's saved workout in the same slot at the same
+//   minutes. 0 until load reads content (per-pattern load, a later step).
 //
 // Planned sport days before the target are NOT projected: the live builder
 // drops hard sport logs, and a planned day carries no intensity, so leaving
@@ -53,10 +47,9 @@ struct CounterfactualOutcome: Equatable {
     let alternative: CounterfactualAlternative
     /// Readiness on the sport day with the plan as it stands.
     let baseline: Double
-    /// Readiness on the sport day under the alternative. Nil when the
-    /// alternative leaves no events at all: the signal then returns its
-    /// neutral 0.5, which the generator treats as "no data" and ignores, so
-    /// it is not a comparable score.
+    /// Form on the sport day under the alternative. Nil when the alternative
+    /// leaves no load at all in the window, which is no data rather than a
+    /// comparable score.
     let score: Double?
 
     var delta: Double? { score.map { $0 - baseline } }
@@ -90,13 +83,6 @@ struct CounterfactualReport: Equatable {
 
 enum Counterfactual {
 
-    /// Readiness right now from the same events, i.e. the live score.
-    /// Nil when there are no events (the live path's `hasReadinessData`
-    /// is false then).
-    static func liveScore(history: [ReadinessEvent], now: Date) -> Double? {
-        score(history, at: now)
-    }
-
     static func evaluate(
         plan: WeekPlan,
         history: [ReadinessEvent],
@@ -120,7 +106,10 @@ enum Counterfactual {
         for d in lifts {
             planned[start(d)] = ReadinessEvent(startTime: start(d), duration: Double(minutes(d)) * 60)
         }
-        guard let baseline = score(history + Array(planned.values), at: sportDay) else {
+        func score(_ events: [ReadinessEvent]) -> Double? {
+            FormModel.form(events: events, at: sportDay, calendar: calendar)
+        }
+        guard let baseline = score(history + Array(planned.values)) else {
             return CounterfactualReport(sportDay: sportDay, baseline: nil, outcomes: [])
         }
 
@@ -133,7 +122,7 @@ enum Counterfactual {
         func add(_ key: Date, _ alt: CounterfactualAlternative, _ events: [Date: ReadinessEvent]) {
             outcomes.append(CounterfactualOutcome(
                 day: key, alternative: alt, baseline: baseline,
-                score: score(history + Array(events.values), at: sportDay)))
+                score: score(history + Array(events.values))))
         }
 
         for d in lifts {
@@ -186,10 +175,6 @@ enum Counterfactual {
     }
 
     // MARK: - Private
-
-    private static func score(_ events: [ReadinessEvent], at date: Date) -> Double? {
-        events.isEmpty ? nil : ReadinessSignal.compute(events: events, now: date).score
-    }
 
     /// Planned minutes: the day's override, else the workout's estimate.
     private static func minutes(_ d: DayPlan) -> Int {

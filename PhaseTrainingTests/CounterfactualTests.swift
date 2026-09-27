@@ -25,9 +25,10 @@ final class CounterfactualTests: XCTestCase {
         return WeekPlan(days: days, generatedAt: monday, inputsHash: "test")
     }
 
-    /// About 3 a week over the prior four weeks, the last one two days ago.
+    /// An hour about 3 times a week for the prior eight weeks, the last one two days ago.
     private var history: [ReadinessEvent] {
-        [-2, -4, -7, -9, -11, -14, -16, -18, -21, -23, -25].map { ReadinessEvent(startTime: at($0)) }
+        stride(from: -2, through: -56, by: -2).filter { $0 % 7 != 0 }
+            .map { ReadinessEvent(startTime: at($0), duration: 3600) }
     }
 
     private func run(_ plan: WeekPlan, history: [ReadinessEvent]? = nil,
@@ -51,42 +52,48 @@ final class CounterfactualTests: XCTestCase {
                        "moves go only to rest days before the sport day")
     }
 
-    func test_skipLowersOrKeepsReadiness() throws {
+    func test_skippingALiftDaysBeforeTheSportDay_raisesForm() throws {
+        // Fatigue forgets in about a week, fitness in about six, so a session
+        // in the last few days before Saturday costs more fatigue than it adds fitness.
         let skips = run(typical).outcomes.filter { $0.alternative == .skip }
         XCTAssertEqual(skips.count, 2)
         for s in skips {
-            let d = try XCTUnwrap(s.delta)
-            XCTAssertLessThan(d, 0, "one fewer session lowers density")
+            XCTAssertGreaterThan(try XCTUnwrap(s.delta), 0)
         }
+        let mon = try XCTUnwrap(skips.first { $0.day == at(0) }?.delta)
+        let wed = try XCTUnwrap(skips.first { $0.day == at(2) }?.delta)
+        XCTAssertGreaterThan(wed, mon, "the later session carries more unrecovered fatigue")
     }
 
-    func test_movingCloserToTheSportDayRaisesRecency() throws {
-        // One lift on Monday, five days before Saturday: recency is on its ramp.
+    func test_movingCloserToTheSportDay_lowersForm() throws {
         let r = run(week([.lift, .rest, .rest, .rest, .rest, .sport, .rest]))
         let moves = r.outcomes.compactMap { o -> (Date, Double)? in
             if case .move(let to) = o.alternative, let s = o.score { return (to, s) }
             return nil
         }
         XCTAssertEqual(moves.map { $0.0 }, [at(1), at(2), at(3), at(4)])
-        let baseline = try XCTUnwrap(r.baseline)
-        XCTAssertGreaterThan(moves[0].1, baseline)
-        XCTAssertGreaterThan(moves[1].1, moves[0].1)
-        XCTAssertEqual(moves[3].1, moves[1].1, accuracy: 1e-12,
-                       "Wed, Thu and Fri are all within 3 days of Saturday: full recency")
-        XCTAssertEqual(r.largestImpact?.alternative, .skip,
-                       "losing the only session costs more than any move gains")
+        var previous = try XCTUnwrap(r.baseline)
+        for (_, score) in moves {
+            XCTAssertLessThan(score, previous)
+            previous = score
+        }
     }
 
-    func test_shorterAndSavedRoutine_areZeroUnderReadinessSignal() throws {
+    func test_shorterRaisesForm_savedRoutineIsZero() throws {
         let saved = CustomRoutine(id: "r1", name: "Mine", exercises: [], createdAt: monday)
+        var sawShorter = false
         for o in run(typical, saved: [saved]).outcomes {
             switch o.alternative {
-            case .shorter, .savedRoutine:
+            case .shorter:
+                sawShorter = true
+                XCTAssertGreaterThan(try XCTUnwrap(o.delta), 0)
+            case .savedRoutine:
                 XCTAssertEqual(try XCTUnwrap(o.delta), 0, accuracy: 1e-12,
-                               "ReadinessSignal ignores duration and content")
+                               "same slot, same minutes; load does not read content yet")
             default: break
             }
         }
+        XCTAssertTrue(sawShorter)
     }
 
     func test_noSportDayAhead_isEmpty() {
@@ -96,7 +103,7 @@ final class CounterfactualTests: XCTestCase {
     }
 
     func test_aDayAlreadyLoggedIsHistory_notPlan() {
-        let logged = history + [ReadinessEvent(startTime: now)]
+        let logged = history + [ReadinessEvent(startTime: now, duration: 3600)]
         let r = run(typical, history: logged)
         XCTAssertEqual(Set(r.outcomes.map(\.day)), [at(2)])
     }
@@ -114,18 +121,6 @@ final class CounterfactualTests: XCTestCase {
         var shuffled = typical
         shuffled.days.reverse()
         XCTAssertEqual(a, run(shuffled))
-    }
-
-    func test_liveScoreMatchesTheGeneratorContext() throws {
-        let sessions = [-1, -3, -6, -10, -20].map { d -> SavedSession in
-            SavedSession(templateId: "t", name: "Lift", category: "", startTime: at(d), exercises: [],
-                         feel: nil, note: nil, endTime: at(d).addingTimeInterval(3600), duration: 3600)
-        }
-        let ctx = GeneratorContext.from(sessions: sessions, soreness: [], feedback: [], now: now)
-        let events = GeneratorContext.buildReadinessEvents(sessions: sessions, importedWorkouts: [],
-                                                           sportLogs: [], now: now)
-        XCTAssertEqual(try XCTUnwrap(Counterfactual.liveScore(history: events, now: now)),
-                       ctx.readinessScore, accuracy: 1e-12)
     }
 
     func test_summaryReadsLikeTheRoadmapLine() throws {

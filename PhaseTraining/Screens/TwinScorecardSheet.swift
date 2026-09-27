@@ -75,13 +75,13 @@ struct TwinScorecardSheet: View {
                     }
                 }
                 if let plan = planStore.plan {
-                    // 2a: the largest-impact alternative for the current plan, on ReadinessSignal.
+                    // 2a: the largest-impact alternative for the current plan, on FormModel.
                     let cfNow = Date()
                     let cf = Counterfactual.evaluate(
                         plan: plan,
-                        history: GeneratorContext.buildReadinessEvents(
+                        history: GeneratorContext.buildLoadEvents(
                             sessions: sessionStore.savedSessions,
-                            importedWorkouts: UserDatabase.shared.recentImportedWorkouts(within: 28),
+                            importedWorkouts: UserDatabase.shared.recentImportedWorkouts(within: FormModel.windowDays),
                             sportLogs: planStore.sportLogStore?.entries ?? [],
                             now: cfNow),
                         savedRoutines: UserDatabase.shared.listRoutines(),
