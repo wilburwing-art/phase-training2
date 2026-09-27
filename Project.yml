@@ -196,6 +196,9 @@ targets:
         # "Apple Health, written once"); heart rate is read live into it.
         NSHealthShareUsageDescription: "PhaseTraining reads your heart rate during a workout you run from the watch, so the saved workout carries it."
         NSHealthUpdateUsageDescription: "PhaseTraining saves a workout you run from the watch to Apple Health, once, so it counts toward your rings."
+        # Labeled motion (PLAN-watch.md, step 3): recorded only while a
+        # workout runs from the watch, stored on the phone, never uploaded.
+        NSMotionUsageDescription: "While a workout runs from the watch, PhaseTraining records wrist motion for each set you mark done, labeled with the exercise, so a later version can count reps for you. It stays on your devices and is never uploaded."
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.phasetraining.app.watchkitapp

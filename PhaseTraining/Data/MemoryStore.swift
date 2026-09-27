@@ -170,6 +170,9 @@ final class MemoryStore: ObservableObject {
         }
         for key in unprefixedKeys { defaults.removeObject(forKey: key) }
         (userDB ?? UserDatabase.defaultStore()).wipeAll()
+        // Labeled motion from the watch lives in Application Support, outside
+        // both stores above (PLAN-watch.md, step 3).
+        MotionStore.shared.wipe()
         // EVERY pending notification, not just the weekly one. The doc comment
         // above claims this wipe covers "any pending local notification", but
         // it named a single hardcoded identifier — so erasing all data (or

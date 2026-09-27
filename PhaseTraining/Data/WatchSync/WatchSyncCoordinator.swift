@@ -71,6 +71,7 @@ final class WatchSyncCoordinator: NSObject, ObservableObject {
                 self.pushContext(nil)
             }
             .store(in: &cancellables)
+        MotionStore.shared.prune()
         guard WCSession.isSupported() else { return }
         WCSession.default.delegate = self
         WCSession.default.activate()
@@ -190,6 +191,22 @@ extension WatchSyncCoordinator: WCSessionDelegate {
         // paired simulators: activation reported paired and installed, yet
         // nothing arrived). Re-push whenever the link comes up.
         DispatchQueue.main.async { self.pushContext(self.store.active) }
+    }
+
+    func session(_ session: WCSession, didReceive file: WCSessionFile) {
+        // A labeled motion window (PLAN-watch.md, step 3). The system deletes
+        // the received file once this returns, so it is moved synchronously.
+        guard let sessionId = file.metadata?["sessionId"] as? String,
+              let fileName = file.metadata?["fileName"] as? String else {
+            Self.log.error("file without motion metadata: \(file.fileURL.lastPathComponent, privacy: .public)")
+            return
+        }
+        do {
+            try MotionStore.shared.store(fileAt: file.fileURL, sessionId: sessionId, fileName: fileName)
+            Self.log.notice("motion stored: \(sessionId, privacy: .public)/\(fileName, privacy: .public)")
+        } catch {
+            Self.log.error("motion store failed: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {

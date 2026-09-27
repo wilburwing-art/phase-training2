@@ -24,6 +24,8 @@
 	<string>PhaseTraining reads your heart rate during a workout you run from the watch, so the saved workout carries it.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>PhaseTraining saves a workout you run from the watch to Apple Health, once, so it counts toward your rings.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>While a workout runs from the watch, PhaseTraining records wrist motion for each set you mark done, labeled with the exercise, so a later version can count reps for you. It stays on your devices and is never uploaded.</string>
 	<key>WKApplication</key>
 	<true/>
 	<key>WKCompanionAppBundleIdentifier</key>

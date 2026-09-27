@@ -171,6 +171,16 @@ The phone stays the source of truth for the session (`SessionStore.saveActive` a
    and by bundle prefix.
 3. **Labeled motion (1 week).** Recording per set, labeling, transfer, storage cap,
    backup exclusion, a DEBUG count on the Signals sheet. Measure the real bytes per set.
+   *Landed 2026-09-27, unmeasured on hardware:* `Shared/Motion/MotionWindow.swift` (the
+   `.ptmotion` format: magic, JSON header, Float32 samples; and the windowing rule, from
+   the later of the previous tap and the rest's end to this tap, three seconds minimum);
+   `MotionRecorder` on the watch (CMMotionManager device motion at 50 Hz into a ring
+   buffer while the watch runs the workout, cut and sent with `transferFile`);
+   `MotionStore` on the phone (`Application Support/Motion/<session>/`, 12 months or
+   200 MB oldest first, wiped by "Erase all my data", outside the single-file backup by
+   construction); the DEBUG Signals sheet counts what landed; `NSMotionUsageDescription`
+   on the watch and a privacy paragraph. `CMBatchedSensorManager` stays the upgrade
+   after the hardware check. Tests in `MotionStoreTests`.
 4. **Release (3 days).** Second profile secret and `ExportOptions.plist` mapping in
    `release.yml`, watch app icon, manual check list on a real watch, tag
    `v1.1.0-build146`.

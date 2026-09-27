@@ -95,6 +95,15 @@ struct TwinScorecardSheet: View {
                         }
                     }
                 }
+                // Labeled motion from the watch (PLAN-watch.md, step 3): what has
+                // landed on this phone. Counts only; the files never leave it.
+                Section("Watch motion (146)") {
+                    let m = MotionStore.shared.summary()
+                    Text(m.windows == 0
+                         ? "No labeled sets yet. Start a workout from the watch."
+                         : String(format: "%d labeled sets across %d sessions, %.1f MB", m.windows, m.sessions, m.megabytes))
+                        .foregroundStyle(m.windows == 0 ? .secondary : .primary)
+                }
                 // 3b: will today happen? One row per clock, per PLAN-next-gen build 145.
                 Section("Will today happen? (3b)") {
                     if let l = planStore.todaySessionLikelihood() {

@@ -23,8 +23,18 @@ final class WatchSessionModel: NSObject, ObservableObject {
     /// Today's planned session from the phone, offered when nothing is running.
     @Published private(set) var planned: ActiveSession?
     @Published private(set) var reachable = false
-    @Published var rest = WatchRestTimer()
+    @Published var rest = WatchRestTimer() {
+        didSet {
+            // The end of a rest (expired or skipped) opens the next set's
+            // motion window.
+            if oldValue.isActive, !rest.isActive { restEndedAt = Date() }
+        }
+    }
     let workout = WatchWorkoutController()
+    /// Labeled motion (step 3), recording only while the watch runs the workout.
+    private let motion = MotionRecorder()
+    private var lastDoneAt: Date?
+    private var restEndedAt: Date?
 
     private var state = WatchSyncState()
     private var cancellables = Set<AnyCancellable>()
@@ -65,7 +75,15 @@ final class WatchSessionModel: NSObject, ObservableObject {
     /// keeps the phone's value.
     func complete(exerciseId: String, setNum: Int, weight: String?, reps: String?) {
         guard let active, set(exerciseId, setNum) != nil else { return }
+        let now = Date()
         send(event(exerciseId, setNum, .setCompleted(weight: weight, reps: reps)))
+        if let exercise = self.active?.exercises.first(where: { $0.id == exerciseId }),
+           let logged = exercise.sets.first(where: { $0.num == setNum }),
+           let span = MotionWindowCodec.window(previousDoneAt: lastDoneAt, restEndedAt: restEndedAt,
+                                               doneAt: now, sessionStart: active.startTime) {
+            motion.send(sessionStart: active.startTime, exercise: exercise, set: logged, start: span.start, end: span.end)
+        }
+        lastDoneAt = now
         startRest(after: exerciseId, setNum: setNum, in: active)
     }
 
@@ -87,11 +105,13 @@ final class WatchSessionModel: NSObject, ObservableObject {
         guard await workout.requestAuthorization() else { return }
         if await workout.start(appSessionStart: active.startTime) {
             send(WatchSyncEvent(sessionStart: active.startTime, kind: .watchWorkoutStarted, at: Date()))
+            motion.start()
         }
     }
 
     func endSession() async {
         guard let active else { return }
+        motion.stop()
         await workout.end()
         send(WatchSyncEvent(sessionStart: active.startTime, kind: .sessionEnded, at: Date()))
         self.active = nil
@@ -173,6 +193,7 @@ final class WatchSessionModel: NSObject, ObservableObject {
         } else {
             // The phone finished or discarded the session: close the workout.
             rest.clear()
+            motion.stop()
             if workout.isRunning { Task { await workout.end() } }
         }
         Self.log.notice("context read: \(decoded.activeSession?.name ?? "none", privacy: .public)")
