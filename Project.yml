@@ -131,7 +131,7 @@ targets:
         # 3c capture (build 145). One coarse fix at session start only,
         # asked at the first session start; see SessionLocationCapture.swift.
         NSLocationWhenInUseUsageDescription: "When you start a workout, PhaseTraining takes one approximate location (to about 100 meters) so it can learn the places you train, like your gym or the crag, and later offer the right version of a session there. It never tracks you in the background or while you train, and the location stays on your device."
-        NSHealthUpdateUsageDescription: "PhaseTraining does not write to Apple Health. It only reads your workout, body-metric and recovery data. iOS requires this permission whenever an app includes HealthKit; PhaseTraining never adds, edits, or deletes anything in Health."
+        NSHealthUpdateUsageDescription: "PhaseTraining saves each workout you finish to Apple Health as a strength-training workout (start, end and, from Apple Watch, heart rate), so it counts toward your rings and shows in the Fitness app. Each session is saved once. PhaseTraining never edits or deletes anything else in Health."
         # Log-screen media card (build 133). MPMediaLibrary authorisation is
         # what lets MPMusicPlayerController.systemMusicPlayer report the
         # now-playing item; without this key the request cannot be made.

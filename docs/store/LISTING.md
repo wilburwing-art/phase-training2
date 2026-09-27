@@ -32,8 +32,8 @@ were counted. Numbers come from the shipped `coach.db` (580 exercises,
 > LOG FAST, KEEP TRAINING
 > Supersets, rest timers, last-time numbers beside every set, RPE and notes. If Apple Music is playing, the track sits at the bottom of the log with pause and skip so you never leave the app mid-session.
 >
-> APPLE HEALTH, READ-ONLY
-> Import recent workouts so the plan knows how active you have really been, and log the ski day or the climb it finds in one tap. Body weight and body composition can populate your log. Phase Training never writes to Health.
+> APPLE HEALTH
+> Import recent workouts so the plan knows how active you have really been, and log the ski day or the climb it finds in one tap. Body weight and body composition can populate your log. Every workout you finish is saved to Health once, so it counts toward your rings.
 >
 > PROGRESS THAT MEANS SOMETHING
 > Streaks, PRs, weekly volume, body weight and composition trends, soreness check-ins, and a recovery read that feeds back into next week.
@@ -98,7 +98,7 @@ Third party: when the user turns on the AI Coach, the training context is sent t
 >
 > Recovery data (heart rate variability, resting heart rate, sleep) has its own read-only Health permission, requested only when the tester taps "Capture recovery data" in Profile → Health & Imports. The nightly summaries stay on the device.
 >
-> Apple Health is read-only. The `NSHealthUpdateUsageDescription` string is present only because iOS requires it whenever the HealthKit entitlement is included; the app calls requestAuthorization with an empty share set and never writes.
+> Apple Health writes: when the tester finishes a workout, the app asks for the workout share permission (once) and saves that session as a strength-training workout, tagged with a sync identifier so it is saved once. Reads stay as described above. The app never edits or deletes other Health data.
 >
 > Apple Music: the Log screen shows a transport card for the currently playing track. It only appears while music is playing, and the media-library permission is requested only when the tester taps "Show controls".
 >

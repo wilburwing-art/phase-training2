@@ -16,11 +16,11 @@ Phase Training does not collect personal data, usage analytics, crash reports, o
 
 Workout sessions you record (exercises, sets, weights, reps, RPE, notes, feel ratings) are saved on your device using iOS's standard local storage. Uninstalling the app removes this data.
 
-## Apple Health (optional, read-only)
+## Apple Health (optional)
 
 Phase Training asks for Apple Health access once, as a step of the first-run setup, with a "Not now" choice that skips it. If you skip it you can connect later in Profile → Health & Imports, and the app works fully without it. If you grant access, Phase Training reads from Apple Health on your device: recent workouts (activity type, date, duration, and calories) and, with a separate permission, body weight, body-fat percentage, and lean-mass readings. This data is used to gauge your training readiness, to match generated workouts to your real activity, and to offer to log outdoor sessions the app finds (for example a ski day or a climb) so your training week can adjust. It is stored locally alongside the rest of your log and never leaves your device on its own.
 
-Phase Training never writes to Apple Health, and Health data is never used for advertising or shared with data brokers. If you enable the AI Coach below, summaries of your logged activity, which can include sessions you confirmed from Health, may be part of the coach's context; nothing is sent unless the AI Coach is on. You can revoke Health access at any time in iOS Settings → Health → Data Access & Devices.
+When you finish a workout, Phase Training offers to save it to Apple Health as a strength-training workout (start time, end time and, when recorded on Apple Watch, heart rate and active energy), with its own separate permission that is asked the first time you finish one. Each session is saved once; a session recorded on the watch is saved by the watch, and one logged on the phone by the phone. The app never edits or deletes anything else in Health, and Health data is never used for advertising or shared with data brokers. If you enable the AI Coach below, summaries of your logged activity, which can include sessions you confirmed from Health, may be part of the coach's context; nothing is sent unless the AI Coach is on. You can revoke Health access at any time in iOS Settings → Health → Data Access & Devices.
 
 ## Apple Health recovery data (optional, separate permission, only when you ask)
 

@@ -140,7 +140,16 @@ The phone stays the source of truth for the session (`SessionStore.saveActive` a
 1. **Sync (1 week).** Message types, the pure reducer, the phone's `WCSession`
    delegate, today's session pushed to the watch. Tests: reducer idempotence, ordering,
    out-of-range queueing, phone-edit-wins.
-2. **Watch logging and Health (1.5 weeks).** Set list, done taps, weight and rep nudge,
+2. **Watch logging and Health (1.5 weeks).**
+   *Phone side started 2026-09-27:* `Shared/Health/HealthWorkoutTag.swift` (the
+   `pt_session` tag, the sync id from `startTime`, the bundle prefix, `HealthWriter`);
+   `HealthWorkoutWriter` saves a completed session with at least one done set through
+   `HKWorkoutBuilder`, asking the share grant on first use, unless
+   `SavedSession.healthWriter == .watch`; `HealthKitImporter` drops own workouts by tag or
+   bundle prefix on both read paths; usage string, `docs/privacy.md` and the store listing
+   rewritten in the same commit. Tests in `HealthWorkoutWriterTests`. The real
+   `HKWorkoutBuilder` save is unexercised until a device run; the simulator has no Health
+   share flow worth trusting. Set list, done taps, weight and rep nudge,
    rest timer with haptic, `HKWorkoutSession` lifecycle, save with sync metadata. Phone
    saves for phone-only sessions. Importer exclusion. Usage string and `docs/privacy.md`
    rewritten in the same commit. Tests: one-writer rule, importer exclusion by metadata

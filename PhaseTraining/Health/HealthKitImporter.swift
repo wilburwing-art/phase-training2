@@ -1,6 +1,8 @@
 // HealthKitImporter.swift — Phase 2 read-only HK workout intake.
 //
-// Read-only on HKWorkoutType. No HK write. No clinical-record access.
+// Read-only on HKWorkoutType here; the app's own writes live in
+// HealthWorkoutWriter (phone) and the watch app, and are filtered out of
+// every read below. No clinical-record access.
 // Auth happens lazily on first open of Settings → Health & Imports, never
 // during onboarding. If the user dismisses or denies, the rest of the app
 // works unchanged: GeneratorContext.from(...) sees zero imported workouts,
@@ -120,6 +122,14 @@ struct HKWorkoutLike: Sendable {
     let startDate: Date
     let duration: TimeInterval
     let totalEnergyBurnedKcal: Double?
+    /// `HKSourceRevision.source.bundleIdentifier` of the writer.
+    var sourceBundleId: String? = nil
+    /// The `pt_session` metadata value, present on workouts this app wrote.
+    var sessionTag: String? = nil
+
+    /// Written by this app on the phone or the watch. Never imported: it
+    /// would come back as an outside workout and count the session twice.
+    var isOwn: Bool { HealthWorkoutTag.isOwn(sessionTag: sessionTag, sourceBundleId: sourceBundleId) }
 }
 
 /// Production wrapper around a real HKHealthStore. Read-only on
@@ -169,7 +179,9 @@ struct HKHealthStoreWrapper: HKHealthStoreInterface, @unchecked Sendable {
                         activityType: hk.workoutActivityType,
                         startDate: hk.startDate,
                         duration: hk.duration,
-                        totalEnergyBurnedKcal: hk.totalEnergyBurned?.doubleValue(for: .kilocalorie())
+                        totalEnergyBurnedKcal: hk.totalEnergyBurned?.doubleValue(for: .kilocalorie()),
+                        sourceBundleId: hk.sourceRevision.source.bundleIdentifier,
+                        sessionTag: hk.metadata?[HealthWorkoutTag.sessionKey] as? String
                     )
                 }
                 cont.resume(returning: workouts)
@@ -283,7 +295,7 @@ actor HealthKitImporter {
     /// same HK UUID → same `id`, so re-import is safe with INSERT OR REPLACE.
     func recentWorkouts(days: Int = 28) async throws -> [ImportedWorkout] {
         let raw = try await store.recentWorkouts(days: days)
-        return raw.map(Self.map(_:))
+        return raw.filter { !$0.isOwn }.map(Self.map(_:))
     }
 
     /// Raw last-`days` workouts, unmapped. The activity-detection layer
@@ -294,7 +306,7 @@ actor HealthKitImporter {
     /// undetermined/denied read errors or comes back empty and the caller
     /// stays silent.
     func recentRawWorkouts(days: Int = 7) async throws -> [HKWorkoutLike] {
-        try await store.recentWorkouts(days: days)
+        try await store.recentWorkouts(days: days).filter { !$0.isOwn }
     }
 
     /// Pure mapper exposed for testability. Maps one HK workout to our

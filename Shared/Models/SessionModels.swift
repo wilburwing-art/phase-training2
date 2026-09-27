@@ -169,6 +169,9 @@ struct ActiveSession: Codable, Equatable {
     var exercises: [LoggedExercise]
     var feel: String?
     var note: String?
+    /// Who saves this session's workout to Apple Health. Optional so every
+    /// session saved before build 146 decodes; nil reads as the phone.
+    var healthWriter: HealthWriter? = nil
 }
 
 struct SavedSession: Codable, Identifiable, Equatable {
@@ -181,6 +184,7 @@ struct SavedSession: Codable, Identifiable, Equatable {
     var note: String?
     var endTime: Date
     var duration: Int // seconds
+    var healthWriter: HealthWriter? = nil
 
     var id: TimeInterval { startTime.timeIntervalSince1970 }
 }

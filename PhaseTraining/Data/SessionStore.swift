@@ -386,7 +386,8 @@ final class SessionStore: ObservableObject {
             feel: feel,
             note: note,
             endTime: endTime,
-            duration: duration
+            duration: duration,
+            healthWriter: active.healthWriter
         )
         // A failed write used to be invisible: saveSession swallowed it and this
         // still returned a SavedSession, so CompleteScreen showed the summary
