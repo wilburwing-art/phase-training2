@@ -424,6 +424,32 @@ deploy key `EVAL_RIG_DEPLOY_KEY` rather than the fine-grained token proposed abo
   from the false-suggestion rate on steady and grinder. Gate: under 1 false suggestion per
   athlete per quarter, recall not lower than today.
 
+**3b tuned 2026-09-26.** `FleetLikelihoodSweepTests` does coordinate descent on Brier
+over seed 42 and reports seed 7 as the holdout, with knobs passed through
+`SessionLikelihoodEngine.Params`. Shipped values:
+
+| knob | was | now |
+|---|---:|---:|
+| prior (happened : missed) | 3 : 1, 75% with no history | 8 : 1.5, 84% |
+| weekday shrinkage | 4 pseudo-days | 12 |
+| skip-streak multiplier | 0.85 | removed (fitted 1.0; the weekday rate already carries those misses, and the streak is still listed as a reason) |
+| travel multiplier | 0.7 | 0.7, not fitted |
+
+Travel was frozen on purpose. Every simulated persona has the same planted travel
+attendance, 0.2, so the sweep's 0.3 would copy the simulator's invented constant into
+the app. It stays a guess until in-app travel days exist. The time-of-day terms cannot
+be fitted either, since the fleet estimates each day from its start.
+
+Scored by eval-rig on the replayed predictions, Brier against running attendance:
+seed 42 **0.126** (was 0.131) vs 0.135; holdout seed 7 **0.127** vs 0.138. The gate
+passes. Mean prediction 0.821 against 0.821 observed on seed 42. The model now wins on six of
+seven personas and still loses on sporadic (0.266 vs 0.250 on seed 42, 0.259 vs 0.253 on
+seed 7). Twin and 2a unchanged. The prior and the shrinkage are still fitted to a
+simulator's variance, so the 2026-10-24 review re-checks 3b on in-app outcomes.
+
+The 6-day check-in floor sits in the check-in suggestion path, not 3b, and the fleet has
+no check-in truth; it waits.
+
 ### 4. Track 1b, pulled forward (about 1 week)
 
 The fitness-fatigue decision makes 2a's skip disagreement a flaw in `ReadinessSignal`, and

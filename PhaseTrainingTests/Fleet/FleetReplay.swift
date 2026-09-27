@@ -43,7 +43,8 @@ enum FleetReplay {
 
     // MARK: - 3b
 
-    static func likelihood(_ h: FleetHistory, calendar: Calendar) -> [FleetLikelihoodRow] {
+    static func likelihood(_ h: FleetHistory, calendar: Calendar,
+                           params: SessionLikelihoodEngine.Params = .defaults) -> [FleetLikelihoodRow] {
         h.dates.compactMap { day -> FleetLikelihoodRow? in
             guard let plan = h.plannedByDate[day], plan.kind == .lift || plan.kind == .sport else { return nil }
             let history = SessionLikelihoodEngine.History(
@@ -54,7 +55,8 @@ enum FleetReplay {
                 $0.kind == .outOfTown && calendar.isDate($0.date, inSameDayAs: day)
             }
             guard let l = SessionLikelihoodEngine.estimate(date: day, dayKind: plan.kind, isTravel: travel,
-                                                           history: history, now: day, calendar: calendar)
+                                                           history: history, now: day, calendar: calendar,
+                                                           params: params)
             else { return nil }
             return FleetLikelihoodRow(date: FleetContract.dayString(day), p: l.probability, samples: l.samples)
         }

@@ -172,7 +172,7 @@ final class FleetReplayTests: XCTestCase {
         XCTAssertEqual(p.engineBuild, "145")
         XCTAssertEqual(p.likelihood.map(\.date),
                        ["2026-03-30", "2026-04-01", "2026-04-03", "2026-04-04", "2026-04-06"])
-        XCTAssertEqual(p.likelihood[0].p, 0.75, accuracy: 1e-9, "no history: the prior")
+        XCTAssertEqual(p.likelihood[0].p, SessionLikelihoodEngine.priorHappened / (SessionLikelihoodEngine.priorHappened + SessionLikelihoodEngine.priorMissed), accuracy: 1e-9, "no history: the prior")
         XCTAssertEqual(p.likelihood[0].samples, 0)
         XCTAssertEqual(p.likelihood[4].samples, 4, "3 happened + 1 missed before 2026-04-06")
 

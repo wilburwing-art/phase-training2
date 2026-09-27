@@ -7,11 +7,16 @@
 // against the user's usual start.
 //
 // Kept simple enough to explain in one breath:
-//   1. Pooled rate over the last 90 days, Beta(3, 1) prior, so no history reads
-//      75% and a handful of days cannot swing it to 0 or 100.
-//   2. This weekday's rate, shrunk toward the pooled rate by 4 pseudo-days.
-//   3. Multiplied down for a skip streak on the weekday, a travel day, and
-//      (today only) being well past the usual start time.
+//   1. Pooled rate over the last 90 days, Beta(8, 1.5) prior, so no history
+//      reads 84% and a handful of days cannot swing it to 0 or 100.
+//   2. This weekday's rate, shrunk toward the pooled rate by 12 pseudo-days.
+//   3. Multiplied down for a travel day and (today only) being well past the
+//      usual start time. A skip streak on the weekday is reported, not
+//      multiplied: the weekday rate already carries those misses.
+// The prior, the shrinkage and dropping the streak multiplier were fitted on
+// the synthetic fleet (seed 42) and checked on a second seed; see
+// PLAN-next-gen.md, "3b tuned". The travel factor was not fitted, because the
+// simulator plants one invented travel attendance for every persona.
 // Every step adds a plain-language reason.
 //
 // Pure and deterministic: every input, `now` and the calendar are passed in.
@@ -44,13 +49,11 @@ enum SessionLikelihoodEngine {
 
     /// Matches the missed log's and DayOutcome's own 90-day retention.
     static let windowDays = 90
-    /// Beta prior on the pooled rate: 3 happened, 1 missed, so 75% with no history.
-    static let priorHappened = 3.0
-    static let priorMissed = 1.0
+    /// Beta prior on the pooled rate: 8 happened, 1.5 missed, so 84% with no history.
+    static let priorHappened = 8.0
+    static let priorMissed = 1.5
     /// Pseudo-days pulling a weekday's rate toward the pooled rate.
-    static let weekdayShrink = 4.0
-    /// Multiplier on a weekday with a skip streak (SkipStreakDetector).
-    static let streakFactor = 0.85
+    static let weekdayShrink = 12.0
     /// Multiplier on a travel day (`.outOfTown` event).
     static let travelFactor = 0.7
     /// Session starts needed before "your usual start time" means anything.
@@ -60,6 +63,18 @@ enum SessionLikelihoodEngine {
     static let lateGraceHours = 1.0
     static let latePerHour = 0.12
     static let lateFloor = 0.25
+
+    /// The fitted knobs, so the fleet can score other values without a
+    /// rebuild (`FleetLikelihoodSweepTests`). The time-of-day terms are not
+    /// here: the fleet estimates each day from its start, where they cannot fire.
+    struct Params: Equatable {
+        var priorHappened = SessionLikelihoodEngine.priorHappened
+        var priorMissed = SessionLikelihoodEngine.priorMissed
+        var weekdayShrink = SessionLikelihoodEngine.weekdayShrink
+        var travelFactor = SessionLikelihoodEngine.travelFactor
+
+        static let defaults = Params()
+    }
 
     struct History {
         var outcomes: [DayOutcome]
@@ -74,7 +89,8 @@ enum SessionLikelihoodEngine {
                          isTravel: Bool,
                          history: History,
                          now: Date,
-                         calendar: Calendar = .current) -> SessionLikelihood? {
+                         calendar: Calendar = .current,
+                         params: Params = .defaults) -> SessionLikelihood? {
         guard dayKind == .lift || dayKind == .sport else { return nil }
         let day = calendar.startOfDay(for: date)
         let today = calendar.startOfDay(for: now)
@@ -102,10 +118,11 @@ enum SessionLikelihoodEngine {
         }
 
         let hAll = Double(happened.count), mAll = Double(missed.count)
-        let pooled = (hAll + priorHappened) / (hAll + mAll + priorHappened + priorMissed)
+        let pooled = (hAll + params.priorHappened)
+            / (hAll + mAll + params.priorHappened + params.priorMissed)
         let h = happened.filter { Weekday.from(date: $0, calendar: calendar) == weekday }.count
         let m = missed.filter { Weekday.from(date: $0, calendar: calendar) == weekday }.count
-        let weekdayRate = (Double(h) + weekdayShrink * pooled) / (Double(h + m) + weekdayShrink)
+        let weekdayRate = (Double(h) + params.weekdayShrink * pooled) / (Double(h + m) + params.weekdayShrink)
 
         var reasons: [String] = []
         if happened.isEmpty && missed.isEmpty {
@@ -119,11 +136,10 @@ enum SessionLikelihoodEngine {
         var p = weekdayRate
         let streaks = SkipStreakDetector.detect(missedWorkouts: history.missed, now: now, calendar: calendar)
         if let streak = streaks.first(where: { $0.weekday == weekday }) {
-            p *= streakFactor
             reasons.append("\(weekday.short) has a skip streak: \(streak.missCount) missed in the last \(SkipStreakDetector.windowDays) days.")
         }
         if isTravel {
-            p *= travelFactor
+            p *= params.travelFactor
             reasons.append("Travel day: the plan has a bodyweight session.")
         }
 
