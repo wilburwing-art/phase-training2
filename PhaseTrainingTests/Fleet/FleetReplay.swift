@@ -32,7 +32,7 @@ enum FleetReplay {
 
     static func run(_ h: FleetHistory, calendar: Calendar = FleetContract.calendar) -> FleetPredictions {
         let patterns = PatternCache()
-        return FleetPredictions(schemaVersion: FleetContract.schemaVersion,
+        return FleetPredictions(schemaVersion: h.athlete.schemaVersion,
                                 athleteId: h.athlete.athleteId,
                                 engineBuild: FleetContract.engineBuild,
                                 likelihood: likelihood(h, calendar: calendar),

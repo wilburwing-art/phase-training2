@@ -1,5 +1,5 @@
 // FleetContract.swift — the synthetic-athlete fleet's JSON shapes, mirrored
-// from eval-rig's fleet/CONTRACT.md (schema version 1).
+// from eval-rig's fleet/CONTRACT.md (schema versions 1 and 2).
 //
 // eval-rig simulates athletes and writes `athletes/<id>.json`; the replay in
 // this folder reads them, drives the app's pure engines, and writes
@@ -14,7 +14,12 @@ import Foundation
 
 enum FleetContract {
 
+    /// The persona generator's version. v2 (the population generator) adds
+    /// truth fields this replay never reads and keeps days and predictions the
+    /// same shape, so both decode through the same structs. Predictions carry
+    /// the version of the athlete they were replayed from.
     static let schemaVersion = 1
+    static let supportedVersions: Set<Int> = [1, 2]
     static let engineBuild = "145"
 
     enum ContractError: Error, CustomStringConvertible {
@@ -26,7 +31,8 @@ enum FleetContract {
         var description: String {
             switch self {
             case .schemaVersion(let found, let source):
-                return "\(source): schema_version \(found), this replay reads \(FleetContract.schemaVersion)"
+                let known = FleetContract.supportedVersions.sorted().map(String.init).joined(separator: " and ")
+                return "\(source): schema_version \(found), this replay reads \(known)"
             case .badDate(let s): return "not a YYYY-MM-DD date: \(s)"
             case .badTimestamp(let s): return "not an ISO 8601 timestamp: \(s)"
             case .unknownPlannedKind(let s): return "planned.kind must be lift, sport or rest, got \(s)"
@@ -93,7 +99,7 @@ enum FleetContract {
     /// refused with a clear error instead of a shape mismatch.
     static func checkVersion(_ data: Data, source: String) throws {
         let header = try JSONDecoder().decode(VersionHeader.self, from: data)
-        guard header.schemaVersion == schemaVersion else {
+        guard supportedVersions.contains(header.schemaVersion) else {
             throw ContractError.schemaVersion(found: header.schemaVersion, source: source)
         }
     }
