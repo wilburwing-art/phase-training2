@@ -386,6 +386,34 @@ the first scored run, which lead the list below.
   in this file: 3b Brier against the running-attendance baseline, PatternEngine recall and
   false suggestions per athlete-month, twin MAE and direction, 2a skip and move agreement.
 
+### Fleet baseline (2026-09-26, run 36281511936)
+
+Items 1 (merge 145) and 2 are done; the prompt check and eval-rig#1 are still open. The run
+went to CI (Wilbur, 2026-09-26): `fleet.yml`, manual, eval-rig read through the read-only
+deploy key `EVAL_RIG_DEPLOY_KEY` rather than the fine-grained token proposed above.
+50 athletes × 26 weeks, seed 42, engine build 145, eval-rig at
+`claude/elegant-brahmagupta-7ecbou` since eval-rig#1 is unmerged. All 50 athletes replayed.
+
+- **3b.** Brier 0.131 against 0.135 for running attendance, over 5,772 planned days. It
+  wins on traveler (0.145 vs 0.162) and weekday-skipper (0.137 vs 0.184), where the travel
+  and weekday terms carry signal, and loses by 0.001 to 0.024 on the other five personas.
+  Miscalibrated at both ends: the 0.9-1.0 bucket predicts 0.947 and observes 0.900, and
+  the 0.2-0.4 buckets predict about 0.30 and observe about 0.465. Too confident near the
+  top, too pessimistic in the low buckets.
+- **PatternEngine.** 100% recall on both planted habits (172 and 151 detectable weeks), zero
+  false suggestions on steady and grinder. Nothing to tune from this: the planted habits are
+  far from every threshold. Tuning `dropsNeeded` and the rest needs personas that sit near
+  the thresholds (a habit shown twice in 28 days, noise on the controls).
+- **Twin.** MAE 5.64 lb against 5.30 for last value, direction 56.8% over 7,818 moved rows.
+  Loses on every persona, consistent with the Fitbod NO-GO.
+- **2a.** 0.0% sign agreement on all 14,082 scorable rows. The scorer is correct; a
+  cross-tab of app sign against simulator sign shows why. `move` and `shorter` return
+  exactly the baseline on every row (10,712 rows, app sign 0), while the simulator moves
+  readiness on all of them. `skip` scores at or below baseline on 3,370 of 3,370, while
+  fitness-fatigue says a skip before a sport day raises readiness on every one. This is the
+  `ReadinessSignal` flaw the fitness-fatigue decision predicted, plus a second one: the app's
+  counterfactual cannot see a moved or shortened lift at all. Both are 1b's targets.
+
 ### 3. Tune from the report (about 3 days)
 
 - **3b priors.** Replace the 75% start, the 15% streak and 30% travel cuts, the 12% an hour
