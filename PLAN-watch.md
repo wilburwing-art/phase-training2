@@ -157,7 +157,14 @@ The phone stays the source of truth for the session (`SessionStore.saveActive` a
    haptic at expiry) follows a completed set from either device. `SetDetailView` nudges
    weight (5 lb or 2.5 kg steps) and reps before marking done. The watch target now has
    HealthKit entitlements and its own usage strings. Compiles for both targets; the
-   workout session and the haptic are unexercised until a device run. Set list, done taps, weight and rep nudge,
+   workout session and the haptic are unexercised until a device run.
+   *Start on the watch (decision 1) landed 2026-09-27:* the context carries today's
+   planned session (`DayPlan.workoutTemplate`, now in the Data layer and shared with
+   Today and the day preview) when nothing is running; the watch adopts it at the tap
+   with its own start time and sends `sessionStarted(session)`, which the phone takes
+   only when nothing is in progress. A phone-started session in the meantime wins and
+   the watch's set events for the other start time are dropped, by the stale-session
+   rule. Set list, done taps, weight and rep nudge,
    rest timer with haptic, `HKWorkoutSession` lifecycle, save with sync metadata. Phone
    saves for phone-only sessions. Importer exclusion. Usage string and `docs/privacy.md`
    rewritten in the same commit. Tests: one-writer rule, importer exclusion by metadata

@@ -20,6 +20,10 @@ struct WatchSyncEvent: Codable, Equatable, Identifiable {
         /// phone's values alone.
         case setCompleted(weight: String?, reps: String?)
         case setReopened
+        /// The lifter started today's planned session on the watch (the phone
+        /// may be out of range). Carries the whole session, with the watch's
+        /// start time; the phone adopts it if nothing is already in progress.
+        case sessionStarted(ActiveSession)
         /// The watch started an HKWorkoutSession for this session, so the
         /// watch saves the workout to Health and the phone must not.
         case watchWorkoutStarted
@@ -63,5 +67,9 @@ struct WatchSyncEvent: Codable, Equatable, Identifiable {
 /// nothing is in progress.
 struct WatchSyncContext: Codable, Equatable {
     var activeSession: ActiveSession?
+    /// Today's planned session, built but not started, when nothing is in
+    /// progress. The watch offers to start it. Its `startTime` is
+    /// meaningless until the watch replaces it at the tap.
+    var plannedSession: ActiveSession? = nil
     var sentAt: Date
 }

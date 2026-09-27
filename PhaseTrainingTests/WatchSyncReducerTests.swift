@@ -134,11 +134,21 @@ final class WatchSyncReducerTests: XCTestCase {
         XCTAssertTrue(again.applied.isEmpty, "already the watch's")
     }
 
+    func test_sessionStartedWhileOneRuns_isConsumed() {
+        let started = WatchSyncEvent(sessionStart: t(10), kind: .sessionStarted(session()), at: t(10))
+        let out = WatchSyncReducer.apply([started], to: session(), state: WatchSyncState())
+        XCTAssertEqual(out.session, session())
+        XCTAssertTrue(out.applied.isEmpty)
+        XCTAssertEqual(out.state.appliedEventIds, [started.id])
+    }
+
     func test_eventsRoundTripThroughJSON() throws {
         let e = done("squat", 2, at: 60, weight: "140", reps: "6")
         let data = try JSONEncoder().encode(e)
         XCTAssertEqual(try JSONDecoder().decode(WatchSyncEvent.self, from: data), e)
-        let ctx = WatchSyncContext(activeSession: session(), sentAt: t(1))
+        let started = WatchSyncEvent(sessionStart: start, kind: .sessionStarted(session()), at: start)
+        XCTAssertEqual(try JSONDecoder().decode(WatchSyncEvent.self, from: try JSONEncoder().encode(started)), started)
+        let ctx = WatchSyncContext(activeSession: nil, plannedSession: session(), sentAt: t(1))
         XCTAssertEqual(try JSONDecoder().decode(WatchSyncContext.self, from: try JSONEncoder().encode(ctx)), ctx)
     }
 }

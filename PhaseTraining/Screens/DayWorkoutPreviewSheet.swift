@@ -537,22 +537,3 @@ struct DayWorkoutPreviewSheet: View {
         return Int(n)
     }
 }
-
-// MARK: - DayPlan → WorkoutTemplate bridge
-
-extension DayPlan {
-    /// Resolve this day's lift/mobility template the same way TodayScreen
-    /// does (generatedWorkout first, routineId fallback). Returns nil for
-    /// non-workout days (sport / rest / event) and when neither source is
-    /// populated.
-    var workoutTemplate: WorkoutTemplate? {
-        if let g = generatedWorkout {
-            return g.toWorkoutTemplate(id: g.stableTemplateId)
-        }
-        if let rid = routineId,
-           let r = CoachDatabase.shared.listRoutines().first(where: { $0.id == rid }) {
-            return r.toWorkoutTemplate(with: CoachDatabase.shared.exercises(forRoutineId: rid))
-        }
-        return nil
-    }
-}

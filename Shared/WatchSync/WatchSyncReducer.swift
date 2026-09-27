@@ -81,6 +81,11 @@ enum WatchSyncReducer {
                 ended = true
                 applied.append(event)
 
+            case .sessionStarted:
+                // A session is already in progress here; the coordinator
+                // handles a start only when nothing is. Consumed.
+                continue
+
             case .watchWorkoutStarted:
                 guard session.healthWriter != .watch else { continue }
                 session.healthWriter = .watch

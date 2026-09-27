@@ -20,6 +20,8 @@ import WatchConnectivity
 final class WatchSessionModel: NSObject, ObservableObject {
 
     @Published private(set) var active: ActiveSession?
+    /// Today's planned session from the phone, offered when nothing is running.
+    @Published private(set) var planned: ActiveSession?
     @Published private(set) var reachable = false
     @Published var rest = WatchRestTimer()
     let workout = WatchWorkoutController()
@@ -65,6 +67,18 @@ final class WatchSessionModel: NSObject, ObservableObject {
         guard let active, set(exerciseId, setNum) != nil else { return }
         send(event(exerciseId, setNum, .setCompleted(weight: weight, reps: reps)))
         startRest(after: exerciseId, setNum: setNum, in: active)
+    }
+
+    /// Start today's planned session here, phone in range or not. The
+    /// session is adopted locally at once; the phone takes it when the event
+    /// reaches it and pushes the same session back as context.
+    func startPlannedSession() {
+        guard active == nil, var session = planned else { return }
+        session.startTime = Date()
+        active = session
+        planned = nil
+        state = WatchSyncState(sessionStart: session.startTime)
+        send(WatchSyncEvent(sessionStart: session.startTime, kind: .sessionStarted(session), at: session.startTime))
     }
 
     /// Run the Health workout from the watch for the active session.
@@ -135,7 +149,16 @@ final class WatchSessionModel: NSObject, ObservableObject {
         guard let data = context["context"] as? Data,
               let decoded = try? Self.decoder.decode(WatchSyncContext.self, from: data) else { return }
         let before = active
+        // The phone has not adopted a session started here yet: keep ours
+        // until the context carries it (same start time) or another one.
+        if decoded.activeSession == nil, let mine = before,
+           state.sessionStart == mine.startTime, !state.appliedEventIds.isEmpty,
+           decoded.sentAt < mine.startTime.addingTimeInterval(120) {
+            planned = decoded.plannedSession
+            return
+        }
         active = decoded.activeSession
+        planned = decoded.activeSession == nil ? decoded.plannedSession : nil
         if let session = decoded.activeSession {
             state = state.matching(session)
             // A set the phone just marked done gets its rest here too.

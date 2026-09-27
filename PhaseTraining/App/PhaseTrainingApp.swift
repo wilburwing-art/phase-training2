@@ -554,7 +554,7 @@ struct PhaseTrainingApp: App {
                 .task {
                     // The watch link (PLAN-watch.md). Built here rather than as
                     // a @StateObject because it needs the session store.
-                    if watchSync == nil { watchSync = WatchSyncCoordinator(store: session) }
+                    if watchSync == nil { watchSync = WatchSyncCoordinator(store: session, planStore: plan) }
                 }
                 .task {
                     // Ski/climb narrowing: route users on an unsupported / no

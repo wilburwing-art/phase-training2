@@ -62,11 +62,21 @@ struct SessionView: View {
                 }
             }
             .navigationTitle(session.name)
+        } else if let planned = model.planned {
+            VStack(spacing: 10) {
+                Text("Today").font(.caption).foregroundStyle(.secondary)
+                Text(planned.name).font(.headline).multilineTextAlignment(.center)
+                Text("\(planned.exercises.count) exercises")
+                    .font(.footnote).foregroundStyle(.secondary)
+                Button("Start") { model.startPlannedSession() }
+                    .buttonStyle(.borderedProminent)
+            }
+            .padding()
         } else {
             VStack(spacing: 8) {
                 Text("Phase Training")
                     .font(.headline)
-                Text("Start today's session on your iPhone.")
+                Text("Nothing planned today. Start a session on your iPhone.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

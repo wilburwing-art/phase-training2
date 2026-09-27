@@ -37,16 +37,12 @@ extension TodayScreen {
                 }
             )
         }
-        // Generated workout (the new default for lift / mobility days).
-        // Uses GeneratedWorkout.stableTemplateId — same exercises → same id,
-        // so SessionStore.getPreviousSession finds last week's same-shape
-        // workout and pulls weight + reps forward into the autofill column.
-        if let _ = todayPlan, let workout = todayPlan?.generatedWorkout {
-            return workout.toWorkoutTemplate(id: workout.stableTemplateId)
-        }
-        // Day-override picked a specific routine (custom workout or library pick).
-        if let routineId = todayPlan?.routineId {
-            return loadTemplate(routineId: routineId)
+        // Generated workout (the default for lift / mobility days) or the
+        // routine a day-override picked. GeneratedWorkout.stableTemplateId
+        // means same exercises, same id, so SessionStore.getPreviousSession
+        // finds last week's same-shape workout for the autofill column.
+        if let planned = todayPlan?.workoutTemplate {
+            return planned
         }
         // No plan yet → upper-1 fallback. Guarantees TodayScreen always has
         // a usable template before onboarding runs.
@@ -54,13 +50,6 @@ extension TodayScreen {
             return WorkoutTemplate.upper1
         }
         return nil
-    }
-
-    private func loadTemplate(routineId: Int) -> WorkoutTemplate? {
-        let routines = CoachDatabase.shared.listRoutines()
-        guard let r = routines.first(where: { $0.id == routineId }) else { return nil }
-        let exercises = CoachDatabase.shared.exercises(forRoutineId: routineId)
-        return r.toWorkoutTemplate(with: exercises)
     }
 
     private var totalSets: Int {

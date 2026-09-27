@@ -26,6 +26,7 @@ final class WatchSyncCoordinator: NSObject, ObservableObject {
     static let stateKey = "pt_watch_sync_state"
 
     private let store: SessionStore
+    private let planStore: PlanStore
     private let defaults: UserDefaults
     private var cancellables = Set<AnyCancellable>()
     private var lastKnown: ActiveSession?
@@ -43,8 +44,9 @@ final class WatchSyncCoordinator: NSObject, ObservableObject {
         return d
     }()
 
-    init(store: SessionStore, defaults: UserDefaults = .standard) {
+    init(store: SessionStore, planStore: PlanStore, defaults: UserDefaults = .standard) {
         self.store = store
+        self.planStore = planStore
         self.defaults = defaults
         if let data = defaults.data(forKey: Self.stateKey),
            let saved = try? Self.decoder.decode(WatchSyncState.self, from: data) {
@@ -59,6 +61,15 @@ final class WatchSyncCoordinator: NSObject, ObservableObject {
         store.$active
             .dropFirst()
             .sink { [weak self] in self?.activeChanged($0) }
+            .store(in: &cancellables)
+        // Today's planned session rides along in the context, so a plan
+        // change (regeneration, an override) reaches the watch too.
+        planStore.$plan
+            .dropFirst()
+            .sink { [weak self] _ in
+                guard let self, self.store.active == nil else { return }
+                self.pushContext(nil)
+            }
             .store(in: &cancellables)
         guard WCSession.isSupported() else { return }
         WCSession.default.delegate = self
@@ -91,7 +102,9 @@ final class WatchSyncCoordinator: NSObject, ObservableObject {
             Self.log.notice("context not pushed: state \(wc.activationState.rawValue) paired \(wc.isPaired) installed \(wc.isWatchAppInstalled)")
             return
         }
-        let context = WatchSyncContext(activeSession: session, sentAt: Date())
+        let context = WatchSyncContext(activeSession: session,
+                                       plannedSession: session == nil ? plannedSessionForToday() : nil,
+                                       sentAt: Date())
         guard let data = try? Self.encoder.encode(context) else { return }
         do {
             try wc.updateApplicationContext(["context": data])
@@ -103,12 +116,31 @@ final class WatchSyncCoordinator: NSObject, ObservableObject {
 
     private static let log = Logger(subsystem: "com.phasetraining.app", category: "watch-sync")
 
+    /// Today's lift or mobility session as the plan shows it, unstarted.
+    private func plannedSessionForToday() -> ActiveSession? {
+        guard let template = planStore.plan?.today()?.workoutTemplate else { return nil }
+        return store.createSession(from: template)
+    }
+
     // MARK: - In
 
     /// Fold events from the watch into the active session. Main thread.
     func apply(_ events: [WatchSyncEvent]) {
         guard let active = store.active else {
-            Self.log.notice("events dropped: no active session")
+            // Nothing in progress: a start from the watch is adopted as is,
+            // with the watch's start time, so its set events line up.
+            // Anything else has nothing to apply to.
+            for event in events {
+                if case .sessionStarted(let session) = event.kind, store.active == nil {
+                    Self.log.notice("session started from the watch: \(session.name, privacy: .public)")
+                    store.saveActive(session)
+                    state = WatchSyncState(sessionStart: session.startTime)
+                    state.appliedEventIds.insert(event.id)
+                    persist(state)
+                } else {
+                    Self.log.notice("event dropped: no active session")
+                }
+            }
             return
         }
         let outcome = WatchSyncReducer.apply(events, to: active, state: state)
