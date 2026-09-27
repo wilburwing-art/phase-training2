@@ -1,0 +1,1895 @@
+{
+  "schema_version": 2,
+  "athlete_id": "a-0002",
+  "persona": "near-overrun",
+  "declared_session_minutes": 60,
+  "truth": {
+    "attendance_by_weekday": {
+      "mon": 0.8084,
+      "tue": 0.8334,
+      "wed": 0.6936,
+      "thu": 0.7898,
+      "fri": 0.795,
+      "sat": 0.5306,
+      "sun": 0.6723
+    },
+    "travel_attendance": 0.1577,
+    "overrun_minutes": 15,
+    "always_dropped_exercise": null,
+    "habits": [
+      "session-overrun",
+      "saturday-skipper",
+      "travel"
+    ],
+    "params": {
+      "attendance.mean": 0.804213,
+      "attendance.weekday_logit_sd": 0.341539,
+      "attendance.weak_day_prob": 0.25,
+      "attendance.weak_day_rate": 0.530627,
+      "attendance.trend_per_26w": 0.004839,
+      "attendance.bursty_prob": 0.12,
+      "travel.trips_per_year": 13.941571,
+      "travel.attendance": 0.157685,
+      "duration.noise_sd_min": 4.974824,
+      "overrun.habit_prob": 0.15,
+      "overrun.rate_per_28d": 4.630444,
+      "overrun.magnitude_min": 15,
+      "drop.habit_prob": 0.2,
+      "drop.rate_per_28d": 5.286965,
+      "drop.random_rate": 0.016678,
+      "abandon.rate": 0.00956,
+      "start.morning_share": 0.4,
+      "start.sd_min": 59.16853,
+      "strength.scale": 1.175626,
+      "strength.growth_per_session": 0.005862,
+      "strength.day_noise_sd": 0.027359,
+      "strength.detrain_per_day": 0.00202,
+      "illness.colds_per_year": 2.636983,
+      "illness.stop_share": 0.5,
+      "illness.attendance": 0.05,
+      "injury.per_year": 0.580793,
+      "injury.sport_attendance": 0.4,
+      "schedule.change_per_year": 0.4,
+      "sport_block.prob": 0.3,
+      "sport_block.lift_factor": 0.690279,
+      "readiness.ctl_days": 49.540772,
+      "readiness.atl_days": 16.969838,
+      "readiness.gain": 2.778929,
+      "sleep.mean_hours": 8.812231,
+      "sleep.night_sd_hours": 1.151225,
+      "stress.spikes_per_year": 3.00111,
+      "stress.fatigue_weight": 0.370092,
+      "sleep.recovery_weight": 0.332803
+    },
+    "habit_truth": [
+      {
+        "habit": "session-overrun",
+        "present": true,
+        "rate_per_28d": 1,
+        "magnitude_minutes": 15,
+        "subject": null,
+        "origin": "near-threshold"
+      }
+    ],
+    "life_events": [
+      {
+        "kind": "trip",
+        "start": "2026-04-08",
+        "end": "2026-04-12"
+      },
+      {
+        "kind": "trip",
+        "start": "2026-04-12",
+        "end": "2026-04-14"
+      }
+    ],
+    "readiness": {
+      "model": "ff-sleep-stress",
+      "ctl_days": 49.541,
+      "atl_days": 16.97,
+      "gain": 2.779,
+      "init": 0.5,
+      "sleep_hours": [
+        8.35,
+        7.59,
+        7.74,
+        7.81,
+        9.03,
+        8.85,
+        8.62,
+        7.32,
+        7.48,
+        9.48,
+        8.38,
+        9.04,
+        8.3,
+        8.56,
+        10.24,
+        8.82,
+        9.53,
+        10.2,
+        9.48,
+        7.82,
+        9.33,
+        9.13,
+        11,
+        9.06,
+        6.21,
+        9.48,
+        9.86,
+        9.63
+      ],
+      "stress": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0.819,
+        0.67,
+        0.549,
+        0.449,
+        0.368,
+        0.301,
+        0.247,
+        0.202,
+        0.165,
+        0.135,
+        0.111,
+        0.091,
+        0.074,
+        0.061,
+        0.05,
+        0.041,
+        0.033,
+        0.027,
+        0.022,
+        0.018
+      ],
+      "stress_fatigue_weight": 0.3701,
+      "sleep_recovery_weight": 0.3328
+    }
+  },
+  "days": [
+    {
+      "date": "2026-03-30",
+      "planned": {
+        "kind": "rest",
+        "title": "Rest",
+        "minutes": 0,
+        "exercises": []
+      },
+      "travel": false,
+      "session": null,
+      "true_readiness": 0.5
+    },
+    {
+      "date": "2026-03-31",
+      "planned": {
+        "kind": "lift",
+        "title": "Lower A",
+        "minutes": 60,
+        "exercises": [
+          {
+            "id": "p-0002-1",
+            "name": "Barbell Back Squat",
+            "sets": 4,
+            "reps": 5
+          },
+          {
+            "id": "p-0002-2",
+            "name": "Romanian Deadlift (Barbell)",
+            "sets": 3,
+            "reps": 8
+          },
+          {
+            "id": "p-0002-3",
+            "name": "Leg Press",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-4",
+            "name": "Standing Calf Raise",
+            "sets": 3,
+            "reps": 12
+          }
+        ]
+      },
+      "travel": false,
+      "session": {
+        "start": "2026-03-31T06:52:00Z",
+        "duration_minutes": 61,
+        "abandoned": false,
+        "exercises": [
+          {
+            "planned_id": "p-0002-1",
+            "name": "Barbell Back Squat",
+            "sets": [
+              {
+                "weight": 285,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 285,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 285,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 285,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-2",
+            "name": "Romanian Deadlift (Barbell)",
+            "sets": [
+              {
+                "weight": 235,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 235,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 235,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-3",
+            "name": "Leg Press",
+            "sets": [
+              {
+                "weight": 410,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 410,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 410,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-4",
+            "name": "Standing Calf Raise",
+            "sets": [
+              {
+                "weight": 195,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 195,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 195,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          }
+        ]
+      },
+      "true_readiness": 0.537
+    },
+    {
+      "date": "2026-04-01",
+      "planned": {
+        "kind": "rest",
+        "title": "Rest",
+        "minutes": 0,
+        "exercises": []
+      },
+      "travel": false,
+      "session": null,
+      "true_readiness": 0.504
+    },
+    {
+      "date": "2026-04-02",
+      "planned": {
+        "kind": "lift",
+        "title": "Upper A",
+        "minutes": 60,
+        "exercises": [
+          {
+            "id": "p-0002-5",
+            "name": "Barbell Bench Press",
+            "sets": 4,
+            "reps": 5
+          },
+          {
+            "id": "p-0002-6",
+            "name": "Barbell Bent-Over Row",
+            "sets": 4,
+            "reps": 8
+          },
+          {
+            "id": "p-0002-7",
+            "name": "Barbell Overhead Press (Strict)",
+            "sets": 3,
+            "reps": 8
+          },
+          {
+            "id": "p-0002-8",
+            "name": "Lat Pulldown (Cable)",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-9",
+            "name": "Face Pull (Cable or Band)",
+            "sets": 3,
+            "reps": 15
+          }
+        ]
+      },
+      "travel": false,
+      "session": {
+        "start": "2026-04-02T07:24:00Z",
+        "duration_minutes": 60,
+        "abandoned": false,
+        "exercises": [
+          {
+            "planned_id": "p-0002-5",
+            "name": "Barbell Bench Press",
+            "sets": [
+              {
+                "weight": 215,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 215,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 215,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 215,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-6",
+            "name": "Barbell Bent-Over Row",
+            "sets": [
+              {
+                "weight": 180,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 180,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 180,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 180,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-7",
+            "name": "Barbell Overhead Press (Strict)",
+            "sets": [
+              {
+                "weight": 120,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 120,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 120,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-8",
+            "name": "Lat Pulldown (Cable)",
+            "sets": [
+              {
+                "weight": 150,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 150,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 150,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-9",
+            "name": "Face Pull (Cable or Band)",
+            "sets": [
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          }
+        ]
+      },
+      "true_readiness": 0.534
+    },
+    {
+      "date": "2026-04-03",
+      "planned": {
+        "kind": "rest",
+        "title": "Rest",
+        "minutes": 0,
+        "exercises": []
+      },
+      "travel": false,
+      "session": null,
+      "true_readiness": 0.5
+    },
+    {
+      "date": "2026-04-04",
+      "planned": {
+        "kind": "lift",
+        "title": "Full Body",
+        "minutes": 60,
+        "exercises": [
+          {
+            "id": "p-0002-10",
+            "name": "Conventional Deadlift",
+            "sets": 3,
+            "reps": 5
+          },
+          {
+            "id": "p-0002-11",
+            "name": "Incline Dumbbell Bench Press",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-12",
+            "name": "Seated Cable Row",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-13",
+            "name": "Dumbbell Lateral Raise",
+            "sets": 3,
+            "reps": 12
+          },
+          {
+            "id": "p-0002-14",
+            "name": "Face Pull (Cable or Band)",
+            "sets": 3,
+            "reps": 15
+          },
+          {
+            "id": "p-0002-15",
+            "name": "Dumbbell Curl",
+            "sets": 3,
+            "reps": 12
+          }
+        ]
+      },
+      "travel": false,
+      "session": null,
+      "true_readiness": 0.539
+    },
+    {
+      "date": "2026-04-05",
+      "planned": {
+        "kind": "sport",
+        "title": "Trail Run",
+        "minutes": 90,
+        "exercises": []
+      },
+      "travel": false,
+      "session": {
+        "start": "2026-04-05T07:48:00Z",
+        "duration_minutes": 95,
+        "abandoned": false,
+        "exercises": []
+      },
+      "true_readiness": 0.574
+    },
+    {
+      "date": "2026-04-06",
+      "planned": {
+        "kind": "rest",
+        "title": "Rest",
+        "minutes": 0,
+        "exercises": []
+      },
+      "travel": false,
+      "session": null,
+      "true_readiness": 0.482
+    },
+    {
+      "date": "2026-04-07",
+      "planned": {
+        "kind": "lift",
+        "title": "Lower A",
+        "minutes": 60,
+        "exercises": [
+          {
+            "id": "p-0002-16",
+            "name": "Barbell Back Squat",
+            "sets": 4,
+            "reps": 5
+          },
+          {
+            "id": "p-0002-17",
+            "name": "Romanian Deadlift (Barbell)",
+            "sets": 3,
+            "reps": 8
+          },
+          {
+            "id": "p-0002-18",
+            "name": "Leg Press",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-19",
+            "name": "Standing Calf Raise",
+            "sets": 3,
+            "reps": 12
+          }
+        ]
+      },
+      "travel": false,
+      "session": {
+        "start": "2026-04-07T07:57:00Z",
+        "duration_minutes": 62,
+        "abandoned": false,
+        "exercises": [
+          {
+            "planned_id": "p-0002-16",
+            "name": "Barbell Back Squat",
+            "sets": [
+              {
+                "weight": 290,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 290,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 290,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 290,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-17",
+            "name": "Romanian Deadlift (Barbell)",
+            "sets": [
+              {
+                "weight": 240,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 240,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 240,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-18",
+            "name": "Leg Press",
+            "sets": [
+              {
+                "weight": 415,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 415,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 415,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-19",
+            "name": "Standing Calf Raise",
+            "sets": [
+              {
+                "weight": 200,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 200,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 200,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          }
+        ]
+      },
+      "true_readiness": 0.509
+    },
+    {
+      "date": "2026-04-08",
+      "planned": {
+        "kind": "rest",
+        "title": "Rest",
+        "minutes": 0,
+        "exercises": []
+      },
+      "travel": true,
+      "session": null,
+      "true_readiness": 0.455
+    },
+    {
+      "date": "2026-04-09",
+      "planned": {
+        "kind": "lift",
+        "title": "Upper A",
+        "minutes": 60,
+        "exercises": [
+          {
+            "id": "p-0002-20",
+            "name": "Barbell Bench Press",
+            "sets": 4,
+            "reps": 5
+          },
+          {
+            "id": "p-0002-21",
+            "name": "Barbell Bent-Over Row",
+            "sets": 4,
+            "reps": 8
+          },
+          {
+            "id": "p-0002-22",
+            "name": "Barbell Overhead Press (Strict)",
+            "sets": 3,
+            "reps": 8
+          },
+          {
+            "id": "p-0002-23",
+            "name": "Lat Pulldown (Cable)",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-24",
+            "name": "Face Pull (Cable or Band)",
+            "sets": 3,
+            "reps": 15
+          }
+        ]
+      },
+      "travel": true,
+      "session": null,
+      "true_readiness": 0.497
+    },
+    {
+      "date": "2026-04-10",
+      "planned": {
+        "kind": "rest",
+        "title": "Rest",
+        "minutes": 0,
+        "exercises": []
+      },
+      "travel": true,
+      "session": null,
+      "true_readiness": 0.535
+    },
+    {
+      "date": "2026-04-11",
+      "planned": {
+        "kind": "lift",
+        "title": "Full Body",
+        "minutes": 60,
+        "exercises": [
+          {
+            "id": "p-0002-25",
+            "name": "Conventional Deadlift",
+            "sets": 3,
+            "reps": 5
+          },
+          {
+            "id": "p-0002-26",
+            "name": "Incline Dumbbell Bench Press",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-27",
+            "name": "Seated Cable Row",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-28",
+            "name": "Dumbbell Lateral Raise",
+            "sets": 3,
+            "reps": 12
+          },
+          {
+            "id": "p-0002-29",
+            "name": "Face Pull (Cable or Band)",
+            "sets": 3,
+            "reps": 15
+          },
+          {
+            "id": "p-0002-30",
+            "name": "Dumbbell Curl",
+            "sets": 3,
+            "reps": 12
+          }
+        ]
+      },
+      "travel": true,
+      "session": null,
+      "true_readiness": 0.57
+    },
+    {
+      "date": "2026-04-12",
+      "planned": {
+        "kind": "sport",
+        "title": "Trail Run",
+        "minutes": 90,
+        "exercises": []
+      },
+      "travel": true,
+      "session": null,
+      "true_readiness": 0.601
+    },
+    {
+      "date": "2026-04-13",
+      "planned": {
+        "kind": "rest",
+        "title": "Rest",
+        "minutes": 0,
+        "exercises": []
+      },
+      "travel": true,
+      "session": null,
+      "true_readiness": 0.63
+    },
+    {
+      "date": "2026-04-14",
+      "planned": {
+        "kind": "lift",
+        "title": "Lower A",
+        "minutes": 60,
+        "exercises": [
+          {
+            "id": "p-0002-31",
+            "name": "Barbell Back Squat",
+            "sets": 4,
+            "reps": 5
+          },
+          {
+            "id": "p-0002-32",
+            "name": "Romanian Deadlift (Barbell)",
+            "sets": 3,
+            "reps": 8
+          },
+          {
+            "id": "p-0002-33",
+            "name": "Leg Press",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-34",
+            "name": "Standing Calf Raise",
+            "sets": 3,
+            "reps": 12
+          }
+        ]
+      },
+      "travel": true,
+      "session": null,
+      "true_readiness": 0.657
+    },
+    {
+      "date": "2026-04-15",
+      "planned": {
+        "kind": "rest",
+        "title": "Rest",
+        "minutes": 0,
+        "exercises": []
+      },
+      "travel": false,
+      "session": null,
+      "true_readiness": 0.68
+    },
+    {
+      "date": "2026-04-16",
+      "planned": {
+        "kind": "lift",
+        "title": "Upper A",
+        "minutes": 60,
+        "exercises": [
+          {
+            "id": "p-0002-35",
+            "name": "Barbell Bench Press",
+            "sets": 4,
+            "reps": 5
+          },
+          {
+            "id": "p-0002-36",
+            "name": "Barbell Bent-Over Row",
+            "sets": 4,
+            "reps": 8
+          },
+          {
+            "id": "p-0002-37",
+            "name": "Barbell Overhead Press (Strict)",
+            "sets": 3,
+            "reps": 8
+          },
+          {
+            "id": "p-0002-38",
+            "name": "Lat Pulldown (Cable)",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-39",
+            "name": "Face Pull (Cable or Band)",
+            "sets": 3,
+            "reps": 15
+          }
+        ]
+      },
+      "travel": false,
+      "session": {
+        "start": "2026-04-16T06:29:00Z",
+        "duration_minutes": 53,
+        "abandoned": false,
+        "exercises": [
+          {
+            "planned_id": "p-0002-35",
+            "name": "Barbell Bench Press",
+            "sets": [
+              {
+                "weight": 220,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 220,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 220,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 220,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-36",
+            "name": "Barbell Bent-Over Row",
+            "sets": [
+              {
+                "weight": 185,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 185,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 185,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 185,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-37",
+            "name": "Barbell Overhead Press (Strict)",
+            "sets": [
+              {
+                "weight": 125,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 125,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 125,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-38",
+            "name": "Lat Pulldown (Cable)",
+            "sets": [
+              {
+                "weight": 150,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 150,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 150,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-39",
+            "name": "Face Pull (Cable or Band)",
+            "sets": [
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          }
+        ]
+      },
+      "true_readiness": 0.701
+    },
+    {
+      "date": "2026-04-17",
+      "planned": {
+        "kind": "rest",
+        "title": "Rest",
+        "minutes": 0,
+        "exercises": []
+      },
+      "travel": false,
+      "session": null,
+      "true_readiness": 0.644
+    },
+    {
+      "date": "2026-04-18",
+      "planned": {
+        "kind": "lift",
+        "title": "Full Body",
+        "minutes": 60,
+        "exercises": [
+          {
+            "id": "p-0002-40",
+            "name": "Conventional Deadlift",
+            "sets": 3,
+            "reps": 5
+          },
+          {
+            "id": "p-0002-41",
+            "name": "Incline Dumbbell Bench Press",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-42",
+            "name": "Seated Cable Row",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-43",
+            "name": "Dumbbell Lateral Raise",
+            "sets": 3,
+            "reps": 12
+          },
+          {
+            "id": "p-0002-44",
+            "name": "Face Pull (Cable or Band)",
+            "sets": 3,
+            "reps": 15
+          },
+          {
+            "id": "p-0002-45",
+            "name": "Dumbbell Curl",
+            "sets": 3,
+            "reps": 12
+          }
+        ]
+      },
+      "travel": false,
+      "session": {
+        "start": "2026-04-18T07:27:00Z",
+        "duration_minutes": 64,
+        "abandoned": false,
+        "exercises": [
+          {
+            "planned_id": "p-0002-40",
+            "name": "Conventional Deadlift",
+            "sets": [
+              {
+                "weight": 330,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 330,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 330,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-41",
+            "name": "Incline Dumbbell Bench Press",
+            "sets": [
+              {
+                "weight": 60,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 60,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 60,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-42",
+            "name": "Seated Cable Row",
+            "sets": [
+              {
+                "weight": 155,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 155,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 155,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-43",
+            "name": "Dumbbell Lateral Raise",
+            "sets": [
+              {
+                "weight": 25,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 25,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 25,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-44",
+            "name": "Face Pull (Cable or Band)",
+            "sets": [
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-45",
+            "name": "Dumbbell Curl",
+            "sets": [
+              {
+                "weight": 35,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 35,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 35,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          }
+        ]
+      },
+      "true_readiness": 0.668
+    },
+    {
+      "date": "2026-04-19",
+      "planned": {
+        "kind": "sport",
+        "title": "Trail Run",
+        "minutes": 90,
+        "exercises": []
+      },
+      "travel": false,
+      "session": {
+        "start": "2026-04-19T07:34:00Z",
+        "duration_minutes": 98,
+        "abandoned": false,
+        "exercises": []
+      },
+      "true_readiness": 0.61
+    },
+    {
+      "date": "2026-04-20",
+      "planned": {
+        "kind": "rest",
+        "title": "Rest",
+        "minutes": 0,
+        "exercises": []
+      },
+      "travel": false,
+      "session": null,
+      "true_readiness": 0.497
+    },
+    {
+      "date": "2026-04-21",
+      "planned": {
+        "kind": "lift",
+        "title": "Lower A",
+        "minutes": 60,
+        "exercises": [
+          {
+            "id": "p-0002-46",
+            "name": "Barbell Back Squat",
+            "sets": 4,
+            "reps": 5
+          },
+          {
+            "id": "p-0002-47",
+            "name": "Romanian Deadlift (Barbell)",
+            "sets": 3,
+            "reps": 8
+          },
+          {
+            "id": "p-0002-48",
+            "name": "Leg Press",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-49",
+            "name": "Standing Calf Raise",
+            "sets": 3,
+            "reps": 12
+          }
+        ]
+      },
+      "travel": false,
+      "session": {
+        "start": "2026-04-21T07:09:00Z",
+        "duration_minutes": 63,
+        "abandoned": false,
+        "exercises": [
+          {
+            "planned_id": "p-0002-46",
+            "name": "Barbell Back Squat",
+            "sets": [
+              {
+                "weight": 270,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 270,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 270,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 270,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-47",
+            "name": "Romanian Deadlift (Barbell)",
+            "sets": [
+              {
+                "weight": 225,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 225,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 225,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-48",
+            "name": "Leg Press",
+            "sets": [
+              {
+                "weight": 390,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 390,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 390,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          }
+        ]
+      },
+      "true_readiness": 0.536
+    },
+    {
+      "date": "2026-04-22",
+      "planned": {
+        "kind": "rest",
+        "title": "Rest",
+        "minutes": 0,
+        "exercises": []
+      },
+      "travel": false,
+      "session": null,
+      "true_readiness": 0.482
+    },
+    {
+      "date": "2026-04-23",
+      "planned": {
+        "kind": "lift",
+        "title": "Upper A",
+        "minutes": 60,
+        "exercises": [
+          {
+            "id": "p-0002-50",
+            "name": "Barbell Bench Press",
+            "sets": 4,
+            "reps": 5
+          },
+          {
+            "id": "p-0002-51",
+            "name": "Barbell Bent-Over Row",
+            "sets": 4,
+            "reps": 8
+          },
+          {
+            "id": "p-0002-52",
+            "name": "Barbell Overhead Press (Strict)",
+            "sets": 3,
+            "reps": 8
+          },
+          {
+            "id": "p-0002-53",
+            "name": "Lat Pulldown (Cable)",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-54",
+            "name": "Face Pull (Cable or Band)",
+            "sets": 3,
+            "reps": 15
+          }
+        ]
+      },
+      "travel": false,
+      "session": {
+        "start": "2026-04-23T08:23:00Z",
+        "duration_minutes": 62,
+        "abandoned": false,
+        "exercises": [
+          {
+            "planned_id": "p-0002-50",
+            "name": "Barbell Bench Press",
+            "sets": [
+              {
+                "weight": 205,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 205,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 205,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 205,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-51",
+            "name": "Barbell Bent-Over Row",
+            "sets": [
+              {
+                "weight": 175,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 175,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 175,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 175,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-52",
+            "name": "Barbell Overhead Press (Strict)",
+            "sets": [
+              {
+                "weight": 115,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 115,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 115,
+                "reps": 8,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-53",
+            "name": "Lat Pulldown (Cable)",
+            "sets": [
+              {
+                "weight": 145,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 145,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 145,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-54",
+            "name": "Face Pull (Cable or Band)",
+            "sets": [
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          }
+        ]
+      },
+      "true_readiness": 0.522
+    },
+    {
+      "date": "2026-04-24",
+      "planned": {
+        "kind": "rest",
+        "title": "Rest",
+        "minutes": 0,
+        "exercises": []
+      },
+      "travel": false,
+      "session": null,
+      "true_readiness": 0.504
+    },
+    {
+      "date": "2026-04-25",
+      "planned": {
+        "kind": "lift",
+        "title": "Full Body",
+        "minutes": 60,
+        "exercises": [
+          {
+            "id": "p-0002-55",
+            "name": "Conventional Deadlift",
+            "sets": 3,
+            "reps": 5
+          },
+          {
+            "id": "p-0002-56",
+            "name": "Incline Dumbbell Bench Press",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-57",
+            "name": "Seated Cable Row",
+            "sets": 3,
+            "reps": 10
+          },
+          {
+            "id": "p-0002-58",
+            "name": "Dumbbell Lateral Raise",
+            "sets": 3,
+            "reps": 12
+          },
+          {
+            "id": "p-0002-59",
+            "name": "Face Pull (Cable or Band)",
+            "sets": 3,
+            "reps": 15
+          },
+          {
+            "id": "p-0002-60",
+            "name": "Dumbbell Curl",
+            "sets": 3,
+            "reps": 12
+          }
+        ]
+      },
+      "travel": false,
+      "session": {
+        "start": "2026-04-25T07:39:00Z",
+        "duration_minutes": 77,
+        "abandoned": false,
+        "exercises": [
+          {
+            "planned_id": "p-0002-55",
+            "name": "Conventional Deadlift",
+            "sets": [
+              {
+                "weight": 340,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 340,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 340,
+                "reps": 5,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-56",
+            "name": "Incline Dumbbell Bench Press",
+            "sets": [
+              {
+                "weight": 60,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 60,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 60,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-57",
+            "name": "Seated Cable Row",
+            "sets": [
+              {
+                "weight": 160,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 160,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 160,
+                "reps": 10,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-58",
+            "name": "Dumbbell Lateral Raise",
+            "sets": [
+              {
+                "weight": 25,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 25,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 25,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-59",
+            "name": "Face Pull (Cable or Band)",
+            "sets": [
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 55,
+                "reps": 15,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          },
+          {
+            "planned_id": "p-0002-60",
+            "name": "Dumbbell Curl",
+            "sets": [
+              {
+                "weight": 35,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 35,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              },
+              {
+                "weight": 35,
+                "reps": 12,
+                "done": true,
+                "warmup": false
+              }
+            ]
+          }
+        ]
+      },
+      "true_readiness": 0.542
+    },
+    {
+      "date": "2026-04-26",
+      "planned": {
+        "kind": "sport",
+        "title": "Trail Run",
+        "minutes": 90,
+        "exercises": []
+      },
+      "travel": false,
+      "session": {
+        "start": "2026-04-26T07:10:00Z",
+        "duration_minutes": 95,
+        "abandoned": false,
+        "exercises": []
+      },
+      "true_readiness": 0.471
+    }
+  ]
+}

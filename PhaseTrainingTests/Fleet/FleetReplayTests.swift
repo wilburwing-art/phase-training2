@@ -133,12 +133,12 @@ final class FleetReplayTests: XCTestCase {
     }
 
     func testOtherSchemaVersionIsRefused() throws {
-        let v2 = Self.fixture.replacingOccurrences(of: "\"schema_version\": 1", with: "\"schema_version\": 2")
-        XCTAssertThrowsError(try FleetContract.decodeAthlete(Data(v2.utf8), source: "v2")) { error in
+        let v3 = Self.fixture.replacingOccurrences(of: "\"schema_version\": 1", with: "\"schema_version\": 3")
+        XCTAssertThrowsError(try FleetContract.decodeAthlete(Data(v3.utf8), source: "v3")) { error in
             guard case FleetContract.ContractError.schemaVersion(let found, _) = error else {
                 return XCTFail("expected a schema version error, got \(error)")
             }
-            XCTAssertEqual(found, 2)
+            XCTAssertEqual(found, 3)
         }
     }
 
