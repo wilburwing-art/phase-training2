@@ -1,0 +1,110 @@
+name: fleet
+
+# Synthetic-athlete fleet run (PLAN-next-gen.md, "First scored fleet run").
+# Manual only. Checks out eval-rig next to this repo, then:
+#   1. eval fleet simulate   writes manifest.json + athletes/*.json
+#   2. FleetReplayTests      replays each athlete through the app's engines
+#                            and writes predictions/*.json (needs Xcode)
+#   3. eval fleet score      writes report.md
+# The whole run directory is uploaded as an artifact and report.md goes to the
+# step summary. eval-rig is private; EVAL_RIG_DEPLOY_KEY is a read-only deploy
+# key on that repo (added 2026-09-26).
+
+on:
+  workflow_dispatch:
+    inputs:
+      athletes:
+        description: Number of simulated athletes
+        default: '50'
+      weeks:
+        description: Weeks per athlete
+        default: '26'
+      seed:
+        description: Simulator seed (same seed, same files)
+        default: '42'
+      eval_rig_ref:
+        description: eval-rig branch, tag or sha
+        default: main
+
+concurrency:
+  group: fleet-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  fleet:
+    runs-on: macos-26
+    timeout-minutes: 40
+    env:
+      RUN_DIR: ${{ github.workspace }}/fleet-run
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check out eval-rig
+        uses: actions/checkout@v5
+        with:
+          repository: wilburwing-art/eval-rig
+          ref: ${{ inputs.eval_rig_ref }}
+          ssh-key: ${{ secrets.EVAL_RIG_DEPLOY_KEY }}
+          path: eval-rig
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: eval-rig/package-lock.json
+
+      - name: Simulate
+        working-directory: eval-rig
+        run: |
+          npm ci
+          npm run eval -- fleet simulate \
+            --athletes "${{ inputs.athletes }}" \
+            --weeks "${{ inputs.weeks }}" \
+            --seed "${{ inputs.seed }}" \
+            --out "$RUN_DIR"
+
+      - name: Setup
+        id: setup
+        uses: ./.github/actions/ios-setup
+
+      - name: Replay
+        # TEST_RUNNER_ is stripped by xcodebuild and handed to the test
+        # process as FLEET_RUN_DIR. Without it the test skips and writes nothing.
+        run: |
+          set -o pipefail
+          mkdir -p build
+          TEST_RUNNER_FLEET_RUN_DIR="$RUN_DIR" xcodebuild test \
+            -project PhaseTraining.xcodeproj \
+            -scheme PhaseTraining \
+            -destination "platform=iOS Simulator,id=${{ steps.setup.outputs.udid }}" \
+            -only-testing:PhaseTrainingTests/FleetReplayTests/testReplayRunDirectory \
+            -resultBundlePath build/FleetReplay.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee build/raw-fleet.log \
+            | xcbeautify --renderer github-actions
+          # A skipped test exits 0 too; require the predictions it should have written.
+          athletes=$(find "$RUN_DIR/athletes" -name "*.json" | wc -l)
+          predictions=$(find "$RUN_DIR/predictions" -name "*.json" 2>/dev/null | wc -l)
+          echo "athletes=$athletes predictions=$predictions"
+          test "$athletes" -gt 0 && test "$athletes" -eq "$predictions"
+
+      - name: Score
+        working-directory: eval-rig
+        run: |
+          npm run eval -- fleet score "$RUN_DIR"
+          cat "$RUN_DIR/report.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fleet-n${{ inputs.athletes }}-w${{ inputs.weeks }}-s${{ inputs.seed }}
+          path: fleet-run
+          if-no-files-found: ignore
+
+      - name: Upload xcresult on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: FleetReplay.xcresult
+          path: build/FleetReplay.xcresult
