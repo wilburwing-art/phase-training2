@@ -494,8 +494,11 @@ four weeks. Add the fleet numbers from 2 and 4 as context.
 
 ### 6. Build 146, the watch (target mid-November)
 
+**Plan: `PLAN-watch.md` (2026-09-27).** Health writes approved 2026-09-26 on the condition of
+no duplicates; the plan covers that, three open decisions, and the portal work.
+
 4a watch companion plus 4b labeled motion capture. **Decision for Wilbur before it
-starts:** 4a writes workouts to Apple Health, and the app is read-only today (usage
+starts (answered yes 2026-09-26):** 4a writes workouts to Apple Health, and the app is read-only today (usage
 string and policy say it never writes). Yes means a new usage string, a write grant, and
 policy and label updates in 146.
 
