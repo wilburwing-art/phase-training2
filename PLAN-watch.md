@@ -112,6 +112,12 @@ The phone stays the source of truth for the session (`SessionStore.saveActive` a
 0. **Spike (2 days).** Empty watch target through xcodegen, built in CI on a watchOS
    simulator. Answer the two "to verify" questions on a real watch: sync-identifier
    dedupe across sources, and batched sensor rates. Write the answers here before step 1.
+   *Started 2026-09-27:* `PhaseTrainingWatch` target in `Project.yml`, embedded by xcodegen
+   (the pbxproj carries an "Embed Watch Content" phase), compiles against
+   `watchsimulator26.4`. Xcode refuses to build the iOS scheme at all unless the watchOS
+   simulator runtime is installed (`xcodebuild -downloadPlatform watchOS`); the macos-26
+   runner ships watchOS 26.4 simulators, so CI is unaffected. The two real-watch checks
+   are still open.
 1. **Sync (1 week).** Message types, the pure reducer, the phone's `WCSession`
    delegate, today's session pushed to the watch. Tests: reducer idempotence, ordering,
    out-of-range queueing, phone-edit-wins.

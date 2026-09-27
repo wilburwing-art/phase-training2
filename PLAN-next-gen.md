@@ -514,7 +514,7 @@ policy and label updates in 146.
 
 - Rowing and paddle-sports: done 2026-09-26, six antagonists each (the SUP set: push-up,
   DB bench, DB overhead press, landmine press, scapular push-up, external rotation).
-  **The other 27 sports done 2026-09-27**, 142 rows: each sport's antagonists are the
+  **The other 27 sports done 2026-09-27**, 140 rows: each sport's antagonists are the
   patterns its own relevance rows lack (cuff external rotation and retraction for the
   overhead and striking sports, hamstring and hip-abduction for the quad and cutting
   sports, rows for the push-heavy practices, extension for the flexion-heavy ones). Where

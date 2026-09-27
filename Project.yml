@@ -87,6 +87,9 @@ targets:
         optional: true
     dependencies:
       - package: MuscleMap
+      # The watch companion (PLAN-watch.md). xcodegen embeds a watchOS app
+      # dependency into the iOS bundle's Watch/ directory.
+      - target: PhaseTrainingWatch
     info:
       path: PhaseTraining/Info.plist
       properties:
@@ -166,6 +169,33 @@ targets:
           CODE_SIGN_IDENTITY: "Apple Distribution"
           PROVISIONING_PROFILE_SPECIFIER: "PhaseTraining App Store"
           DEVELOPMENT_TEAM: A2Z2RXR65P
+
+  # Watch companion, build 146 (PLAN-watch.md). A single-target watchOS app
+  # (no separate extension) embedded in the iOS app. Release signing for it
+  # (its own App ID and App Store profile) lands in the plan's step 4; until
+  # then only Debug simulator builds of this target are expected to succeed.
+  PhaseTrainingWatch:
+    type: application
+    platform: watchOS
+    deploymentTarget: "10.0"
+    sources:
+      - path: PhaseTrainingWatch
+    info:
+      path: PhaseTrainingWatch/Info.plist
+      properties:
+        CFBundleDisplayName: Phase Training
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        WKApplication: true
+        WKCompanionAppBundleIdentifier: com.phasetraining.app
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.phasetraining.app.watchkitapp
+        TARGETED_DEVICE_FAMILY: "4"
+        WATCHOS_DEPLOYMENT_TARGET: "10.0"
+        GENERATE_INFOPLIST_FILE: NO
+        SKIP_INSTALL: YES
+        ENABLE_PREVIEWS: YES
 
   PhaseTrainingTests:
     type: bundle.unit-test
