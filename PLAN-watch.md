@@ -128,7 +128,7 @@ The phone stays the source of truth for the session (`SessionStore.saveActive` a
 
 About 4 weeks of build, in line with Track 4's estimate for 4a plus 4b.
 
-## Decisions for Wilbur
+## Decisions (Wilbur, 2026-09-27: deferred to the recommendations, so all three are as recommended)
 
 1. **Can a session start on the watch with the phone out of range?** Recommended: yes, for
    today's planned session only. The watch queues the events and the phone applies them
