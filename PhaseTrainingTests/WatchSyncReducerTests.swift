@@ -124,6 +124,16 @@ final class WatchSyncReducerTests: XCTestCase {
                        "consumed with everything else")
     }
 
+    func test_watchWorkoutStarted_handsTheHealthWriteToTheWatch() {
+        let claim = WatchSyncEvent(sessionStart: start, kind: .watchWorkoutStarted, at: t(5))
+        let out = WatchSyncReducer.apply([claim], to: session(), state: WatchSyncState())
+        XCTAssertEqual(out.session.healthWriter, .watch)
+        XCTAssertEqual(out.applied.count, 1)
+        let again = WatchSyncReducer.apply([WatchSyncEvent(sessionStart: start, kind: .watchWorkoutStarted, at: t(6))],
+                                           to: out.session, state: out.state)
+        XCTAssertTrue(again.applied.isEmpty, "already the watch's")
+    }
+
     func test_eventsRoundTripThroughJSON() throws {
         let e = done("squat", 2, at: 60, weight: "140", reps: "6")
         let data = try JSONEncoder().encode(e)

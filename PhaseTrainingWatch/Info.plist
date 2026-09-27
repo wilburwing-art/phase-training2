@@ -20,6 +20,10 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>PhaseTraining reads your heart rate during a workout you run from the watch, so the saved workout carries it.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>PhaseTraining saves a workout you run from the watch to Apple Health, once, so it counts toward your rings.</string>
 	<key>WKApplication</key>
 	<true/>
 	<key>WKCompanionAppBundleIdentifier</key>

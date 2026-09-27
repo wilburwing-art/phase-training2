@@ -20,6 +20,9 @@ struct WatchSyncEvent: Codable, Equatable, Identifiable {
         /// phone's values alone.
         case setCompleted(weight: String?, reps: String?)
         case setReopened
+        /// The watch started an HKWorkoutSession for this session, so the
+        /// watch saves the workout to Health and the phone must not.
+        case watchWorkoutStarted
         /// The lifter ended the session on the watch. The phone completes it.
         case sessionEnded
     }

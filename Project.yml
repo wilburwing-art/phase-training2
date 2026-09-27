@@ -192,6 +192,10 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         WKApplication: true
         WKCompanionAppBundleIdentifier: com.phasetraining.app
+        # The watch runs the workout session and saves it (PLAN-watch.md,
+        # "Apple Health, written once"); heart rate is read live into it.
+        NSHealthShareUsageDescription: "PhaseTraining reads your heart rate during a workout you run from the watch, so the saved workout carries it."
+        NSHealthUpdateUsageDescription: "PhaseTraining saves a workout you run from the watch to Apple Health, once, so it counts toward your rings."
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.phasetraining.app.watchkitapp
@@ -200,6 +204,7 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         SKIP_INSTALL: YES
         ENABLE_PREVIEWS: YES
+        CODE_SIGN_ENTITLEMENTS: PhaseTrainingWatch/PhaseTrainingWatch.entitlements
 
   PhaseTrainingTests:
     type: bundle.unit-test

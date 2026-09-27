@@ -81,6 +81,11 @@ enum WatchSyncReducer {
                 ended = true
                 applied.append(event)
 
+            case .watchWorkoutStarted:
+                guard session.healthWriter != .watch else { continue }
+                session.healthWriter = .watch
+                applied.append(event)
+
             case .setCompleted, .setReopened:
                 guard let exerciseId = event.exerciseId, let setNum = event.setNum,
                       let exIdx = session.exercises.firstIndex(where: { $0.id == exerciseId }),

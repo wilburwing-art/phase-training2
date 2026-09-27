@@ -149,7 +149,15 @@ The phone stays the source of truth for the session (`SessionStore.saveActive` a
    bundle prefix on both read paths; usage string, `docs/privacy.md` and the store listing
    rewritten in the same commit. Tests in `HealthWorkoutWriterTests`. The real
    `HKWorkoutBuilder` save is unexercised until a device run; the simulator has no Health
-   share flow worth trusting. Set list, done taps, weight and rep nudge,
+   share flow worth trusting.
+   *Watch side started 2026-09-27:* `WatchWorkoutController` runs the `HKWorkoutSession`
+   with a live builder (heart rate, active energy) and saves with the shared sync
+   metadata; "Start on watch" sends `watchWorkoutStarted`, which the reducer turns into
+   `healthWriter = .watch` so the phone stands down. `WatchRestTimer` (start, +15, skip,
+   haptic at expiry) follows a completed set from either device. `SetDetailView` nudges
+   weight (5 lb or 2.5 kg steps) and reps before marking done. The watch target now has
+   HealthKit entitlements and its own usage strings. Compiles for both targets; the
+   workout session and the haptic are unexercised until a device run. Set list, done taps, weight and rep nudge,
    rest timer with haptic, `HKWorkoutSession` lifecycle, save with sync metadata. Phone
    saves for phone-only sessions. Importer exclusion. Usage string and `docs/privacy.md`
    rewritten in the same commit. Tests: one-writer rule, importer exclusion by metadata
