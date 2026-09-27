@@ -117,7 +117,14 @@ The phone stays the source of truth for the session (`SessionStore.saveActive` a
    `watchsimulator26.4`. Xcode refuses to build the iOS scheme at all unless the watchOS
    simulator runtime is installed (`xcodebuild -downloadPlatform watchOS`); the macos-26
    runner ships watchOS 26.4 simulators, so CI is unaffected. The two real-watch checks
-   are still open.
+   are still open. CI built the embedded app on the first try (run 36320722378).
+1. *Started 2026-09-27:* `Shared/WatchSync/` holds `WatchSyncEvent`, `WatchSyncContext`,
+   `WatchSyncState` and the pure `WatchSyncReducer`, with the three rules tested in
+   `WatchSyncReducerTests`. Compiled into the iOS target only so far: `Session.swift`
+   references the app's `EquipmentCategory`, so the models the watch needs
+   (`ActiveSession`, `LoggedExercise`, `LoggedSet`) have to move into `Shared/` with that
+   one helper left behind as an app-side extension before the watch target can share
+   the reducer. `WCSession` wiring on both sides is next.
 1. **Sync (1 week).** Message types, the pure reducer, the phone's `WCSession`
    delegate, today's session pushed to the watch. Tests: reducer idempotence, ordering,
    out-of-range queueing, phone-edit-wins.
