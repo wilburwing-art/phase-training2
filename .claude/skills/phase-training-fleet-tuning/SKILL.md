@@ -19,8 +19,15 @@ CI: `fleet.yml` is manual, reads eval-rig through the `EVAL_RIG_DEPLOY_KEY` depl
 ## What the fleet can and cannot fit
 - **Freeze any knob whose truth the simulator plants as a constant.** Every persona has `travel_attendance: 0.2`, so the sweep's travel factor 0.3 just copied that number back. Check `truth` in the athlete files before trusting a fitted value.
 - Time-of-day terms cannot be fitted: the replay estimates each day from its start.
-- PatternEngine thresholds cannot be fitted from v1 personas: planted habits sit far above every threshold (100% recall, 0 false). Near-threshold personas would only re-plant invented frequencies; use in-app `suggestionDecisions` instead.
+- PatternEngine thresholds cannot be fitted from the fleet: v1 habits sat far above every threshold, and v2's near-threshold habits measurably re-plant invented frequencies (sensitivity report). Use in-app `suggestionDecisions` instead.
 - A fitted value at the edge of its grid is not an optimum: widen and re-run.
+
+## v2 fleet (eval-rig#2, schema 2) and the sensitivity check
+- `fleet simulate --preset quick|full -s S [--readiness ff-drawn|ff-sleep-stress|ff-fixed]`. Full (500 x 52) replays in ~256 s locally; a 3b sweep is 185 s at 50 x 26 and ~12 min at 100 x 26, so sweep at 100 x 26.
+- Before writing any fitted value into the app, run `fleet sensitivity plan <dir>` + `scripts/fleet-sensitivity-3b.sh` + `fleet sensitivity report <dir> --mirror-check <replayed run>`, and `fleet sensitivity pe` for PatternEngine at full size. A knob is only fittable if both seeds agree AND no ASSUMPTION endpoint moves it.
+- Verdicts 2026-09-27: none of the 10 knobs is fittable. travel_factor follows `travel.attendance` (0.3 -> 0.8); every PatternEngine threshold follows an assumption (dropsNeeded follows the random-drop rate).
+- 2a sign agreement is 100% under any fitness-fatigue truth (a skip lowers readiness only 7+ days out; a week window is at most 6). Read order agreement instead.
+- Parallel sweeps: more than ~8 booted simulators hits the per-user process limit (`maxUserProcs`) and xcodebuild fails "Unable to boot"; the script skips done runs, so rerun it to fill gaps. Booted simulators cannot be cloned; `simctl create` new ones.
 
 ## Two numbers that are not evidence
 - **0% agreement** can be real. Cross-tab app sign against `truthDelta` sign per alternative before calling the scorer broken (2a: move/shorter were exactly baseline on every row).
