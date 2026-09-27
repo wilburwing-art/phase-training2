@@ -275,7 +275,7 @@ ADDITIONS = [
 
     # --- BACK SQUAT ---
     {"key": "back_squat_smith", "new_name": "Smith Machine Back Squat",
-     "template_id": 1087, "slot": "smith", "unilateral": False,
+     "template_id": 57, "slot": "smith", "unilateral": False,
      "notes_cues": "Bar travels on a fixed track — load can be heavier than free squat."},
     {"key": "back_squat_machine", "new_name": "Machine Hack Squat",
      "template_id": 932, "slot": "machine", "unilateral": False, "notes_cues": ""},

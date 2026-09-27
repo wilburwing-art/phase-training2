@@ -507,7 +507,6 @@ policy and label updates in 146.
 
 - Rowing and paddle-sports have 0 antagonists and several sports sit under the floor of 5
   (`validate_coverage.py`). One pipeline pass.
-- `ReadinessEventsTests.swift` header still calls `buildReadinessEvents` private.
-- `scripts/db/draft_variant_additions.py` uses the merged exercise 1087 as a template.
-- Pin the calendar locale in the 2a summary test.
+- Done 2026-09-26: the `ReadinessEventsTests.swift` header, the drafting script's merged
+  squat template (1087 -> 57), and the 2a summary test's calendar locale.
 - Track 5b: licensing outreach drafts in the repo for Wilbur to send.

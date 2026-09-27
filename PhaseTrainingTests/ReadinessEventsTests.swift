@@ -1,10 +1,10 @@
-// ReadinessEventsTests — characterization coverage for the private
+// ReadinessEventsTests — characterization coverage for the
 // `buildReadinessEvents` step inside `GeneratorContext.from(...)`.
 //
 // The builder unions native sessions + imported workouts + light/moderate
 // sport logs into ONE ReadinessEvent per distinct calendar day within the
-// 28-day readiness window. It is private, so these tests observe it
-// through the public `from(...)` outputs:
+// 28-day readiness window. These tests observe it through the
+// `from(...)` outputs, the path the generator actually reads:
 //
 //   - `hasReadinessData` is exactly `!readinessEvents.isEmpty`
 //   - the density norm is a flat 3.0/wk, so

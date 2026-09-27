@@ -7,9 +7,11 @@ final class CounterfactualTests: XCTestCase {
 
     private let monday = Date(timeIntervalSince1970: 1_759_104_000) // 2025-09-29, a Monday UTC
     private var now: Date { monday.addingTimeInterval(8 * 3600) }
+    /// English weekday names, so the summary test reads "Mon" on any device locale.
     private var utc: Calendar {
         var c = Calendar(identifier: .gregorian)
         c.timeZone = TimeZone(identifier: "UTC")!
+        c.locale = Locale(identifier: "en_US_POSIX")
         return c
     }
 
