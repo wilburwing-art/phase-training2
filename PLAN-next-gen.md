@@ -513,9 +513,14 @@ policy and label updates in 146.
 ### 8. Small follow-ups (fold into whichever build is next)
 
 - Rowing and paddle-sports: done 2026-09-26, six antagonists each (the SUP set: push-up,
-  DB bench, DB overhead press, landmine press, scapular push-up, external rotation). 28
-  other sports still sit under `validate_coverage.py`'s floor of 5, 16 of them at 0; that
-  is a curation pass per sport, not one sweep.
+  DB bench, DB overhead press, landmine press, scapular push-up, external rotation).
+  **The other 27 sports done 2026-09-27**, 142 rows: each sport's antagonists are the
+  patterns its own relevance rows lack (cuff external rotation and retraction for the
+  overhead and striking sports, hamstring and hip-abduction for the quad and cutting
+  sports, rows for the push-heavy practices, extension for the flexion-heavy ones). Where
+  a pair already existed as prehab it was left as prehab and a different exercise added.
+  `general-fitness` stays flagged: it has no dominant movement, so "antagonist" has no
+  meaning there and the base pool is untagged foundation lifts by design.
 - Done 2026-09-26: the `ReadinessEventsTests.swift` header, the drafting script's merged
   squat template (1087 -> 57), and the 2a summary test's calendar locale.
 - Track 5b: **permission granted by both MTI and Uphill Athlete (Wilbur, 2026-09-27).** The

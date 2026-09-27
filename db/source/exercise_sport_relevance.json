@@ -18207,5 +18207,1825 @@
     "in_season_volume_modifier": 1.0,
     "off_season_volume_modifier": 1.2,
     "notes": "Cuff external rotation counters the internal rotation at the finish."
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 50,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Miles of sagittal-plane work round the shoulders; reverse flys pull them back."
+  },
+  {
+    "exercise_id": 1199,
+    "sport_id": 50,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Frontal-plane hip control that straight-ahead running never trains."
+  },
+  {
+    "exercise_id": 1200,
+    "sport_id": 50,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1020,
+    "sport_id": 50,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Isolated hip extension against the hip-flexor bias of the stride."
+  },
+  {
+    "exercise_id": 13,
+    "sport_id": 57,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 135,
+    "sport_id": 57,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 57,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1199,
+    "sport_id": 57,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Frontal-plane hip control for off-camber trail."
+  },
+  {
+    "exercise_id": 103,
+    "sport_id": 57,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Descents load the quads eccentrically; the glutes and hamstrings need their own work."
+  },
+  {
+    "exercise_id": 1200,
+    "sport_id": 57,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 13,
+    "sport_id": 68,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Obstacles are pull and carry; pushing balances the shoulder."
+  },
+  {
+    "exercise_id": 15,
+    "sport_id": 68,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 17,
+    "sport_id": 68,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Forearm extensors against the grip work on rigs and walls."
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 68,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 68,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1020,
+    "sport_id": 68,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 480,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Pack straps round the shoulders for hours; retraction work counters it."
+  },
+  {
+    "exercise_id": 21,
+    "sport_id": 480,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 103,
+    "sport_id": 480,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Descents hammer the quads; hip extension keeps the posterior chain in the picture."
+  },
+  {
+    "exercise_id": 1200,
+    "sport_id": 480,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1199,
+    "sport_id": 480,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 220,
+    "sport_id": 480,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Spinal extensors against the forward lean under a pack."
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 150,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Pack straps and the forward lean round the shoulders; retraction work counters it."
+  },
+  {
+    "exercise_id": 21,
+    "sport_id": 150,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 103,
+    "sport_id": 150,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1200,
+    "sport_id": 150,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 220,
+    "sport_id": 150,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 13,
+    "sport_id": 150,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Pushing to balance days of axe and pole pulling."
+  },
+  {
+    "exercise_id": 103,
+    "sport_id": 163,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Skinning is hip flexion and quads; hip extension keeps the glutes and hamstrings in the picture."
+  },
+  {
+    "exercise_id": 1200,
+    "sport_id": 163,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 163,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Poles and pack round the shoulders; retraction work counters it."
+  },
+  {
+    "exercise_id": 21,
+    "sport_id": 163,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 135,
+    "sport_id": 163,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Pulling to balance the pole push of the skin track."
+  },
+  {
+    "exercise_id": 1020,
+    "sport_id": 163,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 1,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Hours folded over the bars round the shoulders; reverse flys pull them back."
+  },
+  {
+    "exercise_id": 220,
+    "sport_id": 1,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Spinal extensors against the flexed riding posture."
+  },
+  {
+    "exercise_id": 1020,
+    "sport_id": 1,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Hip extension against a hip that never opens on the bike."
+  },
+  {
+    "exercise_id": 1200,
+    "sport_id": 1,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Frontal-plane hip control the pedal stroke never trains."
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 450,
+    "relevance_score": 0.95,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Every stroke internally rotates the shoulder; cuff external rotation is the antagonist."
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 450,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 427,
+    "sport_id": 450,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Lower-trap and rhomboid work against the pull-dominant stroke."
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 341,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Serving and forehands internally rotate the shoulder; cuff work counters it."
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 346,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Dinks and drives internally rotate the shoulder; cuff work counters it."
+  },
+  {
+    "exercise_id": 24,
+    "sport_id": 346,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 63,
+    "sport_id": 346,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Anti-rotation against a one-direction rotational sport."
+  },
+  {
+    "exercise_id": 135,
+    "sport_id": 346,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 15,
+    "sport_id": 346,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 320,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1020,
+    "sport_id": 320,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Hip extension against the flexed address posture."
+  },
+  {
+    "exercise_id": 1199,
+    "sport_id": 531,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1200,
+    "sport_id": 531,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 531,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Upper-body posture work the sport never asks for."
+  },
+  {
+    "exercise_id": 103,
+    "sport_id": 534,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Jumping is quad dominant; hip extension keeps the glutes and hamstrings in the picture."
+  },
+  {
+    "exercise_id": 102,
+    "sport_id": 534,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1200,
+    "sport_id": 534,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Frontal-plane hip control for landing and cutting."
+  },
+  {
+    "exercise_id": 1199,
+    "sport_id": 534,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 135,
+    "sport_id": 534,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Pulling to balance shooting and passing, which are all push."
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 534,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 537,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Hitting and serving internally rotate the shoulder; cuff work counters it."
+  },
+  {
+    "exercise_id": 24,
+    "sport_id": 537,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 21,
+    "sport_id": 537,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 135,
+    "sport_id": 537,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Pulling to balance an overhead pushing sport."
+  },
+  {
+    "exercise_id": 103,
+    "sport_id": 537,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Jumping is quad dominant; hip extension balances it."
+  },
+  {
+    "exercise_id": 13,
+    "sport_id": 421,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Paddling is all pull; pushing balances lats and posterior shoulder."
+  },
+  {
+    "exercise_id": 15,
+    "sport_id": 421,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 421,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Cuff external rotation counters the internally rotated paddle stroke."
+  },
+  {
+    "exercise_id": 28,
+    "sport_id": 421,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Serratus work for scapular control under a repetitive pull."
+  },
+  {
+    "exercise_id": 131,
+    "sport_id": 421,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Anti-extension core against the arched prone paddling position."
+  },
+  {
+    "exercise_id": 19,
+    "sport_id": 421,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 102,
+    "sport_id": 200,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Skiing and riding are quad dominant; eccentric hamstring work is the antagonist."
+  },
+  {
+    "exercise_id": 103,
+    "sport_id": 200,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 108,
+    "sport_id": 200,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 200,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 220,
+    "sport_id": 200,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Spinal extensors against the flexed tuck."
+  },
+  {
+    "exercise_id": 102,
+    "sport_id": 201,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Skiing is quad dominant; eccentric hamstring work is the antagonist."
+  },
+  {
+    "exercise_id": 103,
+    "sport_id": 201,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 108,
+    "sport_id": 201,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 201,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Upper-body posture work the sport never asks for."
+  },
+  {
+    "exercise_id": 220,
+    "sport_id": 201,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Spinal extensors against the flexed tuck."
+  },
+  {
+    "exercise_id": 1200,
+    "sport_id": 201,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 135,
+    "sport_id": 601,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "A practice full of pushing and almost no pulling; rows are the antagonist."
+  },
+  {
+    "exercise_id": 499,
+    "sport_id": 601,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 24,
+    "sport_id": 601,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 21,
+    "sport_id": 601,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 372,
+    "sport_id": 601,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 601,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 220,
+    "sport_id": 608,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Flexion-dominant core work; spinal extension is the antagonist."
+  },
+  {
+    "exercise_id": 487,
+    "sport_id": 608,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1020,
+    "sport_id": 608,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Hip extension against the hip-flexor bias of the mat work."
+  },
+  {
+    "exercise_id": 135,
+    "sport_id": 608,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Pulling, which the mat never asks for."
+  },
+  {
+    "exercise_id": 21,
+    "sport_id": 608,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 631,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Kipping and overhead work stress the cuff; slow external rotation is the antagonist."
+  },
+  {
+    "exercise_id": 24,
+    "sport_id": 631,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 21,
+    "sport_id": 631,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 631,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 17,
+    "sport_id": 631,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Forearm extensors against the grip-heavy programming."
+  },
+  {
+    "exercise_id": 24,
+    "sport_id": 632,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Bench and low-bar squat internally rotate the shoulder; face pulls counter it."
+  },
+  {
+    "exercise_id": 21,
+    "sport_id": 632,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 632,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 452,
+    "sport_id": 632,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1200,
+    "sport_id": 632,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Frontal-plane hip work in a sagittal-only sport."
+  },
+  {
+    "exercise_id": 63,
+    "sport_id": 632,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Anti-rotation core for a sport that never rotates."
+  },
+  {
+    "exercise_id": 24,
+    "sport_id": 635,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Overhead work stresses the cuff; face pulls and external rotation are the antagonists."
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 635,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 102,
+    "sport_id": 635,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Quad-dominant pulls and squats; eccentric hamstring work balances them."
+  },
+  {
+    "exercise_id": 131,
+    "sport_id": 635,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Anti-extension core against the extension-dominant lifts."
+  },
+  {
+    "exercise_id": 17,
+    "sport_id": 635,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Forearm extensors against the hook grip."
+  },
+  {
+    "exercise_id": 1200,
+    "sport_id": 635,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 24,
+    "sport_id": 639,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Chest and press volume internally rotate the shoulder; face pulls counter it."
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 639,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 102,
+    "sport_id": 639,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Quad volume outruns the hamstrings; eccentric curls balance it."
+  },
+  {
+    "exercise_id": 17,
+    "sport_id": 639,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Forearm extensors against the curl volume."
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 639,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 108,
+    "sport_id": 639,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 135,
+    "sport_id": 260,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Striking is push and rotation; rows are the antagonist."
+  },
+  {
+    "exercise_id": 24,
+    "sport_id": 260,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 21,
+    "sport_id": 260,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 260,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 260,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1020,
+    "sport_id": 260,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 15,
+    "sport_id": 261,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Grappling is pull and flexion; overhead pushing is the antagonist."
+  },
+  {
+    "exercise_id": 220,
+    "sport_id": 261,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Spinal extension against a guard game lived in flexion."
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 261,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 135,
+    "sport_id": 272,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Punching is push; rows balance the shoulder and upper back."
+  },
+  {
+    "exercise_id": 24,
+    "sport_id": 272,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 21,
+    "sport_id": 272,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 272,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Cuff external rotation against the internally rotated punch."
+  },
+  {
+    "exercise_id": 372,
+    "sport_id": 272,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 135,
+    "sport_id": 270,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Striking is push; rows balance the shoulder and upper back."
+  },
+  {
+    "exercise_id": 24,
+    "sport_id": 270,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 21,
+    "sport_id": 270,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 270,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1200,
+    "sport_id": 270,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Frontal-plane hip control against the kicking load."
+  },
+  {
+    "exercise_id": 452,
+    "sport_id": 450,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 343,
+    "sport_id": 450,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Lower-trap work against the pull-dominant stroke."
+  },
+  {
+    "exercise_id": 452,
+    "sport_id": 341,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 108,
+    "sport_id": 531,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Kicking and sprinting are quad and hip-flexor dominant; single-leg hinge work is the antagonist."
+  },
+  {
+    "exercise_id": 1020,
+    "sport_id": 531,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 220,
+    "sport_id": 531,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Spinal extensors for an upper body the sport ignores."
+  },
+  {
+    "exercise_id": 344,
+    "sport_id": 320,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
   }
 ]
