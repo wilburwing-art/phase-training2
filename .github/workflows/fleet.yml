@@ -13,11 +13,17 @@ name: fleet
 on:
   workflow_dispatch:
     inputs:
+      preset:
+        description: "v2 preset: quick (50 x 26) or full (500 x 52). Empty runs the v1 personas with athletes and weeks below."
+        default: quick
+      readiness:
+        description: "v2 readiness truth: ff-drawn, ff-sleep-stress or ff-fixed"
+        default: ff-drawn
       athletes:
-        description: Number of simulated athletes
+        description: v1 only (empty preset) - number of simulated athletes
         default: '50'
       weeks:
-        description: Weeks per athlete
+        description: v1 only (empty preset) - weeks per athlete
         default: '26'
       seed:
         description: Simulator seed (same seed, same files)
@@ -57,11 +63,19 @@ jobs:
         working-directory: eval-rig
         run: |
           npm ci
-          npm run eval -- fleet simulate \
-            --athletes "${{ inputs.athletes }}" \
-            --weeks "${{ inputs.weeks }}" \
-            --seed "${{ inputs.seed }}" \
-            --out "$RUN_DIR"
+          if [ -n "${{ inputs.preset }}" ]; then
+            npm run eval -- fleet simulate \
+              --preset "${{ inputs.preset }}" \
+              --readiness "${{ inputs.readiness }}" \
+              --seed "${{ inputs.seed }}" \
+              --out "$RUN_DIR"
+          else
+            npm run eval -- fleet simulate \
+              --athletes "${{ inputs.athletes }}" \
+              --weeks "${{ inputs.weeks }}" \
+              --seed "${{ inputs.seed }}" \
+              --out "$RUN_DIR"
+          fi
 
       - name: Setup
         id: setup
@@ -98,7 +112,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: fleet-n${{ inputs.athletes }}-w${{ inputs.weeks }}-s${{ inputs.seed }}
+          name: fleet-${{ inputs.preset || format('n{0}-w{1}', inputs.athletes, inputs.weeks) }}-s${{ inputs.seed }}
           path: fleet-run
           if-no-files-found: ignore
 
