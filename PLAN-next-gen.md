@@ -511,4 +511,4 @@ policy and label updates in 146.
   is a curation pass per sport, not one sweep.
 - Done 2026-09-26: the `ReadinessEventsTests.swift` header, the drafting script's merged
   squat template (1087 -> 57), and the 2a summary test's calendar locale.
-- Track 5b: licensing outreach drafts in the repo for Wilbur to send.
+- Track 5b: drafts for MTI and Uphill Athlete are in `docs/outreach/licensing-2026-09.md`, unsent; contact routes and the personal line are Wilbur's to fill.
