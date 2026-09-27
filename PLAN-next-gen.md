@@ -374,6 +374,10 @@ the first scored run, which lead the list below.
   not a manual step.
 - **Merge eval-rig#1.**
 
+**Done 2026-09-27.** Wilbur checked both prompts on build 145, decline included, and they
+look right. eval-rig#1 merged as `c539877`, so `fleet.yml`'s default `eval_rig_ref: main`
+now has the fleet code. The UI test for the prompts is still unwritten.
+
 ### 2. First scored fleet run (about 2 days)
 
 - **Where the replay runs.** It needs Xcode. Two options: Wilbur runs the three commands in
@@ -511,4 +515,7 @@ policy and label updates in 146.
   is a curation pass per sport, not one sweep.
 - Done 2026-09-26: the `ReadinessEventsTests.swift` header, the drafting script's merged
   squat template (1087 -> 57), and the 2a summary test's calendar locale.
-- Track 5b: drafts for MTI and Uphill Athlete are in `docs/outreach/licensing-2026-09.md`, unsent; contact routes and the personal line are Wilbur's to fill.
+- Track 5b: **permission granted by both MTI and Uphill Athlete (Wilbur, 2026-09-27).** The
+  terms (which sessions, attribution, fee or share, term length) are not in the repo yet.
+  Write them into `docs/outreach/` before any licensed session ships, since the app and
+  store copy have to match what was agreed.
