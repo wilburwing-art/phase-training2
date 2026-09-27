@@ -124,7 +124,19 @@ The phone stays the source of truth for the session (`SessionStore.saveActive` a
    references the app's `EquipmentCategory`, so the models the watch needs
    (`ActiveSession`, `LoggedExercise`, `LoggedSet`) have to move into `Shared/` with that
    one helper left behind as an app-side extension before the watch target can share
-   the reducer. `WCSession` wiring on both sides is next.
+   the reducer. *Wired 2026-09-27:* `WatchSyncCoordinator` (phone) and `WatchSessionModel`
+   (watch). The session models moved to `Shared/Models/SessionModels.swift`.
+   **Proven on paired simulators: phone to watch.** The watch mirrors the seeded session
+   (Bench Press, set 1 done) from application context. **Not provable there: watch to
+   phone.** Across a clean restart and an erase-and-re-pair, both sides stayed
+   `reachable: NO`, the phone's `wcd` logged an IDS fatal error, and after the re-pair the
+   phone reported `appInstalled: NO` with the watch app installed, so neither
+   `transferUserInfo` nor `sendMessage` could deliver. The watch sends by `sendMessage`
+   when reachable and queues with `transferUserInfo` otherwise; the phone accepts both.
+   Added to the step 0 hardware checks: launch the watch app with
+   `--watch-test-toggle-set` (DEBUG only), or tap set 2, and confirm the phone's log
+   screen shows it done and starts the rest. Logs are under subsystems
+   `com.phasetraining.app` and `com.phasetraining.app.watchkitapp`, category `watch-sync`.
 1. **Sync (1 week).** Message types, the pure reducer, the phone's `WCSession`
    delegate, today's session pushed to the watch. Tests: reducer idempotence, ordering,
    out-of-range queueing, phone-edit-wins.

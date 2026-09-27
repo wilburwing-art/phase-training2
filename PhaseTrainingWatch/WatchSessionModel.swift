@@ -9,6 +9,7 @@
 
 import Foundation
 import Combine
+import OSLog
 import WatchConnectivity
 
 final class WatchSessionModel: NSObject, ObservableObject {
@@ -60,8 +61,21 @@ final class WatchSessionModel: NSObject, ObservableObject {
             self.active = outcome.session
         }
         guard let data = try? Self.encoder.encode(event) else { return }
-        WCSession.default.transferUserInfo(["event": data])
+        let wc = WCSession.default
+        // Reachable: deliver now, and fall back to the queue if that fails.
+        // Not reachable: the queue, which survives the phone being away.
+        if wc.isReachable {
+            wc.sendMessage(["event": data], replyHandler: nil) { error in
+                Self.log.error("sendMessage failed, queueing: \(error.localizedDescription, privacy: .public)")
+                wc.transferUserInfo(["event": data])
+            }
+        } else {
+            wc.transferUserInfo(["event": data])
+        }
+        Self.log.notice("event sent: \(String(describing: event.kind), privacy: .public) set \(event.setNum ?? -1), reachable \(wc.isReachable), queued \(wc.outstandingUserInfoTransfers.count)")
     }
+
+    private static let log = Logger(subsystem: "com.phasetraining.app.watchkitapp", category: "watch-sync")
 
     // MARK: - Context
 
@@ -70,7 +84,25 @@ final class WatchSessionModel: NSObject, ObservableObject {
               let decoded = try? Self.decoder.decode(WatchSyncContext.self, from: data) else { return }
         active = decoded.activeSession
         if let session = decoded.activeSession { state = state.matching(session) }
+        Self.log.notice("context read: \(decoded.activeSession?.name ?? "none", privacy: .public), args \(ProcessInfo.processInfo.arguments.joined(separator: " "), privacy: .public)")
+        #if DEBUG
+        // `--watch-test-toggle-set`: mark the first open set once the mirror
+        // arrives, so the watch-to-phone path can be checked on paired
+        // simulators, which have no UI automation. DEBUG only, like the
+        // phone's --seed-* arguments.
+        if !didTestToggle, ProcessInfo.processInfo.arguments.contains("--watch-test-toggle-set"),
+           let session = decoded.activeSession,
+           let ex = session.exercises.first(where: { $0.sets.contains { !$0.done } }),
+           let set = ex.sets.first(where: { !$0.done }) {
+            didTestToggle = true
+            toggle(exerciseId: ex.id, setNum: set.num)
+        }
+        #endif
     }
+
+    #if DEBUG
+    private var didTestToggle = false
+    #endif
 }
 
 extension WatchSessionModel: WCSessionDelegate {

@@ -18,6 +18,7 @@
 
 import Foundation
 import Combine
+import OSLog
 import WatchConnectivity
 
 final class WatchSyncCoordinator: NSObject, ObservableObject {
@@ -86,18 +87,32 @@ final class WatchSyncCoordinator: NSObject, ObservableObject {
     private func pushContext(_ session: ActiveSession?) {
         guard WCSession.isSupported() else { return }
         let wc = WCSession.default
-        guard wc.activationState == .activated, wc.isPaired, wc.isWatchAppInstalled else { return }
+        guard wc.activationState == .activated, wc.isPaired, wc.isWatchAppInstalled else {
+            Self.log.notice("context not pushed: state \(wc.activationState.rawValue) paired \(wc.isPaired) installed \(wc.isWatchAppInstalled)")
+            return
+        }
         let context = WatchSyncContext(activeSession: session, sentAt: Date())
         guard let data = try? Self.encoder.encode(context) else { return }
-        try? wc.updateApplicationContext(["context": data])
+        do {
+            try wc.updateApplicationContext(["context": data])
+            Self.log.notice("context pushed: \(session?.name ?? "none", privacy: .public), \(data.count) bytes")
+        } catch {
+            Self.log.error("updateApplicationContext failed: \(error.localizedDescription, privacy: .public)")
+        }
     }
+
+    private static let log = Logger(subsystem: "com.phasetraining.app", category: "watch-sync")
 
     // MARK: - In
 
     /// Fold events from the watch into the active session. Main thread.
     func apply(_ events: [WatchSyncEvent]) {
-        guard let active = store.active else { return }
+        guard let active = store.active else {
+            Self.log.notice("events dropped: no active session")
+            return
+        }
         let outcome = WatchSyncReducer.apply(events, to: active, state: state)
+        Self.log.notice("events applied: \(outcome.applied.count) of \(events.count), ended \(outcome.ended)")
         persist(outcome.state)
         if outcome.session != active {
             // LogScreen sees this through `store.$active` and starts the rest
@@ -138,9 +153,26 @@ extension WatchSyncCoordinator: WCSessionDelegate {
         DispatchQueue.main.async { self.pushContext(self.store.active) }
     }
 
+    func sessionReachabilityDidChange(_ session: WCSession) {
+        // The phone app can activate before the watch is reachable (seen on
+        // paired simulators: activation reported paired and installed, yet
+        // nothing arrived). Re-push whenever the link comes up.
+        DispatchQueue.main.async { self.pushContext(self.store.active) }
+    }
+
+    func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
+        // The watch sends this way while reachable; the same payload as a
+        // queued transfer, so both land in `apply`.
+        self.session(session, didReceiveUserInfo: message)
+    }
+
     func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
         guard let data = userInfo["event"] as? Data,
-              let event = try? Self.decoder.decode(WatchSyncEvent.self, from: data) else { return }
+              let event = try? Self.decoder.decode(WatchSyncEvent.self, from: data) else {
+            Self.log.error("userInfo without a decodable event: \(userInfo.keys.joined(separator: ","), privacy: .public)")
+            return
+        }
+        Self.log.notice("event received: \(String(describing: event.kind), privacy: .public) set \(event.setNum ?? -1)")
         DispatchQueue.main.async { self.apply([event]) }
     }
 }
