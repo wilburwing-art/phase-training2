@@ -15,6 +15,7 @@ struct PhaseTrainingApp: App {
     @StateObject private var sportLog = SportLogStore()
     @StateObject private var subscriptions = SubscriptionStore()
     @StateObject private var activityDetection = ActivityDetectionStore()
+    @State private var watchSync: WatchSyncCoordinator?
 
     /// UI tests pass `--ui-test-onboarded` to skip the first-launch onboarding cover
     /// without persisting state to UserDefaults.
@@ -549,6 +550,11 @@ struct PhaseTrainingApp: App {
                     // Sync products + entitlement state once on launch.
                     // Cheap and safe to call on every cold start.
                     await subscriptions.refresh()
+                }
+                .task {
+                    // The watch link (PLAN-watch.md). Built here rather than as
+                    // a @StateObject because it needs the session store.
+                    if watchSync == nil { watchSync = WatchSyncCoordinator(store: session) }
                 }
                 .task {
                     // Ski/climb narrowing: route users on an unsupported / no

@@ -183,6 +183,7 @@ targets:
     deploymentTarget: "10.0"
     sources:
       - path: PhaseTrainingWatch
+      - path: Shared
     info:
       path: PhaseTrainingWatch/Info.plist
       properties:

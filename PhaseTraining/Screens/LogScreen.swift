@@ -126,6 +126,21 @@ struct LogScreen: View {
             // Auto-save on every mutation (per README.md:286).
             store.saveActive(newValue)
         }
+        .onReceive(store.$active) { external in
+            // A change that did not come from this screen: the watch marked a
+            // set (WatchSyncCoordinator). Our own edits round-trip as the same
+            // value and fall through the guard.
+            guard didLoad, let external, external != session else { return }
+            let before = session
+            session = external
+            for (exIdx, ex) in external.exercises.enumerated() {
+                let previous = before.exercises.first { $0.id == ex.id }?.sets ?? []
+                for (setIdx, set) in ex.sets.enumerated()
+                where set.done && !(previous.first { $0.num == set.num }?.done ?? false) {
+                    startRestAfterCompleting(exIdx: exIdx, setIdx: setIdx)
+                }
+            }
+        }
         .alert("Discard workout?", isPresented: $showCancelConfirm) {
             Button("Discard", role: .destructive) { onCancel?() }
             Button("Keep going", role: .cancel) {}
@@ -490,40 +505,45 @@ struct LogScreen: View {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
 
         if !wasDone {
-            // Just marked done. Start rest timer if not the final set.
-            //
-            // Superset-aware: when this exercise belongs to a superset and
-            // there are still un-completed siblings at THIS set index in the
-            // group, skip the rest timer — the user is mid-round-robin and
-            // should move to the next member's matching set. The rest only
-            // fires after the LAST member of the group completes set `setIdx`.
-            //
-            // Inter-exercise auto-rest: when this is the final set of the
-            // exercise (and the superset round is complete) AND there's a
-            // next exercise still owed sets, start a rest anchored to this
-            // set using the current exercise's rest interval. Lifters
-            // expect the same rest window between exercises as between sets,
-            // so we don't change the duration on the transition.
-            let ex = session.exercises[exIdx]
-            let hasMoreSets = setIdx < ex.sets.count - 1
-
-            if isMidSupersetRound(exIdx: exIdx, setIdx: setIdx) {
-                // Clear any pending rest from a prior round so the active band
-                // moves cleanly to the next group member.
-                rest.clear()
-            } else if !Self.uiTestSuppressAutoRest, hasMoreSets {
-                rest.start(exIdx: exIdx, setIdx: setIdx, duration: ex.rest)
-            } else if !Self.uiTestSuppressAutoRest, hasFollowingWork(afterExIdx: exIdx) {
-                // Last set of this exercise, but the session has more work
-                // ahead — auto-start the rest so the user gets the same
-                // countdown + expiry alert between exercises.
-                rest.start(exIdx: exIdx, setIdx: setIdx, duration: ex.rest)
-            }
+            startRestAfterCompleting(exIdx: exIdx, setIdx: setIdx)
         } else {
             // Untoggled — clear rest if it was anchored to this set.
             if rest.exIdx == exIdx, rest.setIdx == setIdx {
                 rest.clear()
             }
+        }
+    }
+
+    /// The rest that follows a set being marked done, from a tap here or from
+    /// the watch. Start it if not the final set.
+    ///
+    /// Superset-aware: when this exercise belongs to a superset and there are
+    /// still un-completed siblings at THIS set index in the group, skip the
+    /// rest timer — the user is mid-round-robin and should move to the next
+    /// member's matching set. The rest only fires after the LAST member of
+    /// the group completes set `setIdx`.
+    ///
+    /// Inter-exercise auto-rest: when this is the final set of the exercise
+    /// (and the superset round is complete) AND there's a next exercise still
+    /// owed sets, start a rest anchored to this set using the current
+    /// exercise's rest interval. Lifters expect the same rest window between
+    /// exercises as between sets, so we don't change the duration on the
+    /// transition.
+    func startRestAfterCompleting(exIdx: Int, setIdx: Int) {
+        let ex = session.exercises[exIdx]
+        let hasMoreSets = setIdx < ex.sets.count - 1
+
+        if isMidSupersetRound(exIdx: exIdx, setIdx: setIdx) {
+            // Clear any pending rest from a prior round so the active band
+            // moves cleanly to the next group member.
+            rest.clear()
+        } else if !Self.uiTestSuppressAutoRest, hasMoreSets {
+            rest.start(exIdx: exIdx, setIdx: setIdx, duration: ex.rest)
+        } else if !Self.uiTestSuppressAutoRest, hasFollowingWork(afterExIdx: exIdx) {
+            // Last set of this exercise, but the session has more work
+            // ahead — auto-start the rest so the user gets the same
+            // countdown + expiry alert between exercises.
+            rest.start(exIdx: exIdx, setIdx: setIdx, duration: ex.rest)
         }
     }
 
