@@ -18051,5 +18051,161 @@
     "in_season_volume_modifier": 1.0,
     "off_season_volume_modifier": 1.2,
     "notes": "Cuff external rotation counters the internally rotated catch position."
+  },
+  {
+    "exercise_id": 13,
+    "sport_id": 380,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Paddling is all pull; push-ups balance lats and posterior shoulder."
+  },
+  {
+    "exercise_id": 14,
+    "sport_id": 380,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 15,
+    "sport_id": 380,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Overhead pushing offsets the lat and internal-rotation bias of the stroke."
+  },
+  {
+    "exercise_id": 19,
+    "sport_id": 380,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 28,
+    "sport_id": 380,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Serratus work for scapular control under a repetitive pull."
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 380,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Cuff external rotation counters the internally rotated catch position."
+  },
+  {
+    "exercise_id": 13,
+    "sport_id": 404,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "The stroke is a pull on every rep; push-ups balance lats, rhomboids and rear delts."
+  },
+  {
+    "exercise_id": 14,
+    "sport_id": 404,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 15,
+    "sport_id": 404,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Overhead pushing offsets the lat-dominant finish of the drive."
+  },
+  {
+    "exercise_id": 19,
+    "sport_id": 404,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 28,
+    "sport_id": 404,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Serratus work keeps the scapula controlled through thousands of pulls."
+  },
+  {
+    "exercise_id": 1017,
+    "sport_id": 404,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Cuff external rotation counters the internal rotation at the finish."
   }
 ]
