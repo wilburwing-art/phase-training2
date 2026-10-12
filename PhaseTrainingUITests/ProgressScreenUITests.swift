@@ -37,6 +37,7 @@ final class ProgressScreenUITests: XCTestCase {
 
         // Each card, scrolling as we go. Order matches ProgressScreen.content.
         for title in [
+            "TRAINING DAYS",
             "BODY WEIGHT",
             "BODY COMPOSITION",
             "SESSIONS / WEEK",
@@ -63,6 +64,33 @@ final class ProgressScreenUITests: XCTestCase {
         XCTAssertTrue(scrollTo(app.staticTexts["VOLUME / WEEK"], in: app))
         XCTAssertFalse(app.staticTexts["SETS / WEEK"].exists,
                        "Weighted sets were logged, so the fallback series must not be used")
+    }
+
+    /// The heatmap sits at the top and a shaded day opens its session. The
+    /// seed logs sessions 1 and 4 days back, so on the 1st through the 4th
+    /// of a month they can all fall in the previous month; page back then.
+    func test_heatmap_tapDayOpensSession() throws {
+        let app = launch(seed: "--seed-progress-demo")
+        openProgress(in: app)
+
+        XCTAssertTrue(app.staticTexts["TRAINING DAYS"].waitForExistence(timeout: 5),
+                      "heatmap card should render" + elementDump(app))
+        XCTAssertFalse(app.buttons["progress-heatmap-next"].isEnabled,
+                       "cannot page past the current month")
+        add(XCTAttachment(screenshot: app.screenshot()))
+
+        let trainedDays = app.buttons.matching(NSPredicate(
+            format: "identifier BEGINSWITH 'progress-heatmap-day-' AND isEnabled == true"))
+        if trainedDays.count == 0 {
+            app.buttons["progress-heatmap-prev"].tap()
+        }
+        XCTAssertGreaterThan(trainedDays.count, 0,
+                             "a seeded session day should be tappable" + elementDump(app))
+
+        trainedDays.element(boundBy: trainedDays.count - 1).tap()
+        XCTAssertTrue(app.navigationBars["Edit session"].waitForExistence(timeout: 5),
+                      "tapping a trained day should open its session" + elementDump(app))
+        add(XCTAttachment(screenshot: app.screenshot()))
     }
 
     func test_seeAllSessions_opensHistory() throws {

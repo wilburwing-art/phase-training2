@@ -1,6 +1,8 @@
 // ProgressScreen.swift — Progress tab (v2).
 //
 // Card stack (top → bottom):
+//   0. Heatmap      — a month of day cells shaded by minutes trained; tap a
+//                     day to open its session.
 //   1. Stat strip   — this week vs. target, weekly-target streak, PRs this
 //                     month, lifetime session count.
 //   2. Sessions/wk  — 8-week bar chart with target line.
@@ -16,6 +18,7 @@
 // where Charts pays back its weight.
 //
 // Card renderers live in Screens/Progress/ (architecture item 9):
+//   ProgressScreen+Heatmap.swift       — training-days month heatmap
 //   ProgressScreen+StatCards.swift     — stat strip, sessions/wk, volume/wk
 //   ProgressScreen+BodyCards.swift     — body weight/composition, strength
 //                                        ratios, muscle balance
@@ -45,6 +48,13 @@ struct ProgressScreen: View {
     // extension, so they stay on the struct.
     @State var presentingBodyWeightSheet = false
     @State var presentingBodyCompositionSheet = false
+
+    // Training heatmap (ProgressScreen+Heatmap.swift): months back from the
+    // current one, the session a tapped day opens, and the choices offered
+    // when a tapped day holds more than one session.
+    @State var heatmapMonthOffset = 0
+    @State var heatmapSession: SavedSession?
+    @State var heatmapDayChoices: [SavedSession] = []
 
     static let weeks = 8
     static let topExerciseCount = 6
@@ -136,6 +146,9 @@ struct ProgressScreen: View {
                 )
                 .padding(.horizontal, -20)
                 SeasonPhaseBadge(style: .full, surface: "progress")
+                if !store.savedSessions.isEmpty {
+                    heatmapCard
+                }
                 SorenessCheckInPill()
                 statStrip
                 bodyWeightTrendCard
