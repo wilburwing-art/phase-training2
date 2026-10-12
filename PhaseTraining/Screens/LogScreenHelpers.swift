@@ -159,17 +159,6 @@ extension LogScreen {
         return false
     }
 
-    /// True when any exercise after `exIdx` in the session still has at least
-    /// one un-done set. Used by the inter-exercise auto-rest path so we
-    /// don't start a countdown after the very last set of the workout.
-    func hasFollowingWork(afterExIdx exIdx: Int) -> Bool {
-        guard exIdx + 1 < session.exercises.count else { return false }
-        for ex in session.exercises[(exIdx + 1)...] {
-            if ex.sets.contains(where: { !$0.done }) { return true }
-        }
-        return false
-    }
-
     // MARK: - Formatters
 
     static func fmtTime(_ seconds: Int) -> String {

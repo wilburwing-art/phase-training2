@@ -121,13 +121,13 @@ final class WatchSessionModel: NSObject, ObservableObject {
     // MARK: - Rest
 
     /// Same rule as the phone's log screen, without the superset round-robin:
-    /// a rest follows a completed set whenever more work is planned after it.
+    /// a rest follows a completed set only while this exercise has sets left.
+    /// The last set of an exercise gets none; moving on is the rest.
     private func startRest(after exerciseId: String, setNum: Int, in session: ActiveSession) {
         guard let exIdx = session.exercises.firstIndex(where: { $0.id == exerciseId }) else { return }
         let ex = session.exercises[exIdx]
         let moreSetsHere = ex.sets.contains { $0.num != setNum && !$0.done }
-        let moreWorkAfter = session.exercises[(exIdx + 1)...].contains { $0.sets.contains { !$0.done } }
-        guard moreSetsHere || moreWorkAfter else { rest.clear(); return }
+        guard moreSetsHere else { rest.clear(); return }
         rest.start(exerciseId: exerciseId, setNum: setNum, duration: ex.rest)
     }
 

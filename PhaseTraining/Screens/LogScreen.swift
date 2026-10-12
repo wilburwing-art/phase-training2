@@ -515,23 +515,20 @@ struct LogScreen: View {
     }
 
     /// The rest that follows a set being marked done, from a tap here or from
-    /// the watch. Start it if not the final set.
+    /// the watch. Start it only when this exercise has more sets to come; the
+    /// final set of an exercise gets no rest, since moving to the next
+    /// exercise (setup, walking to the station) is the rest.
     ///
     /// Superset-aware: when this exercise belongs to a superset and there are
     /// still un-completed siblings at THIS set index in the group, skip the
     /// rest timer — the user is mid-round-robin and should move to the next
     /// member's matching set. The rest only fires after the LAST member of
     /// the group completes set `setIdx`.
-    ///
-    /// Inter-exercise auto-rest: when this is the final set of the exercise
-    /// (and the superset round is complete) AND there's a next exercise still
-    /// owed sets, start a rest anchored to this set using the current
-    /// exercise's rest interval. Lifters expect the same rest window between
-    /// exercises as between sets, so we don't change the duration on the
-    /// transition.
     func startRestAfterCompleting(exIdx: Int, setIdx: Int) {
         let ex = session.exercises[exIdx]
-        let hasMoreSets = setIdx < ex.sets.count - 1
+        // Any other set still undone, so ticking sets out of order matches
+        // the watch's rule rather than keying on the set's position.
+        let hasMoreSets = ex.sets.indices.contains { $0 != setIdx && !ex.sets[$0].done }
 
         if isMidSupersetRound(exIdx: exIdx, setIdx: setIdx) {
             // Clear any pending rest from a prior round so the active band
@@ -539,11 +536,10 @@ struct LogScreen: View {
             rest.clear()
         } else if !Self.uiTestSuppressAutoRest, hasMoreSets {
             rest.start(exIdx: exIdx, setIdx: setIdx, duration: ex.rest)
-        } else if !Self.uiTestSuppressAutoRest, hasFollowingWork(afterExIdx: exIdx) {
-            // Last set of this exercise, but the session has more work
-            // ahead — auto-start the rest so the user gets the same
-            // countdown + expiry alert between exercises.
-            rest.start(exIdx: exIdx, setIdx: setIdx, duration: ex.rest)
+        } else {
+            // Final set of the exercise: drop any rest still counting down
+            // from an earlier set so it doesn't carry into the next exercise.
+            rest.clear()
         }
     }
 

@@ -235,18 +235,36 @@ final class LogFlowTests: XCTestCase {
                        "skipping the timer before expiry must not fire the alert")
     }
 
-    // MARK: - 4. Auto-rest between exercises
+    // MARK: - 4. No auto-rest after an exercise's last set
 
-    /// On the final set of the final exercise, no rest card should start.
+    /// On the final set of an exercise, no rest card should start.
     func testNoAutoRestOnFinalExercise() throws {
         let app = launchInLog(fastRest: 2)
         // Pushdown (idx 4) is the last exercise. Mark all three sets done.
         for setIdx in 0..<3 {
             app.buttons["log-set-check-4-\(setIdx)"].tap()
         }
-        // No rest card anywhere now (the last toggle had no following work).
+        // No rest card anywhere now (the last toggle was the exercise's final set).
         XCTAssertFalse(app.buttons["log-rest-add15"].exists,
                        "no rest card after final set of final exercise")
+    }
+
+    /// Finishing an exercise that is not the last one should not start a
+    /// rest either: the walk to the next station is the rest.
+    func testNoAutoRestAfterLastSetOfMiddleExercise() throws {
+        let app = launchInLog(fastRest: 10)
+        // Bench (idx 0) and Row (idx 1) are superset 1 with set 1 done.
+        // Round 2 still rests, since both have set 3 to come.
+        app.buttons["log-set-check-0-1"].tap()
+        app.buttons["log-set-check-1-1"].tap()
+        XCTAssertTrue(app.buttons["log-rest-add15"].waitForExistence(timeout: 2),
+                      "rest should start between rounds")
+        // Round 3 finishes both exercises with squat, curl and pushdown
+        // still owed: no rest, and the round-2 rest is cleared.
+        app.buttons["log-set-check-0-2"].tap()
+        app.buttons["log-set-check-1-2"].tap()
+        XCTAssertFalse(app.buttons["log-rest-add15"].waitForExistence(timeout: 1),
+                       "no rest after the last set of a middle exercise")
     }
 
     /// Inside a superset, completing one member's set should NOT start a
