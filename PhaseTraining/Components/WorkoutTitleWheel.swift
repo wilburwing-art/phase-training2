@@ -87,26 +87,34 @@ struct WorkoutTitleWheel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            GeometryReader { geo in
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 0) {
-                        ForEach(options) { option in
-                            Text(option.title)
-                                .styled(.displayL)
-                                .foregroundStyle(option.id == selectedId ? Color.ink : Color.ink3)
-                                .lineSpacing(-2)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .frame(width: geo.size.width, alignment: .leading)
-                                .id(option.id)
-                        }
-                    }
-                    .scrollTargetLayout()
+            // The tallest title sets the height, so a three-line title is
+            // never clipped and the header still does not jump as shorter
+            // titles scroll past. Measured from the text itself, so it also
+            // grows with Dynamic Type.
+            ZStack(alignment: .topLeading) {
+                ForEach(options) { option in
+                    titleText(option)
                 }
-                .scrollTargetBehavior(.viewAligned)
-                .scrollPosition(id: $scrolledId)
-                .scrollDisabled(options.count <= 1)
             }
-            .frame(height: titleHeight)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .hidden()
+            .overlay {
+                GeometryReader { geo in
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(alignment: .top, spacing: 0) {
+                            ForEach(options) { option in
+                                titleText(option)
+                                    .frame(width: geo.size.width, alignment: .topLeading)
+                                    .id(option.id)
+                            }
+                        }
+                        .scrollTargetLayout()
+                    }
+                    .scrollTargetBehavior(.viewAligned)
+                    .scrollPosition(id: $scrolledId)
+                    .scrollDisabled(options.count <= 1)
+                }
+            }
             if options.count > 1 { pips }
         }
         .onAppear { scrolledId = selectedId }
@@ -147,9 +155,13 @@ struct WorkoutTitleWheel: View {
         .accessibilityAction { onSeeAll() }
     }
 
-    /// Two lines of displayL plus the leading it carries. Fixed so the header
-    /// does not jump as titles of different lengths scroll past.
-    private var titleHeight: CGFloat { 84 }
+    private func titleText(_ option: WorkoutWheelOption) -> some View {
+        Text(option.title)
+            .styled(.displayL)
+            .foregroundStyle(option.id == selectedId ? Color.ink : Color.ink3)
+            .lineSpacing(-2)
+            .fixedSize(horizontal: false, vertical: true)
+    }
 
     /// Position, not a control. Tapping a pip would be a second hit target
     /// competing with the scroll for the same pixels.
