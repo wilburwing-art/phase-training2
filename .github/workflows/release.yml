@@ -235,7 +235,10 @@ jobs:
           xcrun altool --upload-app -f "$IPA" -t ios \
             --apiKey "$ASC_API_KEY_ID" \
             --apiIssuer "$ASC_API_KEY_ISSUER_ID" 2>&1 | tee /tmp/altool.log
-          if grep -qE "UPLOAD FAILED|^ERROR:|Validation failed" /tmp/altool.log; then
+          # ERROR: is matched anywhere on the line. altool prefixes it with a
+          # timestamp, so the old ^ERROR: anchor missed build 146's 403
+          # (expired agreement) and the run reported success.
+          if grep -qE "UPLOAD FAILED|ERROR:|Validation failed" /tmp/altool.log; then
             echo "::error::altool reported failure but exited 0 — see log above"
             exit 1
           fi
