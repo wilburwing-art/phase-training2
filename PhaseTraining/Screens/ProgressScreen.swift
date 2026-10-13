@@ -1,16 +1,25 @@
 // ProgressScreen.swift — Progress tab (v2).
 //
-// Card stack (top → bottom):
-//   0. Heatmap      — a month of day cells shaded by minutes trained; tap a
+// Card stack (top → bottom), re-ordered 2026-10-13 so self-referenced
+// progress (sessions, volume, strength vs your own earlier best) reads
+// before body weight and composition, which research on adherence puts
+// closest to dropout when they lead:
+//   0. Season badge — phase + mesocycle state.
+//   1. Heatmap      — a month of day cells shaded by minutes trained; tap a
 //                     day to open its session.
-//   1. Stat strip   — this week vs. target, weekly-target streak, PRs this
-//                     month, lifetime session count.
-//   2. Sessions/wk  — 8-week bar chart with target line.
-//   3. Volume/wk    — 8-week line (falls back to set count when no weights).
-//   4. Per-exercise — top ~6 lifts by frequency, each with a best-weight
+//   2. Soreness pill, then the stat strip — this week vs. target, weekly-
+//                     target streak, PRs this month, lifetime session count.
+//   3. Sessions/wk  — 8-week bar chart with target line.
+//   4. Volume/wk    — 8-week line (falls back to set count when no weights).
+//   5. Strength     — est 1RM per canonical lift with the change since 90
+//                     days ago, ratio to bodyweight, tier label.
+//   6. Muscle balance, recovery section.
+//   7. Per-exercise — top ~6 lifts by frequency, each with a best-weight
 //                     sparkline (Swift Charts) + last-PR date.
-//   5. PR feed      — chronological PR events, newest first.
-//   6. Feedback     — last 10 FeedbackEntry rows with difficulty/hurt chips.
+//   8. PR feed      — chronological PR events, newest first.
+//   9. Body weight and body composition trends.
+//  10. Feedback     — last 10 FeedbackEntry rows with difficulty/hurt chips.
+//  11. Recent sessions.
 //
 // Sessions / volume cards stay hand-drawn — bar/line geometry there is
 // simple. The per-exercise sparklines use Swift Charts because the
@@ -151,8 +160,6 @@ struct ProgressScreen: View {
                 }
                 SorenessCheckInPill()
                 statStrip
-                bodyWeightTrendCard
-                bodyCompositionTrendCard
                 sessionsCard
                 volumeCard
                 strengthRatiosCard
@@ -160,6 +167,8 @@ struct ProgressScreen: View {
                 ProgressRecoverySection()
                 perExerciseCard
                 prFeedCard
+                bodyWeightTrendCard
+                bodyCompositionTrendCard
                 feedbackCard
                 recentSessionsCard
                 Spacer().frame(height: 60)

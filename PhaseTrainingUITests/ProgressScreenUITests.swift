@@ -38,8 +38,6 @@ final class ProgressScreenUITests: XCTestCase {
         // Each card, scrolling as we go. Order matches ProgressScreen.content.
         for title in [
             "TRAINING DAYS",
-            "BODY WEIGHT",
-            "BODY COMPOSITION",
             "SESSIONS / WEEK",
             "VOLUME / WEEK",
             "STRENGTH RATIOS",
@@ -47,6 +45,10 @@ final class ProgressScreenUITests: XCTestCase {
             "RECOVERY",
             "TOP EXERCISES",
             "RECENT PRs",
+            // Body cards moved below the PR feed 2026-10-13: self-referenced
+            // progress reads first, appearance last.
+            "BODY WEIGHT",
+            "BODY COMPOSITION",
             "RECENT FEEDBACK",
             "RECENT SESSIONS",
         ] {

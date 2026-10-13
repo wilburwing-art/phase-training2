@@ -43,6 +43,19 @@ enum PlanBlurb {
         }
     }
 
+    /// The Today subtitle's countdown fragment, or nil when the phase has no
+    /// date to count to or the date has passed. `days` is whole calendar days
+    /// from today, 0 meaning today.
+    static func countdown(phase: SeasonPhase, daysToTarget days: Int?) -> String? {
+        guard phase.countsDownToTarget, let days, days >= 0 else { return nil }
+        switch phase {
+        case .eventPrep:
+            return days == 0 ? "peak today" : "peak in \(days)d"
+        default:
+            return days == 0 ? "season starts today" : "season in \(days)d"
+        }
+    }
+
     private static func liftSentence(phase: SeasonPhase,
                                      sportLabel: String?,
                                      weekInPhase: Int?) -> String? {

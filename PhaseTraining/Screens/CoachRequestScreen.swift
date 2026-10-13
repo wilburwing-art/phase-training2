@@ -177,10 +177,10 @@ struct CoachRequestScreen: View {
             }
 
             // Claimed equipment + injuries + dislikes. Injuries hold on both
-            // generation paths; equipment only on the season one; dislikes on
-            // neither. Say what is true until the strategy the coach builds
-            // actually reaches the generator.
-            Text("Pick a focus and a length and we'll build a session from your plan, keeping clear of anything your injuries rule out. Re-roll if you don't like it.")
+            // generation paths; equipment and dislikes only on the season one
+            // (an authored routine is a fixed spine). Say what is true until
+            // the strategy the coach builds actually reaches the generator.
+            Text("Pick a focus and a length and we'll build a session from your plan, keeping clear of anything your injuries or avoid-list rule out. Re-roll if you don't like it.")
                 .font(.scaled("Inter-Regular", size: 12))
                 .foregroundStyle(Color.ink3)
                 .padding(.top, 4)

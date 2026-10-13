@@ -245,6 +245,10 @@ enum SportSeasonGenerator {
                     && m.allowed(for: athlete.variant)
                     && m.minExperienceRank <= athlete.experience.seasonRank
                     && !athlete.contraindicatedExerciseIDs.contains(m.exerciseId)
+                    // A dislike is a hard drop, unlike a sunk affinity (which
+                    // only ranks last). No fallback: an emptied demand goes
+                    // through the same shortfall backfill as any other.
+                    && !athlete.isDisliked(m.name)
             }
         // Equipment: an empty available-set means FULL GYM / unrestricted (the
         // `allowedCoachDbSlugs` convention — full gym returns []). Otherwise a

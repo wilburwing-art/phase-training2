@@ -254,13 +254,28 @@ extension ProgressScreen {
         let bestDisplay = imperial
             ? "\(Int(row.bestWeightLb.rounded())) × \(row.bestReps)"
             : "\(Int(BodyMetrics.lbToKg(row.bestWeightLb).rounded())) × \(row.bestReps)"
+        // Self-delta first: the change against the user's own best from
+        // `ProgressAggregates.strengthDeltaDays` ago leads the line, and the
+        // tier label (a comparison to other people) stays where it was, on
+        // the right under the ratio.
+        let detail: String
+        if let delta = row.deltaLb {
+            let shown = imperial ? delta : BodyMetrics.lbToKg(delta)
+            let unit = imperial ? "lb" : "kg"
+            let rounded = Int(shown.rounded())
+            let change = rounded == 0 ? "no change"
+                : "\(rounded > 0 ? "+" : "")\(rounded) \(unit)"
+            detail = "\(change) in \(ProgressAggregates.strengthDeltaDays)d · est 1RM \(oneRmDisplay)"
+        } else {
+            detail = "est 1RM \(oneRmDisplay) · from \(bestDisplay)"
+        }
         return HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(row.lift.label)
                     .font(.scaled("Inter-Regular", size: 13))
                     .foregroundStyle(Color.ink)
                     .lineLimit(1)
-                Text("est 1RM \(oneRmDisplay) · from \(bestDisplay)")
+                Text(detail)
                     .font(.monoXS)
                     .foregroundStyle(Color.ink3)
                     .lineLimit(1)

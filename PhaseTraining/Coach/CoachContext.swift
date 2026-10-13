@@ -94,12 +94,16 @@ enum CoachContext {
             let days = cal.dateComponents([.day],
                                           from: cal.startOfDay(for: now),
                                           to: cal.startOfDay(for: peak)).day ?? 0
+            // Off-/pre-season store the season opener in the same field; a
+            // stale date in a phase with no target keeps the old key.
+            let phase = memory.seasonForPlanner
+            let key = (phase.countsDownToTarget ? phase.targetDateLabel : "Peak date").lowercased()
             if days > 0 {
-                profile.append("peak date: \(short(peak)) (in \(days) day\(days == 1 ? "" : "s"))")
+                profile.append("\(key): \(short(peak)) (in \(days) day\(days == 1 ? "" : "s"))")
             } else if days == 0 {
-                profile.append("peak date: \(short(peak)) (today)")
+                profile.append("\(key): \(short(peak)) (today)")
             } else {
-                profile.append("peak date: \(short(peak)) (passed \(-days) day\(days == -1 ? "" : "s") ago)")
+                profile.append("\(key): \(short(peak)) (passed \(-days) day\(days == -1 ? "" : "s") ago)")
             }
         }
         profile.append("experience: \(memory.experience.label)")
@@ -156,6 +160,13 @@ enum CoachContext {
 
         if !memory.dislikes.isEmpty {
             blocks.append("DISLIKES\n" + memory.dislikes.map { "- \(sanitizeFreeText($0))" }.joined(separator: "\n"))
+        }
+        // Exercises the user asked for more of ("Recommend more often" or a
+        // swap toward it). Names come from the catalog, scores stay private:
+        // the coach needs "they like goblet squats", not a counter.
+        let likes = FavoritesEditorSheet.favorites(in: memory.exerciseAffinities).map(\.name)
+        if !likes.isEmpty {
+            blocks.append("LIKES\n" + likes.map { "- \(sanitizeFreeText($0))" }.joined(separator: "\n"))
         }
         let demoProfile = DemographicProfile.from(memory)
         if let block = structuredInjuriesSection(memory: memory, now: now) {

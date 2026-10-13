@@ -58,3 +58,20 @@ seen here: accessory read `memory.exerciseAffinities` while the test set it on
 Vary `hashSeed` across ~30 seeds, tally pick frequency; assert boosting a
 partially-picked exercise (1 ≤ freq < seeds, so its slot has alternatives) raises
 its frequency, and ≤ -2 drops it. See ExerciseSwapMemoryTests.
+
+## Addendum 2026-10-13: check both directions of a signal before building either
+
+Asked to add a per-exercise "like" that mirrors dislikes. Both already
+existed on the write side (`ExerciseActionSheet` rows → `bumpAffinity` /
+`memory.dislikes`), but only one was read: the comparator consumed
+`exerciseAffinities`, and `dislikes` reached NO generation path
+(`CoachRequestScreen` said so in a comment, `CoachDatabase.exercises(
+excludeKeywords:)` had zero callers). So the "new feature" was visibility
+for likes plus a real fix for dislikes: `AthleteState.dislikedNameKeywords`
+(lowercased substring, same test as `DislikesEditorSheet.matchCount`) is a
+hard drop in `SportSeasonGenerator.filteredPool`, beside the injury
+contraindication check. A sunk affinity (<= -2) still serves a demand when it
+is the sole movement; a dislike never does. The authored-routine path still
+ignores dislikes (fixed spines). Before wiring any TrainingMemory signal,
+grep for its readers AND its sibling's readers: a UI row with a write path
+and no reader looks identical to one that works.

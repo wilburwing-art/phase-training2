@@ -47,6 +47,7 @@ struct ProfileScreen: View {
     @State private var presentingEquipmentEditor = false
     @State private var presentingExperienceEditor = false
     @State private var presentingAboutEditor = false
+    @State private var presentingFavoritesEditor = false
     @State private var presentingDislikesEditor = false
     @State private var presentingInjuriesEditor = false
     @State private var presentingRemindersEditor = false
@@ -210,6 +211,10 @@ struct ProfileScreen: View {
                     }
 
                     settingsGroup("ADJUSTMENTS") {
+                        SettingsRow(label: "Favorite exercises",
+                                    value: favoritesSummary,
+                                    icon: "hand.thumbsup",
+                                    action: { presentingFavoritesEditor = true })
                         SettingsRow(label: "Exercises to avoid",
                                     value: dislikesSummary,
                                     icon: "hand.raised",
@@ -280,6 +285,9 @@ struct ProfileScreen: View {
         }
         .sheet(isPresented: $presentingAboutEditor) {
             AboutYouEditorSheet().environmentObject(store)
+        }
+        .sheet(isPresented: $presentingFavoritesEditor) {
+            FavoritesEditorSheet().environmentObject(store)
         }
         .sheet(isPresented: $presentingDislikesEditor) {
             DislikesEditorSheet().environmentObject(store)

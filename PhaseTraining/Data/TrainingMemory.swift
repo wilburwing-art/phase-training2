@@ -424,6 +424,17 @@ struct Sport: Codable, Hashable, Identifiable {
         self.name = name
     }
 
+    /// The name cut at its first " / " or " (", for chrome with one line to
+    /// spare: "Skiing / Snowboarding" reads "Skiing" in the Today eyebrow.
+    /// A name without either separator is returned whole.
+    var shortName: String {
+        var s = name
+        for sep in [" / ", " ("] {
+            if let r = s.range(of: sep) { s = String(s[..<r.lowerBound]) }
+        }
+        return s.trimmingCharacters(in: .whitespaces)
+    }
+
     init(from decoder: Decoder) throws {
         let c = try decoder.singleValueContainer()
         self = Sport.resolve(slug: try c.decode(String.self))
@@ -544,6 +555,25 @@ enum SeasonPhase: String, Codable, CaseIterable, Identifiable {
         case .maintenance: return "Maintenance"
         default:           return label
         }
+    }
+
+    /// Whether `TrainingMemory.peakDate` means something in this phase. Off-
+    /// and pre-season reuse it as the season opener (2026-10-13), so the
+    /// Today countdown has a date before event prep. In-season is already
+    /// on and maintenance has no season, so neither counts down. The taper
+    /// (`Planner.applyPeakDateTaper`) and the mesocycle countdown
+    /// (`MesocycleProgression.status`) still read the date only in event
+    /// prep, so a pre-season date changes no plan output.
+    var countsDownToTarget: Bool {
+        switch self {
+        case .offSeason, .preSeason, .eventPrep: return true
+        case .inSeason, .maintenance:            return false
+        }
+    }
+
+    /// Editor section label and coach-context key for `peakDate` in this phase.
+    var targetDateLabel: String {
+        self == .eventPrep ? "Peak date" : "Season starts"
     }
 }
 

@@ -13,7 +13,7 @@ final class CoachConsentTests: XCTestCase {
         for term in ["plan", "workout history", "logged sets",
                      "height", "weight", "age", "gender",
                      "injuries", "soreness",
-                     "dislikes", "constraints", "sport logs", "post-workout feedback",
+                     "likes", "dislikes", "constraints", "sport logs", "post-workout feedback",
                      "strength"] {
             XCTAssertTrue(body.contains(term), "modalBody must disclose '\(term)'")
         }

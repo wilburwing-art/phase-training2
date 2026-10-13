@@ -214,6 +214,15 @@ enum StrengthStandards {
         let bestWeightLb: Double
         let bestReps: Int
         let tier: Tier?
+        /// Best estimated 1RM (lb) using only sessions on or before the
+        /// `priorThrough` date passed to `rows`; nil when no earlier session
+        /// trained this lift, or when no cutoff was asked for. The card reads
+        /// `oneRepMaxLb - priorOneRepMaxLb` as "change since", a comparison
+        /// against the user's own past rather than the tier table.
+        var priorOneRepMaxLb: Double? = nil
+
+        /// Signed change in est 1RM (lb) against the prior best, nil without one.
+        var deltaLb: Double? { priorOneRepMaxLb.map { oneRepMaxLb - $0 } }
     }
 
     /// Walk completed sets across all saved sessions; for each canonical
@@ -233,15 +242,20 @@ enum StrengthStandards {
     static func rows(from sessions: [SavedSession],
                      bodyweightKg: Double?,
                      gender: Gender?,
-                     addPullupBodyweight: Bool = true) -> [LiftRow] {
+                     addPullupBodyweight: Bool = true,
+                     priorThrough: Date? = nil) -> [LiftRow] {
         guard let bodyweightKg, bodyweightKg > 0 else { return [] }
         let bodyweightLb = BodyMetrics.kgToLb(bodyweightKg)
 
         // For each canonical lift, find the (weight, reps) maximising
-        // estimated 1RM across all completed sets.
+        // estimated 1RM across all completed sets. `priorBest` repeats the
+        // walk over sessions that started on or before `priorThrough`, so
+        // the row can say how far the number moved since then.
         var bestPerLift: [CanonicalLift: (weight: Double, reps: Int, oneRm: Double)] = [:]
+        var priorBest: [CanonicalLift: Double] = [:]
 
         for session in sessions {
+            let countsAsPrior = priorThrough.map { session.startTime <= $0 } ?? false
             for ex in session.exercises {
                 guard let lift = CanonicalLift.allCases.first(where: { $0.matches(name: ex.name) }) else {
                     continue
@@ -258,6 +272,9 @@ enum StrengthStandards {
                         : weight
                     guard effectiveWeight > 0 else { continue }
                     let oneRm = epley1RM(weight: effectiveWeight, reps: reps)
+                    if countsAsPrior, oneRm > (priorBest[lift] ?? 0) {
+                        priorBest[lift] = oneRm
+                    }
                     if oneRm > (bestPerLift[lift]?.oneRm ?? 0) {
                         // Keep the LOGGED weight for display alongside the
                         // effective one used for the estimate. Storing only
@@ -280,7 +297,8 @@ enum StrengthStandards {
                 ratio: ratio,
                 bestWeightLb: best.weight,
                 bestReps: best.reps,
-                tier: tier(for: lift, ratio: ratio, gender: gender)
+                tier: tier(for: lift, ratio: ratio, gender: gender),
+                priorOneRepMaxLb: priorBest[lift]
             )
         }
     }

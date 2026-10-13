@@ -127,9 +127,51 @@ final class StrengthStandardsTests: XCTestCase {
         XCTAssertEqual(row.bestReps, 5)
     }
 
+    // MARK: - Prior best (self-delta)
+
+    func test_rows_priorBest_readsOnlySessionsOnOrBeforeCutoff() {
+        let now = Date()
+        let old = savedSession(name: "Bench Press", sets: [("185", "5")], endingAt: now.addingTimeInterval(-100 * 86_400))
+        let mid = savedSession(name: "Bench Press", sets: [("205", "5")], endingAt: now.addingTimeInterval(-50 * 86_400))
+        let new = savedSession(name: "Bench Press", sets: [("225", "5")], endingAt: now)
+        let cutoff = now.addingTimeInterval(-90 * 86_400)
+        let rows = StrengthStandards.rows(from: [new, mid, old], bodyweightKg: 80, gender: .male, priorThrough: cutoff)
+        let bench = rows.first { $0.lift == .bench }!
+        XCTAssertEqual(bench.oneRepMaxLb, StrengthStandards.epley1RM(weight: 225, reps: 5), accuracy: 0.01)
+        XCTAssertEqual(bench.priorOneRepMaxLb!, StrengthStandards.epley1RM(weight: 185, reps: 5), accuracy: 0.01,
+                       "only the 100-day-old session is on or before the cutoff")
+        XCTAssertEqual(bench.deltaLb!, StrengthStandards.epley1RM(weight: 225, reps: 5) - StrengthStandards.epley1RM(weight: 185, reps: 5), accuracy: 0.01)
+    }
+
+    func test_rows_priorBest_nilWithoutEarlierSessionsOrCutoff() {
+        let now = Date()
+        let new = savedSession(name: "Bench Press", sets: [("225", "5")], endingAt: now)
+        let withCutoff = StrengthStandards.rows(from: [new], bodyweightKg: 80, gender: .male,
+                                                priorThrough: now.addingTimeInterval(-90 * 86_400))
+        XCTAssertNil(withCutoff.first { $0.lift == .bench }!.priorOneRepMaxLb, "nothing trained before the cutoff")
+        let noCutoff = StrengthStandards.rows(from: [new], bodyweightKg: 80, gender: .male)
+        XCTAssertNil(noCutoff.first { $0.lift == .bench }!.priorOneRepMaxLb, "no cutoff asked for")
+        XCTAssertNil(noCutoff.first { $0.lift == .bench }!.deltaLb)
+    }
+
+    func test_rows_priorBest_neverExceedsCurrentBest() {
+        // The prior walk is a subset of the full walk, so a regression reads
+        // as a negative delta, never as a prior above the all-time best.
+        let now = Date()
+        let old = savedSession(name: "Back Squat", sets: [("315", "3")], endingAt: now.addingTimeInterval(-120 * 86_400))
+        let new = savedSession(name: "Back Squat", sets: [("275", "3")], endingAt: now)
+        let rows = StrengthStandards.rows(from: [old, new], bodyweightKg: 80, gender: .male,
+                                          priorThrough: now.addingTimeInterval(-90 * 86_400))
+        let squat = rows.first { $0.lift == .squat }!
+        XCTAssertEqual(squat.priorOneRepMaxLb!, squat.oneRepMaxLb, accuracy: 0.01,
+                       "the all-time best is the old session, so prior equals current")
+        XCTAssertEqual(squat.deltaLb!, 0, accuracy: 0.01)
+    }
+
     // MARK: - Helpers
 
-    private func savedSession(name: String, sets: [(weight: String, reps: String)]) -> SavedSession {
+    private func savedSession(name: String, sets: [(weight: String, reps: String)],
+                              endingAt end: Date = Date()) -> SavedSession {
         let logged = LoggedExercise(
             id: name, name: name, type: nil, unit: "lbs",
             targetSets: sets.count, targetReps: 5, rest: 90,
@@ -140,9 +182,9 @@ final class StrengthStandardsTests: XCTestCase {
         )
         return SavedSession(
             templateId: "t", name: name, category: "",
-            startTime: Date().addingTimeInterval(-3600),
+            startTime: end.addingTimeInterval(-3600),
             exercises: [logged], feel: nil, note: nil,
-            endTime: Date(), duration: 3600
+            endTime: end, duration: 3600
         )
     }
 

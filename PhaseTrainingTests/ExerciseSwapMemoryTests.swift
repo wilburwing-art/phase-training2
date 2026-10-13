@@ -71,7 +71,7 @@ final class ExerciseSwapMemoryTests: XCTestCase {
     private let slug = "alpine-skiing"
     private let season: SeasonPhase = .offSeason
 
-    private func skier(week: Int, affinities: [String: Int]) -> AthleteState {
+    private func skier(week: Int, affinities: [String: Int], dislikes: [String] = []) -> AthleteState {
         var m = TrainingMemory()
         let sport = Sport(slug: slug, name: "Alpine Skiing")
         m.primarySport = sport
@@ -81,14 +81,15 @@ final class ExerciseSwapMemoryTests: XCTestCase {
         m.equipment = [.fullGym]
         m.liftDaysPerWeek = 3
         m.exerciseAffinities = affinities
+        m.dislikes = dislikes
         return AthleteState.from(m, variant: .inbounds, weekNumber: week)
     }
 
     /// Tally movement picks over 30 weeks x 3 sessions, keyed by exercise id.
-    private func pickFrequencies(affinities: [String: Int]) -> [Int: Int] {
+    private func pickFrequencies(affinities: [String: Int], dislikes: [String] = []) -> [Int: Int] {
         var freq: [Int: Int] = [:]
         for week in 1...30 {
-            let a = skier(week: week, affinities: affinities)
+            let a = skier(week: week, affinities: affinities, dislikes: dislikes)
             for s in SportSeasonGenerator.generateWeek(a) {
                 for ex in s.exercises { freq[ex.exerciseId, default: 0] += 1 }
             }
@@ -153,6 +154,51 @@ final class ExerciseSwapMemoryTests: XCTestCase {
     func test_affinityKeys_foldCase() {
         let a = skier(week: 1, affinities: ["Goblet Squat": 1, "goblet squat": 2])
         XCTAssertEqual(a.affinity(for: "GOBLET SQUAT"), 3)
+    }
+
+    // MARK: - Consume (dislikes drop a movement from the pool)
+    //
+    // "Don't recommend again" and the Profile avoid-list write
+    // TrainingMemory.dislikes, which the season engine never read before
+    // AthleteState.dislikedNameKeywords. A sunk affinity still serves a demand
+    // when it is the only movement; a dislike never does.
+
+    func test_dislikedMovement_isNeverPicked() throws {
+        let baseline = pickFrequencies(affinities: [:])
+        let target = try XCTUnwrap(contestedMovement(in: baseline),
+                                   "fixture found no contested movement; the test would assert nothing")
+        XCTAssertGreaterThan(baseline[target.exerciseId] ?? 0, 0)
+        let avoided = pickFrequencies(affinities: [:], dislikes: [target.name.uppercased()])
+        XCTAssertEqual(avoided[target.exerciseId] ?? 0, 0,
+            "\(target.name) is on the avoid-list and was still picked \(avoided[target.exerciseId] ?? 0) times")
+    }
+
+    func test_dislikedSoleMovement_isDroppedNotServed() throws {
+        let baseline = pickFrequencies(affinities: [:])
+        let sole = try XCTUnwrap(pool.first { m in
+            (baseline[m.exerciseId] ?? 0) > 0
+                && !pool.contains { $0.primaryDemand == m.primaryDemand && $0.exerciseId != m.exerciseId }
+        }, "fixture found no sole-primary movement; the test would assert nothing")
+        let avoided = pickFrequencies(affinities: [:], dislikes: [sole.name])
+        XCTAssertEqual(avoided[sole.exerciseId] ?? 0, 0,
+            "a dislike is a hard drop even when \(sole.name) is the only primary movement for its demand")
+    }
+
+    func test_dislikesMatchingNoMovement_changeNothing() {
+        for week in 1...5 {
+            let plain = SportSeasonGenerator.generateWeek(skier(week: week, affinities: [:]))
+            let noisy = SportSeasonGenerator.generateWeek(skier(week: week, affinities: [:],
+                                                                 dislikes: ["zzz-not-a-lift", "  ", ""]))
+            XCTAssertEqual(plain, noisy, "week \(week): an avoid-list entry matching no movement changed the session")
+        }
+    }
+
+    func test_dislikedKeywords_normalise() {
+        XCTAssertEqual(AthleteState.dislikedKeywords([" Burpee ", "", "  ", "KETTLEBELL swing"]),
+                       ["burpee", "kettlebell swing"])
+        let a = skier(week: 1, affinities: [:], dislikes: ["Goblet"])
+        XCTAssertTrue(a.isDisliked("Goblet Squat"))
+        XCTAssertFalse(a.isDisliked("Back Squat"))
     }
 
     // MARK: - Consume (swap picker browse order)

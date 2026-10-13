@@ -87,6 +87,21 @@ struct AthleteState: Equatable {
         exerciseAffinities[movementName.lowercased()] ?? 0
     }
 
+    /// Lowercased name fragments from `TrainingMemory.dislikes` ("Don't
+    /// recommend again" + the Profile avoid-list). A movement whose name
+    /// contains any fragment is dropped from the pool outright, the same
+    /// substring test `DislikesEditorSheet.matchCount` shows the user. Before
+    /// this the season engine never read `dislikes` at all, so the row did
+    /// nothing to the plan. Defaulted empty so hand-built states keep today's
+    /// selection.
+    var dislikedNameKeywords: [String] = []
+
+    func isDisliked(_ movementName: String) -> Bool {
+        guard !dislikedNameKeywords.isEmpty else { return false }
+        let lower = movementName.lowercased()
+        return dislikedNameKeywords.contains { lower.contains($0) }
+    }
+
     /// Exercise ids contraindicated by the athlete's injuries (already resolved
     /// by `DemographicProfile`) — subtracted from every pool.
     let contraindicatedExerciseIDs: Set<Int>
@@ -125,6 +140,7 @@ struct AthleteState: Equatable {
             weekNumber: weekNumber,
             recentMovementIDs: recentMovementIDs,
             exerciseAffinities: lowercasedAffinities(memory.exerciseAffinities),
+            dislikedNameKeywords: dislikedKeywords(memory.dislikes),
             contraindicatedExerciseIDs: profile.excludedExerciseIds,
             flaggedDemands: [],
             profile: profile
@@ -139,5 +155,12 @@ struct AthleteState: Equatable {
             out[name.lowercased(), default: 0] += score
         }
         return out
+    }
+
+    /// Normalise the avoid-list to the fragments `isDisliked` tests: lowercased,
+    /// trimmed, blanks dropped. An empty string would match every name.
+    static func dislikedKeywords(_ raw: [String]) -> [String] {
+        raw.map { $0.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) }
+           .filter { !$0.isEmpty }
     }
 }

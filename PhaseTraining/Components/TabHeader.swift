@@ -58,9 +58,15 @@ struct TabHeader: View {
                     .foregroundStyle(Color.ink3)
                 Spacer(minLength: 0)
                 if let eyebrowTrailing {
+                    // One line, scaling down before wrapping: Today's trailing
+                    // now carries sport + phase (+ DELOAD), and "OLYMPIC
+                    // WEIGHTLIFTING · PRE-SEASON · DELOAD" would otherwise
+                    // push the date onto a second row.
                     Text(eyebrowTrailing)
                         .styled(.micro)
                         .foregroundStyle(Color.ink3)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
                 }
             }
 

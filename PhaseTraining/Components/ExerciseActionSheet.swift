@@ -88,24 +88,35 @@ struct ExerciseActionSheet: View {
                             }
                             divider
                         }
-                        row(icon: "hand.thumbsup", label: "Recommend more often") {
+                        // The two affinity rows show the running score so a
+                        // tap is visibly cumulative, and the avoid row toggles
+                        // so a dislike made here can be undone here.
+                        row(icon: "hand.thumbsup", label: "Recommend more often",
+                            trailing: affinityTrailing) {
                             memoryStore.bumpAffinity(exerciseName, by: 1)
                             dismiss()
                         }
+                        .accessibilityIdentifier("exercise-action-recommend-more")
                         divider
-                        row(icon: "hand.thumbsdown", label: "Recommend less often") {
+                        row(icon: "hand.thumbsdown", label: "Recommend less often",
+                            trailing: affinityTrailing) {
                             memoryStore.bumpAffinity(exerciseName, by: -1)
                             dismiss()
                         }
                         divider
-                        row(icon: "nosign", label: "Don't recommend again") {
+                        row(icon: isDisliked ? "checkmark.circle.fill" : "nosign",
+                            label: isDisliked ? "On your avoid-list" : "Don't recommend again",
+                            trailing: isDisliked ? "TAP TO UNDO" : nil) {
                             memoryStore.update {
-                                if !$0.dislikes.contains(exerciseName) {
+                                if isDisliked {
+                                    $0.dislikes.removeAll { $0.caseInsensitiveCompare(exerciseName) == .orderedSame }
+                                } else {
                                     $0.dislikes.append(exerciseName)
                                 }
                             }
                             dismiss()
                         }
+                        .accessibilityIdentifier("exercise-action-avoid")
                         if let onDelete {
                             divider
                             row(icon: "trash", label: "Delete from workout",
@@ -142,9 +153,27 @@ struct ExerciseActionSheet: View {
         .preferredColorScheme(.dark)
     }
 
+    // MARK: - Current state
+
+    /// Net affinity for this exercise, case-folded the way the generator
+    /// reads it (`AthleteState.lowercasedAffinities`), so "Goblet Squat" and
+    /// "goblet squat" written by different surfaces read as one score.
+    private var affinity: Int {
+        AthleteState.lowercasedAffinities(memoryStore.memory.exerciseAffinities)[exerciseName.lowercased()] ?? 0
+    }
+
+    private var affinityTrailing: String? {
+        affinity == 0 ? nil : (affinity > 0 ? "+\(affinity)" : "\(affinity)")
+    }
+
+    private var isDisliked: Bool {
+        memoryStore.memory.dislikes.contains { $0.caseInsensitiveCompare(exerciseName) == .orderedSame }
+    }
+
     // MARK: - Row primitive
 
-    private func row(icon: String, label: String, tint: Color = Color.ink, action: @escaping () -> Void) -> some View {
+    private func row(icon: String, label: String, trailing: String? = nil,
+                     tint: Color = Color.ink, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 14) {
                 Image(systemName: icon)
@@ -155,6 +184,11 @@ struct ExerciseActionSheet: View {
                     .font(.scaled("Inter-Regular", size: 15))
                     .foregroundStyle(tint)
                 Spacer(minLength: 0)
+                if let trailing {
+                    Text(trailing)
+                        .styled(.micro)
+                        .foregroundStyle(Color.ink3)
+                }
             }
             .padding(.vertical, 14)
             .contentShape(Rectangle())

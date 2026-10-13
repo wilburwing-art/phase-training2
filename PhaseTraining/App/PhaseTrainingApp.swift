@@ -101,7 +101,15 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-ski-primary") {
             Self.seedSkiPrimary()
         }
-        //   --seed-progress-demo → six saved sessions across five weeks with
+        //   --seed-season-countdown → the already-seeded primary sport goes
+        //     to pre-season with a season opener 34 days out, so Today's
+        //     eyebrow reads "<SPORT> · PRE-SEASON" and its subtitle ends
+        //     "season in 34d". Pair with --seed-ski-primary (or any seed
+        //     that writes a primary sport) and --seed-plan-demo.
+        if ProcessInfo.processInfo.arguments.contains("--seed-season-countdown") {
+            Self.seedSeasonCountdown()
+        }
+        //   --seed-progress-demo → seven saved sessions, one 100 days back and six across five weeks, with
         //     progressing weights, plus a body-weight and a body-composition
         //     log, so every card on the Progress tab has real data. Progress
         //     gates PER CARD, so a seed that populates only sessions would
@@ -338,6 +346,23 @@ struct PhaseTrainingApp: App {
 
     /// Write memory directly (key + encoder mirror MemoryStore), leaving
     /// `onboardedAt` nil so PlanStore's auto-regen stays gated off.
+    /// --seed-season-countdown: see the launch-arg comment. Reads whatever
+    /// memory an earlier seed wrote so the sport is not duplicated here.
+    private static func seedSeasonCountdown() {
+        let dec = JSONDecoder()
+        dec.dateDecodingStrategy = .secondsSince1970
+        var m = UserDefaults.standard.data(forKey: "pt_training_memory")
+            .flatMap { try? dec.decode(TrainingMemory.self, from: $0) } ?? TrainingMemory()
+        if let sport = m.primarySport {
+            m.seasonsBySport[sport] = .preSeason
+        } else {
+            m.defaultSeason = .preSeason
+        }
+        let cal = Calendar.current
+        m.peakDate = cal.date(byAdding: .day, value: 34, to: cal.startOfDay(for: Date()))
+        writeSeedMemory(m)
+    }
+
     private static func writeSeedMemory(_ m: TrainingMemory) {
         let enc = JSONEncoder()
         enc.dateEncodingStrategy = .secondsSince1970
@@ -348,7 +373,7 @@ struct PhaseTrainingApp: App {
 
     /// --seed-progress-demo: a populated Progress tab.
     ///
-    /// Writes six saved sessions across the last five weeks with progressing
+    /// Writes seven saved sessions (one 100 days back, six across the last five weeks) with progressing
     /// weights (so sessions/wk, volume/wk, top exercises, PR feed and recent
     /// sessions all have content), a bodyweight so the strength-ratios card
     /// un-hides, and body-weight + body-composition logs so those two cards
@@ -369,6 +394,9 @@ struct PhaseTrainingApp: App {
         // (days back, bench, squat) — monotonically increasing so every
         // session after the first lands PRs.
         let progression: [(Int, Int, Int)] = [
+            // One session past the strength card's 90-day self-delta window,
+            // so the card has a prior best to show the change against.
+            (100, 125, 185),
             (32, 135, 205),
             (24, 145, 215),
             (16, 155, 225),

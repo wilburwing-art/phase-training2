@@ -39,8 +39,8 @@ struct SeasonsEditorSheet: View {
                                 onPick: { s in pickDefaultSeason(s) }
                             )
                         }
-                        if hasEventPrepSelected {
-                            peakDateRow
+                        if let phase = targetDatePhase {
+                            peakDateRow(label: phase.targetDateLabel.uppercased())
                         }
                     }
                     .padding(.horizontal, 20)
@@ -92,14 +92,21 @@ struct SeasonsEditorSheet: View {
             .foregroundStyle(Color.ink3)
     }
 
-    private var hasEventPrepSelected: Bool {
-        if store.memory.defaultSeason == .eventPrep { return true }
-        return store.memory.seasonsBySport.values.contains(.eventPrep)
+    /// Which phase the date row serves, or nil when nothing counts down.
+    /// The planner phase wins (off-/pre-season read the date as the season
+    /// opener, event prep as the peak); otherwise any sport in event prep
+    /// keeps the row visible, as it did before off-/pre-season joined.
+    private var targetDatePhase: SeasonPhase? {
+        let planner = store.memory.seasonForPlanner
+        if planner.countsDownToTarget { return planner }
+        if store.memory.defaultSeason == .eventPrep
+            || store.memory.seasonsBySport.values.contains(.eventPrep) { return .eventPrep }
+        return nil
     }
 
-    private var peakDateRow: some View {
+    private func peakDateRow(label: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            sectionLabel("PEAK DATE")
+            sectionLabel(label)
                 .padding(.top, 4)
             // An unset peak date must LOOK unset. Binding `get:` to `?? Date()`
             // rendered today's date as though it were chosen, and the Clear

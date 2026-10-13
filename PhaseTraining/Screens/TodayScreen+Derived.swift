@@ -147,14 +147,22 @@ extension TodayScreen {
     /// auto-scheduled mesocycle deload to read).
     var phaseEyebrow: String {
         var s = memoryStore.memory.seasonForPlanner.compactLabel.uppercased()
+        // Identity first: "SKIING · PRE-SEASON" says who is training before
+        // what phase they are in (2026-10-13). `shortName` keeps "Skiing /
+        // Snowboarding" to one word so the row stays beside the date.
+        if let sport = memoryStore.memory.primarySport {
+            s = sport.shortName.uppercased() + " · " + s
+        }
         if planStore.overrides.weekTone == .recovery { s += " · DELOAD" }
         return s
     }
 
-    /// Days until the event-prep peak, when a peak date is set and the
-    /// athlete is in event prep. nil otherwise (nothing to count down to).
+    /// Days until `peakDate` in a phase that counts down to it (event prep's
+    /// peak, or the season opener in off-/pre-season). nil when the phase has
+    /// no target, no date is set, or the date has passed. Plan output is
+    /// unaffected outside event prep; see `SeasonPhase.countsDownToTarget`.
     private var daysToPeak: Int? {
-        guard memoryStore.memory.seasonForPlanner == .eventPrep,
+        guard memoryStore.memory.seasonForPlanner.countsDownToTarget,
               let peak = memoryStore.memory.peakDate else { return nil }
         let cal = Calendar.current
         let days = cal.dateComponents([.day],
@@ -173,8 +181,9 @@ extension TodayScreen {
         } else if !heroSubtitle.isEmpty {
             parts.append(heroSubtitle)
         }
-        if let d = daysToPeak {
-            parts.append(d == 0 ? "peak today" : "peak in \(d)d")
+        if let countdown = PlanBlurb.countdown(phase: memoryStore.memory.seasonForPlanner,
+                                               daysToTarget: daysToPeak) {
+            parts.append(countdown)
         }
         let joined = parts.joined(separator: " · ")
         return joined.isEmpty ? nil : joined

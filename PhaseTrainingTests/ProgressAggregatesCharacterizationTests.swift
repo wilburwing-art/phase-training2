@@ -382,7 +382,9 @@ final class ProgressAggregatesCharacterizationTests: XCTestCase {
         // Old card: StrengthStandards.rows(from: store.savedSessions,
         // bodyweightKg: memory.weightKg, gender: memory.gender) per render.
         let agg = makeAggregates(sessions: sessions, bodyweightKg: bw, gender: .male, now: now)
-        let direct = StrengthStandards.rows(from: sessions, bodyweightKg: bw, gender: .male)
+        let direct = StrengthStandards.rows(
+            from: sessions, bodyweightKg: bw, gender: .male,
+            priorThrough: now.addingTimeInterval(-Double(ProgressAggregates.strengthDeltaDays) * 86_400))
         XCTAssertEqual(agg.strengthRows, direct)
         XCTAssertEqual(Set(direct.map(\.lift)), [.bench, .squat],
                        "Fixture sanity — both canonical lifts produce rows (non-vacuous)")

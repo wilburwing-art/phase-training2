@@ -68,6 +68,9 @@ struct ProgressAggregates {
     let personalRecords: [PersonalRecord]
     /// `StrengthStandards.rows` output — strength-ratios card. Depends on
     /// bodyweightKg + gender, which are therefore part of the cache key.
+    /// Window for the strength card's self-delta: each row's prior best is
+    /// taken from sessions on or before `now` minus this many days.
+    static let strengthDeltaDays = 90
     let strengthRows: [StrengthStandards.LiftRow]
     /// `MuscleVolume.rows` output — muscle-balance card.
     let muscleRows: [MuscleVolume.Row]
@@ -128,7 +131,8 @@ struct ProgressAggregates {
         self.strengthRows = StrengthStandards.rows(
             from: sessions,
             bodyweightKg: bodyweightKg,
-            gender: gender
+            gender: gender,
+            priorThrough: now.addingTimeInterval(-Double(Self.strengthDeltaDays) * 86_400)
         )
         self.muscleRows = MuscleVolume.rows(from: sessions, now: now)
         self.topExercises = Self.topExerciseSeries(

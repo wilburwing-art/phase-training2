@@ -34,7 +34,7 @@ enum CoachConsent {
     • Injuries and soreness you've logged, including your own notes
     • Estimated strength numbers, and your messages to the coach
 
-    • Dislikes and constraints you've written, and notes on sport logs and post-workout feedback
+    • Likes, dislikes and constraints you've written, and notes on sport logs and post-workout feedback
 
     We don't send your name, email or device identifiers, and we don't sell or share this data. You can turn the coach off anytime in Profile, which stops all transmissions.
 

@@ -107,6 +107,13 @@ extension ProfileScreen {
         return parts.joined(separator: " · ")
     }
 
+    var favoritesSummary: String {
+        let favs = FavoritesEditorSheet.favorites(in: store.memory.exerciseAffinities)
+        if favs.isEmpty { return "None" }
+        if favs.count == 1 { return favs[0].name }
+        return "\(favs.count) items"
+    }
+
     var dislikesSummary: String {
         let count = store.memory.dislikes.count
         if count == 0 { return "None" }

@@ -18,6 +18,41 @@ final class PlanBlurbTests: XCTestCase {
         PlanBlurb.sentence(kind: kind, phase: phase, sportLabel: sport, weekInPhase: week)
     }
 
+    // MARK: - Countdown (Today subtitle)
+
+    func testCountdown_eventPrepReadsPeak() {
+        XCTAssertEqual(PlanBlurb.countdown(phase: .eventPrep, daysToTarget: 12), "peak in 12d")
+        XCTAssertEqual(PlanBlurb.countdown(phase: .eventPrep, daysToTarget: 0), "peak today")
+    }
+
+    func testCountdown_offAndPreSeasonReadSeasonStart() {
+        for phase in [SeasonPhase.offSeason, .preSeason] {
+            XCTAssertEqual(PlanBlurb.countdown(phase: phase, daysToTarget: 34), "season in 34d", "\(phase)")
+            XCTAssertEqual(PlanBlurb.countdown(phase: phase, daysToTarget: 0), "season starts today", "\(phase)")
+        }
+    }
+
+    func testCountdown_nilWhenPhaseHasNoTargetOrDatePassed() {
+        for phase in [SeasonPhase.inSeason, .maintenance] {
+            XCTAssertNil(PlanBlurb.countdown(phase: phase, daysToTarget: 10), "\(phase) has nothing to count to")
+            XCTAssertFalse(phase.countsDownToTarget)
+        }
+        XCTAssertNil(PlanBlurb.countdown(phase: .preSeason, daysToTarget: nil))
+        XCTAssertNil(PlanBlurb.countdown(phase: .eventPrep, daysToTarget: -1))
+    }
+
+    // MARK: - Sport short name (Today eyebrow)
+
+    func testSportShortName_cutsAtSlashAndParenOnly() {
+        XCTAssertEqual(Sport(slug: "snow-sports", name: "Skiing / Snowboarding").shortName, "Skiing")
+        XCTAssertEqual(Sport(slug: "x", name: "Hiking / Trekking").shortName, "Hiking")
+        XCTAssertEqual(Sport(slug: "x", name: "Rowing (indoor)").shortName, "Rowing")
+        XCTAssertEqual(Sport(slug: "sup", name: "Stand-Up Paddleboarding").shortName, "Stand-Up Paddleboarding")
+        XCTAssertEqual(Sport(slug: "bjj", name: "Brazilian Jiu-Jitsu").shortName, "Brazilian Jiu-Jitsu")
+    }
+
+    // MARK: - Lift sentence
+
     func testEveryPhaseProducesALiftSentence() {
         for phase in SeasonPhase.allCases {
             let out = s(.lift, phase)
