@@ -581,15 +581,6 @@ enum SportSeasonGenerator {
 
     /// Short, human label for a session title. Prefers the catalog's own name
     /// so a new sport needs no change here.
-    static func sportTitlePrefix(for slug: String) -> String {
-        if let sport = Sport.catalog.first(where: { $0.slug == slug }) {
-            return sport.name
-        }
-        if PhaseRule.skiSlugs.contains(slug) { return "Ski" }
-        if PhaseRule.climbingSlugs.contains(slug) { return "Climb" }
-        return slug.replacingOccurrences(of: "-", with: " ").capitalized
-    }
-
     // MARK: - Assembly
 
     private static func assemble(_ exercises: [GeneratedExercise], picks: [Pick],
@@ -598,12 +589,13 @@ enum SportSeasonGenerator {
                                  signatureUnavailable: Bool = false) -> GeneratedWorkout {
         let minutes = exercises.reduce(0) { $0 + Int(ceil(Double($1.sets) * (Double($1.restSeconds) + 40) / 60)) }
         let demandMix = picks.map { $0.demand.rawValue }
-        // Derived from the athlete's actual sport. Hardcoding "Ski" meant a
-        // climbing athlete who fell through to the engine read
-        // "Ski · In-season — Session 1" on a finger-strength session — and the
-        // string also poisons PlanValidator.resolveFocus, which infers focus
-        // from title text.
-        let title = "\(sportTitlePrefix(for: athlete.sportSlug)) · \(athlete.season.label) — Session \(sessionIndex + 1)"
+        // No sport name: Today's caption already says it, and
+        // "Skiing / Snowboarding · Pre-season — Session 4" ran to three lines
+        // of displayL and clipped in the title wheel. The season stays so
+        // wheel stops sampled from other seasons read apart. Also keep focus
+        // words ("push", "leg", ...) out: PlanValidator.resolveFocus infers
+        // focus from title text.
+        let title = "\(athlete.season.label) · Session \(sessionIndex + 1)"
         var summary = "\(exercises.count) movements · ~\(minutes) min"
         if signatureUnavailable, let sig = signatureDemand(athlete.sportSlug) {
             summary += " · no \(sig.plainLabel) work: your injuries rule out every option"

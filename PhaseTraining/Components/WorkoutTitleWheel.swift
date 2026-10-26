@@ -160,6 +160,10 @@ struct WorkoutTitleWheel: View {
             .styled(.displayL)
             .foregroundStyle(option.id == selectedId ? Color.ink : Color.ink3)
             .lineSpacing(-2)
+            // Two lines at most, shrinking before it wraps a third, so a long
+            // saved-routine name cannot outgrow the header either.
+            .lineLimit(2)
+            .minimumScaleFactor(0.75)
             .fixedSize(horizontal: false, vertical: true)
     }
 
