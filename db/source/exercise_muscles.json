@@ -8558,5 +8558,35 @@
     "exercise_id": 1204,
     "muscle_group_id": 51,
     "role": "secondary"
+  },
+  {
+    "exercise_id": 1205,
+    "muscle_group_id": 53,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1205,
+    "muscle_group_id": 50,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1205,
+    "muscle_group_id": 51,
+    "role": "secondary"
+  },
+  {
+    "exercise_id": 1206,
+    "muscle_group_id": 51,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1206,
+    "muscle_group_id": 52,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1206,
+    "muscle_group_id": 50,
+    "role": "secondary"
   }
 ]

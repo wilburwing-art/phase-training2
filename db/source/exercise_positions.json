@@ -2873,5 +2873,15 @@
     "status": "authored",
     "start_position": "Lying flat on the back on the floor, both legs straight and together pointing straight up at the ceiling (hips at 90 degrees), arms extended straight up toward the feet, head and shoulders on the floor.",
     "end_position": "Head and shoulder blades curled off the floor, chin slightly tucked, both arms reaching straight up so the fingertips touch the toes. Legs remain straight and vertical, lower back stays on the floor."
+  },
+  "dead-bug": {
+    "status": "authored",
+    "start_position": "Lying supine. Both arms reaching straight up vertically toward the ceiling. Both hips and knees bent to 90 degrees, shins horizontal, knees stacked over hips. Lower back flat against the floor.",
+    "end_position": "Right arm lowered overhead to just above the floor and left leg extended straight out to just above the floor. Left arm still vertical, right knee still stacked at 90 degrees. Lower back still flat on the floor with no arch, ribcage down."
+  },
+  "heel-touches": {
+    "status": "authored",
+    "start_position": "Lying on the back, knees bent about 90 degrees, feet flat on the floor slightly wider than hip width. Head and shoulder blades lifted just off the floor, arms straight along the sides a few inches above the floor, palms facing in.",
+    "end_position": "Torso side-bent to the right with the right hand touching the right heel, shoulders still off the floor, hips and feet unmoved, no twisting of the torso toward the floor."
   }
 }
