@@ -4,8 +4,8 @@
 // sitting above the tab bar via safe-area-inset padding. A kettlebell is
 // already a closed round shape, so a disc was drawing a circle around a
 // circle; dropping it also lets the art hit MASCOT2.md's 64pt floor, which
-// the old 52pt disc did not. The frame is the tap target. It runs its flex
-// loop live, matching the big Kettle on Today.
+// the old 52pt disc did not. The frame is the tap target. It runs the user's
+// sport loop live (KettlePose.forSport), so a snowboarder sees Kettle carve.
 //
 // Hidden conditions (any one short-circuits):
 //   - user hasn't granted AI Coach consent
@@ -23,6 +23,7 @@ struct CoachBubble: View {
     @EnvironmentObject private var conv: CoachConversationStore
     @EnvironmentObject private var tabSelection: TabSelectionStore
     @EnvironmentObject private var sessionStore: SessionStore
+    @EnvironmentObject private var memoryStore: MemoryStore
     @AppStorage(CoachConsent.storageKey) private var consentGranted: Bool = false
     @AppStorage(CoachEntitlement.proKey) private var proEntitled: Bool = false
 
@@ -51,6 +52,13 @@ struct CoachBubble: View {
                         sessionActive: sessionStore.active != nil)
     }
 
+    /// Kettle does the user's sport here too (snowboard, climb, bike), same
+    /// mapping as the sport-day Kettle on Today; anything else flexes.
+    private var pose: KettlePose {
+        let memory = memoryStore.memory
+        return .forSport((memory.primarySport ?? memory.sports.first)?.slug)
+    }
+
     /// Pure form of the hidden conditions so tests can exercise the consent
     /// x pro matrix (including the lapsed state) without a view hierarchy.
     /// requirePro is parameterized like CoachEntitlement.unlocked so both
@@ -73,7 +81,8 @@ struct CoachBubble: View {
         } label: {
             EmptyView()
         }
-        .buttonStyle(CoachAvatarStyle(art: Self.art,
+        .buttonStyle(CoachAvatarStyle(pose: pose,
+                                      art: Self.art,
                                       dot: Self.dot,
                                       dotCentre: Self.dotCentre,
                                       pending: conv.hasPendingProposal))
@@ -88,6 +97,7 @@ struct CoachBubble: View {
 /// flex squeeze is what carries the feedback. A ButtonStyle is the only place
 /// `isPressed` is available to the thing being drawn.
 private struct CoachAvatarStyle: ButtonStyle {
+    let pose: KettlePose
     let art: CGFloat
     let dot: CGFloat
     let dotCentre: CGPoint
@@ -95,13 +105,14 @@ private struct CoachAvatarStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         ZStack(alignment: .topLeading) {
-            // Runs its flex loop the whole time the bubble is up, same as the
-            // big Kettle on Today. Pressing stops the loop and snaps to the
-            // peak of the squeeze, so the press still reads as a beat rather
-            // than getting lost in the motion. Reduce Motion drops both back
-            // to a still, handled inside KettleView.
-            KettleBust(animated: !configuration.isPressed,
-                       frozenAt: configuration.isPressed ? KettleBust.peakFlex : 0,
+            // Runs the user's sport loop the whole time the bubble is up.
+            // Pressing stops the loop and snaps to its peak (the squeeze for
+            // flex), so the press still reads as a beat rather than getting
+            // lost in the motion. Reduce Motion drops both back to a still,
+            // handled inside KettleView.
+            KettleBust(pose: pose,
+                       animated: !configuration.isPressed,
+                       frozenAt: configuration.isPressed ? KettleBust.pressedFrame(for: pose) : 0,
                        size: art)
                 .shadow(color: Color.black.opacity(0.55), radius: 2, x: 0, y: 2)
             if pending {

@@ -32,18 +32,38 @@ struct KettleBust: View {
     /// Rendered edge length. MASCOT2.md sets a 64pt floor on live surfaces.
     var size: CGFloat = 64
 
-    /// Design-space window. Holds the whole figure at every loop value.
+    /// Design-space window for flex (and climb/stretch, which sit inside it).
+    /// Holds the whole figure at every loop value.
     static let cropOrigin = CGPoint(x: 2, y: 32)
     static let cropSide: CGFloat = 156
+
+    /// Window per pose. The snowboard tip swings down to y≈205 and the bike
+    /// wheels to y≈197, both past flex's 188 floor, so those two get a taller
+    /// square. A bigger side renders the figure a little smaller in the same
+    /// 64pt slot, which is the trade for not cutting the board off.
+    static func crop(for pose: KettlePose) -> (origin: CGPoint, side: CGFloat) {
+        switch pose {
+        case .snowboard: return (CGPoint(x: -4, y: 33), 172)
+        case .bike:      return (CGPoint(x: -9, y: 33), 166)
+        default:         return (cropOrigin, cropSide)
+        }
+    }
 
     /// Peak of the flex squeeze: flex = 0.5 - 0.5·cos(2π·t/P) reaches 1 at P/2.
     static let peakFlex: TimeInterval = KettlePose.flex.period / 2
 
+    /// Still frame for the pressed state. Flex snaps to the squeeze; the sine
+    /// loops (snowboard's tilt) peak at a quarter period.
+    static func pressedFrame(for pose: KettlePose) -> TimeInterval {
+        pose == .flex ? peakFlex : pose.period / 4
+    }
+
     var body: some View {
-        let unit = size / Self.cropSide
+        let crop = Self.crop(for: pose)
+        let unit = size / crop.side
         KettleView(pose: pose, animated: animated, frozenAt: frozenAt)
             .frame(width: 160 * unit, height: 200 * unit)
-            .offset(x: -Self.cropOrigin.x * unit, y: -Self.cropOrigin.y * unit)
+            .offset(x: -crop.origin.x * unit, y: -crop.origin.y * unit)
             .frame(width: size, height: size, alignment: .topLeading)
             .clipped()
     }
