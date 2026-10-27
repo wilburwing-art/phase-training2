@@ -3873,5 +3873,10 @@
     "exercise_id": 1203,
     "equipment_id": 1,
     "is_required": 1
+  },
+  {
+    "exercise_id": 1204,
+    "equipment_id": 1,
+    "is_required": 1
   }
 ]

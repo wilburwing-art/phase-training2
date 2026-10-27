@@ -8548,5 +8548,15 @@
     "exercise_id": 1203,
     "muscle_group_id": 84,
     "role": "primary"
+  },
+  {
+    "exercise_id": 1204,
+    "muscle_group_id": 50,
+    "role": "primary"
+  },
+  {
+    "exercise_id": 1204,
+    "muscle_group_id": 51,
+    "role": "secondary"
   }
 ]
