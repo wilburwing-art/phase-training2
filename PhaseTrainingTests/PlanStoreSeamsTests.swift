@@ -111,6 +111,29 @@ final class PlanStoreSeamsTests: XCTestCase {
         return e
     }
 
+    // MARK: - Week-tab drag (swap)
+
+    /// The Week tab's drop handler calls `swap`. Dragging a lift day onto the
+    /// rest day after it pins the target as a lift; the next lift day stays
+    /// queue-filled and must not come back as the same session.
+    func test_swap_liftOntoRest_doesNotRepeatASession() throws {
+        var memory = gymMemory()
+        memory.primarySport = Sport.resolve(slug: "alpine-skiing")
+        memory.onboardedAt = monday()
+        let store = makeStore()
+        _ = store.generate(from: memory, today: monday())
+        let days = try XCTUnwrap(store.plan?.days)
+        let liftIdx = try XCTUnwrap(days.firstIndex { $0.kind == .lift })
+        let restIdx = try XCTUnwrap(days.indices.first { $0 > liftIdx && days[$0].kind == .rest })
+
+        store.swap(sourceDate: days[liftIdx].date, targetDate: days[restIdx].date,
+                   memory: memory, today: monday())
+
+        let titles = try XCTUnwrap(store.plan?.days).filter { $0.kind == .lift }.map(\.title)
+        XCTAssertGreaterThan(titles.count, 1)
+        XCTAssertEqual(Set(titles).count, titles.count, "a lift session repeats after the swap: \(titles)")
+    }
+
     // MARK: - makeGeneratorContext (store wiring)
 
     func test_makeGeneratorContext_returnsEmptyWhenSessionStoreAbsent() {

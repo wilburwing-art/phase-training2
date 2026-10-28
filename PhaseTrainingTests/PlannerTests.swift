@@ -662,6 +662,39 @@ final class PlannerTests: XCTestCase {
         XCTAssertEqual(plan.days.first(where: { cal.isDate($0.date, inSameDayAs: thursday) })?.routineId, 1)
     }
 
+    /// Dragging a lift day onto the rest day after it (the Week tab swap) must
+    /// not leave two lift days with the same workout. The moved day is pinned
+    /// as a lift override; every other lift day is generated from the queue.
+    func testSwappedLiftDayDoesNotDuplicateAnotherLiftDay() {
+        var memory = fixtureMemory()
+        memory.experience = .intermediate
+        memory.sessionMinutes = 50
+        memory.liftDaysPerWeek = 3
+        memory.primarySport = Sport.resolve(slug: "alpine-skiing")
+        memory.onboardedAt = mondayAnchor()
+        let cal = Calendar.current
+
+        let baseline = Planner.generate(memory: memory, overrides: nil,
+                                        routines: catalog(), today: mondayAnchor())
+        guard let liftIdx = baseline.days.firstIndex(where: { $0.kind == .lift }),
+              let restIdx = baseline.days.indices.first(where: { $0 > liftIdx && baseline.days[$0].kind == .rest })
+        else { return XCTFail("baseline needs a lift day followed by a rest day") }
+
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.dayOverrides[cal.startOfDay(for: baseline.days[liftIdx].date)] = .rest
+        overrides.dayOverrides[cal.startOfDay(for: baseline.days[restIdx].date)] =
+            DayKindOverride.from(plan: baseline.days[liftIdx])
+
+        let plan = Planner.generate(memory: memory, overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        // The season engine titles each lift "<phase> · Session N" from the
+        // lift's index in the week, so a repeated title is a repeated session.
+        let titles = plan.days.filter { $0.kind == .lift }.map(\.title)
+        XCTAssertGreaterThan(titles.count, 1)
+        XCTAssertEqual(Set(titles).count, titles.count,
+                       "two lift days got the same session: \(titles)")
+    }
+
     // MARK: - Multi-day taper
 
     func testHardRaceTriggersTwoDayTaper() {

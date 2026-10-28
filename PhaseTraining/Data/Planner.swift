@@ -396,26 +396,24 @@ enum Planner {
 
         // Step 3 — apply per-day kind overrides (Move-to-day swaps, force-kind).
         // These are protected so subsequent rules can't undo them.
+        //
+        // A .lift override only reserves its slot here; its workout is built in
+        // step 6, once the whole week's lift days are known, so pinned and
+        // queue-filled lifts share ONE lift index in date order. The season
+        // engine keys the whole session off sessionIndex (= liftIndex), so two
+        // lift days with the same index get the same session. Numbering pinned
+        // days on their own, from 0, made a Week-tab drag (rest becomes a pinned
+        // lift, the next lift stays queue-filled) produce "Session 1" twice.
+        var pinnedLifts: [(idx: Int, date: Date, override: DayKindOverride)] = []
         if let overrides {
-            // Ordinal of each .lift override within the week, so pinned days get
-            // DISTINCT sessions. makeOverrideSlot used to hardcode
-            // liftIndex: 0, totalLifts: 1, and the season engine keys the whole
-            // session off sessionIndex (= liftIndex) — so every user-pinned lift
-            // day, and every day restored by PlanStore.adoptLastWeekShape (which
-            // writes .lift overrides for all prior lift days), produced the
-            // byte-identical workout. Pin Mon/Wed/Fri and you got the same three
-            // exercises three times.
-            let liftOverrideDates: [Date] = dates.enumerated().compactMap { i, date in
-                guard slots[i] == nil,
-                      let ov = overrides.override(on: date, calendar: calendar),
-                      case .lift = ov else { return nil }
-                return date
-            }
             for (i, date) in dates.enumerated() where slots[i] == nil {
                 guard let ov = overrides.override(on: date, calendar: calendar) else { continue }
-                let liftIndex = liftOverrideDates.firstIndex(where: { calendar.isDate($0, inSameDayAs: date) }) ?? 0
-                slots[i] = makeOverrideSlot(date: date, override: ov, memory: memory, routines: routines, recentlyPicked: recentlyPicked, context: context, strategy: strategy,
-                                            liftIndex: liftIndex, totalLifts: max(1, liftOverrideDates.count))
+                if case .lift = ov {
+                    pinnedLifts.append((i, date, ov))
+                    slots[i] = DayPlan(date: date, kind: .lift, title: "", protected: true)
+                } else {
+                    slots[i] = makeOverrideSlot(date: date, override: ov, memory: memory, routines: routines, recentlyPicked: recentlyPicked, context: context, strategy: strategy)
+                }
             }
         }
 
@@ -471,7 +469,16 @@ enum Planner {
         let profile = DemographicProfile.from(memory)
         let totalLifts = pendingKinds.filter { $0.kind == .lift }.count
             + slots.compactMap { $0 }.filter { $0.kind == .lift }.count
-        var liftCursor = 0
+        // One lift index for pinned and queue-filled lift days, in date order.
+        let liftIndexBySlot: [Int: Int] = Dictionary(uniqueKeysWithValues:
+            (pinnedLifts.map(\.idx) + pendingKinds.filter { $0.kind == .lift }.map(\.idx))
+                .sorted()
+                .enumerated()
+                .map { ($1, $0) })
+        for pinned in pinnedLifts {
+            slots[pinned.idx] = makeOverrideSlot(date: pinned.date, override: pinned.override, memory: memory, routines: routines, recentlyPicked: recentlyPicked, context: context, strategy: strategy,
+                                                 liftIndex: liftIndexBySlot[pinned.idx] ?? 0, totalLifts: max(1, totalLifts))
+        }
         for entry in pendingKinds {
             // Sport slots are already placed; a lift slot defers to the sport
             // (lightens) when a sport day sits immediately before or after it.
@@ -487,13 +494,12 @@ enum Planner {
                 recentlyPicked: recentlyPicked,
                 shapeDescription: shape.description,
                 slotOffset: entry.idx,
-                liftIndex: entry.kind == .lift ? liftCursor : 0,
+                liftIndex: liftIndexBySlot[entry.idx] ?? 0,
                 totalLifts: totalLifts,
                 adjacentSportDay: adjacentSport,
                 context: context,
                 strategy: strategy
             )
-            if entry.kind == .lift { liftCursor += 1 }
         }
 
         // Step 6.5 — secondary-sport in-season promotion. For each non-primary
