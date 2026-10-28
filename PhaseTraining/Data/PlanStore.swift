@@ -157,6 +157,9 @@ final class PlanStore: ObservableObject {
     /// Written by `recordSessionPlace`; read only by the DEBUG Signals sheet.
     /// Never part of the coach snapshot.
     @Published var sessionPlaces: [SessionPlacePoint] = []
+    /// The last workout move (Week-tab drag or "Move workout to…"). Drives the
+    /// Week tab's "Re-plan week" banner; not persisted.
+    @Published var lastMove: MoveReceipt?
     /// A4 — where PatternEngine reads browse sessions from. The real database
     /// in the app; an in-memory one under XCTest and Previews
     /// (UserDatabase.defaultStore), and tests may replace it.
@@ -705,6 +708,22 @@ final class PlanStore: ObservableObject {
         updateOverrides(memory: memory, today: today) { o in
             o.dayOverrides[cal.startOfDay(for: sourceDate)] = targetOverride
             o.dayOverrides[cal.startOfDay(for: targetDate)] = sourceOverride
+            // Each side keeps the session it carried; a day that is no longer
+            // a lift drops any index it held.
+            o.setKeptLiftIndex(targetPlan.kind == .lift ? targetPlan.liftIndex : nil, for: sourceDate, calendar: cal)
+            o.setKeptLiftIndex(sourcePlan.kind == .lift ? sourcePlan.liftIndex : nil, for: targetDate, calendar: cal)
+        }
+        lastMove = MoveReceipt(title: sourcePlan.title, from: sourceDate, to: targetDate)
+    }
+
+    /// "Re-plan week" from the move banner: keep the moved days' kinds but let
+    /// the planner choose their sessions again, as a kind-only swap would.
+    func replanAfterMove(memory: TrainingMemory, today: Date = Date()) {
+        guard let move = lastMove else { return }
+        lastMove = nil
+        updateOverrides(memory: memory, today: today) { o in
+            o.setKeptLiftIndex(nil, for: move.from)
+            o.setKeptLiftIndex(nil, for: move.to)
         }
     }
 
@@ -946,4 +965,12 @@ final class PlanStore: ObservableObject {
         guard needsLegacyRegen || needsCalendarWeekRegen else { return }
         generate(from: memory, today: today)
     }
+}
+
+/// One workout move, kept just long enough for the Week tab to offer
+/// "Re-plan week" instead.
+struct MoveReceipt: Equatable {
+    var title: String
+    var from: Date
+    var to: Date
 }

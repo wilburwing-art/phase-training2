@@ -469,22 +469,50 @@ enum Planner {
         let profile = DemographicProfile.from(memory)
         let totalLifts = pendingKinds.filter { $0.kind == .lift }.count
             + slots.compactMap { $0 }.filter { $0.kind == .lift }.count
-        // One lift index for pinned and queue-filled lift days, in date order.
-        let liftIndexBySlot: [Int: Int] = Dictionary(uniqueKeysWithValues:
-            (pinnedLifts.map(\.idx) + pendingKinds.filter { $0.kind == .lift }.map(\.idx))
-                .sorted()
-                .enumerated()
-                .map { ($1, $0) })
+        // One lift index for pinned and queue-filled lift days. A day the user
+        // moved a workout onto keeps that workout's index; every other lift
+        // day takes the remaining indices in date order, so no session repeats.
+        var keptIndexBySlot: [Int: Int] = [:]
         for pinned in pinnedLifts {
-            slots[pinned.idx] = makeOverrideSlot(date: pinned.date, override: pinned.override, memory: memory, routines: routines, recentlyPicked: recentlyPicked, context: context, strategy: strategy,
-                                                 liftIndex: liftIndexBySlot[pinned.idx] ?? 0, totalLifts: max(1, totalLifts))
+            guard let kept = overrides?.keptLiftIndex(on: pinned.date, calendar: calendar),
+                  kept < totalLifts, !keptIndexBySlot.values.contains(kept) else { continue }
+            keptIndexBySlot[pinned.idx] = kept
+        }
+        let freeIndices = (0..<max(totalLifts, 1)).filter { !keptIndexBySlot.values.contains($0) }
+        let unkeptSlots = (pinnedLifts.map(\.idx) + pendingKinds.filter { $0.kind == .lift }.map(\.idx))
+            .filter { keptIndexBySlot[$0] == nil }
+            .sorted()
+        var liftIndexBySlot = keptIndexBySlot
+        for (slot, index) in zip(unkeptSlots, freeIndices) { liftIndexBySlot[slot] = index }
+
+        func isNextToSport(_ idx: Int) -> Bool {
+            (idx > 0 && slots[idx - 1]?.kind == .sport) ||
+            (idx < slots.count - 1 && slots[idx + 1]?.kind == .sport)
+        }
+        for pinned in pinnedLifts {
+            let liftIndex = liftIndexBySlot[pinned.idx] ?? 0
+            if keptIndexBySlot[pinned.idx] != nil {
+                // Built exactly as the queue builds a lift (same seed), so the
+                // moved day reproduces the session it had before the move.
+                var day = makeSlot(date: pinned.date, kind: .lift, memory: memory, profile: profile,
+                                   routines: routines, recentlyPicked: recentlyPicked,
+                                   shapeDescription: shape.description, slotOffset: pinned.idx,
+                                   liftIndex: liftIndex, totalLifts: totalLifts,
+                                   adjacentSportDay: isNextToSport(pinned.idx),
+                                   context: context, strategy: strategy)
+                day.protected = true
+                day.generatedReason = "You moved this workout here"
+                slots[pinned.idx] = day
+            } else {
+                slots[pinned.idx] = makeOverrideSlot(date: pinned.date, override: pinned.override, memory: memory, routines: routines, recentlyPicked: recentlyPicked, context: context, strategy: strategy,
+                                                     liftIndex: liftIndex, totalLifts: max(1, totalLifts))
+            }
+            slots[pinned.idx]?.liftIndex = liftIndex
         }
         for entry in pendingKinds {
             // Sport slots are already placed; a lift slot defers to the sport
             // (lightens) when a sport day sits immediately before or after it.
-            let adjacentSport =
-                (entry.idx > 0 && slots[entry.idx - 1]?.kind == .sport) ||
-                (entry.idx < slots.count - 1 && slots[entry.idx + 1]?.kind == .sport)
+            let adjacentSport = isNextToSport(entry.idx)
             slots[entry.idx] = makeSlot(
                 date: entry.date,
                 kind: entry.kind,
@@ -500,6 +528,7 @@ enum Planner {
                 context: context,
                 strategy: strategy
             )
+            if entry.kind == .lift { slots[entry.idx]?.liftIndex = liftIndexBySlot[entry.idx] }
         }
 
         // Step 6.5 — secondary-sport in-season promotion. For each non-primary

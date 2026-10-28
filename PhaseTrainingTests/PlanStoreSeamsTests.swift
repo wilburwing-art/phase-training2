@@ -134,6 +134,88 @@ final class PlanStoreSeamsTests: XCTestCase {
         XCTAssertEqual(Set(titles).count, titles.count, "a lift session repeats after the swap: \(titles)")
     }
 
+    private func skiMemory() -> TrainingMemory {
+        var memory = gymMemory()
+        memory.primarySport = Sport.resolve(slug: "alpine-skiing")
+        memory.onboardedAt = monday()
+        return memory
+    }
+
+    private func day(_ store: PlanStore, _ date: Date) -> DayPlan? {
+        store.plan?.days.first { Calendar.current.isDate($0.date, inSameDayAs: date) }
+    }
+
+    /// Moving a lift day onto a rest day keeps the session it carried, and it
+    /// survives a later regenerate (a profile edit or a check-in).
+    func test_swap_movedDayKeepsItsSession_andSurvivesRegenerate() throws {
+        let memory = skiMemory()
+        let store = makeStore()
+        _ = store.generate(from: memory, today: monday())
+        let days = try XCTUnwrap(store.plan?.days)
+        // The LAST lift day moved backwards onto a rest day: under date-order
+        // numbering it would become Session 1, so keeping proves the kept index.
+        let liftIdx = try XCTUnwrap(days.lastIndex { $0.kind == .lift })
+        let restIdx = try XCTUnwrap(days.indices.first { $0 < liftIdx && days[$0].kind == .rest })
+        let moved = days[liftIdx]
+        XCTAssertNotNil(moved.liftIndex)
+
+        store.swap(sourceDate: moved.date, targetDate: days[restIdx].date, memory: memory, today: monday())
+
+        let target = try XCTUnwrap(day(store, days[restIdx].date))
+        XCTAssertEqual(target.title, moved.title)
+        XCTAssertEqual(target.liftIndex, moved.liftIndex)
+        // Same session, rebuilt for its new day: the source was trimmed by the
+        // support-sport deconflict pass, which skips a day the user placed, so
+        // the moved copy may carry more than the original but never less.
+        let movedIds = Set(target.generatedWorkout?.exercises.map(\.exerciseId) ?? [])
+        let originalIds = Set(moved.generatedWorkout?.exercises.map(\.exerciseId) ?? [])
+        XCTAssertFalse(originalIds.isEmpty)
+        XCTAssertTrue(originalIds.isSubset(of: movedIds), "original \(originalIds) not all in moved \(movedIds)")
+        let titles = try XCTUnwrap(store.plan?.days).filter { $0.kind == .lift }.map(\.title)
+        XCTAssertEqual(Set(titles).count, titles.count, "a session repeats: \(titles)")
+        XCTAssertEqual(store.lastMove?.to, days[restIdx].date)
+
+        _ = store.generate(from: memory, today: monday())
+        XCTAssertEqual(day(store, days[restIdx].date)?.title, moved.title, "kept session lost on regenerate")
+    }
+
+    /// Lift onto lift: the two sessions trade days.
+    func test_swap_liftOntoLift_tradesSessions() throws {
+        let memory = skiMemory()
+        let store = makeStore()
+        _ = store.generate(from: memory, today: monday())
+        let lifts = try XCTUnwrap(store.plan?.days).filter { $0.kind == .lift }
+        XCTAssertGreaterThanOrEqual(lifts.count, 2)
+        let (a, b) = (lifts[0], lifts[1])
+
+        store.swap(sourceDate: a.date, targetDate: b.date, memory: memory, today: monday())
+
+        XCTAssertEqual(day(store, a.date)?.title, b.title)
+        XCTAssertEqual(day(store, b.date)?.title, a.title)
+    }
+
+    /// "Re-plan week" drops the kept sessions: the week equals a kind-only swap.
+    func test_replanAfterMove_matchesKindOnlySwap() throws {
+        let memory = skiMemory()
+        let store = makeStore()
+        _ = store.generate(from: memory, today: monday())
+        let days = try XCTUnwrap(store.plan?.days)
+        let liftIdx = try XCTUnwrap(days.lastIndex { $0.kind == .lift })
+        let restIdx = try XCTUnwrap(days.indices.first { $0 < liftIdx && days[$0].kind == .rest })
+        store.swap(sourceDate: days[liftIdx].date, targetDate: days[restIdx].date, memory: memory, today: monday())
+
+        store.replanAfterMove(memory: memory, today: monday())
+        XCTAssertNil(store.lastMove)
+        XCTAssertNil(store.overrides.keptLiftIndexByDate)
+
+        let kindOnly = makeStore(tag: "kind-only")
+        _ = kindOnly.generate(from: memory, today: monday())
+        kindOnly.updateOverrides(memory: memory, today: monday()) { o in
+            o.dayOverrides = store.overrides.dayOverrides
+        }
+        XCTAssertEqual(store.plan?.days.map(\.title), kindOnly.plan?.days.map(\.title))
+    }
+
     // MARK: - makeGeneratorContext (store wiring)
 
     func test_makeGeneratorContext_returnsEmptyWhenSessionStoreAbsent() {

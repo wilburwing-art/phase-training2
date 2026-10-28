@@ -82,6 +82,10 @@ struct DayPlan: Codable, Identifiable, Hashable {
     var durationMinutes: Int?
     /// Human-readable rule trace ("4-day plan, day 2 → strength").
     var generatedReason: String?
+    /// The lift index the generator built this day from (the season engine's
+    /// session number, or the push/pull/legs slot). Moving the day keeps it.
+    /// nil for non-lift days and for plans saved before it existed.
+    var liftIndex: Int?
 }
 
 // MARK: - GeneratedWorkout

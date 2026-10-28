@@ -266,6 +266,12 @@ struct WeekOverrides: Codable {
     /// non-optional field missing from an old payload throws keyNotFound and
     /// nukes the whole week's overrides via the try? decode in PlanStore.
     var displacedPlanByDate: [Date: DisplacedPlan]?
+    /// The lift index a moved workout keeps on its new day (Week-tab drag or
+    /// "Move workout to…"). Date (startOfDay) → DayPlan.liftIndex. Stored as
+    /// intent so the moved session survives every later generate(); the
+    /// Planner hands the remaining indices to the other lift days.
+    /// MUST stay Optional (weekTone pattern), see displacedPlanByDate.
+    var keptLiftIndexByDate: [Date: Int]?
 
     init(weekStart: Date) {
         self.weekStart = weekStart
@@ -321,6 +327,27 @@ extension WeekOverrides {
         prescriptionRefreshByDate = map.isEmpty ? nil : map
     }
 
+    /// Lift index a moved workout keeps on `date`, if any.
+    func keptLiftIndex(on date: Date, calendar: Calendar = .current) -> Int? {
+        for (k, v) in keptLiftIndexByDate ?? [:] where calendar.isDate(k, inSameDayAs: date) {
+            return v
+        }
+        return nil
+    }
+
+    /// Set (or clear, with nil) the kept lift index for `date`.
+    /// Same-day keys are removed first so time-of-day never duplicates.
+    mutating func setKeptLiftIndex(_ index: Int?, for date: Date, calendar: Calendar = .current) {
+        var map = keptLiftIndexByDate ?? [:]
+        for k in map.keys where calendar.isDate(k, inSameDayAs: date) {
+            map.removeValue(forKey: k)
+        }
+        if let index {
+            map[calendar.startOfDay(for: date)] = index
+        }
+        keptLiftIndexByDate = map.isEmpty ? nil : map
+    }
+
     /// All events landing on `date`. Usually 0 or 1; planner defends against >1
     /// by taking the first.
     func events(on date: Date, calendar: Calendar = .current) -> [WeekEvent] {
@@ -347,6 +374,7 @@ extension WeekOverrides {
         // A prescription refresh is meaningless without its custom override —
         // it clears with the day.
         setPrescriptionRefresh(nil, for: date, calendar: calendar)
+        setKeptLiftIndex(nil, for: date, calendar: calendar)
     }
 }
 

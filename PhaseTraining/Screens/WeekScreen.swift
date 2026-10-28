@@ -161,6 +161,24 @@ struct WeekScreen: View {
                 .accessibilityIdentifier("plan-validation-banner")
             }
 
+            if let move = planStore.lastMove {
+                MoveBanner(
+                    move: move,
+                    onReplan: { planStore.replanAfterMove(memory: memory.memory) },
+                    onDismiss: { planStore.lastMove = nil }
+                )
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+                .transition(.opacity)
+                // Dismisses itself; a newer move restarts the timer.
+                .task(id: move) {
+                    try? await Task.sleep(for: .seconds(6))
+                    if planStore.lastMove == move {
+                        withAnimation(.easeInOut(duration: 0.2)) { planStore.lastMove = nil }
+                    }
+                }
+            }
+
             GeometryReader { geo in
                 let spacing: CGFloat = 6
                 let rowH = max(48, (geo.size.height - spacing * 6) / 7)
@@ -279,6 +297,53 @@ struct WeekScreen: View {
 
 /// DateFormatter is expensive to allocate; these run per row render and per
 /// drag payload, so cache one instance per distinct format.
+// MARK: - MoveBanner
+
+/// Shown after a workout move. The move already kept the workout; this offers
+/// the other answer ("Re-plan week") without asking on every drop.
+private struct MoveBanner: View {
+    let move: MoveReceipt
+    let onReplan: () -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Button(action: onDismiss) {
+                Text("Moved \(move.title) to \(WeekDateFormatters.weekdayShort.string(from: move.to))")
+                    .styled(.monoXS)
+                    .foregroundStyle(Color.ink)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("move-banner-dismiss")
+
+            Button(action: onReplan) {
+                Text("Re-plan week")
+                    .styled(.monoXS)
+                    .foregroundStyle(Color.accentInk)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("move-banner-replan")
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(Color.surface)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(Color.line, lineWidth: 0.5)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        // No identifier on this container: it would replace the two buttons'
+        // own ids in the accessibility tree (xcuitest-swiftui-gotchas #1).
+    }
+}
+
 private enum WeekDateFormatters {
     /// ISO yyyy-MM-dd — sheet identity + drag payload encoding.
     static let isoDay: DateFormatter = DayKeyFormatter.iso

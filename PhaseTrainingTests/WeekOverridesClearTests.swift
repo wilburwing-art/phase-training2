@@ -307,4 +307,35 @@ final class WeekOverridesClearTests: XCTestCase {
         XCTAssertEqual(decoded.customRoutineId(for: day(1)), "tue-routine",
                        "the rest of the payload decodes unchanged")
     }
+
+    /// keptLiftIndexByDate follows the same Optional rule: an old payload
+    /// without the key decodes, and the rest of the week survives.
+    func test_decodesLegacyPayloadWithoutKeptLiftIndexKey() throws {
+        var o = freshOverrides()
+        o.customRoutineByDate = [day(1): "tue-routine"]
+        o.setKeptLiftIndex(2, for: day(3))
+
+        let enc = JSONEncoder()
+        enc.dateEncodingStrategy = .secondsSince1970
+        var json = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: try enc.encode(o)) as? [String: Any])
+        json.removeValue(forKey: "keptLiftIndexByDate")
+        let legacy = try JSONSerialization.data(withJSONObject: json)
+
+        let dec = JSONDecoder()
+        dec.dateDecodingStrategy = .secondsSince1970
+        let decoded = try dec.decode(WeekOverrides.self, from: legacy)
+
+        XCTAssertNil(decoded.keptLiftIndexByDate)
+        XCTAssertEqual(decoded.customRoutineId(for: day(1)), "tue-routine")
+    }
+
+    func test_clearDate_dropsKeptLiftIndex() {
+        var o = freshOverrides()
+        o.setKeptLiftIndex(1, for: day(2))
+        o.setKeptLiftIndex(0, for: day(4))
+        o.clearDate(day(2))
+        XCTAssertNil(o.keptLiftIndex(on: day(2)))
+        XCTAssertEqual(o.keptLiftIndex(on: day(4)), 0)
+    }
 }
