@@ -548,7 +548,6 @@ final class PlanStore: ObservableObject {
         var after = diff.after
         if let memory = memoryStore?.memory {
             let beforeById = Dictionary(uniqueKeysWithValues: diff.before.days.map { ($0.id, $0) })
-            var pickedIds: [Int] = []
             for idx in after.days.indices {
                 let day = after.days[idx]
                 guard let prior = beforeById[day.id], prior.kind != day.kind else { continue }
@@ -559,13 +558,11 @@ final class PlanStore: ObservableObject {
                         after.days[idx].title = workout.title
                         after.days[idx].routineId = nil
                         after.days[idx].generatedReason = workout.provenance
-                        pickedIds.append(contentsOf: workout.exercises.map(\.exerciseId))
                     }
                 case .rest, .sport, .event:
                     after.days[idx].generatedWorkout = nil
                 }
             }
-            if !pickedIds.isEmpty { recentPicks?.record(exerciseIds: pickedIds) }
         }
 
         if let data = try? Self.encoder().encode(after) {
@@ -831,7 +828,6 @@ final class PlanStore: ObservableObject {
         // days are still stale and the drift banner must keep firing.
         self.plan = plan
         savePlan()
-        recentPicks?.record(exerciseIds: workout.exercises.map(\.exerciseId))
     }
 
     /// Regenerate the full week against current memory. Convenience alias for
@@ -900,7 +896,6 @@ final class PlanStore: ObservableObject {
         let profile = DemographicProfile.from(memory)
         let recentIds = recentPicks?.recentlyPickedIds() ?? []
         let context = buildGeneratorContext(memory: memory, today: today)
-        var pickedIds: [Int] = []
 
         // First `target` future lift days take the (merged) consolidated workouts.
         for (i, cday) in consolidated.enumerated() {
@@ -914,7 +909,6 @@ final class PlanStore: ObservableObject {
             plan.days[dayIdx].title = workout.title
             plan.days[dayIdx].routineId = nil
             plan.days[dayIdx].generatedReason = workout.provenance
-            pickedIds.append(contentsOf: workout.exercises.map(\.exerciseId))
         }
         // Surplus future lift day(s) → rest.
         for j in target..<futureLiftIdx.count {
@@ -928,7 +922,6 @@ final class PlanStore: ObservableObject {
 
         self.plan = plan
         savePlan()
-        if !pickedIds.isEmpty { recentPicks?.record(exerciseIds: pickedIds) }
         midWeekConsolidationCount += 1
         saveConsolidationCount(now: today)
         return nil
@@ -1034,4 +1027,7 @@ struct MoveReceipt: Equatable {
     var title: String
     var from: Date
     var to: Date
+    /// Set when the move came from an off-plan session that covered the
+    /// `to` day's workout (`takeOverCoveredDay`): that workout's title.
+    var coveredTitle: String? = nil
 }

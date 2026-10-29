@@ -306,10 +306,18 @@ private struct MoveBanner: View {
     let onReplan: () -> Void
     let onDismiss: () -> Void
 
+    private var message: String {
+        let to = WeekDateFormatters.weekdayShort.string(from: move.to)
+        if let covered = move.coveredTitle {
+            return "Your log covered \(to)'s \(covered). \(move.title) moved to \(to)"
+        }
+        return "Moved \(move.title) to \(to)"
+    }
+
     var body: some View {
         HStack(spacing: 10) {
             Button(action: onDismiss) {
-                Text("Moved \(move.title) to \(WeekDateFormatters.weekdayShort.string(from: move.to))")
+                Text(message)
                     .styled(.monoXS)
                     .foregroundStyle(Color.ink)
                     .lineLimit(1)

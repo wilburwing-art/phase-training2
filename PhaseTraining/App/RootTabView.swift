@@ -125,9 +125,12 @@ struct RootTabView: View {
             // A2 — planned-vs-actual outcome for every saved session.
             sessionStore.onSessionSaved = { [weak planStore] saved, abandoned in
                 planStore?.recordOutcome(for: saved, abandoned: abandoned)
-                // Muscles this session loaded may now be too fatigued for a
-                // later day's plan: rebuild the days that changed.
+                // Rotation follows what was logged; an off-plan session takes
+                // over the later day it covered; then muscles it loaded may
+                // be too fatigued for another day's plan, so those rebuild.
+                planStore?.recordLoggedPicks(saved)
                 if let planStore, let memory = planStore.memoryStore?.memory {
+                    planStore.takeOverCoveredDay(for: saved, abandoned: abandoned, memory: memory)
                     planStore.applyRecovery(memory: memory)
                 }
                 // Build 146: the session goes to Apple Health once, from the

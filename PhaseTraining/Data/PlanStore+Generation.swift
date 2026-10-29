@@ -77,7 +77,6 @@ extension PlanStore {
         let pWithCustoms = applyCustomRoutineOverrides(to: p, memory: memory, context: context)
         self.plan = pWithCustoms
         savePlan()
-        recordPickedExercises(in: pWithCustoms)
         // PR 4: snapshot every generated plan into history (idempotent by
         // weekStart — a same-week regen replaces the prior entry).
         snapshotCurrentPlan(now: today)
@@ -248,17 +247,6 @@ extension PlanStore {
                               includeParkedSignals: Bool = false) -> GeneratorContext {
         buildGeneratorContext(memory: memory, today: today,
                               includeParkedSignals: includeParkedSignals)
-    }
-
-    /// Stamp every exercise the generator just picked into the variety
-    /// memory so the next regen avoids them.
-    private func recordPickedExercises(in plan: WeekPlan) {
-        guard let recentPicks else { return }
-        let ids = plan.days
-            .compactMap(\.generatedWorkout)
-            .flatMap(\.exercises)
-            .map(\.exerciseId)
-        recentPicks.record(exerciseIds: ids)
     }
 
     /// Replace the current plan wholesale. Onboarding used to call this when
