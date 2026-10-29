@@ -519,7 +519,7 @@ final class SeasonFidelityTest: XCTestCase {
             let plan = Planner.generate(memory: m, routines: [])
             let liftDays = plan.days.filter { $0.kind == .lift }
             XCTAssertFalse(liftDays.isEmpty, "[\(f.slug)] no lift days generated")
-            for d in liftDays {
+            for d in liftDays where !d.isComplementSession {
                 let w = d.generatedWorkout
                 XCTAssertNotNil(w, "[\(f.slug)] lift day missing workout")
                 // Season-engine provenance carries the slot demands; legacy doesn't.
@@ -543,7 +543,7 @@ final class SeasonFidelityTest: XCTestCase {
         let plan = Planner.generate(memory: m, routines: [])
         let liftDays = plan.days.filter { $0.kind == .lift }
         XCTAssertFalse(liftDays.isEmpty, "[\(climbing.slug)] no lift days generated")
-        for d in liftDays {
+        for d in liftDays where !d.isComplementSession {
             let w = d.generatedWorkout
             XCTAssertTrue(w?.provenance.contains("Authored") ?? false,
                 "[\(climbing.slug)] pilot lift day should be authored: \(w?.provenance ?? "nil")")

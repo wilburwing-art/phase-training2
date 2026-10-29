@@ -48,6 +48,21 @@ struct PhaseRule: Equatable {
             sessionMinutesTarget: sessionMinutesTarget)
     }
 
+    /// This phase's rule for a complement session (SessionMix): same
+    /// progression, volume cap and length, the focus's demand mix, and no
+    /// deferring to sport days, since a complement day loads what the sport
+    /// does not.
+    func complement(_ focus: ComplementFocus) -> PhaseRule {
+        PhaseRule(
+            objective: "Complement: \(focus.title.lowercased())",
+            sessionsPerWeek: sessionsPerWeek,
+            demandWeights: focus.demandWeights,
+            progression: progression,
+            sessionVolumeCap: sessionVolumeCap,
+            deferToSport: false,
+            sessionMinutesTarget: sessionMinutesTarget)
+    }
+
     /// Resolve the rule for an athlete. Skiing + climbing are implemented;
     /// other sports fall back to the low-fatigue transition rule.
     static func resolve(sportSlug: String, variant: SportVariant, season: SeasonPhase) -> PhaseRule {

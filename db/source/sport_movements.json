@@ -1761,5 +1761,1617 @@
     "protocol_sets": null,
     "protocol_reps": null,
     "protocol_rest_seconds": null
+  },
+  {
+    "id": 80,
+    "sport": "general-fitness",
+    "exercise_id": 13,
+    "name": "Push-Up",
+    "slug": "gen-push-up",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 81,
+    "sport": "general-fitness",
+    "exercise_id": 1061,
+    "name": "Push Up (Knees)",
+    "slug": "gen-push-up-knees",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 82,
+    "sport": "general-fitness",
+    "exercise_id": 1003,
+    "name": "Chest Press (Band)",
+    "slug": "gen-chest-press-band",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 83,
+    "sport": "general-fitness",
+    "exercise_id": 18,
+    "name": "Close-Grip Push-Up",
+    "slug": "gen-close-grip-push-up",
+    "demands": [
+      "upperPush",
+      "arms"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 84,
+    "sport": "general-fitness",
+    "exercise_id": 20,
+    "name": "Pike Push-Up",
+    "slug": "gen-pike-push-up",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 85,
+    "sport": "general-fitness",
+    "exercise_id": 313,
+    "name": "Dumbbell Floor Press",
+    "slug": "gen-dumbbell-floor-press",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 86,
+    "sport": "general-fitness",
+    "exercise_id": 14,
+    "name": "Dumbbell Bench Press",
+    "slug": "gen-dumbbell-bench-press",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 87,
+    "sport": "general-fitness",
+    "exercise_id": 907,
+    "name": "Incline Dumbbell Bench Press",
+    "slug": "gen-incline-dumbbell-bench-press",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 88,
+    "sport": "general-fitness",
+    "exercise_id": 15,
+    "name": "Dumbbell Overhead Press",
+    "slug": "gen-dumbbell-overhead-press",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 89,
+    "sport": "general-fitness",
+    "exercise_id": 908,
+    "name": "Seated Dumbbell Press",
+    "slug": "gen-seated-dumbbell-press",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 90,
+    "sport": "general-fitness",
+    "exercise_id": 19,
+    "name": "Landmine Press",
+    "slug": "gen-landmine-press",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 91,
+    "sport": "general-fitness",
+    "exercise_id": 1113,
+    "name": "Machine Chest Press",
+    "slug": "gen-machine-chest-press",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 92,
+    "sport": "general-fitness",
+    "exercise_id": 1075,
+    "name": "Shoulder Press (Machine)",
+    "slug": "gen-shoulder-press-machine",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 93,
+    "sport": "general-fitness",
+    "exercise_id": 900,
+    "name": "Barbell Bench Press",
+    "slug": "gen-barbell-bench-press",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 4,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 94,
+    "sport": "general-fitness",
+    "exercise_id": 901,
+    "name": "Incline Barbell Bench Press",
+    "slug": "gen-incline-barbell-bench-press",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 4,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 95,
+    "sport": "general-fitness",
+    "exercise_id": 904,
+    "name": "Barbell Overhead Press (Strict)",
+    "slug": "gen-barbell-overhead-press-strict",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 4,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 96,
+    "sport": "general-fitness",
+    "exercise_id": 998,
+    "name": "Chest Dip",
+    "slug": "gen-chest-dip",
+    "demands": [
+      "upperPush",
+      "arms"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": "intermediate",
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 97,
+    "sport": "general-fitness",
+    "exercise_id": 546,
+    "name": "Dumbbell Lateral Raise",
+    "slug": "gen-dumbbell-lateral-raise",
+    "demands": [
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 98,
+    "sport": "general-fitness",
+    "exercise_id": 922,
+    "name": "Pull-Up",
+    "slug": "gen-pull-up",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": "intermediate",
+    "fatigue_cost": 4,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 99,
+    "sport": "general-fitness",
+    "exercise_id": 923,
+    "name": "Chin-Up",
+    "slug": "gen-chin-up",
+    "demands": [
+      "upperPull",
+      "arms"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": "intermediate",
+    "fatigue_cost": 4,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 100,
+    "sport": "general-fitness",
+    "exercise_id": 924,
+    "name": "Neutral-Grip Pull-Up",
+    "slug": "gen-neutral-grip-pull-up",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": "intermediate",
+    "fatigue_cost": 4,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 101,
+    "sport": "general-fitness",
+    "exercise_id": 499,
+    "name": "Body Row (Rings or Bar)",
+    "slug": "gen-body-row-rings-or-bar",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 102,
+    "sport": "general-fitness",
+    "exercise_id": 135,
+    "name": "Inverted Row",
+    "slug": "gen-inverted-row",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 103,
+    "sport": "general-fitness",
+    "exercise_id": 1185,
+    "name": "Towel Door Row",
+    "slug": "gen-towel-door-row",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 104,
+    "sport": "general-fitness",
+    "exercise_id": 10,
+    "name": "Dumbbell Single-Arm Row",
+    "slug": "gen-dumbbell-single-arm-row",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 105,
+    "sport": "general-fitness",
+    "exercise_id": 372,
+    "name": "Chest-Supported Dumbbell Row",
+    "slug": "gen-chest-supported-dumbbell-row",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 106,
+    "sport": "general-fitness",
+    "exercise_id": 8,
+    "name": "Barbell Bent-Over Row",
+    "slug": "gen-barbell-bent-over-row",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 4,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 107,
+    "sport": "general-fitness",
+    "exercise_id": 9,
+    "name": "Seated Cable Row",
+    "slug": "gen-seated-cable-row",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 108,
+    "sport": "general-fitness",
+    "exercise_id": 1045,
+    "name": "Lat Pulldown (Cable)",
+    "slug": "gen-lat-pulldown-cable",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 109,
+    "sport": "general-fitness",
+    "exercise_id": 1039,
+    "name": "Kneeling Pulldown (Band)",
+    "slug": "gen-kneeling-pulldown-band",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 110,
+    "sport": "general-fitness",
+    "exercise_id": 1043,
+    "name": "Landmine Row",
+    "slug": "gen-landmine-row",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 111,
+    "sport": "general-fitness",
+    "exercise_id": 1125,
+    "name": "Kettlebell Single-Arm Row",
+    "slug": "gen-kettlebell-single-arm-row",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 112,
+    "sport": "general-fitness",
+    "exercise_id": 452,
+    "name": "Dumbbell Reverse Fly",
+    "slug": "gen-dumbbell-reverse-fly",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 113,
+    "sport": "general-fitness",
+    "exercise_id": 24,
+    "name": "Face Pull (Cable or Band)",
+    "slug": "gen-face-pull-cable-or-band",
+    "demands": [
+      "upperPull"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 114,
+    "sport": "general-fitness",
+    "exercise_id": 948,
+    "name": "Dumbbell Curl",
+    "slug": "gen-dumbbell-curl",
+    "demands": [
+      "arms"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 115,
+    "sport": "general-fitness",
+    "exercise_id": 950,
+    "name": "Hammer Curl",
+    "slug": "gen-hammer-curl",
+    "demands": [
+      "arms"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 116,
+    "sport": "general-fitness",
+    "exercise_id": 946,
+    "name": "Barbell Curl",
+    "slug": "gen-barbell-curl",
+    "demands": [
+      "arms"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 117,
+    "sport": "general-fitness",
+    "exercise_id": 952,
+    "name": "Cable Curl",
+    "slug": "gen-cable-curl",
+    "demands": [
+      "arms"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 118,
+    "sport": "general-fitness",
+    "exercise_id": 1103,
+    "name": "Triceps Extension",
+    "slug": "gen-triceps-extension",
+    "demands": [
+      "arms"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 119,
+    "sport": "general-fitness",
+    "exercise_id": 23,
+    "name": "Triceps Extension (Dumbbell, Overhead)",
+    "slug": "gen-triceps-extension-dumbbell-overhead",
+    "demands": [
+      "arms"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 120,
+    "sport": "general-fitness",
+    "exercise_id": 953,
+    "name": "Tricep Pushdown",
+    "slug": "gen-tricep-pushdown",
+    "demands": [
+      "arms"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 121,
+    "sport": "general-fitness",
+    "exercise_id": 1142,
+    "name": "Band Tricep Pushdown",
+    "slug": "gen-band-tricep-pushdown",
+    "demands": [
+      "arms"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 122,
+    "sport": "general-fitness",
+    "exercise_id": 957,
+    "name": "Diamond Push-Up",
+    "slug": "gen-diamond-push-up",
+    "demands": [
+      "arms",
+      "upperPush"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 123,
+    "sport": "general-fitness",
+    "exercise_id": 987,
+    "name": "Bench Dip",
+    "slug": "gen-bench-dip",
+    "demands": [
+      "arms"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 124,
+    "sport": "general-fitness",
+    "exercise_id": 544,
+    "name": "Skull Crusher (Lying Triceps Extension)",
+    "slug": "gen-skull-crusher-lying-triceps-extension",
+    "demands": [
+      "arms"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 125,
+    "sport": "general-fitness",
+    "exercise_id": 974,
+    "name": "Front Plank",
+    "slug": "gen-front-plank",
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 126,
+    "sport": "general-fitness",
+    "exercise_id": 132,
+    "name": "Side Plank",
+    "slug": "gen-side-plank",
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 127,
+    "sport": "general-fitness",
+    "exercise_id": 1205,
+    "name": "Dead Bug",
+    "slug": "gen-dead-bug",
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 128,
+    "sport": "general-fitness",
+    "exercise_id": 7,
+    "name": "Ab Wheel Rollout",
+    "slug": "gen-ab-wheel-rollout",
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": "intermediate",
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 129,
+    "sport": "general-fitness",
+    "exercise_id": 63,
+    "name": "Pallof Press",
+    "slug": "gen-pallof-press",
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 130,
+    "sport": "general-fitness",
+    "exercise_id": 115,
+    "name": "Cable Wood Chop (High-to-Low)",
+    "slug": "gen-cable-wood-chop-high-to-low",
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 131,
+    "sport": "general-fitness",
+    "exercise_id": 975,
+    "name": "Reverse Crunch",
+    "slug": "gen-reverse-crunch",
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 132,
+    "sport": "general-fitness",
+    "exercise_id": 973,
+    "name": "Cable Crunch",
+    "slug": "gen-cable-crunch",
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 133,
+    "sport": "general-fitness",
+    "exercise_id": 970,
+    "name": "Russian Twist",
+    "slug": "gen-russian-twist",
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 134,
+    "sport": "general-fitness",
+    "exercise_id": 310,
+    "name": "Landmine Rotation",
+    "slug": "gen-landmine-rotation",
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 135,
+    "sport": "general-fitness",
+    "exercise_id": 377,
+    "name": "Dragon Flag (Tuck)",
+    "slug": "gen-dragon-flag-tuck",
+    "demands": [
+      "core"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": "advanced",
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 136,
+    "sport": "general-fitness",
+    "exercise_id": 1088,
+    "name": "Squat (Bodyweight)",
+    "slug": "gen-squat-bodyweight",
+    "demands": [
+      "legStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 137,
+    "sport": "general-fitness",
+    "exercise_id": 1051,
+    "name": "Lunge (Bodyweight)",
+    "slug": "gen-lunge-bodyweight",
+    "demands": [
+      "legStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 138,
+    "sport": "general-fitness",
+    "exercise_id": 1020,
+    "name": "Glute Bridge",
+    "slug": "gen-glute-bridge",
+    "demands": [
+      "legStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 1,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 139,
+    "sport": "general-fitness",
+    "exercise_id": 60,
+    "name": "Goblet Squat",
+    "slug": "gen-goblet-squat",
+    "demands": [
+      "legStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 140,
+    "sport": "general-fitness",
+    "exercise_id": 62,
+    "name": "Bulgarian Split Squat",
+    "slug": "gen-bulgarian-split-squat",
+    "demands": [
+      "legStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 141,
+    "sport": "general-fitness",
+    "exercise_id": 1165,
+    "name": "Dumbbell Reverse Lunge",
+    "slug": "gen-dumbbell-reverse-lunge",
+    "demands": [
+      "legStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 142,
+    "sport": "general-fitness",
+    "exercise_id": 1171,
+    "name": "Dumbbell Romanian Deadlift",
+    "slug": "gen-dumbbell-romanian-deadlift",
+    "demands": [
+      "legStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 143,
+    "sport": "general-fitness",
+    "exercise_id": 108,
+    "name": "Single-Leg Romanian Deadlift",
+    "slug": "gen-single-leg-romanian-deadlift",
+    "demands": [
+      "legStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 2,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 144,
+    "sport": "general-fitness",
+    "exercise_id": 101,
+    "name": "Barbell Hip Thrust",
+    "slug": "gen-barbell-hip-thrust",
+    "demands": [
+      "legStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 145,
+    "sport": "general-fitness",
+    "exercise_id": 57,
+    "name": "Barbell Back Squat",
+    "slug": "gen-barbell-back-squat",
+    "demands": [
+      "legStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 4,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
+  },
+  {
+    "id": 146,
+    "sport": "general-fitness",
+    "exercise_id": 932,
+    "name": "Hack Squat (Machine)",
+    "slug": "gen-hack-squat-machine",
+    "demands": [
+      "legStrength"
+    ],
+    "allowed_phases": [
+      "off_season",
+      "pre_season",
+      "in_season",
+      "event_prep",
+      "maintenance"
+    ],
+    "allowed_variants": null,
+    "min_experience": null,
+    "fatigue_cost": 3,
+    "injury_caution": null,
+    "protocol_sets": null,
+    "protocol_reps": null,
+    "protocol_rest_seconds": null
   }
 ]

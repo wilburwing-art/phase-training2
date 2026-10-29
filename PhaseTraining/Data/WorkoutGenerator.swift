@@ -57,6 +57,32 @@ enum WorkoutGenerator {
         adjacentSportDay: Bool = false,
         date: Date? = nil
     ) -> GeneratedWorkout {
+        func athlete() -> AthleteState {
+            AthleteState.from(
+                memory,
+                variant: SportSeasonGenerator.defaultVariant(forSport: memory.primarySport?.slug),
+                weekNumber: memory.weeksInCurrentPhase ?? 1,
+                recentMovementIDs: recentlyPicked,
+                readiness: context.hasReadinessData ? context.readinessScore : nil,
+                soreness: date.map { Planner.soreness(for: $0, memory: memory) } ?? ([], []))
+        }
+        // Sport session or complement session (SessionMix). Only the sport
+        // sessions go to the authored routines and the sport's own engine
+        // rules; they are numbered among themselves.
+        let role = SessionMix.role(liftIndex: liftIndex, totalLifts: totalLifts,
+                                   phase: memory.seasonForPlanner,
+                                   family: SessionMix.family(forSport: memory.primarySport?.slug))
+        var sportIndex = liftIndex, sportSessions = max(1, totalLifts)
+        switch role {
+        case .complement(let slot) where memory.primarySport != nil:
+            return SportSeasonGenerator.generateSession(
+                athlete(), sessionIndex: 0, strategy: strategy, complement: slot)
+        case .sport(let index, let of):
+            sportIndex = index
+            sportSessions = of
+        case .complement:
+            break
+        }
         // Phase 2 — authored program spines. If a curated coach.db routine
         // exists for this (sport, phase, session slot), serve it verbatim with
         // per-user weight recs instead of generating. Placed BEFORE the
@@ -66,7 +92,7 @@ enum WorkoutGenerator {
         if let sport = memory.primarySport {
             let season = memory.seasonsBySport[sport] ?? memory.defaultSeason
             if let routineId = AuthoredRoutineSelector.select(
-                    sportSlug: sport.slug, phase: season, sessionIndex: liftIndex,
+                    sportSlug: sport.slug, phase: season, sessionIndex: sportIndex,
                     excludedExerciseIds: profile.excludedExerciseIds,
                     allowedEquipmentSlugs: profile.allowedEquipmentSlugs),
                let authored = AuthoredRoutine.workout(
@@ -109,16 +135,9 @@ enum WorkoutGenerator {
                 provenance: "no-supported-sport",
                 focus: WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts))
         }
-        let athlete = AthleteState.from(
-            memory,
-            variant: SportSeasonGenerator.defaultVariant(forSport: memory.primarySport?.slug),
-            weekNumber: memory.weeksInCurrentPhase ?? 1,
-            recentMovementIDs: recentlyPicked,
-            readiness: context.hasReadinessData ? context.readinessScore : nil,
-            soreness: date.map { Planner.soreness(for: $0, memory: memory) } ?? ([], []))
         return SportSeasonGenerator.generateSession(
-            athlete, sessionIndex: liftIndex, adjacentSportDay: adjacentSportDay,
-            sessionsInWeek: max(1, totalLifts), strategy: strategy)
+            athlete(), sessionIndex: sportIndex, adjacentSportDay: adjacentSportDay,
+            sessionsInWeek: sportSessions, strategy: strategy)
     }
 
     /// Generate a workout for a consolidated (merged) day. The season engine has

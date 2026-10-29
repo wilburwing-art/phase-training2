@@ -71,6 +71,20 @@ enum DemandScheme {
         .antagonist: SetScheme(
             setsLow: 2, setsHigh: 3, repsLow: 10, repsHigh: 15,
             intensityRPELow: 6, intensityRPEHigh: 7, restSeconds: 60, fatigueCost: 2),
+
+        // complement sessions: general strength, moderate reps
+        .upperPush: SetScheme(
+            setsLow: 3, setsHigh: 4, repsLow: 6, repsHigh: 10,
+            intensityRPELow: 7, intensityRPEHigh: 8, restSeconds: 120, fatigueCost: 3),
+        .upperPull: SetScheme(
+            setsLow: 3, setsHigh: 4, repsLow: 6, repsHigh: 10,
+            intensityRPELow: 7, intensityRPEHigh: 8, restSeconds: 120, fatigueCost: 3),
+        .arms: SetScheme(
+            setsLow: 2, setsHigh: 3, repsLow: 10, repsHigh: 15,
+            intensityRPELow: 7, intensityRPEHigh: 8, restSeconds: 60, fatigueCost: 1),
+        .legStrength: SetScheme(
+            setsLow: 3, setsHigh: 4, repsLow: 6, repsHigh: 10,
+            intensityRPELow: 7, intensityRPEHigh: 8, restSeconds: 120, fatigueCost: 3),
     ]
 
     /// Safe default for any demand without an explicit band — keeps the

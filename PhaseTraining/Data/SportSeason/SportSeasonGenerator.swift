@@ -52,14 +52,22 @@ enum SportSeasonGenerator {
                                 sessionIndex: Int,
                                 adjacentSportDay: Bool = false,
                                 sessionsInWeek: Int = 1,
-                                strategy: GeneratorStrategy = .auto) -> GeneratedWorkout {
-        let rule = deloadAware(
-            PhaseRule.resolve(sportSlug: athlete.sportSlug,
-                              variant: athlete.variant, season: athlete.season),
-            athlete: athlete)
+                                strategy: GeneratorStrategy = .auto,
+                                complement: ComplementSlot? = nil) -> GeneratedWorkout {
+        // A complement session (SessionMix) keeps the phase's progression,
+        // volume cap and length, swaps in its focus's demand mix, and draws
+        // from the general-fitness pool instead of the sport's.
+        let phaseRule = PhaseRule.resolve(sportSlug: athlete.sportSlug,
+                                          variant: athlete.variant, season: athlete.season)
+        let rule = deloadAware(complement.map { phaseRule.complement($0.focus) } ?? phaseRule,
+                               athlete: athlete)
+        let signature = complement == nil ? signatureDemand(athlete.sportSlug) : nil
+        let sessionIndex = complement == nil ? sessionIndex : 0
+        let sessionsInWeek = complement == nil ? sessionsInWeek : 1
         // Pool first: redistribution needs to know which demands this sport can
         // actually serve.
-        let pool = filteredPool(athlete, phase: athlete.season)
+        let pool = filteredPool(athlete, phase: athlete.season,
+                                poolSport: complement == nil ? nil : complementPoolSlug)
         // Movements whose primary muscle the athlete reported sore for this
         // date. Resolved once per session: the lookup goes through coach.db.
         let soreIds = movementIds(in: pool, loading: athlete.soreBuckets)
@@ -68,13 +76,14 @@ enum SportSeasonGenerator {
                                                 flagged: athlete.flaggedDemands,
                                                 available: Set(pool.flatMap(\.demands)))
         let seed = "\(athlete.sportSlug)-\(athlete.season.rawValue)-w\(athlete.weekNumber)-s\(sessionIndex)"
+            + (complement.map { "-\($0.focus.rawValue)\($0.repeatNumber)" } ?? "")
 
         let target = targetMovementCount(rule, preferredMinutes: athlete.preferredSessionMinutes)
         let slots = guaranteeSignature(
             weekSlots(weights, perSession: target,
                       sessionsInWeek: max(1, sessionsInWeek),
                       sessionIndex: sessionIndex),
-            signature: signatureDemand(athlete.sportSlug),
+            signature: signature,
             weights: weights,
             pool: pool)
         // Fatigue-shedding phases (in-season / transition / event taper — all
@@ -89,7 +98,7 @@ enum SportSeasonGenerator {
         // objective still read "Max finger strength". The redistribution is
         // right; being quiet about it is not.
         let signatureUnavailable: Bool = {
-            guard let sig = signatureDemand(athlete.sportSlug),
+            guard let sig = signature,
                   weights[sig, default: 0] > 0 else { return false }
             return !pool.contains { $0.serves(sig) }
         }()
@@ -179,7 +188,16 @@ enum SportSeasonGenerator {
         // keeps its intended size. Ordered by the rule's own weights, so what
         // replaces a dropped slot is still phase-appropriate.
         if shortfall > 0 {
-            let byWeight = rule.demandWeights.sorted { $0.value > $1.value }.map(\.key)
+            var byWeight = rule.demandWeights.sorted { $0.value > $1.value }.map(\.key)
+            // A complement day whose own demands ran dry (an injury that rules
+            // out most pulling, say) backfills from the other upper-body and
+            // core demands. Legs only when the focus already trains legs: a
+            // skier's complement day never turns into leg work.
+            if complement != nil {
+                var spare: [Demand] = [.core, .upperPush, .upperPull, .arms]
+                if rule.demandWeights[.legStrength] != nil { spare.append(.legStrength) }
+                byWeight += spare.filter { !byWeight.contains($0) }
+            }
             outer: for demand in byWeight {
                 for m in pool.filter({ $0.serves(demand) && !used.contains($0.exerciseId) })
                     .sorted(by: {
@@ -200,8 +218,10 @@ enum SportSeasonGenerator {
         }
 
         picks = enforceFatigueCap(picks, cap: rule.sessionVolumeCap,
-                                  phase: athlete.season, signature: signatureDemand(athlete.sportSlug))
-        if rule.deferToSport && adjacentSportDay { picks = lighten(picks) }
+                                  phase: athlete.season, signature: signature)
+        // Complement days load what the sport does not, so they never defer.
+        let lightened = complement == nil && rule.deferToSport && adjacentSportDay
+        if lightened { picks = lighten(picks) }
 
         var exercises = picks.map {
             prescribe($0.movement, demand: $0.demand, rule: rule, strategy: strategy)
@@ -231,8 +251,9 @@ enum SportSeasonGenerator {
             return e
         }
         return assemble(exercises, picks: picks, athlete: athlete, rule: rule,
-                        sessionIndex: sessionIndex, lightened: rule.deferToSport && adjacentSportDay,
+                        sessionIndex: sessionIndex, lightened: lightened,
                         signatureUnavailable: signatureUnavailable,
+                        complement: complement,
                         easedAreas: easedAreas(picks: picks, soreIds: soreIds, athlete: athlete))
     }
 
@@ -250,19 +271,23 @@ enum SportSeasonGenerator {
     ///
     /// The climbing variants are aliased for the same reason, though none are
     /// currently in Sport.catalog so they're unreachable from the UI today.
+    /// coach.db `sport_movements.sport` for the complement pool.
+    static let complementPoolSlug = "general-fitness"
+
     static func poolSlug(for sportSlug: String) -> String {
         if PhaseRule.skiSlugs.contains(sportSlug) { return "alpine-skiing" }
         if PhaseRule.climbingSlugs.contains(sportSlug) { return "climbing" }
         return sportSlug
     }
 
-    private static func filteredPool(_ athlete: AthleteState, phase: SeasonPhase) -> [SportMovement] {
+    private static func filteredPool(_ athlete: AthleteState, phase: SeasonPhase,
+                                     poolSport: String? = nil) -> [SportMovement] {
         // eventPrep draws from BOTH its own pool and the pre-season pool: for
         // skiing it's literally "pre-season tapered" (same movements); for
         // climbing it's antagonist-heavy, so its distinct event_prep-tagged
         // movements must surface alongside the sharp pre-season ones. Accepting
         // either tag covers both without duplicating phase tags across the seed.
-        let raw = CoachDatabase.shared.sportMovements(sport: poolSlug(for: athlete.sportSlug))
+        let raw = CoachDatabase.shared.sportMovements(sport: poolSport ?? poolSlug(for: athlete.sportSlug))
             .filter { m in
                 let phaseOK = (phase == .eventPrep)
                     ? (m.allowed(in: .eventPrep) || m.allowed(in: .preSeason))
@@ -638,6 +663,7 @@ enum SportSeasonGenerator {
                                  athlete: AthleteState, rule: PhaseRule,
                                  sessionIndex: Int, lightened: Bool,
                                  signatureUnavailable: Bool = false,
+                                 complement: ComplementSlot? = nil,
                                  easedAreas: [String] = []) -> GeneratedWorkout {
         let minutes = exercises.reduce(0) { $0 + Int(ceil(Double($1.sets) * (Double($1.restSeconds) + 40) / 60)) }
         let demandMix = picks.map { $0.demand.rawValue }
@@ -647,7 +673,7 @@ enum SportSeasonGenerator {
         // wheel stops sampled from other seasons read apart. Also keep focus
         // words ("push", "leg", ...) out: PlanValidator.resolveFocus infers
         // focus from title text.
-        let title = "\(athlete.season.label) · Session \(sessionIndex + 1)"
+        let title = complement?.title ?? "\(athlete.season.label) · Session \(sessionIndex + 1)"
         var summary = "\(exercises.count) movements · ~\(minutes) min"
         if signatureUnavailable, let sig = signatureDemand(athlete.sportSlug) {
             summary += " · no \(sig.plainLabel) work: your injuries rule out every option"
@@ -656,7 +682,8 @@ enum SportSeasonGenerator {
             let names = easedAreas.compactMap { MuscleBucket(rawValue: $0)?.label.lowercased() }
             summary += " · eased for sore \(ListFormatter.localizedString(byJoining: names))"
         }
-        var prov = "\(athlete.sportSlug) · \(athlete.variant.rawValue) · \(rule.objective)"
+        var prov = complement.map { "complement · \($0.focus.rawValue) · \(rule.objective)" }
+            ?? "\(athlete.sportSlug) · \(athlete.variant.rawValue) · \(rule.objective)"
         if lightened { prov += " · lightened (sport day adjacent)" }
         prov += " · demands: \(demandMix.joined(separator: "/"))"
         // A real WorkoutFocus (not nil) so downstream consolidation / split
@@ -664,7 +691,8 @@ enum SportSeasonGenerator {
         // whole-body by construction → fullBodyA.
         var workout = GeneratedWorkout(
             title: title, summary: summary, exercises: exercises,
-            estimatedMinutes: minutes, provenance: prov, focus: .fullBodyA)
+            estimatedMinutes: minutes, provenance: prov,
+            focus: complement?.focus.workoutFocus ?? .fullBodyA)
         if !athlete.soreBuckets.isEmpty {
             workout.soreAreas = MuscleBucket.allCases.map(\.rawValue).filter(athlete.soreBuckets.contains)
         }

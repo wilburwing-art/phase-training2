@@ -44,6 +44,12 @@ enum Demand: String, Codable, CaseIterable, Hashable {
     case contactStrength
     case pullEndurance
     case antagonist
+    // complement sessions (general-fitness pool): the muscle groups a
+    // sport's own sessions leave out
+    case upperPush
+    case upperPull
+    case arms
+    case legStrength
 
     /// Human wording for a demand, used where a session has to explain itself
     /// to the athlete (R3-2). Only the demands that can appear in that copy

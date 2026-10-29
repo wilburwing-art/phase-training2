@@ -40,7 +40,8 @@ final class ThinSportWeekShapeTests: XCTestCase {
                 XCTAssertGreaterThanOrEqual(lifts.count, 2, "[\(slug)/\(phase.rawValue)] fewer than two lift days in the default shape")
                 for d in lifts {
                     guard let w = d.generatedWorkout else { XCTFail("[\(slug)/\(phase.rawValue)] lift day with no workout"); continue }
-                    XCTAssertTrue(w.provenance.contains("Authored"), "[\(slug)/\(phase.rawValue)] not authored: \(w.provenance)")
+                    // Complement days (SessionMix) come from the general pool.
+                    XCTAssertTrue(w.provenance.contains("Authored") || d.isComplementSession, "[\(slug)/\(phase.rawValue)] not authored: \(w.provenance)")
                     XCTAssertGreaterThanOrEqual(w.exercises.count, AuthoredRoutineSelector.minimumMovements,
                                                 "[\(slug)/\(phase.rawValue)] \(w.exercises.count) movements: '\(w.title)'")
                     XCTAssertLessThanOrEqual(w.exercises.count, 9, "[\(slug)/\(phase.rawValue)] \(w.exercises.count) movements is not a session: '\(w.title)'")
@@ -64,8 +65,11 @@ final class ThinSportWeekShapeTests: XCTestCase {
                 let pool = candidates.isEmpty
                     ? CoachDatabase.shared.authoredRoutineIds(sportSlug: slug, phaseLabels: AuthoredRoutineSelector.allPhaseLabels)
                     : candidates
-                let titles = Set(plan(slug, phase).days.filter { $0.kind == .lift }.compactMap { $0.generatedWorkout?.title })
-                if pool.count >= 2 {
+                let sportDays = plan(slug, phase).days.filter { $0.kind == .lift && !$0.isComplementSession }
+                let titles = Set(sportDays.compactMap { $0.generatedWorkout?.title })
+                // In-season and maintenance hold one sport session at 3 lift
+                // days (SessionMix), so there is nothing to rotate across.
+                if pool.count >= 2 && sportDays.count >= 2 {
                     XCTAssertGreaterThanOrEqual(titles.count, 2,
                         "[\(slug)/\(phase.rawValue)] \(pool.count) routines available but the week served only \(titles)")
                 } else {

@@ -28,7 +28,10 @@ enum CNSBudgetEngine {
     /// sport = moderate; rest = none.
     static func cnsCost(of day: DayPlan) -> Int {
         switch day.kind {
-        case .lift: return 2
+        // A complement session (SessionMix) trains the muscle groups the
+        // sport sessions leave out, at moderate reps: moderate, like a sport
+        // day. Counting it high made a 6-day week demote a sport session.
+        case .lift: return day.isComplementSession ? 1 : 2
         case .event: return 2 // races/hard events read as high-CNS
         case .sport: return 1 // moderate sessions; hard ones only in logs
         case .rest:  return 0

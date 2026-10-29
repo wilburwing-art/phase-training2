@@ -195,7 +195,12 @@ final class AuthoredRoutineTests: XCTestCase {
         let plan = Planner.generate(memory: m, routines: [])
         let liftDays = plan.days.filter { $0.kind == .lift }
         XCTAssertFalse(liftDays.isEmpty, "snowboarding should still get lift days (default shape)")
-        for d in liftDays {
+        for d in liftDays where d.isComplementSession {
+            XCTAssertFalse(d.generatedWorkout?.exercises.isEmpty ?? true, "complement day must not be empty")
+        }
+        // Sport sessions come from the authored routines; complement days
+        // (SessionMix) come from the general pool.
+        for d in liftDays where !d.isComplementSession {
             XCTAssertFalse(d.generatedWorkout?.exercises.isEmpty ?? true,
                            "snowboard lift day must not be empty")
             XCTAssertTrue(d.generatedWorkout?.provenance.contains("Authored") ?? false,

@@ -310,6 +310,14 @@ struct WeekPlan: Codable, Hashable {
 
 // MARK: - Convenience
 
+extension DayPlan {
+    /// A complement session (SessionMix): a lift day that trains what the
+    /// sport sessions leave out, built from the general-fitness pool.
+    var isComplementSession: Bool {
+        generatedWorkout?.provenance.hasPrefix("complement") ?? false
+    }
+}
+
 extension WeekPlan {
     /// Today's plan, or nil if today's date isn't in the window. Compares by
     /// startOfDay so it's robust across timezones / clock skew within the day.

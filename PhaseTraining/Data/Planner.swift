@@ -26,7 +26,7 @@ enum Planner {
     /// `PlanStore.migrateIfStale` rebuilds any plan stamped lower (or not at
     /// all) on the next launch. Leave it alone for changes that only matter
     /// from the next week on.
-    static let version = 1
+    static let version = 2
 
     /// Muscle areas a lift day on `date` should ease off, from the most recent
     /// soreness check-in dated that day or the day before. Mild or high
@@ -90,12 +90,11 @@ enum Planner {
         // declared `liftDaysPerWeek` is preserved in their profile; only
         // THIS planning pass uses the floor. Independent of (and stacks
         // with) the existing feedback / sport-log trim.
+        // No phase cap on lift days: SessionMix limits only the SPORT
+        // sessions to the phase's dose, and the rest become complement days.
         let readinessCapped = applyReadinessLiftDayFloor(memory: biased, context: context)
-        // Stacks with the readiness floor: whichever is stricter wins, since
-        // each only ever lowers the count.
-        let phaseCapped = applyPhaseSessionCap(memory: readinessCapped)
         var plan = generateUnbiased(
-            memory: phaseCapped,
+            memory: readinessCapped,
             overrides: overrides,
             routines: routines,
             recentlyPicked: recentlyPicked,
@@ -242,33 +241,6 @@ enum Planner {
         }
         var out = memory
         out.liftDaysPerWeek = 3
-        return out
-    }
-
-    /// T2-7: enforce the phase rule's own `sessionsPerWeek` cap on the LIVE
-    /// path.
-    ///
-    /// `PhaseRule.sessionsPerWeek` was only ever applied inside
-    /// `SportSeasonGenerator.generateWeek`, which no app code calls — verified
-    /// by grep: every caller is in SeasonFidelityTest. The live path is
-    /// Planner → one `generateSession` per lift slot, sized by
-    /// `memory.liftDaysPerWeek` + WeeklyShape. So the in-season ski rule's
-    /// `2...2` cap was inert: a skier who set 5 lift days got 5 in-season
-    /// sessions, defeating the phase's whole minimal-fatigue objective.
-    ///
-    /// Same shape as `applyReadinessLiftDayFloor` above — a silent clamp on a
-    /// COPY; the user's self-reported value stays untouched in TrainingMemory.
-    static func applyPhaseSessionCap(memory: TrainingMemory) -> TrainingMemory {
-        guard let slug = memory.primarySport?.slug,
-              SportSeasonGenerator.supports(slug) else { return memory }
-        let rule = PhaseRule.resolve(
-            sportSlug: slug,
-            variant: SportSeasonGenerator.defaultVariant(forSport: slug),
-            season: memory.seasonForPlanner)
-        let cap = rule.sessionsPerWeek.upperBound
-        guard memory.liftDaysPerWeek > cap else { return memory }
-        var out = memory
-        out.liftDaysPerWeek = cap
         return out
     }
 
