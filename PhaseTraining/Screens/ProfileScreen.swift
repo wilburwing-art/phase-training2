@@ -46,6 +46,7 @@ struct ProfileScreen: View {
     @State private var presentingSupportEditor = false
     @State private var presentingEquipmentEditor = false
     @State private var presentingExperienceEditor = false
+    @State private var presentingGoalEditor = false
     @State private var presentingAboutEditor = false
     @State private var presentingFavoritesEditor = false
     @State private var presentingDislikesEditor = false
@@ -186,6 +187,10 @@ struct ProfileScreen: View {
                                     value: experienceSummary,
                                     icon: "chart.line.uptrend.xyaxis",
                                     action: { presentingExperienceEditor = true })
+                        SettingsRow(label: "Goal",
+                                    value: store.memory.trainingGoal.label,
+                                    icon: "target",
+                                    action: { presentingGoalEditor = true })
                     }
 
                     settingsGroup("ABOUT YOU") {
@@ -282,6 +287,9 @@ struct ProfileScreen: View {
         }
         .sheet(isPresented: $presentingExperienceEditor) {
             ExperienceEditorSheet().environmentObject(store)
+        }
+        .sheet(isPresented: $presentingGoalEditor) {
+            GoalEditorSheet().environmentObject(store)
         }
         .sheet(isPresented: $presentingAboutEditor) {
             AboutYouEditorSheet().environmentObject(store)

@@ -89,6 +89,9 @@ struct AthleteState: Equatable {
     /// the rest of its demand and caps at RPE 7. Defaulted empty so
     /// hand-built states keep today's selection.
     var easedBuckets: Set<String> = []
+    /// What the athlete trains for (`TrainingMemory.trainingGoal`): re-bands
+    /// strength demands in `prescribe`.
+    var goal: TrainingGoal = .sportPerformance
     var blockedBuckets: Set<String> = []
 
     func affinity(for movementName: String) -> Int {
@@ -154,6 +157,7 @@ struct AthleteState: Equatable {
             flaggedDemands: [],
             profile: profile
         )
+        state.goal = memory.trainingGoal
         state.easedBuckets = recovery.eased
         state.blockedBuckets = recovery.blocked
         return state

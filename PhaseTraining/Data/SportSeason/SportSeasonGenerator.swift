@@ -246,7 +246,7 @@ enum SportSeasonGenerator {
         if lightened { picks = lighten(picks) }
 
         var exercises = picks.map {
-            prescribe($0.movement, demand: $0.demand, rule: rule, strategy: strategy)
+            prescribe($0.movement, demand: $0.demand, rule: rule, strategy: strategy, goal: athlete.goal)
         }
         // Readiness x sets (T2-10). Same lerp(0.6, 1.0) curve makePickedRow
         // has used since Phase 2: a detrained user gets 60% of the sets, a
@@ -643,8 +643,9 @@ enum SportSeasonGenerator {
     /// Prescription is driven by the DEMAND the slot was allocated to (not the
     /// movement's generic catalog default), modulated by the phase progression.
     private static func prescribe(_ m: SportMovement, demand: Demand, rule: PhaseRule,
-                                  strategy: GeneratorStrategy = .auto) -> GeneratedExercise {
-        let scheme = DemandScheme.scheme(for: demand, progression: rule.progression)
+                                  strategy: GeneratorStrategy = .auto,
+                                  goal: TrainingGoal = .sportPerformance) -> GeneratedExercise {
+        let scheme = DemandScheme.scheme(for: demand, progression: rule.progression, goal: goal)
         let key = m.name.lowercased()
         // Sets: the strategy's intensity bias, clamped so a `push` can't run
         // away and a `deload` can't zero the movement out. A movement carrying

@@ -66,6 +66,11 @@ struct TrainingMemory: Codable {
     /// to dial early-session conservatism. Build 72+: no deterministic
     /// preset / time window; the coach just reads the signal and reasons.
     var startingState: StartingState = .freshStart
+    /// What the athlete trains for. Sets the rep / set / rest band on
+    /// strength work in every season-engine session (`DemandScheme`);
+    /// sport-quality work keeps its own. `.sportPerformance` is today's
+    /// behavior.
+    var trainingGoal: TrainingGoal = .sportPerformance
 
     /// Raw values of the `ProfileField`s the user has explicitly set, as opposed
     /// to the ones still running on their default. See ProfileField.swift — the
@@ -170,6 +175,7 @@ struct TrainingMemory: Codable {
         case sessionMinutes, liftDaysPerWeek
         case equipment, experience
         case startingState
+        case trainingGoal
         case statedFields
         case age, gender
         case heightCm, weightKg, usesImperial
@@ -220,6 +226,7 @@ struct TrainingMemory: Codable {
         self.equipment       = (try? c.decode([Equipment].self,    forKey: .equipment))       ?? [.bodyweight]
         self.experience      = (try? c.decode(ExperienceLevel.self, forKey: .experience))     ?? .beginner
         self.startingState   = (try? c.decode(StartingState.self,  forKey: .startingState))   ?? .freshStart
+        self.trainingGoal    = (try? c.decode(TrainingGoal.self,   forKey: .trainingGoal))    ?? .sportPerformance
         // Absent for every save written before the gate was cut. Those users
         // answered the full questionnaire, so treat all fields as stated —
         // otherwise they'd be shown assumption chips for values they picked
@@ -279,6 +286,7 @@ struct TrainingMemory: Codable {
         try c.encode(equipment,       forKey: .equipment)
         try c.encode(experience,      forKey: .experience)
         try c.encode(startingState,   forKey: .startingState)
+        try c.encode(trainingGoal,    forKey: .trainingGoal)
         try c.encode(statedFields,    forKey: .statedFields)
         try c.encodeIfPresent(age,    forKey: .age)
         try c.encodeIfPresent(gender, forKey: .gender)
@@ -748,6 +756,33 @@ enum StartingState: String, Codable, CaseIterable, Identifiable {
         case .freshStart:        return "Never trained, or > 12 months off"
         case .returning:         return "Lifted before but ≥ 3 months off"
         case .currentlyTraining: return "Trained in the last 3 months"
+        }
+    }
+}
+
+enum TrainingGoal: String, Codable, CaseIterable, Identifiable {
+    case sportPerformance = "sport_performance"
+    case strength
+    case size
+    case endurance
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .sportPerformance: return "Sport performance"
+        case .strength:         return "Strength"
+        case .size:             return "Muscle size"
+        case .endurance:        return "Endurance"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .sportPerformance: return "Your sport and season set the reps"
+        case .strength:         return "Heavier, 3-6 reps, long rest"
+        case .size:             return "Moderate, 8-12 reps"
+        case .endurance:        return "Lighter, 15-20 reps, short rest"
         }
     }
 }

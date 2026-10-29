@@ -111,6 +111,7 @@ enum CoachContext {
         // window. Lets the coach reason about expected soreness + load
         // tolerance on a brand-new user vs a continuing lifter.
         profile.append("training state: \(memory.startingState.label.lowercased())")
+        profile.append("goal: \(memory.trainingGoal.label.lowercased())")
         profile.append("equipment: \(memory.equipment.map(\.label).joined(separator: ", "))")
         profile.append("target lifts/wk: \(memory.liftDaysPerWeek)")
         // Session length: declared vs actual. If the user's average completed

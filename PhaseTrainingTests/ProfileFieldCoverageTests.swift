@@ -188,6 +188,11 @@ final class ProfileFieldCoverageTests: XCTestCase {
               mutateForSnapshot: { $0.startingState = .returning },
               snapshotMarker: "coming back",
               skipReason: nil),
+        Probe(name: "trainingGoal",
+              mutateForHash: { $0.trainingGoal = .strength },
+              mutateForSnapshot: { $0.trainingGoal = .size },
+              snapshotMarker: "goal: muscle size",
+              skipReason: nil),
         Probe(name: "age",
               mutateForHash: { $0.age = 47 },
               mutateForSnapshot: { m in m.age = 47; m.weightKg = 80 }, // bodySection needs ≥1 field

@@ -93,8 +93,46 @@ enum DemandScheme {
         setsLow: 3, setsHigh: 3, repsLow: 8, repsHigh: 12,
         intensityRPELow: 7, intensityRPEHigh: 7, restSeconds: 90, fatigueCost: 2)
 
-    /// The prescription for a demand under a phase's progression.
-    static func scheme(for demand: Demand, progression: ProgressionMode) -> SetScheme {
-        (base[demand] ?? fallback).modulated(by: progression)
+    /// The prescription for a demand under a phase's progression. A training
+    /// goal replaces the band on strength demands before the phase modulates
+    /// it, so a pre-season taper still tapers a strength-goal session.
+    static func scheme(for demand: Demand, progression: ProgressionMode,
+                       goal: TrainingGoal = .sportPerformance) -> SetScheme {
+        let band = base[demand] ?? fallback
+        return (goal.band(over: band, demand: demand) ?? band).modulated(by: progression)
+    }
+}
+
+extension TrainingGoal {
+
+    /// Demands a goal may re-band: general strength work. Power, contact,
+    /// finger holds, eccentric tempo, joint control, prehab, uphill, the
+    /// sport's endurance demands, body tension and core keep their own
+    /// prescription (a 15-rep box jump or a 3-rep hang is wrong under any goal).
+    static let rebandable: Set<Demand> = [
+        .maxStrength, .upperStrength, .pullStrength,
+        .upperPush, .upperPull, .arms, .legStrength, .antagonist,
+    ]
+
+    /// The goal's band for `demand`, keeping the base band's fatigue cost.
+    /// nil when the goal leaves the demand alone.
+    func band(over base: SetScheme, demand: Demand) -> SetScheme? {
+        guard Self.rebandable.contains(demand) else { return nil }
+        switch self {
+        case .sportPerformance:
+            return nil
+        case .strength:
+            return SetScheme(setsLow: 3, setsHigh: 5, repsLow: 3, repsHigh: 6,
+                             intensityRPELow: 7, intensityRPEHigh: 8,
+                             restSeconds: 180, fatigueCost: base.fatigueCost)
+        case .size:
+            return SetScheme(setsLow: 3, setsHigh: 4, repsLow: 8, repsHigh: 12,
+                             intensityRPELow: 7, intensityRPEHigh: 8,
+                             restSeconds: 90, fatigueCost: base.fatigueCost)
+        case .endurance:
+            return SetScheme(setsLow: 2, setsHigh: 3, repsLow: 15, repsHigh: 20,
+                             intensityRPELow: 6, intensityRPEHigh: 7,
+                             restSeconds: 45, fatigueCost: base.fatigueCost)
+        }
     }
 }

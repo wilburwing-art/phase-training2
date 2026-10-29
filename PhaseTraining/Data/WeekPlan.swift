@@ -380,7 +380,7 @@ extension TrainingMemory {
                 .map { "\($0.weekday.rawValue)\($0.magnitude.rawValue.prefix(1))" }
                 .joined(separator: ",")
         } ?? "_"
-        let canonical = [
+        let canonical = ([
             "v\(schemaVersion)",
             "ps:\(primarySport?.slug ?? "_")",
             "sp:\(sports.map(\.slug).sorted().joined(separator: ","))",
@@ -397,7 +397,11 @@ extension TrainingMemory {
             "cn:\(constraints.sorted().joined(separator: ","))",
             "ui:\(injuries)",
             "st:\(startingState.rawValue)",
-        ].joined(separator: "|")
+        ]
+        // Only a non-default goal joins the hash, so every existing week keeps
+        // its hash and does not rebuild just because the field now exists.
+        + (trainingGoal == .sportPerformance ? [] : ["tg:\(trainingGoal.rawValue)"]))
+        .joined(separator: "|")
         var hash: UInt64 = 5381
         for byte in canonical.utf8 {
             hash = (hash &* 33) &+ UInt64(byte)
