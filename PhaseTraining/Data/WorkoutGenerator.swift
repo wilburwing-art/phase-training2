@@ -54,7 +54,8 @@ enum WorkoutGenerator {
         recentlyPicked: Set<Int> = [],
         context: GeneratorContext = .empty,
         strategy: GeneratorStrategy = .auto,
-        adjacentSportDay: Bool = false
+        adjacentSportDay: Bool = false,
+        date: Date? = nil
     ) -> GeneratedWorkout {
         // Phase 2 — authored program spines. If a curated coach.db routine
         // exists for this (sport, phase, session slot), serve it verbatim with
@@ -113,7 +114,8 @@ enum WorkoutGenerator {
             variant: SportSeasonGenerator.defaultVariant(forSport: memory.primarySport?.slug),
             weekNumber: memory.weeksInCurrentPhase ?? 1,
             recentMovementIDs: recentlyPicked,
-            readiness: context.hasReadinessData ? context.readinessScore : nil)
+            readiness: context.hasReadinessData ? context.readinessScore : nil,
+            soreness: date.map { Planner.soreness(for: $0, memory: memory) } ?? ([], []))
         return SportSeasonGenerator.generateSession(
             athlete, sessionIndex: liftIndex, adjacentSportDay: adjacentSportDay,
             sessionsInWeek: max(1, totalLifts), strategy: strategy)
@@ -133,12 +135,13 @@ enum WorkoutGenerator {
         hashSeed: String,
         recentlyPicked: Set<Int> = [],
         context: GeneratorContext = .empty,
-        strategy: GeneratorStrategy = .auto
+        strategy: GeneratorStrategy = .auto,
+        date: Date? = nil
     ) -> GeneratedWorkout {
         return generateLift(
             liftIndex: liftIndex, totalLifts: totalLifts, memory: memory,
             profile: profile, hashSeed: hashSeed, recentlyPicked: recentlyPicked,
-            context: context, strategy: strategy)
+            context: context, strategy: strategy, date: date)
     }
 
     /// Build a `GeneratedExercise` row for a picked exercise, applying the
@@ -236,16 +239,18 @@ enum WorkoutGenerator {
               !entry.areas.isEmpty
         else { return false }
 
-        let muscles = CoachDatabase.shared.musclesForExercise(exercise.id)
-        // Match on the primary muscle's bucket. If no primary muscle is
-        // tagged, fall back to any muscle's bucket — better to over-cap
-        // than under-cap on Q9.
+        return !primaryMuscleBuckets(exerciseId: exercise.id).isDisjoint(with: entry.areas)
+    }
+
+    /// MuscleBucket slugs for an exercise's primary muscle. If no primary
+    /// muscle is tagged, falls back to every muscle's bucket: better to treat
+    /// an exercise as loading a sore muscle than to miss it. Shared by the
+    /// RPE cap above and the season engine's sore tier.
+    static func primaryMuscleBuckets(exerciseId: Int) -> Set<String> {
+        let muscles = CoachDatabase.shared.musclesForExercise(exerciseId)
         let candidates = muscles.first(where: { $0.role == "primary" }).map { [$0.slug] }
             ?? muscles.map(\.slug)
-        let buckets = candidates.compactMap { MuscleBucket.bucket(forSlug: $0)?.rawValue }
-        let sore = Set(entry.areas)
-        for b in buckets where sore.contains(b) { return true }
-        return false
+        return Set(candidates.compactMap { MuscleBucket.bucket(forSlug: $0)?.rawValue })
     }
 }
 

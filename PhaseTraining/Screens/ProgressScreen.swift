@@ -285,4 +285,5 @@ struct ProgressScreen: View {
     return ProgressScreen()
         .environmentObject(store)
         .environmentObject(memory)
+        .environmentObject(PlanStore(defaults: defaults))
 }

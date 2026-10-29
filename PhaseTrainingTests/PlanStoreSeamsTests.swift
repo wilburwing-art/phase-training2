@@ -216,6 +216,81 @@ final class PlanStoreSeamsTests: XCTestCase {
         XCTAssertEqual(store.plan?.days.map(\.title), kindOnly.plan?.days.map(\.title))
     }
 
+    // MARK: - Planner version stamp (migrateIfStale)
+
+    /// A store opened on a plan saved under `plannerVersion`.
+    private func storeWithSavedPlan(plannerVersion: Int?, tag: String = #function) throws -> PlanStore {
+        let defaults = freshDefaults(tag)
+        var plan = makePlan([.lift, .rest, .lift, .rest, .lift, .rest, .rest], anchoredTo: monday())
+        plan.plannerVersion = plannerVersion
+        defaults.set(try planEncoder().encode(plan), forKey: "pt_week_plan")
+        return PlanStore(defaults: defaults, today: monday())
+    }
+
+    func test_migrateIfStale_rebuildsAPlanSavedBeforeTheStamp() throws {
+        let memory = skiMemory()
+        let store = try storeWithSavedPlan(plannerVersion: nil)
+        XCTAssertNil(store.plan?.plannerVersion)
+
+        store.migrateIfStale(memory: memory, today: monday())
+
+        XCTAssertEqual(store.plan?.plannerVersion, Planner.version)
+        XCTAssertNotEqual(store.plan?.inputsHash, "fixture")
+    }
+
+    func test_migrateIfStale_rebuildsAnOlderPlannerVersion() throws {
+        let store = try storeWithSavedPlan(plannerVersion: Planner.version - 1)
+        store.migrateIfStale(memory: skiMemory(), today: monday())
+        XCTAssertEqual(store.plan?.plannerVersion, Planner.version)
+    }
+
+    func test_migrateIfStale_leavesACurrentPlanAlone() throws {
+        let store = try storeWithSavedPlan(plannerVersion: Planner.version)
+        store.migrateIfStale(memory: skiMemory(), today: monday())
+        XCTAssertEqual(store.plan?.inputsHash, "fixture")
+    }
+
+    func test_migrateIfStale_skipsDuringAnActiveSession() throws {
+        let store = try storeWithSavedPlan(plannerVersion: nil)
+        let sessions = emptySessionStore()
+        sessions.active = ActiveSession(templateId: "t", name: "Lower A", category: "lift",
+                                        startTime: monday(), exercises: [])
+        store.sessionStore = sessions
+
+        store.migrateIfStale(memory: skiMemory(), today: monday())
+
+        XCTAssertEqual(store.plan?.inputsHash, "fixture", "rebuilt the week under an active session")
+    }
+
+    /// The rebuild keeps a Week-tab move: kept sessions live in overrides.
+    func test_migrateIfStale_keepsAMovedSession() throws {
+        let memory = skiMemory()
+        let store = makeStore()
+        _ = store.generate(from: memory, today: monday())
+        let days = try XCTUnwrap(store.plan?.days)
+        let liftIdx = try XCTUnwrap(days.lastIndex { $0.kind == .lift })
+        let restIdx = try XCTUnwrap(days.indices.first { $0 < liftIdx && days[$0].kind == .rest })
+        store.swap(sourceDate: days[liftIdx].date, targetDate: days[restIdx].date, memory: memory, today: monday())
+        store.plan?.plannerVersion = nil
+
+        store.migrateIfStale(memory: memory, today: monday())
+
+        XCTAssertEqual(store.plan?.plannerVersion, Planner.version)
+        XCTAssertEqual(day(store, days[restIdx].date)?.title, days[liftIdx].title)
+    }
+
+    /// Plans saved before the field existed decode with a nil stamp.
+    func test_weekPlan_legacyPayloadDecodesWithNilVersion() throws {
+        let plan = makePlan([.lift, .rest, .lift, .rest, .lift, .rest, .rest], anchoredTo: monday())
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: planEncoder().encode(plan)) as? [String: Any])
+        XCTAssertNotNil(json.removeValue(forKey: "plannerVersion"))
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .secondsSince1970
+        let decoded = try decoder.decode(WeekPlan.self, from: JSONSerialization.data(withJSONObject: json))
+        XCTAssertNil(decoded.plannerVersion)
+        XCTAssertEqual(decoded.days.map(\.title), plan.days.map(\.title))
+    }
+
     // MARK: - makeGeneratorContext (store wiring)
 
     func test_makeGeneratorContext_returnsEmptyWhenSessionStoreAbsent() {

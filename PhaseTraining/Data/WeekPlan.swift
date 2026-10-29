@@ -123,6 +123,11 @@ struct GeneratedWorkout: Codable, Hashable {
     /// Lets DayOutcome and SpineAggregates count per spine. Older plans decode
     /// with nil.
     var authoredRoutineId: Int? = nil
+    /// Sore areas (MuscleBucket slugs) the session was built around, from
+    /// `Planner.soreness(for:memory:)` for its date. `PlanStore.applySoreness`
+    /// compares it with what the date calls for now and rebuilds the day when
+    /// they differ. Nil on workouts built with no date and on older plans.
+    var soreAreas: [String]? = nil
 }
 
 /// Why this exercise ended up in the workout. Default is `.recipe` — the
@@ -290,6 +295,17 @@ struct WeekPlan: Codable, Hashable {
     /// Stable hash of the TrainingMemory inputs that produced this plan.
     /// PlanStore compares against the live memory hash to know when to regenerate.
     var inputsHash: String
+    /// `Planner.version` of the code that built this plan. Nil on plans saved
+    /// before the stamp existed, which `migrateIfStale` treats as stale.
+    var plannerVersion: Int?
+
+    init(days: [DayPlan], generatedAt: Date, inputsHash: String,
+         plannerVersion: Int? = Planner.version) {
+        self.days = days
+        self.generatedAt = generatedAt
+        self.inputsHash = inputsHash
+        self.plannerVersion = plannerVersion
+    }
 }
 
 // MARK: - Convenience

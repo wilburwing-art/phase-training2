@@ -29,6 +29,11 @@ struct SportsEditorSheet: View {
                                 )
                             }
                         }
+                        if store.memory.sports.count == 1 {
+                            Text("Keep at least one sport. Pick another first to switch.")
+                                .styled(.micro)
+                                .foregroundStyle(Color.ink3)
+                        }
                         if store.memory.sports.count > 1 {
                             Text("PRIMARY")
                                 .styled(.micro)
@@ -69,8 +74,13 @@ struct SportsEditorSheet: View {
 
     /// Same toggle behavior as the inline ProfileScreen version: clears
     /// primary when sport leaves the list; reassigns primary to first
-    /// remaining sport when the previous primary is deselected.
+    /// remaining sport when the previous primary is deselected. The last
+    /// sport cannot be removed.
     private func toggleSport(_ sport: Sport) {
+        // The planner has nothing to build without a sport: removing the last
+        // one turned every lift day into an empty "Rest". Onboarding enforces
+        // the same floor with `nextEnabled: !draft.sports.isEmpty`.
+        if store.memory.sports == [sport] { return }
         store.update { mem in
             if let idx = mem.sports.firstIndex(of: sport) {
                 mem.sports.remove(at: idx)

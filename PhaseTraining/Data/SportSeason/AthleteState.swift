@@ -83,6 +83,14 @@ struct AthleteState: Equatable {
     /// Affinity at or below which a movement is treated as rejected.
     static let affinitySinkThreshold = -2
 
+    /// Muscle areas (MuscleBucket slugs) sore on this session's date, from
+    /// `Planner.soreness(for:memory:)`. Movements whose primary muscle is in
+    /// here rank below the rest of their demand and get a lighter dose.
+    /// `heavySoreBuckets` is the high-or-pain subset, which also cuts sets.
+    /// Defaulted empty so hand-built states keep today's selection.
+    var soreBuckets: Set<String> = []
+    var heavySoreBuckets: Set<String> = []
+
     func affinity(for movementName: String) -> Int {
         exerciseAffinities[movementName.lowercased()] ?? 0
     }
@@ -124,10 +132,11 @@ struct AthleteState: Equatable {
         variant: SportVariant = .inbounds,
         weekNumber: Int = 1,
         recentMovementIDs: Set<Int> = [],
-        readiness: Double? = nil
+        readiness: Double? = nil,
+        soreness: (areas: Set<String>, heavy: Set<String>) = ([], [])
     ) -> AthleteState {
         let profile = DemographicProfile.from(memory)
-        return AthleteState(
+        var state = AthleteState(
             sportSlug: memory.primarySport?.slug ?? "general-fitness",
             variant: variant,
             experience: memory.experience,
@@ -145,6 +154,9 @@ struct AthleteState: Equatable {
             flaggedDemands: [],
             profile: profile
         )
+        state.soreBuckets = soreness.areas
+        state.heavySoreBuckets = soreness.heavy
+        return state
     }
 
     /// Fold case so "Goblet Squat" and "goblet squat" written by different

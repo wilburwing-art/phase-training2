@@ -100,6 +100,12 @@ extension TodayScreen {
         }
         guard let plan = planStore.plan else { return nil }
         if let day = plan.today() {
+            // A soreness check-in reshaped today (Planner.soreness): say so,
+            // or the changed exercises read as a random reroll.
+            if let areas = day.generatedWorkout?.soreAreas, !areas.isEmpty {
+                let names = areas.compactMap { MuscleBucket(rawValue: $0)?.label.lowercased() }
+                return "Eased for sore \(ListFormatter.localizedString(byJoining: names))."
+            }
             if day.protected {
                 return "Today is protected. I won't shuffle it without asking."
             }

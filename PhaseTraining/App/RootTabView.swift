@@ -154,6 +154,9 @@ struct RootTabView: View {
             // their actual selections.
             guard memoryStore.isOnboarded else { return }
             planStore.migrateIfStale(memory: memoryStore.memory)
+            // A check-in from yesterday reaches today; one from two days ago
+            // has expired. Either way the affected days rebuild here.
+            planStore.applySoreness(memory: memoryStore.memory)
         }
     }
 }

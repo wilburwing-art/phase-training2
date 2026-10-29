@@ -60,6 +60,10 @@ enum SportSeasonGenerator {
         // Pool first: redistribution needs to know which demands this sport can
         // actually serve.
         let pool = filteredPool(athlete, phase: athlete.season)
+        // Movements whose primary muscle the athlete reported sore for this
+        // date. Resolved once per session: the lookup goes through coach.db.
+        let soreIds = movementIds(in: pool, loading: athlete.soreBuckets)
+        let heavySoreIds = movementIds(in: pool, loading: athlete.heavySoreBuckets)
         let weights = applyInjuryRedistribution(rule.demandWeights,
                                                 flagged: athlete.flaggedDemands,
                                                 available: Set(pool.flatMap(\.demands)))
@@ -136,6 +140,13 @@ enum SportSeasonGenerator {
                     // served.
                     let lp = lhs.primaryDemand == demand, rp = rhs.primaryDemand == demand
                     if lp != rp { return lp }
+                    // Sore tier: a movement that loads a sore muscle as its
+                    // prime mover ranks below every other movement serving
+                    // the same demand. Below the primary-demand check for the
+                    // same reason rotation is: soreness changes which movement
+                    // serves a demand, never whether it is served.
+                    let ls = soreIds.contains(lhs.exerciseId), rs = soreIds.contains(rhs.exerciseId)
+                    if ls != rs { return !ls }
                     // Rotation tier: 0 fresh, 1 recent, 2 rejected by the user
                     // (affinity <= sink threshold). A rejected movement still
                     // ranks inside its primary-demand group, so a demand whose
@@ -176,6 +187,8 @@ enum SportSeasonGenerator {
                         // chase favorites, which would bypass rotation.
                         let l = isRejected($0, athlete), r = isRejected($1, athlete)
                         if l != r { return !l }
+                        let ls = soreIds.contains($0.exerciseId), rs = soreIds.contains($1.exerciseId)
+                        if ls != rs { return !ls }
                         return djb2("\(seed)-backfill-\($0.exerciseId)") < djb2("\(seed)-backfill-\($1.exerciseId)")
                     }) {
                     picks.append(Pick(movement: m, demand: demand))
@@ -205,9 +218,22 @@ enum SportSeasonGenerator {
                 return e
             }
         }
+        // A sore prime mover that stayed in the session (its demand had no
+        // other movement) gets a lighter dose: RPE 7 at most, and a third
+        // fewer sets when the soreness is high or painful.
+        exercises = exercises.map { ex in
+            guard soreIds.contains(ex.exerciseId) else { return ex }
+            var e = ex
+            e.rpe = e.rpe.map { capRPE($0, to: 7.0) } ?? "7"
+            if heavySoreIds.contains(ex.exerciseId) {
+                e.sets = max(1, Int((Double(ex.sets) * 2 / 3).rounded()))
+            }
+            return e
+        }
         return assemble(exercises, picks: picks, athlete: athlete, rule: rule,
                         sessionIndex: sessionIndex, lightened: rule.deferToSport && adjacentSportDay,
-                        signatureUnavailable: signatureUnavailable)
+                        signatureUnavailable: signatureUnavailable,
+                        easedAreas: easedAreas(picks: picks, soreIds: soreIds, athlete: athlete))
     }
 
     // MARK: - Pool
@@ -506,6 +532,27 @@ enum SportSeasonGenerator {
         athlete.affinity(for: m.name) <= AthleteState.affinitySinkThreshold
     }
 
+    /// Ids of the pool movements whose primary muscle is in `buckets`.
+    private static func movementIds(in pool: [SportMovement], loading buckets: Set<String>) -> Set<Int> {
+        guard !buckets.isEmpty else { return [] }
+        return Set(pool.filter {
+            !WorkoutGenerator.primaryMuscleBuckets(exerciseId: $0.exerciseId).isDisjoint(with: buckets)
+        }.map(\.exerciseId))
+    }
+
+    /// Sore areas the session actually had to work around: a demand with no
+    /// other movement kept a sore prime mover, or the tier moved one out. The
+    /// session summary names these so the user sees why the workout changed.
+    private static func easedAreas(picks: [Pick], soreIds: Set<Int>, athlete: AthleteState) -> [String] {
+        guard !athlete.soreBuckets.isEmpty else { return [] }
+        let kept = picks.filter { soreIds.contains($0.movement.exerciseId) }
+            .reduce(into: Set<String>()) {
+                $0.formUnion(WorkoutGenerator.primaryMuscleBuckets(exerciseId: $1.movement.exerciseId))
+            }
+        let areas = kept.isEmpty ? athlete.soreBuckets : kept.intersection(athlete.soreBuckets)
+        return MuscleBucket.allCases.map(\.rawValue).filter(areas.contains)
+    }
+
     private static func djb2(_ s: String) -> UInt64 {
         var h: UInt64 = 5381
         for b in s.utf8 { h = (h &* 33) &+ UInt64(b) }
@@ -590,7 +637,8 @@ enum SportSeasonGenerator {
     private static func assemble(_ exercises: [GeneratedExercise], picks: [Pick],
                                  athlete: AthleteState, rule: PhaseRule,
                                  sessionIndex: Int, lightened: Bool,
-                                 signatureUnavailable: Bool = false) -> GeneratedWorkout {
+                                 signatureUnavailable: Bool = false,
+                                 easedAreas: [String] = []) -> GeneratedWorkout {
         let minutes = exercises.reduce(0) { $0 + Int(ceil(Double($1.sets) * (Double($1.restSeconds) + 40) / 60)) }
         let demandMix = picks.map { $0.demand.rawValue }
         // No sport name: Today's caption already says it, and
@@ -604,14 +652,22 @@ enum SportSeasonGenerator {
         if signatureUnavailable, let sig = signatureDemand(athlete.sportSlug) {
             summary += " · no \(sig.plainLabel) work: your injuries rule out every option"
         }
+        if !easedAreas.isEmpty {
+            let names = easedAreas.compactMap { MuscleBucket(rawValue: $0)?.label.lowercased() }
+            summary += " · eased for sore \(ListFormatter.localizedString(byJoining: names))"
+        }
         var prov = "\(athlete.sportSlug) · \(athlete.variant.rawValue) · \(rule.objective)"
         if lightened { prov += " · lightened (sport day adjacent)" }
         prov += " · demands: \(demandMix.joined(separator: "/"))"
         // A real WorkoutFocus (not nil) so downstream consolidation / split
         // analytics / LLM-refinement anchoring keep working. Season sessions are
         // whole-body by construction → fullBodyA.
-        return GeneratedWorkout(
+        var workout = GeneratedWorkout(
             title: title, summary: summary, exercises: exercises,
             estimatedMinutes: minutes, provenance: prov, focus: .fullBodyA)
+        if !athlete.soreBuckets.isEmpty {
+            workout.soreAreas = MuscleBucket.allCases.map(\.rawValue).filter(athlete.soreBuckets.contains)
+        }
+        return workout
     }
 }

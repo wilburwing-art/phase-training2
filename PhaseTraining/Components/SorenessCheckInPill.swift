@@ -17,6 +17,7 @@ import SwiftUI
 
 struct SorenessCheckInPill: View {
     @EnvironmentObject private var memoryStore: MemoryStore
+    @EnvironmentObject private var planStore: PlanStore
     @State private var showSheet: Bool = false
 
     /// True when memory carries a soreness entry stamped today.
@@ -50,7 +51,9 @@ struct SorenessCheckInPill: View {
         .buttonStyle(.plain)
         .accessibilityIdentifier("progress-soreness-checkin")
         .sheet(isPresented: $showSheet) {
-            SorenessCheckInSheet(onDone: {})
+            // Today's and tomorrow's lift days ease off whatever was just
+            // marked sore. A skip changes nothing, so the call is a no-op.
+            SorenessCheckInSheet(onDone: { planStore.applySoreness(memory: memoryStore.memory) })
         }
     }
 }

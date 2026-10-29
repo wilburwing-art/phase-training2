@@ -817,7 +817,8 @@ final class PlanStore: ObservableObject {
             profile: profile,
             hashSeed: seed,
             recentlyPicked: recentIds,
-            context: context
+            context: context,
+            date: today
         )
 
         plan.days[idx].generatedWorkout = workout
@@ -908,7 +909,7 @@ final class PlanStore: ObservableObject {
             let workout = WorkoutGenerator.generateConsolidated(
                 cday, liftIndex: i, totalLifts: target, memory: memory,
                 profile: profile, hashSeed: seed, recentlyPicked: recentIds,
-                context: context)
+                context: context, date: plan.days[dayIdx].date)
             plan.days[dayIdx].generatedWorkout = workout
             plan.days[dayIdx].title = workout.title
             plan.days[dayIdx].routineId = nil
@@ -942,6 +943,9 @@ final class PlanStore: ObservableObject {
     /// Development" that has nothing to do with their actual sport
     /// selection — the old picker matched by goal only).
     ///
+    /// Also rebuilds a plan whose `plannerVersion` is below `Planner.version`,
+    /// so a planner fix reaches weeks that were saved before the update.
+    ///
     /// Triggers when ANY lift day in the current plan lacks a
     /// generatedWorkout. No-op for fresh installs, post-migration plans,
     /// and rest-only weeks. User-pinned routines via dayOverrides survive
@@ -962,8 +966,60 @@ final class PlanStore: ObservableObject {
             let monday = firstDate.startOfTrainingWeek(calendar: cal)
             return !cal.isDate(firstDate, inSameDayAs: monday)
         }()
-        guard needsLegacyRegen || needsCalendarWeekRegen else { return }
+        // A plan built by an older planner (or before the stamp existed)
+        // still shows whatever that code produced. Overrides live outside the
+        // plan, so moves and tone survive the rebuild. Never under an active
+        // session, same rule as the memory-drift regen.
+        let needsPlannerRegen = (plan.plannerVersion.map { $0 < Planner.version } ?? true)
+            && sessionStore?.active == nil
+        guard needsLegacyRegen || needsCalendarWeekRegen || needsPlannerRegen else { return }
         generate(from: memory, today: today)
+    }
+
+    /// Rebuild today's and later lift days whose soreness stamp
+    /// (`GeneratedWorkout.soreAreas`) no longer matches what their date calls
+    /// for (`Planner.soreness(for:memory:)`): a check-in just saved, a check-in
+    /// from yesterday that now reaches today, or soreness that has expired.
+    /// One day at a time by direct mutation, never a full `generate`, which
+    /// would rotate every day through `recentPicks`. Each day keeps its lift
+    /// index, so it stays the same session. Skips past days, saved-workout
+    /// days and any active session.
+    func applySoreness(memory: TrainingMemory, today: Date = Date()) {
+        guard var plan = plan, sessionStore?.active == nil else { return }
+        let cal = Calendar.current
+        let todayStart = cal.startOfDay(for: today)
+        let liftIdx = plan.days.indices.filter { plan.days[$0].kind == .lift }
+        let profile = DemographicProfile.from(memory)
+        let recentIds = recentPicks?.recentlyPickedIds() ?? []
+        var changed = false
+        for (n, idx) in liftIdx.enumerated() {
+            let day = plan.days[idx]
+            guard cal.startOfDay(for: day.date) >= todayStart,
+                  let existing = day.generatedWorkout,
+                  day.routineId == nil,
+                  overrides.customRoutineId(for: day.date) == nil
+            else { continue }
+            let wanted = Planner.soreness(for: day.date, memory: memory).areas
+            guard Set(existing.soreAreas ?? []) != wanted else { continue }
+            // The day's own picks are not "recent" to itself, so only the
+            // sore movements give way.
+            let workout = WorkoutGenerator.generateLift(
+                liftIndex: day.liftIndex ?? n,
+                totalLifts: liftIdx.count,
+                memory: memory,
+                profile: profile,
+                hashSeed: memory.planInputsHash,
+                recentlyPicked: recentIds.subtracting(existing.exercises.map(\.exerciseId)),
+                context: buildGeneratorContext(memory: memory, today: day.date),
+                date: day.date
+            )
+            plan.days[idx].generatedWorkout = workout
+            plan.days[idx].title = workout.title
+            changed = true
+        }
+        guard changed else { return }
+        self.plan = plan
+        savePlan()
     }
 }
 
