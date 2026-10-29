@@ -180,3 +180,15 @@ Query it as `app.descendants(matching: .any)["today-workout-wheel"]`. After an
 XCUITest `swipeLeft` the next title shows in grey but the pips and the
 exercise count do not move. The code before `5c31c93` behaves the same way,
 so it is not a regression to chase.
+
+## Prove a sheet opened with an element only the sheet has (2026-10-29)
+
+`LogFlowTests.testTapExerciseHeaderOpensDetail` asserted `staticTexts["Back Squat"]` after
+tapping the header. The log row itself says "Back Squat", so the test passed for months while
+the tap did nothing: the handler matched catalog names exactly, and "Back Squat" is the alias
+of "Barbell Back Squat". Assert on something the presenting screen cannot contain. The sheet's
+`buttons["Done"]` works. `navigationBars["Exercise"]` does NOT: an inline `.navigationTitle`
+inside a sheet did not resolve as a NavigationBar by that name. When a "tap opens X" test never
+fails, change the assertion until it fails with the handler stubbed out.
+Also: a Log-screen name lookup must go through `ExerciseLookupCache.exercise(forName:)`
+(aliases, shorthand). `listExercises(search:)` plus an exact name compare misses aliases.
