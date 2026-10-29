@@ -20,6 +20,28 @@ import Foundation
 
 enum ProgressStats {
 
+    /// "N of your last M left you feeling better", over the most recent
+    /// `window` sessions that carry a mood. Nil until `minimumRated` sessions
+    /// are rated, so the line never reads "1 of your last 1".
+    struct MoodAfterSummary: Equatable {
+        let better: Int
+        let rated: Int
+        var line: String { "\(better) of your last \(rated) left you feeling better" }
+        var mostlyBetter: Bool { better * 2 > rated }
+    }
+
+    static func moodAfterSummary(_ sessions: [SavedSession],
+                                 window: Int = 10,
+                                 minimumRated: Int = 3) -> MoodAfterSummary? {
+        let rated = sessions
+            .filter { $0.mood != nil }
+            .sorted { $0.startTime > $1.startTime }
+            .prefix(window)
+        guard rated.count >= minimumRated else { return nil }
+        return MoodAfterSummary(better: rated.filter { $0.mood == "better" }.count,
+                                rated: rated.count)
+    }
+
     /// Sessions logged in the current week.
     ///
     /// Sums the `byWeek` grouping over keys at or after this week's start

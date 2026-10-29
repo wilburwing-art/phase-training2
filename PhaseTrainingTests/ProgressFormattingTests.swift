@@ -165,4 +165,43 @@ final class ProgressFormattingTests: XCTestCase {
             )
         }
     }
+
+    // MARK: - moodAfterSummary
+
+    private func session(daysBack: Int, mood: String?) -> SavedSession {
+        let start = now.addingTimeInterval(TimeInterval(-daysBack * 86_400))
+        return SavedSession(templateId: "t", name: "s", category: "c", startTime: start,
+                            exercises: [], feel: nil, note: nil, mood: mood,
+                            endTime: start.addingTimeInterval(1800), duration: 1800)
+    }
+
+    func test_moodAfterSummary_nilUnderThreeRated() {
+        let sessions = [session(daysBack: 1, mood: "better"),
+                        session(daysBack: 2, mood: "better"),
+                        session(daysBack: 3, mood: nil),
+                        session(daysBack: 4, mood: nil)]
+        XCTAssertNil(ProgressStats.moodAfterSummary(sessions))
+    }
+
+    func test_moodAfterSummary_countsOnlyRatedSessions() {
+        let sessions = [session(daysBack: 1, mood: "better"),
+                        session(daysBack: 2, mood: nil),
+                        session(daysBack: 3, mood: "same"),
+                        session(daysBack: 4, mood: "worse"),
+                        session(daysBack: 5, mood: "better")]
+        let summary = ProgressStats.moodAfterSummary(sessions)
+        XCTAssertEqual(summary, .init(better: 2, rated: 4))
+        XCTAssertEqual(summary?.line, "2 of your last 4 left you feeling better")
+        XCTAssertEqual(summary?.mostlyBetter, false)
+    }
+
+    func test_moodAfterSummary_capsAtWindow_newestFirst() {
+        // 12 rated sessions, oldest two "worse": the window of 10 must drop
+        // them regardless of input order.
+        var sessions = (1...10).map { session(daysBack: $0, mood: "better") }
+        sessions += [session(daysBack: 11, mood: "worse"), session(daysBack: 12, mood: "worse")]
+        let summary = ProgressStats.moodAfterSummary(sessions.shuffled())
+        XCTAssertEqual(summary, .init(better: 10, rated: 10))
+        XCTAssertEqual(summary?.mostlyBetter, true)
+    }
 }

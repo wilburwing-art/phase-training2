@@ -55,6 +55,11 @@ final class ProgressScreenUITests: XCTestCase {
             XCTAssertTrue(scrollTo(app.staticTexts[title], in: app),
                           "\(title) card should render on a populated Progress tab")
         }
+
+        // The mood-after line under SESSIONS / WEEK. The seed rates six of
+        // seven sessions, five of them "better".
+        XCTAssertTrue(scrollTo(app.staticTexts["5 of your last 6 left you feeling better"], in: app),
+                      "SESSIONS / WEEK should reflect the seeded mood-after tally")
     }
 
     func test_progressTab_volumeCardShowsVolumeNotSetsWhenWeightsLogged() throws {

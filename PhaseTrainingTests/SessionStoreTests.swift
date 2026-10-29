@@ -330,4 +330,39 @@ final class SessionStoreTests: XCTestCase {
         XCTAssertEqual(saved.exercises[1].sets[0].reps, "10")
         XCTAssertTrue(saved.exercises[1].sets[0].done)
     }
+
+    /// `mood` is the newest column on `sessions` (migration v3). The
+    /// Complete screen patches it in after the autosave, so both the insert
+    /// and the ON CONFLICT update have to carry it, and nil must stay nil.
+    func testMoodAfterRoundTripsThroughSaveUpdateAndReload() throws {
+        let dbPath = NSTemporaryDirectory() + "SessionStoreTests-\(UUID().uuidString).sqlite"
+        defer { try? FileManager.default.removeItem(atPath: dbPath) }
+        let store = SessionStore(defaults: defaults, userDB: UserDatabase(path: dbPath))
+
+        let first = store.createSession(templateId: "upper-1")
+        var saved = store.saveCompleted(first, feel: "Hard", note: nil, mood: "better")
+        XCTAssertEqual(saved.mood, "better")
+
+        // Patch in place the way CompleteScreen.syncEdits does.
+        saved.mood = "same"
+        store.updateSession(saved)
+
+        var second = store.createSession(templateId: "upper-1")
+        second.startTime = first.startTime.addingTimeInterval(86_400)
+        _ = store.saveCompleted(second, feel: nil, note: nil)
+        var third = store.createSession(templateId: "upper-1")
+        third.startTime = first.startTime.addingTimeInterval(2 * 86_400)
+        _ = store.saveCompleted(third, feel: nil, note: nil, mood: "worse")
+
+        // start_time is stored in whole seconds, so match by order rather
+        // than by the sub-second `id` the in-memory sessions carry.
+        let reloaded = SessionStore(defaults: defaults, userDB: UserDatabase(path: dbPath))
+        let oldestFirst = reloaded.savedSessions.sorted { $0.startTime < $1.startTime }
+        XCTAssertEqual(oldestFirst.count, 3)
+        XCTAssertEqual(oldestFirst[0].mood, "same", "the ON CONFLICT update must carry mood")
+        XCTAssertNil(oldestFirst[1].mood, "an unrated session must reload as nil, never as a default")
+        XCTAssertEqual(oldestFirst[2].mood, "worse")
+        // The newest-by-template query is a separate SELECT.
+        XCTAssertEqual(reloaded.getPreviousSession(templateId: "upper-1")?.mood, "worse")
+    }
 }

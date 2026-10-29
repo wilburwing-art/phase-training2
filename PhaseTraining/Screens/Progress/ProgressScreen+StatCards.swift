@@ -92,6 +92,15 @@ extension ProgressScreen {
                         .font(.monoXS)
                         .foregroundStyle(Color.ink3)
                 }
+                // The mood payoff, reflected back. Nil until three sessions
+                // carry a mood, so the card is unchanged for an older history.
+                if let mood = aggregates.moodAfter {
+                    Text(mood.line)
+                        .font(.monoXS)
+                        .foregroundStyle(mood.mostlyBetter ? Color.accent : Color.ink3)
+                        .padding(.top, 2)
+                        .accessibilityIdentifier("progress-mood-after")
+                }
             }
         }
     }

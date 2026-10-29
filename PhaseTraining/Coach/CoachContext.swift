@@ -271,8 +271,10 @@ enum CoachContext {
             for s in sessions {
                 let done = s.exercises.flatMap(\.sets).filter(\.done).count
                 let feel = s.feel.map { " · felt: \($0.lowercased())" } ?? ""
+                // Fixed vocabulary (worse | same | better), so no sanitising.
+                let mood = s.mood.map { " · mood after: \($0)" } ?? ""
                 // T2-9: session name comes from a custom routine title.
-                lines.append("- \(short(s.startTime)) · \(sanitizeFreeText(s.name, max: 80)) · \(done) sets · \(s.duration / 60) min\(feel)")
+                lines.append("- \(short(s.startTime)) · \(sanitizeFreeText(s.name, max: 80)) · \(done) sets · \(s.duration / 60) min\(feel)\(mood)")
             }
             blocks.append("\(header)\n" + lines.joined(separator: "\n"))
         }

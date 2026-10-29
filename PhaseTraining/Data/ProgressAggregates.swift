@@ -81,6 +81,10 @@ struct ProgressAggregates {
     /// card.
     let recentSessions: [SavedSession]
 
+    /// Mood-after tally for the SESSIONS / WEEK card. Computed over every
+    /// session, since `recentSessions` is capped below the tally's window.
+    let moodAfter: ProgressStats.MoodAfterSummary?
+
     // MARK: - Computation
 
     init(sessions: [SavedSession],
@@ -145,6 +149,7 @@ struct ProgressAggregates {
                 .sorted { $0.endTime > $1.endTime }
                 .prefix(recentSessionsCount)
         )
+        self.moodAfter = ProgressStats.moodAfterSummary(sessions)
     }
 
     /// Monday-based start of week. Moved from ProgressScreen+StatCards.swift

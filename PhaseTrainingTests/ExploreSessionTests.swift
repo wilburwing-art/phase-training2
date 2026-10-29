@@ -150,6 +150,9 @@ final class ExploreSessionTests: XCTestCase {
             let v = UserDatabase(path: path)
             let db = try XCTUnwrap(v.db)
             XCTAssertEqual(sqlite3_exec(db, "DROP TABLE explore_sessions", nil, nil, nil), SQLITE_OK)
+            // v3 added sessions.mood; a v1 file does not have it, and the
+            // ALTER would fail on a column that already exists.
+            XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE sessions DROP COLUMN mood", nil, nil, nil), SQLITE_OK)
             XCTAssertEqual(sqlite3_exec(db, "PRAGMA user_version = 1", nil, nil, nil), SQLITE_OK)
             XCTAssertEqual(sqlite3_exec(db, """
                 INSERT INTO user_routines (id, name, created_at, updated_at) VALUES ('keep-me', 'Keep', 0, 0)

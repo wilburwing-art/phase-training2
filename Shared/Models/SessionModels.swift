@@ -195,6 +195,10 @@ struct SavedSession: Codable, Identifiable, Equatable {
     var exercises: [LoggedExercise]
     var feel: String?
     var note: String?
+    /// Mood after the session: "worse" | "same" | "better". Captured by the
+    /// Complete screen's MOOD AFTER row; nil on sessions saved before it
+    /// existed, on watch-saved sessions, and when the user skipped the row.
+    var mood: String? = nil
     var endTime: Date
     var duration: Int // seconds
     var healthWriter: HealthWriter? = nil

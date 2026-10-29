@@ -7,6 +7,10 @@
 // Progress strength card reads the change against the user's own best 90
 // days back. Screenshots are attached at each stop so a device sweep can
 // compare them (`xcrun xcresulttool export attachments`).
+//
+// The Complete screen's mood line (item 2 of the same batch, built the
+// same day) is covered here too: tap a mood, it reads as selected, re-tap
+// clears it. Persistence is pinned by SessionStoreTests.
 
 import XCTest
 
@@ -94,6 +98,41 @@ final class MotivationBatchUITests: XCTestCase {
         XCTAssertTrue(scrollTo(app.staticTexts["RECENT PRs"], in: app))
         XCTAssertTrue(scrollTo(app.staticTexts["BODY WEIGHT"], in: app))
         attach(app, "progress-body-after-prs")
+    }
+
+    func test_completeScreenMoodChipTogglesAndSticks() throws {
+        let app = XCUIApplication()
+        app.launchArguments += ["--ui-test-onboarded", "--ui-test-reset", "--seed-supersets-demo"]
+        app.launch()
+
+        // Same route KettleCompleteUITests takes: seeded log -> Finish ->
+        // confirm (sets are still open) -> Complete.
+        XCTAssertTrue(app.buttons["log-finish"].waitForExistence(timeout: 8))
+        app.buttons["log-finish"].tap()
+        let finishConfirm = app.alerts.buttons["Finish"]
+        XCTAssertTrue(finishConfirm.waitForExistence(timeout: 5))
+        finishConfirm.tap()
+        XCTAssertTrue(app.buttons["complete-done"].waitForExistence(timeout: 8))
+
+        let better = app.buttons["complete-mood-better"]
+        XCTAssertTrue(scrollTo(better, in: app), "the mood line should sit under the note")
+        XCTAssertTrue(app.staticTexts["Mood after?"].exists)
+        XCTAssertFalse(better.isSelected)
+        better.tap()
+        XCTAssertTrue(better.isSelected, "tapping a mood should select it")
+        XCTAssertFalse(app.buttons["complete-mood-same"].isSelected, "moods are mutually exclusive")
+        Thread.sleep(forTimeInterval: 0.5)   // let the press highlight fade before the frame
+        attach(app, "complete-mood-better")
+
+        // Switching moves the selection; re-tap clears.
+        app.buttons["complete-mood-same"].tap()
+        XCTAssertTrue(app.buttons["complete-mood-same"].isSelected)
+        XCTAssertFalse(better.isSelected)
+        app.buttons["complete-mood-same"].tap()
+        XCTAssertFalse(app.buttons["complete-mood-same"].isSelected, "re-tap should clear the mood")
+
+        app.buttons["complete-done"].tap()
+        XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 8))
     }
 
     // MARK: - Helpers

@@ -58,8 +58,19 @@ enum HealthWorkoutWriter {
                                     activityType: .traditionalStrengthTraining)
     }
 
+    /// UI tests never prompt: the first save with a completed set raised
+    /// Apple's Health Access sheet over the Complete screen, where it took
+    /// every swipe and tap meant for the app. Same gate as
+    /// `SessionLocationCapture.isDisabledForThisProcess`, minus the XCTest
+    /// environment check, because the unit tests drive `record` through a
+    /// fake store on purpose.
+    static var isDisabledForThisProcess: Bool {
+        ProcessInfo.processInfo.arguments.contains { $0.hasPrefix("--ui-test") }
+    }
+
     /// Save a session's workout. Fire and forget from the save hook.
     static func record(_ session: SavedSession, store: HealthWorkoutStore = HKWorkoutWriterStore()) async {
+        guard !isDisabledForThisProcess else { return }
         guard let payload = payload(for: session) else { return }
         do {
             guard try await store.requestWorkoutShareAuthorization() else {

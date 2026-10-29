@@ -17,11 +17,11 @@ extension UserDatabase {
     /// SwiftUI screens bind to.
     func listSavedSessions() -> [SavedSession] { withLock {
         guard let db else { return [] }
-        let sql = "SELECT start_time, template_id, name, category, end_time, duration, feel, note FROM sessions ORDER BY start_time DESC"
+        let sql = "SELECT start_time, template_id, name, category, end_time, duration, feel, note, mood FROM sessions ORDER BY start_time DESC"
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
         defer { sqlite3_finalize(stmt) }
-        var rows: [(start: Int64, tpl: String, name: String, cat: String, end: Int64, dur: Int, feel: String?, note: String?)] = []
+        var rows: [(start: Int64, tpl: String, name: String, cat: String, end: Int64, dur: Int, feel: String?, note: String?, mood: String?)] = []
         while sqlite3_step(stmt) == SQLITE_ROW {
             rows.append((
                 sqlite3_column_int64(stmt, 0),
@@ -31,7 +31,8 @@ extension UserDatabase {
                 sqlite3_column_int64(stmt, 4),
                 Int(sqlite3_column_int64(stmt, 5)),
                 text(stmt, 6),
-                text(stmt, 7)
+                text(stmt, 7),
+                text(stmt, 8)
             ))
         }
         return rows.map { r in
@@ -43,6 +44,7 @@ extension UserDatabase {
                 exercises: loadExercisesLocked(sessionStart: r.start),
                 feel: r.feel,
                 note: r.note,
+                mood: r.mood,
                 endTime: Date(timeIntervalSince1970: TimeInterval(r.end)),
                 duration: r.dur
             )
@@ -57,7 +59,7 @@ extension UserDatabase {
     /// Replaces the O(N) scan in SessionStore.getPreviousSession.
     func previousSession(templateId: String) -> SavedSession? { withLock {
         guard let db else { return nil }
-        let sql = "SELECT start_time, template_id, name, category, end_time, duration, feel, note FROM sessions WHERE template_id = ? ORDER BY start_time DESC LIMIT 1"
+        let sql = "SELECT start_time, template_id, name, category, end_time, duration, feel, note, mood FROM sessions WHERE template_id = ? ORDER BY start_time DESC LIMIT 1"
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return nil }
         defer { sqlite3_finalize(stmt) }
@@ -72,6 +74,7 @@ extension UserDatabase {
             exercises: loadExercisesLocked(sessionStart: start),
             feel: text(stmt, 6),
             note: text(stmt, 7),
+            mood: text(stmt, 8),
             endTime: Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(stmt, 4))),
             duration: Int(sqlite3_column_int64(stmt, 5))
         )
@@ -234,8 +237,8 @@ extension UserDatabase {
         sqlite3_finalize(clrEx)
 
         let sessSQL = """
-        INSERT INTO sessions(start_time, template_id, name, category, end_time, duration, feel, note)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO sessions(start_time, template_id, name, category, end_time, duration, feel, note, mood)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(start_time) DO UPDATE SET
           template_id = excluded.template_id,
           name = excluded.name,
@@ -243,7 +246,8 @@ extension UserDatabase {
           end_time = excluded.end_time,
           duration = excluded.duration,
           feel = excluded.feel,
-          note = excluded.note
+          note = excluded.note,
+          mood = excluded.mood
         """
         var s: OpaquePointer?
         if sqlite3_prepare_v2(db, sessSQL, -1, &s, nil) == SQLITE_OK {
@@ -255,6 +259,7 @@ extension UserDatabase {
             sqlite3_bind_int64(s, 6, Int64(session.duration))
             if let f = session.feel { sqlite3_bind_text(s, 7, f, -1, SQLITE_TRANSIENT_USER) } else { sqlite3_bind_null(s, 7) }
             if let n = session.note { sqlite3_bind_text(s, 8, n, -1, SQLITE_TRANSIENT_USER) } else { sqlite3_bind_null(s, 8) }
+            if let m = session.mood { sqlite3_bind_text(s, 9, m, -1, SQLITE_TRANSIENT_USER) } else { sqlite3_bind_null(s, 9) }
             if sqlite3_step(s) != SQLITE_DONE { ok = false }
         } else {
             ok = false

@@ -227,6 +227,11 @@ final class UserDatabase {
             )
             """,
             "CREATE INDEX IF NOT EXISTS idx_explore_sessions_started ON explore_sessions(started_at DESC)"
+        ]),
+        // v3 — mood after a session (CompleteScreen mood line). Nullable;
+        // every existing row reads as "not rated".
+        (3, [
+            "ALTER TABLE sessions ADD COLUMN mood TEXT"
         ])
     ]
 

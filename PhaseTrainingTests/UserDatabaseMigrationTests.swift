@@ -49,11 +49,14 @@ final class UserDatabaseMigrationTests: XCTestCase {
         }
     }
 
-    private func sessionSetsColumns() -> [String] {
+    private func sessionSetsColumns() -> [String] { columns(of: "session_sets") }
+    private func sessionsColumns() -> [String] { columns(of: "sessions") }
+
+    private func columns(of table: String) -> [String] {
         withRawDB { db in
             var stmt: OpaquePointer?
             defer { sqlite3_finalize(stmt) }
-            guard sqlite3_prepare_v2(db, "PRAGMA table_info(session_sets)", -1, &stmt, nil) == SQLITE_OK else { return [] }
+            guard sqlite3_prepare_v2(db, "PRAGMA table_info(\(table))", -1, &stmt, nil) == SQLITE_OK else { return [] }
             var cols: [String] = []
             while sqlite3_step(stmt) == SQLITE_ROW {
                 if let c = sqlite3_column_text(stmt, 1) { cols.append(String(cString: c)) }
@@ -73,6 +76,8 @@ final class UserDatabaseMigrationTests: XCTestCase {
         let cols = sessionSetsColumns()
         XCTAssertTrue(cols.contains("is_warmup"),
                       "v1 CREATE must include is_warmup; got \(cols)")
+        XCTAssertTrue(sessionsColumns().contains("mood"),
+                      "v3 must add sessions.mood on a fresh install; got \(sessionsColumns())")
     }
 
     // MARK: - Pre-versioning upgrade
@@ -110,6 +115,8 @@ final class UserDatabaseMigrationTests: XCTestCase {
                        "a pre-versioning file must be upgraded through every migration")
         XCTAssertTrue(sessionSetsColumns().contains("is_warmup"),
                       "legacy session_sets must gain is_warmup via the existence check")
+        XCTAssertTrue(sessionsColumns().contains("mood"),
+                      "legacy sessions must gain mood via v3")
 
         // The pre-existing row survives with the DEFAULT 0 backfill.
         let warmup: Int32? = withRawDB { db in

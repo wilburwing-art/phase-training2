@@ -11,11 +11,13 @@
 //   5. Exercise summary: list of done sets per exercise (Display 14 + Mono XS)
 //   6. Feel chips: 5 mutually-exclusive pills (Too easy / Easy / Right / Hard / Too much)
 //   7. Note: multiline TextField (Inter 13)
-//   8. Sticky Done button (lime primary) — the session is ALREADY saved
+//   8. Mood after: one optional line (Worse / Same / Better), the affective
+//      payoff as distinct from difficulty
+//   9. Sticky Done button (lime primary) — the session is ALREADY saved
 //
 // FINISH IS THE SAVE: the session auto-saves via `SessionStore.saveCompleted`
 // in `.onAppear` (it also clears the active session), so this screen is a
-// post-save summary, not a save gate. `feel`/`note` edits patch the saved
+// post-save summary, not a save gate. `feel`/`mood`/`note` edits patch the saved
 // record in place (`syncEdits` → `updateSession`); PR detection self-excludes
 // the now-persisted session. "Done" just returns to Today; "Discard" deletes
 // the record (it was saved) and returns. Structured feedback
@@ -39,6 +41,7 @@ struct CompleteScreen: View {
     var onDiscard: (() -> Void)? = nil
 
     @State private var feel: String? = nil
+    @State private var mood: String? = nil
     @State private var note: String = ""
     /// Frozen at the moment this screen appears (i.e. the session completed),
     /// so DURATION doesn't keep ticking up while the user fills feel/note.
@@ -65,6 +68,11 @@ struct CompleteScreen: View {
     }
 
     private static let feelOptions = ["Too easy", "Easy", "Right", "Hard", "Too much"]
+    /// Stored value / label. Values are the fixed vocabulary
+    /// `SavedSession.mood` documents and the coach context reads verbatim.
+    static let moodOptions: [(value: String, label: String)] = [
+        ("worse", "Worse"), ("same", "Same"), ("better", "Better"),
+    ]
 
     // MARK: - Derived values
 
@@ -149,7 +157,15 @@ struct CompleteScreen: View {
                             .padding(.horizontal, 20)
                             .padding(.top, 18)
 
-                        Spacer().frame(height: 140)
+                        moodLine
+                            .padding(.horizontal, 20)
+                            .padding(.top, 14)
+
+                        // Clearance for the sticky stack below (Done, the
+                        // feedback link and Discard run to about 220pt with
+                        // the safe area). 140 left the note field and the
+                        // mood line under the buttons at full scroll.
+                        Spacer().frame(height: 240)
                     }
                 }
             }
@@ -167,6 +183,7 @@ struct CompleteScreen: View {
         .preferredColorScheme(.dark)
         .onAppear(perform: autosaveIfNeeded)
         .onChange(of: feel) { _, _ in syncEdits() }
+        .onChange(of: mood) { _, _ in syncEdits() }
         .onChange(of: note) { _, _ in syncEdits() }
         .sheet(isPresented: $showFeedbackSheet) {
             // Optional, opt-in capture of a structured FeedbackEntry (difficulty
@@ -329,11 +346,46 @@ struct CompleteScreen: View {
 
     private func feelChip(_ option: String) -> some View {
         let active = feel == option
-        return Button {
+        return chip(label: option, active: active,
+                    id: "complete-feel-" + option.lowercased().replacingOccurrences(of: " ", with: "-")) {
             // Tap toggles selection; re-tap clears.
             feel = active ? nil : option
-        } label: {
-            Text(option)
+        }
+    }
+
+    /// Mood after, as one optional line under the note: the affective
+    /// payoff, separate from difficulty ("Hard" and "better" are a common
+    /// pair). Plain text options with no pills, so skipping it costs nothing.
+    private var moodLine: some View {
+        HStack(spacing: 14) {
+            Text("Mood after?")
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+            Spacer(minLength: 8)
+            ForEach(Self.moodOptions, id: \.value) { option in
+                let active = mood == option.value
+                Button {
+                    mood = active ? nil : option.value
+                } label: {
+                    Text(option.label)
+                        .font(.monoXS)
+                        .foregroundStyle(active ? Color.accent : Color.ink2)
+                        .underline(active)
+                        .padding(.vertical, 6)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("complete-mood-\(option.value)")
+                .accessibilityAddTraits(active ? .isSelected : [])
+            }
+        }
+    }
+
+    /// One pill for the feel row.
+    private func chip(label: String, active: Bool, id: String,
+                      action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(label)
                 .font(.scaled("JetBrainsMono-Medium", size: 11))
                 .foregroundStyle(active ? Color.accentInk : Color.ink2)
                 .frame(maxWidth: .infinity)
@@ -349,6 +401,8 @@ struct CompleteScreen: View {
                 )
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier(id)
+        .accessibilityAddTraits(active ? .isSelected : [])
     }
 
     private var noteSection: some View {
@@ -391,6 +445,7 @@ struct CompleteScreen: View {
         guard saved == nil else { return }
         saved = store.saveCompleted(session, feel: feel,
                                     note: note.isEmpty ? nil : note,
+                                    mood: mood,
                                     endTime: completedAt)
     }
 
@@ -399,6 +454,7 @@ struct CompleteScreen: View {
     private func syncEdits() {
         guard !discarded, var s = saved else { return }
         s.feel = feel
+        s.mood = mood
         s.note = note.isEmpty ? nil : note
         store.updateSession(s)
         saved = s

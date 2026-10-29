@@ -366,8 +366,9 @@ final class SessionStore: ObservableObject {
     /// Persist a completed session: insert into SQLite, prepend to the
     /// @Published cache, clear active.
     @discardableResult
-    func saveCompleted(_ active: ActiveSession, feel: String?, note: String?, endTime: Date = Date()) -> SavedSession {
-        let saved = commitCompleted(active, feel: feel, note: note, endTime: endTime)
+    func saveCompleted(_ active: ActiveSession, feel: String?, note: String?,
+                       mood: String? = nil, endTime: Date = Date()) -> SavedSession {
+        let saved = commitCompleted(active, feel: feel, note: note, mood: mood, endTime: endTime)
         onSessionSaved?(saved, false)
         return saved
     }
@@ -375,7 +376,7 @@ final class SessionStore: ObservableObject {
     /// The write itself, with no hook. `saveAbandoned` goes through here so
     /// the outcome hook fires once, after the abandonment verdict is known.
     private func commitCompleted(_ active: ActiveSession, feel: String?, note: String?,
-                                 endTime: Date) -> SavedSession {
+                                 mood: String? = nil, endTime: Date) -> SavedSession {
         // A workout logged after the fact keeps the time it happened, not the
         // time spent logging it. The start is the session id, so a clash with
         // a saved session moves it by a second.
@@ -397,6 +398,7 @@ final class SessionStore: ObservableObject {
             exercises: active.exercises,
             feel: feel,
             note: note,
+            mood: mood,
             endTime: endTime,
             duration: duration,
             healthWriter: active.healthWriter

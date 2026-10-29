@@ -405,7 +405,12 @@ struct PhaseTrainingApp: App {
             (1,  185, 255),
         ]
 
-        let sessions: [SavedSession] = progression.map { daysBack, bench, squat in
+        // Mood after: the oldest session is unrated, one reads "same", the
+        // rest "better", so Progress renders "5 of your last 6 left you
+        // feeling better".
+        let moods: [String?] = [nil, "better", "better", "same", "better", "better", "better"]
+        let sessions: [SavedSession] = progression.enumerated().map { idx, entry in
+            let (daysBack, bench, squat) = entry
             let start = cal.date(byAdding: .day, value: -daysBack, to: now) ?? now
             return SavedSession(
                 templateId: "seed-progress",
@@ -416,7 +421,7 @@ struct PhaseTrainingApp: App {
                     seedLoggedExercise(name: "Barbell Bench Press", weight: bench, reps: 5, sets: 3),
                     seedLoggedExercise(name: "Barbell Back Squat", weight: squat, reps: 5, sets: 3),
                 ],
-                feel: "Right", note: nil,
+                feel: "Right", note: nil, mood: moods[idx],
                 endTime: start.addingTimeInterval(3300), duration: 3300
             )
         }
