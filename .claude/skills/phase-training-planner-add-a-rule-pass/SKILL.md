@@ -52,3 +52,35 @@ Verified adding `applySupportPattern` (primary/support de-confliction) 2026-07-1
 
 Pairs with [[phase-training-overrides-persist-intent-not-output]] (persist the
 input, re-derive the week) and [[phase-training-support-scheduler-tied-loads]].
+
+## A Planner test fixture with no sport generates empty lift days (2026-10-28)
+
+`PlannerTests.fixtureMemory()` (equipment only) produces `.lift` days titled
+"Rest" with ZERO exercises, so any assertion over exercise lists passes on
+empty arrays. Set `primarySport` (e.g. `Sport.resolve(slug: "alpine-skiing")`),
+`onboardedAt`, `experience` and `sessionMinutes` to get real season-engine
+sessions. Then compare lift days by title: the engine titles each one
+"<phase> · Session N" from its lift index, so a repeated title is a repeated
+session even when a seed difference changes one exercise. Pinned
+(`dayOverrides`) lifts and queue-filled lifts were numbered in separate index
+spaces, both starting at 0, which is how a Week-tab drag produced two
+"Session 1" days (`testSwappedLiftDayDoesNotDuplicateAnotherLiftDay`).
+
+The same holds in the app: `--seed-missed-consolidation-demo` seeds a profile
+with no sport, so the first edit that regenerates the week turns every lift day
+into "Rest" with no exercises. A UI test screenshot after any Week edit with
+that seed shows empty lift rows; that is the seed, not the change under test.
+
+Real users reach the no-sport path one way: deselecting the last sport in
+Profile, Sports (`SportsEditorSheet.toggleSport`), which sets `primarySport`
+to nil and makes the memory subscription rebuild an empty week. Build 150
+blocks removing the last sport, the same floor onboarding enforces.
+
+## Bump `Planner.version` when saved weeks should change (build 150)
+
+A rule pass that changes output for a week users already have does not
+reach them until something regenerates the week. Bump `Planner.version` in
+`Planner.swift`, and `PlanStore.migrateIfStale` rebuilds every plan stamped
+lower on the next launch. Leave the version alone for changes that only need
+to apply from next week on, because each bump rebuilds every tester's
+current week once.

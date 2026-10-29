@@ -84,3 +84,15 @@ prehab/mobility/balance firehose). Two operations, opposite directions:
 Direction matters: `extract_to_source` = DB→source (use to reconcile);
 `build_db` = source→DB (idempotent only AFTER reconciling). Never run `build_db`
 to "resync" while source is the stale superset — that's the footgun.
+
+## The image folder drifts the same way (audit 2026-09-21)
+
+`Resources/ExerciseImages/` is a folder reference in Project.yml, so every
+file in it ships. The catalogue prunes left 181 photo-era thumbnails
+(2.0 MB) for ids with no `exercises` row, invisible to the app (bundle
+lookup is by id) and to `git status`. Count it from the artifact, never
+from `ls | wc -l` against the row count: 759 `<id>.webp` against 576
+generated rows was the tell. `scripts/db/verify_coachdb_sync.sh` now
+fails on a file with no catalogue id and on a `generated` row missing
+`<id>.webp` or `<id>_hero.webp`, so CI catches the next prune. Fix is
+delete, then rerun the guard; nothing else references those ids.

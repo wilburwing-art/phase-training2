@@ -147,3 +147,17 @@ executed 1,312. Never read exit 0 or TEST SUCCEEDED as a pass on a filtered
 run: grep `Test Suite 'Selected tests'` plus the next line, and require a
 non-zero `Executed N tests`. If it is zero, run the whole target instead of
 debugging the filter.
+
+## Addendum 2026-10-13: `git stash` + `test-without-building` tests the SAME binary
+
+To check whether a failing test was failing before a change, I stashed the
+working tree and re-ran with `test-without-building`. It "passed on the old
+code", which meant nothing: the built test bundle still held the stashed
+edits. Either `build-for-testing` again after the stash, or skip the stash
+and run the class ALONE first. Here the failure
+(`ProgressAggregatesCharacterizationTests.test_muscleRows_...`) passed alone
+and in another batch, so it was an ordering interaction with
+ExploreSessionTests / DayOutcomeTests, not the change. Also: the
+`UserDatabase` v1-rollback fixture in ExploreSessionTests must DROP any
+column a later ALTER adds (`sessions.mood` for v3), or the migration fails
+with a duplicate column on a file that was already at the latest version.

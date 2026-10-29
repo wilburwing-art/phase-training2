@@ -15,14 +15,15 @@ work is wiring, and the one tier with no capture is the weakest signal.
 | Did | Abandoned workout + typed `AbandonReason` | `pt_abandoned_workouts`, 90-day window | coach context only |
 | Did | Planned vs actual per saved session (`DayOutcome`: asPlanned / modified / switched / unplanned / abandoned, swap pairs, drops, sets) | `pt_day_outcomes` on PlanStore, 90-day window, since 2026-09-25 | `PatternEngine` (A4): session-length and dropped-exercise rules; coach PATTERNS block |
 | Did | Missed workout + `MissResolution` | `pt_missed_workouts`; `SkipStreakDetector` | Planner softens rotation; coach |
-| Chose | Swap away X into Y | `TrainingMemory.exerciseAffinities`, `swapAwayCounts` (writers: `LogScreen`, `TodayScreen+TemplateEditor`, `ExerciseActionSheet`) | **nothing in production** |
+| Chose | Swap away X into Y | `TrainingMemory.exerciseAffinities`, `swapAwayCounts` (writers: `LogScreen`, `TodayScreen+TemplateEditor`, `ExerciseActionSheet`) | season engine, via `AthleteState.exerciseAffinities`, read straight from memory (re-checked 2026-10-28). The parked `GeneratorContext` copy stays zeroed. |
 | Chose | Wheel / override switch to saved or sample workout | `overrides.customRoutineByDate` | plan application only, never read as a preference |
+| Chose | Add an exercise to a workout (`appendExercise`, Today editor and LogScreen) | nothing recorded until it is logged; then priorBest only | never read as a preference |
 | Chose | Hand-built routines | `pt_custom_routines` | wheel options; never read as a preference |
 | Looked | Search terms, library browse, detail opens, routine previews, and what converted | `explore_sessions` in `UserDatabase` (A3, 2026-09-26): one `ExploreSession` per surface visit via `ExploreRecorder` | `PatternEngine` viewed-routine rule (A4); never sent to the coach |
 
 ## Facts that change the design
 
-- **Affinities are parked, not dead.** `GeneratorContext.from(... includeParkedSignals:)`
+- **Only the context copy of affinities is parked; the engine reads them from memory.** `GeneratorContext.from(... includeParkedSignals:)`
   zeroes `exerciseAffinities`, `recentSoreAreas`, `stagnantExercises` unless true, and no
   production caller passes true (grep `includeParkedSignals: true` hits tests only). Comment
   T2-11 at `GeneratorContext.swift:244` says why: `buildStagnantExercises` walks four weeks of

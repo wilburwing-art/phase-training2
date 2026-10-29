@@ -52,3 +52,33 @@ Proven adding climbing after skiing (2026-06-26): green on the first full eval r
   `"alpine-skiing"` (single slug); boulder/sportRoute/trad are a `SportVariant`
   sub-axis passed to AthleteState, not separate sports. Tag the seed with the
   onboarding slug so `sportMovements(sport:)` matches.
+- **The onboarding slug must equal `sport_categories.slug` exactly.** Every
+  coach.db join (`exercise_sport_relevance` ranking, authored routines,
+  `sport_movements`, the `ExerciseFilters` sport icon) matches the exact slug
+  with no parent fallback. `SportCatalogSlugTests` now fails on drift (added in
+  31ea2fc after `stand-up-paddleboarding` shipped against the DB's `sup`, which
+  cost secondary-sport users its 14 tagged exercises and the icon). When a slug
+  must change, add the old one to `Sport.renamedSlugs`, or saved memory falls
+  to the synthetic-Sport branch and still misses.
+
+## Sport sessions are only part of the week (SessionMix, build 151, 2026-10-28)
+
+A new sport's PhaseRule now governs the SPORT sessions only.
+`SessionMix.sportDose(phase:liftDays:)` decides how many lift days are
+sport sessions (pre-season at 5 days: 2), and the rest are complement
+sessions from the `general-fitness` pool in `sport_movements`
+(demands `upperPush`, `upperPull`, `arms`, `core`, `legStrength`). Decide
+the new sport's `SessionMix.Family`: legs-dominant complements with upper
+body plus core and never legs; upper-dominant (climbing) complements with
+legs. `PhaseRule.sessionsPerWeek` no longer caps lift days
+(`applyPhaseSessionCap` is deleted).
+
+**`gen_sport_movements.py` is stale.** It errors on exercise 622 and does not
+emit the `protocol_*` fields, so `db/source/sport_movements.json` is the real
+source. Append to the JSON with `indent=2, ensure_ascii=False`, or the diff
+rewrites every row (`°` and `—` get escaped), then run `build_db.py`.
+
+A complement day counts as moderate in `CNSBudgetEngine.cnsCost`. At full
+cost, a 6-day week always demoted a lift day, and the demoted day was the
+middle of the run, which was often a sport session.
+

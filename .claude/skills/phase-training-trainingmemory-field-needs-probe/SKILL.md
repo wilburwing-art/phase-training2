@@ -38,3 +38,10 @@ A new field fails it until you add one. Don't add an empty probe — categorize.
 
 Tip: `test_probesEnforceTheirContracts` independently verifies that any probe claiming
 a mutator actually moves the hash / emits the marker — so a wrong category fails loudly.
+
+## Adding a field to `planInputsHash` rebuilds every user's week (trainingGoal, build 155)
+Any new term in the canonical string changes the hash for every saved plan, so the drift
+check regenerates every user's week on update, and the full regen reshuffles exercises.
+When the new field's default means "no change", join it only when non-default:
+`([...] + (goal == .sportPerformance ? [] : ["tg:\(goal.rawValue)"])).joined(separator: "|")`.
+Test both halves: default leaves the hash equal, a change moves it (`TrainingGoalTests`).

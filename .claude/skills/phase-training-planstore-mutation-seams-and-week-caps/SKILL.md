@@ -87,3 +87,33 @@ you displaced so the way back is exact.
 
 Verify a switch by asserting on the day's EXERCISE LIST, not its title: a
 title proves a label moved, the list proves the mutation landed.
+
+## A planner fix does not reach a week that is already saved (build 149, 2026-10-28)
+
+`PlanStore` persists the generated week and regenerates only on a new training
+week, a memory-input change, an overrides edit, or `migrateIfStale`'s legacy
+checks. Shipping a Planner fix therefore leaves every user's current week as the
+old code built it until one of those fires. Build 149 fixed duplicate sessions
+after a Week move and the reporter still saw the duplicate. The no-op way to
+force a rebuild in the app is Week tab, Set tone, Typical: `onPick` always goes
+through `updateOverrides`, which calls `generate`. When a fix changes what the
+planner outputs for an existing week, bump `Planner.version`.
+
+**A full `generate` rotates every day, even with identical inputs.**
+`recordPickedExercises` writes the week's picks to `recentPicks` after each
+generate, and the next generate ranks those as recent. Any
+`updateOverrides` (Set tone, a swap) therefore shifts exercises on days
+the edit never touched. When a change should hit one day, rebuild that day
+by direct mutation and pass `recentIds.subtracting(day's own ids)` so the
+day's current picks do not count against themselves
+(`PlanStore.applySoreness`).
+
+**Fixed in build 150 with a version stamp.** `WeekPlan.plannerVersion` is
+stamped by its init (default `Planner.version`), and `migrateIfStale`
+rebuilds any plan stamped lower or not stamped at all, on launch, unless a
+session is active. Moves and tone survive because they live in
+`WeekOverrides`. The default on the init is the reason UI-test seeds are not
+rebuilt: `seedWeekPlan` and the others construct `WeekPlan(...)`, so they come
+out stamped current with no call-site edits. A seed that writes raw JSON
+without the key would be rebuilt on launch. Tests:
+`PlanStoreSeamsTests` "Planner version stamp".

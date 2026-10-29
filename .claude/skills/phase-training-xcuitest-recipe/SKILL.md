@@ -171,3 +171,12 @@ was fine; the value override was the break.
   PhaseTrainingUITests/` for the element before adding one.
 - Symptom to recognise: an assertion on a field's text fails with the expected
   string plus a suffix, right after an a11y pass touched that row.
+
+## Today's title wheel is not an otherElement
+`today-workout-wheel` is one adjustable accessibility element, and
+`app.otherElements["today-workout-wheel"]` does not match it (2026-10-12: it
+timed out after 10s and `swipeLeft` then failed with "No matches found").
+Query it as `app.descendants(matching: .any)["today-workout-wheel"]`. After an
+XCUITest `swipeLeft` the next title shows in grey but the pips and the
+exercise count do not move. The code before `5c31c93` behaves the same way,
+so it is not a regression to chase.

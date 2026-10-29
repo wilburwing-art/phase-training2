@@ -70,3 +70,7 @@ exercise passes the filter iff its required equipment ⊆ that set. The catalog 
 ZERO apparatus-free vertical/horizontal pulls (physically accurate) — adding
 table/towel rows + prone raises is the fix, tagged equipment bodyweight(1) or
 table(100). New exercises need no alias (aliases are for RENAMES only).
+
+## Renaming an exercise splits its history
+
+Verified 2026-09-26 by tracing one exercise through the stores. `exercises.id` travels only as far as the plan (`GeneratedExercise.exerciseId`, `pt_recent_exercise_picks`, `user_routine_exercises.exercise_id`). From logging onward everything durable is keyed by the **name** string: `LoggedExercise.name`, `session_exercises.name` (previous sets and PRs are looked up by name, `COLLATE NOCASE`), `DayOutcome.loggedExercises`, `TrainingMemory.exerciseAffinities` and `swapAwayCounts`. So changing `name` in `exercises.json` restarts PRs and zeroes affinity and swap counts for that exercise, and nothing reports it. Previous sets survive only inside the same generated template: `buildSession` matches on `ExerciseTemplate.id` first (derived from planInputsHash + slot + exerciseId, so stable), and falls to the name lookup for swaps or a different template. Before a rename, decide whether that is acceptable or add the old name as an alias plus a migration of the stored name strings.

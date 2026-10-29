@@ -22,7 +22,19 @@ real user. (This is broader than the legacy `phase-training-generator-context-de
 "degraded-by-default" note — that was empty context for fresh users; this is the live generator
 ignoring the layer structurally.) **One exception:** `WorkoutGenerator.represcribe` (custom-routine
 override path, reachable for ski/climb) DOES consume `context.priorBest` for its progressive-overload
-note — so context is not 100% inert. See [[phase-training-legacy-generator-selection-vs-prescription-split]].
+note — so context is not 100% inert. **Superseded in part (re-checked 2026-10-28):** readiness now reaches the
+engine through `AthleteState.readinessScore` and scales SETS by lerp(0.6, 1.0)
+(`SportSeasonGenerator.swift:200`), and swap/recommend affinities reach it
+through `AthleteState.exerciseAffinities`. Soreness reaches it too, since
+build 150: `Planner.soreness(for:memory:)` (check-in day plus the next day,
+mild/high/pain) feeds `AthleteState.soreBuckets`. The slot comparator then
+ranks sore prime movers below the rest of their demand, and the ones that
+stay are capped at RPE 7, with a third fewer sets when soreness is high.
+`generateLift(date:)` is the switch, so a caller that passes no date gets
+no soreness. `GeneratedWorkout.soreAreas` stamps what was applied, and
+`PlanStore.applySoreness` (on check-in save and on launch) rebuilds only
+the days whose stamp is stale. The parked `GeneratorContext.recentSoreAreas`
+is still unused. See [[phase-training-legacy-generator-selection-vs-prescription-split]].
 
 ## Consumer map (who actually reads context/strategy)
 LEGACY-ONLY (consume at generation): `WorkoutGenerator.generate()` core loop +
@@ -46,3 +58,26 @@ builders (history/PRs/soreness), the `build_workout` LLM tool (`CoachTools.swift
 
 Pairs with [[phase-training-delete-primaryfocus-goal-axis]] and
 [[phase-training-season-prescription-demand-scheme]].
+
+## Recovery gate (build 152, 2026-10-29)
+
+Logged volume now reaches the engine. `MuscleFreshness` is volume-based (sets × role,
+sqrt-scaled recovery hours, sessions stack) and `MuscleRecovery.status(on:)` turns it plus the
+soreness check-in into `blocked` (<0.5, dropped from the pool) and `eased` (0.5 to 0.8, sore tier,
+RPE 7) buckets. `GeneratorContext.muscleExposures` carries the loads; `PlanStore.applyRecovery`
+rebuilds changed days after a save, on open and after a check-in. Traps found building it:
+- **Report what the gate cost against an ungated pick, never against the pool.** Counting blocked
+  movements in the pool said a ski complement day "skipped quads"; that day never picks legs.
+  `generateSession` reruns itself with `blockedBuckets = []` and diffs.
+- **A gate on a sport session will drop accessories the previous complement day trained** (a
+  climbing push accessory after an upper push day). That is rule one working. Probe sport days
+  for SIGNATURE muscles only (`RecoveryWeekProbeTests`), or the probe fails on correct behavior.
+- **UI tests asserting a Today caption depend on the weekday's SessionMix role.** A "high"
+  quads check-in on a complement upper day skips nothing and shows no caption. Use a mild
+  check-in (eased is stamped on any day) for a deterministic assertion.
+- Build 153 (`PlanStore+LoggedSession.swift`): `recentPicks` is stamped only from LOGGED
+  exercises at the session's time; generation stamps nothing. An off-plan (`switched` /
+  `unplanned`) session that covers 50%+ of a later lift day's sets swaps with it via `swap`.
+  `RecentPicksStore.prune` uses the wall clock, so a test with 2026-05 fixture dates sees its
+  picks pruned on write; date rotation tests from `Date()`. Pass `today:` into anything that
+  calls `swap`/`updateOverrides` from a test, or the regen builds the real current week.
