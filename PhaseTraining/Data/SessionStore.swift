@@ -18,7 +18,7 @@ final class SessionStore: ObservableObject {
     private static let savedMigrationFlag = "pt_sessions_migrated_v1"
 
     @Published var savedSessions: [SavedSession] {
-        didSet { provenStrengthCache = nil }
+        didSet { historyProfileCache = nil }
     }
     @Published var active: ActiveSession?
     /// PR 9 — app-level wiring: the App layer assigns this to forward
@@ -69,10 +69,15 @@ final class SessionStore: ObservableObject {
         }
 
         // An import, a deletion or the launch ImportMaintenance pass changes
-        // the evidence behind provenStrength.
+        // the evidence behind historyProfile.
         importsObserver = NotificationCenter.default.addObserver(
             forName: .importedSetsDidChange, object: resolvedDB, queue: .main
-        ) { [weak self] _ in self?.provenStrengthCache = nil }
+        ) { [weak self] _ in
+            // Not @Published, so tell observers: the History check row and
+            // the "from history" pills read it.
+            self?.historyProfileCache = nil
+            self?.objectWillChange.send()
+        }
     }
 
     deinit {
@@ -287,19 +292,21 @@ final class SessionStore: ObservableObject {
         return userDB.mostRecentExerciseByName(name)?.sets ?? []
     }
 
-    /// `ProvenStrength` over saved sessions plus imported sets, built on first
+    /// `HistoryProfile` over saved sessions plus imported sets, built on first
     /// use and dropped when either changes. Rows render this per exercise, so
     /// it must not rebuild per call.
-    private var provenStrengthCache: [String: PriorBest]?
+    private var historyProfileCache: HistoryProfile?
     private var importsObserver: NSObjectProtocol?
 
+    var historyProfile: HistoryProfile {
+        if let historyProfileCache { return historyProfileCache }
+        let built = HistoryProfile.build(sessions: savedSessions, imported: userDB.allImportedSets(), now: Date())
+        historyProfileCache = built
+        return built
+    }
+
     func provenStrength(forExerciseNamed name: String) -> PriorBest? {
-        if provenStrengthCache == nil {
-            provenStrengthCache = ProvenStrength.index(sessions: savedSessions,
-                                                       imported: userDB.allImportedSets(),
-                                                       now: Date())
-        }
-        return provenStrengthCache.flatMap { ExerciseKey.lookup($0, name: name) }
+        historyProfile.profile(forExerciseNamed: name)?.estimate
     }
 
     /// Build a fresh ActiveSession from the named template, pulling prior set

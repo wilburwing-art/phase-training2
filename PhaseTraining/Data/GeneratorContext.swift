@@ -456,8 +456,9 @@ extension GeneratorContext {
         return out
     }
 
-    /// Loaded exercises: `ProvenStrength` over native sessions plus imported
-    /// sets (median of the 3 most recent workouts, discounted for age).
+    /// Loaded exercises: `HistoryProfile` estimates over native sessions plus
+    /// imported sets, cleaned of typos and duplicates (median of the 3 most
+    /// recent workouts, discounted for age).
     /// Bodyweight movements with no loaded evidence keep the reps path: the
     /// best reps of the most recent session, weight 0, which
     /// `progressiveOverloadHint` reads as "beat it by one rep".
@@ -466,7 +467,7 @@ extension GeneratorContext {
         importedSets: [ImportedSet] = [],
         now: Date
     ) -> [String: PriorBest] {
-        var out = ProvenStrength.index(sessions: sessions, imported: importedSets, now: now)
+        var out = HistoryProfile.build(sessions: sessions, imported: importedSets, now: now).priorBest
         for session in sessions.sorted(by: { $0.startTime > $1.startTime }) {
             for ex in session.exercises where ex.isBodyweight {
                 guard ExerciseKey.lookup(out, name: ex.name) == nil else { continue }

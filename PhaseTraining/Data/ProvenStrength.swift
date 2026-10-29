@@ -3,6 +3,7 @@
 // One estimate per exercise behind both weight suggestions: the generator's
 // "target: X lb" note (through `GeneratorContext.priorBest`) and the Log /
 // Today "SUGGESTED" pill when the exercise has no previous native session.
+// `HistoryProfile` gathers and cleans the evidence and calls `estimate`.
 //
 // The rule, chosen to fail safe (the constants are judgment calls, not fits):
 //   1. Evidence is every working set with weight > 0 and 1-12 reps (Epley
@@ -70,50 +71,5 @@ enum ProvenStrength {
     private static func median(_ xs: [Double]) -> Double {
         let s = xs.sorted()
         return s.count % 2 == 1 ? s[s.count / 2] : (s[s.count / 2 - 1] + s[s.count / 2]) / 2
-    }
-
-    // MARK: - Index over native sessions + imported sets
-
-    /// Estimates keyed like every per-exercise map (`ExerciseKey`): the raw
-    /// lowercased name for native entries plus `id:<catalogId>` when the
-    /// catalog resolves it. Native and imported evidence for the same
-    /// catalog exercise pool together. Imported sets count only when their
-    /// name resolved to a catalog id.
-    static func index(sessions: [SavedSession], imported: [ImportedSet],
-                      now: Date) -> [String: PriorBest] {
-        let kgToLb = 1 / ImportUnitCorrection.kgPerLb
-        var evidence: [String: [Evidence]] = [:]
-        var rawNames: [String: Set<String>] = [:]
-
-        for session in sessions {
-            for ex in session.exercises {
-                let key = ExerciseKey.id(for: ex.name) ?? ExerciseKey.raw(ex.name)
-                rawNames[key, default: []].insert(ExerciseKey.raw(ex.name))
-                for set in ex.sets where set.done && !set.isWarmup {
-                    guard let w = set.weightValue, let r = set.repsValue else { continue }
-                    evidence[key, default: []].append(Evidence(date: session.startTime, weightLb: w, reps: r))
-                }
-            }
-        }
-        for set in imported {
-            guard let id = set.exerciseId, let kg = set.weight, let r = set.reps else { continue }
-            evidence["id:\(id)", default: []].append(Evidence(date: set.performedAt, weightLb: kg * kgToLb, reps: r))
-        }
-
-        var out: [String: PriorBest] = [:]
-        for (key, ev) in evidence {
-            guard let best = estimate(ev, now: now) else { continue }
-            if key.hasPrefix("id:") {
-                out[key] = best
-                // An imported-only exercise has no native name; key it by its
-                // catalog name too, as the old imported-peak fill did.
-                if rawNames[key] == nil, let id = Int(key.dropFirst(3)),
-                   let name = CoachDatabase.shared.exercise(id: id)?.name {
-                    out[ExerciseKey.raw(name)] = out[ExerciseKey.raw(name)] ?? best
-                }
-            }
-            for raw in rawNames[key] ?? [] { out[raw] = best }
-        }
-        return out
     }
 }

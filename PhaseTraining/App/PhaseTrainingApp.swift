@@ -80,6 +80,12 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-imported-history") {
             Self.seedImportedHistory()
         }
+        //   --seed-history-typo → the same three imported Back Squat workouts
+        //     at 225 lb x 5, one with a 900 lb typo set, so History check
+        //     lists it and the suggestion stays near 225.
+        if ProcessInfo.processInfo.arguments.contains("--seed-history-typo") {
+            Self.seedImportedHistory(typo: true)
+        }
         //   --seed-snow-sport-demo → TODAY is a SNOWBOARDING sport day, so the
         //     sport-matched Kettle loop (KettlePose.forSport) shows him carving.
         if ProcessInfo.processInfo.arguments.contains("--seed-snow-sport-demo") {
@@ -378,17 +384,22 @@ struct PhaseTrainingApp: App {
         }
     }
 
-    /// --seed-imported-history: imported sets only, no native session.
-    private static func seedImportedHistory() {
+    /// --seed-imported-history / --seed-history-typo: imported sets only, no
+    /// native session. The typo variant logs 225 lb and puts one 900 lb set
+    /// in the most recent workout.
+    private static func seedImportedHistory(typo: Bool = false) {
         guard let squat = CoachDatabase.shared.exerciseId(forImportName: "Back Squat") else { return }
         let now = Date()
         let rows = (1...3).flatMap { week -> [ImportedSet] in
             let at = now.addingTimeInterval(-Double(week) * 4 * 86_400)
             return (1...3).map { n in
-                ImportedSet(id: ImportedSet.makeId(source: .fitbodCSV, performedAt: at,
-                                                   exerciseNameRaw: "Back Squat", setNum: n),
-                            source: .fitbodCSV, exerciseId: squat, exerciseNameRaw: "Back Squat",
-                            performedAt: at, setNum: n, weight: 100, reps: 5, rir: nil, rpe: nil)
+                let kg = typo
+                    ? (week == 1 && n == 3 ? 900 : 225) * ImportUnitCorrection.kgPerLb
+                    : 100
+                return ImportedSet(id: ImportedSet.makeId(source: .fitbodCSV, performedAt: at,
+                                                          exerciseNameRaw: "Back Squat", setNum: n),
+                                   source: .fitbodCSV, exerciseId: squat, exerciseNameRaw: "Back Squat",
+                                   performedAt: at, setNum: n, weight: kg, reps: 5, rir: nil, rpe: nil)
             }
         }
         UserDatabase.shared.insertImportedSets(rows)

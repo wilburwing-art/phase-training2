@@ -35,6 +35,7 @@ struct CSVImportSection: View {
             if let last = lastImport {
                 csvLastImportBlock(result: last)
             }
+            HistoryCheckRow()
 
             Button {
                 csvError = nil

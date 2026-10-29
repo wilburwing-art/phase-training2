@@ -325,6 +325,7 @@ struct ProfileScreen: View {
         .sheet(isPresented: $presentingHealthImports, onDismiss: { refreshHealthImportState() }) {
             HealthImportsScreen()
                 .environmentObject(store)
+                .environmentObject(sessionStore)
         }
         .onAppear { refreshHealthImportState() }
         .sheet(isPresented: $presentingBodyWeightLog) {

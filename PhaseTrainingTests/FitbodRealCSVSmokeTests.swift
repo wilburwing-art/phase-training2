@@ -123,7 +123,28 @@ final class FitbodRealCSVSmokeTests: XCTestCase {
             }
         }
 
+        let profile = HistoryProfile.build(sessions: [], imported: sets, now: newest)
+        let audit = profile.audit
+        lines.append("history check: \(audit.outlierSets) outliers, \(audit.impossibleSets) impossible, \(audit.duplicateBlocks) duplicate blocks, \(audit.layoffs.count) layoffs")
+        for f in audit.flags.prefix(10) { lines.append("  flag \(f.exercise) \(f.date) \(Int(f.weightLb))x\(f.reps) \(f.reason)") }
+        for name in ["Barbell Back Squat", "Lat Pulldown (Cable)", "Dumbbell Curl", "Barbell Bench Press"] {
+            if let p = profile.profile(forExerciseNamed: name) {
+                lines.append("  \(name): step \(p.typicalStepLb.map { "\($0)" } ?? "—"), trend \(p.trend), plateau \(p.plateau)")
+            }
+        }
+
         if url.lastPathComponent == "WorkoutExport.csv" {
+            XCTAssertTrue((1...20).contains(audit.outlierSets), "outliers: \(audit.outlierSets)")
+            XCTAssertGreaterThanOrEqual(audit.duplicateBlocks, 1)
+            // 11, not the 12 a weighted-sets-only count gives: one gap holds a
+            // bodyweight-only workout, which is still training.
+            XCTAssertEqual(audit.layoffs.count, 11)
+            for name in ["Barbell Back Squat", "Lat Pulldown (Cable)"] {
+                XCTAssertEqual(profile.profile(forExerciseNamed: name)?.typicalStepLb, 5, name)
+            }
+            XCTAssertNotEqual(profile.profile(forExerciseNamed: "Barbell Back Squat")?.trend, .unknown)
+            // Bench has only 3 workouts in its last 26 weeks: too few to call.
+            XCTAssertEqual(profile.profile(forExerciseNamed: "Barbell Bench Press")?.trend, .unknown)
             // The 2016-2026 export: kg mode with pound numbers until late 2017.
             XCTAssertFalse(reports.isEmpty, "the pre-2018 era should be detected")
             let bench2017 = sets.filter {

@@ -76,7 +76,7 @@ final class ProvenStrengthTests: XCTestCase {
             feel: nil, note: nil, endTime: daysAgo(2), duration: 1800)
         let imported = [ImportedSet(id: "x", source: .fitbodCSV, exerciseId: benchId, exerciseNameRaw: "Barbell Bench Press",
                                     performedAt: daysAgo(9), setNum: 1, weight: 100, reps: 5, rir: nil, rpe: nil)]
-        let index = ProvenStrength.index(sessions: [native], imported: imported, now: now)
+        let index = HistoryProfile.build(sessions: [native], imported: imported, now: now).priorBest
         let est = try XCTUnwrap(ExerciseKey.lookup(index, name: name))
         let importedLb = 100 / ImportUnitCorrection.kgPerLb
         XCTAssertEqual(e1rm(est), (epley(200, 5) + epley(importedLb, 5)) / 2, accuracy: 0.01)
@@ -89,5 +89,10 @@ final class ProvenStrengthTests: XCTestCase {
         let kg = try XCTUnwrap(ProgressionSuggestion.fromHistory(prior, targetReps: 8, unit: "kg"))
         XCTAssertEqual(kg.suggestedWeight.truncatingRemainder(dividingBy: 1.25), 0, accuracy: 1e-9)
         XCTAssertNil(ProgressionSuggestion.fromHistory(PriorBest(weight: 0, reps: 12, date: now), targetReps: 8, unit: "lbs"))
+        // A kg round-trip must not knock an exact load down a step.
+        let roundTripped = 225 * ImportUnitCorrection.kgPerLb / ImportUnitCorrection.kgPerLb
+        let exact = ProgressionSuggestion.fromHistory(PriorBest(weight: roundTripped, reps: 5, date: now),
+                                                      targetReps: 5, unit: "lbs")
+        XCTAssertEqual(exact?.suggestedWeight, 225)
     }
 }

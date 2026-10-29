@@ -128,7 +128,9 @@ enum ProgressionSuggestion {
         } else {
             step = 2.5
         }
-        let snapped = (load / step).rounded(.down) * step
+        // The tolerance absorbs kg round-trips: 225 lb stored as kg reads
+        // back as 224.99999 and would otherwise snap down to 222.5.
+        let snapped = ((load + 1e-6) / step).rounded(.down) * step
         guard snapped > 0 else { return nil }
         return Result(suggestedWeight: snapped, delta: 0, label: "from history",
                       rationale: "From your recent logged and imported sets")
