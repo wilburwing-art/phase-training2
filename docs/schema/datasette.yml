@@ -1,0 +1,25 @@
+# Datasette metadata for scripts/schema/browse.sh
+title: Phase Training databases
+description: Bundled exercise catalog (coach) and a schema-only copy of the on-device history database (user). Full docs in docs/schema/.
+databases:
+  coach:
+    description: Read-only catalog built by scripts/db/build_db.py from db/source/*.json.
+    tables:
+      exercises:
+        facets: [modality, difficulty, environment, intensity_category, image_source]
+        sort: name
+      exercise_sport_relevance:
+        facets: [support_role, specificity]
+      exercise_injury_relevance:
+        facets: [role]
+      exercise_substitutions:
+        facets: [context]
+      sport_categories:
+        facets: [depth]
+        sort: sort_order
+      sport_movements:
+        facets: [sport]
+      routines:
+        facets: [difficulty, phase, environment]
+  user:
+    description: Empty. Built from the migrations in UserDatabase.swift by scripts/schema/build_user_db.py, for inspecting structure only.

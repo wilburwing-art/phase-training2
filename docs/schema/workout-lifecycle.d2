@@ -1,0 +1,71 @@
+# Life of a workout: plan -> start -> log -> finish -> learn.
+# Render: scripts/schema/gen_docs.sh
+shape: sequence_diagram
+
+user: You
+screens: Screens\n(Today, Log, Complete)
+memory: MemoryStore
+plan: PlanStore
+engine: Planner +\ngenerators
+catalog: coach.db
+llm: Coach LLM\n(AI Gateway)
+session: SessionStore
+userdb: user.db
+defaults: UserDefaults
+
+"1 · Plan the week": {
+  memory -> plan: profile changes\n(planInputsHash drifts, 500 ms debounce,\nskipped while a workout is active)
+  screens -> plan: or onboarding finish / Week tab regenerate
+  plan -> catalog: listRoutines()
+  plan -> userdb: buildGeneratorContext()\nreads session + import history
+  plan -> engine: Planner.generate(memory, overrides,\nfeedback, sport logs, recent picks,\ndeload?, skip-streak weekday)
+  engine -> catalog: pick exercises by pattern,\nequipment, sport, injury, phase
+  engine -> plan: WeekPlan (7 DayPlans,\nGeneratedWorkout each)
+  plan -> plan: apply custom-routine overrides
+  plan -> defaults: pt_week_plan
+  plan -> defaults: pt_past_plans (snapshot)
+  plan -> llm: refine lift days\n(only with coach consent)
+  llm -> plan: refined GeneratedWorkout per day
+  plan -> defaults: pt_week_plan (refined)
+}
+
+"2 · Start": {
+  screens -> plan: today's DayPlan
+  user -> screens: tap Start
+  screens -> session: createSession(from: template)
+  session -> userdb: last sets for each exercise\n(prevSets, progression hints)
+  session -> defaults: pt_active_session
+}
+
+"3 · Log sets": {
+  user -> screens: weight, reps, RPE, done
+  screens -> session: saveActive(every edit)
+  session -> defaults: pt_active_session\n(survives an app kill)
+  user -> llm: optional: ask the coach
+  llm -> screens: propose_workout_changes
+  screens -> session: applyWorkoutDiffToActiveSession
+}
+
+"4a · Finish": {
+  user -> screens: Finish
+  screens -> session: saveCompleted(feel, note)
+  session -> userdb: sessions + session_exercises\n+ session_sets (id = start_time)
+  session -> defaults: clear pt_active_session
+  session -> plan: onSessionSaved hook
+  plan -> plan: DayOutcome.derive\n(planned vs logged, swaps, drops)
+  plan -> defaults: pt_day_outcomes
+}
+
+"4b · Or stop early": {
+  screens -> session: saveAbandoned(reason)
+  session -> userdb: same session write
+  session -> plan: under 70% of sets done:\nonAbandonRecorded
+  plan -> defaults: pt_abandoned_workouts\n(+ reshuffle offer, max 2 a week)
+}
+
+"5 · Learn": {
+  user -> screens: optional post-workout feedback
+  screens -> memory: feedback.append(FeedbackEntry)
+  memory -> defaults: pt_training_memory
+  memory -> plan: next regen reads feedback\n(+/- 1 lift day nudge)
+}

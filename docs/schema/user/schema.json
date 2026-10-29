@@ -1,0 +1,851 @@
+{
+  "name": "user.db",
+  "desc": "On-device workout history (Documents/user.db). Schema from the migrations in PhaseTraining/Data/UserDatabase.swift, versioned by PRAGMA user_version.",
+  "tables": [
+    {
+      "name": "user_routines",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "focus",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "INTEGER",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sqlite_autoindex_user_routines_1",
+          "def": "PRIMARY KEY (id)",
+          "table": "user_routines",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "user_routines",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_user_routines_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "user_routines",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE user_routines (\n              id          TEXT PRIMARY KEY,\n              name        TEXT NOT NULL,\n              focus       TEXT,\n              created_at  INTEGER NOT NULL,\n              updated_at  INTEGER NOT NULL\n            )"
+    },
+    {
+      "name": "user_routine_exercises",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "routine_id",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "exercise_id",
+          "type": "INTEGER",
+          "nullable": false,
+          "comment": "coach.db exercises.id. Separate database file, so no FK."
+        },
+        {
+          "name": "position",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "sets",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "reps",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "rest",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false,
+          "comment": "Denormalized copy of the exercise name."
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_ure_routine",
+          "def": "CREATE INDEX idx_ure_routine ON user_routine_exercises(routine_id, position)",
+          "table": "user_routine_exercises",
+          "columns": [
+            "routine_id",
+            "position"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_user_routine_exercises_1",
+          "def": "PRIMARY KEY (id)",
+          "table": "user_routine_exercises",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "user_routine_exercises",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (routine_id) REFERENCES user_routines (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "user_routine_exercises",
+          "referenced_table": "user_routines",
+          "columns": [
+            "routine_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_user_routine_exercises_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "user_routine_exercises",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE user_routine_exercises (\n              id           TEXT PRIMARY KEY,\n              routine_id   TEXT NOT NULL,\n              exercise_id  INTEGER NOT NULL,\n              position     INTEGER NOT NULL,\n              sets         INTEGER,\n              reps         TEXT,\n              rest         TEXT,\n              notes        TEXT,\n              name         TEXT NOT NULL,\n              FOREIGN KEY (routine_id) REFERENCES user_routines(id) ON DELETE CASCADE\n            )"
+    },
+    {
+      "name": "sessions",
+      "type": "table",
+      "comment": "One saved native workout. start_time (epoch seconds) is the session id, referenced from UserDefaults by DayOutcome.sessionId, WeekPlanSnapshot.actualSessionIDs and FeedbackEntry.sessionId.",
+      "columns": [
+        {
+          "name": "start_time",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "template_id",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "category",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "end_time",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "duration",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "feel",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "note",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "mood",
+          "type": "TEXT",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_sessions_start",
+          "def": "CREATE INDEX idx_sessions_start ON sessions(start_time DESC)",
+          "table": "sessions",
+          "columns": [
+            "start_time"
+          ]
+        },
+        {
+          "name": "idx_sessions_template_start",
+          "def": "CREATE INDEX idx_sessions_template_start ON sessions(template_id, start_time DESC)",
+          "table": "sessions",
+          "columns": [
+            "template_id",
+            "start_time"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "start_time",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (start_time)",
+          "table": "sessions",
+          "columns": [
+            "start_time"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE sessions (\n              start_time   INTEGER PRIMARY KEY,\n              template_id  TEXT NOT NULL,\n              name         TEXT NOT NULL,\n              category     TEXT NOT NULL,\n              end_time     INTEGER NOT NULL,\n              duration     INTEGER NOT NULL,\n              feel         TEXT,\n              note         TEXT\n            , mood TEXT)"
+    },
+    {
+      "name": "session_exercises",
+      "type": "table",
+      "columns": [
+        {
+          "name": "session_start",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "position",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "exercise_template_id",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "type",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "unit",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "target_sets",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "target_reps",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "rest",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "prev_sets_json",
+          "type": "TEXT",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_session_exercises_name",
+          "def": "CREATE INDEX idx_session_exercises_name ON session_exercises(name COLLATE NOCASE, session_start DESC)",
+          "table": "session_exercises",
+          "columns": [
+            "name",
+            "session_start"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_session_exercises_1",
+          "def": "PRIMARY KEY (session_start, position)",
+          "table": "session_exercises",
+          "columns": [
+            "session_start",
+            "position"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "session_start",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (session_start)",
+          "table": "session_exercises",
+          "columns": [
+            "session_start"
+          ]
+        },
+        {
+          "name": "position",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (position)",
+          "table": "session_exercises",
+          "columns": [
+            "position"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (session_start) REFERENCES sessions (start_time) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "session_exercises",
+          "referenced_table": "sessions",
+          "columns": [
+            "session_start"
+          ],
+          "referenced_columns": [
+            "start_time"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_session_exercises_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (session_start, position)",
+          "table": "session_exercises",
+          "columns": [
+            "session_start",
+            "position"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE session_exercises (\n              session_start         INTEGER NOT NULL,\n              position              INTEGER NOT NULL,\n              exercise_template_id  TEXT NOT NULL,\n              name                  TEXT NOT NULL,\n              type                  TEXT,\n              unit                  TEXT NOT NULL,\n              target_sets           INTEGER NOT NULL,\n              target_reps           INTEGER NOT NULL,\n              rest                  INTEGER NOT NULL,\n              prev_sets_json        TEXT,\n              PRIMARY KEY (session_start, position),\n              FOREIGN KEY (session_start) REFERENCES sessions(start_time) ON DELETE CASCADE\n            )"
+    },
+    {
+      "name": "session_sets",
+      "type": "table",
+      "columns": [
+        {
+          "name": "session_start",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "exercise_position",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "num",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "weight",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "reps",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "rpe",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "done",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "is_warmup",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": "0"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sqlite_autoindex_session_sets_1",
+          "def": "PRIMARY KEY (session_start, exercise_position, num)",
+          "table": "session_sets",
+          "columns": [
+            "session_start",
+            "exercise_position",
+            "num"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "session_start",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (session_start)",
+          "table": "session_sets",
+          "columns": [
+            "session_start"
+          ]
+        },
+        {
+          "name": "exercise_position",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_position)",
+          "table": "session_sets",
+          "columns": [
+            "exercise_position"
+          ]
+        },
+        {
+          "name": "num",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (num)",
+          "table": "session_sets",
+          "columns": [
+            "num"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (session_start, exercise_position) REFERENCES session_exercises (session_start, position) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "session_sets",
+          "referenced_table": "session_exercises",
+          "columns": [
+            "session_start",
+            "exercise_position"
+          ],
+          "referenced_columns": [
+            "session_start",
+            "position"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_session_sets_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (session_start, exercise_position, num)",
+          "table": "session_sets",
+          "columns": [
+            "session_start",
+            "exercise_position",
+            "num"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE session_sets (\n              session_start      INTEGER NOT NULL,\n              exercise_position  INTEGER NOT NULL,\n              num                INTEGER NOT NULL,\n              weight             TEXT NOT NULL,\n              reps               TEXT NOT NULL,\n              rpe                TEXT NOT NULL,\n              done               INTEGER NOT NULL,\n              is_warmup          INTEGER NOT NULL DEFAULT 0,\n              PRIMARY KEY (session_start, exercise_position, num),\n              FOREIGN KEY (session_start, exercise_position)\n                REFERENCES session_exercises(session_start, position) ON DELETE CASCADE\n            )"
+    },
+    {
+      "name": "imported_workouts",
+      "type": "table",
+      "comment": "HealthKit or CSV workouts, keyed by the source's own UUID so re-import is idempotent. Unioned with sessions in GeneratorContext.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "source",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "hk_uuid",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "kind",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "start_time",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "duration_seconds",
+          "type": "REAL",
+          "nullable": false
+        },
+        {
+          "name": "energy_kcal",
+          "type": "REAL",
+          "nullable": true
+        },
+        {
+          "name": "imported_at",
+          "type": "INTEGER",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_imported_workouts_kind",
+          "def": "CREATE INDEX idx_imported_workouts_kind  ON imported_workouts(kind)",
+          "table": "imported_workouts",
+          "columns": [
+            "kind"
+          ]
+        },
+        {
+          "name": "idx_imported_workouts_start",
+          "def": "CREATE INDEX idx_imported_workouts_start ON imported_workouts(start_time DESC)",
+          "table": "imported_workouts",
+          "columns": [
+            "start_time"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_imported_workouts_1",
+          "def": "PRIMARY KEY (id)",
+          "table": "imported_workouts",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "imported_workouts",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_imported_workouts_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "imported_workouts",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE imported_workouts (\n              id                TEXT PRIMARY KEY,\n              source            TEXT NOT NULL,\n              hk_uuid           TEXT,\n              kind              TEXT NOT NULL,\n              start_time        INTEGER NOT NULL,\n              duration_seconds  REAL NOT NULL,\n              energy_kcal       REAL,\n              imported_at       INTEGER NOT NULL\n            )"
+    },
+    {
+      "name": "imported_sets",
+      "type": "table",
+      "comment": "Set-level CSV history. Attached to imported_workouts by performed_at proximity in Swift, not by FK.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "source",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "exercise_id",
+          "type": "INTEGER",
+          "nullable": true,
+          "comment": "coach.db exercises.id when the raw name fuzzy-matched, else NULL."
+        },
+        {
+          "name": "exercise_name_raw",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "performed_at",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "set_num",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "weight",
+          "type": "REAL",
+          "nullable": true
+        },
+        {
+          "name": "reps",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "rir",
+          "type": "REAL",
+          "nullable": true
+        },
+        {
+          "name": "rpe",
+          "type": "REAL",
+          "nullable": true
+        },
+        {
+          "name": "imported_at",
+          "type": "INTEGER",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_imported_sets_source",
+          "def": "CREATE INDEX idx_imported_sets_source   ON imported_sets(source)",
+          "table": "imported_sets",
+          "columns": [
+            "source"
+          ]
+        },
+        {
+          "name": "idx_imported_sets_perf",
+          "def": "CREATE INDEX idx_imported_sets_perf     ON imported_sets(performed_at DESC)",
+          "table": "imported_sets",
+          "columns": [
+            "performed_at"
+          ]
+        },
+        {
+          "name": "idx_imported_sets_exercise",
+          "def": "CREATE INDEX idx_imported_sets_exercise ON imported_sets(exercise_id, performed_at DESC)",
+          "table": "imported_sets",
+          "columns": [
+            "exercise_id",
+            "performed_at"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_imported_sets_1",
+          "def": "PRIMARY KEY (id)",
+          "table": "imported_sets",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "imported_sets",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_imported_sets_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "imported_sets",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE imported_sets (\n              id                   TEXT PRIMARY KEY,\n              source               TEXT NOT NULL,\n              exercise_id          INTEGER,\n              exercise_name_raw    TEXT NOT NULL,\n              performed_at         INTEGER NOT NULL,\n              set_num              INTEGER NOT NULL,\n              weight               REAL,\n              reps                 INTEGER,\n              rir                  REAL,\n              rpe                  REAL,\n              imported_at          INTEGER NOT NULL\n            )"
+    },
+    {
+      "name": "explore_sessions",
+      "type": "table",
+      "comment": "One row per visit to a browse surface (ExploreSession.swift). Not included in the backup envelope.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "surface",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "started_at",
+          "type": "REAL",
+          "nullable": false
+        },
+        {
+          "name": "ended_at",
+          "type": "REAL",
+          "nullable": false
+        },
+        {
+          "name": "query",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "result_count",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "tier",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "broadened",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "opens_json",
+          "type": "TEXT",
+          "nullable": false,
+          "default": "'[]'"
+        },
+        {
+          "name": "conversions_json",
+          "type": "TEXT",
+          "nullable": false,
+          "default": "'[]'"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_explore_sessions_started",
+          "def": "CREATE INDEX idx_explore_sessions_started ON explore_sessions(started_at DESC)",
+          "table": "explore_sessions",
+          "columns": [
+            "started_at"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_explore_sessions_1",
+          "def": "PRIMARY KEY (id)",
+          "table": "explore_sessions",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "explore_sessions",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_explore_sessions_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "explore_sessions",
+          "columns": [
+            "id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE explore_sessions (\n              id                TEXT PRIMARY KEY,\n              surface           TEXT NOT NULL,\n              started_at        REAL NOT NULL,\n              ended_at          REAL NOT NULL,\n              query             TEXT,\n              result_count      INTEGER,\n              tier              INTEGER,\n              broadened         INTEGER NOT NULL DEFAULT 0,\n              opens_json        TEXT NOT NULL DEFAULT '[]',\n              conversions_json  TEXT NOT NULL DEFAULT '[]'\n            )"
+    }
+  ],
+  "relations": [
+    {
+      "table": "user_routine_exercises",
+      "columns": [
+        "routine_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "user_routines",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (routine_id) REFERENCES user_routines (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "session_exercises",
+      "columns": [
+        "session_start"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "sessions",
+      "parent_columns": [
+        "start_time"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (session_start) REFERENCES sessions (start_time) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "session_sets",
+      "columns": [
+        "session_start",
+        "exercise_position"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "session_exercises",
+      "parent_columns": [
+        "session_start",
+        "position"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (session_start, exercise_position) REFERENCES session_exercises (session_start, position) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    }
+  ],
+  "driver": {
+    "name": "sqlite",
+    "database_version": "3.53.4"
+  }
+}

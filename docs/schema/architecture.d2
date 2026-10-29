@@ -1,0 +1,85 @@
+# Phase Training architecture. Render: scripts/schema/gen_docs.sh
+# (d2 --layout=elk docs/schema/architecture.d2 docs/schema/architecture.svg)
+direction: right
+
+classes: {
+  store: {shape: cylinder; style.fill: "#E8F0F4"; style.stroke: "#2F6A88"}
+  ext: {shape: cloud; style.fill: "#F4EEE8"; style.stroke: "#A8502A"}
+  soft: {style.stroke-dash: 4; style.stroke: "#A8502A"}
+}
+
+pipeline: Content pipeline (repo) {
+  src: db/source/*.json\n22 files + _schema.sql
+  py: scripts/db/*.py\nbuild_db, import, dedupe,\nvalidate_coverage
+  img: Resources/ExerciseImages
+  src -> py
+}
+
+coachdb: coach.db\nbundled, read-only {class: store}
+userdb: user.db\nDocuments/, user_version 2 {class: store}
+defaults: UserDefaults\n36 keys, Codable JSON {class: store}
+
+pipeline.py -> coachdb: build_db.py
+
+app: iOS app (SwiftUI) {
+  stores: "@StateObject stores" {
+    grid-columns: 2
+    SessionStore
+    MemoryStore
+    PlanStore: "PlanStore\n+Generation +History\n+Validation +DayOutcomes\n+LLMRefinement"
+    CustomRoutineStore
+    RecentPicksStore
+    SportLogStore
+    CoachConversationStore
+    SubscriptionStore
+    ActivityDetectionStore
+    TabSelectionStore
+  }
+  engines: Engines (pure Swift) {
+    Planner
+    WorkoutGenerator: "WorkoutGenerator\n+Prescription +Represcribe"
+    SportSeasonGenerator: "SportSeasonGenerator\nAthleteState, DemandScheme,\nSupportScheduler"
+    GeneratorContext
+    PlanValidator
+    signals: "Autoregulation, CNSBudget,\nMuscleFreshness, Readiness"
+    Planner -> WorkoutGenerator
+    Planner -> SportSeasonGenerator
+    GeneratorContext -> Planner
+    signals -> WorkoutGenerator
+  }
+  CoachDatabase: CoachDatabase\nquery layer
+  UserDatabase: "UserDatabase\n+Sessions +Routines\n+Imports +Explore"
+  coach: "Coach\nClient, Context, Tools,\nSystemPrompt"
+  BackupManager
+  screens: "Screens\nToday, Week, Log, Library,\nProgress, History, Profile,\nOnboarding"
+
+  stores.PlanStore -> engines.Planner
+  stores.PlanStore -> engines.PlanValidator
+  stores.PlanStore -> coach: LLM refinement
+  stores.CoachConversationStore -> coach
+  stores -> UserDatabase: SessionStore,\nCustomRoutineStore
+  CoachDatabase -> engines.WorkoutGenerator
+  CoachDatabase -> engines.SportSeasonGenerator
+  CoachDatabase -> engines.GeneratorContext
+  CoachDatabase -> screens
+  stores -> screens
+}
+
+coachdb -> app.CoachDatabase: read
+app.UserDatabase <-> userdb
+app.engines.GeneratorContext -> userdb: reads history {class: soft}
+app.stores -> defaults: JSON per key
+app.BackupManager -> userdb
+app.BackupManager -> defaults
+
+gateway: Cloudflare AI Gateway\nto Anthropic Messages API {class: ext}
+healthkit: HealthKit\nHKWorkoutType, read-only {class: ext}
+csv: Fitbod / workout CSV {class: ext}
+storekit: StoreKit 2 {class: ext}
+backupfile: phasetraining-backup-*.json\nenvelope schema v2 {class: ext}
+
+app.coach <-> gateway: messages + 4 tools
+healthkit -> userdb: HealthKitImporter
+csv -> userdb: WorkoutCSVImporter
+storekit -> app.stores: SubscriptionStore
+app.BackupManager -> backupfile: snapshot / restore

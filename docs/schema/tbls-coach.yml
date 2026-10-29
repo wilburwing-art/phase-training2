@@ -1,0 +1,46 @@
+# tbls config for the bundled exercise catalog.
+#   tbls doc -c docs/schema/tbls-coach.yml --rm-dist
+#   tbls lint -c docs/schema/tbls-coach.yml
+name: coach.db
+desc: Bundled read-only exercise catalog, built by scripts/db/build_db.py from db/source/*.json.
+dsn: sqlite://./db/coach.db
+docPath: docs/schema/coach
+
+er:
+  format: mermaid
+  distance: 1
+
+format:
+  adjust: true
+  hideColumnsWithoutValues: [Extra Definition, Parents]
+
+# Joins the database does not declare as foreign keys.
+relations:
+  - table: sport_movements
+    columns: [sport]
+    parentTable: sport_categories
+    parentColumns: [slug]
+    def: "text join on slug, no FK (sport_movements.sport)"
+
+comments:
+  - table: exercises
+    tableComment: The catalog. Ids are pinned in db/source/exercises.json and copied into user.db and UserDefaults, so an id change repoints saved routines and plans.
+  - table: sport_movements
+    tableComment: Season-aware movement pool. `sport` is a sport_categories slug with no FK.
+  - table: sport_categories
+    columnComments:
+      unsupported_reason: NULL means in scope for plan generation.
+
+lint:
+  requireTableComment:
+    enabled: false
+  unrelatedTable:
+    enabled: true
+  requireForeignKeyIndex:
+    enabled: true
+    exclude:
+      - sport_recovery_profiles.sport_id  # INTEGER PRIMARY KEY, already the rowid
+  duplicateRelations:
+    enabled: true
+  labelStyleBigQuery:
+    enabled: false

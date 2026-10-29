@@ -1,0 +1,38 @@
+# tbls config for the on-device user database.
+# user.db only exists at runtime, so build a schema-only copy first:
+#   uv run scripts/schema/build_user_db.py
+#   tbls doc -c docs/schema/tbls-user.yml --rm-dist
+name: user.db
+desc: On-device workout history (Documents/user.db). Schema from the migrations in PhaseTraining/Data/UserDatabase.swift, versioned by PRAGMA user_version.
+dsn: sqlite://./build/schema/user.db
+docPath: docs/schema/user
+
+er:
+  format: mermaid
+  distance: 1
+
+format:
+  adjust: true
+  hideColumnsWithoutValues: [Extra Definition, Parents]
+
+comments:
+  - table: sessions
+    tableComment: One saved native workout. start_time (epoch seconds) is the session id, referenced from UserDefaults by DayOutcome.sessionId, WeekPlanSnapshot.actualSessionIDs and FeedbackEntry.sessionId.
+  - table: user_routine_exercises
+    columnComments:
+      exercise_id: coach.db exercises.id. Separate database file, so no FK.
+      name: Denormalized copy of the exercise name.
+  - table: imported_workouts
+    tableComment: HealthKit or CSV workouts, keyed by the source's own UUID so re-import is idempotent. Unioned with sessions in GeneratorContext.
+  - table: imported_sets
+    tableComment: Set-level CSV history. Attached to imported_workouts by performed_at proximity in Swift, not by FK.
+    columnComments:
+      exercise_id: coach.db exercises.id when the raw name fuzzy-matched, else NULL.
+  - table: explore_sessions
+    tableComment: One row per visit to a browse surface (ExploreSession.swift). Not included in the backup envelope.
+
+lint:
+  requireForeignKeyIndex:
+    enabled: true
+  duplicateRelations:
+    enabled: true

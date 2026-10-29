@@ -1,0 +1,3055 @@
+{
+  "name": "coach.db",
+  "desc": "Bundled read-only exercise catalog, built by scripts/db/build_db.py from db/source/*.json.",
+  "tables": [
+    {
+      "name": "common_injuries",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "body_region",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "mechanism",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "typical_recovery",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TEXT",
+          "nullable": true,
+          "default": "datetime('now')"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sqlite_autoindex_common_injuries_2",
+          "def": "UNIQUE (slug)",
+          "table": "common_injuries",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_common_injuries_1",
+          "def": "UNIQUE (name)",
+          "table": "common_injuries",
+          "columns": [
+            "name"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "common_injuries",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_common_injuries_2",
+          "type": "UNIQUE",
+          "def": "UNIQUE (slug)",
+          "table": "common_injuries",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_common_injuries_1",
+          "type": "UNIQUE",
+          "def": "UNIQUE (name)",
+          "table": "common_injuries",
+          "columns": [
+            "name"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE common_injuries (\n  id                       INTEGER PRIMARY KEY,\n  name                     TEXT NOT NULL UNIQUE,\n  slug                     TEXT NOT NULL UNIQUE,\n  body_region              TEXT,\n  description              TEXT,\n  mechanism                TEXT,\n  typical_recovery         TEXT,\n  created_at               TEXT DEFAULT (datetime('now'))\n)"
+    },
+    {
+      "name": "equipment",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "category",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "portability",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "estimated_cost",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "home_gym_friendly",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": "0"
+        },
+        {
+          "name": "created_at",
+          "type": "TEXT",
+          "nullable": true,
+          "default": "datetime('now')"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sqlite_autoindex_equipment_2",
+          "def": "UNIQUE (slug)",
+          "table": "equipment",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_equipment_1",
+          "def": "UNIQUE (name)",
+          "table": "equipment",
+          "columns": [
+            "name"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "equipment",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_equipment_2",
+          "type": "UNIQUE",
+          "def": "UNIQUE (slug)",
+          "table": "equipment",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_equipment_1",
+          "type": "UNIQUE",
+          "def": "UNIQUE (name)",
+          "table": "equipment",
+          "columns": [
+            "name"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (portability IN ('portable','gym_only','outdoor_only','any'))",
+          "table": "equipment",
+          "columns": [
+            "portability"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (estimated_cost IN ('low','medium','high'))",
+          "table": "equipment",
+          "columns": [
+            "estimated_cost"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (home_gym_friendly IN (0,1))",
+          "table": "equipment",
+          "columns": [
+            "home_gym_friendly"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE equipment (\n  id                       INTEGER PRIMARY KEY,\n  name                     TEXT NOT NULL UNIQUE,\n  slug                     TEXT NOT NULL UNIQUE,\n  category                 TEXT,\n  portability              TEXT CHECK (portability IN ('portable','gym_only','outdoor_only','any')),\n  estimated_cost           TEXT CHECK (estimated_cost IN ('low','medium','high')),\n  home_gym_friendly        INTEGER DEFAULT 0 CHECK (home_gym_friendly IN (0,1)),\n  created_at               TEXT DEFAULT (datetime('now'))\n)"
+    },
+    {
+      "name": "exercise_aliases",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "exercise_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "alias",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "source",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TEXT",
+          "nullable": true,
+          "default": "datetime('now')"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_exercise_aliases_unique",
+          "def": "CREATE UNIQUE INDEX idx_exercise_aliases_unique\n  ON exercise_aliases(exercise_id, alias COLLATE NOCASE)",
+          "table": "exercise_aliases",
+          "columns": [
+            "exercise_id",
+            "alias"
+          ]
+        },
+        {
+          "name": "idx_exercise_aliases_exercise",
+          "def": "CREATE INDEX idx_exercise_aliases_exercise ON exercise_aliases(exercise_id)",
+          "table": "exercise_aliases",
+          "columns": [
+            "exercise_id"
+          ]
+        },
+        {
+          "name": "idx_exercise_aliases_alias",
+          "def": "CREATE INDEX idx_exercise_aliases_alias    ON exercise_aliases(alias COLLATE NOCASE)",
+          "table": "exercise_aliases",
+          "columns": [
+            "alias"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "exercise_aliases",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "exercise_aliases",
+          "referenced_table": "exercises",
+          "columns": [
+            "exercise_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (source IN ( 'common_name', -- everyday gym name (\"RDL\", \"DL\") 'sport_name', -- discipline-specific (\"crimp grip\", \"front lever\") 'brand', -- equipment-brand name (\"ViPR shovel\", \"Bulgarian bag\") 'historical', -- older name still in literature 'misspelling', -- common typo we want to forgive 'translation' -- non-English label ))",
+          "table": "exercise_aliases",
+          "columns": [
+            "source"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE exercise_aliases (\n  id            INTEGER PRIMARY KEY AUTOINCREMENT,\n  exercise_id   INTEGER NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,\n  alias         TEXT NOT NULL,\n  source        TEXT CHECK (source IN (\n                  'common_name',    -- everyday gym name (\"RDL\", \"DL\")\n                  'sport_name',     -- discipline-specific (\"crimp grip\", \"front lever\")\n                  'brand',          -- equipment-brand name (\"ViPR shovel\", \"Bulgarian bag\")\n                  'historical',     -- older name still in literature\n                  'misspelling',    -- common typo we want to forgive\n                  'translation'     -- non-English label\n                )),\n  notes         TEXT,\n  created_at    TEXT DEFAULT (datetime('now'))\n)"
+    },
+    {
+      "name": "exercise_equipment",
+      "type": "table",
+      "columns": [
+        {
+          "name": "exercise_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "equipment_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "is_required",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": "1"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_ee_equipment",
+          "def": "CREATE INDEX idx_ee_equipment                  ON exercise_equipment(equipment_id)",
+          "table": "exercise_equipment",
+          "columns": [
+            "equipment_id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_exercise_equipment_1",
+          "def": "PRIMARY KEY (exercise_id, equipment_id)",
+          "table": "exercise_equipment",
+          "columns": [
+            "exercise_id",
+            "equipment_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "exercise_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_id)",
+          "table": "exercise_equipment",
+          "columns": [
+            "exercise_id"
+          ]
+        },
+        {
+          "name": "equipment_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (equipment_id)",
+          "table": "exercise_equipment",
+          "columns": [
+            "equipment_id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (equipment_id) REFERENCES equipment (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "exercise_equipment",
+          "referenced_table": "equipment",
+          "columns": [
+            "equipment_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 1)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "exercise_equipment",
+          "referenced_table": "exercises",
+          "columns": [
+            "exercise_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_exercise_equipment_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_id, equipment_id)",
+          "table": "exercise_equipment",
+          "columns": [
+            "exercise_id",
+            "equipment_id"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (is_required IN (0,1))",
+          "table": "exercise_equipment",
+          "columns": [
+            "is_required"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE exercise_equipment (\n  exercise_id     INTEGER NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,\n  equipment_id    INTEGER NOT NULL REFERENCES equipment(id) ON DELETE CASCADE,\n  is_required     INTEGER DEFAULT 1 CHECK (is_required IN (0,1)),\n  PRIMARY KEY (exercise_id, equipment_id)\n)"
+    },
+    {
+      "name": "exercise_injury_relevance",
+      "type": "table",
+      "columns": [
+        {
+          "name": "exercise_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "injury_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "role",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_exinj_injury",
+          "def": "CREATE INDEX idx_exinj_injury                  ON exercise_injury_relevance(injury_id)",
+          "table": "exercise_injury_relevance",
+          "columns": [
+            "injury_id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_exercise_injury_relevance_1",
+          "def": "PRIMARY KEY (exercise_id, injury_id, role)",
+          "table": "exercise_injury_relevance",
+          "columns": [
+            "exercise_id",
+            "injury_id",
+            "role"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "exercise_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_id)",
+          "table": "exercise_injury_relevance",
+          "columns": [
+            "exercise_id"
+          ]
+        },
+        {
+          "name": "injury_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (injury_id)",
+          "table": "exercise_injury_relevance",
+          "columns": [
+            "injury_id"
+          ]
+        },
+        {
+          "name": "role",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (role)",
+          "table": "exercise_injury_relevance",
+          "columns": [
+            "role"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (injury_id) REFERENCES common_injuries (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "exercise_injury_relevance",
+          "referenced_table": "common_injuries",
+          "columns": [
+            "injury_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 1)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "exercise_injury_relevance",
+          "referenced_table": "exercises",
+          "columns": [
+            "exercise_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_exercise_injury_relevance_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_id, injury_id, role)",
+          "table": "exercise_injury_relevance",
+          "columns": [
+            "exercise_id",
+            "injury_id",
+            "role"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (role IN ('prehab','rehab_early','rehab_late','contraindicated'))",
+          "table": "exercise_injury_relevance",
+          "columns": [
+            "role"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE exercise_injury_relevance (\n  exercise_id     INTEGER NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,\n  injury_id       INTEGER NOT NULL REFERENCES common_injuries(id) ON DELETE CASCADE,\n  role            TEXT NOT NULL CHECK (role IN ('prehab','rehab_early','rehab_late','contraindicated')),\n  notes           TEXT,\n  PRIMARY KEY (exercise_id, injury_id, role)\n)"
+    },
+    {
+      "name": "exercise_movement_patterns",
+      "type": "table",
+      "columns": [
+        {
+          "name": "exercise_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "movement_pattern_id",
+          "type": "INTEGER",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sqlite_autoindex_exercise_movement_patterns_1",
+          "def": "PRIMARY KEY (exercise_id, movement_pattern_id)",
+          "table": "exercise_movement_patterns",
+          "columns": [
+            "exercise_id",
+            "movement_pattern_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "exercise_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_id)",
+          "table": "exercise_movement_patterns",
+          "columns": [
+            "exercise_id"
+          ]
+        },
+        {
+          "name": "movement_pattern_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (movement_pattern_id)",
+          "table": "exercise_movement_patterns",
+          "columns": [
+            "movement_pattern_id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (movement_pattern_id) REFERENCES movement_patterns (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "exercise_movement_patterns",
+          "referenced_table": "movement_patterns",
+          "columns": [
+            "movement_pattern_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 1)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "exercise_movement_patterns",
+          "referenced_table": "exercises",
+          "columns": [
+            "exercise_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_exercise_movement_patterns_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_id, movement_pattern_id)",
+          "table": "exercise_movement_patterns",
+          "columns": [
+            "exercise_id",
+            "movement_pattern_id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE exercise_movement_patterns (\n  exercise_id         INTEGER NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,\n  movement_pattern_id INTEGER NOT NULL REFERENCES movement_patterns(id) ON DELETE CASCADE,\n  PRIMARY KEY (exercise_id, movement_pattern_id)\n)"
+    },
+    {
+      "name": "exercise_muscles",
+      "type": "table",
+      "columns": [
+        {
+          "name": "exercise_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "muscle_group_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "role",
+          "type": "TEXT",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_em_muscle",
+          "def": "CREATE INDEX idx_em_muscle                     ON exercise_muscles(muscle_group_id)",
+          "table": "exercise_muscles",
+          "columns": [
+            "muscle_group_id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_exercise_muscles_1",
+          "def": "PRIMARY KEY (exercise_id, muscle_group_id)",
+          "table": "exercise_muscles",
+          "columns": [
+            "exercise_id",
+            "muscle_group_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "exercise_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_id)",
+          "table": "exercise_muscles",
+          "columns": [
+            "exercise_id"
+          ]
+        },
+        {
+          "name": "muscle_group_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (muscle_group_id)",
+          "table": "exercise_muscles",
+          "columns": [
+            "muscle_group_id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (muscle_group_id) REFERENCES muscle_groups (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "exercise_muscles",
+          "referenced_table": "muscle_groups",
+          "columns": [
+            "muscle_group_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 1)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "exercise_muscles",
+          "referenced_table": "exercises",
+          "columns": [
+            "exercise_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_exercise_muscles_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_id, muscle_group_id)",
+          "table": "exercise_muscles",
+          "columns": [
+            "exercise_id",
+            "muscle_group_id"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (role IN ('primary','secondary','stabilizer'))",
+          "table": "exercise_muscles",
+          "columns": [
+            "role"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE exercise_muscles (\n  exercise_id     INTEGER NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,\n  muscle_group_id INTEGER NOT NULL REFERENCES muscle_groups(id) ON DELETE CASCADE,\n  role            TEXT NOT NULL CHECK (role IN ('primary','secondary','stabilizer')),\n  PRIMARY KEY (exercise_id, muscle_group_id)\n)"
+    },
+    {
+      "name": "exercise_phases",
+      "type": "table",
+      "columns": [
+        {
+          "name": "exercise_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "phase",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "priority",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "volume_guidance",
+          "type": "TEXT",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sqlite_autoindex_exercise_phases_1",
+          "def": "PRIMARY KEY (exercise_id, phase)",
+          "table": "exercise_phases",
+          "columns": [
+            "exercise_id",
+            "phase"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "exercise_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_id)",
+          "table": "exercise_phases",
+          "columns": [
+            "exercise_id"
+          ]
+        },
+        {
+          "name": "phase",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (phase)",
+          "table": "exercise_phases",
+          "columns": [
+            "phase"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "exercise_phases",
+          "referenced_table": "exercises",
+          "columns": [
+            "exercise_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_exercise_phases_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_id, phase)",
+          "table": "exercise_phases",
+          "columns": [
+            "exercise_id",
+            "phase"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (phase IN ('off_season','base','build','peak','race','recovery','maintenance'))",
+          "table": "exercise_phases",
+          "columns": [
+            "phase"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (priority IN ('primary','supplementary','optional'))",
+          "table": "exercise_phases",
+          "columns": [
+            "priority"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE exercise_phases (\n  exercise_id     INTEGER NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,\n  phase           TEXT NOT NULL CHECK (phase IN ('off_season','base','build','peak','race','recovery','maintenance')),\n  priority        TEXT CHECK (priority IN ('primary','supplementary','optional')),\n  volume_guidance TEXT,\n  PRIMARY KEY (exercise_id, phase)\n)"
+    },
+    {
+      "name": "exercise_sport_relevance",
+      "type": "table",
+      "columns": [
+        {
+          "name": "exercise_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "sport_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "relevance_score",
+          "type": "REAL",
+          "nullable": false,
+          "default": "0.5"
+        },
+        {
+          "name": "specificity",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "support_role",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "season_emphasis",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "in_season_volume_modifier",
+          "type": "REAL",
+          "nullable": true,
+          "default": "1.0"
+        },
+        {
+          "name": "off_season_volume_modifier",
+          "type": "REAL",
+          "nullable": true,
+          "default": "1.0"
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_esr_support_role",
+          "def": "CREATE INDEX idx_esr_support_role              ON exercise_sport_relevance(support_role)",
+          "table": "exercise_sport_relevance",
+          "columns": [
+            "support_role"
+          ]
+        },
+        {
+          "name": "idx_esr_sport_role",
+          "def": "CREATE INDEX idx_esr_sport_role                ON exercise_sport_relevance(sport_id, support_role)",
+          "table": "exercise_sport_relevance",
+          "columns": [
+            "sport_id",
+            "support_role"
+          ]
+        },
+        {
+          "name": "idx_esr_sport_id",
+          "def": "CREATE INDEX idx_esr_sport_id                  ON exercise_sport_relevance(sport_id)",
+          "table": "exercise_sport_relevance",
+          "columns": [
+            "sport_id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_exercise_sport_relevance_1",
+          "def": "PRIMARY KEY (exercise_id, sport_id, support_role)",
+          "table": "exercise_sport_relevance",
+          "columns": [
+            "exercise_id",
+            "sport_id",
+            "support_role"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "exercise_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_id)",
+          "table": "exercise_sport_relevance",
+          "columns": [
+            "exercise_id"
+          ]
+        },
+        {
+          "name": "sport_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (sport_id)",
+          "table": "exercise_sport_relevance",
+          "columns": [
+            "sport_id"
+          ]
+        },
+        {
+          "name": "support_role",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (support_role)",
+          "table": "exercise_sport_relevance",
+          "columns": [
+            "support_role"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (sport_id) REFERENCES sport_categories (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "exercise_sport_relevance",
+          "referenced_table": "sport_categories",
+          "columns": [
+            "sport_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 1)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "exercise_sport_relevance",
+          "referenced_table": "exercises",
+          "columns": [
+            "exercise_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_exercise_sport_relevance_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_id, sport_id, support_role)",
+          "table": "exercise_sport_relevance",
+          "columns": [
+            "exercise_id",
+            "sport_id",
+            "support_role"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (relevance_score BETWEEN 0.0 AND 1.0)",
+          "table": "exercise_sport_relevance",
+          "columns": [
+            "relevance_score"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (specificity IN ('general','related','highly_specific'))",
+          "table": "exercise_sport_relevance",
+          "columns": [
+            "specificity"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (support_role IN ( 'direct_strength','antagonist','prehab','mobility', 'power','conditioning','general_foundation','recovery'))",
+          "table": "exercise_sport_relevance",
+          "columns": [
+            "support_role"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE exercise_sport_relevance (\n  exercise_id                INTEGER NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,\n  sport_id                   INTEGER NOT NULL REFERENCES sport_categories(id) ON DELETE CASCADE,\n  relevance_score            REAL NOT NULL DEFAULT 0.5 CHECK (relevance_score BETWEEN 0.0 AND 1.0),\n  specificity                TEXT CHECK (specificity IN ('general','related','highly_specific')),\n  support_role               TEXT NOT NULL CHECK (support_role IN (\n                               'direct_strength','antagonist','prehab','mobility',\n                               'power','conditioning','general_foundation','recovery')),\n  season_emphasis            TEXT,  -- JSON array: any of pre_season, in_season, off_season, all\n  in_season_volume_modifier  REAL DEFAULT 1.0,\n  off_season_volume_modifier REAL DEFAULT 1.0,\n  notes                      TEXT,\n  PRIMARY KEY (exercise_id, sport_id, support_role)\n)"
+    },
+    {
+      "name": "exercise_substitutions",
+      "type": "table",
+      "columns": [
+        {
+          "name": "exercise_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "substitute_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "context",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "similarity_score",
+          "type": "REAL",
+          "nullable": true,
+          "default": "0.5"
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_sub_substitute",
+          "def": "CREATE INDEX idx_sub_substitute                ON exercise_substitutions(substitute_id)",
+          "table": "exercise_substitutions",
+          "columns": [
+            "substitute_id"
+          ]
+        },
+        {
+          "name": "idx_sub_context",
+          "def": "CREATE INDEX idx_sub_context                   ON exercise_substitutions(context)",
+          "table": "exercise_substitutions",
+          "columns": [
+            "context"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_exercise_substitutions_1",
+          "def": "PRIMARY KEY (exercise_id, substitute_id, context)",
+          "table": "exercise_substitutions",
+          "columns": [
+            "exercise_id",
+            "substitute_id",
+            "context"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "exercise_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_id)",
+          "table": "exercise_substitutions",
+          "columns": [
+            "exercise_id"
+          ]
+        },
+        {
+          "name": "substitute_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (substitute_id)",
+          "table": "exercise_substitutions",
+          "columns": [
+            "substitute_id"
+          ]
+        },
+        {
+          "name": "context",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (context)",
+          "table": "exercise_substitutions",
+          "columns": [
+            "context"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (substitute_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "exercise_substitutions",
+          "referenced_table": "exercises",
+          "columns": [
+            "substitute_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 1)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "exercise_substitutions",
+          "referenced_table": "exercises",
+          "columns": [
+            "exercise_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_exercise_substitutions_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (exercise_id, substitute_id, context)",
+          "table": "exercise_substitutions",
+          "columns": [
+            "exercise_id",
+            "substitute_id",
+            "context"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (context IN ( 'lower_intensity','lower_recovery','home_friendly', 'pre_event_safe','low_energy','equipment_swap', 'age_friendly','time_efficient'))",
+          "table": "exercise_substitutions",
+          "columns": [
+            "context"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (similarity_score BETWEEN 0.0 AND 1.0)",
+          "table": "exercise_substitutions",
+          "columns": [
+            "similarity_score"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (exercise_id != substitute_id)",
+          "table": "exercise_substitutions",
+          "columns": [
+            "exercise_id",
+            "substitute_id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE exercise_substitutions (\n  exercise_id         INTEGER NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,\n  substitute_id       INTEGER NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,\n  context             TEXT NOT NULL CHECK (context IN (\n                        'lower_intensity','lower_recovery','home_friendly',\n                        'pre_event_safe','low_energy','equipment_swap',\n                        'age_friendly','time_efficient')),\n  similarity_score    REAL DEFAULT 0.5 CHECK (similarity_score BETWEEN 0.0 AND 1.0),\n  notes               TEXT,\n  PRIMARY KEY (exercise_id, substitute_id, context),\n  CHECK (exercise_id != substitute_id)\n)"
+    },
+    {
+      "name": "exercises",
+      "type": "table",
+      "comment": "The catalog. Ids are pinned in db/source/exercises.json and copied into user.db and UserDefaults, so an id change repoints saved routines and plans.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "instructions",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "cues",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "difficulty",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "modality",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "movement_plane",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "energy_system",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "contraction_type",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "is_unilateral",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": "0"
+        },
+        {
+          "name": "is_compound",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": "1"
+        },
+        {
+          "name": "environment",
+          "type": "TEXT",
+          "nullable": true,
+          "default": "'gym'"
+        },
+        {
+          "name": "default_sets",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "default_reps",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "default_rest",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "default_tempo",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "default_duration",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "time_efficient_variation",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "home_variation",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "age_considerations",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "desk_worker_notes",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "recovery_demand",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "cns_load",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "intensity_category",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "fatigue_type",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "swap_group",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "low_energy_suitable",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": "0"
+        },
+        {
+          "name": "pre_event_safe",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": "1"
+        },
+        {
+          "name": "warmup_compatible",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": "0"
+        },
+        {
+          "name": "injury_prevention_notes",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "contraindications",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "pt_rehab_relevance",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "common_compensations",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "regression",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "progression",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "video_url",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "image_url",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "thumbnail_url",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "source_video_attribution",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "image_source",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "image_license",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "image_attribution",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "source_name",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "source_url",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "source_type",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "source_year",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "tags",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TEXT",
+          "nullable": true,
+          "default": "datetime('now')"
+        },
+        {
+          "name": "updated_at",
+          "type": "TEXT",
+          "nullable": true,
+          "default": "datetime('now')"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_exercises_swap_group",
+          "def": "CREATE INDEX idx_exercises_swap_group          ON exercises(swap_group)",
+          "table": "exercises",
+          "columns": [
+            "swap_group"
+          ]
+        },
+        {
+          "name": "idx_exercises_pre_event_safe",
+          "def": "CREATE INDEX idx_exercises_pre_event_safe      ON exercises(pre_event_safe)",
+          "table": "exercises",
+          "columns": [
+            "pre_event_safe"
+          ]
+        },
+        {
+          "name": "idx_exercises_modality",
+          "def": "CREATE INDEX idx_exercises_modality            ON exercises(modality)",
+          "table": "exercises",
+          "columns": [
+            "modality"
+          ]
+        },
+        {
+          "name": "idx_exercises_low_energy",
+          "def": "CREATE INDEX idx_exercises_low_energy          ON exercises(low_energy_suitable)",
+          "table": "exercises",
+          "columns": [
+            "low_energy_suitable"
+          ]
+        },
+        {
+          "name": "idx_exercises_environment",
+          "def": "CREATE INDEX idx_exercises_environment         ON exercises(environment)",
+          "table": "exercises",
+          "columns": [
+            "environment"
+          ]
+        },
+        {
+          "name": "idx_exercises_difficulty",
+          "def": "CREATE INDEX idx_exercises_difficulty          ON exercises(difficulty)",
+          "table": "exercises",
+          "columns": [
+            "difficulty"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_exercises_1",
+          "def": "UNIQUE (slug)",
+          "table": "exercises",
+          "columns": [
+            "slug"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "exercises",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_exercises_1",
+          "type": "UNIQUE",
+          "def": "UNIQUE (slug)",
+          "table": "exercises",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (difficulty IN ('beginner','intermediate','advanced','elite'))",
+          "table": "exercises",
+          "columns": [
+            "difficulty"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (modality IN ( 'strength','power','endurance','flexibility','mobility', 'balance','coordination','agility','speed','plyometric', 'sport_drill','pt_rehab','prehab','breathing','recovery', 'warm_up','cool_down'))",
+          "table": "exercises",
+          "columns": [
+            "modality"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (movement_plane IN ('sagittal','frontal','transverse','multi_plane'))",
+          "table": "exercises",
+          "columns": [
+            "movement_plane"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (energy_system IN ('phosphagen','glycolytic','oxidative','mixed'))",
+          "table": "exercises",
+          "columns": [
+            "id",
+            "energy_system"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (contraction_type IN ('concentric','eccentric','isometric','plyometric','ballistic'))",
+          "table": "exercises",
+          "columns": [
+            "contraction_type"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (is_unilateral IN (0,1))",
+          "table": "exercises",
+          "columns": [
+            "is_unilateral"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (is_compound IN (0,1))",
+          "table": "exercises",
+          "columns": [
+            "is_compound"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (environment IN ('gym','home','outdoor','sport_facility','travel','anywhere'))",
+          "table": "exercises",
+          "columns": [
+            "environment"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (recovery_demand BETWEEN 1 AND 10)",
+          "table": "exercises",
+          "columns": [
+            "recovery_demand"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (cns_load BETWEEN 1 AND 10)",
+          "table": "exercises",
+          "columns": [
+            "cns_load"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (intensity_category IN ('low','moderate','high','max'))",
+          "table": "exercises",
+          "columns": [
+            "intensity_category"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (low_energy_suitable IN (0,1))",
+          "table": "exercises",
+          "columns": [
+            "low_energy_suitable"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (pre_event_safe IN (0,1))",
+          "table": "exercises",
+          "columns": [
+            "pre_event_safe"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (warmup_compatible IN (0,1))",
+          "table": "exercises",
+          "columns": [
+            "warmup_compatible"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (source_type IN ('peer_reviewed','clinical','governing_body','coaching','expert_consensus'))",
+          "table": "exercises",
+          "columns": [
+            "source_type"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE exercises (\n  id                       INTEGER PRIMARY KEY,\n  name                     TEXT NOT NULL,\n  slug                     TEXT NOT NULL UNIQUE,\n  description              TEXT NOT NULL,\n  instructions             TEXT NOT NULL,\n  cues                     TEXT,   -- JSON array\n  difficulty               TEXT NOT NULL CHECK (difficulty IN ('beginner','intermediate','advanced','elite')),\n  modality                 TEXT NOT NULL CHECK (modality IN (\n                             'strength','power','endurance','flexibility','mobility',\n                             'balance','coordination','agility','speed','plyometric',\n                             'sport_drill','pt_rehab','prehab','breathing','recovery',\n                             'warm_up','cool_down')),\n  movement_plane           TEXT CHECK (movement_plane IN ('sagittal','frontal','transverse','multi_plane')),\n  energy_system            TEXT CHECK (energy_system IN ('phosphagen','glycolytic','oxidative','mixed')),\n  contraction_type         TEXT CHECK (contraction_type IN ('concentric','eccentric','isometric','plyometric','ballistic')),\n  is_unilateral            INTEGER DEFAULT 0 CHECK (is_unilateral IN (0,1)),\n  is_compound              INTEGER DEFAULT 1 CHECK (is_compound IN (0,1)),\n  environment              TEXT DEFAULT 'gym' CHECK (environment IN ('gym','home','outdoor','sport_facility','travel','anywhere')),\n\n  default_sets             INTEGER,\n  default_reps             TEXT,\n  default_rest             TEXT,\n  default_tempo            TEXT,\n  default_duration         TEXT,\n\n  time_efficient_variation TEXT,\n  home_variation           TEXT,\n  age_considerations       TEXT,\n  desk_worker_notes        TEXT,\n\n  recovery_demand          INTEGER CHECK (recovery_demand BETWEEN 1 AND 10),\n  cns_load                 INTEGER CHECK (cns_load BETWEEN 1 AND 10),\n  intensity_category       TEXT CHECK (intensity_category IN ('low','moderate','high','max')),\n  fatigue_type             TEXT,   -- JSON array\n  swap_group               TEXT,\n  low_energy_suitable      INTEGER DEFAULT 0 CHECK (low_energy_suitable IN (0,1)),\n  pre_event_safe           INTEGER DEFAULT 1 CHECK (pre_event_safe IN (0,1)),\n  warmup_compatible        INTEGER DEFAULT 0 CHECK (warmup_compatible IN (0,1)),\n\n  injury_prevention_notes  TEXT,\n  contraindications        TEXT,   -- JSON array\n  pt_rehab_relevance       TEXT,\n  common_compensations     TEXT,   -- JSON array\n  regression               TEXT,\n  progression              TEXT,\n\n  video_url                TEXT,\n  image_url                TEXT,\n  thumbnail_url            TEXT,\n  source_video_attribution TEXT,\n  image_source             TEXT,   -- free-exercise-db | wger | wikimedia | youtube | other\n  image_license            TEXT,   -- MIT | Unlicense | CC-BY-SA-4 | CC-BY-4 | PUBLIC-DOMAIN | CC0 | YouTube ToS\n  image_attribution        TEXT,   -- human-readable attribution string\n\n  source_name              TEXT,\n  source_url               TEXT,\n  source_type              TEXT CHECK (source_type IN ('peer_reviewed','clinical','governing_body','coaching','expert_consensus')),\n  source_year              INTEGER,\n\n  tags                     TEXT,   -- JSON array\n\n  created_at               TEXT DEFAULT (datetime('now')),\n  updated_at               TEXT DEFAULT (datetime('now'))\n)"
+    },
+    {
+      "name": "injury_sport_prevalence",
+      "type": "table",
+      "columns": [
+        {
+          "name": "injury_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "sport_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "prevalence",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_injury_prev_sport",
+          "def": "CREATE INDEX idx_injury_prev_sport             ON injury_sport_prevalence(sport_id)",
+          "table": "injury_sport_prevalence",
+          "columns": [
+            "sport_id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_injury_sport_prevalence_1",
+          "def": "PRIMARY KEY (injury_id, sport_id)",
+          "table": "injury_sport_prevalence",
+          "columns": [
+            "injury_id",
+            "sport_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "injury_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (injury_id)",
+          "table": "injury_sport_prevalence",
+          "columns": [
+            "injury_id"
+          ]
+        },
+        {
+          "name": "sport_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (sport_id)",
+          "table": "injury_sport_prevalence",
+          "columns": [
+            "sport_id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (sport_id) REFERENCES sport_categories (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "injury_sport_prevalence",
+          "referenced_table": "sport_categories",
+          "columns": [
+            "sport_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 1)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (injury_id) REFERENCES common_injuries (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "injury_sport_prevalence",
+          "referenced_table": "common_injuries",
+          "columns": [
+            "injury_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_injury_sport_prevalence_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (injury_id, sport_id)",
+          "table": "injury_sport_prevalence",
+          "columns": [
+            "injury_id",
+            "sport_id"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (prevalence IN ('common','occasional','rare'))",
+          "table": "injury_sport_prevalence",
+          "columns": [
+            "prevalence"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE injury_sport_prevalence (\n  injury_id       INTEGER NOT NULL REFERENCES common_injuries(id) ON DELETE CASCADE,\n  sport_id        INTEGER NOT NULL REFERENCES sport_categories(id) ON DELETE CASCADE,\n  prevalence      TEXT CHECK (prevalence IN ('common','occasional','rare')),\n  notes           TEXT,\n  PRIMARY KEY (injury_id, sport_id)\n)"
+    },
+    {
+      "name": "movement_patterns",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "body_region",
+          "type": "TEXT",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sqlite_autoindex_movement_patterns_2",
+          "def": "UNIQUE (slug)",
+          "table": "movement_patterns",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_movement_patterns_1",
+          "def": "UNIQUE (name)",
+          "table": "movement_patterns",
+          "columns": [
+            "name"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "movement_patterns",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_movement_patterns_2",
+          "type": "UNIQUE",
+          "def": "UNIQUE (slug)",
+          "table": "movement_patterns",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_movement_patterns_1",
+          "type": "UNIQUE",
+          "def": "UNIQUE (name)",
+          "table": "movement_patterns",
+          "columns": [
+            "name"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE movement_patterns (\n  id                       INTEGER PRIMARY KEY,\n  name                     TEXT NOT NULL UNIQUE,\n  slug                     TEXT NOT NULL UNIQUE,\n  description              TEXT,\n  body_region              TEXT\n)"
+    },
+    {
+      "name": "muscle_groups",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "parent_id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "body_region",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TEXT",
+          "nullable": true,
+          "default": "datetime('now')"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_muscle_parent",
+          "def": "CREATE INDEX idx_muscle_parent                 ON muscle_groups(parent_id)",
+          "table": "muscle_groups",
+          "columns": [
+            "parent_id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_muscle_groups_2",
+          "def": "UNIQUE (slug)",
+          "table": "muscle_groups",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_muscle_groups_1",
+          "def": "UNIQUE (name)",
+          "table": "muscle_groups",
+          "columns": [
+            "name"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "muscle_groups",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (parent_id) REFERENCES muscle_groups (id) ON UPDATE NO ACTION ON DELETE NO ACTION MATCH NONE",
+          "table": "muscle_groups",
+          "referenced_table": "muscle_groups",
+          "columns": [
+            "parent_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_muscle_groups_2",
+          "type": "UNIQUE",
+          "def": "UNIQUE (slug)",
+          "table": "muscle_groups",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_muscle_groups_1",
+          "type": "UNIQUE",
+          "def": "UNIQUE (name)",
+          "table": "muscle_groups",
+          "columns": [
+            "name"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (body_region IN ('upper_body','lower_body','core','full_body','neck'))",
+          "table": "muscle_groups",
+          "columns": [
+            "body_region"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE muscle_groups (\n  id                       INTEGER PRIMARY KEY,\n  name                     TEXT NOT NULL UNIQUE,\n  slug                     TEXT NOT NULL UNIQUE,\n  parent_id                INTEGER REFERENCES muscle_groups(id),\n  body_region              TEXT CHECK (body_region IN ('upper_body','lower_body','core','full_body','neck')),\n  created_at               TEXT DEFAULT (datetime('now'))\n)"
+    },
+    {
+      "name": "routine_exercises",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "routine_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "exercise_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "position",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "superset_group",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "sets",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "reps",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "rest",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "tempo",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "duration",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_routine_ex_routine",
+          "def": "CREATE INDEX idx_routine_ex_routine            ON routine_exercises(routine_id)",
+          "table": "routine_exercises",
+          "columns": [
+            "routine_id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_routine_exercises_1",
+          "def": "UNIQUE (routine_id, position)",
+          "table": "routine_exercises",
+          "columns": [
+            "routine_id",
+            "position"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "routine_exercises",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "routine_exercises",
+          "referenced_table": "exercises",
+          "columns": [
+            "exercise_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 1)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (routine_id) REFERENCES routines (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "routine_exercises",
+          "referenced_table": "routines",
+          "columns": [
+            "routine_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_routine_exercises_1",
+          "type": "UNIQUE",
+          "def": "UNIQUE (routine_id, position)",
+          "table": "routine_exercises",
+          "columns": [
+            "routine_id",
+            "position"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE routine_exercises (\n  id                       INTEGER PRIMARY KEY AUTOINCREMENT,\n  routine_id               INTEGER NOT NULL REFERENCES routines(id) ON DELETE CASCADE,\n  exercise_id              INTEGER NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,\n  position                 INTEGER NOT NULL,\n  superset_group           INTEGER,\n  sets                     INTEGER,\n  reps                     TEXT,\n  rest                     TEXT,\n  tempo                    TEXT,\n  duration                 TEXT,\n  notes                    TEXT,\n  UNIQUE (routine_id, position)\n)"
+    },
+    {
+      "name": "routine_sports",
+      "type": "table",
+      "columns": [
+        {
+          "name": "routine_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "sport_id",
+          "type": "INTEGER",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_routine_sports_sport",
+          "def": "CREATE INDEX idx_routine_sports_sport          ON routine_sports(sport_id)",
+          "table": "routine_sports",
+          "columns": [
+            "sport_id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_routine_sports_1",
+          "def": "PRIMARY KEY (routine_id, sport_id)",
+          "table": "routine_sports",
+          "columns": [
+            "routine_id",
+            "sport_id"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "routine_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (routine_id)",
+          "table": "routine_sports",
+          "columns": [
+            "routine_id"
+          ]
+        },
+        {
+          "name": "sport_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (sport_id)",
+          "table": "routine_sports",
+          "columns": [
+            "sport_id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (sport_id) REFERENCES sport_categories (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "routine_sports",
+          "referenced_table": "sport_categories",
+          "columns": [
+            "sport_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 1)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (routine_id) REFERENCES routines (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "routine_sports",
+          "referenced_table": "routines",
+          "columns": [
+            "routine_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_routine_sports_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (routine_id, sport_id)",
+          "table": "routine_sports",
+          "columns": [
+            "routine_id",
+            "sport_id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE routine_sports (\n  routine_id               INTEGER NOT NULL REFERENCES routines(id) ON DELETE CASCADE,\n  sport_id                 INTEGER NOT NULL REFERENCES sport_categories(id) ON DELETE CASCADE,\n  PRIMARY KEY (routine_id, sport_id)\n)"
+    },
+    {
+      "name": "routines",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "goal",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "difficulty",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "phase",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "duration_minutes",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "frequency",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "environment",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "time_commitment",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "ideal_schedule",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "source_name",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "source_url",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "tags",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "TEXT",
+          "nullable": true,
+          "default": "datetime('now')"
+        },
+        {
+          "name": "updated_at",
+          "type": "TEXT",
+          "nullable": true,
+          "default": "datetime('now')"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sqlite_autoindex_routines_1",
+          "def": "UNIQUE (slug)",
+          "table": "routines",
+          "columns": [
+            "slug"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "routines",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_routines_1",
+          "type": "UNIQUE",
+          "def": "UNIQUE (slug)",
+          "table": "routines",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (difficulty IN ('beginner','intermediate','advanced','elite'))",
+          "table": "routines",
+          "columns": [
+            "difficulty"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (phase IN ('off_season','base','build','peak','race','recovery','maintenance'))",
+          "table": "routines",
+          "columns": [
+            "phase"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (environment IN ('gym','home','outdoor','sport_facility','travel','anywhere'))",
+          "table": "routines",
+          "columns": [
+            "environment"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE routines (\n  id                       INTEGER PRIMARY KEY,\n  name                     TEXT NOT NULL,\n  slug                     TEXT NOT NULL UNIQUE,\n  description              TEXT,\n  goal                     TEXT,\n  difficulty               TEXT CHECK (difficulty IN ('beginner','intermediate','advanced','elite')),\n  phase                    TEXT CHECK (phase IN ('off_season','base','build','peak','race','recovery','maintenance')),\n  duration_minutes         INTEGER,\n  frequency                TEXT,\n  environment              TEXT CHECK (environment IN ('gym','home','outdoor','sport_facility','travel','anywhere')),\n  time_commitment          TEXT,\n  ideal_schedule           TEXT,\n  notes                    TEXT,\n  source_name              TEXT,\n  source_url               TEXT,\n  tags                     TEXT,   -- JSON array\n  created_at               TEXT DEFAULT (datetime('now')),\n  updated_at               TEXT DEFAULT (datetime('now'))\n)"
+    },
+    {
+      "name": "sport_categories",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "parent_id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "depth",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": "0"
+        },
+        {
+          "name": "sort_order",
+          "type": "INTEGER",
+          "nullable": true,
+          "default": "0"
+        },
+        {
+          "name": "typical_session_minutes",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "common_training_days",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "peak_season",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "common_injuries",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "governing_body",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "unsupported_reason",
+          "type": "TEXT",
+          "nullable": true,
+          "comment": "NULL means in scope for plan generation."
+        },
+        {
+          "name": "created_at",
+          "type": "TEXT",
+          "nullable": true,
+          "default": "datetime('now')"
+        },
+        {
+          "name": "updated_at",
+          "type": "TEXT",
+          "nullable": true,
+          "default": "datetime('now')"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_sport_parent",
+          "def": "CREATE INDEX idx_sport_parent                  ON sport_categories(parent_id)",
+          "table": "sport_categories",
+          "columns": [
+            "parent_id"
+          ]
+        },
+        {
+          "name": "idx_sport_depth",
+          "def": "CREATE INDEX idx_sport_depth                   ON sport_categories(depth)",
+          "table": "sport_categories",
+          "columns": [
+            "depth"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_sport_categories_2",
+          "def": "UNIQUE (slug)",
+          "table": "sport_categories",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_sport_categories_1",
+          "def": "UNIQUE (name)",
+          "table": "sport_categories",
+          "columns": [
+            "name"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "sport_categories",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (parent_id) REFERENCES sport_categories (id) ON UPDATE NO ACTION ON DELETE NO ACTION MATCH NONE",
+          "table": "sport_categories",
+          "referenced_table": "sport_categories",
+          "columns": [
+            "parent_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_sport_categories_2",
+          "type": "UNIQUE",
+          "def": "UNIQUE (slug)",
+          "table": "sport_categories",
+          "columns": [
+            "slug"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_sport_categories_1",
+          "type": "UNIQUE",
+          "def": "UNIQUE (name)",
+          "table": "sport_categories",
+          "columns": [
+            "name"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE sport_categories (\n  id                       INTEGER PRIMARY KEY,\n  name                     TEXT NOT NULL UNIQUE,\n  slug                     TEXT NOT NULL UNIQUE,\n  description              TEXT,\n  parent_id                INTEGER REFERENCES sport_categories(id),\n  depth                    INTEGER NOT NULL DEFAULT 0,\n  sort_order               INTEGER DEFAULT 0,\n  typical_session_minutes  INTEGER,\n  common_training_days     TEXT,\n  peak_season              TEXT,\n  common_injuries          TEXT,   -- JSON array of strings\n  governing_body           TEXT,\n  -- Phase 1.2 sport-coverage floor. When a depth\u003c=1 sport is intentionally\n  -- out of scope for training-plan generation, populate this with a short\n  -- rationale (e.g. \"No general-strength transfer; niche audience\"). NULL =\n  -- in scope. See scripts/validate_coverage.sql.\n  unsupported_reason       TEXT,\n  created_at               TEXT DEFAULT (datetime('now')),\n  updated_at               TEXT DEFAULT (datetime('now'))\n)"
+    },
+    {
+      "name": "sport_recovery_profiles",
+      "type": "table",
+      "columns": [
+        {
+          "name": "sport_id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "typical_recovery_hours",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "primary_fatigue_type",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "muscles_loaded",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "avoid_before_session",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "ideal_supplement_timing",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "nullable": true
+        }
+      ],
+      "constraints": [
+        {
+          "name": "sport_id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (sport_id)",
+          "table": "sport_recovery_profiles",
+          "columns": [
+            "sport_id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (sport_id) REFERENCES sport_categories (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "sport_recovery_profiles",
+          "referenced_table": "sport_categories",
+          "columns": [
+            "sport_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE sport_recovery_profiles (\n  sport_id                 INTEGER PRIMARY KEY REFERENCES sport_categories(id) ON DELETE CASCADE,\n  typical_recovery_hours   INTEGER,\n  primary_fatigue_type     TEXT,   -- JSON array\n  muscles_loaded           TEXT,   -- JSON array\n  avoid_before_session     TEXT,   -- JSON array\n  ideal_supplement_timing  TEXT,\n  notes                    TEXT\n)"
+    },
+    {
+      "name": "sport_movements",
+      "type": "table",
+      "comment": "Season-aware movement pool. `sport` is a sport_categories slug with no FK.",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "sport",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "exercise_id",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "demands",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "allowed_phases",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "allowed_variants",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "fatigue_cost",
+          "type": "INTEGER",
+          "nullable": false,
+          "default": "2"
+        },
+        {
+          "name": "min_experience",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "injury_caution",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "protocol_sets",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "protocol_reps",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "protocol_rest_seconds",
+          "type": "INTEGER",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_sport_movements_exercise",
+          "def": "CREATE INDEX idx_sport_movements_exercise      ON sport_movements(exercise_id)",
+          "table": "sport_movements",
+          "columns": [
+            "exercise_id"
+          ]
+        },
+        {
+          "name": "idx_sport_movements_sport",
+          "def": "CREATE INDEX idx_sport_movements_sport         ON sport_movements(sport)",
+          "table": "sport_movements",
+          "columns": [
+            "sport"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "sport_movements",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "- (Foreign key ID: 0)",
+          "type": "FOREIGN KEY",
+          "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE",
+          "table": "sport_movements",
+          "referenced_table": "exercises",
+          "columns": [
+            "exercise_id"
+          ],
+          "referenced_columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (fatigue_cost BETWEEN 1 AND 5)",
+          "table": "sport_movements",
+          "columns": [
+            "fatigue_cost"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (protocol_sets BETWEEN 1 AND 10)",
+          "table": "sport_movements",
+          "columns": [
+            "protocol_sets"
+          ]
+        },
+        {
+          "name": "-",
+          "type": "CHECK",
+          "def": "CHECK (protocol_rest_seconds BETWEEN 0 AND 600)",
+          "table": "sport_movements",
+          "columns": [
+            "protocol_rest_seconds"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE sport_movements (\n  id                INTEGER PRIMARY KEY,\n  slug              TEXT NOT NULL,\n  name              TEXT NOT NULL,\n  sport             TEXT NOT NULL,            -- sport_categories.slug (e.g. alpine-skiing)\n  exercise_id       INTEGER NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,\n  demands           TEXT NOT NULL,            -- JSON array of Demand rawValues, primary first\n  allowed_phases    TEXT NOT NULL,            -- JSON array of SeasonPhase rawValues\n  allowed_variants  TEXT,                     -- JSON array of SportVariant rawValues; NULL = all\n  fatigue_cost      INTEGER NOT NULL DEFAULT 2 CHECK (fatigue_cost BETWEEN 1 AND 5),\n  min_experience    TEXT,                     -- novice|intermediate|advanced; NULL = no gate\n  injury_caution    TEXT,\n  -- Optional per-movement prescription (R3-9). The engine prescribes by DEMAND\n  -- (DemandScheme), which is right for a generic squat and wrong for a movement\n  -- that carries a cited protocol: the no-hang finger pull is a 3 s overcoming\n  -- isometric and was being served as 5x8s holds. When these are set the\n  -- scheme's sets/reps/rest yield to them; RPE and tempo still come from the scheme.\n  protocol_sets         INTEGER CHECK (protocol_sets BETWEEN 1 AND 10),\n  protocol_reps         TEXT,\n  protocol_rest_seconds INTEGER CHECK (protocol_rest_seconds BETWEEN 0 AND 600)\n)"
+    }
+  ],
+  "relations": [
+    {
+      "table": "exercise_aliases",
+      "columns": [
+        "exercise_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "exercises",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "exercise_equipment",
+      "columns": [
+        "equipment_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "equipment",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (equipment_id) REFERENCES equipment (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "exercise_equipment",
+      "columns": [
+        "exercise_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "exercises",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "exercise_injury_relevance",
+      "columns": [
+        "injury_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "common_injuries",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (injury_id) REFERENCES common_injuries (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "exercise_injury_relevance",
+      "columns": [
+        "exercise_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "exercises",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "exercise_movement_patterns",
+      "columns": [
+        "movement_pattern_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "movement_patterns",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (movement_pattern_id) REFERENCES movement_patterns (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "exercise_movement_patterns",
+      "columns": [
+        "exercise_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "exercises",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "exercise_muscles",
+      "columns": [
+        "muscle_group_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "muscle_groups",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (muscle_group_id) REFERENCES muscle_groups (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "exercise_muscles",
+      "columns": [
+        "exercise_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "exercises",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "exercise_phases",
+      "columns": [
+        "exercise_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "exercises",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "exercise_sport_relevance",
+      "columns": [
+        "sport_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "sport_categories",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (sport_id) REFERENCES sport_categories (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "exercise_sport_relevance",
+      "columns": [
+        "exercise_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "exercises",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "exercise_substitutions",
+      "columns": [
+        "substitute_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "exercises",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (substitute_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "exercise_substitutions",
+      "columns": [
+        "exercise_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "exercises",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "injury_sport_prevalence",
+      "columns": [
+        "sport_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "sport_categories",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (sport_id) REFERENCES sport_categories (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "injury_sport_prevalence",
+      "columns": [
+        "injury_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "common_injuries",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (injury_id) REFERENCES common_injuries (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "muscle_groups",
+      "columns": [
+        "parent_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "muscle_groups",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "zero_or_one",
+      "def": "FOREIGN KEY (parent_id) REFERENCES muscle_groups (id) ON UPDATE NO ACTION ON DELETE NO ACTION MATCH NONE"
+    },
+    {
+      "table": "routine_exercises",
+      "columns": [
+        "exercise_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "exercises",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "routine_exercises",
+      "columns": [
+        "routine_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "routines",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (routine_id) REFERENCES routines (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "routine_sports",
+      "columns": [
+        "sport_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "sport_categories",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (sport_id) REFERENCES sport_categories (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "routine_sports",
+      "columns": [
+        "routine_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "routines",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (routine_id) REFERENCES routines (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "sport_categories",
+      "columns": [
+        "parent_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "sport_categories",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "zero_or_one",
+      "def": "FOREIGN KEY (parent_id) REFERENCES sport_categories (id) ON UPDATE NO ACTION ON DELETE NO ACTION MATCH NONE"
+    },
+    {
+      "table": "sport_recovery_profiles",
+      "columns": [
+        "sport_id"
+      ],
+      "cardinality": "zero_or_one",
+      "parent_table": "sport_categories",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "zero_or_one",
+      "def": "FOREIGN KEY (sport_id) REFERENCES sport_categories (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "sport_movements",
+      "columns": [
+        "exercise_id"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "exercises",
+      "parent_columns": [
+        "id"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "FOREIGN KEY (exercise_id) REFERENCES exercises (id) ON UPDATE NO ACTION ON DELETE CASCADE MATCH NONE"
+    },
+    {
+      "table": "sport_movements",
+      "columns": [
+        "sport"
+      ],
+      "cardinality": "zero_or_more",
+      "parent_table": "sport_categories",
+      "parent_columns": [
+        "slug"
+      ],
+      "parent_cardinality": "exactly_one",
+      "def": "text join on slug, no FK (sport_movements.sport)",
+      "virtual": true
+    }
+  ],
+  "driver": {
+    "name": "sqlite",
+    "database_version": "3.53.4"
+  }
+}
