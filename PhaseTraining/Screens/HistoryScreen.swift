@@ -239,6 +239,7 @@ struct HistoryScreen: View {
             if isExpanded {
                 expandedDetail(session)
                     .padding(.top, 10)
+                reflection(session)
                 Button(action: { editingSession = session }) {
                     Text("Edit session")
                         .styled(.monoS)
@@ -269,6 +270,30 @@ struct HistoryScreen: View {
         Text("·")
             .styled(.body)
             .foregroundColor(.ink3)
+    }
+
+    /// Feel, mood and note, each only when the user gave one, so an
+    /// unrated workout looks exactly as it did before.
+    @ViewBuilder
+    private func reflection(_ session: SavedSession) -> some View {
+        let line = SessionRowMeta.feelMoodLine(feel: session.feel, mood: session.mood)
+        if line != nil || session.note != nil {
+            VStack(alignment: .leading, spacing: 4) {
+                if let line {
+                    Text(line)
+                        .styled(.monoXS)
+                        .foregroundColor(.ink3)
+                        .accessibilityIdentifier("history-reflection-\(session.id)")
+                }
+                if let note = session.note {
+                    Text("\u{201C}\(note)\u{201D}")
+                        .styled(.body)
+                        .foregroundColor(.ink2)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 8)
+        }
     }
 
     // MARK: - Expanded detail block

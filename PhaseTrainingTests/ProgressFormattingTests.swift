@@ -204,4 +204,15 @@ final class ProgressFormattingTests: XCTestCase {
         XCTAssertEqual(summary, .init(better: 10, rated: 10))
         XCTAssertEqual(summary?.mostlyBetter, true)
     }
+
+    // MARK: - feelMoodLine (History reflection)
+
+    func test_feelMoodLine_joinsWhatWasGiven_nilWhenNeither() {
+        XCTAssertEqual(SessionRowMeta.feelMoodLine(feel: "Hard", mood: "better"),
+                       "Felt hard · Mood after: better")
+        XCTAssertEqual(SessionRowMeta.feelMoodLine(feel: "Too easy", mood: nil), "Felt too easy")
+        XCTAssertEqual(SessionRowMeta.feelMoodLine(feel: nil, mood: "worse"), "Mood after: worse")
+        XCTAssertNil(SessionRowMeta.feelMoodLine(feel: nil, mood: nil))
+    }
 }
+

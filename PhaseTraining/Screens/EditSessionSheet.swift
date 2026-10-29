@@ -3,7 +3,7 @@
 // Fat-fingered weight ("1335" not "135"), wrong reps, forgot to check the
 // last set done — these are the failure modes this sheet covers. Identity
 // fields (startTime / endTime / templateId) are immutable so the session
-// stays the same row in user.db; only per-set fields are editable.
+// stays the same row in user.db; per-set fields and the mood are editable.
 //
 // On save: calls SessionStore.updateSession which upserts via UserDatabase.
 // On delete: calls deleteSession (with confirmation alert).
@@ -31,6 +31,9 @@ struct EditSessionSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     header
+
+                    // A watch-saved or skipped workout gets its mood here.
+                    MoodAfterLine(mood: $draft.mood)
 
                     ForEach(Array(draft.exercises.enumerated()), id: \.offset) { exIdx, ex in
                         exerciseBlock(exIdx: exIdx, ex: ex)

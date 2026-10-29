@@ -114,22 +114,22 @@ final class MotivationBatchUITests: XCTestCase {
         finishConfirm.tap()
         XCTAssertTrue(app.buttons["complete-done"].waitForExistence(timeout: 8))
 
-        let better = app.buttons["complete-mood-better"]
+        let better = app.buttons["mood-better"]
         XCTAssertTrue(scrollTo(better, in: app), "the mood line should sit under the note")
         XCTAssertTrue(app.staticTexts["Mood after?"].exists)
         XCTAssertFalse(better.isSelected)
         better.tap()
         XCTAssertTrue(better.isSelected, "tapping a mood should select it")
-        XCTAssertFalse(app.buttons["complete-mood-same"].isSelected, "moods are mutually exclusive")
+        XCTAssertFalse(app.buttons["mood-same"].isSelected, "moods are mutually exclusive")
         Thread.sleep(forTimeInterval: 0.5)   // let the press highlight fade before the frame
-        attach(app, "complete-mood-better")
+        attach(app, "mood-better")
 
         // Switching moves the selection; re-tap clears.
-        app.buttons["complete-mood-same"].tap()
-        XCTAssertTrue(app.buttons["complete-mood-same"].isSelected)
+        app.buttons["mood-same"].tap()
+        XCTAssertTrue(app.buttons["mood-same"].isSelected)
         XCTAssertFalse(better.isSelected)
-        app.buttons["complete-mood-same"].tap()
-        XCTAssertFalse(app.buttons["complete-mood-same"].isSelected, "re-tap should clear the mood")
+        app.buttons["mood-same"].tap()
+        XCTAssertFalse(app.buttons["mood-same"].isSelected, "re-tap should clear the mood")
 
         app.buttons["complete-done"].tap()
         XCTAssertTrue(app.tabBars.buttons["Today"].waitForExistence(timeout: 8))

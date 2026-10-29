@@ -68,11 +68,6 @@ struct CompleteScreen: View {
     }
 
     private static let feelOptions = ["Too easy", "Easy", "Right", "Hard", "Too much"]
-    /// Stored value / label. Values are the fixed vocabulary
-    /// `SavedSession.mood` documents and the coach context reads verbatim.
-    static let moodOptions: [(value: String, label: String)] = [
-        ("worse", "Worse"), ("same", "Same"), ("better", "Better"),
-    ]
 
     // MARK: - Derived values
 
@@ -157,7 +152,7 @@ struct CompleteScreen: View {
                             .padding(.horizontal, 20)
                             .padding(.top, 18)
 
-                        moodLine
+                        MoodAfterLine(mood: $mood)
                             .padding(.horizontal, 20)
                             .padding(.top, 14)
 
@@ -350,34 +345,6 @@ struct CompleteScreen: View {
                     id: "complete-feel-" + option.lowercased().replacingOccurrences(of: " ", with: "-")) {
             // Tap toggles selection; re-tap clears.
             feel = active ? nil : option
-        }
-    }
-
-    /// Mood after, as one optional line under the note: the affective
-    /// payoff, separate from difficulty ("Hard" and "better" are a common
-    /// pair). Plain text options with no pills, so skipping it costs nothing.
-    private var moodLine: some View {
-        HStack(spacing: 14) {
-            Text("Mood after?")
-                .font(.monoXS)
-                .foregroundStyle(Color.ink3)
-            Spacer(minLength: 8)
-            ForEach(Self.moodOptions, id: \.value) { option in
-                let active = mood == option.value
-                Button {
-                    mood = active ? nil : option.value
-                } label: {
-                    Text(option.label)
-                        .font(.monoXS)
-                        .foregroundStyle(active ? Color.accent : Color.ink2)
-                        .underline(active)
-                        .padding(.vertical, 6)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("complete-mood-\(option.value)")
-                .accessibilityAddTraits(active ? .isSelected : [])
-            }
         }
     }
 

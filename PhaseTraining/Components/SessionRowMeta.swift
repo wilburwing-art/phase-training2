@@ -38,4 +38,12 @@ enum SessionRowMeta {
         case .spelled: return "\(minutes) min"
         }
     }
+
+    /// History's reflection line: "Felt hard · Mood after: better", either
+    /// half alone when only one was given, nil when neither was.
+    static func feelMoodLine(feel: String?, mood: String?) -> String? {
+        let parts = [feel.map { "Felt \($0.lowercased())" },
+                     mood.map { "Mood after: \($0)" }].compactMap { $0 }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
 }
