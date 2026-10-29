@@ -123,11 +123,18 @@ struct GeneratedWorkout: Codable, Hashable {
     /// Lets DayOutcome and SpineAggregates count per spine. Older plans decode
     /// with nil.
     var authoredRoutineId: Int? = nil
-    /// Sore areas (MuscleBucket slugs) the session was built around, from
-    /// `Planner.soreness(for:memory:)` for its date. `PlanStore.applySoreness`
-    /// compares it with what the date calls for now and rebuilds the day when
-    /// they differ. Nil on workouts built with no date and on older plans.
+    /// Part-recovered areas (MuscleBucket slugs) the session was built
+    /// around, from `MuscleRecovery.status` for its date. With `blockedAreas`
+    /// it is what `PlanStore.applyRecovery` compares against the date's
+    /// current status to decide whether to rebuild the day. Nil on workouts
+    /// built with no date and on older plans.
     var soreAreas: [String]? = nil
+    /// Areas still recovering on the session's date: no movement in it loads
+    /// them as a prime mover.
+    var blockedAreas: [String]? = nil
+    /// The blocked areas that actually cost this session a movement. Today
+    /// names these.
+    var skippedAreas: [String]? = nil
 }
 
 /// Why this exercise ended up in the workout. Default is `.recipe` — the

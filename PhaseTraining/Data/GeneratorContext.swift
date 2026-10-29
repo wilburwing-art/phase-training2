@@ -82,6 +82,14 @@ struct GeneratorContext: Equatable {
     /// neutral 0.5 sentinel must not be mistaken for "low real readiness".
     var hasReadinessData: Bool = false
 
+    /// Muscle loads of the sessions logged in the last `exposureWindowDays`,
+    /// for the recovery gate (`MuscleRecovery.status`). Resolved once here so
+    /// each generated day does not go back to coach.db.
+    var muscleExposures: [MuscleFreshness.Exposure] = []
+
+    /// Longest any load can stay unrecovered (60h × 1.75) is under five days.
+    static let exposureWindowDays = 7.0
+
     static let empty = GeneratorContext(
         priorBest: [:], recentSoreAreas: [],
         stagnantExercises: [],
@@ -273,7 +281,9 @@ extension GeneratorContext {
                                                           calendar: cal),
             readinessScore: signal.score,
             readinessBreakdown: signal.breakdown,
-            hasReadinessData: hasData
+            hasReadinessData: hasData,
+            muscleExposures: MuscleFreshness.exposures(
+                from: sessions.filter { $0.startTime >= now.addingTimeInterval(-exposureWindowDays * 86_400) })
         )
     }
 

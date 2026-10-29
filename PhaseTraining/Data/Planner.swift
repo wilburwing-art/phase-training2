@@ -26,26 +26,7 @@ enum Planner {
     /// `PlanStore.migrateIfStale` rebuilds any plan stamped lower (or not at
     /// all) on the next launch. Leave it alone for changes that only matter
     /// from the next week on.
-    static let version = 2
-
-    /// Muscle areas a lift day on `date` should ease off, from the most recent
-    /// soreness check-in dated that day or the day before. Mild or high
-    /// soreness, or a pain flag, counts; `heavy` holds the areas reported high
-    /// or with pain. A newer "none" check-in clears an older one.
-    static func soreness(for date: Date, memory: TrainingMemory,
-                         calendar: Calendar = .current) -> (areas: Set<String>, heavy: Set<String>) {
-        let day = calendar.startOfDay(for: date)
-        guard let dayBefore = calendar.date(byAdding: .day, value: -1, to: day),
-              let entry = memory.soreness
-                .filter({ let d = calendar.startOfDay(for: $0.date); return d == day || d == dayBefore })
-                .max(by: { $0.date < $1.date })
-        else { return ([], []) }
-        let sore = entry.soreness == "mild" || entry.soreness == "high" || entry.pain
-        guard sore else { return ([], []) }
-        let areas = Set(entry.areas).intersection(MuscleBucket.sorenessPrimarySlugs)
-        let heavy = (entry.soreness == "high" || entry.pain) ? areas : []
-        return (areas, heavy)
-    }
+    static let version = 3
 
     static func generate(
         memory: TrainingMemory,

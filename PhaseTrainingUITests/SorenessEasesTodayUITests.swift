@@ -1,6 +1,6 @@
 import XCTest
 
-/// End to end: a soreness check-in on Progress reshapes today's lift day and
+/// End to end: a mild soreness check-in on Progress reshapes today's lift day and
 /// Today says why. Seeds a ski athlete whose whole week is lift days, so today
 /// is a lift day on any weekday.
 final class SorenessEasesTodayUITests: XCTestCase {
@@ -26,7 +26,7 @@ final class SorenessEasesTodayUITests: XCTestCase {
         pill.tap()
 
         app.buttons["soreness-energy-normal"].tap()
-        app.buttons["soreness-severity-high"].tap()
+        app.buttons["soreness-severity-mild"].tap()
         let quads = app.buttons["soreness-area-quads"]
         swipes = 0
         while !quads.isHittable && swipes < 4 { app.swipeUp(); swipes += 1 }

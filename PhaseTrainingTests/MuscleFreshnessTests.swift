@@ -66,11 +66,12 @@ final class MuscleFreshnessTests: XCTestCase {
         XCTAssertEqual(rows.map(\.label), ["Quads", "Chest", "Biceps", "Calves"])
     }
 
-    // MARK: - rows: recovery decay
+    // MARK: - rows: recovery from volume
 
-    func test_decay_halfwayThroughWindow() {
-        // Chest window = 5 days; trained 2.5 days ago → freshness 0.5.
-        let session = savedSession(name: "Bench Press", daysAgo: 2.5)
+    // One done set on chest: load 1 → scale clamps to 0.5 → 60h × 0.5 = 30h.
+
+    func test_decay_halfwayThroughRecovery() {
+        let session = savedSession(name: "Bench Press", hoursAgo: 15)
         let rows = MuscleFreshness.rows(
             from: [session],
             now: now,
@@ -79,13 +80,13 @@ final class MuscleFreshnessTests: XCTestCase {
         )
         XCTAssertEqual(rows[0].freshness, 0.5, accuracy: 1e-9)
         XCTAssertEqual(rows[0].lastWorked, session.startTime)
-        XCTAssertEqual(rows[0].daysSinceLastWorked, 2)
+        XCTAssertEqual(rows[0].daysSinceLastWorked, 0)
     }
 
-    func test_decay_usesPerMuscleWindow() {
-        // Same 3-days-ago session: calves (3-day window) fully recover,
-        // quadriceps (6-day window) sit at exactly half.
-        let session = savedSession(name: "Leg Day", daysAgo: 3)
+    func test_decay_usesPerMuscleBaseHours() {
+        // Same 15h-ago single set: calves (36h base → 18h) are 15/18 back,
+        // quadriceps (60h base → 30h) exactly half.
+        let session = savedSession(name: "Leg Day", hoursAgo: 15)
         let rows = MuscleFreshness.rows(
             from: [session],
             now: now,
@@ -95,13 +96,28 @@ final class MuscleFreshnessTests: XCTestCase {
             ]]),
             allMuscles: [("calves", "Calves"), ("quadriceps", "Quads")]
         )
-        XCTAssertEqual(rows[0].freshness, 1.0, accuracy: 1e-9)
+        XCTAssertEqual(rows[0].freshness, 15.0 / 18.0, accuracy: 1e-9)
         XCTAssertEqual(rows[1].freshness, 0.5, accuracy: 1e-9)
     }
 
-    func test_decay_unknownSlugFallsBackToDefaultWindow() {
-        // "mystery-muscle" isn't in recoveryWindow → 5-day default.
-        let session = savedSession(name: "Mystery Move", daysAgo: 2.5)
+    func test_decay_moreSetsRecoverSlower_withACap() {
+        XCTAssertEqual(MuscleFreshness.recoveryHours(slug: "chest", load: 6), 60, accuracy: 1e-9)
+        XCTAssertEqual(MuscleFreshness.recoveryHours(slug: "chest", load: 12), 60 * 2.0.squareRoot(), accuracy: 1e-9)
+        XCTAssertEqual(MuscleFreshness.recoveryHours(slug: "chest", load: 40), 105, accuracy: 1e-9, "capped at 1.75x")
+        XCTAssertEqual(MuscleFreshness.recoveryHours(slug: "chest", load: 0.5), 30, accuracy: 1e-9, "floored at 0.5x")
+
+        let light = savedSession(exercises: [loggedExercise(name: "Bench Press", done: true, sets: 2)], hoursAgo: 24)
+        let heavy = savedSession(exercises: [loggedExercise(name: "Bench Press", done: true, sets: 12)], hoursAgo: 24)
+        let f = { (s: SavedSession) in
+            MuscleFreshness.rows(from: [s], now: self.now, resolve: self.resolver(["Bench Press": [self.chest]]),
+                                 allMuscles: [("chest", "Chest")])[0].freshness
+        }
+        XCTAssertGreaterThan(f(light), f(heavy))
+    }
+
+    func test_decay_unknownSlugFallsBackToDefaultBaseHours() {
+        // "mystery-muscle" has no base → 36h; one set → 18h; 9h → half.
+        let session = savedSession(name: "Mystery Move", hoursAgo: 9)
         let rows = MuscleFreshness.rows(
             from: [session],
             now: now,
@@ -114,9 +130,9 @@ final class MuscleFreshnessTests: XCTestCase {
     }
 
     func test_decay_capsAtFullyRecovered() {
-        // Way past the window: freshness clamps to 1.0 but lastWorked /
+        // Long past recovery: freshness clamps to 1.0 but lastWorked /
         // daysSinceLastWorked still report the stale session.
-        let session = savedSession(name: "Bench Press", daysAgo: 30)
+        let session = savedSession(name: "Bench Press", daysAgo: 6)
         let rows = MuscleFreshness.rows(
             from: [session],
             now: now,
@@ -125,7 +141,7 @@ final class MuscleFreshnessTests: XCTestCase {
         )
         XCTAssertEqual(rows[0].freshness, 1.0)
         XCTAssertEqual(rows[0].lastWorked, session.startTime)
-        XCTAssertEqual(rows[0].daysSinceLastWorked, 30)
+        XCTAssertEqual(rows[0].daysSinceLastWorked, 6)
         XCTAssertEqual(rows[0].intensity, BodyAnatomyView.HighlightIntensity.none)
     }
 
@@ -142,10 +158,9 @@ final class MuscleFreshnessTests: XCTestCase {
         XCTAssertEqual(rows[0].intensity, .primary)
     }
 
-    func test_futureDatedSession_clampsToZeroDays() {
-        // A session timestamped after `now` (clock skew, edited date) must
-        // clamp to zero elapsed days, not produce negative freshness.
-        let session = savedSession(name: "Bench Press", daysAgo: -1)
+    func test_slightlyFutureSession_countsAsJustTrained() {
+        // Clock skew: an hour ahead clamps to zero elapsed time.
+        let session = savedSession(name: "Bench Press", hoursAgo: -1)
         let rows = MuscleFreshness.rows(
             from: [session],
             now: now,
@@ -154,6 +169,20 @@ final class MuscleFreshnessTests: XCTestCase {
         )
         XCTAssertEqual(rows[0].freshness, 0.0)
         XCTAssertEqual(rows[0].daysSinceLastWorked, 0)
+    }
+
+    func test_laterSession_isIgnored() {
+        // A day ahead of the anchor has not happened yet from there (a past
+        // day being rebuilt).
+        let session = savedSession(name: "Bench Press", daysAgo: -1)
+        let rows = MuscleFreshness.rows(
+            from: [session],
+            now: now,
+            resolve: resolver(["Bench Press": [chest]]),
+            allMuscles: [("chest", "Chest")]
+        )
+        XCTAssertEqual(rows[0].freshness, 1.0)
+        XCTAssertNil(rows[0].lastWorked)
     }
 
     func test_daysSinceLastWorked_floorsPartialDays() {
@@ -169,9 +198,10 @@ final class MuscleFreshnessTests: XCTestCase {
 
     // MARK: - rows: multiple sessions + done-set gating
 
-    func test_multipleSessions_mostRecentWins_anyOrder() {
-        let old = savedSession(name: "Bench Press", daysAgo: 4)
-        let recent = savedSession(name: "Bench Press", daysAgo: 1)
+    func test_multipleSessions_stack_anyOrder() {
+        // Two single sets 10h and 20h ago: fatigue 20/30 + 10/30 = 1 → 0.
+        let old = savedSession(name: "Bench Press", hoursAgo: 20)
+        let recent = savedSession(name: "Bench Press", hoursAgo: 10)
         let resolve = resolver(["Bench Press": [chest]])
 
         for sessions in [[old, recent], [recent, old]] {
@@ -181,17 +211,17 @@ final class MuscleFreshnessTests: XCTestCase {
                 resolve: resolve,
                 allMuscles: [("chest", "Chest")]
             )
-            // 1 day / 5-day window = 0.2 regardless of input order.
-            XCTAssertEqual(rows[0].freshness, 0.2, accuracy: 1e-9)
+            XCTAssertEqual(rows[0].freshness, 0.0, accuracy: 1e-9)
             XCTAssertEqual(rows[0].lastWorked, recent.startTime)
-            XCTAssertEqual(rows[0].daysSinceLastWorked, 1)
         }
+        let alone = MuscleFreshness.rows(from: [recent], now: now, resolve: resolve,
+                                         allMuscles: [("chest", "Chest")])
+        XCTAssertEqual(alone[0].freshness, 1.0 / 3.0, accuracy: 1e-9)
     }
 
     func test_sessionWithNoDoneSets_doesNotFatigue() {
-        // The recent session has zero done sets — only the old one counts.
-        let old = savedSession(name: "Bench Press", daysAgo: 4)
-        let recentUndone = savedSession(name: "Bench Press", daysAgo: 1, done: false)
+        let old = savedSession(name: "Bench Press", hoursAgo: 24)
+        let recentUndone = savedSession(name: "Bench Press", hoursAgo: 1, done: false)
         let rows = MuscleFreshness.rows(
             from: [old, recentUndone],
             now: now,
@@ -202,12 +232,22 @@ final class MuscleFreshnessTests: XCTestCase {
         XCTAssertEqual(rows[0].lastWorked, old.startTime)
     }
 
+    func test_warmupSets_doNotFatigue() {
+        var ex = loggedExercise(name: "Bench Press", done: true)
+        ex.sets[0].isWarmup = true
+        let rows = MuscleFreshness.rows(
+            from: [savedSession(exercises: [ex], hoursAgo: 1)],
+            now: now,
+            resolve: resolver(["Bench Press": [chest]]),
+            allMuscles: [("chest", "Chest")]
+        )
+        XCTAssertEqual(rows[0].freshness, 1.0)
+    }
+
     func test_exerciseWithNoDoneSets_skippedWithinSession() {
-        // One session, two exercises: bench all-undone, curl done. Only the
-        // curl's muscle decays even though the session itself has done sets.
         let bench = loggedExercise(name: "Bench Press", done: false)
         let curl = loggedExercise(name: "Curl", done: true)
-        let session = savedSession(exercises: [bench, curl], daysAgo: 1)
+        let session = savedSession(exercises: [bench, curl], hoursAgo: 9)
         let rows = MuscleFreshness.rows(
             from: [session],
             now: now,
@@ -219,12 +259,14 @@ final class MuscleFreshnessTests: XCTestCase {
         )
         XCTAssertEqual(rows[0].freshness, 1.0, "Undone bench should not fatigue chest")
         XCTAssertNil(rows[0].lastWorked)
-        // Biceps window = 4 days → 1/4 = 0.25.
-        XCTAssertEqual(rows[1].freshness, 0.25, accuracy: 1e-9)
+        // Biceps 36h base, one set → 18h; 9h → half.
+        XCTAssertEqual(rows[1].freshness, 0.5, accuracy: 1e-9)
     }
 
-    func test_onlyPrimaryRole_fatigues() {
-        let session = savedSession(name: "Bench Press", daysAgo: 1)
+    func test_secondaryCountsHalf_stabilizerNot() {
+        // Four bench sets: chest load 4 (60h × sqrt(4/6)), triceps 2
+        // (36h × sqrt(2/6)).
+        let session = savedSession(exercises: [loggedExercise(name: "Bench Press", done: true, sets: 4)], hoursAgo: 9)
         let rows = MuscleFreshness.rows(
             from: [session],
             now: now,
@@ -235,8 +277,8 @@ final class MuscleFreshnessTests: XCTestCase {
             ]]),
             allMuscles: [("chest", "Chest"), ("triceps", "Triceps"), ("delt-anterior", "Front Delt")]
         )
-        XCTAssertEqual(rows[0].freshness, 0.2, accuracy: 1e-9)
-        XCTAssertEqual(rows[1].freshness, 1.0, "Secondary role must not fatigue")
+        XCTAssertEqual(rows[0].freshness, 9 / (60 * (4.0 / 6).squareRoot()), accuracy: 1e-9)
+        XCTAssertEqual(rows[1].freshness, 9 / (36 * (2.0 / 6).squareRoot()), accuracy: 1e-9)
         XCTAssertEqual(rows[2].freshness, 1.0, "Stabilizer role must not fatigue")
     }
 
@@ -257,7 +299,7 @@ final class MuscleFreshnessTests: XCTestCase {
     func test_resolverMapsByExerciseName() {
         let bench = loggedExercise(name: "Bench Press", done: true)
         let squat = loggedExercise(name: "Squat", done: true)
-        let session = savedSession(exercises: [bench, squat], daysAgo: 1)
+        let session = savedSession(exercises: [bench, squat], hoursAgo: 15)
         let rows = MuscleFreshness.rows(
             from: [session],
             now: now,
@@ -267,8 +309,8 @@ final class MuscleFreshnessTests: XCTestCase {
             ]),
             allMuscles: [("chest", "Chest"), ("quadriceps", "Quads")]
         )
-        XCTAssertEqual(rows[0].freshness, 0.2, accuracy: 1e-9)   // 1/5
-        XCTAssertEqual(rows[1].freshness, 1.0 / 6.0, accuracy: 1e-9) // 1/6
+        XCTAssertEqual(rows[0].freshness, 0.5, accuracy: 1e-9)
+        XCTAssertEqual(rows[1].freshness, 0.5, accuracy: 1e-9)
     }
 
     func test_resolverMemoized_oncePerUniqueName() {
@@ -295,28 +337,25 @@ final class MuscleFreshnessTests: XCTestCase {
     // MARK: - DST-adjacent dates
 
     func test_dstSpanningInterval_countsPureSecondsNotWallClockDays() {
-        // last = 2026-03-07 00:00:00 UTC; now = last + 2.5 × 86,400 s. That
-        // interval spans the US spring-forward transition (2026-03-08 02:00
-        // local). The model counts 86,400-second days via timeIntervalSince,
-        // so the answer is exactly 0.5 freshness / 2 floor-days in every
-        // timezone — DST never shifts it.
+        // last = 2026-03-07 00:00:00 UTC; now = last + 60h of seconds, across
+        // the US spring-forward change. Twelve sets of chest recover in
+        // 60 × sqrt(2) hours, so freshness is 1/sqrt(2) in every timezone.
         let last = Date(timeIntervalSince1970: 1_772_841_600)
-        let session = savedSession(name: "Bench Press", startTime: last)
+        let session = savedSession(exercises: [loggedExercise(name: "Bench Press", done: true, sets: 12)],
+                                   startTime: last)
         let rows = MuscleFreshness.rows(
             from: [session],
             now: now, // 1_773_057_600 = last + 216,000 s
             resolve: resolver(["Bench Press": [chest]]),
             allMuscles: [("chest", "Chest")]
         )
-        XCTAssertEqual(rows[0].freshness, 0.5, accuracy: 1e-9)
+        XCTAssertEqual(rows[0].freshness, 1 / 2.0.squareRoot(), accuracy: 1e-9)
         XCTAssertEqual(rows[0].daysSinceLastWorked, 2)
     }
 
     // MARK: - rows: freshness bounds
 
     func test_freshness_alwaysWithinUnitInterval() {
-        // Future-dated, fresh, mid-window, and ancient sessions — every row
-        // must stay inside 0...1 so Row.intensity's bands are total.
         for offset in [-2.0, 0.0, 0.1, 2.5, 4.99, 5.0, 365.0] {
             let session = savedSession(name: "Bench Press", daysAgo: offset)
             let rows = MuscleFreshness.rows(
@@ -389,15 +428,15 @@ final class MuscleFreshnessTests: XCTestCase {
     }
 
     func test_highlights_thresholdBandsPerMuscle() {
-        // chest:      1 day / 5 → 0.20 → .primary
-        // quadriceps: 3 days / 6 → 0.50 → .secondary
-        // biceps:     3 days / 4 → 0.75 → .tertiary
-        // calves:     3 days / 3 → 1.00 → excluded
+        // One set each. chest:  3h / 30h → 0.10 → .primary
+        //                quads: 15h / 30h → 0.50 → .secondary
+        //                biceps: 15h / 18h → 0.83 → .tertiary
+        //                calves: 20h / 18h → 1.00 → excluded
         let sessions = [
-            savedSession(name: "Bench Press", daysAgo: 1),
-            savedSession(name: "Squat", daysAgo: 3),
-            savedSession(name: "Curl", daysAgo: 3),
-            savedSession(name: "Calf Raise", daysAgo: 3),
+            savedSession(name: "Bench Press", hoursAgo: 3),
+            savedSession(name: "Squat", hoursAgo: 15),
+            savedSession(name: "Curl", hoursAgo: 15),
+            savedSession(name: "Calf Raise", hoursAgo: 20),
         ]
         let out = MuscleFreshness.highlights(
             from: sessions,
@@ -441,13 +480,21 @@ final class MuscleFreshnessTests: XCTestCase {
         )
     }
 
-    private func loggedExercise(name: String, done: Bool) -> LoggedExercise {
+    private func loggedExercise(name: String, done: Bool, sets: Int = 1) -> LoggedExercise {
         LoggedExercise(
             id: name, name: name, type: nil, unit: "lbs",
-            targetSets: 1, targetReps: 5, rest: 90,
-            sets: [LoggedSet(num: 1, weight: "135", reps: "5", rpe: "", done: done)],
+            targetSets: sets, targetReps: 5, rest: 90,
+            sets: (1...sets).map { LoggedSet(num: $0, weight: "135", reps: "5", rpe: "", done: done) },
             prevSets: []
         )
+    }
+
+    private func savedSession(name: String, hoursAgo: Double, done: Bool = true) -> SavedSession {
+        savedSession(name: name, startTime: now.addingTimeInterval(-hoursAgo * 3600), done: done)
+    }
+
+    private func savedSession(exercises: [LoggedExercise], hoursAgo: Double) -> SavedSession {
+        savedSession(exercises: exercises, startTime: now.addingTimeInterval(-hoursAgo * 3600))
     }
 
     private func savedSession(name: String, daysAgo: Double, done: Bool = true) -> SavedSession {

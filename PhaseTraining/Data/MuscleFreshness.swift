@@ -1,54 +1,62 @@
-// MuscleFreshness.swift — per-muscle-group recovery freshness model.
+// MuscleFreshness.swift — per-muscle recovery from logged volume.
 //
-// For each muscle_groups.slug, find the most recent SavedSession that
-// trained it as a PRIMARY role and decay freshness from there. Used by the
-// Recovery tab body view: red = needs recovery, gray = fresh.
+// Each session leaves fatigue on the muscles it loaded: a done working set
+// counts 1.0 toward its PRIMARY muscles and 0.5 toward its secondaries.
+// That load sets how long the muscle takes to recover:
 //
-// Why primary-only: stabilisers and secondaries fire all day across many
-// lifts; counting them would mean "nothing is ever fresh." Volume-based
-// recovery (MuscleVolume) is a separate model for the Progress card.
+//     hours = baseHours[slug] × clamp(sqrt(load / 6), 0.5, 1.75)
 //
-// Recovery windows are tuned per muscle size: large prime movers (glutes,
-// quads, back) take ~6 days; smaller ones (forearms, calves) ~3-4. Defaults
-// in `Self.recoveryWindow`. Override via the `recoveryWindow` parameter for
-// previews / tests.
+// so six hard sets recover in the base time, twelve in about 1.4 times it,
+// and one set in half of it. Fatigue left by each session falls linearly to
+// zero over that time, and sessions stack: two leg days in a row leave more
+// than one. Freshness is 1 minus the summed fatigue, clamped to 0...1.
+//
+// Base hours are starting estimates from general recovery research (large
+// prime movers about 2.5 days at moderate volume, small muscles 1.5); the
+// season-week probe in SorenessSelectionTests keeps them from blocking the
+// app's own sport spacing. The Recovery cards and the generator's recovery
+// gate (MuscleRecovery) read these same numbers.
 
 import Foundation
 
 enum MuscleFreshness {
 
-    /// Days to full recovery, by muscle_groups.slug. Anything not listed
-    /// falls back to `Self.defaultWindow` (5 days). Sized roughly on
-    /// muscle-fiber recovery research — bigger / more eccentrically-loaded
-    /// muscles take longer. Tunable; see PR notes for future per-user
-    /// adjustments.
-    static let recoveryWindow: [String: Double] = [
-        // Large prime movers — slow recovery
-        "quadriceps":   6, "rectus-femoris": 6, "vastus-medialis": 6, "vastus-lateralis": 6, "vastus-intermedius": 6,
-        "hamstrings":   6, "biceps-femoris": 6, "semitendinosus": 6, "semimembranosus": 6,
-        "glutes":       6, "glute-max": 6, "glute-med": 6, "glute-min": 6,
-        "back":         6, "lats": 6, "erector-thoracic": 6, "erector-lumbar": 6,
+    /// Hours to full recovery after a reference load of six working sets,
+    /// by muscle_groups.slug. Anything not listed uses `defaultBaseHours`.
+    static let baseHours: [String: Double] = {
+        var out: [String: Double] = [:]
+        let large = ["quadriceps", "rectus-femoris", "vastus-medialis", "vastus-lateralis", "vastus-intermedius",
+                     "hamstrings", "biceps-femoris", "semitendinosus", "semimembranosus",
+                     "glutes", "glute-max", "glute-med", "glute-min",
+                     "back", "lats", "erector-thoracic", "erector-lumbar",
+                     "chest", "pec-major-clav", "pec-major-sternal", "pec-minor"]
+        let medium = ["shoulders", "delt-anterior", "delt-lateral", "delt-posterior",
+                      "adductors", "traps", "upper-traps", "mid-traps", "lower-traps", "rhomboids"]
+        for s in large { out[s] = 60 }
+        for s in medium { out[s] = 48 }
+        return out
+    }()
 
-        // Medium muscles — default-ish
-        "chest":        5, "pec-major-clav": 5, "pec-major-sternal": 5, "pec-minor": 5,
-        "shoulders":    5, "delt-anterior": 5, "delt-lateral": 5, "delt-posterior": 5,
-        "biceps":       4, "triceps": 4, "brachialis": 4, "brachioradialis": 4,
-        "traps":        4, "upper-traps": 4, "mid-traps": 4, "lower-traps": 4,
-        "rhomboids":    4,
-        "abs":          4, "rectus-abdominis": 4, "external-obliques": 4, "internal-obliques": 4,
-        "adductors":    5, "hip-flexors": 4, "iliopsoas": 4,
+    /// Small muscles: arms, calves, forearms, core, neck, rotator cuff.
+    static let defaultBaseHours: Double = 36
 
-        // Small / fast-recovering muscles
-        "calves":       3, "gastrocnemius": 3, "soleus": 3, "peroneals": 3, "tib-anterior": 3,
-        "forearm-flexors": 3, "forearm-extensors": 3, "finger-flexors": 3, "finger-extensors": 3,
-        "grip-crush":   3, "grip-pinch": 3, "grip-support": 3,
-        "neck":         3, "scm": 3, "scalenes": 3, "cervical-extensors": 3, "deep-neck-flexors": 3, "levator-scapulae": 3,
-        "rotator-cuff": 4, "supraspinatus": 4, "infraspinatus": 4, "teres-minor": 4, "subscapularis": 4,
-        "serratus-anterior": 4, "teres-major": 4,
-    ]
+    /// Working sets that recover in exactly `baseHours`.
+    static let referenceSets: Double = 6
 
-    /// Fallback recovery window for any slug not in `recoveryWindow`.
-    static let defaultWindow: Double = 5
+    /// Load a set puts on a secondary muscle, relative to a primary one.
+    static let secondaryWeight: Double = 0.5
+
+    /// Hours for `slug` to recover fully from `load` set-equivalents.
+    static func recoveryHours(slug: String, load: Double) -> Double {
+        let scale = min(max((load / referenceSets).squareRoot(), 0.5), 1.75)
+        return (baseHours[slug] ?? defaultBaseHours) * scale
+    }
+
+    /// One session's load per muscle slug, in set-equivalents.
+    struct Exposure: Equatable {
+        let start: Date
+        let loads: [String: Double]
+    }
 
     /// Output row: per-muscle freshness + the last-worked date so callers
     /// can render "3 days" / "no recent exercises" subtitles.
@@ -69,11 +77,60 @@ enum MuscleFreshness {
         }
     }
 
+    /// Per-session muscle loads. Only done, non-warm-up sets count; an
+    /// exercise the resolver doesn't know contributes nothing. Name lookups
+    /// are memoized across the call.
+    static func exposures(
+        from sessions: [SavedSession],
+        resolve: MuscleVolume.NameResolver = MuscleVolume.defaultResolve
+    ) -> [Exposure] {
+        var resolved: [String: MuscleVolume.ResolvedExercise?] = [:]
+        return sessions.compactMap { session in
+            var loads: [String: Double] = [:]
+            for ex in session.exercises {
+                let sets = Double(ex.sets.filter { $0.done && !$0.isWarmup }.count)
+                guard sets > 0 else { continue }
+                let info: MuscleVolume.ResolvedExercise?
+                if let cached = resolved[ex.name] {
+                    info = cached
+                } else {
+                    info = resolve(ex.name)
+                    resolved[ex.name] = info
+                }
+                for muscle in info?.muscles ?? [] {
+                    switch muscle.role {
+                    case "primary":   loads[muscle.slug, default: 0] += sets
+                    case "secondary": loads[muscle.slug, default: 0] += sets * secondaryWeight
+                    default: break
+                    }
+                }
+            }
+            return loads.isEmpty ? nil : Exposure(start: session.startTime, loads: loads)
+        }
+    }
+
+    /// Sessions logged more than this far after the anchor are ignored: they
+    /// have not happened yet from that point of view (a past day being
+    /// rebuilt). Anything closer is clock skew and counts as just trained.
+    static let futureTolerance: TimeInterval = 6 * 3600
+
+    /// Freshness of `slug` at `now`: 1 minus the fatigue every exposure has
+    /// left, clamped to 0...1.
+    static func freshness(of slug: String, exposures: [Exposure], at now: Date) -> Double {
+        var fatigue = 0.0
+        for e in exposures {
+            guard let load = e.loads[slug], load > 0,
+                  e.start.timeIntervalSince(now) <= futureTolerance else { continue }
+            let hours = max(0, now.timeIntervalSince(e.start)) / 3600
+            fatigue += max(0, 1 - hours / recoveryHours(slug: slug, load: load))
+        }
+        return max(0, 1 - min(1, fatigue))
+    }
+
     /// Compute freshness for every muscle_groups slug.
     ///
     /// - Parameters:
-    ///   - sessions: full saved-session history (in any order). Only sets
-    ///     marked `done` are counted; in-progress sets don't fatigue you.
+    ///   - sessions: full saved-session history (in any order).
     ///   - now: time anchor (defaults to `Date()`).
     ///   - resolve: exercise-name → muscles resolver. Production callers
     ///     pass `MuscleVolume.defaultResolve` so we hit CoachDatabase via
@@ -87,72 +144,17 @@ enum MuscleFreshness {
         resolve: MuscleVolume.NameResolver = MuscleVolume.defaultResolve,
         allMuscles: [(slug: String, name: String)] = MuscleFreshness.defaultMuscleList()
     ) -> [Row] {
-        // 1. Walk sessions, finding the most recent done-set per primary-role
-        //    muscle slug. Memoize the exercise-name resolution across the call.
-        var lastWorked: [String: Date] = [:]
-        var resolved: [String: MuscleVolume.ResolvedExercise?] = [:]
-
-        for session in sessions {
-            // Skip sessions with no done sets — the session timestamp is the
-            // session start, but a session with zero done sets shouldn't
-            // fatigue anyone.
-            let anyDone = session.exercises.contains { ex in
-                ex.sets.contains { $0.done }
-            }
-            guard anyDone else { continue }
-
-            for ex in session.exercises {
-                guard ex.sets.contains(where: { $0.done }) else { continue }
-
-                let info: MuscleVolume.ResolvedExercise?
-                if let cached = resolved[ex.name] {
-                    info = cached
-                } else {
-                    let r = resolve(ex.name)
-                    resolved[ex.name] = r
-                    info = r
-                }
-                guard let info else { continue }
-
-                // Use session end time if available, otherwise startTime.
-                // We approximate per-set timing as "the session it happened
-                // in" — sub-session resolution is noise at the day scale.
-                let when = session.startTime
-                for muscle in info.muscles where muscle.role == "primary" {
-                    if let existing = lastWorked[muscle.slug] {
-                        if when > existing { lastWorked[muscle.slug] = when }
-                    } else {
-                        lastWorked[muscle.slug] = when
-                    }
-                }
-            }
-        }
-
-        // 2. Build a row per muscle in `allMuscles`. Slugs with no recent
-        //    primary training get freshness 1.0 (fully recovered) and nil
-        //    lastWorked — the UI shows "No recent exercises".
+        let exposures = exposures(from: sessions, resolve: resolve)
+            .filter { $0.start.timeIntervalSince(now) <= futureTolerance }
         return allMuscles.map { (slug, name) in
-            let window = recoveryWindow[slug] ?? defaultWindow
-            if let last = lastWorked[slug] {
-                let seconds = now.timeIntervalSince(last)
-                let days = max(0, seconds / 86_400)
-                let freshness = min(1.0, days / window)
-                return Row(
-                    slug: slug,
-                    label: name,
-                    freshness: freshness,
-                    lastWorked: last,
-                    daysSinceLastWorked: Int(days.rounded(.down))
-                )
-            } else {
-                return Row(
-                    slug: slug,
-                    label: name,
-                    freshness: 1.0,
-                    lastWorked: nil,
-                    daysSinceLastWorked: nil
-                )
-            }
+            let last = exposures.filter { $0.loads[slug, default: 0] > 0 }.map(\.start).max()
+            return Row(
+                slug: slug,
+                label: name,
+                freshness: freshness(of: slug, exposures: exposures, at: now),
+                lastWorked: last,
+                daysSinceLastWorked: last.map { Int((max(0, now.timeIntervalSince($0)) / 86_400).rounded(.down)) }
+            )
         }
     }
 

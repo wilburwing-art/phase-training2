@@ -53,7 +53,7 @@ struct SorenessCheckInPill: View {
         .sheet(isPresented: $showSheet) {
             // Today's and tomorrow's lift days ease off whatever was just
             // marked sore. A skip changes nothing, so the call is a no-op.
-            SorenessCheckInSheet(onDone: { planStore.applySoreness(memory: memoryStore.memory) })
+            SorenessCheckInSheet(onDone: { planStore.applyRecovery(memory: memoryStore.memory) })
         }
     }
 }

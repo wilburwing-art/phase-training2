@@ -83,13 +83,13 @@ struct AthleteState: Equatable {
     /// Affinity at or below which a movement is treated as rejected.
     static let affinitySinkThreshold = -2
 
-    /// Muscle areas (MuscleBucket slugs) sore on this session's date, from
-    /// `Planner.soreness(for:memory:)`. Movements whose primary muscle is in
-    /// here rank below the rest of their demand and get a lighter dose.
-    /// `heavySoreBuckets` is the high-or-pain subset, which also cuts sets.
-    /// Defaulted empty so hand-built states keep today's selection.
-    var soreBuckets: Set<String> = []
-    var heavySoreBuckets: Set<String> = []
+    /// Muscle areas (MuscleBucket slugs) on this session's date, from
+    /// `MuscleRecovery.status`. A movement whose primary muscle is blocked is
+    /// dropped from the pool; one whose primary muscle is eased ranks below
+    /// the rest of its demand and caps at RPE 7. Defaulted empty so
+    /// hand-built states keep today's selection.
+    var easedBuckets: Set<String> = []
+    var blockedBuckets: Set<String> = []
 
     func affinity(for movementName: String) -> Int {
         exerciseAffinities[movementName.lowercased()] ?? 0
@@ -133,7 +133,7 @@ struct AthleteState: Equatable {
         weekNumber: Int = 1,
         recentMovementIDs: Set<Int> = [],
         readiness: Double? = nil,
-        soreness: (areas: Set<String>, heavy: Set<String>) = ([], [])
+        recovery: RecoveryStatus = .none
     ) -> AthleteState {
         let profile = DemographicProfile.from(memory)
         var state = AthleteState(
@@ -154,8 +154,8 @@ struct AthleteState: Equatable {
             flaggedDemands: [],
             profile: profile
         )
-        state.soreBuckets = soreness.areas
-        state.heavySoreBuckets = soreness.heavy
+        state.easedBuckets = recovery.eased
+        state.blockedBuckets = recovery.blocked
         return state
     }
 

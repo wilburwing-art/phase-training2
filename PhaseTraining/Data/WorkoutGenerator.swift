@@ -57,6 +57,10 @@ enum WorkoutGenerator {
         adjacentSportDay: Bool = false,
         date: Date? = nil
     ) -> GeneratedWorkout {
+        let recovery = date.map {
+            MuscleRecovery.status(on: $0, exposures: context.muscleExposures,
+                                  soreness: memory.soreness)
+        } ?? .none
         func athlete() -> AthleteState {
             AthleteState.from(
                 memory,
@@ -64,7 +68,7 @@ enum WorkoutGenerator {
                 weekNumber: memory.weeksInCurrentPhase ?? 1,
                 recentMovementIDs: recentlyPicked,
                 readiness: context.hasReadinessData ? context.readinessScore : nil,
-                soreness: date.map { Planner.soreness(for: $0, memory: memory) } ?? ([], []))
+                recovery: recovery)
         }
         // Sport session or complement session (SessionMix). Only the sport
         // sessions go to the authored routines and the sport's own engine
@@ -98,8 +102,24 @@ enum WorkoutGenerator {
                let authored = AuthoredRoutine.workout(
                     forRoutineId: routineId, memory: memory, context: context,
                     focus: WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts),
-                    profile: profile) {
+                    profile: profile,
+                    blockedBuckets: recovery.blocked) {
                 return authored
+            }
+            // The authored session trains muscles that are still recovering
+            // and the season engine has no rules for this sport: train what
+            // the sport leaves out today instead.
+            if !recovery.blocked.isEmpty,
+               !SportSeasonGenerator.supports(sport.slug),
+               AuthoredRoutineSelector.select(
+                    sportSlug: sport.slug, phase: season, sessionIndex: sportIndex,
+                    excludedExerciseIds: profile.excludedExerciseIds,
+                    allowedEquipmentSlugs: profile.allowedEquipmentSlugs) != nil {
+                let focus = SessionMix.complementRotation(
+                    family: SessionMix.family(forSport: sport.slug), count: 1)[0]
+                return SportSeasonGenerator.generateSession(
+                    athlete(), sessionIndex: 0, strategy: strategy,
+                    complement: ComplementSlot(focus: focus, repeatNumber: 1))
             }
         }
         // The season-aware engine (ski / climb) is the only generator. Every

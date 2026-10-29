@@ -256,11 +256,22 @@ enum AuthoredRoutine {
         memory: TrainingMemory,
         context: GeneratorContext,
         focus: WorkoutFocus,
-        profile: DemographicProfile
+        profile: DemographicProfile,
+        blockedBuckets: Set<String> = []
     ) -> GeneratedWorkout? {
         let db = CoachDatabase.shared
-        let rows = resolvedRows(forRoutineId: routineId, profile: profile)
-        guard !rows.isEmpty else { return nil }
+        let all = resolvedRows(forRoutineId: routineId, profile: profile)
+        guard !all.isEmpty else { return nil }
+        // Rule one: drop rows whose prime mover is still recovering. Under
+        // three rows left is not the authored session any more, so the caller
+        // builds something else.
+        let skipped = blockedBuckets.isEmpty ? Set<String>() : all.reduce(into: Set<String>()) {
+            $0.formUnion(WorkoutGenerator.primaryMuscleBuckets(exerciseId: $1.exerciseId))
+        }.intersection(blockedBuckets)
+        let rows = skipped.isEmpty ? all : all.filter {
+            WorkoutGenerator.primaryMuscleBuckets(exerciseId: $0.exerciseId).isDisjoint(with: blockedBuckets)
+        }
+        guard !rows.isEmpty, skipped.isEmpty || rows.count >= 3 else { return nil }
 
         let exercises: [GeneratedExercise] = rows.map { rr in
             let re = rr.row
@@ -309,9 +320,15 @@ enum AuthoredRoutine {
         } / 60)
         let meta = db.authoredRoutineMeta(id: routineId)
         let provenance = meta?.source.map { "Authored · \($0)" } ?? "Authored program"
-        return GeneratedWorkout(
+        var summary = "\(exercises.count) movements · ~\(estMin) min"
+        let skippedOrdered = MuscleBucket.allCases.map(\.rawValue).filter(skipped.contains)
+        if !skippedOrdered.isEmpty {
+            let names = skippedOrdered.compactMap { MuscleBucket(rawValue: $0)?.label.lowercased() }
+            summary += " · no \(ListFormatter.localizedString(byJoining: names)) work, still recovering"
+        }
+        var workout = GeneratedWorkout(
             title: meta?.name ?? "Session",
-            summary: "\(exercises.count) movements · ~\(estMin) min",
+            summary: summary,
             exercises: exercises,
             estimatedMinutes: estMin,
             provenance: provenance,
@@ -319,6 +336,11 @@ enum AuthoredRoutine {
             focus: focus,
             authoredRoutineId: routineId
         )
+        if !blockedBuckets.isEmpty {
+            workout.blockedAreas = MuscleBucket.allCases.map(\.rawValue).filter(blockedBuckets.contains)
+        }
+        workout.skippedAreas = skippedOrdered.isEmpty ? nil : skippedOrdered
+        return workout
     }
 
     /// Parse a free-form rest string ("90s", "1 min", "2:00") to seconds.

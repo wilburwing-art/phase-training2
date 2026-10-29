@@ -1,9 +1,10 @@
 import XCTest
 @testable import PhaseTraining
 
-/// A soreness check-in reaches the season engine: sore prime movers give way
-/// inside their demand, the ones that stay get a lighter dose, and only the
-/// lift days in the check-in's window change.
+/// Recovery reaches the season engine (MuscleRecovery): a blocked muscle's
+/// prime movers never appear, a part-recovered one's give way inside their
+/// demand and cap at RPE 7, and only the lift days whose recovery changed
+/// are rebuilt.
 final class SorenessSelectionTests: XCTestCase {
 
     // MARK: - Fixtures
@@ -48,9 +49,9 @@ final class SorenessSelectionTests: XCTestCase {
     }
 
     private func session(_ m: TrainingMemory, index: Int, lifts: Int,
-                         sore: (areas: Set<String>, heavy: Set<String>) = ([], [])) -> GeneratedWorkout {
+                         recovery: RecoveryStatus = .none) -> GeneratedWorkout {
         let athlete = AthleteState.from(m, variant: SportSeasonGenerator.defaultVariant(forSport: m.primarySport?.slug),
-                                        soreness: sore)
+                                        recovery: recovery)
         return SportSeasonGenerator.generateSession(athlete, sessionIndex: index, sessionsInWeek: lifts)
     }
 
@@ -61,26 +62,46 @@ final class SorenessSelectionTests: XCTestCase {
         return PlanStore(defaults: d, today: monday())
     }
 
-    // MARK: - Window
+    // MARK: - Check-in window
+
+    private func status(_ date: Date, _ m: TrainingMemory,
+                        exposures: [MuscleFreshness.Exposure] = []) -> RecoveryStatus {
+        MuscleRecovery.status(on: date, exposures: exposures, soreness: m.soreness, now: monday())
+    }
 
     func test_window_coversTheCheckInDayAndTheNext() throws {
         var m = try memory(sport: "alpine-skiing", season: .offSeason)
         m.soreness = [entry(monday(), "mild", ["quads"])]
-        XCTAssertEqual(Planner.soreness(for: day(0), memory: m).areas, ["quads"])
-        XCTAssertEqual(Planner.soreness(for: day(1), memory: m).areas, ["quads"])
-        XCTAssertEqual(Planner.soreness(for: day(2), memory: m).areas, [])
-        XCTAssertEqual(Planner.soreness(for: day(-1), memory: m).areas, [])
-        XCTAssertEqual(Planner.soreness(for: day(0), memory: m).heavy, [], "mild is not heavy")
+        XCTAssertEqual(status(day(0), m).eased, ["quads"])
+        XCTAssertEqual(status(day(1), m).eased, ["quads"])
+        XCTAssertEqual(status(day(2), m).eased, [])
+        XCTAssertEqual(status(day(-1), m).eased, [])
+        XCTAssertEqual(status(day(0), m).blocked, [], "mild eases, it does not block")
     }
 
-    func test_window_highOrPainIsHeavy_andANewerNoneClears() throws {
+    func test_window_highOrPainBlocks_andANewerNoneClears() throws {
         var m = try memory(sport: "alpine-skiing", season: .offSeason)
         m.soreness = [entry(monday(), "high", ["quads", "glutes"])]
-        XCTAssertEqual(Planner.soreness(for: day(0), memory: m).heavy, ["quads", "glutes"])
+        XCTAssertEqual(status(day(0), m).blocked, ["quads", "glutes"])
         m.soreness = [entry(monday(), "none", ["back"], pain: true)]
-        XCTAssertEqual(Planner.soreness(for: day(0), memory: m).heavy, ["back"], "pain counts as heavy")
+        XCTAssertEqual(status(day(0), m).blocked, ["back"], "pain blocks")
         m.soreness = [entry(monday(), "high", ["quads"]), entry(day(1), "none", [])]
-        XCTAssertEqual(Planner.soreness(for: day(1), memory: m).areas, [], "Tuesday's 'none' replaces Monday's report")
+        XCTAssertEqual(status(day(1), m), RecoveryStatus.none, "Tuesday's 'none' replaces Monday's report")
+    }
+
+    func test_model_blocksTheDayAfterAHeavyLegSession_andANoneCheckInOverrides() throws {
+        // Twelve sets of quads Monday evening: Tuesday noon is 18h into a
+        // ~85h recovery, so quads are blocked; by Friday they are recovered.
+        var m = try memory(sport: "alpine-skiing", season: .offSeason)
+        let legs = [MuscleFreshness.Exposure(start: monday().addingTimeInterval(10 * 3600),
+                                             loads: ["quadriceps": 12])]
+        XCTAssertTrue(status(day(1), m, exposures: legs).blocked.contains("quads"))
+        XCTAssertFalse(status(day(4), m, exposures: legs).blocked.contains("quads"))
+        XCTAssertFalse(status(day(4), m, exposures: legs).eased.contains("quads"))
+
+        m.soreness = [entry(day(1).addingTimeInterval(-3 * 3600), "none", [])]
+        XCTAssertFalse(status(day(1), m, exposures: legs).blocked.contains("quads"),
+                       "feeling fine after the session beats the estimate")
     }
 
     // MARK: - Engine
@@ -99,7 +120,7 @@ final class SorenessSelectionTests: XCTestCase {
             var before = 0, after = 0
             for i in 0..<3 {
                 let base = session(m, index: i, lifts: 3)
-                let sore = session(m, index: i, lifts: 3, sore: ([area], []))
+                let sore = session(m, index: i, lifts: 3, recovery: RecoveryStatus(eased: [area]))
                 XCTAssertEqual(demands(sore), demands(base), "\(slug) \(season) s\(i): a demand was lost")
                 XCTAssertLessThanOrEqual(soreCount(sore, area), soreCount(base, area))
                 for ex in sore.exercises where WorkoutGenerator.primaryMuscleBuckets(exerciseId: ex.exerciseId).contains(area) {
@@ -114,19 +135,27 @@ final class SorenessSelectionTests: XCTestCase {
         XCTAssertTrue(anyFewer, "the sore tier never substituted anything")
     }
 
-    func test_engine_heavySorenessCutsSetsOnWhatStays() throws {
-        let m = try memory(sport: "alpine-skiing", season: .offSeason)
-        let base = session(m, index: 0, lifts: 3)
-        let sore = session(m, index: 0, lifts: 3, sore: (["quads"], ["quads"]))
-        let baseSets = Dictionary(base.exercises.map { ($0.exerciseId, $0.sets) }, uniquingKeysWith: { a, _ in a })
-        let kept = sore.exercises.filter {
-            WorkoutGenerator.primaryMuscleBuckets(exerciseId: $0.exerciseId).contains("quads") && baseSets[$0.exerciseId] != nil
+    func test_engine_blockedMuscleNeverAppears_andTheSessionKeepsItsSize() throws {
+        let cases: [(String, SeasonPhase, String)] = [
+            ("alpine-skiing", .offSeason, "quads"),
+            ("alpine-skiing", .preSeason, "glutes"),
+            ("climbing", .preSeason, "forearms"),
+            ("climbing", .inSeason, "back"),
+        ]
+        for (slug, season, area) in cases {
+            let m = try memory(sport: slug, season: season)
+            for i in 0..<3 {
+                let base = session(m, index: i, lifts: 3)
+                let gated = session(m, index: i, lifts: 3, recovery: RecoveryStatus(blocked: [area]))
+                XCTAssertEqual(soreCount(gated, area), 0, "\(slug) \(season) s\(i) kept a \(area) prime mover")
+                XCTAssertEqual(gated.blockedAreas, [area])
+                if soreCount(base, area) > 0 {
+                    XCTAssertEqual(gated.skippedAreas, [area])
+                    XCTAssertTrue(gated.summary.contains("still recovering"), gated.summary)
+                }
+                print("GATE-MEASURE \(slug) \(season) s\(i) \(area): \(base.exercises.count) -> \(gated.exercises.count) movements, \(soreCount(base, area)) blocked")
+            }
         }
-        XCTAssertFalse(kept.isEmpty, "fixture needs a quad prime mover that stays")
-        for ex in kept {
-            XCTAssertLessThan(ex.sets, try XCTUnwrap(baseSets[ex.exerciseId]), "\(ex.name) kept its full sets")
-        }
-        XCTAssertTrue(sore.summary.contains("eased for sore quads"), sore.summary)
     }
 
     // MARK: - PlanStore
@@ -141,17 +170,18 @@ final class SorenessSelectionTests: XCTestCase {
             let inWindow = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: monday()),
                                                            to: Calendar.current.startOfDay(for: d.date)).day! <= 1
             XCTAssertEqual(d.generatedWorkout?.soreAreas, inWindow ? ["quads"] : nil, "\(d.date)")
+            XCTAssertNil(d.generatedWorkout?.blockedAreas)
         }
     }
 
-    func test_applySoreness_changesOnlyWindowDays_keepsSessions_andIsIdempotent() throws {
+    func test_applyRecovery_changesOnlyWindowDays_keepsSessions_andIsIdempotent() throws {
         var m = try memory(sport: "alpine-skiing", season: .offSeason)
         let store = freshStore()
         _ = store.generate(from: m, today: monday())
         let before = try XCTUnwrap(store.plan?.days)
 
         m.soreness = [entry(monday(), "high", ["quads"])]
-        store.applySoreness(memory: m, today: monday())
+        store.applyRecovery(memory: m, today: monday())
         let after = try XCTUnwrap(store.plan?.days)
 
         let cal = Calendar.current
@@ -160,7 +190,8 @@ final class SorenessSelectionTests: XCTestCase {
             XCTAssertEqual(a.title, b.title, "the session changed on \(b.date)")
             let inWindow = cal.isDate(b.date, inSameDayAs: day(0)) || cal.isDate(b.date, inSameDayAs: day(1))
             if b.kind == .lift && inWindow {
-                XCTAssertEqual(a.generatedWorkout?.soreAreas, ["quads"])
+                XCTAssertEqual(a.generatedWorkout?.blockedAreas, ["quads"])
+                XCTAssertEqual(soreCount(try XCTUnwrap(a.generatedWorkout), "quads"), 0)
                 if a.generatedWorkout != b.generatedWorkout { changedAny = true }
             } else {
                 XCTAssertEqual(a, b, "a day outside the window changed: \(b.date)")
@@ -168,11 +199,11 @@ final class SorenessSelectionTests: XCTestCase {
         }
         XCTAssertTrue(changedAny || !before.contains { $0.kind == .lift && cal.startOfDay(for: $0.date) <= cal.startOfDay(for: day(1)) })
 
-        store.applySoreness(memory: m, today: monday())
+        store.applyRecovery(memory: m, today: monday())
         XCTAssertEqual(store.plan?.days, after, "a second apply changed something")
     }
 
-    func test_applySoreness_undoesAnExpiredCheckIn() throws {
+    func test_applyRecovery_undoesAnExpiredCheckIn() throws {
         var m = try memory(sport: "alpine-skiing", season: .offSeason)
         m.soreness = [entry(monday(), "mild", ["quads"])]
         let store = freshStore()
@@ -180,11 +211,12 @@ final class SorenessSelectionTests: XCTestCase {
         XCTAssertTrue(store.plan?.days.contains { $0.generatedWorkout?.soreAreas != nil } ?? false)
 
         m.soreness = [entry(monday(), "none", [])]
-        store.applySoreness(memory: m, today: monday())
+        store.applyRecovery(memory: m, today: monday())
         XCTAssertFalse(store.plan?.days.contains { $0.generatedWorkout?.soreAreas != nil } ?? true)
+        XCTAssertFalse(store.plan?.days.contains { $0.generatedWorkout?.blockedAreas != nil } ?? true)
     }
 
-    func test_applySoreness_skipsDuringAnActiveSession() throws {
+    func test_applyRecovery_skipsDuringAnActiveSession() throws {
         var m = try memory(sport: "alpine-skiing", season: .offSeason)
         let store = freshStore()
         _ = store.generate(from: m, today: monday())
@@ -196,7 +228,40 @@ final class SorenessSelectionTests: XCTestCase {
         store.sessionStore = sessions
 
         m.soreness = [entry(monday(), "high", ["quads"])]
-        store.applySoreness(memory: m, today: monday())
+        store.applyRecovery(memory: m, today: monday())
         XCTAssertEqual(store.plan, before)
+    }
+
+    func test_applyRecovery_afterALoggedLegSession_dropsQuadsFromTheNextLiftDay() throws {
+        let m = try memory(sport: "alpine-skiing", season: .offSeason, lifts: 5)
+        let store = freshStore()
+        let sessions = SessionStore(defaults: UserDefaults(suiteName: "recovery-session-\(UUID().uuidString)")!,
+                                    userDB: UserDatabase(path: ":memory:"))
+        store.sessionStore = sessions
+        _ = store.generate(from: m, today: monday())
+        let cal = Calendar.current
+        let next = try XCTUnwrap(store.plan?.days.first {
+            $0.kind == .lift && cal.startOfDay(for: $0.date) > cal.startOfDay(for: monday())
+                && cal.startOfDay(for: $0.date) <= cal.startOfDay(for: day(2))
+        }, "fixture needs a lift day on Tuesday or Wednesday")
+
+        // Twelve sets of quads at 6pm the evening before that day.
+        let start = cal.startOfDay(for: next.date).addingTimeInterval(-6 * 3600)
+        let squat = LoggedExercise(id: "x", name: "Barbell Back Squat", type: nil, unit: "lbs",
+                                   targetSets: 6, targetReps: 5, rest: 120,
+                                   sets: (1...6).map { LoggedSet(num: $0, weight: "185", reps: "5", rpe: "", done: true) },
+                                   prevSets: [])
+        let split = LoggedExercise(id: "y", name: "Bulgarian Split Squat", type: nil, unit: "lbs",
+                                   targetSets: 6, targetReps: 8, rest: 90,
+                                   sets: (1...6).map { LoggedSet(num: $0, weight: "40", reps: "8", rpe: "", done: true) },
+                                   prevSets: [])
+        sessions.savedSessions.insert(SavedSession(templateId: "t", name: "Legs", category: "lift",
+                                                   startTime: start, exercises: [squat, split],
+                                                   endTime: start.addingTimeInterval(3600), duration: 3600), at: 0)
+        store.applyRecovery(memory: m, today: start.addingTimeInterval(3600))
+
+        let rebuilt = try XCTUnwrap(store.plan?.days.first { $0.id == next.id }?.generatedWorkout)
+        XCTAssertTrue(rebuilt.blockedAreas?.contains("quads") ?? false, "\(rebuilt.blockedAreas ?? [])")
+        XCTAssertEqual(soreCount(rebuilt, "quads"), 0, rebuilt.exercises.map(\.name).joined(separator: ", "))
     }
 }

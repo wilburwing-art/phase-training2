@@ -125,6 +125,11 @@ struct RootTabView: View {
             // A2 — planned-vs-actual outcome for every saved session.
             sessionStore.onSessionSaved = { [weak planStore] saved, abandoned in
                 planStore?.recordOutcome(for: saved, abandoned: abandoned)
+                // Muscles this session loaded may now be too fatigued for a
+                // later day's plan: rebuild the days that changed.
+                if let planStore, let memory = planStore.memoryStore?.memory {
+                    planStore.applyRecovery(memory: memory)
+                }
                 // Build 146: the session goes to Apple Health once, from the
                 // phone unless the watch ran its workout (PLAN-watch.md).
                 // Fire-and-forget: saving never waits on Health.
@@ -156,7 +161,7 @@ struct RootTabView: View {
             planStore.migrateIfStale(memory: memoryStore.memory)
             // A check-in from yesterday reaches today; one from two days ago
             // has expired. Either way the affected days rebuild here.
-            planStore.applySoreness(memory: memoryStore.memory)
+            planStore.applyRecovery(memory: memoryStore.memory)
         }
     }
 }

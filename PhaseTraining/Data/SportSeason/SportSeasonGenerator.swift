@@ -54,6 +54,23 @@ enum SportSeasonGenerator {
                                 sessionsInWeek: Int = 1,
                                 strategy: GeneratorStrategy = .auto,
                                 complement: ComplementSlot? = nil) -> GeneratedWorkout {
+        // What the recovery gate cost this session: the blocked areas among
+        // the movements the same session picks when nothing is blocked. The
+        // pool alone would overstate it (a complement day's pool holds leg
+        // movements it never picks).
+        var skippedAreas: [String] = []
+        if !athlete.blockedBuckets.isEmpty {
+            var open = athlete
+            open.blockedBuckets = []
+            let ungated = generateSession(open, sessionIndex: sessionIndex,
+                                          adjacentSportDay: adjacentSportDay,
+                                          sessionsInWeek: sessionsInWeek,
+                                          strategy: strategy, complement: complement)
+            let hit = ungated.exercises.reduce(into: Set<String>()) {
+                $0.formUnion(WorkoutGenerator.primaryMuscleBuckets(exerciseId: $1.exerciseId))
+            }.intersection(athlete.blockedBuckets)
+            skippedAreas = MuscleBucket.allCases.map(\.rawValue).filter(hit.contains)
+        }
         // A complement session (SessionMix) keeps the phase's progression,
         // volume cap and length, swaps in its focus's demand mix, and draws
         // from the general-fitness pool instead of the sport's.
@@ -66,12 +83,17 @@ enum SportSeasonGenerator {
         let sessionsInWeek = complement == nil ? sessionsInWeek : 1
         // Pool first: redistribution needs to know which demands this sport can
         // actually serve.
-        let pool = filteredPool(athlete, phase: athlete.season,
-                                poolSport: complement == nil ? nil : complementPoolSlug)
-        // Movements whose primary muscle the athlete reported sore for this
-        // date. Resolved once per session: the lookup goes through coach.db.
-        let soreIds = movementIds(in: pool, loading: athlete.soreBuckets)
-        let heavySoreIds = movementIds(in: pool, loading: athlete.heavySoreBuckets)
+        let unrecovered = filteredPool(athlete, phase: athlete.season,
+                                       poolSport: complement == nil ? nil : complementPoolSlug)
+        // Rule one: a movement whose prime mover is still recovering on this
+        // date never reaches the session. Its demand falls through to the
+        // shortfall backfill like any other emptied demand.
+        let blockedIds = movementIds(in: unrecovered, loading: athlete.blockedBuckets)
+        let pool = unrecovered.filter { !blockedIds.contains($0.exerciseId) }
+        // Movements whose primary muscle is only part-recovered (or reported
+        // mildly sore). Resolved once per session: the lookup goes through
+        // coach.db.
+        let soreIds = movementIds(in: pool, loading: athlete.easedBuckets)
         let weights = applyInjuryRedistribution(rule.demandWeights,
                                                 flagged: athlete.flaggedDemands,
                                                 available: Set(pool.flatMap(\.demands)))
@@ -238,23 +260,20 @@ enum SportSeasonGenerator {
                 return e
             }
         }
-        // A sore prime mover that stayed in the session (its demand had no
-        // other movement) gets a lighter dose: RPE 7 at most, and a third
-        // fewer sets when the soreness is high or painful.
+        // A part-recovered prime mover that stayed in the session (its
+        // demand had no other movement) caps at RPE 7.
         exercises = exercises.map { ex in
             guard soreIds.contains(ex.exerciseId) else { return ex }
             var e = ex
             e.rpe = e.rpe.map { capRPE($0, to: 7.0) } ?? "7"
-            if heavySoreIds.contains(ex.exerciseId) {
-                e.sets = max(1, Int((Double(ex.sets) * 2 / 3).rounded()))
-            }
             return e
         }
         return assemble(exercises, picks: picks, athlete: athlete, rule: rule,
                         sessionIndex: sessionIndex, lightened: lightened,
                         signatureUnavailable: signatureUnavailable,
                         complement: complement,
-                        easedAreas: easedAreas(picks: picks, soreIds: soreIds, athlete: athlete))
+                        easedAreas: easedAreas(picks: picks, soreIds: soreIds, athlete: athlete),
+                        skippedAreas: skippedAreas)
     }
 
     // MARK: - Pool
@@ -569,12 +588,12 @@ enum SportSeasonGenerator {
     /// other movement kept a sore prime mover, or the tier moved one out. The
     /// session summary names these so the user sees why the workout changed.
     private static func easedAreas(picks: [Pick], soreIds: Set<Int>, athlete: AthleteState) -> [String] {
-        guard !athlete.soreBuckets.isEmpty else { return [] }
+        guard !athlete.easedBuckets.isEmpty else { return [] }
         let kept = picks.filter { soreIds.contains($0.movement.exerciseId) }
             .reduce(into: Set<String>()) {
                 $0.formUnion(WorkoutGenerator.primaryMuscleBuckets(exerciseId: $1.movement.exerciseId))
             }
-        let areas = kept.isEmpty ? athlete.soreBuckets : kept.intersection(athlete.soreBuckets)
+        let areas = kept.isEmpty ? athlete.easedBuckets : kept.intersection(athlete.easedBuckets)
         return MuscleBucket.allCases.map(\.rawValue).filter(areas.contains)
     }
 
@@ -664,7 +683,8 @@ enum SportSeasonGenerator {
                                  sessionIndex: Int, lightened: Bool,
                                  signatureUnavailable: Bool = false,
                                  complement: ComplementSlot? = nil,
-                                 easedAreas: [String] = []) -> GeneratedWorkout {
+                                 easedAreas: [String] = [],
+                                 skippedAreas: [String] = []) -> GeneratedWorkout {
         let minutes = exercises.reduce(0) { $0 + Int(ceil(Double($1.sets) * (Double($1.restSeconds) + 40) / 60)) }
         let demandMix = picks.map { $0.demand.rawValue }
         // No sport name: Today's caption already says it, and
@@ -677,6 +697,10 @@ enum SportSeasonGenerator {
         var summary = "\(exercises.count) movements · ~\(minutes) min"
         if signatureUnavailable, let sig = signatureDemand(athlete.sportSlug) {
             summary += " · no \(sig.plainLabel) work: your injuries rule out every option"
+        }
+        if !skippedAreas.isEmpty {
+            let names = skippedAreas.compactMap { MuscleBucket(rawValue: $0)?.label.lowercased() }
+            summary += " · no \(ListFormatter.localizedString(byJoining: names)) work, still recovering"
         }
         if !easedAreas.isEmpty {
             let names = easedAreas.compactMap { MuscleBucket(rawValue: $0)?.label.lowercased() }
@@ -693,9 +717,13 @@ enum SportSeasonGenerator {
             title: title, summary: summary, exercises: exercises,
             estimatedMinutes: minutes, provenance: prov,
             focus: complement?.focus.workoutFocus ?? .fullBodyA)
-        if !athlete.soreBuckets.isEmpty {
-            workout.soreAreas = MuscleBucket.allCases.map(\.rawValue).filter(athlete.soreBuckets.contains)
+        if !athlete.easedBuckets.isEmpty {
+            workout.soreAreas = MuscleBucket.allCases.map(\.rawValue).filter(athlete.easedBuckets.contains)
         }
+        if !athlete.blockedBuckets.isEmpty {
+            workout.blockedAreas = MuscleBucket.allCases.map(\.rawValue).filter(athlete.blockedBuckets.contains)
+        }
+        workout.skippedAreas = skippedAreas.isEmpty ? nil : skippedAreas
         return workout
     }
 }

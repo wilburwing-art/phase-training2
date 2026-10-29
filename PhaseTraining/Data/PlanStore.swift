@@ -976,21 +976,22 @@ final class PlanStore: ObservableObject {
         generate(from: memory, today: today)
     }
 
-    /// Rebuild today's and later lift days whose soreness stamp
-    /// (`GeneratedWorkout.soreAreas`) no longer matches what their date calls
-    /// for (`Planner.soreness(for:memory:)`): a check-in just saved, a check-in
-    /// from yesterday that now reaches today, or soreness that has expired.
-    /// One day at a time by direct mutation, never a full `generate`, which
-    /// would rotate every day through `recentPicks`. Each day keeps its lift
-    /// index, so it stays the same session. Skips past days, saved-workout
-    /// days and any active session.
-    func applySoreness(memory: TrainingMemory, today: Date = Date()) {
+    /// Rebuild today's and later lift days whose recovery stamp
+    /// (`GeneratedWorkout.soreAreas` + `blockedAreas`) no longer matches what
+    /// their date calls for (`MuscleRecovery.status`): a session just saved,
+    /// a check-in just saved, or a muscle that has since recovered. One day at
+    /// a time by direct mutation, never a full `generate`, which would rotate
+    /// every day through `recentPicks`. Each day keeps its lift index, so it
+    /// stays the same session. Skips past days, saved-workout days and any
+    /// active session.
+    func applyRecovery(memory: TrainingMemory, today: Date = Date()) {
         guard var plan = plan, sessionStore?.active == nil else { return }
         let cal = Calendar.current
         let todayStart = cal.startOfDay(for: today)
         let liftIdx = plan.days.indices.filter { plan.days[$0].kind == .lift }
         let profile = DemographicProfile.from(memory)
         let recentIds = recentPicks?.recentlyPickedIds() ?? []
+        var context: GeneratorContext?
         var changed = false
         for (n, idx) in liftIdx.enumerated() {
             let day = plan.days[idx]
@@ -999,10 +1000,14 @@ final class PlanStore: ObservableObject {
                   day.routineId == nil,
                   overrides.customRoutineId(for: day.date) == nil
             else { continue }
-            let wanted = Planner.soreness(for: day.date, memory: memory).areas
-            guard Set(existing.soreAreas ?? []) != wanted else { continue }
+            if context == nil { context = buildGeneratorContext(memory: memory, today: today) }
+            let ctx = context ?? .empty
+            let wanted = MuscleRecovery.status(on: day.date, exposures: ctx.muscleExposures,
+                                               soreness: memory.soreness, now: today)
+            guard Set(existing.soreAreas ?? []) != wanted.eased
+                    || Set(existing.blockedAreas ?? []) != wanted.blocked else { continue }
             // The day's own picks are not "recent" to itself, so only the
-            // sore movements give way.
+            // unrecovered movements give way.
             let workout = WorkoutGenerator.generateLift(
                 liftIndex: day.liftIndex ?? n,
                 totalLifts: liftIdx.count,
@@ -1010,7 +1015,7 @@ final class PlanStore: ObservableObject {
                 profile: profile,
                 hashSeed: memory.planInputsHash,
                 recentlyPicked: recentIds.subtracting(existing.exercises.map(\.exerciseId)),
-                context: buildGeneratorContext(memory: memory, today: day.date),
+                context: ctx,
                 date: day.date
             )
             plan.days[idx].generatedWorkout = workout
