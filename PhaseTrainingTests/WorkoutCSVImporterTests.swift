@@ -13,7 +13,7 @@
 // All dates in fixtures are fixed literals ("+0000" offset, the shape
 // Fitbod emits) so assertions never depend on the wall clock. Persistence
 // is verified through date-window-free surfaces (importedSetsSummary /
-// importedWorkoutSummary / importedSetsLifetimePeaks) — the windowed
+// importedWorkoutSummary / allImportedSets) — the windowed
 // recentImportedWorkouts(within:) compares against Date() and would drift.
 
 import XCTest
@@ -99,12 +99,12 @@ final class WorkoutCSVImporterTests: XCTestCase {
         // stays unresolved, so the surfaced match rate is exactly 0.
         XCTAssertEqual(result.nameMatchRate, 0.0, accuracy: 0.001)
         // Unmatched rows persist (zero-data-loss) but with exercise_id NULL,
-        // so they can never seed priorBest via lifetime peaks.
+        // so they can never feed ProvenStrength (it skips rows with no id).
         XCTAssertEqual(db.importedSetsSummary()?.count, 6)
-        XCTAssertTrue(db.importedSetsLifetimePeaks().isEmpty)
+        XCTAssertTrue(db.allImportedSets().allSatisfy { $0.exerciseId == nil })
     }
 
-    func test_resolvedCatalogName_flowsThroughToLifetimePeaks() async throws {
+    func test_resolvedCatalogName_flowsThroughToImportedSets() async throws {
         // Probe-first so this test self-skips instead of coupling to
         // catalog contents (per the test-by-coverage-not-canonical-name
         // convention). Positive resolution at scale is covered by the
@@ -127,11 +127,10 @@ final class WorkoutCSVImporterTests: XCTestCase {
         XCTAssertEqual(result.setsInserted, 2)
         XCTAssertEqual(result.nameMatchRate, 1.0, accuracy: 0.001)
 
-        let peaks = db.importedSetsLifetimePeaks()
-        XCTAssertEqual(peaks.count, 1)
-        XCTAssertEqual(peaks.first?.exerciseId, expectedId)
-        XCTAssertEqual(peaks.first?.weight, 102.5)
-        XCTAssertEqual(peaks.first?.reps, 5)
+        let stored = db.allImportedSets()
+        XCTAssertEqual(stored.count, 2)
+        XCTAssertTrue(stored.allSatisfy { $0.exerciseId == expectedId })
+        XCTAssertEqual(stored.compactMap(\.weight).max(), 102.5)
     }
 
     // MARK: - Malformed rows (non-fatal)

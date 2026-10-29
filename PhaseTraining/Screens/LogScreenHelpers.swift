@@ -44,7 +44,16 @@ extension LogScreen {
             targetReps: ex.targetReps,
             exerciseName: ex.name,
             unit: ex.unit
-        ) else { return nil }
+        ) else {
+            // Never logged here: fall back to proven strength from the whole
+            // history, imports included.
+            guard !ex.isBodyweight,
+                  let prior = store.provenStrength(forExerciseNamed: ex.name),
+                  let h = ProgressionSuggestion.fromHistory(prior, targetReps: ex.targetReps, unit: ex.unit)
+            else { return nil }
+            return ProgressionPillModel(text: "SUGGESTED · \(h.suggestedWeightString) \(ex.unit) · \(h.label)",
+                                        tint: .accent)
+        }
         let weightStr = r.suggestedWeightString
         let label: String
         let tint: Color

@@ -73,6 +73,13 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-saved-workouts") {
             Self.seedSavedWorkouts()
         }
+        //   --seed-imported-history → three recent imported Back Squat
+        //     workouts (100 kg x 5) and no native history, so a Back Squat row
+        //     shows the proven-strength "from history" suggestion. Pair with
+        //     --seed-supersets-demo.
+        if ProcessInfo.processInfo.arguments.contains("--seed-imported-history") {
+            Self.seedImportedHistory()
+        }
         //   --seed-snow-sport-demo → TODAY is a SNOWBOARDING sport day, so the
         //     sport-matched Kettle loop (KettlePose.forSport) shows him carving.
         if ProcessInfo.processInfo.arguments.contains("--seed-snow-sport-demo") {
@@ -371,6 +378,22 @@ struct PhaseTrainingApp: App {
         }
     }
 
+    /// --seed-imported-history: imported sets only, no native session.
+    private static func seedImportedHistory() {
+        guard let squat = CoachDatabase.shared.exerciseId(forImportName: "Back Squat") else { return }
+        let now = Date()
+        let rows = (1...3).flatMap { week -> [ImportedSet] in
+            let at = now.addingTimeInterval(-Double(week) * 4 * 86_400)
+            return (1...3).map { n in
+                ImportedSet(id: ImportedSet.makeId(source: .fitbodCSV, performedAt: at,
+                                                   exerciseNameRaw: "Back Squat", setNum: n),
+                            source: .fitbodCSV, exerciseId: squat, exerciseNameRaw: "Back Squat",
+                            performedAt: at, setNum: n, weight: 100, reps: 5, rir: nil, rpe: nil)
+            }
+        }
+        UserDatabase.shared.insertImportedSets(rows)
+    }
+
     /// --seed-progress-demo: a populated Progress tab.
     ///
     /// Writes seven saved sessions (one 100 days back, six across the last five weeks) with progressing
@@ -588,6 +611,11 @@ struct PhaseTrainingApp: App {
                     // The watch link (PLAN-watch.md). Built here rather than as
                     // a @StateObject because it needs the session store.
                     if watchSync == nil { watchSync = WatchSyncCoordinator(store: session, planStore: plan) }
+                }
+                .task {
+                    // Re-match imported names against the current catalog and
+                    // convert a pounds-in-kg-mode era (ImportMaintenance).
+                    _ = await Task.detached(priority: .utility) { () -> Int in ImportMaintenance.run() }.value
                 }
                 .task {
                     // Ski/climb narrowing: route users on an unsupported / no

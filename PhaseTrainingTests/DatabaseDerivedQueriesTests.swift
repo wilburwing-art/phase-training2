@@ -1,12 +1,6 @@
-// DatabaseDerivedQueriesTests — characterization of two derived-query
-// surfaces:
+// DatabaseDerivedQueriesTests — characterization of a derived-query surface:
 //
-//   1. UserDatabase.importedSetsLifetimePeaks — per-exercise heaviest
-//      matched imported set (Phase 3 CSV history). Exercised against an
-//      in-memory UserDatabase so the real Documents/user.db is never
-//      touched (same pattern as ImportedWorkoutsDatabaseTests).
-//
-//   2. CoachDatabase.adjacentByDifficulty — easier/harder neighbors along
+//   CoachDatabase.adjacentByDifficulty — easier/harder neighbors along
 //      the difficulty axis within shared movement pattern(s). Exercised
 //      read-only against the bundled coach.db via the shared singleton.
 //      Probe exercises are found by scanning the catalog rather than
@@ -17,122 +11,6 @@ import XCTest
 @testable import PhaseTraining
 
 final class DatabaseDerivedQueriesTests: XCTestCase {
-
-    // MARK: - Fixtures
-
-    /// Fixed whole-second instants — performed_at round-trips through an
-    /// INTEGER column, so sub-second precision would be lost anyway.
-    private let t0 = Date(timeIntervalSince1970: 1_700_000_000)
-
-    private func at(daysAgo: Int) -> Date {
-        t0.addingTimeInterval(-Double(daysAgo) * 86_400)
-    }
-
-    /// Minimal ImportedSet builder. The id comes from the natural-key
-    /// tuple via `ImportedSet.makeId`, so distinct (performedAt, name,
-    /// setNum) combinations never collide on the PK.
-    private func makeSet(
-        exerciseId: Int?,
-        weight: Double?,
-        reps: Int?,
-        performedAt: Date,
-        setNum: Int = 1,
-        name: String = "Imported Lift"
-    ) -> ImportedSet {
-        ImportedSet(
-            id: ImportedSet.makeId(source: .fitbodCSV, performedAt: performedAt,
-                                   exerciseNameRaw: name, setNum: setNum),
-            source: .fitbodCSV,
-            exerciseId: exerciseId,
-            exerciseNameRaw: name,
-            performedAt: performedAt,
-            setNum: setNum,
-            weight: weight,
-            reps: reps,
-            rir: nil,
-            rpe: nil
-        )
-    }
-
-    // MARK: - UserDatabase.importedSetsLifetimePeaks
-
-    func test_lifetimePeaks_emptyDatabase_returnsEmpty() {
-        let db = UserDatabase(path: ":memory:")
-        XCTAssertTrue(db.isOpen)
-        XCTAssertTrue(db.importedSetsLifetimePeaks().isEmpty)
-    }
-
-    func test_lifetimePeaks_singleExercise_picksHeaviestSetRow() {
-        let db = UserDatabase(path: ":memory:")
-        let peakDate = at(daysAgo: 30)
-        db.insertImportedSets([
-            makeSet(exerciseId: 42, weight: 100, reps: 8, performedAt: at(daysAgo: 60)),
-            makeSet(exerciseId: 42, weight: 120, reps: 3, performedAt: peakDate),
-            makeSet(exerciseId: 42, weight: 110, reps: 5, performedAt: at(daysAgo: 10))
-        ])
-        let peaks = db.importedSetsLifetimePeaks()
-        XCTAssertEqual(peaks.count, 1)
-        XCTAssertEqual(peaks.first?.exerciseId, 42)
-        XCTAssertEqual(peaks.first?.weight, 120)
-        // Reps + date come from the SAME row as the peak weight, not the
-        // max reps / latest date across all rows.
-        XCTAssertEqual(peaks.first?.reps, 3)
-        XCTAssertEqual(peaks.first?.performedAt, peakDate)
-    }
-
-    func test_lifetimePeaks_multipleExercises_onePeakEach() {
-        let db = UserDatabase(path: ":memory:")
-        db.insertImportedSets([
-            makeSet(exerciseId: 1, weight: 60, reps: 10, performedAt: at(daysAgo: 5), name: "Curl"),
-            makeSet(exerciseId: 1, weight: 55, reps: 12, performedAt: at(daysAgo: 4), name: "Curl"),
-            makeSet(exerciseId: 2, weight: 140, reps: 5, performedAt: at(daysAgo: 3), name: "Squat"),
-            makeSet(exerciseId: 2, weight: 130, reps: 8, performedAt: at(daysAgo: 2), name: "Squat")
-        ])
-        let peaks = db.importedSetsLifetimePeaks()
-        XCTAssertEqual(peaks.count, 2)
-        let byId = Dictionary(uniqueKeysWithValues: peaks.map { ($0.exerciseId, $0) })
-        XCTAssertEqual(byId[1]?.weight, 60)
-        XCTAssertEqual(byId[1]?.reps, 10)
-        XCTAssertEqual(byId[2]?.weight, 140)
-        XCTAssertEqual(byId[2]?.reps, 5)
-    }
-
-    func test_lifetimePeaks_tieOnPeakWeight_prefersMostRecentRow() {
-        let db = UserDatabase(path: ":memory:")
-        let older = at(daysAgo: 90)
-        let newer = at(daysAgo: 9)
-        db.insertImportedSets([
-            makeSet(exerciseId: 7, weight: 100, reps: 8, performedAt: older),
-            makeSet(exerciseId: 7, weight: 100, reps: 5, performedAt: newer)
-        ])
-        let peaks = db.importedSetsLifetimePeaks()
-        XCTAssertEqual(peaks.count, 1)
-        XCTAssertEqual(peaks.first?.weight, 100)
-        // Doc comment: "Tiebreak by most recent (we prefer newer evidence
-        // of the same peak)" — the newer row's reps and date win.
-        XCTAssertEqual(peaks.first?.reps, 5)
-        XCTAssertEqual(peaks.first?.performedAt, newer)
-    }
-
-    func test_lifetimePeaks_skipsUnmatchedAndIncompleteRows() {
-        let db = UserDatabase(path: ":memory:")
-        db.insertImportedSets([
-            // Unmatched name (nil exercise_id) — heaviest of all, must not appear.
-            makeSet(exerciseId: nil, weight: 200, reps: 1, performedAt: at(daysAgo: 8), name: "Mystery Lift"),
-            // exercise 9: two incomplete rows + one complete row.
-            makeSet(exerciseId: 9, weight: nil, reps: 10, performedAt: at(daysAgo: 7)),
-            makeSet(exerciseId: 9, weight: 50, reps: nil, performedAt: at(daysAgo: 6)),
-            makeSet(exerciseId: 9, weight: 40, reps: 6, performedAt: at(daysAgo: 5)),
-            // exercise 11: only incomplete rows — excluded entirely.
-            makeSet(exerciseId: 11, weight: nil, reps: 12, performedAt: at(daysAgo: 4), name: "Plank")
-        ])
-        let peaks = db.importedSetsLifetimePeaks()
-        XCTAssertEqual(peaks.map { $0.exerciseId }, [9])
-        // The heavier-but-repless 50 kg row can't back priorBest; the
-        // complete 40 kg row is the peak.
-        XCTAssertEqual(peaks.first?.weight, 40)
-        XCTAssertEqual(peaks.first?.reps, 6)
-    }
 
     // MARK: - CoachDatabase.adjacentByDifficulty helpers
 

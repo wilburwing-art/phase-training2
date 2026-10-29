@@ -23,6 +23,7 @@ final class FitbodRealCSVSmokeTests: XCTestCase {
         let candidates: [String] = [
             env["FITBOD_CSV_PATH"] ?? "",
             env["TEST_RUNNER_FITBOD_CSV_PATH"] ?? "",
+            "/Users/wilburpyn/Desktop/Desktop - Wilbur\u{2019}s MacBook Air/WorkoutExport.csv",
             ("~/Downloads/FitBodWorkoutExport.csv" as NSString).expandingTildeInPath,
             "/Users/wilburpyn/Downloads/FitBodWorkoutExport.csv",
         ]
@@ -77,6 +78,65 @@ final class FitbodRealCSVSmokeTests: XCTestCase {
         XCTAssertGreaterThan(result.nameMatchRate, 0.50, "name match rate dropped below 50% (\(result.nameMatchRate)) — alias coverage regressed below the Phase 3.5 baseline?")
         XCTAssertLessThan(Double(result.errors.count) / Double(max(result.totalRows, 1)), 0.05,
                           "more than 5% of rows failed to parse — schema drift?")
+    }
+
+    /// The path from a real export to a weight suggestion: names resolve,
+    /// the pounds-in-kg-mode era is converted, and the proven-strength
+    /// estimate never exceeds what the lifter did recently.
+    func testRealExportFeedsProvenStrength() throws {
+        guard let url = locateCSV() else {
+            throw XCTSkip("no real Fitbod export on this machine")
+        }
+        let csv = try String(contentsOf: url, encoding: .utf8)
+        let coach = CoachDatabase.shared
+        let parsed = FitbodCSVParser.parse(csv, source: .fitbodCSV) { coach.exerciseId(forImportName: $0) }
+        let (sets, reports) = ImportUnitCorrection.apply(parsed.sets)
+
+        let weighted = sets.filter { ($0.weight ?? 0) > 0 }
+        let weightedMatch = Double(weighted.filter { $0.exerciseId != nil }.count) / Double(max(weighted.count, 1))
+        let allMatch = Double(sets.filter { $0.exerciseId != nil }.count) / Double(max(sets.count, 1))
+        XCTAssertGreaterThanOrEqual(weightedMatch, 0.90, "weighted sets matched: \(weightedMatch)")
+        XCTAssertGreaterThanOrEqual(allMatch, 0.85, "all sets matched: \(allMatch)")
+
+        let kgToLb = 1 / ImportUnitCorrection.kgPerLb
+        let newest = sets.map(\.performedAt).max() ?? Date()
+        let recentCut = Calendar.current.date(byAdding: .month, value: -6, to: newest)!
+        var lines = ["unit corrections: " + reports.map { "\($0.correctedSets) sets \($0.from) → \($0.through)" }.joined(separator: "; "),
+                     String(format: "matched: weighted %.1f%%, all %.1f%%", weightedMatch * 100, allMatch * 100)]
+        let byExercise = Dictionary(grouping: weighted.filter { $0.exerciseId != nil }, by: { $0.exerciseId! })
+        for (id, rows) in byExercise.sorted(by: { $0.value.count > $1.value.count }).prefix(12) {
+            let evidence = rows.compactMap { s -> ProvenStrength.Evidence? in
+                guard let kg = s.weight, let r = s.reps else { return nil }
+                return .init(date: s.performedAt, weightLb: kg * kgToLb, reps: r)
+            }
+            guard let est = ProvenStrength.estimate(evidence, now: newest) else { continue }
+            let estimate = StrengthStandards.epley1RM(weight: est.weight, reps: est.reps)
+            let recentBest = evidence.filter { $0.date >= recentCut && ProvenStrength.repRange.contains($0.reps) }
+                .map { StrengthStandards.epley1RM(weight: $0.weightLb, reps: $0.reps) }.max()
+            let peak = evidence.filter { ProvenStrength.repRange.contains($0.reps) }
+                .map { StrengthStandards.epley1RM(weight: $0.weightLb, reps: $0.reps) }.max() ?? 0
+            let name = coach.exercise(id: id)?.name ?? "#\(id)"
+            lines.append(String(format: "%@: estimate %.0f, recent best %@, all-time %.0f",
+                                name, estimate, recentBest.map { String(format: "%.0f", $0) } ?? "—", peak))
+            if let recentBest {
+                XCTAssertLessThanOrEqual(estimate, recentBest + 0.01, "\(name) estimate above the last 6 months")
+            }
+        }
+
+        if url.lastPathComponent == "WorkoutExport.csv" {
+            // The 2016-2026 export: kg mode with pound numbers until late 2017.
+            XCTAssertFalse(reports.isEmpty, "the pre-2018 era should be detected")
+            let bench2017 = sets.filter {
+                $0.exerciseNameRaw == "Barbell Bench Press" && $0.performedAt < Date(timeIntervalSince1970: 1_514_764_800)
+            }.compactMap { s -> Double? in
+                guard let kg = s.weight, let r = s.reps, ProvenStrength.repRange.contains(r) else { return nil }
+                return StrengthStandards.epley1RM(weight: kg * kgToLb, reps: r)
+            }.max() ?? 0
+            XCTAssertLessThan(bench2017, 230, "2017 bench should read as pounds, not 2.2x")
+        }
+        let report = lines.joined(separator: "\n")
+        print("--- proven strength from real export ---\n" + report)
+        add(XCTAttachment(string: report))
     }
 
     private func unmatchedExamples(_ r: FitbodCSVParser.ParseResult) -> [String] {

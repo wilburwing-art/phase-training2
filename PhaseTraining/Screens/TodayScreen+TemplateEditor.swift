@@ -89,8 +89,15 @@ extension TodayScreen {
     /// the previous and the suggested weight lets the user see "+5" as
     /// progression in motion, not just a fresh number.
     private func progressionSegment(ex: ExerciseTemplate, prevEx: LoggedExercise?, prevWeightText: String) -> String {
-        guard !prevWeightText.isEmpty else { return "—" }
         let unit = ex.unit
+        guard !prevWeightText.isEmpty else {
+            // Never logged here: the same history fallback as the Log pill.
+            if let prior = store.provenStrength(forExerciseNamed: ex.name),
+               let h = ProgressionSuggestion.fromHistory(prior, targetReps: ex.targetReps, unit: unit) {
+                return "\(h.suggestedWeightString) \(unit) · \(h.label)"
+            }
+            return "—"
+        }
         // Shared extraction (heaviest set that met target reps) so the Today
         // tile and the Log pill never disagree on the suggested number.
         guard let prevEx,

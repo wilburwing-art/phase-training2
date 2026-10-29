@@ -83,3 +83,27 @@ pairs with gap <= 7 d); if only direction passes, 1b is a direction signal, neve
 Lesson for any small-sample verdict here: slice the full walk-forward history and test
 direction before calling a model dead, and register any new criterion BEFORE the data that
 will judge it exists.
+
+## Imported history as a strength signal (measured 2026-10-29)
+
+`WorkoutCSVImporter` on the real Fitbod export (Desktop `WorkoutExport.csv`, 2016-05 to 2026-03):
+5,013 sets and 129 timed workouts in, 235 warm-ups skipped, 57 zero-rep hold rows rejected. Two
+facts before touching weight suggestions:
+- **Only 1,604 of 5,013 sets (32%) resolve to a catalog id**, and unresolved sets never reach
+  `priorBest`. Back Squat, Deadlift, Lat Pulldown, Dumbbell Row and Dumbbell Fly are among the misses.
+- **`importedSetsLifetimePeaks()` is the heaviest set EVER**, with no recency, and
+  `buildPriorBest` uses it for any exercise never logged natively. That suggests bench 365 lb for 6-10
+  reps from a 2017 397x4 when the last 6 months top out at 135x10, and leg press 610 lb against a
+  recent 160x4. Natively, `priorBest` is the top set of the most recent session (one set, no decay).
+Re-measure with a temporary test that calls `WorkoutCSVImporter.import(url:db:)` on a temp
+`UserDatabase`: the simulator can read the host path directly. `FitbodRealCSVSmokeTests` already
+exists with the `FITBOD_CSV_PATH` + XCTSkip guard; extend that instead of writing a new probe.
+
+**Resolved in the working tree 2026-10-29 (ship as build 158):** 80 Fitbod aliases plus punctuation
+folding take weighted-set match to 93.8%. `ImportUnitCorrection` converts the 2016-2017
+pounds-typed-in-kg-mode era (1,472 sets; see the global `unit-era-from-decimal-residue` skill).
+`ProvenStrength` (median of the last 3 workouts, discounted for age) replaces both the lifetime-peak
+fill and "most recent session top set" in `priorBest`. It also backs the Log/Today pill for
+imported-only exercises. `importedSetsLifetimePeaks()` is deleted. `ImportMaintenance` re-applies
+names and units to stored imports at launch.
+

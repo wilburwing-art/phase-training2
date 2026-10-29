@@ -186,7 +186,7 @@ extension UserDatabase {
             if sqlite3_step(stmt) != SQLITE_DONE { ok = false; break }
             sqlite3_reset(stmt)
         }
-    } }
+    }; postImportedSetsChanged() }
 
     /// Every imported set, for the backup envelope. This is the big one: a
     /// Fitbod CSV import is thousands of rows spanning years, and it lived
@@ -240,43 +240,7 @@ extension UserDatabase {
         guard let db else { return }
         sqlite3_exec(db, "DELETE FROM imported_sets", nil, nil, nil)
         sqlite3_exec(db, "DELETE FROM imported_workouts", nil, nil, nil)
-    } }
-
-    /// Per-exercise heaviest matched set in the import history. Used by
-    /// `GeneratorContext.from(...)` to seed priorBest for users who
-    /// import lifetime history before they've logged a native session.
-    /// Returns rows for exercises with a resolved `exercise_id` only —
-    /// unmatched names can't safely back priorBest.
-    func importedSetsLifetimePeaks() -> [(exerciseId: Int, weight: Double, reps: Int, performedAt: Date)] { withLock {
-        guard let db else { return [] }
-        // Heaviest single-set weight per exercise, with the rep count and
-        // date from that same row. Tiebreak by most recent (we prefer
-        // newer evidence of the same peak).
-        let sql = """
-        SELECT exercise_id, weight, reps, performed_at
-        FROM imported_sets
-        WHERE exercise_id IS NOT NULL
-          AND weight IS NOT NULL
-          AND reps IS NOT NULL
-        ORDER BY exercise_id, weight DESC, performed_at DESC
-        """
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
-        defer { sqlite3_finalize(stmt) }
-
-        var lastEx = -1
-        var out: [(exerciseId: Int, weight: Double, reps: Int, performedAt: Date)] = []
-        while sqlite3_step(stmt) == SQLITE_ROW {
-            let exId = Int(sqlite3_column_int64(stmt, 0))
-            if exId == lastEx { continue }  // first row per exId is the peak
-            lastEx = exId
-            let w = sqlite3_column_double(stmt, 1)
-            let r = Int(sqlite3_column_int64(stmt, 2))
-            let at = Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(stmt, 3)))
-            out.append((exId, w, r, at))
-        }
-        return out
-    } }
+    }; postImportedSetsChanged() }
 
     /// Settings diagnostic + per-source delete preflight. Returns count,
     /// oldest, newest, plus a per-source breakdown for the import list UI.
@@ -327,5 +291,17 @@ extension UserDatabase {
             if sqlite3_step(stmt2) != SQLITE_DONE { ok = false }
             sqlite3_finalize(stmt2)
         } else { ok = false }
-    } }
+    }; postImportedSetsChanged() }
+}
+
+extension Notification.Name {
+    /// Posted by `UserDatabase` after imported_sets changes (import, delete,
+    /// clear, ImportMaintenance write-back). `object` is the database.
+    static let importedSetsDidChange = Notification.Name("importedSetsDidChange")
+}
+
+extension UserDatabase {
+    func postImportedSetsChanged() {
+        NotificationCenter.default.post(name: .importedSetsDidChange, object: self)
+    }
 }

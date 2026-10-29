@@ -38,7 +38,7 @@ struct LogScreen: View {
     @ScaledMetric(relativeTo: .caption2) var warmupPillHeight: CGFloat = 14
     @ScaledMetric(relativeTo: .caption2) var warmupPillFont: CGFloat = 9
 
-    @EnvironmentObject private var store: SessionStore
+    @EnvironmentObject var store: SessionStore
     @EnvironmentObject private var memoryStore: MemoryStore
     @EnvironmentObject private var conv: CoachConversationStore
     let onFinish: () -> Void

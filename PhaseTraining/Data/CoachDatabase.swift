@@ -257,6 +257,8 @@ final class CoachDatabase {
     }
 
     private var db: OpaquePointer?
+    /// Lazily built by `importNameIndexLocked`; the catalog is read-only.
+    private var importNameIndex: [String: Int]?
 
     /// Serializes ALL public reads on this singleton. SQLite is opened with
     /// FULLMUTEX so per-statement access is already safe at the C level —
@@ -1603,8 +1605,52 @@ final class CoachDatabase {
                 sql: "SELECT exercise_id FROM exercise_aliases WHERE LOWER(alias) = ? LIMIT 1",
                 bind: candidate) { return id }
         }
+        // Fallback: the same three sources with punctuation folded on both
+        // sides, so Fitbod's "Push Up" / "Chin Up" / "Cable Pull Through"
+        // find "Push-Up" / "Chin-Up" / "Cable Pull-Through". Exact matches
+        // above always win, so nothing that resolved before changes.
+        let index = importNameIndexLocked(db: db)
+        for candidate in candidates {
+            if let id = index[Self.foldImportName(candidate)] { return id }
+        }
         return nil
     } }
+
+    /// Folded name -> id over exercises.name, slug and exercise_aliases.alias,
+    /// built once. Names take precedence over slugs, slugs over aliases, and
+    /// within a source the lowest id wins, so a fold collision is stable.
+    private func importNameIndexLocked(db: OpaquePointer) -> [String: Int] {
+        if let importNameIndex { return importNameIndex }
+        var index: [String: Int] = [:]
+        let sources = [
+            "SELECT name, id FROM exercises ORDER BY id",
+            "SELECT slug, id FROM exercises ORDER BY id",
+            "SELECT alias, exercise_id FROM exercise_aliases ORDER BY id",
+        ]
+        for sql in sources {
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { continue }
+            defer { sqlite3_finalize(stmt) }
+            while sqlite3_step(stmt) == SQLITE_ROW {
+                guard let c = sqlite3_column_text(stmt, 0) else { continue }
+                let key = Self.foldImportName(String(cString: c))
+                if !key.isEmpty, index[key] == nil {
+                    index[key] = Int(sqlite3_column_int64(stmt, 1))
+                }
+            }
+        }
+        importNameIndex = index
+        return index
+    }
+
+    /// "Push-Up", "push up" and "Push Up." all fold to "push up": lowercase,
+    /// every run of non-alphanumerics becomes one space.
+    static func foldImportName(_ s: String) -> String {
+        s.lowercased()
+            .components(separatedBy: CharacterSet.alphanumerics.inverted)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+    }
 
     private func lookupExerciseIdLocked(db: OpaquePointer, sql: String, bind value: String) -> Int? {
         var stmt: OpaquePointer?

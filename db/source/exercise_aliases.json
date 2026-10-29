@@ -934,5 +934,645 @@
     "source": "historical",
     "notes": "Duplicate row 1087 merged into Barbell Back Squat (build 145); keeps logged history resolvable",
     "created_at": "2026-09-26 00:00:00"
+  },
+  {
+    "id": 118,
+    "exercise_id": 965,
+    "alias": "Dumbbell Fly",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 119,
+    "exercise_id": 57,
+    "alias": "Back Squat",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 120,
+    "exercise_id": 10,
+    "alias": "Dumbbell Row",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 121,
+    "exercise_id": 1045,
+    "alias": "Lat Pulldown",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 122,
+    "exercise_id": 983,
+    "alias": "Back Extensions",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 123,
+    "exercise_id": 59,
+    "alias": "Deadlift",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 124,
+    "exercise_id": 16,
+    "alias": "Dip",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 125,
+    "exercise_id": 948,
+    "alias": "Dumbbell Bicep Curl",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 126,
+    "exercise_id": 450,
+    "alias": "Front Squat",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 127,
+    "exercise_id": 1019,
+    "alias": "Leg Raise",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 128,
+    "exercise_id": 545,
+    "alias": "Cable Crossover Fly",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 129,
+    "exercise_id": 968,
+    "alias": "Crunches",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 130,
+    "exercise_id": 953,
+    "alias": "Cable Rope Tricep Extension",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 131,
+    "exercise_id": 1051,
+    "alias": "Lunge",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 132,
+    "exercise_id": 1052,
+    "alias": "Dumbbell Lunge",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 133,
+    "exercise_id": 9,
+    "alias": "Cable Row",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 134,
+    "exercise_id": 1083,
+    "alias": "Dumbbell Skullcrusher",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 135,
+    "exercise_id": 1123,
+    "alias": "Smith Machine Bent Over Row",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 136,
+    "exercise_id": 901,
+    "alias": "Barbell Incline Bench Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 137,
+    "exercise_id": 15,
+    "alias": "Dumbbell Shoulder Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 138,
+    "exercise_id": 8,
+    "alias": "Bent Over Barbell Row",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 139,
+    "exercise_id": 994,
+    "alias": "Shotgun Row",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 140,
+    "exercise_id": 1171,
+    "alias": "Dumbbell Stiff Legged Deadlift",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 141,
+    "exercise_id": 950,
+    "alias": "Hammer Curls",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 142,
+    "exercise_id": 58,
+    "alias": "Romanian Deadlift",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 143,
+    "exercise_id": 925,
+    "alias": "Wide Grip Lat Pulldown",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 144,
+    "exercise_id": 1108,
+    "alias": "Cable Tricep Pushdown",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 145,
+    "exercise_id": 24,
+    "alias": "Cable Face Pull",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 146,
+    "exercise_id": 452,
+    "alias": "Dumbbell Rear Delt Raise",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 147,
+    "exercise_id": 907,
+    "alias": "Dumbbell Incline Bench Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 148,
+    "exercise_id": 904,
+    "alias": "Barbell Shoulder Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 149,
+    "exercise_id": 238,
+    "alias": "Dumbbell Step Up",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 150,
+    "exercise_id": 1091,
+    "alias": "Smith Machine Squat",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 151,
+    "exercise_id": 962,
+    "alias": "Upright Row",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 152,
+    "exercise_id": 101,
+    "alias": "Hip Thrust",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 153,
+    "exercise_id": 1004,
+    "alias": "Hammerstrength Chest Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 154,
+    "exercise_id": 108,
+    "alias": "Single Leg Romanian Deadlift",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 155,
+    "exercise_id": 984,
+    "alias": "Seated Back Extension",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 156,
+    "exercise_id": 934,
+    "alias": "Lying Hamstrings Curl",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 157,
+    "exercise_id": 221,
+    "alias": "Flutter Kicks",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 158,
+    "exercise_id": 1045,
+    "alias": "V-Bar Pulldown",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 159,
+    "exercise_id": 1117,
+    "alias": "Smith Machine Overhead Shoulder Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 160,
+    "exercise_id": 1124,
+    "alias": "Machine Row",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 161,
+    "exercise_id": 948,
+    "alias": "Seated Dumbbell Curl",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 162,
+    "exercise_id": 1116,
+    "alias": "Smith Machine Close-Grip Bench Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 163,
+    "exercise_id": 1070,
+    "alias": "Machine Leg Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 164,
+    "exercise_id": 1114,
+    "alias": "Smith Machine Incline Bench Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 165,
+    "exercise_id": 132,
+    "alias": "Side Bridge",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 166,
+    "exercise_id": 1010,
+    "alias": "Barbell Decline Bench Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 167,
+    "exercise_id": 1199,
+    "alias": "Clam",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 168,
+    "exercise_id": 921,
+    "alias": "Stiff-Legged Barbell Good Morning",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 169,
+    "exercise_id": 1050,
+    "alias": "Barbell Lunge",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 170,
+    "exercise_id": 967,
+    "alias": "Machine Fly",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 171,
+    "exercise_id": 23,
+    "alias": "Dumbbell Tricep Extension",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 172,
+    "exercise_id": 1030,
+    "alias": "Hammerstrength Iso Row",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 173,
+    "exercise_id": 993,
+    "alias": "Machine Bicep Curl",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 174,
+    "exercise_id": 966,
+    "alias": "Dumbbell Incline Fly",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 175,
+    "exercise_id": 108,
+    "alias": "Single Leg Kettlebell Deadlift",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 176,
+    "exercise_id": 1038,
+    "alias": "Vertical Knee Raise",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 177,
+    "exercise_id": 1182,
+    "alias": "Standing Machine Calf Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 178,
+    "exercise_id": 1062,
+    "alias": "Rack Pulls",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 179,
+    "exercise_id": 960,
+    "alias": "Cable Rear Delt Fly",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 180,
+    "exercise_id": 961,
+    "alias": "Machine Rear Delt Fly",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 181,
+    "exercise_id": 1089,
+    "alias": "Dumbbell Squat",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 182,
+    "exercise_id": 921,
+    "alias": "Good Morning",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 183,
+    "exercise_id": 1027,
+    "alias": "Hammerstrength Incline Chest Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 184,
+    "exercise_id": 1122,
+    "alias": "Dumbbell Bent Over Row",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 185,
+    "exercise_id": 18,
+    "alias": "Tricep Push Up",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 186,
+    "exercise_id": 958,
+    "alias": "Behind the Back Cable Lateral Raise",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 187,
+    "exercise_id": 452,
+    "alias": "Dumbbell Back Fly",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 188,
+    "exercise_id": 1204,
+    "alias": "Toe Touchers",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 189,
+    "exercise_id": 1011,
+    "alias": "Dumbbell Decline Bench Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 190,
+    "exercise_id": 1173,
+    "alias": "Smith Machine Stiff-Legged Deadlift",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 191,
+    "exercise_id": 1064,
+    "alias": "Reverse Barbell Curl",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 192,
+    "exercise_id": 955,
+    "alias": "Cable Rope Overhead Triceps Extension",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 193,
+    "exercise_id": 981,
+    "alias": "Around the Worlds",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 194,
+    "exercise_id": 996,
+    "alias": "Calf Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 195,
+    "exercise_id": 1200,
+    "alias": "Side Leg Raises",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 196,
+    "exercise_id": 7,
+    "alias": "Ab Rollout",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 197,
+    "exercise_id": 1028,
+    "alias": "Incline Dumbbell Row",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-10-29 00:00:00"
   }
 ]

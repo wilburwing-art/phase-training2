@@ -208,13 +208,11 @@ extension GeneratorContext {
         // need to thread them. PlanStore.buildGeneratorContext does pass
         // the real list once HK auth is granted.
         importedWorkouts: [ImportedWorkout] = [],
-        // Phase 3 — per-exercise heaviest set from imported_sets, in kg.
-        // Used to warm-start priorBest for exercises the user has never
-        // logged natively but DOES have imported history for. PlanStore
-        // sources this from UserDatabase.importedSetsLifetimePeaks().
-        // Each tuple resolves to a coach.db exercise the importer was
-        // able to match by name — unmatched rows never reach here.
-        importedPeaks: [(exerciseId: Int, weight: Double, reps: Int, performedAt: Date)] = [],
+        // Imported strength sets (kg), pooled with native sessions by
+        // ProvenStrength. PlanStore sources this from
+        // UserDatabase.allImportedSets(); rows without a catalog id are
+        // ignored.
+        importedSets: [ImportedSet] = [],
         // Per-exercise affinity from TrainingMemory. Defaulted so the
         // test/preview + LLM-refinement surfaces that build their own context
         // don't have to thread it; PlanStore.buildGeneratorContext passes the
@@ -266,7 +264,7 @@ extension GeneratorContext {
         // CoachDatabase. `computeParkedSignals` is the single switch to flip
         // when the engine starts consuming them.
         return GeneratorContext(
-            priorBest: buildPriorBest(sessions: sessions, importedPeaks: importedPeaks),
+            priorBest: buildPriorBest(sessions: sessions, importedSets: importedSets, now: now),
             lastAttempt: buildLastAttempt(sessions: sessions),
             attemptHistory: buildAttemptHistory(sessions: sessions, now: now),
             recentSoreAreas: includeParkedSignals
@@ -398,17 +396,6 @@ extension GeneratorContext {
 
     // MARK: - priorBest
 
-    /// Walk sessions newest-first; first completed set with weight + reps
-    /// for an exercise name wins. We treat "top-set" as the heaviest
-    /// completed set in the user's most recent session for that exercise,
-    /// not the all-time max — the generator wants "what did you actually
-    /// do last time?" not "your best ever".
-    ///
-    /// Phase 3 addition: after the native pass, fill gaps from `importedPeaks`
-    /// (lifetime peak per exercise from CSV history). Imports never override
-    /// a native entry — native session > imported peak. For exercises the
-    /// user has imported but never logged natively, the peak warm-starts
-    /// priorBest so the generator has a real baseline weight to work from.
     /// PR 10B — per-exercise completion history for autoregulation.
     /// Newest-first. One Attempt per SESSION containing the exercise:
     /// completion = done working sets / target sets for that exercise in
@@ -469,65 +456,29 @@ extension GeneratorContext {
         return out
     }
 
+    /// Loaded exercises: `ProvenStrength` over native sessions plus imported
+    /// sets (median of the 3 most recent workouts, discounted for age).
+    /// Bodyweight movements with no loaded evidence keep the reps path: the
+    /// best reps of the most recent session, weight 0, which
+    /// `progressiveOverloadHint` reads as "beat it by one rep".
     private static func buildPriorBest(
         sessions: [SavedSession],
-        importedPeaks: [(exerciseId: Int, weight: Double, reps: Int, performedAt: Date)] = []
+        importedSets: [ImportedSet] = [],
+        now: Date
     ) -> [String: PriorBest] {
-        let ordered = sessions.sorted { $0.startTime > $1.startTime }
-        var out: [String: PriorBest] = [:]
-        for session in ordered {
-            for ex in session.exercises {
-                let key = ex.name.lowercased()
-                guard out[key] == nil else { continue } // most recent session wins
-                // Heaviest completed set in this session.
-                // Warmup sets excluded — progressive-overload signal needs the
-                // working top set, not a warmup ramp weight.
-                let isBodyweight = ex.isBodyweight
-                var bestWeight = 0.0
-                var bestReps = 0
-                var bestBodyweightReps = 0   // best reps on a loadless bodyweight set
-                for set in ex.sets where set.done && !set.isWarmup {
-                    let w = set.weightValue ?? 0
-                    let r = set.repsValue ?? 0
-                    guard r > 0 else { continue }
-                    if w > 0 {
-                        if w > bestWeight { bestWeight = w; bestReps = r }
-                    } else if isBodyweight {
-                        // Only a true bodyweight movement (unit == "bw") reads a
-                        // loadless set as a rep-progression signal. A 0 logged on
-                        // a loaded lift is missing data, not a bodyweight PR — so
-                        // it stays ignored, preserving the old skip-zero behavior.
-                        bestBodyweightReps = max(bestBodyweightReps, r)
-                    }
-                }
-                if bestWeight > 0 {
-                    ExerciseKey.store(PriorBest(weight: bestWeight, reps: bestReps,
-                                         date: session.startTime), name: ex.name, into: &out)
-                } else if bestBodyweightReps > 0 {
-                    // Bodyweight movement (push-up, inverted row): no external
-                    // load to progress, so track best reps — weight 0 signals the
-                    // reps-based progression path in progressiveOverloadHint. (T2.1)
-                    ExerciseKey.store(PriorBest(weight: 0, reps: bestBodyweightReps,
-                                         date: session.startTime), name: ex.name, into: &out)
-                }
-            }
-        }
-
-        // Phase 3: fill gaps from imported peaks. Resolve coach.db exercise
-        // by id → name, key by lowercased name to match the native path.
-        if !importedPeaks.isEmpty {
-            let db = CoachDatabase.shared
-            let kgToLb = 2.20462
-            for peak in importedPeaks {
-                guard let ex = db.exercise(id: peak.exerciseId) else { continue }
-                let key = ex.name.lowercased()
-                guard out[key] == nil else { continue }  // native always wins
-                guard peak.weight > 0, peak.reps > 0 else { continue }
-                out[key] = PriorBest(
-                    weight: peak.weight * kgToLb,
-                    reps: peak.reps,
-                    date: peak.performedAt
-                )
+        var out = ProvenStrength.index(sessions: sessions, imported: importedSets, now: now)
+        for session in sessions.sorted(by: { $0.startTime > $1.startTime }) {
+            for ex in session.exercises where ex.isBodyweight {
+                guard ExerciseKey.lookup(out, name: ex.name) == nil else { continue }
+                // Only a true bodyweight movement (unit == "bw") reads a
+                // loadless set as a rep-progression signal. A 0 logged on a
+                // loaded lift is missing data, not a bodyweight PR.
+                let bestReps = ex.sets
+                    .filter { $0.done && !$0.isWarmup && ($0.weightValue ?? 0) == 0 }
+                    .compactMap(\.repsValue).max() ?? 0
+                guard bestReps > 0 else { continue }
+                ExerciseKey.store(PriorBest(weight: 0, reps: bestReps, date: session.startTime),
+                                  name: ex.name, into: &out)
             }
         }
         return out

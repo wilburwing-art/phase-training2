@@ -219,16 +219,16 @@ extension PlanStore {
                                includeParkedSignals: Bool = false) -> GeneratorContext {
         guard let sessionStore else { return .empty }
         let imported = UserDatabase.shared.recentImportedWorkouts(within: 28)
-        // Phase 3: lifetime peaks from CSV imports warm-start priorBest
-        // for exercises the user has imported but never logged natively.
-        let peaks = UserDatabase.shared.importedSetsLifetimePeaks()
+        // Imported strength history pools with native sessions in
+        // ProvenStrength (priorBest).
+        let importedSets = UserDatabase.shared.allImportedSets()
         return GeneratorContext.from(
             sessions: sessionStore.savedSessions,
             soreness: memory.soreness,
             feedback: memory.feedback,
             sportLogs: sportLogStore?.entries ?? [],
             importedWorkouts: imported,
-            importedPeaks: peaks,
+            importedSets: importedSets,
             exerciseAffinities: memory.exerciseAffinities,
             now: today,
             includeParkedSignals: includeParkedSignals

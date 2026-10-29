@@ -111,6 +111,29 @@ enum ProgressionSuggestion {
         return compoundKeywords.contains(where: { lower.contains($0) })
     }
 
+    /// A working load for `targetReps` from a proven-strength estimate
+    /// (`ProvenStrength`, in lb), for an exercise with no previous native
+    /// session to progress from. Epley maps the estimate to the target reps,
+    /// then the load snaps DOWN to the unit's small step (2.5 lb / 1.25 kg):
+    /// a first suggestion from history should never round up. Nil for
+    /// bodyweight estimates or a non-numeric target.
+    static func fromHistory(_ prior: PriorBest, targetReps: Int, unit: String) -> Result? {
+        guard prior.weight > 0, prior.reps > 0, targetReps > 0 else { return nil }
+        let e1rm = StrengthStandards.epley1RM(weight: prior.weight, reps: prior.reps)
+        var load = e1rm / (1 + Double(targetReps) / 30)
+        let step: Double
+        if unit.lowercased() == "kg" {
+            load *= ImportUnitCorrection.kgPerLb
+            step = 1.25
+        } else {
+            step = 2.5
+        }
+        let snapped = (load / step).rounded(.down) * step
+        guard snapped > 0 else { return nil }
+        return Result(suggestedWeight: snapped, delta: 0, label: "from history",
+                      rationale: "From your recent logged and imported sets")
+    }
+
     /// Resolve the bump for one exercise. Pass `isCompound` to override the
     /// keyword default for known cases.
     static func bumpFor(

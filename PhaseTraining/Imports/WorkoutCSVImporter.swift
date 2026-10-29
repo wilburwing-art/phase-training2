@@ -29,6 +29,9 @@ enum WorkoutCSVImporter {
         /// Warmup rows the parser dropped — surfaced so the user can tell a
         /// big "skipped" number (possible column drift) from a clean import.
         let warmupsSkipped: Int
+        /// Eras of pounds typed in kg mode that were converted on the way
+        /// in (`ImportUnitCorrection`), so the summary can say so.
+        var unitCorrections: [ImportUnitCorrection.Report] = []
     }
 
     enum Failure: Error, LocalizedError {
@@ -103,9 +106,13 @@ enum WorkoutCSVImporter {
             throw Failure.headerMismatch(parsed.errors.first?.reason ?? "header rejected")
         }
 
+        // A kg-mode era holding pound numbers reads 2.2x too heavy; convert
+        // it before anything downstream sees it.
+        let corrected = ImportUnitCorrection.apply(parsed.sets)
+
         // Persist both streams. Wrapped in implicit transactions per
         // UserDatabase's insertImportedSets/insertImportedWorkouts.
-        db.insertImportedSets(parsed.sets)
+        db.insertImportedSets(corrected.sets)
         db.insertImportedWorkouts(parsed.workouts)
 
         let dateRange: (oldest: Date, newest: Date)?
@@ -133,7 +140,8 @@ enum WorkoutCSVImporter {
             dateRange: dateRange,
             parseErrors: parsed.errors,
             topExercises: Array(top),
-            warmupsSkipped: parsed.warmupsSkipped
+            warmupsSkipped: parsed.warmupsSkipped,
+            unitCorrections: corrected.reports
         )
     }
 }

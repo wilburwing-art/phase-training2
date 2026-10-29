@@ -17,7 +17,9 @@ final class SessionStore: ObservableObject {
     private static let legacySavedKey = "pt_sessions"
     private static let savedMigrationFlag = "pt_sessions_migrated_v1"
 
-    @Published var savedSessions: [SavedSession]
+    @Published var savedSessions: [SavedSession] {
+        didSet { provenStrengthCache = nil }
+    }
     @Published var active: ActiveSession?
     /// PR 9 — app-level wiring: the App layer assigns this to forward
     /// abandonment entries into PlanStore. SessionStore stays plan-agnostic
@@ -65,6 +67,16 @@ final class SessionStore: ObservableObject {
         } else {
             InactivityReminderScheduler.cancel()
         }
+
+        // An import, a deletion or the launch ImportMaintenance pass changes
+        // the evidence behind provenStrength.
+        importsObserver = NotificationCenter.default.addObserver(
+            forName: .importedSetsDidChange, object: resolvedDB, queue: .main
+        ) { [weak self] _ in self?.provenStrengthCache = nil }
+    }
+
+    deinit {
+        if let importsObserver { NotificationCenter.default.removeObserver(importsObserver) }
     }
 
     // MARK: - One-shot legacy migration
@@ -273,6 +285,21 @@ final class SessionStore: ObservableObject {
     /// a load derived from a different lift.
     func previousSets(forExerciseNamed name: String) -> [LoggedSet] {
         return userDB.mostRecentExerciseByName(name)?.sets ?? []
+    }
+
+    /// `ProvenStrength` over saved sessions plus imported sets, built on first
+    /// use and dropped when either changes. Rows render this per exercise, so
+    /// it must not rebuild per call.
+    private var provenStrengthCache: [String: PriorBest]?
+    private var importsObserver: NSObjectProtocol?
+
+    func provenStrength(forExerciseNamed name: String) -> PriorBest? {
+        if provenStrengthCache == nil {
+            provenStrengthCache = ProvenStrength.index(sessions: savedSessions,
+                                                       imported: userDB.allImportedSets(),
+                                                       now: Date())
+        }
+        return provenStrengthCache.flatMap { ExerciseKey.lookup($0, name: name) }
     }
 
     /// Build a fresh ActiveSession from the named template, pulling prior set

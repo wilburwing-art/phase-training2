@@ -141,6 +141,12 @@ struct CSVImportSection: View {
                     .font(.caption2)
                     .foregroundColor(.ink2)
             }
+            ForEach(Array(result.unitCorrections.enumerated()), id: \.offset) { _, fix in
+                Text("Some workouts \(Self.dateFormatter.string(from: fix.from)) → \(Self.dateFormatter.string(from: fix.through)) looked like pounds entered in kg mode: converted \(fix.correctedSets) sets")
+                    .font(.caption2)
+                    .foregroundColor(.ink2)
+                    .accessibilityIdentifier("csv-unit-correction")
+            }
             if !result.topExercises.isEmpty {
                 Text("Top: " + result.topExercises.map { "\($0.name) (\($0.sets))" }.joined(separator: ", "))
                     .font(.caption2)

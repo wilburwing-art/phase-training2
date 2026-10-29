@@ -319,7 +319,7 @@ final class PlanStoreSeamsTests: XCTestCase {
         store.sessionStore = sessions
 
         let ctx = store.makeGeneratorContext(memory: gymMemory(), today: today)
-        XCTAssertEqual(ctx.priorBest["bench press"]?.weight, 225)
+        XCTAssertEqual(ctx.priorBest["bench press"]?.weight ?? 0, 225, accuracy: 0.001)
         XCTAssertEqual(ctx.priorBest["bench press"]?.reps, 5)
         XCTAssertTrue(ctx.hasReadinessData,
                       "a session 3 days ago is inside the 28-day readiness window")

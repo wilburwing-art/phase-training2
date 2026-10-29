@@ -9,7 +9,11 @@ final class GeneratorContextTests: XCTestCase {
 
     // MARK: - Builder: priorBest
 
-    func test_priorBest_picksMostRecentSessionPerExercise() {
+    /// ProvenStrength: the estimate pools the recent workouts (mean of two
+    /// here, both inside the 4-week grace) at the latest workout's best-set
+    /// reps. The newer session's best set by estimated 1RM is 225x5 (262.5),
+    /// not the heavier 230x3 (253).
+    func test_priorBest_poolsRecentWorkouts() {
         let now = Date()
         let cal = Calendar.current
         let older = savedSession(
@@ -26,9 +30,12 @@ final class GeneratorContextTests: XCTestCase {
             sessions: [older, newer],
             soreness: [], feedback: [], now: now
         )
-        let pb = ctx.priorBest["bench press"]
-        XCTAssertEqual(pb?.weight, 230)
-        XCTAssertEqual(pb?.reps, 3)
+        let pb = try? XCTUnwrap(ctx.priorBest["bench press"])
+        let expected1RM = (StrengthStandards.epley1RM(weight: 200, reps: 5)
+                           + StrengthStandards.epley1RM(weight: 225, reps: 5)) / 2
+        XCTAssertEqual(pb?.reps, 5)
+        XCTAssertEqual(pb.map { StrengthStandards.epley1RM(weight: $0.weight, reps: $0.reps) } ?? 0,
+                       expected1RM, accuracy: 0.01)
     }
 
     func test_priorBest_skipsZeroWeightOrUndoneSets() {
