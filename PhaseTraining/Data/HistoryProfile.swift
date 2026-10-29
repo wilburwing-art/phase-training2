@@ -66,6 +66,21 @@ struct HistoryProfile: Equatable {
         case unknown
     }
 
+    /// One logged set, in lb.
+    struct SetRecord: Equatable {
+        let date: Date
+        let weightLb: Double
+        let reps: Int
+    }
+
+    /// One workout's best estimated 1RM, in lb.
+    struct Point: Equatable {
+        let date: Date
+        let e1rm: Double
+    }
+
+    static let recentPoints = 12
+
     struct ExerciseProfile: Equatable {
         let name: String
         /// `ProvenStrength.estimate` over the cleaned evidence.
@@ -79,6 +94,10 @@ struct HistoryProfile: Equatable {
         let bestDate: Date
         let workouts: Int
         let excludedSets: Int
+        /// Best set (by estimated 1RM) of the most recent workout.
+        let latestBest: SetRecord
+        /// Up to `recentPoints` session-best estimates, oldest first.
+        let recentBests: [Point]
     }
 
     /// Keyed like every per-exercise map (`ExerciseKey`).
@@ -263,10 +282,17 @@ struct HistoryProfile: Equatable {
               }?.key
             : nil
 
+        let latestRows = rows.filter { $0.date == last && ProvenStrength.repRange.contains($0.reps) }
+        let latest = (latestRows.isEmpty ? rows.filter { $0.date == last } : latestRows)
+            .max { StrengthStandards.epley1RM(weight: $0.weightLb, reps: $0.reps)
+                 < StrengthStandards.epley1RM(weight: $1.weightLb, reps: $1.reps) }!
+
         return ExerciseProfile(name: rows[0].name, estimate: estimate, trend: trend, plateau: plateau,
                                typicalStepLb: typicalStep, lastTrained: last,
                                bestE1RM: best.e1rm, bestDate: best.date,
-                               workouts: bests.count, excludedSets: excluded)
+                               workouts: bests.count, excludedSets: excluded,
+                               latestBest: SetRecord(date: latest.date, weightLb: latest.weightLb, reps: latest.reps),
+                               recentBests: bests.suffix(recentPoints).map { Point(date: $0.date, e1rm: $0.e1rm) })
     }
 
     /// Least-squares slope of session-best e1RM against time, as % of the

@@ -2,7 +2,8 @@
 //
 // Surfaces every field on `Exercise` that the rest of the app currently
 // discards: description, instructions, cues, default sets/reps/rest,
-// regression / progression text, and the compound / unilateral flags.
+// regression / progression text, and the compound / unilateral flags. Plus
+// "Your strength" from the lifter's own history (`HistoryProfile`).
 //
 // Reachable from SubstituteExerciseSheet, CoachRequestScreen preview rows,
 // LibraryScreen, and CustomRoutineEditSheet. Pure UI + DB reads — no
@@ -61,6 +62,16 @@ private struct ExerciseDetailContent: View {
     /// empty when the system has no embedding asset, which hides the section.
     @State private var similar: [Exercise] = []
     @EnvironmentObject private var memoryStore: MemoryStore
+    @EnvironmentObject private var sessionStore: SessionStore
+
+    /// What the lifter's own history says about this exercise; nil hides the
+    /// section (no loaded history yet, or bodyweight only).
+    private var strength: ExerciseStrengthSummary? {
+        sessionStore.historyProfile.profile(forExerciseNamed: exercise.name).flatMap {
+            ExerciseStrengthSummary(profile: $0, defaultReps: exercise.defaultReps,
+                                    usesImperial: memoryStore.memory.usesImperial, now: Date())
+        }
+    }
 
     var body: some View {
         let adj = adjacency
@@ -70,6 +81,11 @@ private struct ExerciseDetailContent: View {
                 metaBadges
                 heroImage
                 muscleChips
+                if let strength {
+                    section(title: "Your strength") {
+                        ExerciseStrengthView(summary: strength)
+                    }
+                }
                 if let desc = exercise.description, !desc.isEmpty {
                     section(title: "Overview") {
                         Text(desc)

@@ -118,6 +118,22 @@ final class HistoryProfileTests: XCTestCase {
         XCTAssertEqual(p.lastTrained, daysAgo(3))
     }
 
+    func test_latestBestAndRecentBests() throws {
+        var sessions: [SavedSession] = []
+        for i in 0..<14 {
+            let days = Double(100 - i * 7)
+            let lb = Double(100 + i * 5)
+            sessions.append(session("Zz Lift", days, [(lb, 5)]))
+        }
+        sessions.append(session("Zz Lift", 1, [(150, 3), (140, 8)]))   // 8 reps at 140 beats 3 at 150
+        let p = try XCTUnwrap(build(sessions).profile(forExerciseNamed: "Zz Lift"))
+        XCTAssertEqual(p.latestBest, HistoryProfile.SetRecord(date: daysAgo(1), weightLb: 140, reps: 8))
+        XCTAssertEqual(p.recentBests.count, HistoryProfile.recentPoints)
+        XCTAssertEqual(p.recentBests.last?.date, daysAgo(1))
+        let dates: [Date] = p.recentBests.map { $0.date }
+        XCTAssertEqual(dates, dates.sorted())
+    }
+
     func test_layoffsOverEightWeeksAreListed() {
         let p = build([session("Zz A", 200, [(100, 5)]), session("Zz A", 100, [(100, 5)]), session("Zz A", 90, [(100, 5)])])
         XCTAssertEqual(p.audit.layoffs.count, 1)
