@@ -57,6 +57,8 @@ struct LogScreen: View {
     /// session as an abandonment (<70% completion → rules-engine
     /// reshuffle, reason feeds the coach). nil = sheet closed.
     @State private var showAbandonSheet = false
+    /// "Logged for" sheet: a workout done earlier, without the phone.
+    @State private var showLoggedForSheet = false
     /// Reached with no active session — an anomalous state, not a normal entry.
     /// LogScreen used to paper over it by creating a hardcoded "upper-1"
     /// session, silently ignoring today's plan, generated workout and any day
@@ -154,6 +156,9 @@ struct LogScreen: View {
             Text(incompleteSetCount == 1
                  ? "One set isn't logged yet. Finishing saves the workout as it stands."
                  : "\(incompleteSetCount) sets aren't logged yet. Finishing saves the workout as it stands.")
+        }
+        .sheet(isPresented: $showLoggedForSheet) {
+            LoggedForSheet(loggedFor: $session.loggedFor)
         }
         .sheet(isPresented: $showAbandonSheet) {
             // PR 9 — typed abandon-reason capture. Confirm saves the
@@ -336,15 +341,25 @@ struct LogScreen: View {
                     .accessibilityLabel("Discard workout")
                 }
 
-                Image(systemName: "timer")
+                Image(systemName: session.loggedFor == nil ? "timer" : "calendar")
                     .font(.system(size: 14, weight: .regular))
                     .foregroundStyle(Color.ink3)
 
-                TimelineView(.periodic(from: .now, by: 1.0)) { ctx in
-                    Text(Self.fmtElapsed(ctx.date.timeIntervalSince(session.startTime)))
-                        .styled(.monoM)
+                // A workout logged for an earlier time has no live clock: the
+                // header shows when it happened.
+                if let past = session.loggedFor {
+                    Text(LoggedForSheet.label(past))
+                        .styled(.monoXS)
                         .foregroundStyle(Color.ink)
-                        .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                } else {
+                    TimelineView(.periodic(from: .now, by: 1.0)) { ctx in
+                        Text(Self.fmtElapsed(ctx.date.timeIntervalSince(session.startTime)))
+                            .styled(.monoM)
+                            .foregroundStyle(Color.ink)
+                            .monospacedDigit()
+                    }
                 }
 
                 Spacer()
@@ -425,6 +440,24 @@ struct LogScreen: View {
             Text(session.name)
                 .styled(.displayM)
                 .foregroundStyle(Color.ink)
+            Button {
+                showLoggedForSheet = true
+            } label: {
+                HStack(spacing: 4) {
+                    Text(LoggedForSheet.label(session.loggedFor))
+                        .styled(.body)
+                        .foregroundStyle(session.loggedFor == nil ? Color.ink3 : Color.accent)
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(Color.ink3)
+                }
+                .padding(.vertical, 2)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("log-logged-for")
+            .accessibilityLabel(session.loggedFor == nil
+                                ? "Logged for today. Change the date"
+                                : "Logged for \(LoggedForSheet.label(session.loggedFor)). Change the date")
             HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Text("\(session.exercises.count) exercises · \(stats.doneSets)/\(stats.totalSets) sets logged")
                     .styled(.body)

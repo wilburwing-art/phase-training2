@@ -172,6 +172,19 @@ struct ActiveSession: Codable, Equatable {
     /// Who saves this session's workout to Apple Health. Optional so every
     /// session saved before build 146 decodes; nil reads as the phone.
     var healthWriter: HealthWriter? = nil
+    /// Set when the workout is logged after the fact: when it happened and
+    /// how long it took. Applied at save time; nil means now. Optional so
+    /// older payloads and the watch decode it.
+    var loggedFor: LoggedFor? = nil
+}
+
+/// A workout logged after the fact: its real start and length.
+struct LoggedFor: Codable, Equatable {
+    var start: Date
+    var minutes: Int
+
+    /// How far back a workout can be logged.
+    static let maxDaysBack = 14
 }
 
 struct SavedSession: Codable, Identifiable, Equatable {

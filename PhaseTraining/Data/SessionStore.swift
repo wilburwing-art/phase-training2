@@ -376,6 +376,18 @@ final class SessionStore: ObservableObject {
     /// the outcome hook fires once, after the abandonment verdict is known.
     private func commitCompleted(_ active: ActiveSession, feel: String?, note: String?,
                                  endTime: Date) -> SavedSession {
+        // A workout logged after the fact keeps the time it happened, not the
+        // time spent logging it. The start is the session id, so a clash with
+        // a saved session moves it by a second.
+        var active = active
+        var endTime = endTime
+        if let past = active.loggedFor {
+            var start = past.start
+            let taken = Set(savedSessions.map(\.id))
+            while taken.contains(start.timeIntervalSince1970) { start.addTimeInterval(1) }
+            active.startTime = start
+            endTime = start.addingTimeInterval(Double(past.minutes) * 60)
+        }
         let duration = max(0, Int(endTime.timeIntervalSince(active.startTime)))
         let saved = SavedSession(
             templateId: active.templateId,

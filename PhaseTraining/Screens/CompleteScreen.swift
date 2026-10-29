@@ -71,7 +71,8 @@ struct CompleteScreen: View {
     private var stats: SessionStats { store.stats(for: session) }
 
     private var elapsedSeconds: Int {
-        max(0, Int(completedAt.timeIntervalSince(session.startTime)))
+        if let past = session.loggedFor { return past.minutes * 60 }
+        return max(0, Int(completedAt.timeIntervalSince(session.startTime)))
     }
 
     private var durationString: String {

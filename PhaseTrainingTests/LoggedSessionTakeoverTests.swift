@@ -139,6 +139,23 @@ final class LoggedSessionTakeoverTests: XCTestCase {
         XCTAssertNil(store.lastMove)
     }
 
+    func test_noTakeover_ofADayThatHasAlreadyPassed() throws {
+        // Logged later for an earlier day: the leg day it covers is already
+        // behind today, so nothing moves.
+        let m = try memory()
+        let (store, _, _) = store()
+        _ = store.generate(from: m, today: monday())
+        let probe = legSession(on: monday())
+        let (logDay, legDay) = try fixtureDays(try XCTUnwrap(store.plan), buckets: PlanStore.coveredBuckets(by: probe))
+        let session = legSession(on: logDay.date)
+        let laterToday = Calendar.current.date(byAdding: .day, value: 1, to: legDay.date)!
+        let before = store.plan
+
+        store.recordOutcome(for: session, abandoned: false)
+        XCTAssertNil(store.takeOverCoveredDay(for: session, abandoned: false, memory: m, today: laterToday))
+        XCTAssertEqual(store.plan, before)
+    }
+
     // MARK: - Rotation
 
     func test_rotationFollowsLoggedExercises_notGeneration() throws {

@@ -82,15 +82,20 @@ extension PlanStore {
            Self.coverage(of: own, by: buckets) >= Self.coveredShare {
             return nil
         }
+        // The log stands in for the NEXT session it covers. When that day has
+        // already passed (a workout logged later for an earlier day), nothing
+        // moves: a leg day further out was not done early.
         let logStart = cal.startOfDay(for: logDay.date)
         guard let covered = plan.days.first(where: { day in
             cal.startOfDay(for: day.date) > logStart
                 && day.kind == .lift
-                && !day.protected
-                && day.routineId == nil
-                && overrides.customRoutineId(for: day.date) == nil
                 && day.generatedWorkout.map { Self.coverage(of: $0, by: buckets) >= Self.coveredShare } == true
-        }) else { return nil }
+        }),
+              cal.startOfDay(for: covered.date) >= cal.startOfDay(for: today),
+              !covered.protected,
+              covered.routineId == nil,
+              overrides.customRoutineId(for: covered.date) == nil
+        else { return nil }
         swap(sourceDate: logDay.date, targetDate: covered.date, memory: memory, today: today)
         lastMove?.coveredTitle = covered.title
         return covered.date
