@@ -86,6 +86,9 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-history-typo") {
             Self.seedImportedHistory(typo: true)
         }
+        //   --seed-rep-gap → with --seed-supersets-demo: Back Squat was 185 x 10
+        //     last time (saved natively) and today asks for 5 reps, so the pill
+        //     remaps proven strength to 5 reps instead of adding 5 lb.
         //   --seed-snow-sport-demo → TODAY is a SNOWBOARDING sport day, so the
         //     sport-matched Kettle loop (KettlePose.forSport) shows him carving.
         if ProcessInfo.processInfo.arguments.contains("--seed-snow-sport-demo") {
@@ -159,7 +162,24 @@ struct PhaseTrainingApp: App {
     /// reads only there, so a separate suite would make the seed invisible.
     /// That is exactly why this is DEBUG-gated: in a release binary it would
     /// overwrite a user's in-flight workout.
+    /// --seed-rep-gap: last Back Squat session was 185 x 10, today asks for 5.
+    private static var repGapSquatSets: [LoggedSet] {
+        guard ProcessInfo.processInfo.arguments.contains("--seed-rep-gap") else { return [] }
+        return (1...3).map { LoggedSet(num: $0, weight: "185", reps: "10", rpe: "", done: true) }
+    }
+
     private static func seedSupersetsDemo() {
+        if !repGapSquatSets.isEmpty {
+            // The same session saved natively, so the history profile has
+            // an estimate (185 x 10 -> e1RM 246.7) to remap to 5 reps.
+            let start = Date().addingTimeInterval(-3 * 86_400)
+            _ = UserDatabase.shared.saveSession(SavedSession(
+                templateId: "seed-rep-gap", name: "Legs", category: "lift", startTime: start,
+                exercises: [LoggedExercise(id: "squat", name: "Back Squat", type: "Barbell", unit: "lbs",
+                                           targetSets: 3, targetReps: 10, rest: 180,
+                                           sets: repGapSquatSets, prevSets: [])],
+                feel: nil, note: nil, endTime: start.addingTimeInterval(3000), duration: 3000))
+        }
         let session = ActiveSession(
             templateId: "demo-supersets",
             name: "Upper · superset demo",
@@ -196,7 +216,7 @@ struct PhaseTrainingApp: App {
                         LoggedSet(num: 2, weight: "225", reps: "5", rpe: "", done: false),
                         LoggedSet(num: 3, weight: "225", reps: "5", rpe: "", done: false),
                     ],
-                    prevSets: [],
+                    prevSets: repGapSquatSets,
                     supersetGroup: nil
                 ),
                 LoggedExercise(

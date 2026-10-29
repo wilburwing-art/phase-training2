@@ -39,11 +39,13 @@ extension LogScreen {
     func computeProgressionSuggestion(for ex: LoggedExercise) -> ProgressionPillModel? {
         // Shared extraction: the heaviest set that MET target reps (so a
         // pyramid's heavy top single doesn't read as a missed target).
+        let profile = store.historyProfile.profile(forExerciseNamed: ex.name)
         guard let r = ProgressionSuggestion.suggest(
             prevSets: ex.prevSets,
             targetReps: ex.targetReps,
             exerciseName: ex.name,
-            unit: ex.unit
+            unit: ex.unit,
+            profile: profile
         ) else {
             // Never logged here: fall back to proven strength from the whole
             // history, imports included.
@@ -55,6 +57,15 @@ extension LogScreen {
                                         tint: .accent)
         }
         let weightStr = r.suggestedWeightString
+        switch r.basis {
+        case .repRemap, .history:
+            // A lighter load for more reps is not a back-off.
+            return ProgressionPillModel(text: "SUGGESTED · \(weightStr) \(ex.unit) · \(r.label)", tint: .accent)
+        case .addRep:
+            return ProgressionPillModel(text: "HOLD · \(weightStr) \(ex.unit) · add a rep", tint: .ink2)
+        case .lastSession:
+            break
+        }
         let label: String
         let tint: Color
         switch r.delta {

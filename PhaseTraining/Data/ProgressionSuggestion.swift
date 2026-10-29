@@ -26,6 +26,18 @@ import Foundation
 
 enum ProgressionSuggestion {
 
+    enum Basis: Equatable {
+        /// Linear rule on the previous session's top set.
+        case lastSession
+        /// Proven strength, for an exercise never logged in the app.
+        case history
+        /// Proven strength mapped to today's reps, which differ too much
+        /// from last session's for the linear rule to be fair.
+        case repRemap
+        /// Plateau: same weight, one more rep.
+        case addRep
+    }
+
     /// Snapshot of last session's top set + whether the user hit the
     /// programmed target. Build this from PriorBest at the call site.
     struct PriorPerformance: Equatable {
@@ -43,6 +55,9 @@ enum ProgressionSuggestion {
         let label: String
         /// Free-text rationale for tooltips / accessibility.
         let rationale: String
+        /// What the number rests on, so a screen can word it: a lower load
+        /// for more reps is not a "back off".
+        var basis: Basis = .lastSession
 
         /// Suggested weight as a tidy string ("190" or "187.5"). Shared by
         /// the Today tile + Log pill so they format identically.
@@ -133,7 +148,7 @@ enum ProgressionSuggestion {
         let snapped = ((load + 1e-6) / step).rounded(.down) * step
         guard snapped > 0 else { return nil }
         return Result(suggestedWeight: snapped, delta: 0, label: "from history",
-                      rationale: "From your recent logged and imported sets")
+                      rationale: "From your recent logged and imported sets", basis: .history)
     }
 
     /// Resolve the bump for one exercise. Pass `isCompound` to override the
@@ -149,14 +164,70 @@ enum ProgressionSuggestion {
         return compound ? 5.0 : 2.5
     }
 
+    /// Past this many reps between last session's working set and today's
+    /// target, the last top set stops being a fair base: the goal re-bands
+    /// rows (build 155), so 135x10 last time and 5 reps today is routine.
+    static let repGapLimit = 2
+
+    /// The suggestion both the Log pill and the Today tile show, using the
+    /// lifter's history profile when there is one:
+    ///   - today's reps far from last session's -> proven strength mapped to
+    ///     today's reps ("for 5 reps")
+    ///   - a plateau whose last session hit its target -> same weight, add a rep
+    ///   - otherwise the linear rule, stepping by the lifter's own usual jump
+    /// Without a profile this is exactly the old rule.
+    static func suggest(
+        prevSets: [LoggedSet],
+        targetReps: Int,
+        exerciseName: String,
+        unit: String,
+        profile: HistoryProfile.ExerciseProfile?
+    ) -> Result? {
+        guard let prior = priorPerformance(from: prevSets, targetReps: targetReps) else { return nil }
+        guard let profile else { return suggest(prior: prior, exerciseName: exerciseName, unit: unit) }
+
+        if abs(prior.repsAchieved - targetReps) > repGapLimit, let estimate = profile.estimate,
+           let mapped = fromHistory(estimate, targetReps: targetReps, unit: unit) {
+            return Result(suggestedWeight: mapped.suggestedWeight,
+                          delta: mapped.suggestedWeight - prior.weight,
+                          label: "for \(targetReps) reps",
+                          rationale: "Last time was \(prior.repsAchieved) reps; today asks for \(targetReps).",
+                          basis: .repRemap)
+        }
+        if profile.plateau, prior.repsAchieved >= targetReps {
+            return Result(suggestedWeight: prior.weight, delta: 0, label: "add a rep",
+                          rationale: "Your estimate has been flat. Same weight, one more rep.",
+                          basis: .addRep)
+        }
+        let step = personalStep(profile: profile, workingWeight: prior.weight, unit: unit,
+                                compound: isCompound(name: exerciseName))
+        return suggest(prior: prior, exerciseName: exerciseName, unit: unit, bump: step)
+    }
+
+    /// The lifter's usual jump (`HistoryProfile.typicalStepLb`) in `unit`,
+    /// snapped to 1.25 kg for kg users. Falls back to the table when there is
+    /// none, or when it is bigger than both twice the table step and 10% of
+    /// the working weight (a sparse history should not produce a +20 lb jump;
+    /// a 5 lb dumbbell pair on a 25 lb curl is fine).
+    static func personalStep(profile: HistoryProfile.ExerciseProfile?, workingWeight: Double,
+                             unit: String, compound: Bool) -> Double {
+        let table = bumpFor(unit: unit, compound: compound)
+        guard let lb = profile?.typicalStepLb, lb > 0 else { return table }
+        let step = unit.lowercased() == "kg"
+            ? max(1.25, (lb * ImportUnitCorrection.kgPerLb / 1.25).rounded() * 1.25)
+            : lb
+        return step > max(2 * table, workingWeight * 0.10) ? table : step
+    }
+
     static func suggest(
         prior: PriorPerformance?,
         exerciseName: String,
-        unit: String
+        unit: String,
+        bump stepOverride: Double? = nil
     ) -> Result? {
         guard let prior else { return nil }
         let compound = isCompound(name: exerciseName)
-        let bump = bumpFor(unit: unit, compound: compound)
+        let bump = stepOverride ?? bumpFor(unit: unit, compound: compound)
         let missed = prior.targetReps - prior.repsAchieved
 
         switch missed {

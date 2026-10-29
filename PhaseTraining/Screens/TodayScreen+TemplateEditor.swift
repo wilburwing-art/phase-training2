@@ -105,9 +105,13 @@ extension TodayScreen {
                 prevSets: prevEx.sets,
                 targetReps: ex.targetReps,
                 exerciseName: ex.name,
-                unit: unit
+                unit: unit,
+                profile: store.historyProfile.profile(forExerciseNamed: ex.name)
               ) else {
             return "\(prevWeightText) \(unit)"
+        }
+        if s.basis != .lastSession {
+            return "\(s.suggestedWeightString) \(unit) · \(s.label)"
         }
         if s.delta == 0 {
             return "\(s.suggestedWeightString) \(unit) · hold"

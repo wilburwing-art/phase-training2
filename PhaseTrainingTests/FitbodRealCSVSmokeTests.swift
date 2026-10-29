@@ -143,6 +143,18 @@ final class FitbodRealCSVSmokeTests: XCTestCase {
                 XCTAssertEqual(profile.profile(forExerciseNamed: name)?.typicalStepLb, 5, name)
             }
             XCTAssertNotEqual(profile.profile(forExerciseNamed: "Barbell Back Squat")?.trend, .unknown)
+            // A 10-rep last session against a 5-rep row remaps through the
+            // estimate and never lands above the recent best mapped to 5.
+            if let squat = profile.profile(forExerciseNamed: "Barbell Back Squat"), let est = squat.estimate {
+                let tenAt = (est.weight * (1 + Double(est.reps) / 30) / (1 + 10.0 / 30) / 5).rounded() * 5
+                let prev = (1...3).map { LoggedSet(num: $0, weight: "\(tenAt)", reps: "10", rpe: "", done: true) }
+                let r = ProgressionSuggestion.suggest(prevSets: prev, targetReps: 5, exerciseName: "Barbell Back Squat",
+                                                      unit: "lbs", profile: squat)
+                XCTAssertEqual(r?.basis, .repRemap)
+                let recentBestAt5 = squat.recentBests.map(\.e1rm).max().map { $0 / (1 + 5.0 / 30) } ?? 0
+                XCTAssertLessThanOrEqual(r?.suggestedWeight ?? .infinity, recentBestAt5 + 0.01)
+                lines.append("  squat 10 reps at \(tenAt) -> today 5 reps: \(r?.suggestedWeight ?? 0) lb (\(r?.label ?? ""))")
+            }
             // Bench has only 3 workouts in its last 26 weeks: too few to call.
             XCTAssertEqual(profile.profile(forExerciseNamed: "Barbell Bench Press")?.trend, .unknown)
             // The 2016-2026 export: kg mode with pound numbers until late 2017.
