@@ -161,3 +161,12 @@ ExploreSessionTests / DayOutcomeTests, not the change. Also: the
 `UserDatabase` v1-rollback fixture in ExploreSessionTests must DROP any
 column a later ALTER adds (`sessions.mood` for v3), or the migration fails
 with a duplicate column on a file that was already at the latest version.
+
+## Build-phase failure from DerivedData deleted mid-build (2026-10-29)
+
+`clang dependency scanning failure: no such file ... ModuleCache.noindex/Session.modulevalidation`,
+then on retry `accessing build database ".../XCBuildData/build.db": disk I/O error` and
+"cannot open file ... .d". None of it is your code. Something else on the machine (another session,
+a cleanup tool) deleted `~/Library/Developer/Xcode/DerivedData` while the build ran. The tell:
+`du -sh ~/Library/Developer/Xcode/DerivedData` reports a few MB on a project that normally holds
+gigabytes, while `df` shows free space. Re-run once; the next build starts from scratch and passes.
