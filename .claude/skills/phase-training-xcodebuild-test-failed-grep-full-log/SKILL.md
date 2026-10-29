@@ -73,7 +73,7 @@ separates only the first:
 | Shape | Count | Assertion lines | Tell |
 |---|---|---|---|
 | Simulator death | large (153) | **none** | `IOSurfaceClientSetSurfaceNotify` |
-| Bundle/catalog not loaded | medium (67) | ~20, **all identical** | every message is a *resource precondition* (`coach.db must have…`), not business logic |
+| Bundle/catalog not loaded | medium (67) | ~20, **all identical** | every message is a *resource precondition* (`coach.db must have…`), not business logic. Seen again 2026-10-29 as "fixture is inert, contraindicates nothing in coach.db" (124 failures in AuthoredRoutineTests); the final line read `Executed 1102 tests ... 0 failures` (full suite is 1555) because the runner restarted, so grep `Executed .* [1-9][0-9]* failures`, never only the last count |
 | Test host never launched | **zero** (`Executed` absent) | none | `Failed to send signal 19 to process`, `IDELaunchReport ... Finished with error` — usually self-inflicted, see below |
 | Real regression | usually small | varied | messages differ, and they name YOUR behavior |
 
