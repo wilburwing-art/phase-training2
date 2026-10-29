@@ -207,7 +207,11 @@ final class ExerciseSwapMemoryTests: XCTestCase {
         let all = CoachDatabase.shared.searchExercises(
             search: nil, muscleSlugs: [], patternSlugs: [], modality: nil, difficulty: nil,
             environment: nil, compoundOnly: nil, userSportSlugs: []).exercises
-        XCTAssertGreaterThan(all.count, 10)
+        // Guard, not just assert: an unreadable catalog must fail this test,
+        // not crash the runner on all[7] and hide the failure count.
+        guard all.count > 10 else {
+            return XCTFail("catalog returned \(all.count) exercises; see CatalogAvailabilityTests")
+        }
         let favorite = all[7], liked = all[3], disliked = all[0]
         let out = ExerciseSearch.preferenceOrdered(
             all, affinities: [favorite.name: 3, liked.name: 1, disliked.name: -4])
