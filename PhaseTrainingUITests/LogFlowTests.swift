@@ -106,11 +106,10 @@ final class LogFlowTests: XCTestCase {
     func testTapExerciseHeaderOpensDetail() throws {
         let app = launchInLog()
         app.staticTexts["log-exercise-name-2"].tap()  // squat
-        // Detail sheet contains some content keyed to the exercise; the
-        // simplest assertion is that something new appeared above the row.
-        // ExerciseDetailSheet shows the exercise name as a header.
+        // Assert on the sheet's own Done button. "Back Squat" alone also
+        // matches the log row, which let this pass while the tap did nothing.
         XCTAssertTrue(
-            app.staticTexts["Back Squat"].waitForExistence(timeout: 3),
+            app.buttons["Done"].waitForExistence(timeout: 3),
             "tap should open detail sheet for Back Squat"
         )
     }

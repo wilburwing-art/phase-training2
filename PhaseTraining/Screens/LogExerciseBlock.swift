@@ -73,11 +73,12 @@ extension LogScreen {
             .padding(.bottom, 6)
             // Tap the exercise header (anywhere except the Swap button, which
             // is its own tappable Button) to open the read-only how-to /
-            // video / instructions sheet. Mid-workout form check.
+            // video / instructions sheet. Mid-workout form check. Resolved
+            // through ExerciseLookupCache (aliases, shorthand): an exact-name
+            // match missed "Back Squat" -> "Barbell Back Squat" and the tap
+            // did nothing.
             .onTapGesture {
-                detailExercise = CoachDatabase.shared
-                    .listExercises(search: ex.name)
-                    .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }
+                detailExercise = ExerciseLookupCache.shared.exercise(forName: ex.name)
             }
             .contextMenu {
                 Button {
@@ -86,9 +87,7 @@ extension LogScreen {
                     Label("Swap with similar…", systemImage: "rectangle.on.rectangle")
                 }
                 Button {
-                    detailExercise = CoachDatabase.shared
-                        .listExercises(search: ex.name)
-                        .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }
+                    detailExercise = ExerciseLookupCache.shared.exercise(forName: ex.name)
                 } label: {
                     Label("Show details", systemImage: "info.circle")
                 }
