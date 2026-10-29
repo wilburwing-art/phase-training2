@@ -32,3 +32,13 @@ Fresh user (no logged sessions, no HK grant) → context = .empty, hasReadinessD
 
 ## Context can be .empty because a CALL SITE dropped it (not just fresh users)
 `Planner.generate(... context: GeneratorContext = .empty ...)` defaults the param, so a call site that forgets to thread context silently runs the degraded path even for a data-rich user. **Found 2026-06-05:** `WeeklyCheckInFlow.regenerateAndAdvance` called `Planner.generate` with no `context:`, so `applyReadinessLiftDayFloor` (caps lift days at 3/wk when `readinessScore < 0.3`) never fired during weekly check-in — the one flow where the user just told you they're cooked. `PlanStore.generate` threads it correctly via the **private** `buildGeneratorContext`; flows that build a CANDIDATE plan against local overrides (check-in) can't reach it. **Fix:** added public seam `PlanStore.makeGeneratorContext(memory:today:)` and passed it. When editing or adding any `Planner.generate` call site, grep all of them (`grep -rn "Planner.generate"`) and confirm each threads context — the default makes the omission invisible. Fixed on branch `fix/checkin-readiness-context-and-event-kind`; relevant gate: `ReadinessGeneratorShipGateTests`, `PlannerTests`.
+
+## `GeneratedExercise.notes` never reaches a screen (found 2026-10-29)
+
+`progressiveOverloadHint` and `SportSeasonGenerator.prescribe` write "target: X lb" into
+`GeneratedExercise.notes`. But `GeneratedWorkout.toWorkoutTemplate` (`WeekPlan.swift`) builds
+`ExerciseTemplate` without `notes`, and no screen reads a generated row's notes. So a target
+written there is visible only to the coach/LLM context. Weights the user actually sees come from
+`ProgressionSuggestion` (Log pill `computeProgressionSuggestion`, Today tile `progressionSegment`).
+Since build 161 that path is history-aware: rep-gap remap, plateau "add a rep", and the lifter's
+own `typicalStepLb`. Put user-facing weight logic there, not in row notes.
