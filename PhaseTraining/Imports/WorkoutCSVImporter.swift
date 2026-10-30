@@ -32,6 +32,9 @@ enum WorkoutCSVImporter {
         /// Eras of pounds typed in kg mode that were converted on the way
         /// in (`ImportUnitCorrection`), so the summary can say so.
         var unitCorrections: [ImportUnitCorrection.Report] = []
+        /// How weights without a stated unit were read (Strong), so a wrong
+        /// guess is visible in the summary.
+        var unitNote: String? = nil
     }
 
     enum Failure: Error, LocalizedError {
@@ -42,8 +45,8 @@ enum WorkoutCSVImporter {
         var errorDescription: String? {
             switch self {
             case .unreadable(let why): return "Couldn't read the file: \(why)"
-            case .unknownFormat: return "Unrecognized CSV format. v1 supports Fitbod exports."
-            case .headerMismatch(let detail): return "CSV header didn't match the expected Fitbod shape. \(detail)"
+            case .unknownFormat: return "Unrecognized CSV format. Fitbod, Hevy and Strong exports are supported."
+            case .headerMismatch(let detail): return "CSV header didn't match the expected shape. \(detail)"
             }
         }
     }
@@ -51,7 +54,10 @@ enum WorkoutCSVImporter {
     /// Import a CSV from a security-scoped URL (e.g. from `.fileImporter`).
     /// Caller is responsible for `startAccessingSecurityScopedResource`
     /// on the URL before invoking and stopping after.
-    static func `import`(url: URL, db: UserDatabase = .shared, coach: CoachDatabase = .shared) async throws -> Result {
+    /// `fallbackImperial` is the user's unit, used only for a Strong export
+    /// that states no unit.
+    static func `import`(url: URL, db: UserDatabase = .shared, coach: CoachDatabase = .shared,
+                         fallbackImperial: Bool = true) async throws -> Result {
         let csv: String
         do {
             csv = try String(contentsOf: url, encoding: .utf8)
@@ -71,11 +77,27 @@ enum WorkoutCSVImporter {
         let source = detectSource(headerLine: firstLine)
         guard let source else { throw Failure.unknownFormat }
 
+        return try run(csv: csv, source: source, db: db, coach: coach, fallbackImperial: fallbackImperial)
+    }
+
+    /// Parse and persist text already read. Split from `import(url:)` so tests
+    /// run it on fixture strings.
+    static func run(csv: String, source: ImportSource, db: UserDatabase = .shared, coach: CoachDatabase = .shared,
+                    fallbackImperial: Bool = true) throws -> Result {
+        let resolve = db.importNameResolver(coach: coach)
         switch source {
         case .fitbodCSV:
-            return try await runFitbod(csv: csv, db: db, coach: coach)
-        case .hevyCSV, .stravaCSV:
-            // Stubbed for Phase 3.5; format detected, parser not yet wired.
+            return try runFitbod(csv: csv, db: db, coach: coach)
+        case .hevyCSV:
+            return try persist(HevyCSVParser.parse(csv, nameResolver: resolve), source: .hevyCSV, db: db)
+        case .strongCSV:
+            let parsed = StrongCSVParser.parse(csv, fallbackImperial: fallbackImperial, nameResolver: resolve)
+            var result = try persist(parsed.result, source: .strongCSV, db: db)
+            if parsed.unitSource == .assumed {
+                result.unitNote = "Weights read as \(parsed.imperial ? "lb" : "kg"): the file doesn't say, so your unit setting was used"
+            }
+            return result
+        case .stravaCSV:
             throw Failure.unknownFormat
         case .healthKit:
             // HK isn't a CSV source — shouldn't reach here.
@@ -83,32 +105,40 @@ enum WorkoutCSVImporter {
         }
     }
 
-    private static func detectSource(headerLine: String) -> ImportSource? {
+    static func detectSource(headerLine: String) -> ImportSource? {
         if headerLine == FitbodCSVParser.expectedHeader { return .fitbodCSV }
-        // Hevy + Strava header signatures land in Phase 3.5.
-        //
-        // T2-6 note (2026-08-26): the audit suggested implementing detection
-        // here because "the parse layer exists". It does NOT — FitbodCSVParser
-        // is the only parser in Imports/, so detecting a Hevy header would just
-        // route to the stub below and throw. Detection without a parser is
-        // worse than no detection: it turns "unknown format" into a silent
-        // failure on a file we claimed to recognize. Both land together.
+        if let fields = CSVRows.parse(headerLine, delimiter: ",").first?.fields, HevyCSVParser.looksLikeHeader(fields) {
+            return .hevyCSV
+        }
+        let strongDelimiter = StrongCSVParser.delimiter(forHeaderLine: headerLine)
+        if let fields = CSVRows.parse(headerLine, delimiter: strongDelimiter).first?.fields,
+           StrongCSVParser.looksLikeHeader(fields) {
+            return .strongCSV
+        }
+        // Strava stays undetected until it has a parser: detecting a format
+        // we can't read turns "unknown format" into a failure on a file we
+        // claimed to recognize.
         return nil
     }
 
-    private static func runFitbod(csv: String, db: UserDatabase, coach: CoachDatabase) async throws -> Result {
-        let parsed = FitbodCSVParser.parse(csv, source: .fitbodCSV) { rawName in
-            coach.exerciseId(forImportName: rawName)
-        }
+    private static func runFitbod(csv: String, db: UserDatabase, coach: CoachDatabase) throws -> Result {
+        // The user's own matches (import_name_map) win over the catalog.
+        let parsed = FitbodCSVParser.parse(csv, source: .fitbodCSV, nameResolver: db.importNameResolver(coach: coach))
+        // A kg-mode era holding pound numbers reads 2.2x too heavy; convert
+        // it before anything downstream sees it. Fitbod only: Hevy and Strong
+        // state their unit.
+        return try persist(parsed, source: .fitbodCSV, db: db, correctUnitEras: true)
+    }
 
+    /// Write a parse to user.db and summarize it. Shared by every format.
+    private static func persist(_ parsed: FitbodCSVParser.ParseResult, source: ImportSource, db: UserDatabase,
+                                correctUnitEras: Bool = false) throws -> Result {
         if parsed.totalRows == 0 && !parsed.errors.isEmpty {
             // Header was rejected upstream — surface as a typed failure.
             throw Failure.headerMismatch(parsed.errors.first?.reason ?? "header rejected")
         }
 
-        // A kg-mode era holding pound numbers reads 2.2x too heavy; convert
-        // it before anything downstream sees it.
-        let corrected = ImportUnitCorrection.apply(parsed.sets)
+        let corrected = correctUnitEras ? ImportUnitCorrection.apply(parsed.sets) : (sets: parsed.sets, reports: [])
 
         // Persist both streams. Wrapped in implicit transactions per
         // UserDatabase's insertImportedSets/insertImportedWorkouts.
@@ -133,7 +163,7 @@ enum WorkoutCSVImporter {
             .map { (name: $0.key, sets: $0.value) }
 
         return Result(
-            source: .fitbodCSV,
+            source: source,
             setsInserted: parsed.sets.count,
             workoutsInserted: parsed.workouts.count,
             nameMatchRate: parsed.nameMatchRate,

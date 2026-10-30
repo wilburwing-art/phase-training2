@@ -43,6 +43,8 @@ enum ExploreConversionKind: String, Codable, CaseIterable {
     case startRoutine
     /// Put a workout on today in place of the planned one.
     case switchToday
+    /// Matched an imported exercise name to a catalog exercise.
+    case matchImport
 }
 
 struct ExploreOpen: Codable, Hashable {

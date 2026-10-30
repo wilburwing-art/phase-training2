@@ -345,7 +345,7 @@ extension UserDatabase {
         for table in ["session_sets", "session_exercises", "sessions",
                       "user_routine_exercises", "user_routines",
                       "imported_sets", "imported_workouts",
-                      "explore_sessions"] {
+                      "explore_sessions", "import_name_map"] {
             sqlite3_exec(db, "DELETE FROM \(table)", nil, nil, nil)
         }
         sqlite3_exec(db, "COMMIT", nil, nil, nil)

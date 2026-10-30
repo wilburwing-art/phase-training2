@@ -16,6 +16,7 @@ On-device workout history (Documents/user.db). Schema from the migrations in Pha
 | [imported_workouts](imported_workouts.md)           | 8       | HealthKit or CSV workouts, keyed by the source's own UUID so re-import is idempotent. Unioned with sessions in GeneratorContext.                                                             | table |
 | [imported_sets](imported_sets.md)                   | 11      | Set-level CSV history. Attached to imported_workouts by performed_at proximity in Swift, not by FK.                                                                                          | table |
 | [explore_sessions](explore_sessions.md)             | 10      | One row per visit to a browse surface (ExploreSession.swift). Not included in the backup envelope.                                                                                           | table |
+| [import_name_map](import_name_map.md)               | 2       |                                                                                                                                                                                              | table |
 
 ## Relations
 
@@ -111,6 +112,10 @@ erDiagram
   INTEGER broadened
   TEXT opens_json
   TEXT conversions_json
+}
+"import_name_map" {
+  TEXT name_raw PK
+  INTEGER exercise_id
 }
 ```
 

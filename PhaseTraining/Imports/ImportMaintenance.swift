@@ -17,11 +17,12 @@ enum ImportMaintenance {
         let stored = db.allImportedSets()
         guard !stored.isEmpty else { return 0 }
 
+        let resolve = db.importNameResolver(coach: coach)
         var resolvedByName: [String: Int?] = [:]
         let resolved = stored.map { set -> ImportedSet in
             guard set.exerciseId == nil else { return set }
             if resolvedByName[set.exerciseNameRaw] == nil {
-                resolvedByName[set.exerciseNameRaw] = .some(coach.exerciseId(forImportName: set.exerciseNameRaw))
+                resolvedByName[set.exerciseNameRaw] = .some(resolve(set.exerciseNameRaw))
             }
             return set.withExerciseId(resolvedByName[set.exerciseNameRaw] ?? nil)
         }

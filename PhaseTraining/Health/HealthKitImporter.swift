@@ -45,6 +45,7 @@ enum ImportSource: String, Codable, CaseIterable, Sendable {
     case fitbodCSV
     case hevyCSV
     case stravaCSV
+    case strongCSV
 }
 
 /// Coarse workout kind. The readiness signal treats all three as

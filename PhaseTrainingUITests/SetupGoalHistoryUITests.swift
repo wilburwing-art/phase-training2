@@ -53,7 +53,7 @@ final class SetupGoalHistoryUITests: XCTestCase {
         add(checklistShot)
 
         row.tap()
-        XCTAssertTrue(app.buttons["Import Fitbod CSV"].waitForExistence(timeout: 5), "the row opens the import")
+        XCTAssertTrue(app.buttons["Import CSV"].waitForExistence(timeout: 5), "the row opens the import")
         let sheetShot = XCTAttachment(screenshot: app.screenshot())
         sheetShot.name = "past-workouts-sheet"
         sheetShot.lifetime = .keepAlways

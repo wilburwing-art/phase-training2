@@ -69,6 +69,7 @@ enum ImportedHistorySessions {
         case .fitbodCSV: return "Fitbod"
         case .hevyCSV: return "Hevy"
         case .stravaCSV: return "Strava"
+        case .strongCSV: return "Strong"
         case .healthKit: return "Apple Health"
         }
     }

@@ -799,6 +799,53 @@
         }
       ],
       "def": "CREATE TABLE explore_sessions (\n              id                TEXT PRIMARY KEY,\n              surface           TEXT NOT NULL,\n              started_at        REAL NOT NULL,\n              ended_at          REAL NOT NULL,\n              query             TEXT,\n              result_count      INTEGER,\n              tier              INTEGER,\n              broadened         INTEGER NOT NULL DEFAULT 0,\n              opens_json        TEXT NOT NULL DEFAULT '[]',\n              conversions_json  TEXT NOT NULL DEFAULT '[]'\n            )"
+    },
+    {
+      "name": "import_name_map",
+      "type": "table",
+      "columns": [
+        {
+          "name": "name_raw",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "exercise_id",
+          "type": "INTEGER",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sqlite_autoindex_import_name_map_1",
+          "def": "PRIMARY KEY (name_raw)",
+          "table": "import_name_map",
+          "columns": [
+            "name_raw"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "name_raw",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (name_raw)",
+          "table": "import_name_map",
+          "columns": [
+            "name_raw"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_import_name_map_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (name_raw)",
+          "table": "import_name_map",
+          "columns": [
+            "name_raw"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE import_name_map (\n              name_raw     TEXT PRIMARY KEY,\n              exercise_id  INTEGER NOT NULL\n            )"
     }
   ],
   "relations": [

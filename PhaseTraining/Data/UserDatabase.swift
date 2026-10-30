@@ -232,6 +232,17 @@ final class UserDatabase {
         // every existing row reads as "not rated".
         (3, [
             "ALTER TABLE sessions ADD COLUMN mood TEXT"
+        ]),
+        // v4 — the user's own match for an imported exercise name the catalog
+        // didn't recognize (UnmatchedNamesSheet). Survives clearing imports,
+        // so a re-import of the same export resolves the same way.
+        (4, [
+            """
+            CREATE TABLE IF NOT EXISTS import_name_map (
+              name_raw     TEXT PRIMARY KEY,
+              exercise_id  INTEGER NOT NULL
+            )
+            """
         ])
     ]
 

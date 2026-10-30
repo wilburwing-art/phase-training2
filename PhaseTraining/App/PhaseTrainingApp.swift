@@ -86,6 +86,12 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-history-typo") {
             Self.seedImportedHistory(typo: true)
         }
+        //   --seed-unmatched-import → with --seed-imported-history: three sets
+        //     under a name the catalog can't match, so Health & Imports offers
+        //     "1 name didn't match" and the Unmatched names sheet.
+        if ProcessInfo.processInfo.arguments.contains("--seed-unmatched-import") {
+            Self.seedUnmatchedImport()
+        }
         //   --seed-rep-gap → with --seed-supersets-demo: Back Squat was 185 x 10
         //     last time (saved natively) and today asks for 5 reps, so the pill
         //     remaps proven strength to 5 reps instead of adding 5 lb.
@@ -423,6 +429,17 @@ struct PhaseTrainingApp: App {
             }
         }
         UserDatabase.shared.insertImportedSets(rows)
+    }
+
+    /// --seed-unmatched-import: imported sets the catalog can't resolve.
+    private static func seedUnmatchedImport() {
+        let at = Date().addingTimeInterval(-6 * 86_400)
+        let name = "Zercher Hold Thing"
+        UserDatabase.shared.insertImportedSets((1...3).map { n in
+            ImportedSet(id: ImportedSet.makeId(source: .fitbodCSV, performedAt: at, exerciseNameRaw: name, setNum: n),
+                        source: .fitbodCSV, exerciseId: nil, exerciseNameRaw: name,
+                        performedAt: at, setNum: n, weight: 60, reps: 8, rir: nil, rpe: nil)
+        })
     }
 
     /// --seed-progress-demo: a populated Progress tab.

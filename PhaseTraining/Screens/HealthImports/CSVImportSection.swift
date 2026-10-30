@@ -38,13 +38,16 @@ struct CSVImportSection: View {
                 csvLastImportBlock(result: last)
             }
             // Nothing to check until something is imported.
-            if (csvSummary?.count ?? 0) > 0 { HistoryCheckRow() }
+            if (csvSummary?.count ?? 0) > 0 {
+                HistoryCheckRow()
+                UnmatchedNamesRow()
+            }
 
             Button {
                 csvError = nil
                 presentingCSVPicker = true
             } label: {
-                Text(csvImporting ? "Importing…" : "Import Fitbod CSV")
+                Text(csvImporting ? "Importing…" : "Import CSV")
                     .font(.subheadline.bold())
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
@@ -67,7 +70,7 @@ struct CSVImportSection: View {
 
             // Was "arrives in a follow-up", which reads as imminent for
             // something with no parser written (T2-6). Say what's true today.
-            Text("Fitbod exports only for now. We only read the file; nothing is uploaded.")
+            Text("Fitbod, Hevy and Strong exports. We only read the file; nothing is uploaded.")
                 .font(.caption)
                 .foregroundColor(.ink2)
         }
@@ -140,6 +143,12 @@ struct CSVImportSection: View {
             Text("Matched \(Int(result.nameMatchRate * 100))% of exercise names to the catalog")
                 .font(.caption2)
                 .foregroundColor(.ink2)
+            if let note = result.unitNote {
+                Text(note)
+                    .font(.caption2)
+                    .foregroundColor(.ink2)
+                    .accessibilityIdentifier("csv-unit-note")
+            }
             if result.warmupsSkipped > 0 {
                 Text("Skipped \(result.warmupsSkipped) warmup \(result.warmupsSkipped == 1 ? "row" : "rows")")
                     .font(.caption2)
@@ -192,6 +201,7 @@ struct CSVImportSection: View {
         case "fitbodCSV": return "Fitbod CSV"
         case "hevyCSV": return "Hevy CSV"
         case "stravaCSV": return "Strava CSV"
+        case "strongCSV": return "Strong CSV"
         default: return raw
         }
     }
@@ -227,7 +237,7 @@ struct CSVImportSection: View {
             let scoped = url.startAccessingSecurityScopedResource()
             defer { if scoped { url.stopAccessingSecurityScopedResource() } }
             do {
-                let result = try await WorkoutCSVImporter.import(url: url)
+                let result = try await WorkoutCSVImporter.import(url: url, fallbackImperial: memoryStore.memory.usesImperial)
                 lastImport = result
                 refreshCSVSummary()
                 // Retires the "Past workouts" row in Finish setup.
