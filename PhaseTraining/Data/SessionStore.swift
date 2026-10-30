@@ -18,7 +18,7 @@ final class SessionStore: ObservableObject {
     private static let savedMigrationFlag = "pt_sessions_migrated_v1"
 
     @Published var savedSessions: [SavedSession] {
-        didSet { historyProfileCache = nil }
+        didSet { historyProfileCache = nil; importedSessionsCache = nil }
     }
     @Published var active: ActiveSession?
     /// PR 9 — app-level wiring: the App layer assigns this to forward
@@ -76,6 +76,7 @@ final class SessionStore: ObservableObject {
             // Not @Published, so tell observers: the History check row and
             // the "from history" pills read it.
             self?.historyProfileCache = nil
+            self?.importedSessionsCache = nil
             self?.objectWillChange.send()
         }
     }
@@ -305,6 +306,42 @@ final class SessionStore: ObservableObject {
         return built
     }
 
+    /// Imported sets as read-only sessions (`ImportedHistorySessions`),
+    /// cached per unit and dropped with `historyProfileCache`.
+    private var importedSessionsCache: (usesImperial: Bool, sessions: [SavedSession])?
+
+    func importedSessions(usesImperial: Bool) -> [SavedSession] {
+        if let c = importedSessionsCache, c.usesImperial == usesImperial { return c.sessions }
+        let excluded = Set(historyProfile.audit.flags.map(\.id))
+        let built = ImportedHistorySessions.build(imported: userDB.allImportedSets(),
+                                                  excluded: excluded, usesImperial: usesImperial)
+        importedSessionsCache = (usesImperial, built)
+        return built
+    }
+
+    /// What History and Progress show: native sessions plus imported ones,
+    /// newest first. Everything that writes or plans keeps `savedSessions`.
+    func displaySessions(usesImperial: Bool) -> [SavedSession] {
+        let imported = importedSessions(usesImperial: usesImperial)
+        guard !imported.isEmpty else { return savedSessions }
+        return (savedSessions + imported).sorted { $0.startTime > $1.startTime }
+    }
+
+    /// Best weight per (exercise, reps) across imported sessions, the
+    /// baseline imported history adds to PR detection.
+    private func importedBests(usesImperial: Bool) -> [String: [Int: Double]] {
+        var best: [String: [Int: Double]] = [:]
+        for s in importedSessions(usesImperial: usesImperial) {
+            for ex in s.exercises {
+                for set in ex.sets {
+                    guard let r = set.repsValue, r > 0, let w = set.weightValue, w > 0 else { continue }
+                    best[ex.name, default: [:]][r] = max(best[ex.name]?[r] ?? 0, w)
+                }
+            }
+        }
+        return best
+    }
+
     func provenStrength(forExerciseNamed name: String) -> PriorBest? {
         historyProfile.profile(forExerciseNamed: name)?.estimate
     }
@@ -520,10 +557,14 @@ final class SessionStore: ObservableObject {
     /// current session is already in user.db.
     func personalRecords(in exercises: [LoggedExercise],
                          excludingSessionId: TimeInterval? = nil,
-                         sessionDate: Date = Date()) -> [PersonalRecord] {
-        let best = userDB.bestWeightsByExerciseAndReps(
+                         sessionDate: Date = Date(),
+                         usesImperial: Bool = true) -> [PersonalRecord] {
+        var best = userDB.bestWeightsByExerciseAndReps(
             excludingSessionStart: excludingSessionId.map { Int64($0) }
         )
+        for (name, byReps) in importedBests(usesImperial: usesImperial) {
+            best[name, default: [:]].merge(byReps, uniquingKeysWith: max)
+        }
 
         var out: [PersonalRecord] = []
         var emitted: Set<String> = []
@@ -556,8 +597,24 @@ final class SessionStore: ObservableObject {
     /// (exercise, reps) pair per session.
     ///
     /// Used by ProgressScreen's PR feed + per-exercise sparklines.
-    func allPersonalRecords() -> [PersonalRecord] {
-        let rows = userDB.qualifyingSetsForPRs()
+    func allPersonalRecords(usesImperial: Bool = true) -> [PersonalRecord] {
+        // Imported sets join the walk as rows at their session start, so a
+        // Fitbod best sets the baseline the first native set has to beat.
+        var imported: [UserDatabase.PRSetRow] = []
+        for s in importedSessions(usesImperial: usesImperial).reversed() {
+            for ex in s.exercises {
+                for set in ex.sets {
+                    guard let r = set.repsValue, r > 0, let w = set.weightValue, w > 0 else { continue }
+                    imported.append(UserDatabase.PRSetRow(name: ex.name, reps: r, weight: w,
+                                                          sessionStart: Int64(s.startTime.timeIntervalSince1970)))
+                }
+            }
+        }
+        let native = userDB.qualifyingSetsForPRs()
+        let rows = imported.isEmpty ? native
+            : (imported + native).enumerated()
+                .sorted { ($0.element.sessionStart, $0.offset) < ($1.element.sessionStart, $1.offset) }
+                .map(\.element)
         var best: [String: [Int: Double]] = [:]
         var events: [PersonalRecord] = []
         var currentSession: Int64 = .min

@@ -210,4 +210,29 @@ final class FitbodRealCSVSmokeTests: XCTestCase {
             .map { String(format: "%@: %.1f kg × %d", $0.name, $0.weightKg, $0.reps) }
             .joined(separator: ", ")
     }
+
+    func testRealExportBuildsHistorySessions() throws {
+        guard let url = locateCSV() else {
+            throw XCTSkip("no real Fitbod export on this machine")
+        }
+        let csv = try String(contentsOf: url, encoding: .utf8)
+        let coach = CoachDatabase.shared
+        let parsed = FitbodCSVParser.parse(csv, source: .fitbodCSV) { coach.exerciseId(forImportName: $0) }
+        let (sets, _) = ImportUnitCorrection.apply(parsed.sets)
+        let flagged = Set(HistoryProfile.build(sessions: [], imported: sets, now: Date()).audit.flags.map(\.id))
+
+        let started = Date()
+        let sessions = ImportedHistorySessions.build(imported: sets, excluded: flagged, usesImperial: true)
+        let seconds = Date().timeIntervalSince(started)
+        let bests = sessions.flatMap(\.exercises).filter { $0.name == "Barbell Bench Press" }
+            .flatMap(\.sets).compactMap(\.weightValue)
+        let note = String(format: "history sessions: %d built in %.3f s; bench best %.1f lb",
+                          sessions.count, seconds, bests.max() ?? 0)
+        print(note)
+        add(XCTAttachment(string: note))
+        XCTAssertLessThan(seconds, 1.0)
+        XCTAssertFalse(sessions.isEmpty)
+        // The 397 lb bench from the kg-mode era is corrected, then the outlier rule holds the rest.
+        XCTAssertLessThan(bests.max() ?? 0, 300)
+    }
 }

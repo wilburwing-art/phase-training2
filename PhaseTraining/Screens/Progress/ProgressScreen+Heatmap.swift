@@ -12,7 +12,7 @@ extension ProgressScreen {
     var heatmapCard: some View {
         let now = Date()
         let month = TrainingHeatmap.monthStart(offset: heatmapMonthOffset, now: now)
-        let weeks = TrainingHeatmap.weeks(month: month, sessions: store.savedSessions)
+        let weeks = TrainingHeatmap.weeks(month: month, sessions: sessions)
         let days = weeks.flatMap { $0 }.compactMap { $0 }
         let sessionCount = days.reduce(0) { $0 + $1.sessions.count }
         let minutes = days.reduce(0) { $0 + $1.minutes }
@@ -94,11 +94,14 @@ extension ProgressScreen {
     private func heatmapCell(_ day: TrainingHeatmap.Day?, now: Date) -> some View {
         if let day {
             let isToday = Calendar.current.isDate(day.date, inSameDayAs: now)
+            // Imported workouts shade the day but are read-only, so only
+            // native sessions open the editor.
+            let editable = day.sessions.filter { $0.importSource == nil }
             Button {
-                if day.sessions.count == 1 {
-                    heatmapSession = day.sessions[0]
-                } else if day.sessions.count > 1 {
-                    heatmapDayChoices = day.sessions
+                if editable.count == 1 {
+                    heatmapSession = editable[0]
+                } else if editable.count > 1 {
+                    heatmapDayChoices = editable
                 }
             } label: {
                 RoundedRectangle(cornerRadius: 4)
@@ -115,7 +118,7 @@ extension ProgressScreen {
                     )
             }
             .buttonStyle(.plain)
-            .disabled(day.sessions.isEmpty)
+            .disabled(editable.isEmpty)
             .frame(maxWidth: .infinity)
             .accessibilityLabel(heatmapAccessibilityLabel(day))
             .accessibilityIdentifier("progress-heatmap-day-\(Self.heatmapIdFormatter.string(from: day.date))")

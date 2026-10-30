@@ -80,15 +80,21 @@ struct ProgressScreen: View {
     /// checked on each access (savedSessions content + bodyweight + gender +
     /// calendar day), so a save / restore / profile edit recomputes on the
     /// very next render — no view-lifecycle invalidation to go stale.
+    /// Native plus imported sessions (`SessionStore.displaySessions`): every
+    /// card counts history brought in from another app.
+    var sessions: [SavedSession] {
+        store.displaySessions(usesImperial: memoryStore.memory.usesImperial)
+    }
+
     var aggregates: ProgressAggregates {
         aggregatesCache.aggregates(
-            sessions: store.savedSessions,
+            sessions: sessions,
             bodyweightKg: memoryStore.memory.weightKg,
             gender: memoryStore.memory.gender,
             weeks: Self.weeks,
             topExerciseCount: Self.topExerciseCount,
             recentSessionsCount: Self.recentSessionsPreview,
-            personalRecords: { store.allPersonalRecords() }
+            personalRecords: { store.allPersonalRecords(usesImperial: memoryStore.memory.usesImperial) }
         )
     }
 
@@ -99,7 +105,7 @@ struct ProgressScreen: View {
             // by "Nothing yet." whenever no workout had been logged — hiding
             // body weight, body composition and the recovery silhouette, which
             // have their own data and render fine before the first session.
-            if store.savedSessions.isEmpty && !hasNonWorkoutData {
+            if sessions.isEmpty && !hasNonWorkoutData {
                 emptyState
             } else {
                 content
@@ -155,7 +161,7 @@ struct ProgressScreen: View {
                 )
                 .padding(.horizontal, -20)
                 SeasonPhaseBadge(style: .full, surface: "progress")
-                if !store.savedSessions.isEmpty {
+                if !sessions.isEmpty {
                     heatmapCard
                 }
                 SorenessCheckInPill()

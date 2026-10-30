@@ -252,7 +252,9 @@ extension ProgressScreen {
                 .foregroundStyle(Color.ink)
                 .lineLimit(1)
             Spacer(minLength: 6)
-            Text(SessionRowMeta.durationLabel(session.duration, style: .spelled))
+            Text(session.importSource == nil
+                 ? SessionRowMeta.durationLabel(session.duration, style: .spelled)
+                 : "Imported")
                 .font(.monoXS)
                 .foregroundStyle(Color.ink3)
         }

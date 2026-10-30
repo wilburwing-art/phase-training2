@@ -92,7 +92,8 @@ struct CompleteScreen: View {
         // this recomputes, so PR detection must skip its own rows.
         store.personalRecords(in: session.exercises,
                               excludingSessionId: saved?.startTime.timeIntervalSince1970,
-                              sessionDate: session.startTime).map { record in
+                              sessionDate: session.startTime,
+                              usesImperial: memoryStore.memory.usesImperial).map { record in
             PRItem(
                 id: "\(record.exerciseName)|\(record.reps)",
                 name: record.exerciseName,

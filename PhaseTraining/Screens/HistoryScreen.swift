@@ -5,6 +5,7 @@ import SwiftUI
 
 struct HistoryScreen: View {
     @EnvironmentObject var store: SessionStore
+    @EnvironmentObject var memoryStore: MemoryStore
     /// Build 92: now presented as a sheet from the Progress tab's "See
     /// all" link, not pushed from TodayTab. Uses Environment dismiss so
     /// it works in any presentation context.
@@ -25,11 +26,13 @@ struct HistoryScreen: View {
         self.initialExerciseFilter = initialExerciseFilter
     }
 
-    /// Sessions actually rendered — `store.savedSessions` when no filter is
-    /// set, otherwise narrowed to sessions containing the named exercise.
+    /// Sessions actually rendered — native plus imported
+    /// (`store.displaySessions`) when no filter is set, otherwise narrowed to
+    /// sessions containing the named exercise.
     private var displayedSessions: [SavedSession] {
-        guard let name = initialExerciseFilter else { return store.savedSessions }
-        return store.savedSessions.filter { sess in
+        let all = store.displaySessions(usesImperial: memoryStore.memory.usesImperial)
+        guard let name = initialExerciseFilter else { return all }
+        return all.filter { sess in
             sess.exercises.contains {
                 $0.name.caseInsensitiveCompare(name) == .orderedSame
             }
@@ -128,7 +131,7 @@ struct HistoryScreen: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
 
-                VStack(spacing: 0) {
+                LazyVStack(spacing: 0) {
                     ForEach(Array(sessions.enumerated()), id: \.element.id) { idx, session in
                         sessionRow(
                             session: session,
@@ -213,10 +216,13 @@ struct HistoryScreen: View {
                                 .styled(.body)
                                 .foregroundColor(.ink3)
                             dot
-                            Text(SessionRowMeta.durationLabel(session.duration, style: .compact))
-                                .styled(.monoS)
-                                .foregroundColor(.ink3)
-                            dot
+                            // Imported workouts carry no duration.
+                            if session.importSource == nil {
+                                Text(SessionRowMeta.durationLabel(session.duration, style: .compact))
+                                    .styled(.monoS)
+                                    .foregroundColor(.ink3)
+                                dot
+                            }
                             Text("\(doneSetCount(session)) sets")
                                 .styled(.monoXS)
                                 .foregroundColor(.ink3)
@@ -240,22 +246,31 @@ struct HistoryScreen: View {
                 expandedDetail(session)
                     .padding(.top, 10)
                 reflection(session)
-                Button(action: { editingSession = session }) {
-                    Text("Edit session")
-                        .styled(.monoS)
-                        .foregroundColor(.ink2)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .frame(maxWidth: .infinity)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.line, lineWidth: 0.5)
-                        )
+                if let source = session.importSource {
+                    Text("Imported from \(ImportedHistorySessions.sourceName(source))")
+                        .styled(.monoXS)
+                        .foregroundColor(.ink3)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 8)
+                        .accessibilityIdentifier("history-imported-\(session.id)")
+                } else {
+                    Button(action: { editingSession = session }) {
+                        Text("Edit session")
+                            .styled(.monoS)
+                            .foregroundColor(.ink2)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.line, lineWidth: 0.5)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Edit \(session.name)")
+                    .accessibilityIdentifier("history-edit-\(session.id)")
+                    .padding(.top, 8)
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Edit \(session.name)")
-                .accessibilityIdentifier("history-edit-\(session.id)")
-                .padding(.top, 8)
             }
         }
         .padding(.vertical, 14)
@@ -479,5 +494,6 @@ struct HistoryScreen: View {
 
     return HistoryScreen()
         .environmentObject(store)
+        .environmentObject(MemoryStore())
         .preferredColorScheme(.dark)
 }
