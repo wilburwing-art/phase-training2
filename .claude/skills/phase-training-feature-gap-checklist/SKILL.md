@@ -33,6 +33,12 @@ The classification distribution is consistently top-heavy on **SHIPPED + HIDDEN*
 - HIDDEN capability (data exists, no UI): **phase/mesocycle surfacing** (the app's NAMESAKE — `SeasonPhase` enum drives the planner but only shows up in profile + check-in), supersets (`routine_exercises.superset_group` column), body-weight trends, soreness/feedback
 - TRULY MISSING: plate calculator, warmup flag, RIR
 
+## Recheck 2026-10-29 (after builds 154-162): the May list is stale
+
+Most of it is now SHIPPED: plate calculator (`Screens/PlateCalculatorSheet.swift`, reachable from Profile only, not from Log), warm-up flag (`LogSetRow` "Mark as warmup", excluded from `HistoryProfile` and `priorPerformance`), phase eyebrow on Today (`phaseEyebrow`), recovery card, body-weight chart (`ProgressScreen+BodyCards`). RIR is shipped too (`LoggedSet.rir`, build 103; a `\brir\b` grep through ugrep misses it). Don't recommend those again.
+
+The new prior is about REACH of imported history. Imported sets feed the suggestion pill, the Today tile, Log pre-fill and the strength card, but **History, Progress and `allPersonalRecords()` read only sets logged in the app** (`qualifyingSetsForPRs`). Also check: is the import or goal offered in onboarding (it wasn't), how many CSV formats exist (Fitbod only), and is there a UI to map unmatched import names (none). Grep `Screens/` and `Components/` for `importedSets|historyProfile` to list which screens actually see it.
+
 ## Priority ordering rule
 
 When synthesizing, lead with the "data layer is way ahead of UI" framing and order recommendations:
