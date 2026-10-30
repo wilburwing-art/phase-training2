@@ -32,6 +32,8 @@ struct OnboardingSportSeasonsScreen: View {
                     Divider().background(Color.lineSoft)
                     defaultSeasonPicker
                 }
+                Divider().background(Color.lineSoft)
+                goalSection
                 if showSupport {
                     Divider().background(Color.lineSoft)
                     supportSection
@@ -57,6 +59,29 @@ struct OnboardingSportSeasonsScreen: View {
                 .foregroundStyle(Color.ink2)
                 .fixedSize(horizontal: false, vertical: true)
             SupportPatternEditor(pattern: $draft.supportPattern, showBlurb: false)
+        }
+    }
+
+    /// Rides on this step instead of earning its own: sport performance is
+    /// pre-selected, so leaving it costs no tap. Only a tap marks the goal
+    /// stated; an untouched default keeps its "we guessed" chip on Week.
+    private var goalSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            OnboardingSectionLabel(text: "What are you training for?")
+            VStack(spacing: 8) {
+                ForEach(TrainingGoal.allCases) { goal in
+                    OnboardingPickRow(
+                        title: goal.label,
+                        subtitle: goal.subtitle,
+                        selected: draft.trainingGoal == goal,
+                        action: { draft.trainingGoal = goal; draft.markStated(.goal) },
+                        a11yId: "onboarding-goal-\(goal.rawValue)"
+                    )
+                }
+            }
+            Text("Strength work follows this. Your season still sets the rest.")
+                .styled(.body)
+                .foregroundStyle(Color.ink3)
         }
     }
 

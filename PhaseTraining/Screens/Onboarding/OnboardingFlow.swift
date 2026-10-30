@@ -21,6 +21,9 @@ import SwiftUI
 ///   - sports + sportSeasons: `WeeklyShape.resolve(primarySport:season:)` cannot
 ///     run without them, and the season engine is gated on plannable sports.
 ///     There is no defensible default for "what do you train for".
+///   - trainingGoal rides on the sportSeasons step with no step of its own:
+///     sport performance is pre-selected, so a user who leaves it pays no tap,
+///     and the rep bands are right from the first plan for one who doesn't.
 ///   - coachConsent: an Apple Guideline 5.1.2(i) gate, not a personalization
 ///     question. Defaulting consent is not an option.
 ///
@@ -182,10 +185,12 @@ struct OnboardingFlow: View {
     private static let healthAvailable = HKHealthStore.isHealthDataAvailable()
 
     private func finish() {
-        // The gate only ever asks sport + season, both of which the user picked
-        // by hand — so they're stated by definition. Everything else is left
-        // unstated on purpose: that is what puts an assumption chip on the Week
-        // tab instead of silently pretending the default was a choice.
+        // The gate asks sport + season, both picked by hand, so they're stated
+        // by definition. The goal is offered on the seasons step too, but is
+        // stated only if the user tapped one (the row calls markStated).
+        // Everything else is left unstated on purpose: that is what puts an
+        // assumption chip on the Week tab instead of pretending the default
+        // was a choice.
         store.memory = draft
         store.completeOnboarding()
         clearPersistedDraft()
