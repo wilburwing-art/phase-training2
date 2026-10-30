@@ -32,6 +32,12 @@ enum ProfileField: String, CaseIterable, Identifiable, Hashable {
     case equipment
     /// `experience` + `startingState`.
     case experience
+    /// `trainingGoal`. Sets rep ranges and rest on strength work.
+    case goal
+    /// Workout history brought in from another app. Not a TrainingMemory
+    /// value: stated once an import lands or the user says they're starting
+    /// fresh. It sets starting weights, not the week, so it has no Week chip.
+    case history
 
     var id: String { rawValue }
 
@@ -41,14 +47,22 @@ enum ProfileField: String, CaseIterable, Identifiable, Hashable {
         case .availability: return "Schedule"
         case .equipment:    return "Equipment"
         case .experience:   return "Experience"
+        case .goal:         return "Goal"
+        case .history:      return "Past workouts"
         }
     }
+
+    /// Whether the default changes the generated week, which is what earns a
+    /// chip on the Week tab. Every field still gets a Finish setup row.
+    var shapesWeek: Bool { self != .history }
 
     var icon: String {
         switch self {
         case .availability: return "clock"
         case .equipment:    return "wrench.and.screwdriver"
         case .experience:   return "chart.line.uptrend.xyaxis"
+        case .goal:         return "target"
+        case .history:      return "clock.arrow.circlepath"
         }
     }
 
@@ -61,6 +75,10 @@ enum ProfileField: String, CaseIterable, Identifiable, Hashable {
             return "Which exercises can be picked at all."
         case .experience:
             return "Movement complexity and how hard the first weeks ramp."
+        case .goal:
+            return "Rep ranges and rest on strength work."
+        case .history:
+            return "Weight suggestions start from what you've already lifted."
         }
     }
 }
@@ -95,6 +113,10 @@ extension TrainingMemory {
             return "\(equipment.count) items"
         case .experience:
             return experience.label
+        case .goal:
+            return trainingGoal.label
+        case .history:
+            return isStated(.history) ? "Done" : "Not imported yet"
         }
     }
 }

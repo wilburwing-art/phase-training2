@@ -58,7 +58,7 @@ struct SetupChecklistSheet: View {
         let remaining = store.memory.assumedFields.count
         return Text(remaining == 0
                     ? "Every input below is one you set. Nothing here is a guess."
-                    : "Your week is built on these. \(remaining) of them we guessed — set them and the plan gets closer.")
+                    : "Your plan starts from these. We guessed \(remaining) of them; set them and the plan gets closer.")
             .styled(.body)
             .foregroundStyle(Color.ink2)
             .fixedSize(horizontal: false, vertical: true)

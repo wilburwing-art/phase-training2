@@ -25,7 +25,7 @@ struct PlanAssumptionsRow: View {
     @State private var editing: ProfileField?
 
     var body: some View {
-        let assumed = store.memory.assumedFields
+        let assumed = store.memory.assumedFields.filter(\.shapesWeek)
         // The container and its `.sheet` are UNCONDITIONAL; only the chips are
         // conditional. Putting the sheet inside the `if` looked tidier and was
         // wrong: the editors retire their own chip on write, so setting the
@@ -105,6 +105,8 @@ struct ProfileFieldEditorHost: View {
         case .equipment:    EquipmentEditorSheet().environmentObject(store)
         case .experience:   ExperienceEditorSheet().environmentObject(store)
         case .availability: AvailabilityEditorSheet().environmentObject(store)
+        case .goal:         GoalEditorSheet().environmentObject(store)
+        case .history:      PastWorkoutsSheet().environmentObject(store)
         }
     }
 }

@@ -234,6 +234,9 @@ struct TrainingMemory: Codable {
         // the field again.
         self.statedFields    = (try? c.decodeIfPresent(Set<String>.self, forKey: .statedFields))
             ?? Set(ProfileField.allCases.map(\.rawValue))
+        // The goal row predates its stated bookkeeping (build 155): a goal
+        // already moved off the default was chosen by hand.
+        if trainingGoal != .sportPerformance { statedFields.insert(ProfileField.goal.rawValue) }
         self.age             =  try? c.decodeIfPresent(Int.self,    forKey: .age)
         self.gender          =  try? c.decodeIfPresent(Gender.self, forKey: .gender)
         self.heightCm        =  try? c.decodeIfPresent(Int.self,    forKey: .heightCm)

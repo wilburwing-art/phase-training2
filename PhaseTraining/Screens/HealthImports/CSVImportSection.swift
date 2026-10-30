@@ -11,6 +11,8 @@ struct CSVImportSection: View {
     /// refresh its summary.
     let onImportedWorkoutsChanged: () -> Void
 
+    @EnvironmentObject private var memoryStore: MemoryStore
+
     // Phase 3 CSV import state.
     @State private var presentingCSVPicker = false
     @State private var csvImporting = false
@@ -35,7 +37,8 @@ struct CSVImportSection: View {
             if let last = lastImport {
                 csvLastImportBlock(result: last)
             }
-            HistoryCheckRow()
+            // Nothing to check until something is imported.
+            if (csvSummary?.count ?? 0) > 0 { HistoryCheckRow() }
 
             Button {
                 csvError = nil
@@ -227,6 +230,8 @@ struct CSVImportSection: View {
                 let result = try await WorkoutCSVImporter.import(url: url)
                 lastImport = result
                 refreshCSVSummary()
+                // Retires the "Past workouts" row in Finish setup.
+                if result.setsInserted > 0 { memoryStore.update { $0.markStated(.history) } }
                 // Also refresh the HK summary in case the importer wrote
                 // cardio rows to imported_workouts (Fitbod cardio path).
                 onImportedWorkoutsChanged()

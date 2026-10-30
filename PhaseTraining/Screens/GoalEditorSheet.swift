@@ -26,7 +26,7 @@ struct GoalEditorSheet: View {
                                     title: goal.label,
                                     subtitle: goal.subtitle,
                                     selected: store.memory.trainingGoal == goal,
-                                    action: { store.update { $0.trainingGoal = goal } },
+                                    action: { store.update { $0.trainingGoal = goal; $0.markStated(.goal) } },
                                     a11yId: "goal-\(goal.rawValue)"
                                 )
                             }

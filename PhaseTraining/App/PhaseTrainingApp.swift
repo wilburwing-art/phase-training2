@@ -647,6 +647,11 @@ struct PhaseTrainingApp: App {
                     // Re-match imported names against the current catalog and
                     // convert a pounds-in-kg-mode era (ImportMaintenance).
                     _ = await Task.detached(priority: .utility) { () -> Int in ImportMaintenance.run() }.value
+                    // Anyone who imported before the "Past workouts" setup row
+                    // existed has already answered it.
+                    if !memory.memory.isStated(.history), (UserDatabase.shared.importedSetsSummary()?.count ?? 0) > 0 {
+                        memory.update { $0.markStated(.history) }
+                    }
                 }
                 .task {
                     // Ski/climb narrowing: route users on an unsupported / no

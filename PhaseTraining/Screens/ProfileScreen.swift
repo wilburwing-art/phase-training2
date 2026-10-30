@@ -68,10 +68,10 @@ struct ProfileScreen: View {
     @State private var presentingBodyWeightLog = false
     @State private var presentingBodyCompositionLog = false
     @State private var presentingPlateCalculator = false
+    @State private var presentingSetupChecklist = false
     #if DEBUG
     @State private var presentingMuscleChipGenerator = false
     @State private var presentingTwinScorecard = false
-    @State private var presentingSetupChecklist = false
     #endif
 
     // Tap-to-edit alert for the two number fields (build 67). Still triggered
@@ -120,16 +120,10 @@ struct ProfileScreen: View {
                         // Leads the group: it's the answer to "what is my plan
                         // actually built on", and on a fresh install most of
                         // these rows are still defaults the user never chose.
-                        // DEBUG-only: it opens presentingSetupChecklist, which
-                        // is a DEBUG-only @State (the sheet ships only in
-                        // DEBUG). Unguarded, Release archives fail to compile
-                        // (build 126's release run died here).
-                        #if DEBUG
                         SettingsRow(label: "Plan setup",
                                     value: setupChecklistSummary,
                                     icon: "checklist",
                                     action: { presentingSetupChecklist = true })
-                        #endif
                         SettingsRow(label: "Sports",
                                     value: sportsSummary,
                                     icon: "figure.run",
@@ -341,10 +335,10 @@ struct ProfileScreen: View {
             PaywallView()
                 .environmentObject(subStore)
         }
-        #if DEBUG
         .sheet(isPresented: $presentingSetupChecklist) {
             SetupChecklistSheet().environmentObject(store)
         }
+        #if DEBUG
         .sheet(isPresented: $presentingMuscleChipGenerator) {
             MuscleChipGeneratorView()
         }
