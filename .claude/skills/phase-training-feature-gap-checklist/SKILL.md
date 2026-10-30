@@ -50,3 +50,7 @@ When synthesizing, lead with the "data layer is way ahead of UI" framing and ord
 ## Why not just feature-gap-audit
 
 Generic `feature-gap-audit` works on a single feature surface ("critique the library screen"). This skill is feature-gap-audit pre-loaded with (a) the right candidate list for lifting apps and (b) the phase-training-family priors about data-layer-ahead-of-UI. Saves a clarifying round and prevents shallow recommendations like "add 1RM!" when 1RM has been shipped for months.
+
+## Check the entry point ships in Release
+
+A screen can exist in code and still be missing on TestFlight. Plan setup (`SetupChecklistSheet`) was reachable only from a `#if DEBUG` Profile row from build 126 (a compile fix put its `@State` beside the dev tools) until build 164. Before classifying something SHIPPED, or routing new work through it, grep the presenting row and its `@State`/`.sheet` for an enclosing `#if DEBUG`, and verify with `xcodebuild build -configuration Release`.

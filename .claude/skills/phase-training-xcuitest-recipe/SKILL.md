@@ -192,3 +192,7 @@ inside a sheet did not resolve as a NavigationBar by that name. When a "tap open
 fails, change the assertion until it fails with the handler stubbed out.
 Also: a Log-screen name lookup must go through `ExerciseLookupCache.exercise(forName:)`
 (aliases, shorthand). `listExercises(search:)` plus an exact name compare misses aliases.
+
+## Week-tab assumption chips need the real gate
+
+`--ui-test-onboarded --ui-test-reset` skips onboarding without committing a plan, so `assumption-chip-*` never appears. Drive welcome, sports, seasons, `onboarding-health-off`, `onboarding-consent-off` instead (`SetupGoalHistoryUITests`, `OnboardingLandingUITests`). Chips sit in a horizontal ScrollView: swipe a visible chip (`assumption-chip-availability`) to bring a later one on screen, because swiping the offscreen chip fails with "visible frame is empty".
