@@ -360,8 +360,23 @@ final class SessionStore: ObservableObject {
             let templateMatchedEx = templatePrev?.exercises.first(where: { $0.id == ex.id })
             let prevEx = templateMatchedEx ?? userDB.mostRecentExerciseByName(ex.name)
 
+            // The weight boxes match the suggestion pill. Never logged here:
+            // the load from proven strength (imports included). Logged at
+            // very different reps (the goal re-bands rows): that load mapped
+            // to today's reps, with today's reps. Otherwise last session's sets.
+            let historyLoad = ex.unit == LoggedExercise.bodyweightUnit ? nil
+                : provenStrength(forExerciseNamed: ex.name).flatMap {
+                    ProgressionSuggestion.fromHistory($0, targetReps: ex.targetReps, unit: ex.unit)?.suggestedWeightString
+                }
+            let lastReps = ProgressionSuggestion.priorPerformance(from: prevEx?.sets ?? [], targetReps: ex.targetReps)?.repsAchieved
+            let repGap = lastReps.map { abs($0 - ex.targetReps) > ProgressionSuggestion.repGapLimit } ?? false
+
             let sets: [LoggedSet] = (0..<ex.targetSets).map { i in
                 let prevSet: LoggedSet? = (prevEx?.sets.indices.contains(i) ?? false) ? prevEx?.sets[i] : nil
+                if let historyLoad, prevEx == nil || repGap {
+                    return LoggedSet(num: i + 1, weight: historyLoad, reps: String(ex.targetReps),
+                                     rpe: "", done: false)
+                }
                 return LoggedSet(
                     num: i + 1,
                     weight: prevSet.map { $0.weight } ?? "",
