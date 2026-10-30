@@ -8,6 +8,7 @@ import SwiftUI
 
 struct HistoryCheckSheet: View {
     let audit: HistoryProfile.Audit
+    var detraining: ProvenStrength.DetrainingRate = .standard
     @Environment(\.dismiss) private var dismiss
 
     private static let date: DateFormatter = {
@@ -53,6 +54,12 @@ struct HistoryCheckSheet: View {
                                 Text("Estimates start lighter after a break and catch up as you log.")
                                     .styled(.body)
                                     .foregroundStyle(Color.ink2)
+                                if let rate = Self.rateLine(detraining) {
+                                    Text(rate)
+                                        .styled(.body)
+                                        .foregroundStyle(Color.ink2)
+                                        .accessibilityIdentifier("history-check-detraining")
+                                }
                                 ForEach(Array(audit.layoffs.enumerated()), id: \.offset) { _, gap in
                                     Text("\(Self.date.string(from: gap.from)) → \(Self.date.string(from: gap.to)) · \(gap.days) days")
                                         .font(.monoXS)
@@ -74,6 +81,15 @@ struct HistoryCheckSheet: View {
             }
         }
         .preferredColorScheme(.dark)
+    }
+
+    /// Nil unless the estimates use the lifter's own rate.
+    static func rateLine(_ d: ProvenStrength.DetrainingRate) -> String? {
+        guard d.isPersonal, let measured = d.measured else { return nil }
+        func pct(_ x: Double) -> String { String(format: "%.1f%%", max(0, x) * 100) }
+        let bound = measured < d.perWeek ? ", the gentlest we allow"
+            : measured > d.perWeek ? ", the steepest we allow" : ""
+        return "In \(d.breaks) past breaks you lost about \(pct(measured)) a week. Estimates use \(pct(d.perWeek))\(bound)."
     }
 
     private var groups: [(exercise: String, flags: [HistoryProfile.Flag])] {
@@ -131,7 +147,7 @@ struct HistoryCheckRow: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("history-check-row")
-        .sheet(isPresented: $showing) { HistoryCheckSheet(audit: audit) }
+        .sheet(isPresented: $showing) { HistoryCheckSheet(audit: audit, detraining: profile.detraining) }
     }
 
     private func summary(_ audit: HistoryProfile.Audit) -> String {

@@ -33,7 +33,7 @@ struct ExerciseStrengthSummary: Equatable {
 
     /// Nil when there is no loaded estimate (new users, bodyweight-only).
     init?(profile p: HistoryProfile.ExerciseProfile, defaultReps: String?,
-          usesImperial: Bool, now: Date) {
+          usesImperial: Bool, now: Date, detraining: ProvenStrength.DetrainingRate = .standard) {
         guard let est = p.estimate, est.weight > 0 else { return nil }
         let unit = usesImperial ? "lb" : "kg"
         func display(_ lb: Double) -> String {
@@ -50,8 +50,9 @@ struct ExerciseStrengthSummary: Equatable {
         basis = "Based on \(over) · latest \(display(l.weightLb)) × \(l.reps) on \(Self.day(l.date, now: now))"
 
         let weeksOff = now.timeIntervalSince(p.lastTrained) / (7 * 86_400)
+        let why = detraining.isPersonal ? ", at your rate from \(detraining.breaks) past breaks" : ""
         layoff = weeksOff > Self.layoffWeeks
-            ? "Lowered for \(Int(weeksOff.rounded())) weeks off. It builds back as you log."
+            ? "Lowered for \(Int(weeksOff.rounded())) weeks off\(why). It builds back as you log."
             : nil
 
         if let reps = defaultReps.flatMap(WorkoutGenerator.repBandMidpoint), reps > 0,

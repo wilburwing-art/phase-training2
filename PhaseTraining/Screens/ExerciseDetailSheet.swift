@@ -67,9 +67,11 @@ private struct ExerciseDetailContent: View {
     /// What the lifter's own history says about this exercise; nil hides the
     /// section (no loaded history yet, or bodyweight only).
     private var strength: ExerciseStrengthSummary? {
-        sessionStore.historyProfile.profile(forExerciseNamed: exercise.name).flatMap {
+        let history = sessionStore.historyProfile
+        return history.profile(forExerciseNamed: exercise.name).flatMap {
             ExerciseStrengthSummary(profile: $0, defaultReps: exercise.defaultReps,
-                                    usesImperial: memoryStore.memory.usesImperial, now: Date())
+                                    usesImperial: memoryStore.memory.usesImperial, now: Date(),
+                                    detraining: history.detraining)
         }
     }
 

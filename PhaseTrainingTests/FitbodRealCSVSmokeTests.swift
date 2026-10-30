@@ -26,6 +26,7 @@ final class FitbodRealCSVSmokeTests: XCTestCase {
             "/Users/wilburpyn/Desktop/Desktop - Wilbur\u{2019}s MacBook Air/WorkoutExport.csv",
             ("~/Downloads/FitBodWorkoutExport.csv" as NSString).expandingTildeInPath,
             "/Users/wilburpyn/Downloads/FitBodWorkoutExport.csv",
+            "/Users/wilburpyn/Downloads/Phase-Training/FitBodWorkoutExport.csv",
         ]
         for path in candidates where !path.isEmpty {
             if FileManager.default.fileExists(atPath: path) {
@@ -234,5 +235,26 @@ final class FitbodRealCSVSmokeTests: XCTestCase {
         XCTAssertFalse(sessions.isEmpty)
         // The 397 lb bench from the kg-mode era is corrected, then the outlier rule holds the rest.
         XCTAssertLessThan(bests.max() ?? 0, 300)
+    }
+
+    /// The personal detraining rate on a real ten-year history: measured
+    /// from its comebacks, and inside the clamp whatever it measures.
+    func testRealExportMeasuresADetrainingRate() throws {
+        guard let url = locateCSV() else {
+            throw XCTSkip("no real Fitbod export on this machine")
+        }
+        let csv = try String(contentsOf: url, encoding: .utf8)
+        let coach = CoachDatabase.shared
+        let parsed = FitbodCSVParser.parse(csv, source: .fitbodCSV) { coach.exerciseId(forImportName: $0) }
+        let (sets, _) = ImportUnitCorrection.apply(parsed.sets)
+        let started = Date()
+        let d = HistoryProfile.build(sessions: [], imported: sets, now: Date()).detraining
+        let note = String(format: "detraining: %d breaks, %d pairs, measured %.4f, used %.4f, personal %@ (profile %.3f s)",
+                          d.breaks, d.pairs, d.measured ?? -1, d.perWeek, d.isPersonal ? "yes" : "no",
+                          Date().timeIntervalSince(started))
+        print(note)
+        add(XCTAttachment(string: note))
+        XCTAssertTrue(ProvenStrength.DetrainingRate.range.contains(d.perWeek) || d.perWeek == ProvenStrength.discountPerWeek)
+        XCTAssertGreaterThan(d.pairs, 0, "a ten-year history with breaks should yield comeback pairs")
     }
 }

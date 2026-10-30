@@ -103,6 +103,8 @@ struct HistoryProfile: Equatable {
     /// Keyed like every per-exercise map (`ExerciseKey`).
     let exercises: [String: ExerciseProfile]
     let audit: Audit
+    /// The weekly discount every estimate here used.
+    var detraining: ProvenStrength.DetrainingRate = .standard
 
     static let empty = HistoryProfile(exercises: [:], audit: Audit(flags: [], layoffs: []))
 
@@ -130,6 +132,14 @@ struct HistoryProfile: Equatable {
     static let plateauWorkouts = 6
     static let stepWindowDays = 730.0
     static let stepMinJumps = 3
+    /// Comeback measurement: the workouts before a break count within this
+    /// many days of it, and the return is the best workout this many days
+    /// after (the first session back is often light on purpose).
+    static let comebackBeforeDays = 56.0
+    static let comebackReturnDays = 14.0
+    /// A return outside this ratio of the pre-break level is a unit or name
+    /// mixup, not detraining.
+    static let comebackRatioRange = 0.4...1.6
 
     // MARK: - Build
 
@@ -176,9 +186,18 @@ struct HistoryProfile: Equatable {
         let excludedByKey = Dictionary(grouping: entries.filter { flagged.contains($0.id) }, by: \.key)
             .mapValues(\.count)
 
+        let dates = workoutDates.sorted()
+        let layoffs = zip(dates, dates.dropFirst()).compactMap { a, b -> Layoff? in
+            b.timeIntervalSince(a) / 86_400 > layoffDays ? Layoff(from: a, to: b) : nil
+        }
+        let byKey = Dictionary(grouping: clean, by: \.key)
+        let detraining = detrainingRate(byKey.values.map { $0.map { ($0.date, $0.weightLb, $0.reps) } },
+                                        layoffs: layoffs)
+
         var exercises: [String: ExerciseProfile] = [:]
-        for (key, rows) in Dictionary(grouping: clean, by: \.key) {
-            guard let p = profile(rows, excluded: excludedByKey[key] ?? 0, now: now) else { continue }
+        for (key, rows) in byKey {
+            guard let p = profile(rows, excluded: excludedByKey[key] ?? 0, now: now,
+                                  perWeek: detraining.perWeek) else { continue }
             if key.hasPrefix("id:") {
                 exercises[key] = p
                 if rawNames[key] == nil {
@@ -190,12 +209,38 @@ struct HistoryProfile: Equatable {
             for raw in rawNames[key] ?? [] { exercises[raw] = p }
         }
 
-        let dates = workoutDates.sorted()
-        let layoffs = zip(dates, dates.dropFirst()).compactMap { a, b -> Layoff? in
-            b.timeIntervalSince(a) / 86_400 > layoffDays ? Layoff(from: a, to: b) : nil
-        }
         return HistoryProfile(exercises: exercises,
-                              audit: Audit(flags: flags.sorted { $0.date > $1.date }, layoffs: layoffs))
+                              audit: Audit(flags: flags.sorted { $0.date > $1.date }, layoffs: layoffs),
+                              detraining: detraining)
+    }
+
+    /// One pair per (break, exercise) trained on both sides of it: the median
+    /// session-best e1RM of up to 3 workouts in the 8 weeks before, against
+    /// the best in the 2 weeks after, as loss per week past the grace period.
+    static func detrainingRate(_ exercises: [[(date: Date, weightLb: Double, reps: Int)]],
+                               layoffs: [Layoff]) -> ProvenStrength.DetrainingRate {
+        var rates: [Double] = []
+        var breaksWithPairs: Set<Date> = []
+        for rows in exercises {
+            let bests = Dictionary(grouping: rows.filter { ProvenStrength.repRange.contains($0.reps) }, by: \.date)
+                .mapValues { $0.map { StrengthStandards.epley1RM(weight: $0.weightLb, reps: $0.reps) }.max()! }
+            let dates = bests.keys.sorted()
+            for gap in layoffs {
+                let before = dates.filter {
+                    $0 <= gap.from && gap.from.timeIntervalSince($0) / 86_400 <= comebackBeforeDays
+                }.suffix(3).map { bests[$0]! }
+                let after = dates.filter {
+                    $0 >= gap.to && $0.timeIntervalSince(gap.to) / 86_400 <= comebackReturnDays
+                }.map { bests[$0]! }
+                guard before.count >= 2, let back = after.max(), let pre = median(Array(before)), pre > 0 else { continue }
+                let ratio = back / pre
+                guard comebackRatioRange.contains(ratio) else { continue }
+                let weeksPastGrace = max(1, gap.to.timeIntervalSince(gap.from) / (7 * 86_400) - ProvenStrength.graceWeeks)
+                rates.append((1 - ratio) / weeksPastGrace)
+                breaksWithPairs.insert(gap.from)
+            }
+        }
+        return .from(pairRates: rates, breaks: breaksWithPairs.count)
     }
 
     // MARK: - Cleaning
@@ -254,10 +299,10 @@ struct HistoryProfile: Equatable {
 
     // MARK: - Per exercise
 
-    private static func profile(_ rows: [Entry], excluded: Int, now: Date) -> ExerciseProfile? {
+    private static func profile(_ rows: [Entry], excluded: Int, now: Date, perWeek: Double) -> ExerciseProfile? {
         guard let last = rows.map(\.date).max() else { return nil }
         let estimate = ProvenStrength.estimate(rows.map { .init(date: $0.date, weightLb: $0.weightLb, reps: $0.reps) },
-                                               now: now)
+                                               now: now, perWeek: perWeek)
 
         // Session-best estimated 1RM, oldest first.
         let bests = Dictionary(grouping: rows.filter { ProvenStrength.repRange.contains($0.reps) }, by: \.date)
