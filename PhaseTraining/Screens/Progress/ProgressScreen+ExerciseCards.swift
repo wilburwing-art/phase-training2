@@ -32,23 +32,59 @@ extension ProgressScreen {
             )
         }
         return AnyView(
-            TileList(label: "TOP EXERCISES", count: series.count) {
-                ForEach(series, id: \.name) { s in
-                    ExerciseTile(
-                        vm: .init(
-                            leading: .none,
-                            title: s.name,
-                            meta: "\(formatBigNum(s.latest)) \(s.unit)\(prDateSuffix(s.lastPRDate))",
-                            trailing: .sparkline(
-                                points: normalizedPoints(s.points),
-                                pr: isWithin14Days(s.lastPRDate)
+            VStack(alignment: .leading, spacing: 8) {
+                TileList(label: "TOP EXERCISES", count: series.count) {
+                    ForEach(series, id: \.name) { s in
+                        // A tap opens the exercise's detail sheet, where the
+                        // Your strength card lives.
+                        Button {
+                            liftDetail = ExerciseLookupCache.shared.exercise(forName: s.name)
+                        } label: {
+                            ExerciseTile(
+                                vm: .init(
+                                    leading: .none,
+                                    title: s.name,
+                                    meta: "\(formatBigNum(s.latest)) \(s.unit)\(estimateSuffix(s.name))\(prDateSuffix(s.lastPRDate))",
+                                    trailing: .sparkline(
+                                        points: normalizedPoints(s.points),
+                                        pr: isWithin14Days(s.lastPRDate)
+                                    )
+                                ),
+                                density: .flat
                             )
-                        ),
-                        density: .flat
-                    )
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("progress-top-exercise-\(s.name)")
+                    }
                 }
+                Button {
+                    showingAllLifts = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("See all lifts")
+                            .styled(.micro)
+                            .foregroundStyle(Color.accent)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(Color.accent)
+                    }
+                }
+                .buttonStyle(.plain)
+                .padding(.leading, 14)
+                .accessibilityIdentifier("progress-see-all-lifts")
             }
         )
+    }
+
+    /// " · est max 246 lbs" from the history profile, matching the Your
+    /// strength card; empty when the profile has no estimate.
+    private func estimateSuffix(_ name: String) -> String {
+        guard let p = store.historyProfile.profile(forExerciseNamed: name),
+              let summary = ExerciseStrengthSummary(profile: p, defaultReps: nil,
+                                                    usesImperial: memoryStore.memory.usesImperial, now: Date())
+        else { return "" }
+        return " · est max \(summary.estimate)"
     }
 
     /// Convert per-session SparkPoints (date, weight) to a normalized 0..1

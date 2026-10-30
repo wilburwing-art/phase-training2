@@ -51,6 +51,9 @@ struct ProgressScreen: View {
     /// Build 92: history surfaced from here via "See all sessions" on the
     /// Recent Sessions card. Previously lived as a tab off the Today screen.
     @State var showingHistory = false
+    /// Your lifts: the exercise a TOP EXERCISES row opens, and the full list.
+    @State var liftDetail: Exercise?
+    @State var showingAllLifts = false
 
     // Sheet toggles for the body-weight / body-composition trend cards
     // (ProgressScreen+BodyCards.swift). Stored properties can't live in an
@@ -183,6 +186,13 @@ struct ProgressScreen: View {
         }
         .sheet(isPresented: $showingHistory) {
             HistoryScreen()
+                .environmentObject(store)
+        }
+        .sheet(item: $liftDetail) { ex in
+            ExerciseDetailSheet(exercise: ex)
+        }
+        .sheet(isPresented: $showingAllLifts) {
+            YourLiftsSheet()
                 .environmentObject(store)
         }
     }
