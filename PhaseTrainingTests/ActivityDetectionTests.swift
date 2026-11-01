@@ -367,7 +367,11 @@ final class ActivityDetectionStoreTests: XCTestCase {
         // survive to double-log the day.
         let suite = "ActivityDetectionStoreTests.sameDay"
         let defaults = freshDefaults(suite)
-        let day = Date().addingTimeInterval(-86_400)
+        // 10:00 yesterday, so the +1h second workout stays on the same
+        // calendar day whatever time CI runs (23:32 UTC split it once).
+        let cal = Calendar.current
+        let day = cal.date(byAdding: .hour, value: 10,
+                           to: cal.date(byAdding: .day, value: -1, to: cal.startOfDay(for: Date()))!)!
 
         let fake = FakeStore()
         fake.workoutsResult = .success([
@@ -392,7 +396,11 @@ final class ActivityDetectionStoreTests: XCTestCase {
         // the other candidate might be the one that's real.
         let suite = "ActivityDetectionStoreTests.dismissKeeps"
         let defaults = freshDefaults(suite)
-        let day = Date().addingTimeInterval(-86_400)
+        // 10:00 yesterday, so the +1h second workout stays on the same
+        // calendar day whatever time CI runs (23:32 UTC split it once).
+        let cal = Calendar.current
+        let day = cal.date(byAdding: .hour, value: 10,
+                           to: cal.date(byAdding: .day, value: -1, to: cal.startOfDay(for: Date()))!)!
 
         let fake = FakeStore()
         fake.workoutsResult = .success([
