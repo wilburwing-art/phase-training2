@@ -107,3 +107,20 @@ fill and "most recent session top set" in `priorBest`. It also backs the Log/Tod
 imported-only exercises. `importedSetsLifetimePeaks()` is deleted. `ImportMaintenance` re-applies
 names and units to stored imports at launch.
 
+
+## Recheck 2026-10-31 (after builds 162-166)
+
+- **Post-workout difficulty IS consumed by the planner**, and that is easy to miss
+  because the table above lists only coach context for feedback:
+  `Planner.applyRecentSignalBias` (`Data/Planner.swift:236`, called at :61) drops one
+  lift day after 2+ "too_hard" in 7 days (or 3+ hard sport days) and adds one after
+  2+ "too_easy". A gap pass on 2026-10-30 proposed "ease volume after hard days" as
+  new work; it was already shipped at day grain. Grep this before proposing any
+  fatigue-driven volume change.
+- **Captured and read by nothing that changes a plan or a suggestion:** logged RIR
+  (`LogScreen.swift:530` writes it, no reader), logged RPE (not read by
+  `ProgressionSuggestion` or `HistoryProfile`), imported Hevy RPE in `imported_sets`,
+  post-workout `hurtAreas` (only the parked `GeneratorContext.recentSoreAreas`;
+  check-in soreness is the live path), session feel and mood (coach and display).
+- New signals from 162-166 are all consumed: imported history, `import_name_map`,
+  `trainingGoal`, and the personal detraining rate (`HistoryProfile.detraining`).
