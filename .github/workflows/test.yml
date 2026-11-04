@@ -83,7 +83,9 @@ jobs:
     # 45, not 20: every run since #307 (2026-08-27) was killed at exactly
     # the 20-minute mark mid-UI-suite — the suite has outgrown the old
     # budget on these runners, so CI could never reach a verdict.
-    timeout-minutes: 45
+    # 60, not 45: build 166 took 42 minutes, and build 167's seven new UI
+    # test files pushed it to the 45-minute cutoff with tests still running.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
 

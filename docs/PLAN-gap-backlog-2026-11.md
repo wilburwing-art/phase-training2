@@ -59,8 +59,10 @@ Found while planning: logged RIR was never saved (`session_sets` had no column).
 ## Phase 6: ski lead (one build each, in order)
 
 - [x] **Ski discipline picker (about half a day).** Inbounds / backcountry / skimo / park in the onboarding season step and Profile; ski-mountaineering defaults to skimo. UI over an engine that already exists.
-- [ ] **Pre-season ski test (about 1 day).** A benchmark battery (wall-sit time, single-leg balance, lateral bounds, broad jump) with a Progress "SKI READINESS" card, mirroring the max-hang test.
-- [ ] **Ski days from Apple Watch (about 1 day).** This season's ski days from detected ski workouts, plus vertical if Health stores it (unverified), as a Progress card.
+- [x] **Pre-season ski test (about 1 day).** A benchmark battery (wall-sit time, single-leg balance, lateral bounds, broad jump) with a Progress "SKI READINESS" card, mirroring the max-hang test.
+- [x] **Ski days from Apple Watch (about 1 day).** This season's ski days from detected ski workouts, plus vertical if Health stores it (unverified), as a Progress card.
+
+Phase 6 shipped in build 167 (2026-11-04). Vertical reads `HKMetadataKeyElevationDescended`; unconfirmed until a real watch ski day.
 
 Not picked: snowpack-aware season start from snow-almanac. It needs a server, and the app has none by its privacy stance.
 
