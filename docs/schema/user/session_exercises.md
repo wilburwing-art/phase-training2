@@ -16,7 +16,7 @@ CREATE TABLE session_exercises (
               target_sets           INTEGER NOT NULL,
               target_reps           INTEGER NOT NULL,
               rest                  INTEGER NOT NULL,
-              prev_sets_json        TEXT,
+              prev_sets_json        TEXT, note TEXT,
               PRIMARY KEY (session_start, position),
               FOREIGN KEY (session_start) REFERENCES sessions(start_time) ON DELETE CASCADE
             )
@@ -38,6 +38,7 @@ CREATE TABLE session_exercises (
 | target_reps          | INTEGER |         | false    |                                 |                         |         |
 | rest                 | INTEGER |         | false    |                                 |                         |         |
 | prev_sets_json       | TEXT    |         | true     |                                 |                         |         |
+| note                 | TEXT    |         | true     |                                 |                         |         |
 
 ## Constraints
 
@@ -74,6 +75,7 @@ erDiagram
   INTEGER target_reps
   INTEGER rest
   TEXT prev_sets_json
+  TEXT note
 }
 "sessions" {
   INTEGER start_time
@@ -95,6 +97,7 @@ erDiagram
   TEXT rpe
   INTEGER done
   INTEGER is_warmup
+  TEXT rir
 }
 ```
 

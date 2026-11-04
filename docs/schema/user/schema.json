@@ -306,6 +306,11 @@
           "name": "prev_sets_json",
           "type": "TEXT",
           "nullable": true
+        },
+        {
+          "name": "note",
+          "type": "TEXT",
+          "nullable": true
         }
       ],
       "indexes": [
@@ -371,7 +376,7 @@
           ]
         }
       ],
-      "def": "CREATE TABLE session_exercises (\n              session_start         INTEGER NOT NULL,\n              position              INTEGER NOT NULL,\n              exercise_template_id  TEXT NOT NULL,\n              name                  TEXT NOT NULL,\n              type                  TEXT,\n              unit                  TEXT NOT NULL,\n              target_sets           INTEGER NOT NULL,\n              target_reps           INTEGER NOT NULL,\n              rest                  INTEGER NOT NULL,\n              prev_sets_json        TEXT,\n              PRIMARY KEY (session_start, position),\n              FOREIGN KEY (session_start) REFERENCES sessions(start_time) ON DELETE CASCADE\n            )"
+      "def": "CREATE TABLE session_exercises (\n              session_start         INTEGER NOT NULL,\n              position              INTEGER NOT NULL,\n              exercise_template_id  TEXT NOT NULL,\n              name                  TEXT NOT NULL,\n              type                  TEXT,\n              unit                  TEXT NOT NULL,\n              target_sets           INTEGER NOT NULL,\n              target_reps           INTEGER NOT NULL,\n              rest                  INTEGER NOT NULL,\n              prev_sets_json        TEXT, note TEXT,\n              PRIMARY KEY (session_start, position),\n              FOREIGN KEY (session_start) REFERENCES sessions(start_time) ON DELETE CASCADE\n            )"
     },
     {
       "name": "session_sets",
@@ -417,6 +422,12 @@
           "type": "INTEGER",
           "nullable": false,
           "default": "0"
+        },
+        {
+          "name": "rir",
+          "type": "TEXT",
+          "nullable": false,
+          "default": "''"
         }
       ],
       "indexes": [
@@ -486,7 +497,7 @@
           ]
         }
       ],
-      "def": "CREATE TABLE session_sets (\n              session_start      INTEGER NOT NULL,\n              exercise_position  INTEGER NOT NULL,\n              num                INTEGER NOT NULL,\n              weight             TEXT NOT NULL,\n              reps               TEXT NOT NULL,\n              rpe                TEXT NOT NULL,\n              done               INTEGER NOT NULL,\n              is_warmup          INTEGER NOT NULL DEFAULT 0,\n              PRIMARY KEY (session_start, exercise_position, num),\n              FOREIGN KEY (session_start, exercise_position)\n                REFERENCES session_exercises(session_start, position) ON DELETE CASCADE\n            )"
+      "def": "CREATE TABLE session_sets (\n              session_start      INTEGER NOT NULL,\n              exercise_position  INTEGER NOT NULL,\n              num                INTEGER NOT NULL,\n              weight             TEXT NOT NULL,\n              reps               TEXT NOT NULL,\n              rpe                TEXT NOT NULL,\n              done               INTEGER NOT NULL,\n              is_warmup          INTEGER NOT NULL DEFAULT 0, rir TEXT NOT NULL DEFAULT '',\n              PRIMARY KEY (session_start, exercise_position, num),\n              FOREIGN KEY (session_start, exercise_position)\n                REFERENCES session_exercises(session_start, position) ON DELETE CASCADE\n            )"
     },
     {
       "name": "imported_workouts",
@@ -642,6 +653,11 @@
           "name": "imported_at",
           "type": "INTEGER",
           "nullable": false
+        },
+        {
+          "name": "note",
+          "type": "TEXT",
+          "nullable": true
         }
       ],
       "indexes": [
@@ -699,7 +715,7 @@
           ]
         }
       ],
-      "def": "CREATE TABLE imported_sets (\n              id                   TEXT PRIMARY KEY,\n              source               TEXT NOT NULL,\n              exercise_id          INTEGER,\n              exercise_name_raw    TEXT NOT NULL,\n              performed_at         INTEGER NOT NULL,\n              set_num              INTEGER NOT NULL,\n              weight               REAL,\n              reps                 INTEGER,\n              rir                  REAL,\n              rpe                  REAL,\n              imported_at          INTEGER NOT NULL\n            )"
+      "def": "CREATE TABLE imported_sets (\n              id                   TEXT PRIMARY KEY,\n              source               TEXT NOT NULL,\n              exercise_id          INTEGER,\n              exercise_name_raw    TEXT NOT NULL,\n              performed_at         INTEGER NOT NULL,\n              set_num              INTEGER NOT NULL,\n              weight               REAL,\n              reps                 INTEGER,\n              rir                  REAL,\n              rpe                  REAL,\n              imported_at          INTEGER NOT NULL\n            , note TEXT)"
     },
     {
       "name": "explore_sessions",

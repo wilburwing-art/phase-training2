@@ -105,3 +105,18 @@ sites argument by argument before reading the SQL; the SQL was fine. Any
 `Bool?` filter parameter needs `nil` at a "cleared" call site, and
 `CoachDatabaseSearchTests.test_librarySearch_findsCompoundLifts` now pins the
 Library's exact call shape.
+
+## Machine brands strip and filter, they do not rewrite (build 167)
+
+Searching "hammer strength row" should find the machine rows. Rewriting the
+brand to the token "machine" found only "Machine Chest Press": the catalog
+names machines in both orders ("Machine Chest Press", "Iso-Lateral Row
+(Machine)"), and the rewritten token lands in the wrong slot for half of
+them. What works (`ExerciseSearchVocabulary.stripMachineBrand` +
+`CoachDatabase.searchExercises`): remove the brand token sequence, then add
+`name LIKE '%machine%' AND NOT LIKE '%smith%'` and apply the same filter to
+the fuzzy fallback candidates. Match brands as whole sequences so "hammer"
+alone still finds Hammer Curl and "star jump" is not Star Trac. Before
+adding a single-word brand, count catalog names containing it (all 14 added
+were 0). Leave cable-first brands (Freemotion, Keiser) out: their rows are
+"Cable ...", which the machines-only filter hides.

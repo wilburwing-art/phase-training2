@@ -54,3 +54,15 @@ Generic `feature-gap-audit` works on a single feature surface ("critique the lib
 ## Check the entry point ships in Release
 
 A screen can exist in code and still be missing on TestFlight. Plan setup (`SetupChecklistSheet`) was reachable only from a `#if DEBUG` Profile row from build 126 (a compile fix put its `@State` beside the dev tools) until build 164. Before classifying something SHIPPED, or routing new work through it, grep the presenting row and its `@State`/`.sheet` for an enclosing `#if DEBUG`, and verify with `xcodebuild build -configuration Release`.
+
+## Recheck 2026-11-01: grep for "until the ... UI lands"
+
+The same data-ahead-of-UI pattern, found in the ski scoping: `SportVariant`
+has backcountry, skimo and park with real demand deltas
+(`PhaseRule.applyingVariantOverride`), but `SportSeasonGenerator.defaultVariant`
+returns `.inbounds` for every skier, and `AthleteState.swift:130` still says
+"defaults to `.inbounds` until the M4 variant UI lands". It never landed, so
+three disciplines were unreachable. Also: timed prescriptions ("8s hold")
+reached Log as rep counts until build 167 carried `repsLabel`. Before
+scoping a sport, grep `until the .* lands|defaults to .* until` and list
+every enum case with no UI path to set it.

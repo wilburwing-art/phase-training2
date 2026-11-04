@@ -236,7 +236,7 @@ The working prototype (`Prototype.html` + `proto/` folder) is a fully functional
 | `lineSoft` | `#1F2229` | Subtle dividers |
 | `ink` | `#F5F5F0` | Primary text |
 | `ink2` | `#B5B7BD` | Secondary text |
-| `ink3` | `#7A7D85` | Tertiary text, labels |
+| `ink3` | `#83868E` | Tertiary text, labels |
 | `accent` | `#D4FF3D` | Primary accent (electric lime) |
 | `accentInk` | `#0A0B0D` | Text on accent backgrounds |
 | `accentDim` | `#8FA82A` | Dimmed accent (rest time labels) |

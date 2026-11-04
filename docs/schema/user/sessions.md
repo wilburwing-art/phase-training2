@@ -78,6 +78,7 @@ erDiagram
   INTEGER target_reps
   INTEGER rest
   TEXT prev_sets_json
+  TEXT note
 }
 ```
 

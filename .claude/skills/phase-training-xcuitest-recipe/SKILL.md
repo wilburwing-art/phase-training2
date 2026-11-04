@@ -196,3 +196,32 @@ Also: a Log-screen name lookup must go through `ExerciseLookupCache.exercise(for
 ## Week-tab assumption chips need the real gate
 
 `--ui-test-onboarded --ui-test-reset` skips onboarding without committing a plan, so `assumption-chip-*` never appears. Drive welcome, sports, seasons, `onboarding-health-off`, `onboarding-consent-off` instead (`SetupGoalHistoryUITests`, `OnboardingLandingUITests`). Chips sit in a horizontal ScrollView: swipe a visible chip (`assumption-chip-availability`) to bring a later one on screen, because swiping the offscreen chip fails with "visible frame is empty".
+
+## Context menus in Log (long-press an exercise or a set)
+
+Three traps, all hit 2026-11-01:
+- **A tap on a menu item while the menu is still animating in is dropped.**
+  `testDeleteSetRenumbers` tapped "Delete set" straight after
+  `press(forDuration:)`; the delete sometimes never happened and the next
+  assertion passed anyway, because untouched set 2 also reads "2". Wait for
+  the item's `isHittable` before tapping, and assert something the no-op
+  case cannot satisfy.
+- **An open menu covers the rows around it, and no coordinate tap reliably
+  closes it.** Adding one item made the menu tall enough to cover the next
+  exercise header ("Not hittable"). Order the test so the menu you leave
+  open is the last thing it does, or close it through an action (open a
+  sheet, then Done).
+- **Text inside a `Button` label is merged into the button.** An
+  `accessibilityIdentifier` on a child `Text` cannot be queried as a
+  `staticTexts` element; put the id on the Button and read its `label`.
+
+## A number pad hides the next field (SkiReadinessTestSheet, build 167)
+
+"Failed to synthesize event: Neither element nor any descendant has keyboard
+focus" on the SECOND numeric field of a sheet means the tap landed on the
+number pad covering it: `.numberPad`/`.decimalPad` have no return key, so
+the first field's keyboard never leaves. Real users are stuck the same way,
+so fix the app rather than the test: a shared `@FocusState`, a
+`ToolbarItemGroup(placement: .keyboard)` Done button with its own id, and
+`.scrollDismissesKeyboard(.interactively)` on the ScrollView. The test taps
+`<sheet>-keyboard-done` between fields.

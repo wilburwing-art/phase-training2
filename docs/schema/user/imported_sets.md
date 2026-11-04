@@ -20,7 +20,7 @@ CREATE TABLE imported_sets (
               rir                  REAL,
               rpe                  REAL,
               imported_at          INTEGER NOT NULL
-            )
+            , note TEXT)
 ```
 
 </details>
@@ -40,6 +40,7 @@ CREATE TABLE imported_sets (
 | rir               | REAL    |         | true     |          |                                                                   |
 | rpe               | REAL    |         | true     |          |                                                                   |
 | imported_at       | INTEGER |         | false    |          |                                                                   |
+| note              | TEXT    |         | true     |          |                                                                   |
 
 ## Constraints
 
@@ -75,6 +76,7 @@ erDiagram
   REAL rir
   REAL rpe
   INTEGER imported_at
+  TEXT note
 }
 ```
 
