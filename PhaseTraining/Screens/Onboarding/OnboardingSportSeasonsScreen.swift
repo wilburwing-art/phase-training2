@@ -36,6 +36,15 @@ struct OnboardingSportSeasonsScreen: View {
                 goalSection
                 if showSupport {
                     Divider().background(Color.lineSoft)
+                    // Pre-selected with the sport's default, so leaving it
+                    // costs no tap.
+                    VStack(alignment: .leading, spacing: 10) {
+                        OnboardingSectionLabel(text: "How do you ski?")
+                        SkiDisciplinePicker(selection: draft.primaryVariant,
+                                            onPick: { draft.skiDiscipline = $0 },
+                                            idPrefix: "onboarding-discipline")
+                    }
+                    Divider().background(Color.lineSoft)
                     supportSection
                 }
             }

@@ -69,10 +69,10 @@ struct CoachSettingsRow: View {
 
     private var subtitle: String {
         if consentGranted {
-            return "On — chat reaches Claude via our proxy"
+            return "On. Chat reaches Claude via our proxy"
         }
-        return proSatisfied ? "Off — nothing leaves your phone"
-                            : "Off — requires Pro"
+        return proSatisfied ? "Off. Nothing leaves your phone"
+                            : "Off. Requires Pro"
     }
 
     /// Consent is on but the subscription isn't — coach surfaces are dark

@@ -121,7 +121,7 @@ enum SupportScheduler {
 
             if free.isEmpty && supportSet.contains(day) {
                 let (w, note) = lighten(workouts[idx],
-                    reason: "shares \(day.short) with a support day — no free day left")
+                    reason: "shares \(day.short) with a support day and no free day is left")
                 workouts[idx] = w
                 adjustments[idx].append(note)
             }
@@ -176,7 +176,7 @@ enum SupportScheduler {
                 .max(by: { sessionLoad(workouts[$0]) < sessionLoad(workouts[$1]) })
             else { break }
             let (w, note) = lighten(workouts[idx],
-                reason: "combined weekly load — \(pattern.sportSlug) is carrying \(String(format: "%.1f", equivalents)) session-equivalents")
+                reason: "combined weekly load: \(pattern.sportSlug) is carrying \(String(format: "%.1f", equivalents)) session-equivalents")
             workouts[idx] = w
             adjustments[idx].append(note)
         }
@@ -281,7 +281,7 @@ enum SupportScheduler {
                 .max(by: { sessionLoad(workouts[$0]) < sessionLoad(workouts[$1]) })
             else { break }                                     // every session at floor
             let (w, note) = lighten(workouts[idx],
-                reason: "combined weekly load — support sport is carrying \(String(format: "%.1f", equivalents)) session-equivalents")
+                reason: "combined weekly load: support sport is carrying \(String(format: "%.1f", equivalents)) session-equivalents")
             workouts[idx] = w
             notes.append("\(w.title): \(note)")
         }
@@ -303,7 +303,7 @@ enum SupportScheduler {
             $0 + Int(ceil(Double($1.sets) * (Double($1.restSeconds) + 40) / 60))
         }
         out.summary = "\(out.exercises.count) movements · ~\(out.estimatedMinutes) min"
-        return (out, "dropped \(dropped.name) — \(reason)")
+        return (out, "dropped \(dropped.name): \(reason)")
     }
 
     // MARK: - No-pattern spread

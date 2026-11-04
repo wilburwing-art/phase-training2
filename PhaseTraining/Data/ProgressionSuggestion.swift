@@ -17,6 +17,9 @@
 //   · Missed reps by 1            → hold weight
 //   · Missed reps by 2+           → drop a small notch (one band down)
 //   · No prior data               → hold (no suggestion, generator default)
+//   · Logged effort on a hit (2026-11, from RIR, or 10 minus RPE):
+//        3+ in reserve → a bigger jump (double the step, capped)
+//        0 in reserve  → hold: the reps came at failure
 //
 // The output is metric-agnostic: callers pass a `unit` string ("lb" / "kg")
 // and we return the suggestion in the same unit. The bump table is hard-
@@ -44,7 +47,12 @@ enum ProgressionSuggestion {
         let weight: Double
         let repsAchieved: Int
         let targetReps: Int
+        /// Reps in reserve on that set, when the lifter logged RIR or RPE.
+        var rir: Double? = nil
     }
+
+    /// At or above this many reps in reserve, a hit earns the bigger jump.
+    static let easyRIR = 3.0
 
     /// What to render on the exercise tile.
     struct Result: Equatable {
@@ -79,16 +87,17 @@ enum ProgressionSuggestion {
     static func priorPerformance(from prevSets: [LoggedSet], targetReps: Int) -> PriorPerformance? {
         let working = prevSets
             .filter { $0.done && !$0.isWarmup }
-            .compactMap { set -> (weight: Double, reps: Int)? in
+            .compactMap { set -> (weight: Double, reps: Int, rir: Double?)? in
                 guard let w = set.weightValue, w > 0,
                       let r = set.repsValue, r > 0 else { return nil }
-                return (w, r)
+                return (w, r, set.effortRIR)
             }
         guard !working.isEmpty else { return nil }
         let metTarget = working.filter { $0.reps >= targetReps }
         let chosen = metTarget.max(by: { $0.weight < $1.weight })
             ?? working.max(by: { $0.weight < $1.weight })!
-        return PriorPerformance(weight: chosen.weight, repsAchieved: chosen.reps, targetReps: targetReps)
+        return PriorPerformance(weight: chosen.weight, repsAchieved: chosen.reps, targetReps: targetReps,
+                                rir: chosen.rir)
     }
 
     /// One-shot convenience: extract the prior top-set from a session's logged
@@ -229,6 +238,32 @@ enum ProgressionSuggestion {
         let compound = isCompound(name: exerciseName)
         let bump = stepOverride ?? bumpFor(unit: unit, compound: compound)
         let missed = prior.targetReps - prior.repsAchieved
+
+        // Effort only moves a hit. A miss already holds or backs off.
+        if missed <= 0, let rir = prior.rir {
+            if rir <= 0 {
+                return Result(
+                    suggestedWeight: prior.weight,
+                    delta: 0,
+                    label: "hold",
+                    rationale: "Hit reps at failure last time. Hold and own them."
+                )
+            }
+            if rir >= easyRIR {
+                // Same ceiling personalStep uses, so a sparse history or a
+                // light lift cannot turn "easy" into a reckless jump.
+                let table = bumpFor(unit: unit, compound: compound)
+                let big = min(bump * 2, max(2 * table, prior.weight * 0.10))
+                if big > bump {
+                    return Result(
+                        suggestedWeight: prior.weight + big,
+                        delta: big,
+                        label: signedLabel(big),
+                        rationale: "Hit reps with \(Int(rir)) in reserve. Bigger jump: \(formatBump(big, unit: unit))."
+                    )
+                }
+            }
+        }
 
         switch missed {
         case ..<0:  // beat reps — still bump (could go bigger, but keep linear)

@@ -402,8 +402,8 @@ struct CustomRoutineEditSheet: View {
 
     private static func fieldBoundHint(for label: String) -> String? {
         switch label {
-        case setsFieldLabel: return "1–99"
-        case repsFieldLabel: return "1–50"
+        case setsFieldLabel: return "1-99"
+        case repsFieldLabel: return "1-50"
         default: return nil
         }
     }

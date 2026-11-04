@@ -79,7 +79,8 @@ extension BundledRoutineRow {
                     targetSets: rex.sets ?? 3,
                     targetReps: parseRepsLeading(rex.reps) ?? 8,
                     rest: parseRestSeconds(rex.rest) ?? 90,
-                    supersetGroup: rex.supersetGroup
+                    supersetGroup: rex.supersetGroup,
+                    repsLabel: rex.reps
                 )
             }
         )

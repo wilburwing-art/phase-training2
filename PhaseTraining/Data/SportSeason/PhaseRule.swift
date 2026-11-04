@@ -162,7 +162,7 @@ struct PhaseRule: Equatable {
         // eventPrep = pre-season emphasis, tapered: same demand mix, volume cap
         // dropped hard, progression holds — MesocycleProgression peaks it.
         .eventPrep: PhaseRule(
-            objective: "Taper to the objective — keep sharp qualities, shed fatigue",
+            objective: "Taper to the objective: keep sharp qualities, shed fatigue",
             sessionsPerWeek: 3...3,
             demandWeights: [
                 .maxStrength: 0.15, .eccentricLeg: 0.30, .legEndurance: 0.20,
@@ -257,7 +257,7 @@ struct PhaseRule: Equatable {
         // eventPrep = sharp qualities present but low-volume; antagonist carries
         // the health load while projecting (the owner's prescribed column).
         .eventPrep: PhaseRule(
-            objective: "Taper to the send — sharp qualities low-volume, stay healthy",
+            objective: "Taper to the send: sharp qualities at low volume, stay healthy",
             sessionsPerWeek: 2...2,
             demandWeights: [
                 .fingerStrength: 0.20, .contactStrength: 0.10, .pullStrength: 0.10,

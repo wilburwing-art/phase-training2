@@ -26,11 +26,11 @@ struct CoachPolishedExplanationSheet: View {
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(Color.accent)
                 Text("Personalized by your coach")
-                    .font(.system(size: 18, weight: .bold))
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 18))
             }
 
             Text("Your coach reshaped today's workout based on recent sessions, soreness, and goals. The shape of your week (push / pull / legs and rest days) is unchanged. Only this day's exercise picks, sets, RPE, or weights are different from the deterministic default.")
-                .font(.system(size: 14))
+                .font(.scaled("Inter-Regular", size: 14))
                 .foregroundStyle(Color.ink2)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -40,7 +40,7 @@ struct CoachPolishedExplanationSheet: View {
                         .styled(.micro)
                         .foregroundStyle(Color.ink3)
                     Text(provenance)
-                        .font(.system(size: 14))
+                        .font(.scaled("Inter-Regular", size: 14))
                         .foregroundStyle(Color.ink)
                 }
             }
@@ -51,13 +51,13 @@ struct CoachPolishedExplanationSheet: View {
                         .styled(.micro)
                         .foregroundStyle(Color.ink3)
                     Text(refinedAt.formatted(date: .abbreviated, time: .shortened))
-                        .font(.system(size: 14))
+                        .font(.scaled("Inter-Regular", size: 14))
                         .foregroundStyle(Color.ink)
                 }
             }
 
             Text("To opt out of background polishing, turn the coach off in Profile.")
-                .font(.system(size: 12))
+                .font(.scaled("Inter-Regular", size: 12))
                 .foregroundStyle(Color.ink3)
                 .padding(.top, 4)
 
@@ -65,7 +65,7 @@ struct CoachPolishedExplanationSheet: View {
 
             Button { dismiss() } label: {
                 Text("Done")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(Color.accent)

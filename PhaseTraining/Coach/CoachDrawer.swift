@@ -253,6 +253,7 @@ struct CoachDrawer: View {
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(sending ? "Stop" : "Send")
                 .disabled(!canSend && !sending)
             }
             .padding(.horizontal, 16)
@@ -272,7 +273,7 @@ struct CoachDrawer: View {
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(hard ? Color.ink2 : Color.accent)
             Text(hard
-                 ? "Daily coaching limit reached. Pick this up tomorrow — your plan and history stay put."
+                 ? "Daily coaching limit reached. Pick this up tomorrow. Your plan and history stay put."
                  : "You've sent \(conv.turnsToday) messages today, nearing the daily limit of \(CoachConfig.hardTurnCap).")
                 .font(.monoXS)
                 .foregroundStyle(Color.ink2)
@@ -475,7 +476,7 @@ struct CoachDrawer: View {
         if let coachError = error as? CoachClient.CoachError {
             switch coachError {
             case .dailyCeilingReached:
-                return "That's the coach's limit for today — it'll pick back up tomorrow."
+                return "That's the coach's limit for today. It'll pick back up tomorrow."
             case .missingGatewayToken:
                 return "The coach isn't available in this build."
             case .http(let status, _):
@@ -501,7 +502,7 @@ struct CoachDrawer: View {
     private func noteUndeliveredProposal() {
         guard let id = streamingId,
               let idx = conv.messages.firstIndex(where: { $0.id == id }) else { return }
-        let note = "\n\n⚠️ That change didn't come through in a usable form — ask again and I'll re-propose it."
+        let note = "\n\n⚠️ That change didn't come through in a usable form. Ask again and I'll re-propose it."
         if !conv.messages[idx].text.hasSuffix(note) {
             conv.messages[idx].text += note
         }
@@ -513,7 +514,7 @@ struct CoachDrawer: View {
     private func noteTruncatedReply() {
         guard let id = streamingId,
               let idx = conv.messages.firstIndex(where: { $0.id == id }) else { return }
-        let note = "\n\n… (cut off — ask me to continue)"
+        let note = "\n\n… (cut off. Ask me to continue)"
         if !conv.messages[idx].text.hasSuffix(note) {
             conv.messages[idx].text += note
         }

@@ -153,7 +153,7 @@ struct MiniPlanDiffCard: View {
         if let mins = day.durationMinutes { parts.append("· \(mins)m") }
         if day.protected { parts.append("· locked") }
         if day.kind == .sport, let note = day.notes, !note.isEmpty {
-            parts.append("— \(note)")
+            parts.append("· \(note)")
         }
         return parts.joined(separator: " ")
     }

@@ -204,10 +204,22 @@ struct CompleteScreen: View {
 
     // MARK: - Sections
 
+    /// "12,450" in the lifter's unit, bare so five digits fit the cell; a
+    /// dash when nothing loaded was logged (bodyweight or cardio).
+    private var volumeString: String {
+        let v = session.workingVolume(usesImperial: memoryStore.memory.usesImperial)
+        guard v > 0 else { return "—" }
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.maximumFractionDigits = 0
+        return f.string(from: NSNumber(value: v.rounded())) ?? "\(Int(v))"
+    }
+
     private var statGrid: some View {
         let items: [(value: String, label: String)] = [
             (durationString, "DURATION"),
             (String(stats.doneSets), "SETS"),
+            (volumeString, "VOLUME"),
             (stats.avgRpe, "AVG RPE"),
         ]
 
@@ -223,6 +235,8 @@ struct CompleteScreen: View {
             Text(label)
                 .styled(.micro)
                 .foregroundStyle(Color.ink3)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
             Text(value)
                 .styled(.displayM)
                 .foregroundStyle(Color.ink)
@@ -310,7 +324,7 @@ struct CompleteScreen: View {
                 let rpeString: String? = {
                     guard let lo = rpes.min(), let hi = rpes.max() else { return nil }
                     if lo == hi { return "rpe \(formattedRpe(lo))" }
-                    return "rpe \(formattedRpe(lo))–\(formattedRpe(hi))"
+                    return "rpe \(formattedRpe(lo))-\(formattedRpe(hi))"
                 }()
                 let setsLabel = done.count == 1 ? "1 set" : "\(done.count) sets"
 

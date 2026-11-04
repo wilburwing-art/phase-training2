@@ -214,6 +214,7 @@ struct InjuriesEditorSheet: View {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 14))
                             .foregroundStyle(Color.ink3)
+                            .accessibilityLabel("Clear onset date")
                     }
                     .buttonStyle(.plain)
                 } else {
@@ -285,6 +286,7 @@ struct InjuriesEditorSheet: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(Color.ink3)
+                    .accessibilityLabel("Remove \(item)")
             }
             .buttonStyle(.plain)
         }

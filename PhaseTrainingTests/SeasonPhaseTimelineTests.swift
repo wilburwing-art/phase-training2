@@ -88,7 +88,9 @@ final class SeasonPhaseTimelineTests: XCTestCase {
             BodyWeightEntry(date: now, weightKg: 79.1),
         ]
         mem.weightKg = 79.1
-        mem.phaseStartedAt = now.addingTimeInterval(-86400 * 21)
+        // Calendar days, not 21 x 86,400 s: across a DST change that lands on
+        // day 20 and reads as week 3 (failed on 2026-11-01).
+        mem.phaseStartedAt = Calendar.current.date(byAdding: .day, value: -21, to: now)
         mem.defaultSeason = .preSeason
 
         let encoder = JSONEncoder()

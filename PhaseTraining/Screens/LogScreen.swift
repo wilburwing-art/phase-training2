@@ -92,6 +92,13 @@ struct LogScreen: View {
     /// Read-only Exercise detail (name → coach.db lookup). Opens via row tap
     /// (mid-workout how-to) or contextMenu "Show details".
     @State var detailExercise: Exercise? = nil
+    /// Plate calculator opened from a barbell exercise's context menu, carrying
+    /// the weight to load. Profile was the only way in before (gap pass 2026-10-31).
+    @State var plateTarget: PlateTarget? = nil
+    /// The exercise whose note sheet is open.
+    @State var noteTarget: ExerciseNoteTarget? = nil
+    /// The exercise whose hold timer is open.
+    @State var holdTarget: HoldTimerTarget? = nil
     /// Mid-workout "Add exercise" picker. true = sheet open.
     @State private var addingExercise: Bool = false
 
@@ -193,6 +200,35 @@ struct LogScreen: View {
         }
         .sheet(item: $detailExercise) { ex in
             ExerciseDetailSheet(exercise: ex)
+        }
+        .sheet(item: $plateTarget) { target in
+            PlateCalculatorSheet(initialTarget: target.weight)
+                .environmentObject(memoryStore)
+        }
+        .sheet(item: $holdTarget) { target in
+            if session.exercises.indices.contains(target.index),
+               let hold = HoldProtocol.parse(session.exercises[target.index].repsLabel) {
+                let ex = session.exercises[target.index]
+                HoldTimerSheet(
+                    exerciseName: ex.name,
+                    hold: hold,
+                    onMarkSetDone: ex.sets.firstIndex(where: { !$0.done }).map { setIdx in
+                        { toggleSet(exIdx: target.index, setIdx: setIdx) }
+                    })
+            }
+        }
+        .sheet(item: $noteTarget) { target in
+            if session.exercises.indices.contains(target.index) {
+                ExerciseNoteSheet(
+                    exerciseName: session.exercises[target.index].name,
+                    lastNote: session.exercises[target.index].lastNote,
+                    note: Binding(
+                        get: { session.exercises[target.index].note ?? "" },
+                        set: {
+                            let trimmed = $0.trimmingCharacters(in: .whitespacesAndNewlines)
+                            session.exercises[target.index].note = trimmed.isEmpty ? nil : $0
+                        }))
+            }
         }
         .sheet(isPresented: $addingExercise) {
             // Mid-workout add. No initial filter — user came to the log
@@ -645,7 +681,9 @@ struct LogScreen: View {
 
     /// Append a freshly picked exercise to the active session. Mirrors the
     /// "new exercise" branch in SessionStore.applyWorkoutDiffToActiveSession:
-    /// 3 sets × 8 reps × 90s rest, no prevSets, no supersetGroup.
+    /// 3 sets × 8 reps × 90s rest, no supersetGroup. Unit and last-time sets
+    /// are derived the same way `swapExercise` does, so a freestyle session
+    /// shows what the lifter did last time on each pick.
     private func appendExerciseFromPicker(_ picked: Exercise) {
         let target = 3
         let reps = 8
@@ -656,12 +694,13 @@ struct LogScreen: View {
             id: "ad-hoc-\(UUID().uuidString.prefix(8))",
             name: picked.name,
             type: picked.modalityLabel,
-            unit: "lbs",
+            unit: LoggedExercise.unit(for: CoachDatabase.shared
+                .equipmentCategory(forExerciseIds: [picked.id])[picked.id]),
             targetSets: target,
             targetReps: reps,
             rest: 90,
             sets: sets,
-            prevSets: [],
+            prevSets: store.previousSets(forExerciseNamed: picked.name),
             rpe: nil,
             tempo: nil,
             supersetGroup: nil
@@ -681,6 +720,9 @@ struct LogScreen: View {
             return
         }
         session = existing
+        // A freestyle session starts empty: open the picker so the first
+        // exercise is one tap away.
+        if existing.exercises.isEmpty { addingExercise = true }
         // UI-test hook: --ui-test-rest-seconds=N clamps every exercise's rest
         // so timer-expiry tests can fire in ~2s instead of 60-90s. Has no
         // effect outside test runs.

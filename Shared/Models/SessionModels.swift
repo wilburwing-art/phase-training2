@@ -104,6 +104,14 @@ extension LoggedSet {
     /// getter and every read path that calls it.
     var repsValue: Int? { Self.leadingNumber(reps).flatMap { Int(exactly: $0.rounded()) } }
 
+    /// Reps in reserve: the logged RIR, else 10 minus a logged RPE (1-10).
+    /// Nil when neither was logged. Feeds the next-weight suggestion.
+    var effortRIR: Double? {
+        if let r = Self.leadingNumber(rir), r >= 0 { return r }
+        if let p = Self.leadingNumber(rpe), p > 0, p <= 10 { return 10 - p }
+        return nil
+    }
+
     private static func leadingNumber(_ raw: String) -> Double? {
         var s = raw.trimmingCharacters(in: .whitespaces)
         guard !s.isEmpty else { return nil }
@@ -142,6 +150,16 @@ struct LoggedExercise: Codable, Identifiable, Equatable {
     /// LogScreen + DayWorkoutPreviewSheet, and round-robin during rest
     /// navigation. Optional so pre-superset saved sessions decode cleanly.
     var supersetGroup: Int?
+    /// The lifter's own note for this exercise in this session ("seat 4",
+    /// "left knee fine"). Saved with the exercise row (user.db v6). Optional
+    /// so every earlier payload decodes.
+    var note: String? = nil
+    /// The most recent earlier note for this exercise, shown read-only in Log
+    /// as "Last time: …". Set by buildSession; never saved.
+    var lastNote: String? = nil
+    /// The prescription text when it is more than a rep count ("8s hold"),
+    /// from `ExerciseTemplate.repsLabel`. Drives the hold timer.
+    var repsLabel: String? = nil
 }
 
 extension LoggedExercise {

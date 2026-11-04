@@ -25,7 +25,7 @@ struct SupportPatternEditor: View {
             if isEnabled {
                 sectionLabel("DISCIPLINE").padding(.top, 4)
                 disciplineChips
-                sectionLabel("WHICH DAYS — AND HOW HARD").padding(.top, 4)
+                sectionLabel("WHICH DAYS, AND HOW HARD").padding(.top, 4)
                 ForEach(Weekday.allCases) { day in dayRow(day) }
                 footerHint.padding(.top, 4)
             }

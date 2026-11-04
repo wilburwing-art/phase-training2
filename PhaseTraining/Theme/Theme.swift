@@ -17,7 +17,8 @@ extension Color {
     // Ink (text)
     static let ink  = Color(red: 0xF5 / 255, green: 0xF5 / 255, blue: 0xF0 / 255) // #F5F5F0
     static let ink2 = Color(red: 0xB5 / 255, green: 0xB7 / 255, blue: 0xBD / 255) // #B5B7BD
-    static let ink3 = Color(red: 0x7A / 255, green: 0x7D / 255, blue: 0x85 / 255) // #7A7D85
+    // #83868E clears 4.5:1 on bg, surface and elevated (was #7A7D85: 4.40 on surface, 4.01 on elevated).
+    static let ink3 = Color(red: 0x83 / 255, green: 0x86 / 255, blue: 0x8E / 255) // #83868E
 
     // Accent (electric lime)
     static let accent       = Color(red: 0xD4 / 255, green: 0xFF / 255, blue: 0x3D / 255) // #D4FF3D

@@ -48,7 +48,7 @@ extension PlanStore {
             now: now
         )
         guard !edits.isEmpty else { return nil }
-        return propose(edits, reasoning: "Missed workout — moved to keep coverage")
+        return propose(edits, reasoning: "Missed workout, moved to keep coverage")
     }
 
     /// D3 — whether the missed-workout banner should offer a CONSOLIDATE option
@@ -201,7 +201,7 @@ extension PlanStore {
             now: now
         )
         guard !edits.isEmpty else { return nil }
-        return propose(edits, reasoning: "Stopped early — moved to keep coverage")
+        return propose(edits, reasoning: "Stopped early, moved to keep coverage")
     }
 
     /// Apply an abandonment reshuffle: applies the diff, bumps the

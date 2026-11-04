@@ -60,6 +60,11 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-supersets-demo") {
             Self.seedSupersetsDemo()
         }
+        //   --seed-hang-demo → an active hangboard session: a max hang ("8s hold")
+        //     and repeaters ("6 hangs (7s on / 3s off)"), for the hold timer.
+        if ProcessInfo.processInfo.arguments.contains("--seed-hang-demo") {
+            Self.seedHangDemo()
+        }
         if ProcessInfo.processInfo.arguments.contains("--seed-plan-demo") {
             Self.seedPlanDemo()
         }
@@ -123,6 +128,17 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-ski-primary") {
             Self.seedSkiPrimary()
         }
+        //   --seed-ski-season → ski-primary plus one alpine ski day in the
+        //     sport log two days ago, so Progress shows SKI SEASON at 1 day
+        //     and the empty SKI READINESS card.
+        if ProcessInfo.processInfo.arguments.contains("--seed-ski-season") {
+            Self.seedSkiSeason()
+        }
+        //   --seed-climber → climbing-primary memory with a body weight and two
+        //     max-hang tests, so Progress shows the finger-strength card.
+        if ProcessInfo.processInfo.arguments.contains("--seed-climber") {
+            Self.seedClimber()
+        }
         //   --seed-season-countdown → the already-seeded primary sport goes
         //     to pre-season with a season opener 34 days out, so Today's
         //     eyebrow reads "<SPORT> · PRE-SEASON" and its subtitle ends
@@ -172,6 +188,28 @@ struct PhaseTrainingApp: App {
     private static var repGapSquatSets: [LoggedSet] {
         guard ProcessInfo.processInfo.arguments.contains("--seed-rep-gap") else { return [] }
         return (1...3).map { LoggedSet(num: $0, weight: "185", reps: "10", rpe: "", done: true) }
+    }
+
+    private static func seedHangDemo() {
+        func hang(_ id: String, _ name: String, sets: Int, reps: Int, label: String) -> LoggedExercise {
+            LoggedExercise(id: id, name: name, type: nil, unit: LoggedExercise.bodyweightUnit,
+                           targetSets: sets, targetReps: reps, rest: 120,
+                           sets: (1...sets).map { LoggedSet(num: $0, weight: "", reps: "\(reps)", rpe: "", done: false) },
+                           prevSets: [], repsLabel: label)
+        }
+        let session = ActiveSession(
+            templateId: "demo-hang", name: "Fingers", category: "Demo",
+            startTime: Date().addingTimeInterval(-5 * 60),
+            exercises: [
+                hang("maxhang", "Hangboard Max Hang (20mm Edge)", sets: 5, reps: 8, label: "8s hold"),
+                hang("repeaters", "Hangboard Repeaters (7/3 Protocol)", sets: 3, reps: 6, label: "6 hangs (7s on / 3s off)"),
+            ],
+            feel: nil, note: nil)
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .secondsSince1970
+        if let data = try? encoder.encode(session) {
+            UserDefaults.standard.set(data, forKey: "pt_active_session")
+        }
     }
 
     private static func seedSupersetsDemo() {
@@ -369,6 +407,24 @@ struct PhaseTrainingApp: App {
 
     /// UITest-only: a ski-primary TrainingMemory (off-season), the base for the
     /// support seeds. Shared so the Profile-row gate (ski/snow primary) is met.
+    private static func seedClimber() {
+        guard let climb = Sport.catalog.first(where: { $0.slug == "climbing" }) else { return }
+        var m = TrainingMemory()
+        m.sports = [climb]
+        m.primarySport = climb
+        m.seasonsBySport = [climb: .preSeason]
+        m.defaultSeason = .preSeason
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.weightKg = 70
+        let now = Date()
+        m.maxHangTests = [
+            MaxHangTest(date: now.addingTimeInterval(-42 * 86_400), addedKg: 15, bodyKg: 70),
+            MaxHangTest(date: now.addingTimeInterval(-7 * 86_400), addedKg: 20, bodyKg: 70),
+        ]
+        writeSeedMemory(m)
+    }
+
     private static func skiPrimaryMemory() -> TrainingMemory? {
         guard let ski = Sport.catalog.first(where: { $0.slug == "alpine-skiing" }) else { return nil }
         var m = TrainingMemory()
@@ -570,6 +626,13 @@ struct PhaseTrainingApp: App {
     private static func seedSkiPrimary() {
         guard let m = skiPrimaryMemory() else { return }
         writeSeedMemory(m)
+    }
+
+    private static func seedSkiSeason() {
+        guard let m = skiPrimaryMemory(), let ski = m.primarySport else { return }
+        writeSeedMemory(m)
+        SportLogStore().log(sport: ski, on: Date().addingTimeInterval(-2 * 86_400),
+                            durationMinutes: 240, intensity: .hard)
     }
 
     /// --seed-support-demo: ski-primary + a climbing support pattern (Tue

@@ -140,6 +140,7 @@ extension ProgressScreen {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(symbol == "chevron.left" ? "Previous month" : "Next month")
         .accessibilityIdentifier(id)
     }
 

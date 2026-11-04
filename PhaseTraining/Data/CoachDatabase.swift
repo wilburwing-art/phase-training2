@@ -567,9 +567,14 @@ final class CoachDatabase {
         // remain visible).
         // One rewrite, shared by the substring query and the fallbacks below, so
         // "db shoulder press" reaches both as "dumbbell shoulder press".
+        // A machine brand ("hammer strength row") is stripped from the term
+        // and becomes a machines-only filter on every tier below.
         var searchTerm: String?
+        var machineOnly = false
         if let raw = search?.trimmingCharacters(in: .whitespaces), !raw.isEmpty {
-            searchTerm = ExerciseSearchVocabulary.rewrite(raw)
+            let split = ExerciseSearchVocabulary.stripMachineBrand(raw)
+            machineOnly = split.machineOnly
+            if !split.rest.isEmpty { searchTerm = ExerciseSearchVocabulary.rewrite(split.rest) }
         }
 
         let useSportRank = !userSportSlugs.isEmpty
@@ -612,6 +617,9 @@ final class CoachDatabase {
             // nameNormalizeSQL / normalizeSearchTerm / singularStem.
             clauses.append("\(Self.nameNormalizeSQL("e.name")) LIKE ?")
             binds.append(.str("%\(Self.singularStem(Self.normalizeSearchTerm(s)))%"))
+        }
+        if machineOnly {
+            clauses.append("LOWER(e.name) LIKE '%machine%' AND LOWER(e.name) NOT LIKE '%smith%'")
         }
         if let m = modality {
             clauses.append("e.modality = ?")
@@ -741,7 +749,7 @@ final class CoachDatabase {
                 environment: environment,
                 compoundOnly: compoundOnly,
                 userSportSlugs: userSportSlugs
-            )
+            ).filter { !machineOnly || ExerciseSearchVocabulary.isMachineName($0.name) }
             let fuzzy = Self.fuzzyMatches(in: candidates, query: q)
             if !fuzzy.isEmpty { return (fuzzy, .fuzzy) }
             return (Self.partialMatches(in: candidates, query: q), .partial)

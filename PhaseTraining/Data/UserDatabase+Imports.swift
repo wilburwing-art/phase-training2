@@ -158,8 +158,8 @@ extension UserDatabase {
         let sql = """
         INSERT OR REPLACE INTO imported_sets(
           id, source, exercise_id, exercise_name_raw, performed_at, set_num,
-          weight, reps, rir, rpe, imported_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          weight, reps, rir, rpe, imported_at, note
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return }
@@ -182,6 +182,7 @@ extension UserDatabase {
             if let rir = row.rir { sqlite3_bind_double(stmt, 9, rir) } else { sqlite3_bind_null(stmt, 9) }
             if let rpe = row.rpe { sqlite3_bind_double(stmt, 10, rpe) } else { sqlite3_bind_null(stmt, 10) }
             sqlite3_bind_int64(stmt, 11, now)
+            if let n = row.note, !n.isEmpty { sqlite3_bind_text(stmt, 12, n, -1, SQLITE_TRANSIENT_USER) } else { sqlite3_bind_null(stmt, 12) }
 
             if sqlite3_step(stmt) != SQLITE_DONE { ok = false; break }
             sqlite3_reset(stmt)

@@ -28,6 +28,11 @@ struct TrainingMemory: Codable {
     /// scheduled week is always re-derived from this by SupportScheduler.
     /// nil = single-sport user (no change to shipped behavior).
     var supportPattern: SupportPattern? = nil
+    /// How a ski primary skis: resort, backcountry, ski mountaineering or
+    /// park (2026-11). The engine has carried all four since M1
+    /// (`PhaseRule.applyingVariantOverride`); until this field nothing could
+    /// choose anything but resort. Nil means the sport's default.
+    var skiDiscipline: SportVariant? = nil
     /// Used when no sport is set OR for any sport without a per-sport entry.
     var defaultSeason: SeasonPhase = .maintenance
     /// Target peak date for .eventPrep seasons. Build 78 — before this, .eventPrep
@@ -114,6 +119,10 @@ struct TrainingMemory: Codable {
     /// scale weight. The planner doesn't read this yet — surfaces are
     /// Profile + Progress for now.
     var bodyCompositionLog: [BodyCompositionEntry] = []
+    /// Max-hang finger-strength tests (2026-11), oldest first.
+    var maxHangTests: [MaxHangTest] = []
+    /// Pre-season ski tests (2026-11), oldest first.
+    var skiReadinessTests: [SkiReadinessTest] = []
     /// Display preference for height + weight. Defaults true (US default);
     /// users elsewhere can flip on the Profile screen.
     var usesImperial: Bool = true
@@ -168,7 +177,7 @@ struct TrainingMemory: Codable {
 
     enum CodingKeys: String, CodingKey {
         case schemaVersion, sports, primarySport
-        case seasonsBySport, supportPattern, defaultSeason, peakDate
+        case seasonsBySport, supportPattern, skiDiscipline, defaultSeason, peakDate
         case season                               // legacy (build 20-23) — read for migration
         case availableDays, fixedSportDays        // legacy (build 20-24) — read but dropped on encode
         case phaseStartedAt
@@ -179,7 +188,7 @@ struct TrainingMemory: Codable {
         case statedFields
         case age, gender
         case heightCm, weightKg, usesImperial
-        case bodyWeightLog, bodyCompositionLog
+        case bodyWeightLog, bodyCompositionLog, maxHangTests, skiReadinessTests
         case dislikes, constraints
         case exerciseAffinities, swapAwayCounts, suggestionDecisions
         case userInjuries
@@ -204,6 +213,7 @@ struct TrainingMemory: Codable {
         // Pre-primary/support saves never wrote the key → decodeIfPresent nil →
         // single-sport behavior, no migration needed.
         self.supportPattern = (try? c.decodeIfPresent(SupportPattern.self, forKey: .supportPattern)) ?? nil
+        self.skiDiscipline = (try? c.decodeIfPresent(SportVariant.self, forKey: .skiDiscipline)) ?? nil
         if let ds = try? c.decode(SeasonPhase.self, forKey: .defaultSeason) {
             self.defaultSeason = ds
         } else if let legacySeason = try? c.decode(SeasonPhase.self, forKey: .season) {
@@ -244,6 +254,8 @@ struct TrainingMemory: Codable {
         self.usesImperial    = (try? c.decode(Bool.self,            forKey: .usesImperial)) ?? true
         self.bodyWeightLog   = (try? c.decode([BodyWeightEntry].self, forKey: .bodyWeightLog)) ?? []
         self.bodyCompositionLog = (try? c.decode([BodyCompositionEntry].self, forKey: .bodyCompositionLog)) ?? []
+        self.maxHangTests = (try? c.decodeIfPresent([MaxHangTest].self, forKey: .maxHangTests)) ?? []
+        self.skiReadinessTests = (try? c.decodeIfPresent([SkiReadinessTest].self, forKey: .skiReadinessTests)) ?? []
         self.dislikes        = (try? c.decode([String].self,       forKey: .dislikes))        ?? []
         self.constraints     = (try? c.decode([String].self,       forKey: .constraints))     ?? []
         self.exerciseAffinities = (try? c.decode([String: Int].self, forKey: .exerciseAffinities)) ?? [:]
@@ -281,6 +293,7 @@ struct TrainingMemory: Codable {
         try c.encodeIfPresent(primarySport, forKey: .primarySport)
         try c.encode(seasonsBySport,  forKey: .seasonsBySport)
         try c.encodeIfPresent(supportPattern, forKey: .supportPattern)
+        try c.encodeIfPresent(skiDiscipline, forKey: .skiDiscipline)
         try c.encode(defaultSeason,   forKey: .defaultSeason)
         try c.encodeIfPresent(peakDate, forKey: .peakDate)
         try c.encodeIfPresent(phaseStartedAt, forKey: .phaseStartedAt)
@@ -298,6 +311,8 @@ struct TrainingMemory: Codable {
         try c.encode(usesImperial, forKey: .usesImperial)
         try c.encode(bodyWeightLog, forKey: .bodyWeightLog)
         try c.encode(bodyCompositionLog, forKey: .bodyCompositionLog)
+        try c.encode(maxHangTests, forKey: .maxHangTests)
+        try c.encode(skiReadinessTests, forKey: .skiReadinessTests)
         try c.encode(dislikes,        forKey: .dislikes)
         try c.encode(constraints,     forKey: .constraints)
         try c.encode(exerciseAffinities, forKey: .exerciseAffinities)
@@ -550,11 +565,11 @@ enum SeasonPhase: String, Codable, CaseIterable, Identifiable {
 
     var subtitle: String {
         switch self {
-        case .offSeason:   return "Build the engine — high volume, lower specificity"
-        case .preSeason:   return "Sharpen — convert to sport-specific"
-        case .inSeason:    return "Maintain — protect performance, recover hard"
-        case .eventPrep:   return "Peak — taper to a date"
-        case .maintenance: return "Stay strong — no peak in mind"
+        case .offSeason:   return "Build the engine: high volume, lower specificity"
+        case .preSeason:   return "Sharpen: convert to sport-specific"
+        case .inSeason:    return "Maintain: protect performance, recover hard"
+        case .eventPrep:   return "Peak: taper to a date"
+        case .maintenance: return "Stay strong with no peak in mind"
         }
     }
 
@@ -915,6 +930,46 @@ extension Weekday {
         case 6: return .friday
         case 7: return .saturday
         default: return .monday
+        }
+    }
+}
+
+// MARK: - Ski discipline
+
+extension TrainingMemory {
+    /// True when the primary sport is a ski sport (the disciplines apply).
+    var skisPrimary: Bool { PhaseRule.skiSlugs.contains(primarySport?.slug ?? "") }
+
+    /// The variant the engine plans with: the chosen ski discipline for a ski
+    /// primary, else the sport's default. Every generator call site reads this.
+    var primaryVariant: SportVariant {
+        if skisPrimary, let skiDiscipline { return skiDiscipline }
+        return SportSeasonGenerator.defaultVariant(forSport: primarySport?.slug)
+    }
+}
+
+extension SportVariant {
+    static let skiDisciplines: [SportVariant] = [.inbounds, .backcountry, .skimo, .park]
+
+    var disciplineLabel: String {
+        switch self {
+        case .inbounds: return "Resort"
+        case .backcountry: return "Backcountry"
+        case .skimo: return "Ski mountaineering"
+        case .park: return "Park"
+        case .sportRoute: return "Sport"
+        case .boulder: return "Bouldering"
+        case .tradAlpine: return "Trad / alpine"
+        }
+    }
+
+    var disciplineSubtitle: String {
+        switch self {
+        case .inbounds: return "Lifts and groomers. Strength and knee durability lead."
+        case .backcountry: return "Skin up, ski down. Adds uphill aerobic work."
+        case .skimo: return "Aerobic first, heavy strength capped."
+        case .park: return "Jumps and rails. More power and landing work."
+        default: return ""
         }
     }
 }

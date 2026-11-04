@@ -47,6 +47,7 @@ struct ProfileScreen: View {
     @State private var presentingEquipmentEditor = false
     @State private var presentingExperienceEditor = false
     @State private var presentingGoalEditor = false
+    @State private var presentingDisciplineEditor = false
     @State private var presentingAboutEditor = false
     @State private var presentingFavoritesEditor = false
     @State private var presentingDislikesEditor = false
@@ -185,6 +186,12 @@ struct ProfileScreen: View {
                                     value: store.memory.trainingGoal.label,
                                     icon: "target",
                                     action: { presentingGoalEditor = true })
+                        if store.memory.skisPrimary {
+                            SettingsRow(label: "Discipline",
+                                        value: store.memory.primaryVariant.disciplineLabel,
+                                        icon: "figure.skiing.downhill",
+                                        action: { presentingDisciplineEditor = true })
+                        }
                     }
 
                     settingsGroup("ABOUT YOU") {
@@ -266,6 +273,7 @@ struct ProfileScreen: View {
                 .padding(.top, 24)
             }
         }
+        .statusBarBackdrop()
         // Editor sheets.
         .sheet(isPresented: $presentingSportsEditor) {
             SportsEditorSheet().environmentObject(store)
@@ -281,6 +289,9 @@ struct ProfileScreen: View {
         }
         .sheet(isPresented: $presentingExperienceEditor) {
             ExperienceEditorSheet().environmentObject(store)
+        }
+        .sheet(isPresented: $presentingDisciplineEditor) {
+            SkiDisciplineSheet().environmentObject(store)
         }
         .sheet(isPresented: $presentingGoalEditor) {
             GoalEditorSheet().environmentObject(store)
@@ -313,7 +324,12 @@ struct ProfileScreen: View {
         }) {
             DataEditorSheet(
                 onExport: { pendingDataAction = backup.exportBackup },
-                onImport: { pendingDataAction = { backup.presentingImporter = true } }
+                onImport: { pendingDataAction = { backup.presentingImporter = true } },
+                onExportCSV: sessionStore.savedSessions.isEmpty ? nil : {
+                    let sessions = sessionStore.savedSessions
+                    let imperial = store.memory.usesImperial
+                    pendingDataAction = { backup.exportWorkoutsCSV(sessions: sessions, usesImperial: imperial) }
+                }
             )
         }
         .sheet(isPresented: $presentingHealthImports, onDismiss: { refreshHealthImportState() }) {
@@ -389,7 +405,7 @@ struct ProfileScreen: View {
             // field added since, with nothing telling them.
             Text("This replaces your current profile, workouts, history, and plan with the backup from \(formattedShort(envelope.exportedAt)). It can't be undone."
                  + (envelope.isMemorySchemaStale
-                    ? "\n\nThis backup predates some settings this version stores. Those will come back as defaults — worth a look at Profile afterwards."
+                    ? "\n\nThis backup predates some settings this version stores. Those will come back as defaults, so check Profile afterwards."
                     : ""))
         }
         .alert("Restore complete", isPresented: $backup.restoreCompleted) {
@@ -404,7 +420,7 @@ struct ProfileScreen: View {
             Button("Save") { commitEditingValue() }
         } message: {
             if let field = editingField {
-                Text("Enter \(field.clamp.lowerBound)–\(field.clamp.upperBound) \(field.unit).")
+                Text("Enter \(field.clamp.lowerBound) to \(field.clamp.upperBound) \(field.unit).")
             }
         }
     }
@@ -435,19 +451,22 @@ struct ProfileScreen: View {
         let lifts = profile.recommendedLiftDays
         let mins  = profile.recommendedSessionMinutes
         return VStack(alignment: .leading, spacing: 12) {
-            sectionLabel("HOW WE'RE TUNING YOUR PLAN")
+            // These are recommendations; the settings below are what the plan
+            // uses. Named as such, with the setting beside each, so "2-3" above
+            // "3 days / week" no longer reads as two answers to one question.
+            sectionLabel("RECOMMENDED FOR YOU")
             VStack(alignment: .leading, spacing: 8) {
                 tuningRow(
                     label: "LIFT DAYS",
                     value: "\(lifts.lowerBound)-\(lifts.upperBound) / WEEK",
                     matches: lifts.contains(store.memory.liftDaysPerWeek),
-                    actualHint: lifts.contains(store.memory.liftDaysPerWeek) ? nil : "You set \(store.memory.liftDaysPerWeek)"
+                    actualHint: "You set \(store.memory.liftDaysPerWeek)"
                 )
                 tuningRow(
                     label: "SESSION",
                     value: "\(mins.lowerBound)-\(mins.upperBound) MIN",
                     matches: mins.contains(store.memory.sessionMinutes),
-                    actualHint: mins.contains(store.memory.sessionMinutes) ? nil : "You set \(store.memory.sessionMinutes)"
+                    actualHint: "You set \(store.memory.sessionMinutes)"
                 )
                 tuningRow(
                     label: "DIFFICULTY",
@@ -500,13 +519,16 @@ struct ProfileScreen: View {
                 .foregroundStyle(Color.ink)
             Spacer()
             if let actualHint {
+                // Quiet when the setting sits inside the range, accent when not.
                 Text(actualHint.uppercased())
                     .styled(.micro)
-                    .foregroundStyle(Color.accent)
-            } else if matches {
+                    .foregroundStyle(matches ? Color.ink3 : Color.accent)
+            }
+            if matches {
                 Image(systemName: "checkmark")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(Color.ok)
+                    .accessibilityLabel("within the recommendation")
             }
         }
         .padding(.vertical, 10)
@@ -558,7 +580,7 @@ struct ProfileScreen: View {
         let clamped = max(field.clamp.lowerBound, min(field.clamp.upperBound, raw))
         clampNotice = clamped == raw
             ? nil
-            : "\(field.title) adjusted to \(clamped) — valid range is \(field.clamp.lowerBound)–\(field.clamp.upperBound) \(field.unit)."
+            : "\(field.title) adjusted to \(clamped). The valid range is \(field.clamp.lowerBound) to \(field.clamp.upperBound) \(field.unit)."
         store.update { mem in
             switch field {
             case .sessionMinutes: mem.sessionMinutes = clamped

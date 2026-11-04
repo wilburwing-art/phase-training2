@@ -797,7 +797,7 @@ private struct ToneCard: View {
     /// means.
     private var subtitle: String {
         switch tone {
-        case .typical:  return "Default — no adjustment to volume or duration"
+        case .typical:  return "Default. No change to volume or duration"
         case .recovery: return "Lower volume (~30% fewer sets) for a deload week"
         case .build:    return "Higher volume (~15% more sets) for a hard push"
         case .busy:     return "Shorter sessions (~70% of usual length)"

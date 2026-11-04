@@ -15,6 +15,29 @@ extension LoggedExercise {
     }
 }
 
+extension ActiveSession {
+    /// Total load moved: weight × reps over done working sets, in the lifter's
+    /// unit. Warm-ups are left out. A bodyweight row counts only its added load
+    /// (a vest or plate), since the logged weight is the addition.
+    func workingVolume(usesImperial: Bool) -> Double {
+        exercises.reduce(0) { total, ex in
+            let isKg = ex.unit.lowercased() == "kg"
+            let factor: Double
+            switch (isKg, usesImperial) {
+            case (true, true): factor = 1 / ImportUnitCorrection.kgPerLb
+            case (false, false): factor = ImportUnitCorrection.kgPerLb
+            default: factor = 1
+            }
+            return total + ex.sets.reduce(0) { sum, set in
+                guard set.done, !set.isWarmup,
+                      let w = set.weightValue, w > 0,
+                      let r = set.repsValue, r > 0 else { return sum }
+                return sum + w * Double(r) * factor
+            }
+        }
+    }
+}
+
 struct SessionStats: Equatable {
     var totalSets: Int
     var doneSets: Int

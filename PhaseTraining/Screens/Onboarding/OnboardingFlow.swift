@@ -285,6 +285,7 @@ struct OnboardingScaffold<Content: View>: View {
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(Color.ink2)
                             .frame(width: 32, height: 32)
+                            .accessibilityLabel("Back")
                     }
                     .buttonStyle(.plain)
                 } else {

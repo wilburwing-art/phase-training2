@@ -17,6 +17,8 @@ import SwiftUI
 struct PlateCalculatorSheet: View {
     @EnvironmentObject private var memory: MemoryStore
     @Environment(\.dismiss) private var dismiss
+    /// Pre-fills the target when opened from a set in Log; empty from Profile.
+    var initialTarget: String = ""
 
     @State private var targetText: String = ""
     @State private var barText: String = ""
@@ -63,12 +65,15 @@ struct PlateCalculatorSheet: View {
         .preferredColorScheme(.dark)
         .onAppear {
             imperial = memory.memory.usesImperial
+            if targetText.isEmpty { targetText = initialTarget }
             if barText.isEmpty {
                 barText = savedBarText.isEmpty
                     ? String(format: "%g", defaultBarWeight)
                     : savedBarText
             }
-            targetFocused = true
+            // From Log the target arrives filled; the keyboard would cover the
+            // plate breakdown the user opened the sheet to read.
+            targetFocused = initialTarget.isEmpty
         }
         .onChange(of: barText) { _, newValue in
             // Persist only parseable values so a half-typed entry doesn't

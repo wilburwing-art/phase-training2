@@ -77,7 +77,7 @@ enum MesocycleProgression {
                     state: .taper,
                     weekOfCycle: nil,
                     badge: "TAPER",
-                    detail: "T-\(days)d taper — volume drops, intensity holds."
+                    detail: "T-\(days)d taper. Volume drops, intensity holds."
                 )
             }
             if days <= 14 {
@@ -105,7 +105,7 @@ enum MesocycleProgression {
                 state: .deload,
                 weekOfCycle: weekOfCycle,
                 badge: "DELOAD WK",
-                detail: "Deload — volume −30%, intensity holds. Earn the recovery."
+                detail: "Deload. Volume −30%, intensity holds. Earn the recovery."
             )
         }
         if weekOfCycle == cycle - 1 {
@@ -113,7 +113,7 @@ enum MesocycleProgression {
                 state: .deloadNextWeek,
                 weekOfCycle: weekOfCycle,
                 badge: "DELOAD NEXT",
-                detail: "Week \(weekOfCycle) of \(cycle). Deload starts in one week — push the top sets."
+                detail: "Week \(weekOfCycle) of \(cycle). Deload starts in one week, so push the top sets."
             )
         }
         return Status(

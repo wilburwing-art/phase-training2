@@ -134,7 +134,7 @@ enum Planner {
             date: out.days[target].date,
             kind: .rest,
             title: "Rest",
-            generatedReason: "Rest — this day hasn't been working for you lately"
+            generatedReason: "Rest. This day hasn't been working for you lately"
         )
         return out
     }
@@ -182,7 +182,7 @@ enum Planner {
                     date: out.days[drop].date,
                     kind: .rest,
                     title: "Recovery",
-                    generatedReason: "Recovery day — you've trained hard the last few weeks"
+                    generatedReason: "Recovery day. You've trained hard the last few weeks"
                 )
             }
         }
@@ -652,14 +652,14 @@ enum Planner {
             // doesn't currently filter by equipment availability.
             // Replacing this with a generator-driven bodyweight path is
             // a planned follow-up.
-            let title = event.title.isEmpty ? "Travel — bodyweight flow" : event.title
+            let title = event.title.isEmpty ? "Travel: bodyweight flow" : event.title
             return DayPlan(
                 date: date,
                 kind: .lift,
                 title: title,
                 generatedWorkout: bodyweightTravelWorkout(title: title, date: date),
                 protected: true,
-                generatedReason: "You marked this day as out of town — bodyweight flow you can do anywhere"
+                generatedReason: "You marked this day as out of town, so here is a bodyweight flow you can do anywhere"
             )
         }
     }
@@ -955,7 +955,7 @@ enum Planner {
                 kind: .sport,
                 title: "\(sport.name) session",
                 sport: sport,
-                generatedReason: "\(sport.name) is in-season — added a placeholder day"
+                generatedReason: "\(sport.name) is in-season, so a placeholder day was added"
             )
         }
     }
@@ -983,7 +983,7 @@ enum Planner {
         // also keeps the row reachable whenever a pattern exists, so the user
         // can clear it; this stops it applying where it was never authored.
         guard PhaseRule.skiSlugs.contains(memory.primarySport?.slug ?? "") else { return }
-        let primaryVariant = SportSeasonGenerator.defaultVariant(forSport: memory.primarySport?.slug)
+        let primaryVariant = memory.primaryVariant
         let supportSport = Sport.catalog.first { $0.slug == pattern.sportSlug }
         let verb = pattern.sportSlug == "climbing" ? "climb" : "train \(supportSport?.name ?? pattern.sportSlug)"
 

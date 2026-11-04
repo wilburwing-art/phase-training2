@@ -182,6 +182,33 @@ final class CoachDatabaseSearchTests: XCTestCase {
             .contains { $0.name == "Kettlebell Swing" })
     }
 
+    func test_stripMachineBrand() {
+        XCTAssertTrue(ExerciseSearchVocabulary.stripMachineBrand("Hammer Strength row") == ("row", true))
+        XCTAssertTrue(ExerciseSearchVocabulary.stripMachineBrand("hammerstrength") == ("", true))
+        XCTAssertTrue(ExerciseSearchVocabulary.stripMachineBrand("hammer curl") == ("hammer curl", false))
+        XCTAssertTrue(ExerciseSearchVocabulary.stripMachineBrand("Life Fitness leg press") == ("leg press", true))
+        XCTAssertTrue(ExerciseSearchVocabulary.stripMachineBrand("cybex row") == ("row", true))
+        XCTAssertTrue(ExerciseSearchVocabulary.stripMachineBrand("star jump") == ("star jump", false))
+    }
+
+    func test_hammerStrength_findsTheMachines() throws {
+        try requireCoachDB()
+        let coach = CoachDatabase.shared
+        let rows = coach.listExercises(search: "hammer strength row", muscleSlugs: []).map(\.name)
+        XCTAssertTrue(rows.contains("Iso-Lateral Row (Machine)"), "got \(rows)")
+        let press = coach.listExercises(search: "hammerstrength chest press", muscleSlugs: []).map(\.name)
+        XCTAssertTrue(press.contains("Iso-Lateral Chest Press (Machine)"), "got \(press)")
+        XCTAssertTrue(press.contains("Machine Chest Press"), "both name orders: \(press)")
+        let bare = coach.listExercises(search: "hammer strength", muscleSlugs: []).map(\.name)
+        XCTAssertTrue(bare.count > 20, "the brand alone lists the machines: \(bare.count)")
+        XCTAssertTrue(bare.allSatisfy(ExerciseSearchVocabulary.isMachineName), "\(bare)")
+        XCTAssertTrue(coach.listExercises(search: "hammer", muscleSlugs: [])
+            .contains { $0.name == "Hammer Curl" })
+        let cybex = coach.listExercises(search: "cybex chest press", muscleSlugs: []).map(\.name)
+        XCTAssertTrue(cybex.contains("Machine Chest Press"), "other brands work the same: \(cybex)")
+        XCTAssertTrue(cybex.allSatisfy(ExerciseSearchVocabulary.isMachineName), "\(cybex)")
+    }
+
     func test_irregularPlural_calvesFindsCalfWork() throws {
         try requireCoachDB()
         let hits = CoachDatabase.shared.listExercises(search: "calves", muscleSlugs: [])

@@ -76,7 +76,7 @@ extension LogScreen {
             label = "BACK OFF · \(weightStr) \(ex.unit) · \(r.label)"
             tint = .danger
         default:
-            label = "HOLD · \(weightStr) \(ex.unit) — earn the reps"
+            label = "HOLD · \(weightStr) \(ex.unit). Earn the reps"
             tint = .ink2
         }
         return ProgressionPillModel(text: label, tint: tint)

@@ -42,7 +42,7 @@ struct RootTabView: View {
             return "Your last workout couldn't be written to storage. It's still on screen, but it won't be here after you close the app."
         }
         if let reason = UserDatabase.shared.unavailableReason {
-            return reason + " Your workouts and history can't be saved until this is fixed. Reinstalling the app usually clears it — restore a backup from Profile first if you have one."
+            return reason + " Your workouts and history can't be saved until this is fixed. Reinstalling the app usually clears it. Restore a backup from Profile first if you have one."
         }
         return nil
     }

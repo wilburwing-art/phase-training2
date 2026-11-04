@@ -68,7 +68,7 @@ enum FitbodCSVParser {
             return ParseResult(sets: [], workouts: [], errors: [(0, "", "empty file")], nameMatchRate: 0, totalRows: 0, warmupsSkipped: 0)
         }
         guard headerLine == expectedHeader else {
-            return ParseResult(sets: [], workouts: [], errors: [(0, headerLine, "header mismatch — expected \"\(expectedHeader)\"")], nameMatchRate: 0, totalRows: 0, warmupsSkipped: 0)
+            return ParseResult(sets: [], workouts: [], errors: [(0, headerLine, "header mismatch, expected \"\(expectedHeader)\"")], nameMatchRate: 0, totalRows: 0, warmupsSkipped: 0)
         }
 
         // Cluster by (date, exercise) to derive set numbers per group.

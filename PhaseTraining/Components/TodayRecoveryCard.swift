@@ -53,7 +53,7 @@ struct TodayRecoveryCard: View {
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Muscle recovery — \(freshCount) fresh, \(needsRestCount) need rest. Tap for details.")
+        .accessibilityLabel("Muscle recovery: \(freshCount) fresh, \(needsRestCount) need rest. Tap for details.")
     }
 
     private func recoveryHighlights(

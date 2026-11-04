@@ -284,7 +284,7 @@ final class PlannerTaperPromotionTests: XCTestCase {
         XCTAssertFalse(slots[1]?.protected ?? true,
                        "Promoted placeholder stays unprotected so taper rules can demote it")
         XCTAssertEqual(slots[1]?.generatedReason,
-                       "Alpine Skiing is in-season — added a placeholder day")
+                       "Alpine Skiing is in-season, so a placeholder day was added")
         // Remaining rests untouched.
         XCTAssertEqual(slots[3]?.kind, .rest)
         XCTAssertEqual(slots[4]?.kind, .rest)

@@ -127,6 +127,9 @@ struct HKWorkoutLike: Sendable {
     var sourceBundleId: String? = nil
     /// The `pt_session` metadata value, present on workouts this app wrote.
     var sessionTag: String? = nil
+    /// `HKMetadataKeyElevationDescended` in meters, when the writer set it.
+    /// The vertical of a ski day; nil for most workouts.
+    var elevationDescendedMeters: Double? = nil
 
     /// Written by this app on the phone or the watch. Never imported: it
     /// would come back as an outside workout and count the session twice.
@@ -182,7 +185,9 @@ struct HKHealthStoreWrapper: HKHealthStoreInterface, @unchecked Sendable {
                         duration: hk.duration,
                         totalEnergyBurnedKcal: hk.totalEnergyBurned?.doubleValue(for: .kilocalorie()),
                         sourceBundleId: hk.sourceRevision.source.bundleIdentifier,
-                        sessionTag: hk.metadata?[HealthWorkoutTag.sessionKey] as? String
+                        sessionTag: hk.metadata?[HealthWorkoutTag.sessionKey] as? String,
+                        elevationDescendedMeters: (hk.metadata?[HKMetadataKeyElevationDescended] as? HKQuantity)?
+                            .doubleValue(for: .meter())
                     )
                 }
                 cont.resume(returning: workouts)
@@ -308,6 +313,13 @@ actor HealthKitImporter {
     /// stays silent.
     func recentRawWorkouts(days: Int = 7) async throws -> [HKWorkoutLike] {
         try await store.recentWorkouts(days: days).filter { !$0.isOwn }
+    }
+
+    /// Outside workouts since `since`, for the ski-season card. Same
+    /// read-only posture as `recentRawWorkouts`.
+    func skiSeasonWorkouts(since: Date, now: Date = Date()) async throws -> [HKWorkoutLike] {
+        let days = max(1, Int(ceil(now.timeIntervalSince(since) / 86_400)))
+        return try await store.recentWorkouts(days: days).filter { !$0.isOwn && $0.startDate >= since }
     }
 
     /// Pure mapper exposed for testability. Maps one HK workout to our

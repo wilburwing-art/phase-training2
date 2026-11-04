@@ -39,6 +39,9 @@ struct ImportedSet: Equatable, Sendable, Codable {
     let rir: Double?
     /// RPE, when the source captures it (Hevy does, Fitbod does not).
     let rpe: Double?
+    /// The source's note for this exercise in that workout (Hevy
+    /// `exercise_notes`). Repeated on every set row of the exercise.
+    var note: String? = nil
 
     /// Construct a stable id from the natural-key tuple.
     static func makeId(source: ImportSource, performedAt: Date, exerciseNameRaw: String, setNum: Int) -> String {

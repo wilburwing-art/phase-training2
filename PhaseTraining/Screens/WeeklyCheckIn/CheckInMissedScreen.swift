@@ -101,8 +101,8 @@ struct CheckInMissedScreen: View {
         case .unrecoverableFocus:
             reason = "the remaining workouts couldn't be merged"
         case nil:
-            return "The week couldn't absorb the missed work — the workout was skipped instead."
+            return "The week couldn't absorb the missed work, so the workout was skipped instead."
         }
-        return "The week couldn't absorb the missed work — \(reason). The workout was skipped instead."
+        return "The week couldn't absorb the missed work: \(reason). The workout was skipped instead."
     }
 }

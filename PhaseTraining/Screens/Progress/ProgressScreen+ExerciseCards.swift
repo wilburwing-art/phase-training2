@@ -73,6 +73,27 @@ extension ProgressScreen {
                 .buttonStyle(.plain)
                 .padding(.leading, 14)
                 .accessibilityIdentifier("progress-see-all-lifts")
+                // The history check used to live only under a CSV import, so a
+                // lifter logging in the app never saw its typo flags, breaks or
+                // personal detraining rate. Shown when it has something to say.
+                if let summary = HistoryCheckRow.summary(store.historyProfile.audit, onlyWhenNotable: true) {
+                    Button {
+                        showingHistoryCheck = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text("History check · \(summary)")
+                                .styled(.micro)
+                                .foregroundStyle(Color.ink2)
+                                .lineLimit(1)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(Color.ink2)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.leading, 14)
+                    .accessibilityIdentifier("progress-history-check")
+                }
             }
         )
     }

@@ -56,7 +56,7 @@ private struct ShapeKey: Hashable {
 
 private let defaultShape = WeeklyShape(
     kinds:       [.lift, .rest, .lift, .rest, .lift, .rest, .rest],
-    description: "3-day full body strength — flexible fallback"
+    description: "3-day full body strength, a flexible fallback"
 )
 
 // MARK: - Sport × season combinations

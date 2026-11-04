@@ -183,6 +183,7 @@ struct ExerciseEditorSheet: View {
                 Image(systemName: "minus.circle.fill")
                     .font(.system(size: 28))
                     .foregroundStyle(canDecrement ? Color.accent : Color.line)
+                    .accessibilityLabel("Decrease \(title.lowercased())")
             }
             .buttonStyle(.plain)
             .disabled(!canDecrement)
@@ -197,6 +198,7 @@ struct ExerciseEditorSheet: View {
                 Image(systemName: "plus.circle.fill")
                     .font(.system(size: 28))
                     .foregroundStyle(canIncrement ? Color.accent : Color.line)
+                    .accessibilityLabel("Increase \(title.lowercased())")
             }
             .buttonStyle(.plain)
             .disabled(!canIncrement)

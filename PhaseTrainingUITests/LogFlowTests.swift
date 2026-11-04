@@ -398,15 +398,24 @@ final class LogFlowTests: XCTestCase {
         let app = launchInLog()
         // Bench has sets 1, 2, 3. Delete set 2.
         app.staticTexts["log-set-num-0-1"].press(forDuration: 1.0)
-        app.buttons["Delete set"].tap()
+        // A tap while the menu is still animating in is dropped (2026-11-01:
+        // the delete never happened and the label check below passed anyway,
+        // since the untouched set 2 also reads "2"). Wait for it to settle.
+        let delete = app.buttons["Delete set"]
+        XCTAssertTrue(delete.waitForExistence(timeout: 3))
+        let settled = NSPredicate(format: "isHittable == true")
+        wait(for: [XCTNSPredicateExpectation(predicate: settled, object: delete)], timeout: 3)
+        delete.tap()
         // After delete, the row at idx 1 should be the former set 3 (now num=2).
         let setNum1 = app.staticTexts["log-set-num-0-1"]
         XCTAssertTrue(setNum1.waitForExistence(timeout: 2))
         XCTAssertEqual(setNum1.label, "2",
                        "set 3 should renumber to 2 after deleting set 2")
         // And there should be no set at idx 2 anymore.
-        XCTAssertFalse(app.staticTexts["log-set-num-0-2"].exists,
-                       "only 2 sets remain after delete")
+        // Wait out the removal animation; an immediate .exists read the
+        // leaving row once (2026-11-01) and failed a correct delete.
+        XCTAssertTrue(app.staticTexts["log-set-num-0-2"].waitForNonExistence(timeout: 3),
+                      "only 2 sets remain after delete")
     }
 
     func testDeleteRestingSetClearsRest() throws {

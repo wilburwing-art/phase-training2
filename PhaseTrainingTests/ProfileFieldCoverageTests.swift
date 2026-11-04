@@ -101,6 +101,12 @@ final class ProfileFieldCoverageTests: XCTestCase {
         Probe(name: "bodyCompositionLog", mutateForHash: nil, mutateForSnapshot: nil,
               snapshotMarker: nil,
               skipReason: "Append-only body-composition series; not read by planner or coach yet (Profile + Progress surfaces only)."),
+        Probe(name: "maxHangTests", mutateForHash: nil, mutateForSnapshot: nil,
+              snapshotMarker: nil,
+              skipReason: "Append-only max-hang test series (2026-11); Progress finger card only. Nothing prescribes from it yet, so it stays out of the plan hash and the coach snapshot."),
+        Probe(name: "skiReadinessTests", mutateForHash: nil, mutateForSnapshot: nil,
+              snapshotMarker: nil,
+              skipReason: "Append-only pre-season ski test series (2026-11); Progress ski readiness card only. Nothing prescribes from it yet, so it stays out of the plan hash and the coach snapshot."),
 
         // Body metrics — see WeekPlan.planInputsHash comment. Intentionally
         // excluded from hash to avoid weight-log retriggering plan regen; ARE
@@ -187,6 +193,11 @@ final class ProfileFieldCoverageTests: XCTestCase {
               mutateForHash: { $0.startingState = .returning },
               mutateForSnapshot: { $0.startingState = .returning },
               snapshotMarker: "coming back",
+              skipReason: nil),
+        Probe(name: "skiDiscipline",
+              mutateForHash: { $0.skiDiscipline = .backcountry },
+              mutateForSnapshot: { $0.skiDiscipline = .skimo },
+              snapshotMarker: "discipline: ski mountaineering",
               skipReason: nil),
         Probe(name: "trainingGoal",
               mutateForHash: { $0.trainingGoal = .strength },

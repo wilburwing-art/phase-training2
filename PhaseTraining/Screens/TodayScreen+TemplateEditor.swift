@@ -76,7 +76,11 @@ extension TodayScreen {
             vm: .init(
                 leading: .composite(exerciseID: exerciseID, photoURL: photoURL, group: bucket, side: bucket.naturalSide),
                 title: ex.name,
-                meta: "\(ex.targetSets) sets · \(ex.targetReps) reps · \(weightSegment)",
+                // "4 × 5" rather than "4 sets · 5 reps" so the load and its
+                // change fit on one line (it truncated to "175…" before), and
+                // no trailing "· —" when there is no load to show.
+                meta: (["\(ex.targetSets) × \(ex.targetReps)"] + [weightSegment].compactMap { $0 })
+                    .joined(separator: " · "),
                 trailing: .overflow(onTap: { actionSheetExIdx = position - 1 }),
                 onTap: { actionSheetExIdx = position - 1 }
             ),
@@ -88,15 +92,17 @@ extension TodayScreen {
     /// Compose the rightmost segment of the tile meta line. Showing both
     /// the previous and the suggested weight lets the user see "+5" as
     /// progression in motion, not just a fresh number.
-    private func progressionSegment(ex: ExerciseTemplate, prevEx: LoggedExercise?, prevWeightText: String) -> String {
+    private func progressionSegment(ex: ExerciseTemplate, prevEx: LoggedExercise?, prevWeightText: String) -> String? {
         let unit = ex.unit
         guard !prevWeightText.isEmpty else {
             // Never logged here: the same history fallback as the Log pill.
             if let prior = store.provenStrength(forExerciseNamed: ex.name),
                let h = ProgressionSuggestion.fromHistory(prior, targetReps: ex.targetReps, unit: unit) {
-                return "\(h.suggestedWeightString) \(unit) · \(h.label)"
+                // The tile has one line; "from history" pushed the load into
+                // an ellipsis. The Log pill still says where it came from.
+                return "\(h.suggestedWeightString) \(unit)"
             }
-            return "—"
+            return nil
         }
         // Shared extraction (heaviest set that met target reps) so the Today
         // tile and the Log pill never disagree on the suggested number.
@@ -109,6 +115,10 @@ extension TodayScreen {
                 profile: store.historyProfile.profile(forExerciseNamed: ex.name)
               ) else {
             return "\(prevWeightText) \(unit)"
+        }
+        if s.basis == .repRemap || s.basis == .history {
+            // "for 5 reps" repeats the "× 5" already on the line.
+            return "\(s.suggestedWeightString) \(unit)"
         }
         if s.basis != .lastSession {
             return "\(s.suggestedWeightString) \(unit) · \(s.label)"

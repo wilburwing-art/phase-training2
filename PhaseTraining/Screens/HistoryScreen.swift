@@ -353,6 +353,12 @@ struct HistoryScreen: View {
             Text(setSummary(doneSets))
                 .styled(.monoXS)
                 .foregroundColor(.ink2)
+            if let note = ex.note, !note.isEmpty {
+                Text(note)
+                    .font(.scaled("Inter-Regular", size: 12))
+                    .foregroundColor(.ink3)
+                    .accessibilityIdentifier("history-exercise-note")
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 8)
@@ -380,7 +386,7 @@ struct HistoryScreen: View {
         let hi = values.max()!
         let loStr = formatRpe(lo)
         let hiStr = formatRpe(hi)
-        return loStr == hiStr ? "rpe \(loStr)" : "rpe \(loStr)–\(hiStr)"
+        return loStr == hiStr ? "rpe \(loStr)" : "rpe \(loStr)-\(hiStr)"
     }
 
     private func formatRpe(_ v: Double) -> String {

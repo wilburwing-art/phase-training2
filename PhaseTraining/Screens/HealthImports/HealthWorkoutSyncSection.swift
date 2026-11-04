@@ -96,7 +96,7 @@ struct HealthWorkoutSyncSection: View {
                 .font(.subheadline.weight(.medium))
                 .foregroundColor(.ink)
             if let oldest = s.oldest, let newest = s.newest {
-                Text("Range: \(short(oldest)) – \(short(newest))")
+                Text("Range: \(short(oldest)) to \(short(newest))")
                     .font(.caption)
                     .foregroundColor(.ink2)
             }

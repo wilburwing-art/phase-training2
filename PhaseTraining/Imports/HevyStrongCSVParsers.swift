@@ -39,7 +39,7 @@ private struct ImportedSetBuilder {
         self.resolve = resolve
     }
 
-    mutating func add(name: String, at: Date, kg: Double?, reps: Int, rpe: Double?) {
+    mutating func add(name: String, at: Date, kg: Double?, reps: Int, rpe: Double?, note: String? = nil) {
         if resolved[name] == nil { resolved[name] = .some(resolve(name)) }
         let key = "\(Int64(at.timeIntervalSince1970))|\(name)"
         let n = (counters[key] ?? 0) + 1
@@ -47,7 +47,8 @@ private struct ImportedSetBuilder {
         sets.append(ImportedSet(id: ImportedSet.makeId(source: source, performedAt: at, exerciseNameRaw: name, setNum: n),
                                 source: source, exerciseId: resolved[name] ?? nil, exerciseNameRaw: name,
                                 performedAt: at, setNum: n,
-                                weight: (kg ?? 0) > 0 ? kg : nil, reps: reps, rir: nil, rpe: rpe))
+                                weight: (kg ?? 0) > 0 ? kg : nil, reps: reps, rir: nil, rpe: rpe,
+                                note: note.flatMap { $0.isEmpty ? nil : $0 }))
     }
 
     func result() -> FitbodCSVParser.ParseResult {
@@ -100,7 +101,8 @@ enum HevyCSVParser {
             }
             let w = number(cell(r, lbs ? "weight_lbs" : "weight_kg"))
             b.add(name: name, at: at, kg: w.map { lbs ? $0 * ImportUnitCorrection.kgPerLb : $0 },
-                  reps: reps, rpe: number(cell(r, "rpe")))
+                  reps: reps, rpe: number(cell(r, "rpe")),
+                  note: cell(r, "exercise_notes")?.trimmingCharacters(in: .whitespacesAndNewlines))
         }
         return b.result()
     }

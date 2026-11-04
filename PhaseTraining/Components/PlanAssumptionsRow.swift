@@ -34,7 +34,7 @@ struct PlanAssumptionsRow: View {
         // zero-height, so nothing is spent on the settled case.
         VStack(alignment: .leading, spacing: 6) {
             if !assumed.isEmpty {
-                Text("ASSUMED — TAP TO CHANGE")
+                Text("ASSUMED · TAP TO CHANGE")
                     .styled(.micro)
                     .foregroundStyle(Color.ink3)
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -214,6 +214,7 @@ struct AvailabilityEditorSheet: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(symbol == "minus" ? "Decrease" : "Increase")
         .accessibilityIdentifier(a11y)
     }
 

@@ -180,7 +180,7 @@ struct TodayScreen: View {
                                 }
                             }
                         }
-                        Spacer().frame(height: 160)
+                        Spacer().frame(height: 210)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -191,10 +191,12 @@ struct TodayScreen: View {
             // (TBD — orphaned in code for now).
             VStack(spacing: 10) {
                 primaryButton
+                if store.active == nil { freestyleButton }
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 24)
         }
+        .statusBarBackdrop()
         .foregroundStyle(Color.ink)
         .preferredColorScheme(.dark)
         .sheet(item: $editingExIdx.exerciseSheetItem) { wrapped in
@@ -534,6 +536,25 @@ struct TodayScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("today-log-sport")
+    }
+
+    /// Start an empty session and pick exercises as the gym allows. Shown on
+    /// every day kind, since "whatever machines are open" ignores the plan.
+    private var freestyleButton: some View {
+        Button {
+            store.saveActive(store.createFreestyleSession())
+            onStart()
+        } label: {
+            Text("Freestyle: build it as you go")
+                .font(.scaled("Inter-Regular", size: 13).weight(.bold))
+                .foregroundStyle(Color.ink2)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 9)
+                .background(Color.surface, in: Capsule())
+                .overlay(Capsule().stroke(Color.lineSoft, lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("today-freestyle")
     }
 
     private var workoutStartButton: some View {

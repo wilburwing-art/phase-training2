@@ -465,7 +465,9 @@ enum SportSeasonGenerator {
     /// climbing → sportRoute.
     static func defaultVariant(forSport sportSlug: String?) -> SportVariant {
         guard let s = sportSlug else { return .inbounds }
-        return PhaseRule.climbingSlugs.contains(s) ? .sportRoute : .inbounds
+        if PhaseRule.climbingSlugs.contains(s) { return .sportRoute }
+        // A ski-mountaineering primary trained as a resort skier until 2026-11.
+        return s == "ski-mountaineering" ? .skimo : .inbounds
     }
 
     /// Apply the mesocycle deload to a phase rule (T1-8).

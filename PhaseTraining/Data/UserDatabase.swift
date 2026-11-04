@@ -243,6 +243,17 @@ final class UserDatabase {
               exercise_id  INTEGER NOT NULL
             )
             """
+        ]),
+        // v5 — reps in reserve per set. `LoggedSet.rir` shipped in build 103
+        // but session_sets never had a column, so every logged RIR was dropped
+        // on save (found in the 2026-10-31 gap pass). Blank means not logged.
+        (5, [
+            "ALTER TABLE session_sets ADD COLUMN rir TEXT NOT NULL DEFAULT ''"
+        ]),
+        // v6 — per-exercise notes, logged in the app and imported from Hevy.
+        (6, [
+            "ALTER TABLE session_exercises ADD COLUMN note TEXT",
+            "ALTER TABLE imported_sets ADD COLUMN note TEXT"
         ])
     ]
 

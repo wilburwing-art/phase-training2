@@ -113,11 +113,42 @@ extension UserDatabase {
         return loadOneExerciseLocked(sessionStart: sessionStart, position: position)
     } }
 
+    /// The newest note for an exercise: logged in the app first, else from
+    /// an import (matched by catalog id or raw name). Nil when none.
+    func lastExerciseNote(name: String, exerciseId: Int?) -> String? { withLock {
+        guard let db else { return nil }
+        var stmt: OpaquePointer?
+        let native = """
+        SELECT note FROM session_exercises
+        WHERE name = ? COLLATE NOCASE AND note IS NOT NULL AND note <> ''
+        ORDER BY session_start DESC LIMIT 1
+        """
+        if sqlite3_prepare_v2(db, native, -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, name, -1, SQLITE_TRANSIENT_USER)
+            if sqlite3_step(stmt) == SQLITE_ROW, let n = text(stmt, 0) {
+                sqlite3_finalize(stmt)
+                return n
+            }
+        }
+        sqlite3_finalize(stmt)
+        stmt = nil
+        let imported = """
+        SELECT note FROM imported_sets
+        WHERE (exercise_id = ? OR exercise_name_raw = ? COLLATE NOCASE) AND note IS NOT NULL AND note <> ''
+        ORDER BY performed_at DESC LIMIT 1
+        """
+        guard sqlite3_prepare_v2(db, imported, -1, &stmt, nil) == SQLITE_OK else { return nil }
+        defer { sqlite3_finalize(stmt) }
+        if let exerciseId { sqlite3_bind_int64(stmt, 1, Int64(exerciseId)) } else { sqlite3_bind_null(stmt, 1) }
+        sqlite3_bind_text(stmt, 2, name, -1, SQLITE_TRANSIENT_USER)
+        return sqlite3_step(stmt) == SQLITE_ROW ? text(stmt, 0) : nil
+    } }
+
     /// Caller holds the lock. Used by listSavedSessions + previousSession.
     private func loadExercisesLocked(sessionStart: Int64) -> [LoggedExercise] {
         guard let db else { return [] }
         let sql = """
-        SELECT position, exercise_template_id, name, type, unit, target_sets, target_reps, rest, prev_sets_json
+        SELECT position, exercise_template_id, name, type, unit, target_sets, target_reps, rest, prev_sets_json, note
         FROM session_exercises
         WHERE session_start = ?
         ORDER BY position ASC
@@ -127,7 +158,7 @@ extension UserDatabase {
         defer { sqlite3_finalize(stmt) }
         sqlite3_bind_int64(stmt, 1, sessionStart)
 
-        var heads: [(position: Int, tplId: String, name: String, type: String?, unit: String, targetSets: Int, targetReps: Int, rest: Int, prevJSON: String?)] = []
+        var heads: [(position: Int, tplId: String, name: String, type: String?, unit: String, targetSets: Int, targetReps: Int, rest: Int, prevJSON: String?, note: String?)] = []
         while sqlite3_step(stmt) == SQLITE_ROW {
             heads.append((
                 Int(sqlite3_column_int64(stmt, 0)),
@@ -138,7 +169,8 @@ extension UserDatabase {
                 Int(sqlite3_column_int64(stmt, 5)),
                 Int(sqlite3_column_int64(stmt, 6)),
                 Int(sqlite3_column_int64(stmt, 7)),
-                text(stmt, 8)
+                text(stmt, 8),
+                text(stmt, 9)
             ))
         }
         return heads.map { h in
@@ -151,7 +183,8 @@ extension UserDatabase {
                 targetReps: h.targetReps,
                 rest: h.rest,
                 sets: loadSetsLocked(sessionStart: sessionStart, position: h.position),
-                prevSets: decodePrevSets(h.prevJSON)
+                prevSets: decodePrevSets(h.prevJSON),
+                note: h.note
             )
         }
     }
@@ -159,7 +192,7 @@ extension UserDatabase {
     private func loadOneExerciseLocked(sessionStart: Int64, position: Int) -> LoggedExercise? {
         guard let db else { return nil }
         let sql = """
-        SELECT exercise_template_id, name, type, unit, target_sets, target_reps, rest, prev_sets_json
+        SELECT exercise_template_id, name, type, unit, target_sets, target_reps, rest, prev_sets_json, note
         FROM session_exercises
         WHERE session_start = ? AND position = ?
         """
@@ -178,13 +211,14 @@ extension UserDatabase {
             targetReps: Int(sqlite3_column_int64(stmt, 5)),
             rest: Int(sqlite3_column_int64(stmt, 6)),
             sets: loadSetsLocked(sessionStart: sessionStart, position: position),
-            prevSets: decodePrevSets(text(stmt, 7))
+            prevSets: decodePrevSets(text(stmt, 7)),
+            note: text(stmt, 8)
         )
     }
 
     private func loadSetsLocked(sessionStart: Int64, position: Int) -> [LoggedSet] {
         guard let db else { return [] }
-        let sql = "SELECT num, weight, reps, rpe, done, is_warmup FROM session_sets WHERE session_start = ? AND exercise_position = ? ORDER BY num ASC"
+        let sql = "SELECT num, weight, reps, rpe, done, is_warmup, rir FROM session_sets WHERE session_start = ? AND exercise_position = ? ORDER BY num ASC"
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
         defer { sqlite3_finalize(stmt) }
@@ -198,7 +232,8 @@ extension UserDatabase {
                 reps: text(stmt, 2) ?? "",
                 rpe: text(stmt, 3) ?? "",
                 done: sqlite3_column_int64(stmt, 4) == 1,
-                isWarmup: sqlite3_column_int64(stmt, 5) == 1
+                isWarmup: sqlite3_column_int64(stmt, 5) == 1,
+                rir: text(stmt, 6) ?? ""
             ))
         }
         return out
@@ -267,12 +302,12 @@ extension UserDatabase {
         sqlite3_finalize(s)
 
         let exSQL = """
-        INSERT INTO session_exercises(session_start, position, exercise_template_id, name, type, unit, target_sets, target_reps, rest, prev_sets_json)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO session_exercises(session_start, position, exercise_template_id, name, type, unit, target_sets, target_reps, rest, prev_sets_json, note)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         let setSQL = """
-        INSERT INTO session_sets(session_start, exercise_position, num, weight, reps, rpe, done, is_warmup)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO session_sets(session_start, exercise_position, num, weight, reps, rpe, done, is_warmup, rir)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         let enc = JSONEncoder()
         for (pos, ex) in session.exercises.enumerated() {
@@ -289,6 +324,11 @@ extension UserDatabase {
                 sqlite3_bind_int64(eStmt, 9, Int64(ex.rest))
                 let prevJSON = (try? enc.encode(ex.prevSets)).flatMap { String(data: $0, encoding: .utf8) }
                 if let j = prevJSON { sqlite3_bind_text(eStmt, 10, j, -1, SQLITE_TRANSIENT_USER) } else { sqlite3_bind_null(eStmt, 10) }
+                if let n = ex.note?.trimmingCharacters(in: .whitespacesAndNewlines), !n.isEmpty {
+                    sqlite3_bind_text(eStmt, 11, n, -1, SQLITE_TRANSIENT_USER)
+                } else {
+                    sqlite3_bind_null(eStmt, 11)
+                }
                 if sqlite3_step(eStmt) != SQLITE_DONE { ok = false }
             } else {
                 ok = false
@@ -306,6 +346,7 @@ extension UserDatabase {
                     sqlite3_bind_text(sStmt, 6, set.rpe, -1, SQLITE_TRANSIENT_USER)
                     sqlite3_bind_int64(sStmt, 7, set.done ? 1 : 0)
                     sqlite3_bind_int64(sStmt, 8, set.isWarmup ? 1 : 0)
+                    sqlite3_bind_text(sStmt, 9, set.rir, -1, SQLITE_TRANSIENT_USER)
                     if sqlite3_step(sStmt) != SQLITE_DONE { ok = false }
                 } else {
                     ok = false

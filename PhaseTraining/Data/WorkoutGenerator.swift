@@ -64,7 +64,7 @@ enum WorkoutGenerator {
         func athlete() -> AthleteState {
             AthleteState.from(
                 memory,
-                variant: SportSeasonGenerator.defaultVariant(forSport: memory.primarySport?.slug),
+                variant: memory.primaryVariant,
                 weekNumber: memory.weeksInCurrentPhase ?? 1,
                 recentMovementIDs: recentlyPicked,
                 readiness: context.hasReadinessData ? context.readinessScore : nil,

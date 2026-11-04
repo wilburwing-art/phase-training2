@@ -200,6 +200,7 @@ struct CheckInEventsScreen: View {
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Color.ink3)
                     .frame(width: 32, height: 32)
+                    .accessibilityLabel("Delete event")
             }
             .buttonStyle(.plain)
         }

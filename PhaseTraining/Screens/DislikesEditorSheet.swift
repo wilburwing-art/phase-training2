@@ -41,7 +41,7 @@ struct DislikesEditorSheet: View {
                         // entry was indistinguishable from a working one.
                         ForEach(store.memory.dislikes, id: \.self) { term in
                             if Self.matchCount(for: term) == 0 {
-                                Text("\"\(term)\" doesn't match any exercise — try a shorter word.")
+                                Text("\"\(term)\" doesn't match any exercise. Try a shorter word.")
                                     .font(.monoXS)
                                     .foregroundStyle(Color.danger)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -106,6 +106,7 @@ struct DislikesEditorSheet: View {
                         .background(canCommit(input.wrappedValue) ? Color.accent : Color.surface)
                         .overlay(RoundedRectangle(cornerRadius: 10).stroke(canCommit(input.wrappedValue) ? Color.clear : Color.line, lineWidth: 0.5))
                         .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .accessibilityLabel("Add")
                 }
                 .buttonStyle(.plain)
                 .disabled(!canCommit(input.wrappedValue))
@@ -121,6 +122,7 @@ struct DislikesEditorSheet: View {
                                 Image(systemName: "xmark")
                                     .font(.system(size: 9, weight: .bold))
                                     .foregroundStyle(Color.ink3)
+                                    .accessibilityLabel("Remove \(item)")
                             }
                             .buttonStyle(.plain)
                         }

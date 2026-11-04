@@ -54,7 +54,7 @@ struct StyleGuidePreview: View {
             .init(name: "lineSoft",      hex: "#1F2229",   color: .lineSoft,    inkOnTop: .ink),
             .init(name: "ink",           hex: "#F5F5F0",   color: .ink,         inkOnTop: .bg),
             .init(name: "ink2",          hex: "#B5B7BD",   color: .ink2,        inkOnTop: .bg),
-            .init(name: "ink3",          hex: "#7A7D85",   color: .ink3,        inkOnTop: .bg),
+            .init(name: "ink3",          hex: "#83868E",   color: .ink3,        inkOnTop: .bg),
             .init(name: "accent",        hex: "#D4FF3D",   color: .accent,      inkOnTop: .accentInk),
             .init(name: "accentInk",     hex: "#0A0B0D",   color: .accentInk,   inkOnTop: .ink),
             .init(name: "accentDim",     hex: "#8FA82A",   color: .accentDim,   inkOnTop: .bg),

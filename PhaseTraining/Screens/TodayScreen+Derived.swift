@@ -228,7 +228,7 @@ extension TodayScreen {
     }
 
     var lastSessionDetail: String {
-        guard let prev = previous else { return "First time — weights will be empty" }
+        guard let prev = previous else { return "First time, so weights start empty" }
         let stats = computeStats(prev)
         return "\(formatDuration(prev.duration)) · \(stats.doneSets) sets · avg rpe \(stats.avgRpe)"
     }

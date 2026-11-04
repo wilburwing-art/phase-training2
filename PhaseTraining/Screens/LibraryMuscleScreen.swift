@@ -71,6 +71,7 @@ struct LibraryMuscleScreen: View {
                     .background(Color.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.line, lineWidth: 0.5))
+                    .accessibilityLabel("Back")
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("library-muscle-back")
@@ -111,6 +112,7 @@ struct LibraryMuscleScreen: View {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 14))
                         .foregroundStyle(Color.ink3)
+                        .accessibilityLabel("Clear search")
                 }
                 .buttonStyle(.plain)
             }

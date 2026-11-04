@@ -376,6 +376,18 @@ final class SessionStore: ObservableObject {
                             exercises: tmpl.exercises)
     }
 
+    /// Template id for a session built as you go: no plan, exercises added
+    /// from the picker in Log.
+    static let freestyleTemplateId = "freestyle"
+
+    /// An empty session the user fills from the picker ("Freestyle" on Today).
+    func createFreestyleSession() -> ActiveSession {
+        buildSession(templateId: Self.freestyleTemplateId,
+                     name: "Freestyle",
+                     category: "Built as you go",
+                     exercises: [])
+    }
+
     /// Shared session-construction body. Pulls prev autofill in two passes:
     ///
     ///   1. templateId-match — UserDatabase.previousSession on (template_id).
@@ -434,7 +446,10 @@ final class SessionStore: ObservableObject {
                 prevSets: prevEx?.sets ?? [],
                 rpe: ex.rpe,
                 tempo: ex.tempo,
-                supersetGroup: ex.supersetGroup
+                supersetGroup: ex.supersetGroup,
+                lastNote: userDB.lastExerciseNote(
+                    name: ex.name, exerciseId: ExerciseLookupCache.shared.exercise(forName: ex.name)?.id),
+                repsLabel: ex.repsLabel
             )
         }
 
@@ -510,7 +525,7 @@ final class SessionStore: ObservableObject {
     @discardableResult
     func saveAbandoned(_ active: ActiveSession, reason: AbandonReason,
                        note: String?, endTime: Date = Date()) -> SavedSession {
-        var abandonNote = "Stopped early — \(reason.label)"
+        var abandonNote = "Stopped early: \(reason.label)"
         if let note, !note.isEmpty { abandonNote += ": \(note)" }
         let saved = commitCompleted(active, feel: reason.label, note: abandonNote, endTime: endTime)
 

@@ -22,13 +22,18 @@ struct ExerciseTemplate: Identifiable, Codable, Equatable {
     /// sets, then rest." Survives the trip through SessionStore into
     /// LoggedExercise so LogScreen can use it for visual + nav grouping.
     var supersetGroup: Int?
+    /// The prescription as written ("8s hold", "6 hangs (7s on / 3s off)",
+    /// "30-60 sec"). `targetReps` keeps only its leading number, which read a
+    /// timed hold as that many reps; this keeps the text for Log and the hold
+    /// timer. Nil for plain rep counts.
+    var repsLabel: String? = nil
 
     /// Convenience init so the upper-1 template + everywhere else that
     /// constructs an ExerciseTemplate without coaching hints stays unchanged.
     init(id: String, name: String, type: String?, unit: String,
          targetSets: Int, targetReps: Int, rest: Int,
          rpe: String? = nil, tempo: String? = nil,
-         supersetGroup: Int? = nil) {
+         supersetGroup: Int? = nil, repsLabel: String? = nil) {
         self.id = id
         self.name = name
         self.type = type
@@ -39,6 +44,14 @@ struct ExerciseTemplate: Identifiable, Codable, Equatable {
         self.rpe = rpe
         self.tempo = tempo
         self.supersetGroup = supersetGroup
+        self.repsLabel = ExerciseTemplate.nonNumeric(repsLabel)
+    }
+
+    /// The label only when it says more than a number ("8", "8-10" carry
+    /// nothing `targetReps` doesn't).
+    static func nonNumeric(_ s: String?) -> String? {
+        guard let s = s?.trimmingCharacters(in: .whitespaces), !s.isEmpty else { return nil }
+        return s.allSatisfy { $0.isNumber || $0 == "-" || $0 == " " } ? nil : s
     }
 }
 

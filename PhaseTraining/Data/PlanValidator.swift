@@ -140,7 +140,7 @@ enum PlanValidator {
         let title = "\(run.count) hard days in a row"
         let explanation = "You've got \(weekdays.joined(separator: " → ")) booked as " +
             "lift or sport days with no rest between them. Most lifters need at " +
-            "least one easy day after two hard ones — recovery starts breaking " +
+            "least one easy day after two hard ones, or recovery starts breaking " +
             "down past that. Move one of the middle days to a mobility flow or rest."
         return PlanValidationIssue(
             ruleKey: "stacked-hard-days",
@@ -162,10 +162,10 @@ enum PlanValidator {
         let title: String
         let body: String
         if diff > 0 {
-            title = "Lifting \(planned) days — declared \(declared)"
+            title = "Lifting \(planned) days, declared \(declared)"
             body = "Your profile says you want to lift \(declared) times a week, but this week schedules \(planned). That's a \(diff)-day jump. If you're consciously pushing, mark the week as a Build tone; if not, drop a lift to keep volume on track."
         } else {
-            title = "Lifting \(planned) days — usually \(declared)"
+            title = "Lifting \(planned) days, usually \(declared)"
             body = "Your profile says \(declared) lift days but this week only schedules \(planned). If you're recovering or busy, mark the week tone so the coach reads the signal. Otherwise add a lift day back."
         }
         return [PlanValidationIssue(
@@ -207,7 +207,7 @@ enum PlanValidator {
         if diff > 0 {
             title = "Push-heavy week (\(pushCount) push vs \(pullCount) pull)"
             body = "You've got \(pushCount) push days and \(pullCount) pull days. " +
-                "Posterior chain matters for shoulder health and balanced strength — " +
+                "Posterior chain matters for shoulder health and balanced strength, so " +
                 "swap one of the push days to pull, or pick Full body to even it out."
         } else {
             title = "Pull-heavy week (\(pullCount) pull vs \(pushCount) push)"
@@ -246,7 +246,7 @@ enum PlanValidator {
                 patternKey: patternKey,
                 severity: .warn,
                 title: "Hard sport right after a lift",
-                explanation: "\(weekdayShort(of: prev.date)) is a lift day and \(weekdayShort(of: next.date)) is a hard \(next.sport?.name ?? "sport") session. Stacking two hard days in a row eats into recovery — consider moving the lift earlier in the week or marking the sport day lighter.",
+                explanation: "\(weekdayShort(of: prev.date)) is a lift day and \(weekdayShort(of: next.date)) is a hard \(next.sport?.name ?? "sport") session. Stacking two hard days in a row eats into recovery. Consider moving the lift earlier in the week or marking the sport day lighter.",
                 relevantDates: [prev.date, next.date]
             ))
         }
@@ -315,7 +315,7 @@ enum PlanValidator {
         var issues: [PlanValidationIssue] = []
         for (focus, dates) in counts where dates.count >= 3 {
             let title = "\(dates.count) \(focus.label.lowercased()) days this week"
-            let body = "Hitting \(focus.label.lowercased()) \(dates.count) times in a week is a lot — " +
+            let body = "Hitting \(focus.label.lowercased()) \(dates.count) times in a week is a lot: " +
                 "joint and tendon load on that pattern won't have time to settle. Unless " +
                 "you're consciously specializing, swap one or two to a different focus."
             issues.append(PlanValidationIssue(

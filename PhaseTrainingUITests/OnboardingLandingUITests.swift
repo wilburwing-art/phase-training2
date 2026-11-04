@@ -52,7 +52,7 @@ final class OnboardingLandingUITests: XCTestCase {
         // resolve through app.otherElements (same query-mismatch class as
         // the body-weight sheet). The marker text is the visible thing the
         // assertion is really about.
-        let assumedMarker = app.staticTexts["ASSUMED — TAP TO CHANGE"]
+        let assumedMarker = app.staticTexts["ASSUMED · TAP TO CHANGE"]
         XCTAssertTrue(assumedMarker.waitForExistence(timeout: 5)
                         || app.otherElements["plan-assumptions-row"].exists
                         || app.buttons["plan-assumptions-row"].exists,

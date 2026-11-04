@@ -47,6 +47,7 @@ import SwiftUI
 struct ProgressScreen: View {
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject var memoryStore: MemoryStore
+    @EnvironmentObject var sportLogStore: SportLogStore
 
     /// Build 92: history surfaced from here via "See all sessions" on the
     /// Recent Sessions card. Previously lived as a tab off the Today screen.
@@ -54,11 +55,16 @@ struct ProgressScreen: View {
     /// Your lifts: the exercise a TOP EXERCISES row opens, and the full list.
     @State var liftDetail: Exercise?
     @State var showingAllLifts = false
+    @State var showingHistoryCheck = false
 
     // Sheet toggles for the body-weight / body-composition trend cards
     // (ProgressScreen+BodyCards.swift). Stored properties can't live in an
     // extension, so they stay on the struct.
     @State var presentingBodyWeightSheet = false
+    @State var presentingMaxHangSheet = false
+    @State var presentingSkiTestSheet = false
+    /// Ski days this season (ProgressScreen+SkiCards.swift); nil until loaded.
+    @State var skiSeasonSummary: SkiSeasonSummary?
     @State var presentingBodyCompositionSheet = false
 
     // Training heatmap (ProgressScreen+Heatmap.swift): months back from the
@@ -114,7 +120,12 @@ struct ProgressScreen: View {
                 content
             }
         }
+        .statusBarBackdrop()
         .preferredColorScheme(.dark)
+        .task { await loadSkiSeason() }
+        .onChange(of: sportLogStore.entries.count) { _, _ in
+            Task { await loadSkiSeason() }
+        }
     }
 
     // MARK: - Empty
@@ -151,6 +162,9 @@ struct ProgressScreen: View {
     private var hasNonWorkoutData: Bool {
         !memoryStore.memory.bodyWeightLog.isEmpty
             || !memoryStore.memory.bodyCompositionLog.isEmpty
+            || !memoryStore.memory.maxHangTests.isEmpty
+            || !memoryStore.memory.skiReadinessTests.isEmpty
+            || (skiSeasonSummary?.days ?? 0) > 0
     }
 
     private var content: some View {
@@ -172,6 +186,9 @@ struct ProgressScreen: View {
                 sessionsCard
                 volumeCard
                 strengthRatiosCard
+                fingerStrengthCard
+                skiSeasonCard
+                skiReadinessCard
                 muscleBalanceCard
                 ProgressRecoverySection()
                 perExerciseCard
@@ -194,6 +211,9 @@ struct ProgressScreen: View {
         .sheet(isPresented: $showingAllLifts) {
             YourLiftsSheet()
                 .environmentObject(store)
+        }
+        .sheet(isPresented: $showingHistoryCheck) {
+            HistoryCheckSheet(audit: store.historyProfile.audit, detraining: store.historyProfile.detraining)
         }
     }
 
@@ -302,4 +322,5 @@ struct ProgressScreen: View {
         .environmentObject(store)
         .environmentObject(memory)
         .environmentObject(PlanStore(defaults: defaults))
+        .environmentObject(SportLogStore(defaults: defaults))
 }

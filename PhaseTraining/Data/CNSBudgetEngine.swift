@@ -82,7 +82,7 @@ enum CNSBudgetEngine {
                 date: out.days[target].date,
                 kind: .rest,
                 title: "Recovery",
-                generatedReason: "Recovery day — balanced against your harder days"
+                generatedReason: "Recovery day, balanced against your harder days"
             )
         }
         return out

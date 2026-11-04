@@ -50,6 +50,47 @@ enum ExerciseSearchVocabulary {
         "flyes": "fly",
     ]
 
+    /// Machine brands, as token sequences. The catalog names machines
+    /// generically and in both orders ("Machine Chest Press", "Iso-Lateral
+    /// Chest Press (Machine)"), so a brand cannot rewrite to the word
+    /// "machine": it is stripped and the search keeps machine rows only.
+    /// Matched as a whole sequence so "hammer" alone still finds Hammer Curl.
+    /// Cable-first brands (Freemotion, Keiser) are left out: their rows are
+    /// named "Cable ...", which the machines-only filter would hide.
+    static let machineBrands: [[String]] = [
+        ["hammer", "strength"], ["hammerstrength"],
+        ["life", "fitness"], ["lifefitness"],
+        ["star", "trac"], ["startrac"],
+        ["cybex"], ["nautilus"], ["matrix"], ["precor"], ["technogym"],
+        ["hoist"], ["prime"], ["panatta"], ["atlantis"], ["arsenal"],
+        ["gym80"], ["bodymaster"],
+    ]
+
+    /// `query` with any machine brand removed, and whether one was there.
+    static func stripMachineBrand(_ query: String) -> (rest: String, machineOnly: Bool) {
+        var tokens = CoachDatabase.searchTokens(query)
+        var found = false
+        for brand in machineBrands {
+            var i = 0
+            while i + brand.count <= tokens.count {
+                if Array(tokens[i..<i + brand.count]) == brand {
+                    tokens.removeSubrange(i..<i + brand.count)
+                    found = true
+                } else {
+                    i += 1
+                }
+            }
+        }
+        return found ? (tokens.joined(separator: " "), true) : (query, false)
+    }
+
+    /// A machine row for a brand search. Smith machines are a bar on rails,
+    /// which no machine brand query means.
+    static func isMachineName(_ name: String) -> Bool {
+        let lower = name.lowercased()
+        return lower.contains("machine") && !lower.contains("smith")
+    }
+
     /// Interchangeable words, as equivalence classes — membership is symmetric,
     /// so each class works in both directions.
     static let equivalents: [Set<String>] = [

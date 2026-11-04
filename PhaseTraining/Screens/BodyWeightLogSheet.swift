@@ -243,6 +243,7 @@ struct BodyWeightLogSheet: View {
                 Image(systemName: "trash")
                     .font(.system(size: 12))
                     .foregroundStyle(Color.ink3)
+                    .accessibilityLabel("Delete entry")
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("body-weight-log-delete-\(entry.id.uuidString)")

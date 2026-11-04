@@ -215,17 +215,17 @@ final class WeekPlanIdentityTests: XCTestCase {
         return f.string(from: date)
     }
 
-    func test_rangeLabel_rendersFirstAndLastDayJoinedByEnDash() {
+    func test_rangeLabel_rendersFirstAndLastDayJoinedBySpacedHyphen() {
         let p = plan(startingAt: mondayAnchor())  // May 11 – May 17, 2026
         let label = p.rangeLabel
 
         // Note: the doc comment claims a compact "May 14–20", but the
         // implementation renders the full "MMM d" on BOTH endpoints —
         // characterize the actual behavior.
-        XCTAssertEqual(label, "\(mmmD(p.days.first!.date))–\(mmmD(p.days.last!.date))")
+        XCTAssertEqual(label, "\(mmmD(p.days.first!.date)) - \(mmmD(p.days.last!.date))")
 
-        let halves = label.components(separatedBy: "–")
-        XCTAssertEqual(halves.count, 2, "exactly one en dash, got \(label)")
+        let halves = label.components(separatedBy: " - ")
+        XCTAssertEqual(halves.count, 2, "exactly one separator, got \(label)")
         XCTAssertFalse(halves[0].isEmpty)
         XCTAssertFalse(halves[1].isEmpty)
         XCTAssertTrue(halves[0].contains("11"), "got \(label)")
@@ -246,9 +246,9 @@ final class WeekPlanIdentityTests: XCTestCase {
         let p = plan(startingAt: start)
 
         let label = p.rangeLabel
-        XCTAssertEqual(label, "\(mmmD(p.days.first!.date))–\(mmmD(p.days.last!.date))")
+        XCTAssertEqual(label, "\(mmmD(p.days.first!.date)) - \(mmmD(p.days.last!.date))")
 
-        let halves = label.components(separatedBy: "–")
+        let halves = label.components(separatedBy: " - ")
         XCTAssertEqual(halves.count, 2, "got \(label)")
         XCTAssertTrue(halves[0].contains("29"), "got \(label)")
         XCTAssertTrue(halves[1].contains("4"), "got \(label)")

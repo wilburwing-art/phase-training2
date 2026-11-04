@@ -317,5 +317,6 @@ extension LogScreen {
         // rendered for the test to assert against). The label is 44 now, but
         // .borderless stays: no reason to re-test that interaction.
         .buttonStyle(.borderless)
+        .accessibilityLabel(done ? "Set done" : "Mark set done")
     }
 }

@@ -228,9 +228,9 @@ extension DemographicProfile {
         var why: [String] = []
         why.append("\(m.experience.label) lifters do best with \(liftLow)-\(liftHigh) lift days at \(sessLow)-\(sessHigh) min per session.")
         if let age = m.age, age >= 70 {
-            why.append("Age \(age) — power/balance bias, shorter sessions, and extended recovery between lifts.")
+            why.append("Age \(age): power/balance bias, shorter sessions, and extended recovery between lifts.")
         } else if let age = m.age, age >= 55 {
-            why.append("Age \(age) — capping volume and adding recovery between hard days.")
+            why.append("Age \(age): capping volume and adding recovery between hard days.")
         }
         if !envs.isEmpty {
             why.append("Equipment-aware workout pool: only \(envs.sorted().joined(separator: ", ")) workouts.")
@@ -243,9 +243,6 @@ extension DemographicProfile {
         }
         if let sport = m.primarySport {
             why.append("Sport-aware shape from \(sport.name) × \(m.seasonForPlanner.label).")
-        }
-        if m.gender != nil {
-            why.append("Gender is recorded for future recovery / intensity models but isn't used to shape exercise selection.")
         }
 
         return DemographicProfile(

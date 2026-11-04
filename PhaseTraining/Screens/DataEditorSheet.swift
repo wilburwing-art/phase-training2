@@ -11,6 +11,8 @@ struct DataEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     var onExport: () -> Void
     var onImport: () -> Void
+    /// Nil when there is nothing logged to export.
+    var onExportCSV: (() -> Void)? = nil
 
     var body: some View {
         NavigationStack {
@@ -31,6 +33,20 @@ struct DataEditorSheet: View {
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("profile-export")
+
+                        Button(action: {
+                            onExportCSV?()
+                            dismiss()
+                        }) {
+                            dataRow(icon: "tablecells",
+                                    title: "Export workouts (CSV)",
+                                    subtitle: onExportCSV == nil
+                                        ? "No workouts logged yet."
+                                        : "Every logged set in Strong's CSV format, which other lifting apps can import.")
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(onExportCSV == nil)
+                        .accessibilityIdentifier("profile-export-csv")
 
                         Button(action: {
                             onImport()

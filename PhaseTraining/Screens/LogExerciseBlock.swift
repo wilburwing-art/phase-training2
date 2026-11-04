@@ -50,7 +50,7 @@ extension LogScreen {
                     .accessibilityLabel(allDone ? "\(displayName), all sets done" : displayName)
                 if let type = ex.type, !type.isEmpty {
                     Text("(\(type))")
-                        .font(.system(size: 11))
+                        .font(.scaled("Inter-Regular", size: 11))
                         .foregroundStyle(Color.ink3)
                 }
                 Spacer()
@@ -91,6 +91,77 @@ extension LogScreen {
                 } label: {
                     Label("Show details", systemImage: "info.circle")
                 }
+                Button {
+                    noteTarget = ExerciseNoteTarget(index: exIdx)
+                } label: {
+                    Label(ex.note == nil ? "Add note" : "Edit note", systemImage: "note.text")
+                }
+                if PlateTarget.isBarbell(ex.name) {
+                    Button {
+                        plateTarget = PlateTarget(exercise: ex)
+                    } label: {
+                        Label("Plate calculator", systemImage: "circle.grid.cross")
+                    }
+                }
+            }
+
+            // A timed prescription ("8s hold", "6 hangs (7s on / 3s off)") used
+            // to reach Log as its leading number, read as reps. Show it as
+            // written, with the hold timer when it parses.
+            if let label = ex.repsLabel {
+                HStack(spacing: 8) {
+                    Text("Target: \(label)")
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink2)
+                        .lineLimit(2)
+                        .accessibilityIdentifier("log-reps-label-\(exIdx)")
+                    Spacer(minLength: 6)
+                    if HoldProtocol.parse(label) != nil {
+                        Button {
+                            holdTarget = HoldTimerTarget(index: exIdx)
+                        } label: {
+                            Label("Timer", systemImage: "timer")
+                                .font(.scaled("Inter-Regular", size: 13))
+                                .foregroundStyle(Color.accent)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(Color.elevated)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("log-hold-timer-\(exIdx)")
+                    }
+                }
+                .padding(.bottom, 6)
+            }
+
+            // Per-exercise notes (2026-11): last time's, read-only, then this
+            // session's own. Tap opens the editor.
+            if (ex.lastNote?.isEmpty == false) || (ex.note?.isEmpty == false) {
+                Button {
+                    noteTarget = ExerciseNoteTarget(index: exIdx)
+                } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        if let last = ex.lastNote, !last.isEmpty {
+                            Text("Last time: \(last)")
+                                .font(.monoXS)
+                                .foregroundStyle(Color.ink3)
+                                .lineLimit(2)
+                                .accessibilityIdentifier("log-exercise-last-note-\(exIdx)")
+                        }
+                        if let note = ex.note, !note.isEmpty {
+                            Text(note)
+                                .font(.scaled("Inter-Regular", size: 13))
+                                .foregroundStyle(Color.ink2)
+                                .lineLimit(3)
+                                .accessibilityIdentifier("log-exercise-note-\(exIdx)")
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, 6)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("log-exercise-notes-\(exIdx)")
             }
 
             // Coaching hints (build 70): RPE + tempo prescription from the

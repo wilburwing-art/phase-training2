@@ -90,7 +90,7 @@ struct SportLogSheet: View {
                     durationMinutes = min(600, max(5, raw))
                 }
             } message: {
-                Text("Enter 5–600 minutes.")
+                Text("Enter 5 to 600 minutes.")
             }
         }
         .presentationBackground(Color.bg)
@@ -124,6 +124,7 @@ struct SportLogSheet: View {
                     Image(systemName: "minus.circle.fill")
                         .font(.system(size: 28))
                         .foregroundStyle(durationMinutes > 5 ? Color.accent : Color.line)
+                        .accessibilityLabel("Decrease duration")
                 }
                 .buttonStyle(.plain)
                 .disabled(durationMinutes <= 5)
@@ -147,6 +148,7 @@ struct SportLogSheet: View {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 28))
                         .foregroundStyle(durationMinutes < 600 ? Color.accent : Color.line)
+                        .accessibilityLabel("Increase duration")
                 }
                 .buttonStyle(.plain)
                 .disabled(durationMinutes >= 600)

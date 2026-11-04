@@ -150,9 +150,9 @@ struct MissedWorkoutBanner: View {
             return "Plan updated"
         }
         if offersConsolidation {
-            return "No room to move it — consolidate the week instead?"
+            return "No room to move it. Consolidate the week instead?"
         }
-        return "Already a full week — leaving it skipped"
+        return "The week is already full, so it stays skipped"
     }
 
     private var weekdayLabel: String {

@@ -112,6 +112,9 @@ enum CoachContext {
         // tolerance on a brand-new user vs a continuing lifter.
         profile.append("training state: \(memory.startingState.label.lowercased())")
         profile.append("goal: \(memory.trainingGoal.label.lowercased())")
+        if let d = memory.skiDiscipline {
+            profile.append("discipline: \(d.disciplineLabel.lowercased())")
+        }
         profile.append("equipment: \(memory.equipment.map(\.label).joined(separator: ", "))")
         profile.append("target lifts/wk: \(memory.liftDaysPerWeek)")
         // Session length: declared vs actual. If the user's average completed

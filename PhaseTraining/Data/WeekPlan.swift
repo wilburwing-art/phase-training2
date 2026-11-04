@@ -281,7 +281,8 @@ extension GeneratedWorkout {
                     rest: gex.restSeconds,
                     rpe: gex.rpe,
                     tempo: gex.tempo,
-                    supersetGroup: gex.supersetGroup
+                    supersetGroup: gex.supersetGroup,
+                    repsLabel: gex.reps
                 )
             }
         )
@@ -338,7 +339,7 @@ extension WeekPlan {
         guard let first = days.first?.date, let last = days.last?.date else { return "" }
         let f = DateFormatter()
         f.dateFormat = "MMM d"
-        return "\(f.string(from: first))–\(f.string(from: last))"
+        return "\(f.string(from: first)) - \(f.string(from: last))"
     }
 }
 
@@ -400,7 +401,9 @@ extension TrainingMemory {
         ]
         // Only a non-default goal joins the hash, so every existing week keeps
         // its hash and does not rebuild just because the field now exists.
-        + (trainingGoal == .sportPerformance ? [] : ["tg:\(trainingGoal.rawValue)"]))
+        + (trainingGoal == .sportPerformance ? [] : ["tg:\(trainingGoal.rawValue)"])
+        // Same rule for the ski discipline: only a chosen one joins.
+        + (skiDiscipline.map { ["sd:\($0.rawValue)"] } ?? []))
         .joined(separator: "|")
         var hash: UInt64 = 5381
         for byte in canonical.utf8 {

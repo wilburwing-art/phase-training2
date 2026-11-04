@@ -166,6 +166,7 @@ struct ExercisePickerSheet: View {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 14))
                         .foregroundStyle(Color.ink3)
+                        .accessibilityLabel("Clear search")
                 }
                 .buttonStyle(.plain)
             }

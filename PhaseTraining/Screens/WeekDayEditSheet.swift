@@ -215,7 +215,7 @@ struct WeekDayEditSheet: View {
 
             ActionRow(
                 title: "Add sport session",
-                subtitle: "Climb, ski, run — slot a sport on this day",
+                subtitle: "Climb, ski, run: slot a sport on this day",
                 icon: "figure.outdoor.cycle",
                 action: { requestAdd(.sport) }
             )

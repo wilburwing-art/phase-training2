@@ -131,7 +131,7 @@ struct HistoryCheckRow: View {
                     Text("History check")
                         .font(.subheadline)
                         .foregroundColor(.ink)
-                    Text(summary(audit))
+                    Text(Self.summary(audit) ?? "Nothing looked wrong")
                         .font(.caption)
                         .foregroundColor(.ink2)
                         .multilineTextAlignment(.leading)
@@ -150,7 +150,9 @@ struct HistoryCheckRow: View {
         .sheet(isPresented: $showing) { HistoryCheckSheet(audit: audit, detraining: profile.detraining) }
     }
 
-    private func summary(_ audit: HistoryProfile.Audit) -> String {
+    /// One line on what the check found. With `onlyWhenNotable`, nil when
+    /// there are no flags and no breaks, so a caller can hide its entry point.
+    static func summary(_ audit: HistoryProfile.Audit, onlyWhenNotable: Bool = false) -> String? {
         var parts: [String] = []
         let typos = audit.outlierSets + audit.impossibleSets
         if typos > 0 {
@@ -160,7 +162,11 @@ struct HistoryCheckRow: View {
         if audit.duplicateBlocks > 0 {
             parts.append("\(audit.duplicateBlocks) duplicate \(audit.duplicateBlocks == 1 ? "workout" : "workouts")")
         }
-        return parts.isEmpty ? "Nothing looked wrong" : parts.joined(separator: ", ").capitalizedFirst
+        if !audit.layoffs.isEmpty {
+            parts.append("\(audit.layoffs.count) \(audit.layoffs.count == 1 ? "break" : "breaks") over 8 weeks")
+        }
+        if parts.isEmpty { return onlyWhenNotable ? nil : "Nothing looked wrong" }
+        return parts.joined(separator: ", ").capitalizedFirst
     }
 }
 

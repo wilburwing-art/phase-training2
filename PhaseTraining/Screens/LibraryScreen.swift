@@ -266,6 +266,7 @@ struct LibraryScreen: View {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 14))
                         .foregroundStyle(Color.ink3)
+                        .accessibilityLabel("Clear search")
                 }
                 .buttonStyle(.plain)
             }
@@ -676,14 +677,14 @@ struct BundledRoutinePreviewSheet: View {
                     VStack(alignment: .leading, spacing: 16) {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(row.name)
-                                .font(.system(size: 22, weight: .bold))
+                                .font(.scaled("SpaceGrotesk-SemiBold", size: 22))
                                 .foregroundStyle(Color.ink)
                             Text(headerMeta)
                                 .styled(.micro)
                                 .foregroundStyle(Color.ink3)
                             if let desc = row.description, !desc.isEmpty {
                                 Text(desc)
-                                    .font(.system(size: 14))
+                                    .font(.scaled("Inter-Regular", size: 14))
                                     .foregroundStyle(Color.ink2)
                                     .fixedSize(horizontal: false, vertical: true)
                                     .padding(.top, 4)
@@ -696,7 +697,7 @@ struct BundledRoutinePreviewSheet: View {
                                 .foregroundStyle(Color.ink3)
                             if exercises.isEmpty {
                                 Text("Loading…")
-                                    .font(.system(size: 14))
+                                    .font(.scaled("Inter-Regular", size: 14))
                                     .foregroundStyle(Color.ink3)
                             } else {
                                 ForEach(exercises) { ex in
@@ -707,7 +708,7 @@ struct BundledRoutinePreviewSheet: View {
                                             .frame(width: 18, alignment: .trailing)
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(ex.name)
-                                                .font(.system(size: 15, weight: .semibold))
+                                                .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                                                 .foregroundStyle(Color.ink)
                                             if let line = setRepLine(ex) {
                                                 Text(line)

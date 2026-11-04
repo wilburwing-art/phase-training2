@@ -29,6 +29,18 @@ final class BackupCoordinator: ObservableObject {
 
     // MARK: - Backup / restore
 
+    /// The lifter's logged workouts as a Strong-format CSV, through the same
+    /// share sheet as the backup.
+    func exportWorkoutsCSV(sessions: [SavedSession], usesImperial: Bool) {
+        do {
+            exportURL = try WorkoutCSVExporter.writeTempFile(
+                WorkoutCSVExporter.csv(sessions: sessions, usesImperial: usesImperial))
+            presentingShare = true
+        } catch {
+            backupError = "Couldn't write the CSV: \(error.localizedDescription)"
+        }
+    }
+
     func exportBackup() {
         do {
             let envelope = BackupManager.snapshot()

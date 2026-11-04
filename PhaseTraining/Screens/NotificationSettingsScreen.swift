@@ -22,7 +22,7 @@ struct NotificationSettingsScreen: View {
             } footer: {
                 Text(
                     "PhaseTraining will send at most 3 push notifications a day " +
-                    "(workout timers don't count — they only fire while a workout is running). " +
+                    "(workout timers don't count, since they only fire while a workout is running). " +
                     "Notifications you dismiss repeatedly are suppressed automatically."
                 )
             }

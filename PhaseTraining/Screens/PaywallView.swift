@@ -69,7 +69,7 @@ struct PaywallView: View {
             }
             .accessibilityHidden(true)
             Text("Phase Training Pro")
-                .font(.system(size: 26, weight: .bold))
+                .font(.scaled("SpaceGrotesk-SemiBold", size: 26))
                 .foregroundStyle(Color.ink)
             // Copy claims are load-bearing: keep every line to something the
             // shipped code actually does. The old sentence promised "an AI
@@ -77,7 +77,7 @@ struct PaywallView: View {
             // the coach's strategy on both paths, which is the same false
             // claim PlanStore+LLMRefinement disabled itself over.
             Text("Training that follows your season, and plans your primary sport around the second one you refuse to give up.")
-                .font(.system(size: 15))
+                .font(.scaled("Inter-Regular", size: 15))
                 .foregroundStyle(Color.ink2)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -98,7 +98,7 @@ struct PaywallView: View {
                 .foregroundStyle(Color.accent)
                 .font(.system(size: 14, weight: .semibold))
             Text(text)
-                .font(.system(size: 14))
+                .font(.scaled("Inter-Regular", size: 14))
                 .foregroundStyle(Color.ink2)
             Spacer()
         }
@@ -124,20 +124,20 @@ struct PaywallView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(product.displayName)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.scaled("SpaceGrotesk-SemiBold", size: 16))
                         .foregroundStyle(Color.ink)
                     // Price per period and any trial the buyer is eligible
                     // for, stated on the button itself (guideline 3.1.2).
                     Text(subStore.terms(for: product)?.line ?? product.displayPrice)
-                        .font(.system(size: 12))
+                        .font(.scaled("Inter-Regular", size: 12))
                         .foregroundStyle(Color.ink2)
                     Text(product.description)
-                        .font(.system(size: 12))
+                        .font(.scaled("Inter-Regular", size: 12))
                         .foregroundStyle(Color.ink3)
                 }
                 Spacer()
                 Text(product.displayPrice)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 16))
                     .foregroundStyle(Color.accent)
             }
             .padding(16)
@@ -165,7 +165,7 @@ struct PaywallView: View {
         #if DEBUG
         return "Subscriptions aren't set up for this build. Create the Pro product in App Store Connect, then update `SubscriptionStore.allProductIDs`. For local previews, add a StoreKit Configuration File to the scheme."
         #else
-        return "Pro isn't available yet. Everything in the app is free in the meantime — nothing is locked."
+        return "Pro isn't available yet. Everything in the app is free in the meantime, and nothing is locked."
         #endif
     }
 
@@ -180,7 +180,7 @@ struct PaywallView: View {
                 .styled(.micro)
                 .foregroundStyle(Color.ink3)
             Text(Self.unconfiguredMessage)
-                .font(.system(size: 13))
+                .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink2)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -195,7 +195,7 @@ struct PaywallView: View {
         VStack(alignment: .leading, spacing: 6) {
             if let err = subStore.lastError {
                 Text(err)
-                    .font(.system(size: 12))
+                    .font(.scaled("Inter-Regular", size: 12))
                     .foregroundStyle(.red)
                     .fixedSize(horizontal: false, vertical: true)
                 Button("Try again") {
@@ -206,7 +206,7 @@ struct PaywallView: View {
                 .accessibilityIdentifier("paywall-retry")
             }
             Text(Self.renewalTerms)
-                .font(.system(size: 11))
+                .font(.scaled("Inter-Regular", size: 11))
                 .foregroundStyle(Color.ink3)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 14) {
