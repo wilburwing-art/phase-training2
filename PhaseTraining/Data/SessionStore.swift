@@ -31,6 +31,11 @@ final class SessionStore: ObservableObject {
     /// records the planned-vs-actual DayOutcome from it. Closure wiring keeps
     /// SessionStore plan-agnostic, same as `onAbandonRecorded`.
     var onSessionSaved: ((SavedSession, _ abandoned: Bool) -> Void)?
+    /// Added load for a hangboard exercise from the latest max-hang test
+    /// (`HangboardLoad`), keyed by exercise name. Wired by RootTabView to
+    /// read MemoryStore, so SessionStore stays memory-agnostic. Nil in tests
+    /// that never set it.
+    var hangboardLoad: ((String) -> HangboardLoad.Prescription?)?
     /// 3c capture — fired once when a NEW active session begins (a start time
     /// not seen before, within the last few minutes), never for autosaves of
     /// the same session or a session restored on launch. The App layer hangs
@@ -420,8 +425,22 @@ final class SessionStore: ObservableObject {
             let lastReps = ProgressionSuggestion.priorPerformance(from: prevEx?.sets ?? [], targetReps: ex.targetReps)?.repsAchieved
             let repGap = lastReps.map { abs($0 - ex.targetReps) > ProgressionSuggestion.repGapLimit } ?? false
 
+            // A max-hang test prescribes the added load on the hangboard
+            // protocols it covers, over last session's weights: the test is
+            // the newer, deliberate measurement. An assisted load (negative)
+            // stays blank, since a weight box cannot hold a negative; the
+            // Log pill says how much to take off.
+            let hangLoad = ex.unit == LoggedExercise.bodyweightUnit
+                ? hangboardLoad?(ex.name).flatMap { $0.addedLb > 0 ? $0.addedLb : nil }
+                : nil
+
             let sets: [LoggedSet] = (0..<ex.targetSets).map { i in
                 let prevSet: LoggedSet? = (prevEx?.sets.indices.contains(i) ?? false) ? prevEx?.sets[i] : nil
+                if let hangLoad {
+                    return LoggedSet(num: i + 1, weight: Self.weightString(hangLoad),
+                                     reps: prevSet.map { $0.reps } ?? String(ex.targetReps),
+                                     rpe: "", done: false)
+                }
                 if let historyLoad, prevEx == nil || repGap {
                     return LoggedSet(num: i + 1, weight: historyLoad, reps: String(ex.targetReps),
                                      rpe: "", done: false)
@@ -462,6 +481,11 @@ final class SessionStore: ObservableObject {
             feel: nil,
             note: nil
         )
+    }
+
+    /// "5", "12.5": a weight box value without a trailing ".0".
+    static func weightString(_ lb: Double) -> String {
+        lb.truncatingRemainder(dividingBy: 1) == 0 ? "\(Int(lb))" : String(format: "%.1f", lb)
     }
 
     /// Persist a completed session: insert into SQLite, prepend to the

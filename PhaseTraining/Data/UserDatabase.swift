@@ -254,6 +254,14 @@ final class UserDatabase {
         (6, [
             "ALTER TABLE session_exercises ADD COLUMN note TEXT",
             "ALTER TABLE imported_sets ADD COLUMN note TEXT"
+        ]),
+        // v7 — the coaching hints and superset grouping on each exercise.
+        // `LoggedExercise.rpe`, `tempo` and `supersetGroup` were dropped on
+        // save (same class as v5's RIR). Nullable: every earlier row reads nil.
+        (7, [
+            "ALTER TABLE session_exercises ADD COLUMN rpe TEXT",
+            "ALTER TABLE session_exercises ADD COLUMN tempo TEXT",
+            "ALTER TABLE session_exercises ADD COLUMN superset_group INTEGER"
         ])
     ]
 

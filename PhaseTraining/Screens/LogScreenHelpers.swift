@@ -37,6 +37,13 @@ extension LogScreen {
     }
 
     func computeProgressionSuggestion(for ex: LoggedExercise) -> ProgressionPillModel? {
+        // A max-hang test outranks set history on the protocols it covers.
+        if ex.isBodyweight, let hang = store.hangboardLoad?(ex.name) {
+            let load = SessionStore.weightString(abs(hang.addedLb))
+            let what = hang.addedLb > 0 ? "+\(load) lbs"
+                : hang.addedLb < 0 ? "take off \(load) lbs" : "body weight"
+            return ProgressionPillModel(text: "MAX HANG · \(what) · \(hang.percentLabel)", tint: .accent)
+        }
         // Shared extraction: the heaviest set that MET target reps (so a
         // pyramid's heavy top single doesn't read as a missed target).
         let profile = store.historyProfile.profile(forExerciseNamed: ex.name)

@@ -103,7 +103,7 @@ final class ProfileFieldCoverageTests: XCTestCase {
               skipReason: "Append-only body-composition series; not read by planner or coach yet (Profile + Progress surfaces only)."),
         Probe(name: "maxHangTests", mutateForHash: nil, mutateForSnapshot: nil,
               snapshotMarker: nil,
-              skipReason: "Append-only max-hang test series (2026-11); Progress finger card only. Nothing prescribes from it yet, so it stays out of the plan hash and the coach snapshot."),
+              skipReason: "Append-only max-hang test series (2026-11). The latest test sets hangboard added load (HangboardLoad, Lattice 85%/80% of total load), read by SessionStore.buildSession and the Log pill when a session starts. Kept out of the plan hash because the load is computed at session start, so a new test applies to the next session without a week regen; not in the coach snapshot."),
         Probe(name: "skiReadinessTests", mutateForHash: nil, mutateForSnapshot: nil,
               snapshotMarker: nil,
               skipReason: "Append-only pre-season ski test series (2026-11); Progress ski readiness card only. Nothing prescribes from it yet, so it stays out of the plan hash and the coach snapshot."),

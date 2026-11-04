@@ -158,6 +158,10 @@ final class ExploreSessionTests: XCTestCase {
             // And v6's notes.
             XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE session_exercises DROP COLUMN note", nil, nil, nil), SQLITE_OK)
             XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE imported_sets DROP COLUMN note", nil, nil, nil), SQLITE_OK)
+            // And v7's exercise hints.
+            for column in ["rpe", "tempo", "superset_group"] {
+                XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE session_exercises DROP COLUMN \(column)", nil, nil, nil), SQLITE_OK)
+            }
             XCTAssertEqual(sqlite3_exec(db, "PRAGMA user_version = 1", nil, nil, nil), SQLITE_OK)
             XCTAssertEqual(sqlite3_exec(db, """
                 INSERT INTO user_routines (id, name, created_at, updated_at) VALUES ('keep-me', 'Keep', 0, 0)

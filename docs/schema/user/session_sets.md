@@ -83,6 +83,9 @@ erDiagram
   INTEGER rest
   TEXT prev_sets_json
   TEXT note
+  TEXT rpe
+  TEXT tempo
+  INTEGER superset_group
 }
 ```
 

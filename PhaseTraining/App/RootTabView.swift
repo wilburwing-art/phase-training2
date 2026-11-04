@@ -122,6 +122,10 @@ struct RootTabView: View {
             sessionStore.onAbandonRecorded = { [weak planStore] entry in
                 planStore?.recordAbandonment(entry)
             }
+            // The latest max-hang test sets hangboard added load.
+            sessionStore.hangboardLoad = { [weak memoryStore] name in
+                memoryStore.flatMap { HangboardLoad.prescription(forExerciseNamed: name, memory: $0.memory) }
+            }
             // A2 — planned-vs-actual outcome for every saved session.
             sessionStore.onSessionSaved = { [weak planStore] saved, abandoned in
                 planStore?.recordOutcome(for: saved, abandoned: abandoned)

@@ -1,9 +1,29 @@
 // SkiReadinessTestSheet.swift — log a pre-season ski test. Any subset of
-// the four tests saves; a blank field is a test not run this time.
+// the four tests saves; a blank field is a test not run this time. The
+// timed tests carry a "Time it" button: HoldTimerSheet counts up until Stop
+// and writes the seconds into the field.
 
 import SwiftUI
 
 struct SkiReadinessTestSheet: View {
+    /// A field the hold timer is running for.
+    enum TimedField: String, Identifiable {
+        case wallSit, balanceLeft, balanceRight
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .wallSit: return "Wall sit"
+            case .balanceLeft: return "Balance, left leg"
+            case .balanceRight: return "Balance, right leg"
+            }
+        }
+
+        var capSeconds: Int? {
+            self == .wallSit ? nil : SkiReadinessTest.balanceCapSeconds
+        }
+    }
+
     @EnvironmentObject private var store: MemoryStore
     @Environment(\.dismiss) private var dismiss
     @State private var wallSitText = ""
@@ -12,6 +32,7 @@ struct SkiReadinessTestSheet: View {
     @State private var hopsText = ""
     @State private var jumpText = ""
     @FocusState private var focused: Bool
+    @State private var timerField: TimedField?
 
     private var imperial: Bool { store.memory.usesImperial }
 
@@ -49,13 +70,13 @@ struct SkiReadinessTestSheet: View {
                             .fixedSize(horizontal: false, vertical: true)
                         field(label: "WALL SIT (SECONDS)",
                               how: "Back flat on the wall, thighs level. Hold until you can't.",
-                              text: $wallSitText, id: "ski-test-wall-sit")
+                              text: $wallSitText, id: "ski-test-wall-sit", timed: .wallSit)
                         field(label: "BALANCE, LEFT LEG (SECONDS)",
                               how: "Stand on the left foot, eyes closed. Stop when anything touches down. Max 60.",
-                              text: $balanceLeftText, id: "ski-test-balance-left")
+                              text: $balanceLeftText, id: "ski-test-balance-left", timed: .balanceLeft)
                         field(label: "BALANCE, RIGHT LEG (SECONDS)",
                               how: "Same test on the right foot.",
-                              text: $balanceRightText, id: "ski-test-balance-right")
+                              text: $balanceRightText, id: "ski-test-balance-right", timed: .balanceRight)
                         field(label: "LATERAL HOPS (IN 30 SECONDS)",
                               how: "Feet together, hop side to side over a line. Count every landing.",
                               text: $hopsText, id: "ski-test-hops")
@@ -90,13 +111,27 @@ struct SkiReadinessTestSheet: View {
                 }
             }
         }
+        .sheet(item: $timerField) { field in
+            HoldTimerSheet(exerciseName: field.title, capSeconds: field.capSeconds) { seconds in
+                guard seconds > 0 else { return }
+                text(for: field).wrappedValue = String(seconds)
+            }
+        }
         .presentationDetents([.large])
         .presentationBackground(Color.bg)
         .preferredColorScheme(.dark)
     }
 
+    private func text(for field: TimedField) -> Binding<String> {
+        switch field {
+        case .wallSit: return $wallSitText
+        case .balanceLeft: return $balanceLeftText
+        case .balanceRight: return $balanceRightText
+        }
+    }
+
     private func field(label: String, how: String, text: Binding<String>, id: String,
-                       decimal: Bool = false) -> some View {
+                       decimal: Bool = false, timed: TimedField? = nil) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
                 .styled(.micro)
@@ -105,15 +140,32 @@ struct SkiReadinessTestSheet: View {
                 .font(.monoXS)
                 .foregroundStyle(Color.ink3)
                 .fixedSize(horizontal: false, vertical: true)
-            TextField("—", text: text)
-                .keyboardType(decimal ? .decimalPad : .numberPad)
-                .font(.scaled("JetBrainsMono-SemiBold", size: 20))
-                .foregroundStyle(Color.ink)
-                .padding(12)
-                .background(Color.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .focused($focused)
-                .accessibilityIdentifier(id)
+            HStack(spacing: 10) {
+                TextField("—", text: text)
+                    .keyboardType(decimal ? .decimalPad : .numberPad)
+                    .font(.scaled("JetBrainsMono-SemiBold", size: 20))
+                    .foregroundStyle(Color.ink)
+                    .padding(12)
+                    .background(Color.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .focused($focused)
+                    .accessibilityIdentifier(id)
+                if let timed {
+                    Button {
+                        focused = false
+                        timerField = timed
+                    } label: {
+                        Label("Time it", systemImage: "stopwatch")
+                            .styled(.body)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                            .background(Color.surface)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+                    .foregroundStyle(Color.accent)
+                    .accessibilityIdentifier("\(id)-timer")
+                }
+            }
         }
     }
 

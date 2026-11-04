@@ -148,7 +148,8 @@ extension UserDatabase {
     private func loadExercisesLocked(sessionStart: Int64) -> [LoggedExercise] {
         guard let db else { return [] }
         let sql = """
-        SELECT position, exercise_template_id, name, type, unit, target_sets, target_reps, rest, prev_sets_json, note
+        SELECT position, exercise_template_id, name, type, unit, target_sets, target_reps, rest, prev_sets_json, note,
+               rpe, tempo, superset_group
         FROM session_exercises
         WHERE session_start = ?
         ORDER BY position ASC
@@ -158,7 +159,7 @@ extension UserDatabase {
         defer { sqlite3_finalize(stmt) }
         sqlite3_bind_int64(stmt, 1, sessionStart)
 
-        var heads: [(position: Int, tplId: String, name: String, type: String?, unit: String, targetSets: Int, targetReps: Int, rest: Int, prevJSON: String?, note: String?)] = []
+        var heads: [(position: Int, tplId: String, name: String, type: String?, unit: String, targetSets: Int, targetReps: Int, rest: Int, prevJSON: String?, note: String?, rpe: String?, tempo: String?, supersetGroup: Int?)] = []
         while sqlite3_step(stmt) == SQLITE_ROW {
             heads.append((
                 Int(sqlite3_column_int64(stmt, 0)),
@@ -170,7 +171,10 @@ extension UserDatabase {
                 Int(sqlite3_column_int64(stmt, 6)),
                 Int(sqlite3_column_int64(stmt, 7)),
                 text(stmt, 8),
-                text(stmt, 9)
+                text(stmt, 9),
+                text(stmt, 10),
+                text(stmt, 11),
+                intOrNil(stmt, 12)
             ))
         }
         return heads.map { h in
@@ -184,6 +188,9 @@ extension UserDatabase {
                 rest: h.rest,
                 sets: loadSetsLocked(sessionStart: sessionStart, position: h.position),
                 prevSets: decodePrevSets(h.prevJSON),
+                rpe: h.rpe,
+                tempo: h.tempo,
+                supersetGroup: h.supersetGroup,
                 note: h.note
             )
         }
@@ -192,7 +199,8 @@ extension UserDatabase {
     private func loadOneExerciseLocked(sessionStart: Int64, position: Int) -> LoggedExercise? {
         guard let db else { return nil }
         let sql = """
-        SELECT exercise_template_id, name, type, unit, target_sets, target_reps, rest, prev_sets_json, note
+        SELECT exercise_template_id, name, type, unit, target_sets, target_reps, rest, prev_sets_json, note,
+               rpe, tempo, superset_group
         FROM session_exercises
         WHERE session_start = ? AND position = ?
         """
@@ -212,6 +220,9 @@ extension UserDatabase {
             rest: Int(sqlite3_column_int64(stmt, 6)),
             sets: loadSetsLocked(sessionStart: sessionStart, position: position),
             prevSets: decodePrevSets(text(stmt, 7)),
+            rpe: text(stmt, 9),
+            tempo: text(stmt, 10),
+            supersetGroup: intOrNil(stmt, 11),
             note: text(stmt, 8)
         )
     }
@@ -302,8 +313,8 @@ extension UserDatabase {
         sqlite3_finalize(s)
 
         let exSQL = """
-        INSERT INTO session_exercises(session_start, position, exercise_template_id, name, type, unit, target_sets, target_reps, rest, prev_sets_json, note)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO session_exercises(session_start, position, exercise_template_id, name, type, unit, target_sets, target_reps, rest, prev_sets_json, note, rpe, tempo, superset_group)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         let setSQL = """
         INSERT INTO session_sets(session_start, exercise_position, num, weight, reps, rpe, done, is_warmup, rir)
@@ -329,6 +340,9 @@ extension UserDatabase {
                 } else {
                     sqlite3_bind_null(eStmt, 11)
                 }
+                if let r = ex.rpe { sqlite3_bind_text(eStmt, 12, r, -1, SQLITE_TRANSIENT_USER) } else { sqlite3_bind_null(eStmt, 12) }
+                if let t = ex.tempo { sqlite3_bind_text(eStmt, 13, t, -1, SQLITE_TRANSIENT_USER) } else { sqlite3_bind_null(eStmt, 13) }
+                if let g = ex.supersetGroup { sqlite3_bind_int64(eStmt, 14, Int64(g)) } else { sqlite3_bind_null(eStmt, 14) }
                 if sqlite3_step(eStmt) != SQLITE_DONE { ok = false }
             } else {
                 ok = false

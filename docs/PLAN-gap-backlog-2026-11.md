@@ -50,7 +50,7 @@ Found while planning: logged RIR was never saved (`session_sets` had no column).
 ## Phase 5: bigger bets (each gets its own plan first)
 
 - [x] **CSV export (about 1 day).** Write a CSV that Hevy or Strong can import, so portability works both ways.
-- [x] **Climbing tools (several days).** Shipped as a hold/interval timer on any timed set plus a max-hang test log (Progress card). Not yet: the test driving hangboard loads.
+- [x] **Climbing tools (several days).** Shipped as a hold/interval timer on any timed set plus a max-hang test log (Progress card). Build 168: the latest test sets added load on `Hangboard Max Hang (20mm Edge)` at 85% and `Hangboard Repeaters (7/3 Protocol)` at 80% of tested total load (`HangboardLoad`), prefilled at session start with a Log pill. Figures read verbatim from Lattice's Testing & Training Rung Instructions PDF; no other hangboard exercise gets a load because Lattice gives no figure for it.
   - A hangboard and interval timer.
   - A finger-strength test log feeding the existing finger-strength demands in `SportSeason/*`.
   - Benchmarks: Crimpd and Lattice.
@@ -59,7 +59,7 @@ Found while planning: logged RIR was never saved (`session_sets` had no column).
 ## Phase 6: ski lead (one build each, in order)
 
 - [x] **Ski discipline picker (about half a day).** Inbounds / backcountry / skimo / park in the onboarding season step and Profile; ski-mountaineering defaults to skimo. UI over an engine that already exists.
-- [x] **Pre-season ski test (about 1 day).** A benchmark battery (wall-sit time, single-leg balance, lateral bounds, broad jump) with a Progress "SKI READINESS" card, mirroring the max-hang test.
+- [x] **Pre-season ski test (about 1 day).** A benchmark battery (wall-sit time, single-leg balance, lateral bounds, broad jump) with a Progress "SKI READINESS" card, mirroring the max-hang test. Build 168: wall sit and both balance fields carry a "Time it" button that opens HoldTimerSheet in count-up mode and writes the seconds in (balance stops itself at 60).
 - [x] **Ski days from Apple Watch (about 1 day).** This season's ski days from detected ski workouts, plus vertical if Health stores it (unverified), as a Progress card.
 
 Phase 6 shipped in build 167 (2026-11-04). Vertical reads `HKMetadataKeyElevationDescended`; unconfirmed until a real watch ski day.
@@ -70,4 +70,5 @@ Not picked: snowpack-aware season start from snow-almanac. It needs a server, an
 
 - Ease volume after hard days: already shipped as `Planner.applyRecentSignalBias`.
 - Re-run the shadow twin replay on `workout-plan/data/fitbod-history.csv`, which runs to 2026-03-10. Do this only before any readiness work.
-- `LoggedExercise.rpe`, `tempo` and `supersetGroup` are not saved to SQLite (same class as the RIR bug). Low priority: nothing reads them from a saved session today (Log reads the active session, the coach reads the generated week). Fix with a migration if History or a repeat-workout flow ever needs them.
+- [x] `LoggedExercise.rpe`, `tempo` and `supersetGroup` saved to SQLite: user.db v7 (build 168), with an old-row decode test.
+- `LoggedExercise.repsLabel` ("8s hold") is also not saved to SQLite. Nothing reads it from a saved session today; the hold timer reads the active session. Fix with a migration if a repeat-workout flow ever needs it.

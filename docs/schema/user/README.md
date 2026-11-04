@@ -11,7 +11,7 @@ On-device workout history (Documents/user.db). Schema from the migrations in Pha
 | [user_routines](user_routines.md)                   | 5       |                                                                                                                                                                                              | table |
 | [user_routine_exercises](user_routine_exercises.md) | 9       |                                                                                                                                                                                              | table |
 | [sessions](sessions.md)                             | 9       | One saved native workout. start_time (epoch seconds) is the session id, referenced from UserDefaults by DayOutcome.sessionId, WeekPlanSnapshot.actualSessionIDs and FeedbackEntry.sessionId. | table |
-| [session_exercises](session_exercises.md)           | 11      |                                                                                                                                                                                              | table |
+| [session_exercises](session_exercises.md)           | 14      |                                                                                                                                                                                              | table |
 | [session_sets](session_sets.md)                     | 9       |                                                                                                                                                                                              | table |
 | [imported_workouts](imported_workouts.md)           | 8       | HealthKit or CSV workouts, keyed by the source's own UUID so re-import is idempotent. Unioned with sessions in GeneratorContext.                                                             | table |
 | [imported_sets](imported_sets.md)                   | 12      | Set-level CSV history. Attached to imported_workouts by performed_at proximity in Swift, not by FK.                                                                                          | table |
@@ -68,6 +68,9 @@ erDiagram
   INTEGER rest
   TEXT prev_sets_json
   TEXT note
+  TEXT rpe
+  TEXT tempo
+  INTEGER superset_group
 }
 "session_sets" {
   INTEGER session_start PK

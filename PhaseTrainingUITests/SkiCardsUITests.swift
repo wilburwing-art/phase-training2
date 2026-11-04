@@ -8,7 +8,8 @@ final class SkiCardsUITests: XCTestCase {
 
     func test_skiSeasonCountsTheLoggedDay_andATestLogs() {
         let app = XCUIApplication()
-        app.launchArguments += ["--ui-test-onboarded", "--ui-test-reset", "--seed-ski-season"]
+        app.launchArguments += ["--ui-test-onboarded", "--ui-test-reset", "--seed-ski-season",
+                                "--ui-test-hold-seconds=1"]
         app.launch()
         let progress = app.tabBars.buttons["Progress"]
         XCTAssertTrue(progress.waitForExistence(timeout: 10))
@@ -26,6 +27,21 @@ final class SkiCardsUITests: XCTestCase {
         let wallSit = app.textFields["ski-test-wall-sit"]
         XCTAssertTrue(wallSit.waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["ski-test-save"].isEnabled, "an empty test does not save")
+        // The hold timer counts a balance test up and writes the seconds in.
+        app.buttons["ski-test-balance-left-timer"].tap()
+        let start = app.buttons["hold-timer-start"]
+        XCTAssertTrue(start.waitForExistence(timeout: 5))
+        start.tap()
+        let count = app.staticTexts["hold-timer-count"]
+        let held = NSPredicate(format: "label == '1'")
+        XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: held, evaluatedWith: count)], timeout: 6), .completed,
+                       "the stopwatch counts up after the get-ready")
+        app.buttons["hold-timer-stop"].tap()
+        let balance = app.textFields["ski-test-balance-left"]
+        XCTAssertTrue(balance.waitForExistence(timeout: 5))
+        XCTAssertTrue(["1", "2"].contains(balance.value as? String ?? ""),
+                      "Stop writes the seconds held into the field; got \(String(describing: balance.value))")
+
         wallSit.tap()
         wallSit.typeText("90")
         app.buttons["ski-test-keyboard-done"].tap()
