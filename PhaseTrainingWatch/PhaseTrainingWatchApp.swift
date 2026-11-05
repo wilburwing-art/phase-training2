@@ -100,6 +100,8 @@ struct RestRow: View {
                         .font(.title3.monospacedDigit())
                 }
                 Spacer()
+                Button("−15") { model.rest.shorten() }
+                    .buttonStyle(.bordered)
                 Button("+15") { model.rest.extend() }
                     .buttonStyle(.bordered)
                 Button {

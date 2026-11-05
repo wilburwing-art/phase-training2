@@ -140,6 +140,18 @@ extension LogScreen {
                         rest.duration = (rest.duration ?? 0) + 15
                         rest.rescheduleExpiryNotification()
                     },
+                    onSubtract15: {
+                        // Shorten in place. If that leaves nothing on the
+                        // clock, just end the rest rather than flashing DONE.
+                        let newDuration = (rest.duration ?? 0) - 15
+                        if let started = rest.startedAt,
+                           newDuration <= Int(Date().timeIntervalSince(started)) {
+                            rest.clear()
+                        } else {
+                            rest.duration = newDuration
+                            rest.rescheduleExpiryNotification()
+                        }
+                    },
                     onSkip: { rest.clear() },
                     onSetDuration: { newDuration in
                         // Reset start time so the new duration runs from now.

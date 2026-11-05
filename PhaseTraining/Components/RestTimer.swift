@@ -10,7 +10,7 @@
 //   - Pulse dot (7pt, accent) with opacity 1 → 0.35 → 1 over 1.6s ease-in-out
 //   - "REST" micro label (accent)
 //   - Mono L remaining-time readout (M:SS, accent) — tap to pick a new duration
-//   - "+15" and "Skip" pill chips
+//   - "−15", "+15" and "Skip" pill chips
 //
 // Feature: tap the time readout to surface a Menu with duration presets +
 // "Custom…". `expired` flips the band to a brief alert state when the parent
@@ -24,6 +24,9 @@ struct RestTimer: View {
     /// LogScreen drives this from a state flag it clears ~1.2s after expiry.
     var expired: Bool = false
     let onAdd15: () -> Void
+    /// Shorten the rest by 15s (for when the timer started late). nil hides
+    /// the chip (e.g. the expired flash state).
+    var onSubtract15: (() -> Void)? = nil
     let onSkip: () -> Void
     /// Set an arbitrary new duration (seconds). Parent typically resets the
     /// countdown start time so the new value runs from "now" instead of
@@ -66,6 +69,11 @@ struct RestTimer: View {
 
             Spacer(minLength: 4)
 
+            if let onSubtract15 {
+                chip("−15", action: onSubtract15)
+                    .accessibilityIdentifier("log-rest-sub15")
+                    .accessibilityLabel("Subtract 15 seconds")
+            }
             chip("+15", action: onAdd15)
                 .accessibilityIdentifier("log-rest-add15")
             chip("Skip", action: onSkip)
@@ -157,7 +165,7 @@ struct RestTimer: View {
     ZStack {
         Color.bg.ignoresSafeArea()
         VStack(spacing: 16) {
-            RestTimer(remaining: 75, onAdd15: {}, onSkip: {}, onSetDuration: { _ in })
+            RestTimer(remaining: 75, onAdd15: {}, onSubtract15: {}, onSkip: {}, onSetDuration: { _ in })
             RestTimer(remaining: 9, onAdd15: {}, onSkip: {}, onSetDuration: { _ in })
             RestTimer(remaining: 0, expired: true, onAdd15: {}, onSkip: {}, onSetDuration: { _ in })
         }
