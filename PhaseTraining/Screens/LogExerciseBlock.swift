@@ -200,15 +200,32 @@ extension LogScreen {
                 }
             }
 
-            // Add Set button
-            Button(action: { addSet(exIdx: exIdx) }) {
-                Text("+ Add Set (\(Self.fmtTime(ex.rest)))")
-                    .styled(.body)
-                    .foregroundStyle(Color.ink3)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
+            // Remove / Add Set buttons. Remove drops the last set (kept to a
+            // minimum of one; delete-any-set still lives in the row's
+            // long-press menu).
+            HStack(spacing: 0) {
+                if ex.sets.count > 1 {
+                    Button(action: { deleteSet(exIdx: exIdx, setIdx: ex.sets.count - 1) }) {
+                        Text("− Remove Set")
+                            .styled(.body)
+                            .foregroundStyle(Color.ink3)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("log-remove-set-\(exIdx)")
+                }
+                Button(action: { addSet(exIdx: exIdx) }) {
+                    Text("+ Add Set (\(Self.fmtTime(ex.rest)))")
+                        .styled(.body)
+                        .foregroundStyle(Color.ink3)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
 
             // Log all sets — for users who do the work at the rack first
             // and come back to the phone to log everything at once. Marks

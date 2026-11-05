@@ -34,6 +34,17 @@ struct WatchRestTimer: Equatable {
         hapticPlayedFor = nil
     }
 
+    /// Shorten the rest. Ends it outright if no time would be left.
+    mutating func shorten(by seconds: Int = 15, now: Date = Date()) {
+        guard isActive, let startedAt else { return }
+        let newDuration = (duration ?? 0) - seconds
+        if newDuration <= Int(now.timeIntervalSince(startedAt)) {
+            clear()
+        } else {
+            duration = newDuration
+        }
+    }
+
     mutating func clear() {
         self = WatchRestTimer()
     }
