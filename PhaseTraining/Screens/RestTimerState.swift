@@ -67,26 +67,49 @@ struct RestTimerState {
         Self.cancelExpiryNotification()
     }
 
-    /// Fire-and-forget: request authorization opportunistically, and schedule
-    /// only if it's already granted. Rest alerts are not worth a cold permission
-    /// prompt mid-workout — WeeklyReminderScheduler already owns the ask.
+    /// Last-known notification authorization. Lets the foreground expiry
+    /// path decide whether the banner will carry the sound or whether it has
+    /// to play one itself.
+    static var notificationsAuthorized = false
+
+    /// Fire-and-forget. Asks for notification permission the first time a
+    /// rest starts (status .notDetermined) so the "Rest's up" banner works
+    /// without the user first having to turn on weekly reminders.
     static func scheduleExpiryNotification(after seconds: Int) {
         guard seconds > 0 else { return }
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [expiryNotificationId])
+        let fireAt = Date().addingTimeInterval(TimeInterval(seconds))
         center.getNotificationSettings { settings in
-            guard settings.authorizationStatus == .authorized else { return }
-            let content = UNMutableNotificationContent()
-            content.title = "Rest's up"
-            content.body = "Time for your next set."
-            content.sound = .default
-            content.interruptionLevel = .timeSensitive
-            let trigger = UNTimeIntervalNotificationTrigger(
-                timeInterval: TimeInterval(seconds), repeats: false)
-            center.add(UNNotificationRequest(identifier: expiryNotificationId,
-                                             content: content,
-                                             trigger: trigger))
+            switch settings.authorizationStatus {
+            case .authorized, .provisional, .ephemeral:
+                notificationsAuthorized = true
+                add(fireAt: fireAt, center: center)
+            case .notDetermined:
+                center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+                    notificationsAuthorized = granted
+                    if granted { add(fireAt: fireAt, center: center) }
+                }
+            default:
+                notificationsAuthorized = false
+            }
         }
+    }
+
+    private static func add(fireAt: Date, center: UNUserNotificationCenter) {
+        // Measure from the original request time so a slow permission prompt
+        // doesn't push the alert late.
+        let seconds = fireAt.timeIntervalSinceNow
+        guard seconds > 0 else { return }
+        let content = UNMutableNotificationContent()
+        content.title = "Rest's up"
+        content.body = "Time for your next set."
+        content.sound = .default
+        content.interruptionLevel = .timeSensitive
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: seconds, repeats: false)
+        center.add(UNNotificationRequest(identifier: expiryNotificationId,
+                                         content: content,
+                                         trigger: trigger))
     }
 
     /// Re-arm the pending notification after the countdown length changes
@@ -209,14 +232,16 @@ extension LogScreen {
 
         rest.alertFiredFor = started
         rest.expiredFlashUntil = date.addingTimeInterval(1.2)
-        // We're foregrounded and just played the in-app alert, so drop the
-        // pending background banner rather than double-notifying.
-        RestTimerState.cancelExpiryNotification()
-
-        // System sound 1322 = "Begin recording" (short, attention-grabbing).
-        // Pair with success haptic so the user notices even with the phone
-        // silenced or laid screen-down on a bench.
-        AudioServicesPlaySystemSound(1322)
+        // Leave the pending "Rest's up" notification alone: NotificationDelegate
+        // presents it as a banner + sound even while the app is open. Only
+        // play our own sound when notifications are off, so it doesn't
+        // double up with the banner's.
+        if !RestTimerState.notificationsAuthorized {
+            // System sound 1322 = "Begin recording" (short, attention-grabbing).
+            AudioServicesPlaySystemSound(1322)
+        }
+        // Success haptic so the user notices even with the phone silenced
+        // or laid screen-down on a bench.
         let haptic = UINotificationFeedbackGenerator()
         haptic.notificationOccurred(.success)
     }

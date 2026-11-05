@@ -162,7 +162,8 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         // PR 12 — a dismissal (user cleared without tapping) feeds the
         // suppression counter for this push's class. Taps don't count —
         // acting on the notification is engagement, not dismissal.
-        if response.actionIdentifier == UNNotificationDismissActionIdentifier {
+        if response.actionIdentifier == UNNotificationDismissActionIdentifier,
+           response.notification.request.identifier != RestTimerState.expiryNotificationId {
             NotificationBudget.recordDismissal(cls: .weeklyPlan)
         }
         if let raw, let url = URL(string: raw) {
