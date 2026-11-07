@@ -142,6 +142,12 @@ struct RootTabView: View {
                 // Fire-and-forget: saving never waits on Health.
                 Task { await HealthWorkoutWriter.record(saved) }
             }
+            // An edited or deleted session changes the sets recovery is
+            // computed from, so the affected days rebuild like after a save.
+            sessionStore.onSavedHistoryEdited = { [weak planStore] in
+                guard let planStore, let memory = planStore.memoryStore?.memory else { return }
+                planStore.applyRecovery(memory: memory)
+            }
             // 3c capture — one coarse point per session start, kept on device.
             // Fire-and-forget: starting the workout never waits on it.
             sessionStore.onSessionStarted = { [weak planStore] session in

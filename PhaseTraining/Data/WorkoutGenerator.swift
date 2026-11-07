@@ -281,14 +281,22 @@ enum WorkoutGenerator {
         return !primaryMuscleBuckets(exerciseId: exercise.id).isDisjoint(with: entry.areas)
     }
 
-    /// MuscleBucket slugs for an exercise's primary muscle. If no primary
-    /// muscle is tagged, falls back to every muscle's bucket: better to treat
-    /// an exercise as loading a sore muscle than to miss it. Shared by the
-    /// RPE cap above and the season engine's sore tier.
+    /// MuscleBucket slugs for every primary muscle of an exercise. If no
+    /// primary muscle is tagged, falls back to every muscle's bucket: better
+    /// to treat an exercise as loading a sore muscle than to miss it. Shared
+    /// by the RPE cap above, the season engine's sore tier and recovery gate,
+    /// the authored-routine gate and the off-plan coverage check.
+    ///
+    /// Every primary, not the first one listed. MuscleFreshness charges a
+    /// full set to each primary, so Trap Bar Deadlift (quads, hamstrings,
+    /// glutes) fatigues all three; reading only the first row let it, and
+    /// every RDL, squat and lunge, back into a session whose glutes or
+    /// hamstrings were blocked, and let Conventional Deadlift (erectors
+    /// listed first) through a full leg block as a "back" movement.
     static func primaryMuscleBuckets(exerciseId: Int) -> Set<String> {
         let muscles = CoachDatabase.shared.musclesForExercise(exerciseId)
-        let candidates = muscles.first(where: { $0.role == "primary" }).map { [$0.slug] }
-            ?? muscles.map(\.slug)
+        let primaries = muscles.filter { $0.role == "primary" }.map(\.slug)
+        let candidates = primaries.isEmpty ? muscles.map(\.slug) : primaries
         return Set(candidates.compactMap { MuscleBucket.bucket(forSlug: $0)?.rawValue })
     }
 }

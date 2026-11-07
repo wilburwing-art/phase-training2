@@ -9,9 +9,12 @@
 // fair game.
 //
 // Freshness comes from logged volume (MuscleFreshness). The soreness
-// check-in overrides it, because the athlete knows better than a model:
-// "high" or a pain flag blocks the area, "mild" eases it, and a "none"
-// check-in newer than the last session that loaded the area clears it.
+// check-in adds to it: "high" or a pain flag blocks the area, "mild" eases
+// it. A "none" check-in newer than the last session that loaded an area
+// clears the EASED tier only. It never lifts a block: soreness lags the
+// work by a day or two, so "not sore" the morning after heavy legs is not
+// "recovered", and the Recovery card would still read 22% beside a plan
+// that trains the same legs again.
 
 import Foundation
 
@@ -85,15 +88,16 @@ enum MuscleRecovery {
             let areas = Set(entry.areas).intersection(MuscleBucket.sorenessPrimarySlugs)
             status.eased.formUnion(areas.subtracting(status.blocked))
         } else if entry.soreness == "none" {
-            // Feeling fine after the last session that loaded a group beats
-            // the model's estimate for that group.
-            for bucket in status.blocked.union(status.eased) {
+            // Feeling fine after the last session that loaded a group lifts
+            // the part-recovered tier for that group. A block stays: the
+            // model says the group is under half recovered, and soreness
+            // shows up later than the fatigue it reports.
+            for bucket in status.eased {
                 let members = Set(MuscleBucket(rawValue: bucket)?.memberSlugs ?? [])
                 let lastLoad = exposures
                     .filter { e in e.loads.keys.contains { members.contains($0) } && e.start <= at }
                     .map(\.start).max()
                 if let lastLoad, entry.date > lastLoad {
-                    status.blocked.remove(bucket)
                     status.eased.remove(bucket)
                 }
             }
