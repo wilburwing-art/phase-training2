@@ -778,6 +778,15 @@ struct PhaseTrainingApp: App {
                         // on this screen reads the plan. No-op when the plan
                         // already covers this week, and skipped mid-session.
                         plan.refreshForCurrentWeek(memory: memory.memory)
+                        // Recovery moves with the clock: a muscle blocked or
+                        // eased when the plan was built may have recovered,
+                        // and a session saved yesterday must still shape
+                        // today after the app sat in the background. Only
+                        // the days whose recovery stamp is stale rebuild;
+                        // skipped mid-session.
+                        if memory.isOnboarded {
+                            plan.applyRecovery(memory: memory.memory)
+                        }
                         Task {
                             // Entitlement mirror first: runIfDue's pro gate
                             // reads the proKey default that refresh() writes,

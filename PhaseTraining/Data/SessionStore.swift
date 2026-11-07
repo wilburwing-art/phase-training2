@@ -31,6 +31,10 @@ final class SessionStore: ObservableObject {
     /// records the planned-vs-actual DayOutcome from it. Closure wiring keeps
     /// SessionStore plan-agnostic, same as `onAbandonRecorded`.
     var onSessionSaved: ((SavedSession, _ abandoned: Bool) -> Void)?
+    /// Fired after saved history changes OUTSIDE a fresh save: a logged
+    /// session edited in History or deleted. The sets behind muscle recovery
+    /// changed, so RootTabView reruns `PlanStore.applyRecovery` from it.
+    var onSavedHistoryEdited: (() -> Void)?
     /// Added load for a hangboard exercise from the latest max-hang test
     /// (`HangboardLoad`), keyed by exercise name. Wired by RootTabView to
     /// read MemoryStore, so SessionStore stays memory-agnostic. Nil in tests
@@ -172,6 +176,7 @@ final class SessionStore: ObservableObject {
     func deleteSession(id: TimeInterval) {
         userDB.deleteSession(startTime: Date(timeIntervalSince1970: id))
         savedSessions = userDB.listSavedSessions()
+        onSavedHistoryEdited?()
     }
 
     /// Re-read saved history + active session from their stores. Used after a
@@ -187,8 +192,12 @@ final class SessionStore: ObservableObject {
     /// the row is replaced in place; the @Published list is refreshed so
     /// SwiftUI rebinds. Used by HistoryScreen's set-level edit flow.
     func updateSession(_ session: SavedSession) {
+        // CompleteScreen patches feel/note through here on every keystroke;
+        // only a change to the logged work moves recovery.
+        let setsChanged = savedSessions.first { $0.id == session.id }?.exercises != session.exercises
         userDB.saveSession(session)
         savedSessions = userDB.listSavedSessions()
+        if setsChanged { onSavedHistoryEdited?() }
     }
 
     func clearSavedSessions() {

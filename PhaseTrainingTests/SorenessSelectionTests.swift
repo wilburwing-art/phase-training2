@@ -89,7 +89,7 @@ final class SorenessSelectionTests: XCTestCase {
         XCTAssertEqual(status(day(1), m), RecoveryStatus.none, "Tuesday's 'none' replaces Monday's report")
     }
 
-    func test_model_blocksTheDayAfterAHeavyLegSession_andANoneCheckInOverrides() throws {
+    func test_model_blocksTheDayAfterAHeavyLegSession_andANoneCheckInOnlyLiftsTheEasedTier() throws {
         // Twelve sets of quads Monday evening: Tuesday noon is 18h into a
         // ~85h recovery, so quads are blocked; by Friday they are recovered.
         var m = try memory(sport: "alpine-skiing", season: .offSeason)
@@ -99,9 +99,57 @@ final class SorenessSelectionTests: XCTestCase {
         XCTAssertFalse(status(day(4), m, exposures: legs).blocked.contains("quads"))
         XCTAssertFalse(status(day(4), m, exposures: legs).eased.contains("quads"))
 
+        // Not sore the morning after is not recovered: soreness lags the
+        // work, so a "none" check-in leaves the model's block in place.
         m.soreness = [entry(day(1).addingTimeInterval(-3 * 3600), "none", [])]
-        XCTAssertFalse(status(day(1), m, exposures: legs).blocked.contains("quads"),
-                       "feeling fine after the session beats the estimate")
+        XCTAssertTrue(status(day(1), m, exposures: legs).blocked.contains("quads"),
+                      "a 'none' check-in must not lift a block the volume model set")
+
+        // Thursday noon is 66h into the ~85h recovery: part-recovered, eased.
+        // Feeling fine then does lift the eased tier.
+        m.soreness = []
+        XCTAssertTrue(status(day(3), m, exposures: legs).eased.contains("quads"))
+        m.soreness = [entry(day(3).addingTimeInterval(-1 * 3600), "none", [])]
+        XCTAssertFalse(status(day(3), m, exposures: legs).eased.contains("quads"))
+        XCTAssertFalse(status(day(3), m, exposures: legs).blocked.contains("quads"))
+    }
+
+    /// The reported case: box jumps and trap bar deadlift the evening before,
+    /// quads, hamstrings and glutes all near 22% the next morning. The next
+    /// day's session holds no movement whose prime movers include any of the
+    /// three, whether or not the athlete checks in "not sore".
+    func test_trapBarAndBoxJumpsYesterday_blockAllThreeLegGroupsToday() throws {
+        var m = try memory(sport: "alpine-skiing", season: .offSeason)
+        let start = monday().addingTimeInterval(10 * 3600)    // Monday 6pm
+        let legs = [MuscleFreshness.Exposure(start: start, loads: [
+            "quadriceps": 9, "glutes": 9, "hamstrings": 5, "calves": 1.5])]
+        let legBuckets: Set<String> = ["quads", "hamstrings", "glutes"]
+        m.soreness = [entry(day(1).addingTimeInterval(-2 * 3600), "none", [])]
+        let recovery = status(day(1), m, exposures: legs)
+        XCTAssertTrue(legBuckets.isSubset(of: recovery.blocked), "\(recovery.blocked)")
+
+        for index in 0..<3 {
+            let w = session(m, index: index, lifts: 3, recovery: recovery)
+            let hit = w.exercises.filter {
+                !WorkoutGenerator.primaryMuscleBuckets(exerciseId: $0.exerciseId).isDisjoint(with: legBuckets)
+            }
+            XCTAssertTrue(hit.isEmpty, "session \(index): \(hit.map(\.name))")
+        }
+    }
+
+    /// Every primary muscle counts, not just the first row coach.db lists.
+    /// Trap Bar Deadlift is tagged quads, hamstrings and glutes; Conventional
+    /// Deadlift lists the erectors first. Both must read as hamstring work.
+    func test_primaryMuscleBuckets_readsEveryPrimaryMuscle() throws {
+        let db = CoachDatabase.shared
+        let trapBar = try XCTUnwrap(db.listExercises(search: "Trap Bar Deadlift")
+            .first { $0.name == "Trap Bar Deadlift" })
+        XCTAssertEqual(WorkoutGenerator.primaryMuscleBuckets(exerciseId: trapBar.id),
+                       ["quads", "hamstrings", "glutes"])
+        let conventional = try XCTUnwrap(db.listExercises(search: "Conventional Deadlift")
+            .first { $0.name == "Conventional Deadlift" })
+        XCTAssertTrue(WorkoutGenerator.primaryMuscleBuckets(exerciseId: conventional.id)
+            .isSuperset(of: ["back", "hamstrings", "glutes"]))
     }
 
     // MARK: - Engine
