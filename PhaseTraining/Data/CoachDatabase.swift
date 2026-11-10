@@ -259,6 +259,9 @@ final class CoachDatabase {
     private var db: OpaquePointer?
     /// Lazily built by `importNameIndexLocked`; the catalog is read-only.
     private var importNameIndex: [String: Int]?
+    /// Lazily built by `importTokenIndexLocked`: word-set key -> id, with
+    /// keys that two different exercises share left out.
+    private var importTokenIndex: [String: Int]?
 
     /// Serializes ALL public reads on this singleton. SQLite is opened with
     /// FULLMUTEX so per-statement access is already safe at the C level —
@@ -1621,8 +1624,60 @@ final class CoachDatabase {
         for candidate in candidates {
             if let id = index[Self.foldImportName(candidate)] { return id }
         }
+        // Last: the same words in any order, plurals folded, so Fitbod's
+        // "Machine Hip Adductor" finds "Hip Adductor (Machine)" and "Air
+        // Squats" an alias "Air Squat". Runs only after both tiers above
+        // miss, and a word set shared by two exercises resolves to nothing.
+        let tokenIndex = importTokenIndexLocked(db: db)
+        if let id = tokenIndex[Self.tokenSetImportName(normalized)] { return id }
         return nil
     } }
+
+    /// "Machine Hip Adductor" and "Hip Adductor (Machine)" both give
+    /// "adductor hip machine": folded, a plural `s` dropped from words over
+    /// three letters (not `ss`, so "press" stays), then sorted.
+    static func tokenSetImportName(_ s: String) -> String {
+        foldImportName(s)
+            .split(separator: " ")
+            .map { w -> String in
+                let w = String(w)
+                guard w.count > 3, w.hasSuffix("s"), !w.hasSuffix("ss") else { return w }
+                return String(w.dropLast())
+            }
+            .sorted()
+            .joined(separator: " ")
+    }
+
+    /// Word-set key -> id over exercises.name and exercise_aliases.alias.
+    /// A key two different exercises produce is dropped rather than guessed.
+    private func importTokenIndexLocked(db: OpaquePointer) -> [String: Int] {
+        if let importTokenIndex { return importTokenIndex }
+        var index: [String: Int] = [:]
+        var ambiguous = Set<String>()
+        let sources = [
+            "SELECT name, id FROM exercises ORDER BY id",
+            "SELECT alias, exercise_id FROM exercise_aliases ORDER BY id",
+        ]
+        for sql in sources {
+            var stmt: OpaquePointer?
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { continue }
+            defer { sqlite3_finalize(stmt) }
+            while sqlite3_step(stmt) == SQLITE_ROW {
+                guard let c = sqlite3_column_text(stmt, 0) else { continue }
+                let key = Self.tokenSetImportName(String(cString: c))
+                let id = Int(sqlite3_column_int64(stmt, 1))
+                guard !key.isEmpty, !ambiguous.contains(key) else { continue }
+                if let existing = index[key], existing != id {
+                    index[key] = nil
+                    ambiguous.insert(key)
+                } else {
+                    index[key] = id
+                }
+            }
+        }
+        importTokenIndex = index
+        return index
+    }
 
     /// Folded name -> id over exercises.name, slug and exercise_aliases.alias,
     /// built once. Names take precedence over slugs, slugs over aliases, and

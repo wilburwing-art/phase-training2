@@ -1574,5 +1574,69 @@
     "source": "common_name",
     "notes": "Fitbod export name (CSV import)",
     "created_at": "2026-10-29 00:00:00"
+  },
+  {
+    "id": 198,
+    "exercise_id": 1088,
+    "alias": "Air Squat",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-11-10 00:00:00"
+  },
+  {
+    "id": 199,
+    "exercise_id": 903,
+    "alias": "Floor Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-11-10 00:00:00"
+  },
+  {
+    "id": 200,
+    "exercise_id": 227,
+    "alias": "Side Lunge",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-11-10 00:00:00"
+  },
+  {
+    "id": 201,
+    "exercise_id": 344,
+    "alias": "Dumbbell Bent Over Reverse Fly",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-11-10 00:00:00"
+  },
+  {
+    "id": 202,
+    "exercise_id": 1133,
+    "alias": "Cable Rope Hammer Curl",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-11-10 00:00:00"
+  },
+  {
+    "id": 203,
+    "exercise_id": 1004,
+    "alias": "Machine Bench Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-11-10 00:00:00"
+  },
+  {
+    "id": 204,
+    "exercise_id": 942,
+    "alias": "Seated Machine Calf Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-11-10 00:00:00"
+  },
+  {
+    "id": 205,
+    "exercise_id": 14,
+    "alias": "Alternating Dumbbell Bench Press",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-11-10 00:00:00"
   }
 ]
