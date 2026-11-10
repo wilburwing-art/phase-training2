@@ -3634,5 +3634,59 @@
     "phase": "peak",
     "priority": "primary",
     "volume_guidance": null
+  },
+  {
+    "exercise_id": 1206,
+    "phase": "base",
+    "priority": "primary",
+    "volume_guidance": null
+  },
+  {
+    "exercise_id": 1206,
+    "phase": "build",
+    "priority": "primary",
+    "volume_guidance": null
+  },
+  {
+    "exercise_id": 1206,
+    "phase": "maintenance",
+    "priority": "primary",
+    "volume_guidance": null
+  },
+  {
+    "exercise_id": 1206,
+    "phase": "off_season",
+    "priority": "primary",
+    "volume_guidance": null
+  },
+  {
+    "exercise_id": 1207,
+    "phase": "base",
+    "priority": "primary",
+    "volume_guidance": null
+  },
+  {
+    "exercise_id": 1207,
+    "phase": "build",
+    "priority": "primary",
+    "volume_guidance": null
+  },
+  {
+    "exercise_id": 1207,
+    "phase": "maintenance",
+    "priority": "primary",
+    "volume_guidance": null
+  },
+  {
+    "exercise_id": 1207,
+    "phase": "off_season",
+    "priority": "primary",
+    "volume_guidance": null
+  },
+  {
+    "exercise_id": 1207,
+    "phase": "peak",
+    "priority": "supplementary",
+    "volume_guidance": null
   }
 ]

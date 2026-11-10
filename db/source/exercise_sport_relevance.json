@@ -20027,5 +20027,252 @@
     "in_season_volume_modifier": 1.0,
     "off_season_volume_modifier": 1.2,
     "notes": null
+  },
+  {
+    "exercise_id": 1206,
+    "sport_id": 450,
+    "relevance_score": 0.9,
+    "specificity": "highly_specific",
+    "support_role": "conditioning",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1206,
+    "sport_id": 455,
+    "relevance_score": 0.9,
+    "specificity": "highly_specific",
+    "support_role": "conditioning",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 1,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 50,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 100,
+    "relevance_score": 0.9,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Climbers chronically underdevelop pushing."
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 200,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 261,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 284,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "direct_strength",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.0,
+    "notes": null
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 320,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 450,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 631,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.1,
+    "notes": null
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 639,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "direct_strength",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.0,
+    "notes": null
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 395,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Paddling is all pull; push-ups balance lats and posterior shoulder."
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 380,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Paddling is all pull; push-ups balance lats and posterior shoulder."
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 404,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "The stroke is a pull on every rep; push-ups balance lats, rhomboids and rear delts."
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 57,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": null
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 68,
+    "relevance_score": 0.8,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Obstacles are pull and carry; pushing balances the shoulder."
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 150,
+    "relevance_score": 0.75,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Pushing to balance days of axe and pole pulling."
+  },
+  {
+    "exercise_id": 1207,
+    "sport_id": 421,
+    "relevance_score": 0.85,
+    "specificity": "general",
+    "support_role": "antagonist",
+    "season_emphasis": [
+      "all"
+    ],
+    "in_season_volume_modifier": 1.0,
+    "off_season_volume_modifier": 1.2,
+    "notes": "Paddling is all pull; pushing balances lats and posterior shoulder."
   }
 ]

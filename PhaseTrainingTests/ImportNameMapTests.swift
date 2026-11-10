@@ -57,7 +57,7 @@ final class ImportNameMapTests: XCTestCase {
     /// Two from the real export where the search lands the right exercise.
     func test_suggestionsPutTheRightExerciseInTheTopThree() throws {
         let coach = CoachDatabase.shared
-        for (name, want) in [("Decline Push Up", "Push-Up"), ("Elliptical", "Elliptical Machine")] {
+        for (name, want) in [("Single Leg Leg Extension", "Leg Extension"), ("Elliptical", "Elliptical Machine")] {
             guard let wantId = coach.exerciseId(forImportName: want) else { throw XCTSkip("catalog has no \(want)") }
             XCTAssertTrue(UnmatchedNamesSheet.suggestions(for: name).map(\.id).contains(wantId), name)
         }

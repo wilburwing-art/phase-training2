@@ -62,7 +62,16 @@ final class ImportMaintenanceTests: XCTestCase {
         for (name, id) in expected {
             XCTAssertEqual(coach.exerciseId(forImportName: name), id, name)
         }
-        XCTAssertNil(coach.exerciseId(forImportName: "Decline Push Up"), "a harder variant is not Push-Up")
+        XCTAssertNotEqual(coach.exerciseId(forImportName: "Decline Push Up"), 13, "a harder variant is not Push-Up")
+    }
+
+    /// The four biggest no-catalog gaps in a real Fitbod export, by sets.
+    func test_fitbodGapsNowInTheCatalog() {
+        let coach = CoachDatabase.shared
+        for (name, id) in [("Scissor Kick", 1206), ("Decline Push Up", 1207),
+                           ("Exercise Ball Crunch", 1208), ("Leg Pull-In", 1209)] {
+            XCTAssertEqual(coach.exerciseId(forImportName: name), id, name)
+        }
     }
 
     func test_fitbodAliases_resolveTheStaples() throws {

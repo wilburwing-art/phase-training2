@@ -21424,5 +21424,101 @@
     "injury_id": 20,
     "role": "contraindicated",
     "notes": "Deadlift, good-morning, and rack-pull variants are, by definition, loaded forward bending under a lifted load, the mechanism AAOS names as aggravating. A blanket hip-hinge pattern rule would also sweep in low-flexion, low-risk hinge work (hip thrust, glute bridge) the mechanism does not name, so name_regex targets the loaded-forward-bend lift family specifically instead of the hip-hinge pattern. Sourced (loaded forward-bend lifting mechanism), unreviewed. The AAOS sentence asks for slow, controlled bending and lifting rather than forbidding it; this rule stands on the curated tier, which already contraindicates the conventional and Romanian deadlift, block pull, Zercher good morning and back squat for this injury, so the remaining deadlift, good morning and rack pull variants follow the movement class a human established. Olympic-derivative floor lifts added on the drafter's point: every one is an inherently loaded barbell or kettlebell pull from the floor, with Tire Flip already contraindicated by the curated tier as precedent. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1207,
+    "injury_id": 11,
+    "role": "rehab_late",
+    "notes": "Push-ups at appropriate angle help posterior shoulder."
+  },
+  {
+    "exercise_id": 1207,
+    "injury_id": 14,
+    "role": "contraindicated",
+    "notes": "Recent dislocation is an exercise contraindication (Lane CC shoulder conservative management); avoid abduction + external rotation loading: overhead, dips, deep/wide press, snatch. Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1207,
+    "injury_id": 13,
+    "role": "contraindicated",
+    "notes": "AC sprain: avoid dips, deep horizontal press, and overhead loading until pain-free (StatPearls grading). Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1207,
+    "injury_id": 53,
+    "role": "contraindicated",
+    "notes": "Median nerve compression: avoid loaded wrist extension/flexion (push-ups, front rack) and sustained heavy grip. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1207,
+    "injury_id": 70,
+    "role": "contraindicated",
+    "notes": "Pec strain: avoid heavy pressing, flies and dips, especially at end range, until cleared. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1207,
+    "injury_id": 52,
+    "role": "contraindicated",
+    "notes": "Extends the existing hand-on-ground, wrist-extended, weight-bearing contraindications (Push-Up Plyo, Handstand Wall Hold, Wall Walk) to the rest of that same position family: every Push-Up variant, Bear Crawl, Renegade Row, Trapeze Plank Hold and Handstand Push Up all load a fully extended wrist under bodyweight, the exact position StatPearls names. Front-rack/goblet/Zercher/thruster and heavy curls were checked and NOT included: the wrist there is stabilizing a bar resting on the shoulders or forearm rather than bearing weight through an extended wrist joint, and no fetched source named that position or named curls for wrist sprain specifically, so including them would be wider than what was actually read. A generic 'Front Plank'/'Plank'/'Reverse Plank'/'Side Plank' entry was also left out because the catalog does not say whether it is performed on hands (wrist extended) or forearms (wrist neutral). Sourced (weight-bearing wrist extension mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1208,
+    "injury_id": 21,
+    "role": "contraindicated",
+    "notes": "Acute lumbar strain: no heavy hinge/axial loading or loaded flexion-extension until pain-free (Triangle/Focus Physiotherapy lumbar guidance). Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1208,
+    "injury_id": 23,
+    "role": "contraindicated",
+    "notes": "Pars defect: avoid loaded lumbar extension, loaded flexion, and heavy deadlift/squat/overhead unless supervised (Doctronic; ProRemedy; Triangle Physio). Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1208,
+    "injury_id": 22,
+    "role": "contraindicated",
+    "notes": "SI joint: avoid sit-ups, running, sudden direction change and asymmetric single-leg loading while symptomatic (Better Health Alaska SI guidance). Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1208,
+    "injury_id": 71,
+    "role": "contraindicated",
+    "notes": "Oblique strain: avoid loaded trunk rotation, sit-ups and throwing early. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1208,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Sit-up and crunch family load the disc in repeated loaded flexion, the exact motion flexion-intolerant herniation patients are told to stop. No pattern tag covers this family (Sit-Up, Crunch, Russian Twist, Barbell Good Morning and others carry patterns: null in the catalog), so name_regex was required. Sourced (loaded flexion mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1209,
+    "injury_id": 21,
+    "role": "contraindicated",
+    "notes": "Acute lumbar strain: no heavy hinge/axial loading or loaded flexion-extension until pain-free (Triangle/Focus Physiotherapy lumbar guidance). Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1209,
+    "injury_id": 23,
+    "role": "contraindicated",
+    "notes": "Pars defect: avoid loaded lumbar extension, loaded flexion, and heavy deadlift/squat/overhead unless supervised (Doctronic; ProRemedy; Triangle Physio). Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1209,
+    "injury_id": 22,
+    "role": "contraindicated",
+    "notes": "SI joint: avoid sit-ups, running, sudden direction change and asymmetric single-leg loading while symptomatic (Better Health Alaska SI guidance). Sourced, unreviewed."
+  },
+  {
+    "exercise_id": 1209,
+    "injury_id": 71,
+    "role": "contraindicated",
+    "notes": "Oblique strain: avoid loaded trunk rotation, sit-ups and throwing early. Sourced (mechanism), unreviewed."
+  },
+  {
+    "exercise_id": 1209,
+    "injury_id": 20,
+    "role": "contraindicated",
+    "notes": "Sit-up and crunch family load the disc in repeated loaded flexion, the exact motion flexion-intolerant herniation patients are told to stop. No pattern tag covers this family (Sit-Up, Crunch, Russian Twist, Barbell Good Morning and others carry patterns: null in the catalog), so name_regex was required. Sourced (loaded flexion mechanism), unreviewed."
   }
 ]

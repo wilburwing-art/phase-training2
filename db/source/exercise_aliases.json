@@ -1638,5 +1638,21 @@
     "source": "common_name",
     "notes": "Fitbod export name (CSV import)",
     "created_at": "2026-11-10 00:00:00"
+  },
+  {
+    "id": 206,
+    "exercise_id": 1208,
+    "alias": "Exercise Ball Crunch",
+    "source": "common_name",
+    "notes": "Fitbod export name (CSV import)",
+    "created_at": "2026-11-10 00:00:00"
+  },
+  {
+    "id": 207,
+    "exercise_id": 1209,
+    "alias": "Seated Knee Tuck",
+    "source": "common_name",
+    "notes": "common name",
+    "created_at": "2026-11-10 00:00:00"
   }
 ]
