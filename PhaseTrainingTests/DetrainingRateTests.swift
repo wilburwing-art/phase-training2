@@ -73,6 +73,15 @@ final class DetrainingRateTests: XCTestCase {
                        "In 3 past breaks you lost about 0.1% a week. The other 7 didn't have the same lift logged just before and just after, so they couldn't be measured. Estimates use 0.5%, the gentlest we allow.")
     }
 
+    func test_matchLineCountsSetsNotNames() {
+        XCTAssertEqual(CSVImportSection.matchLine(totalSets: 4723, unmatchedSets: 507, unmatchedNames: 64),
+                       "89% of sets count toward suggestions · 64 names left to match")
+        XCTAssertEqual(CSVImportSection.matchLine(totalSets: 1000, unmatchedSets: 1, unmatchedNames: 1),
+                       "99% of sets count toward suggestions · 1 name left to match", "never rounds up to 100")
+        XCTAssertEqual(CSVImportSection.matchLine(totalSets: 10, unmatchedSets: 0, unmatchedNames: 0),
+                       "100% of sets count toward suggestions · every name matched")
+    }
+
     func test_skipReasonsGroupMostFrequentFirst() {
         let g = CSVImportSection.groupedReasons(["Plank: no reps logged", "Side Bridge: no reps logged",
                                                  "Plank: no reps logged", "empty Exercise"])

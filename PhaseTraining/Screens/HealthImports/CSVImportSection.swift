@@ -19,6 +19,8 @@ struct CSVImportSection: View {
     @State private var csvError: String?
     @State private var csvSummary: (count: Int, oldest: Date?, newest: Date?, perSource: [String: Int])?
     @State private var lastImport: WorkoutCSVImporter.Result?
+    /// Read live, so matching a name in the Unmatched sheet moves it.
+    @State private var unmatched: (names: Int, sets: Int) = (0, 0)
     /// Pending per-source delete, held until the user confirms. Deleting an
     /// import source drops every set that came from it — the data behind
     /// priorBest and lifetime peaks — and there is no undo, so this follows
@@ -75,6 +77,9 @@ struct CSVImportSection: View {
                 .foregroundColor(.ink2)
         }
         .onAppear { refreshCSVSummary() }
+        .onReceive(NotificationCenter.default.publisher(for: .importedSetsDidChange).receive(on: RunLoop.main)) { _ in
+            refreshCSVSummary()
+        }
         .fileImporter(
             isPresented: $presentingCSVPicker,
             allowedContentTypes: [.commaSeparatedText, .plainText],
@@ -114,6 +119,10 @@ struct CSVImportSection: View {
                     .font(.caption)
                     .foregroundColor(.ink2)
             }
+            Text(Self.matchLine(totalSets: s.count, unmatchedSets: unmatched.sets, unmatchedNames: unmatched.names))
+                .font(.caption)
+                .foregroundColor(.ink2)
+                .accessibilityIdentifier("csv-match-line")
             ForEach(s.perSource.sorted(by: { $0.value > $1.value }), id: \.key) { entry in
                 HStack {
                     Text(prettySource(entry.key)).font(.caption).foregroundColor(.ink)
@@ -148,9 +157,6 @@ struct CSVImportSection: View {
                     .font(.caption2)
                     .foregroundColor(.ink2)
             }
-            Text("Matched \(Int(result.nameMatchRate * 100))% of exercise names to the catalog")
-                .font(.caption2)
-                .foregroundColor(.ink2)
             if let note = result.unitNote {
                 Text(note)
                     .font(.caption2)
@@ -218,6 +224,18 @@ struct CSVImportSection: View {
         }
     }
 
+    /// Sets, not names: one unmatched name can carry 50 sets and another 1,
+    /// so the set share is what tells you how much of your history counts.
+    static func matchLine(totalSets: Int, unmatchedSets: Int, unmatchedNames: Int) -> String {
+        guard totalSets > 0 else { return "" }
+        let matched = max(0, totalSets - unmatchedSets)
+        // Floor, so a few stragglers never round up to 100%.
+        let pct = Int((Double(matched) / Double(totalSets) * 100).rounded(.down))
+        let left = unmatchedNames == 0 ? "every name matched"
+            : unmatchedNames == 1 ? "1 name left to match" : "\(unmatchedNames) names left to match"
+        return "\(pct)% of sets count toward suggestions · \(left)"
+    }
+
     /// Distinct skip reasons, most frequent first.
     static func groupedReasons(_ reasons: [String]) -> [(reason: String, count: Int)] {
         Dictionary(grouping: reasons, by: { $0 })
@@ -272,6 +290,8 @@ struct CSVImportSection: View {
 
     private func refreshCSVSummary() {
         csvSummary = UserDatabase.shared.importedSetsSummary()
+        let names = UserDatabase.shared.unmatchedImportNames()
+        unmatched = (names.count, names.reduce(0) { $0 + $1.sets })
     }
 
     private func deleteSource(rawValue: String) {
