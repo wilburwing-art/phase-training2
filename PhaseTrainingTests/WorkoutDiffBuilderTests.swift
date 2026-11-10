@@ -45,7 +45,7 @@ final class WorkoutDiffBuilderTests: XCTestCase {
             workout: workout
         )
         XCTAssertFalse(diff.isNoop)
-        XCTAssertEqual(diff.after.exercises[0].name, "Floor Press")
+        XCTAssertEqual(diff.after.exercises[0].name, "Floor Press (Barbell)", "the alias resolves to the catalog name")
     }
 
     func testSwapPreservesSlotIdAndTargets() {

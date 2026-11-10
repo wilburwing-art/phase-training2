@@ -22,7 +22,7 @@ final class ExerciseNoteTests: XCTestCase {
         XCTAssertTrue(db.saveSession(session("   ", start: t.addingTimeInterval(86_400))))
         let notes = db.listSavedSessions().sorted { $0.startTime < $1.startTime }.map { $0.exercises[0].note }
         XCTAssertEqual(notes, ["seat 4", nil])
-        XCTAssertEqual(UserDatabase.latestSchemaVersion, 6)
+        XCTAssertGreaterThanOrEqual(UserDatabase.latestSchemaVersion, 6, "notes arrived in v6")
     }
 
     func test_oldPayloadWithoutNoteDecodes() throws {
