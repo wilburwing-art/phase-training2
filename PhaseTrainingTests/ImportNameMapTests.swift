@@ -35,6 +35,35 @@ final class ImportNameMapTests: XCTestCase {
         XCTAssertTrue(db.importNameMap().isEmpty)
     }
 
+    func test_notALift_leavesTheList_undoBringsItBack_wipeClearsIt() {
+        let db = UserDatabase(path: ":memory:")
+        db.insertImportedSets([set(1, raw: "Foam Roll Upper Back", id: nil), set(2, raw: "Foam Roll Upper Back", id: nil),
+                               set(1, raw: "Other", id: nil)])
+        db.setImportNameIgnored("Foam Roll Upper Back", true)
+        XCTAssertEqual(db.unmatchedImportNames().map(\.name), ["Other"])
+        XCTAssertEqual(db.ignoredImportNames().first?.sets, 2)
+        XCTAssertTrue(db.allImportedSets().allSatisfy { $0.exerciseId == nil }, "rows are not touched")
+
+        db.clearAllImports()
+        XCTAssertEqual(db.ignoredImportNames().map(\.name), ["Foam Roll Upper Back"], "survives clearing imports")
+        db.setImportNameIgnored("Foam Roll Upper Back", false)
+        XCTAssertTrue(db.ignoredImportNames().isEmpty)
+
+        db.setImportNameIgnored("Butt Kick", true)
+        db.wipeAll()
+        XCTAssertTrue(db.ignoredImportNames().isEmpty)
+    }
+
+    /// Two from the real export where the search lands the right exercise.
+    func test_suggestionsPutTheRightExerciseInTheTopThree() throws {
+        let coach = CoachDatabase.shared
+        for (name, want) in [("Decline Push Up", "Push-Up"), ("Elliptical", "Elliptical Machine")] {
+            guard let wantId = coach.exerciseId(forImportName: want) else { throw XCTSkip("catalog has no \(want)") }
+            XCTAssertTrue(UnmatchedNamesSheet.suggestions(for: name).map(\.id).contains(wantId), name)
+        }
+        XCTAssertLessThanOrEqual(UnmatchedNamesSheet.suggestions(for: "Push").count, 3)
+    }
+
     func test_resolverAndMaintenanceUseTheMap() {
         let db = UserDatabase(path: ":memory:")
         db.setImportName("Mystery", exerciseId: 42)

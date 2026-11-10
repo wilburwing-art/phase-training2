@@ -20,7 +20,7 @@ struct CSVImportSection: View {
     @State private var csvSummary: (count: Int, oldest: Date?, newest: Date?, perSource: [String: Int])?
     @State private var lastImport: WorkoutCSVImporter.Result?
     /// Read live, so matching a name in the Unmatched sheet moves it.
-    @State private var unmatched: (names: Int, sets: Int) = (0, 0)
+    @State private var unmatched: (names: Int, sets: Int, ignoredSets: Int) = (0, 0, 0)
     /// Pending per-source delete, held until the user confirms. Deleting an
     /// import source drops every set that came from it — the data behind
     /// priorBest and lifetime peaks — and there is no undo, so this follows
@@ -119,7 +119,9 @@ struct CSVImportSection: View {
                     .font(.caption)
                     .foregroundColor(.ink2)
             }
-            Text(Self.matchLine(totalSets: s.count, unmatchedSets: unmatched.sets, unmatchedNames: unmatched.names))
+            // Sets marked "Not a lift" were never lifts, so they leave the total.
+            Text(Self.matchLine(totalSets: s.count - unmatched.ignoredSets, unmatchedSets: unmatched.sets,
+                                unmatchedNames: unmatched.names))
                 .font(.caption)
                 .foregroundColor(.ink2)
                 .accessibilityIdentifier("csv-match-line")
@@ -291,7 +293,8 @@ struct CSVImportSection: View {
     private func refreshCSVSummary() {
         csvSummary = UserDatabase.shared.importedSetsSummary()
         let names = UserDatabase.shared.unmatchedImportNames()
-        unmatched = (names.count, names.reduce(0) { $0 + $1.sets })
+        let ignored = UserDatabase.shared.ignoredImportNames()
+        unmatched = (names.count, names.reduce(0) { $0 + $1.sets }, ignored.reduce(0) { $0 + $1.sets })
     }
 
     private func deleteSource(rawValue: String) {

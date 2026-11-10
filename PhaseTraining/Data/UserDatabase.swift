@@ -268,6 +268,12 @@ final class UserDatabase {
         // session everywhere they appear and never queried independently.
         (8, [
             "ALTER TABLE sessions ADD COLUMN session_tags TEXT NOT NULL DEFAULT '[]'"
+        ]),
+        // v9 — imported names the user marked "Not a lift" (foam rolling,
+        // hiking) so they leave the Unmatched list. Their rows keep a nil
+        // exercise id; survives clearing imports like import_name_map.
+        (9, [
+            "CREATE TABLE IF NOT EXISTS import_name_ignored (name_raw TEXT PRIMARY KEY)"
         ])
     ]
 
