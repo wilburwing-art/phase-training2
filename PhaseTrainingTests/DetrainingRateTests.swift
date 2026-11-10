@@ -66,6 +66,20 @@ final class DetrainingRateTests: XCTestCase {
                        "In 3 past breaks you lost about 0.1% a week. Estimates use 0.5%, the gentlest we allow.")
     }
 
+    /// 12 breaks listed, 5 measured: say why the other 7 were not used.
+    func test_rateLineExplainsUnmeasuredBreaks() {
+        let p = comebacks(breaks: 3, exercises: 4, back: 199)
+        XCTAssertEqual(HistoryCheckSheet.rateLine(p.detraining, totalBreaks: 10),
+                       "In 3 past breaks you lost about 0.1% a week. The other 7 didn't have the same lift logged just before and just after, so they couldn't be measured. Estimates use 0.5%, the gentlest we allow.")
+    }
+
+    func test_skipReasonsGroupMostFrequentFirst() {
+        let g = CSVImportSection.groupedReasons(["Plank: no reps logged", "Side Bridge: no reps logged",
+                                                 "Plank: no reps logged", "empty Exercise"])
+        XCTAssertEqual(g.map(\.reason), ["Plank: no reps logged", "Side Bridge: no reps logged", "empty Exercise"])
+        XCTAssertEqual(g.first?.count, 2)
+    }
+
     func test_anImplausibleReturnIsDropped() {
         var odd: [SavedSession] = []
         for k in 0..<3 {

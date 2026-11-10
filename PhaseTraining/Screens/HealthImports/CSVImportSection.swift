@@ -118,7 +118,10 @@ struct CSVImportSection: View {
                 HStack {
                     Text(prettySource(entry.key)).font(.caption).foregroundColor(.ink)
                     Spacer()
-                    Text("\(entry.value)").font(.caption.monospaced()).foregroundColor(.ink2)
+                    // One source: its count is the headline above, so don't repeat it.
+                    if s.perSource.count > 1 {
+                        Text("\(entry.value)").font(.caption.monospaced()).foregroundColor(.ink2)
+                    }
                     Button(role: .destructive) {
                         pendingDelete = (source: entry.key, count: entry.value)
                     } label: {
@@ -137,9 +140,14 @@ struct CSVImportSection: View {
             // "Read" not "imported": the count is rows parsed, and the table
             // is INSERT OR REPLACE, so re-importing the same file shows the
             // same number with zero net-new rows.
-            Text("Last import: read \(result.setsInserted) sets · \(result.workoutsInserted) cardio rows")
+            Text("Last import: read \(result.setsInserted) sets")
                 .font(.caption)
                 .foregroundColor(.ink)
+            if result.workoutsInserted > 0 {
+                Text("\(result.workoutsInserted) cardio \(result.workoutsInserted == 1 ? "session" : "sessions") went to Workout history at the top of this screen")
+                    .font(.caption2)
+                    .foregroundColor(.ink2)
+            }
             Text("Matched \(Int(result.nameMatchRate * 100))% of exercise names to the catalog")
                 .font(.caption2)
                 .foregroundColor(.ink2)
@@ -171,23 +179,27 @@ struct CSVImportSection: View {
             // `.count`, under a message pointing at an Xcode console that
             // nothing ever writes to — a grep for print/os_log/Logger across
             // Imports/, HealthImports/ and Health/ returns zero hits. Show them.
+            // Grouped by reason: 57 lines of "Plank: no reps logged" read as
+            // one fact, and a line number is nothing the user can act on.
             if !result.parseErrors.isEmpty {
+                let reasons = Self.groupedReasons(result.parseErrors.map(\.reason))
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(result.parseErrors.count) \(result.parseErrors.count == 1 ? "row" : "rows") skipped")
                         .font(.caption2)
                         .foregroundColor(.ink2)
-                    ForEach(Array(result.parseErrors.prefix(3).enumerated()), id: \.offset) { _, err in
-                        Text("Line \(err.line): \(err.reason)")
+                    ForEach(reasons.prefix(3), id: \.reason) { r in
+                        Text(r.count == 1 ? r.reason : "\(r.reason) (\(r.count) rows)")
                             .font(.caption2)
                             .foregroundColor(.ink3)
                             .lineLimit(2)
                     }
-                    if result.parseErrors.count > 3 {
-                        Text("…and \(result.parseErrors.count - 3) more")
+                    if reasons.count > 3 {
+                        Text("…and \(reasons.count - 3) more")
                             .font(.caption2)
                             .foregroundColor(.ink3)
                     }
                 }
+                .accessibilityIdentifier("csv-skipped-rows")
             }
         }
         .padding(8)
@@ -204,6 +216,13 @@ struct CSVImportSection: View {
         case "strongCSV": return "Strong CSV"
         default: return raw
         }
+    }
+
+    /// Distinct skip reasons, most frequent first.
+    static func groupedReasons(_ reasons: [String]) -> [(reason: String, count: Int)] {
+        Dictionary(grouping: reasons, by: { $0 })
+            .map { (reason: $0.key, count: $0.value.count) }
+            .sorted { $0.count != $1.count ? $0.count > $1.count : $0.reason < $1.reason }
     }
 
     private static let dateFormatter: DateFormatter = {

@@ -54,7 +54,7 @@ struct HistoryCheckSheet: View {
                                 Text("Estimates start lighter after a break and catch up as you log.")
                                     .styled(.body)
                                     .foregroundStyle(Color.ink2)
-                                if let rate = Self.rateLine(detraining) {
+                                if let rate = Self.rateLine(detraining, totalBreaks: audit.layoffs.count) {
                                     Text(rate)
                                         .styled(.body)
                                         .foregroundStyle(Color.ink2)
@@ -84,12 +84,18 @@ struct HistoryCheckSheet: View {
     }
 
     /// Nil unless the estimates use the lifter's own rate.
-    static func rateLine(_ d: ProvenStrength.DetrainingRate) -> String? {
+    /// `totalBreaks` is every break listed; only those with the same lift
+    /// logged on both sides (`HistoryProfile.detrainingRate`) are measured.
+    static func rateLine(_ d: ProvenStrength.DetrainingRate, totalBreaks: Int = 0) -> String? {
         guard d.isPersonal, let measured = d.measured else { return nil }
         func pct(_ x: Double) -> String { String(format: "%.1f%%", max(0, x) * 100) }
         let bound = measured < d.perWeek ? ", the gentlest we allow"
             : measured > d.perWeek ? ", the steepest we allow" : ""
-        return "In \(d.breaks) past breaks you lost about \(pct(measured)) a week. Estimates use \(pct(d.perWeek))\(bound)."
+        let rest = totalBreaks - d.breaks
+        let why = rest > 0
+            ? " The other \(rest) didn't have the same lift logged just before and just after, so they couldn't be measured."
+            : ""
+        return "In \(d.breaks) past breaks you lost about \(pct(measured)) a week.\(why) Estimates use \(pct(d.perWeek))\(bound)."
     }
 
     private var groups: [(exercise: String, flags: [HistoryProfile.Flag])] {
@@ -106,7 +112,10 @@ struct HistoryCheckSheet: View {
         case .outlier(let median):
             return "\(set) · rest of that workout around \(Self.lb(median))"
         case .duplicate(let of):
-            return "\(set) · same sets as \(Self.date.string(from: of))"
+            // Same day reads as a bug ("Jun 22 · same sets as Jun 22").
+            return Calendar.current.isDate(f.date, inSameDayAs: of)
+                ? "\(set) · logged twice that day"
+                : "\(set) · same sets as \(Self.date.string(from: of))"
         }
     }
 

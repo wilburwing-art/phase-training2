@@ -147,7 +147,9 @@ enum FitbodCSVParser {
             // Strength row. We accept rows with zero weight (bodyweight)
             // as long as they carry reps.
             guard let r = reps, r > 0 else {
-                errors.append((idx + 1, line, "non-warmup row with reps=\"\(repsRaw)\""))
+                // Named by exercise so the import summary can group them: in a
+                // real export every one was a timed hold (Plank, Side Bridge).
+                errors.append((idx + 1, line, "\(exName): no reps logged"))
                 continue
             }
 
