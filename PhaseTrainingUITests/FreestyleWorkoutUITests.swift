@@ -13,9 +13,22 @@ final class FreestyleWorkoutUITests: XCTestCase {
         app.launchArguments += ["--ui-test-onboarded", "--ui-test-reset"]
         app.launch()
 
+        // Lift and sport days show the pill; rest and event days route
+        // Freestyle through "Train anyway". Which one today is depends on
+        // the seeded plan and the weekday, so accept either path.
         let freestyle = app.buttons["today-freestyle"]
-        XCTAssertTrue(freestyle.waitForExistence(timeout: 10))
-        freestyle.tap()
+        let trainAnyway = app.buttons["today-train-anyway"]
+        XCTAssertTrue(freestyle.waitForExistence(timeout: 10) || trainAnyway.exists,
+                      "Today offers Freestyle directly or via Train anyway")
+        if freestyle.exists {
+            XCTAssertFalse(trainAnyway.exists, "the two never show together")
+            freestyle.tap()
+        } else {
+            trainAnyway.tap()
+            let row = app.buttons["override-freestyle"]
+            XCTAssertTrue(row.waitForExistence(timeout: 5))
+            row.tap()
+        }
 
         let pickerRow = app.staticTexts.matching(
             NSPredicate(format: "identifier BEGINSWITH 'picker-row-name-'")

@@ -191,7 +191,12 @@ struct TodayScreen: View {
             // (TBD — orphaned in code for now).
             VStack(spacing: 10) {
                 primaryButton
-                if store.active == nil { freestyleButton }
+                // Rest and event days already offer "Train anyway", whose
+                // sheet carries Freestyle, so the pill shows on lift and
+                // sport days only.
+                if store.active == nil, effectiveKind != .rest, effectiveKind != .event {
+                    freestyleButton
+                }
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 24)

@@ -1,10 +1,12 @@
 // OverrideTodaySheet.swift — "I want to do something other than the
 // coach's plan for today."
 //
-// Two routes:
-//   1. Pick one of the user's saved CustomRoutines (created via the coach
+// Three routes:
+//   1. Freestyle: an empty session filled from the picker (start-now mode
+//      only; Today's "Train anyway" on rest and event days lands here).
+//   2. Pick one of the user's saved CustomRoutines (created via the coach
 //      request flow, or migrated from earlier free-form custom workouts).
-//   2. Ask the coach to build a fresh workout (CoachRequestScreen).
+//   3. Ask the coach to build a fresh workout (CoachRequestScreen).
 //
 // Replaces the previous RoutineLibraryFlow entry point on Today + Week —
 // users no longer browse the bundled routine library. The library still
@@ -45,6 +47,11 @@ struct OverrideTodaySheet: View {
                 Color.bg.ignoresSafeArea()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 18) {
+                        // Start-now mode only: scheduling a future date has
+                        // no empty-session equivalent.
+                        if targetDate == nil {
+                            freestyleRow
+                        }
                         Button(action: { showingCoachRequest = true }) {
                             HStack(spacing: 12) {
                                 Image(systemName: "sparkles")
@@ -118,6 +125,44 @@ struct OverrideTodaySheet: View {
             if let routine { recorder.opened(.customRoutine, id: routine.id, name: routine.name) }
         }
         .onDisappear { recorder.flush() }
+    }
+
+    // MARK: - Freestyle row
+
+    /// An empty session the user fills from the picker. On rest and event
+    /// days this is the only way to Freestyle, since Today hides its pill
+    /// there in favor of "Train anyway".
+    private var freestyleRow: some View {
+        Button {
+            sessionStore.saveActive(sessionStore.createFreestyleSession())
+            dismiss()
+            onStartSession()
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "square.and.pencil")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(Color.accent)
+                    .frame(width: 24, alignment: .center)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Freestyle")
+                        .styled(.displayS)
+                        .foregroundStyle(Color.ink)
+                    Text("Build it as you go")
+                        .styled(.body)
+                        .foregroundStyle(Color.ink2)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.ink3)
+            }
+            .padding(14)
+            .background(Color.surface)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("override-freestyle")
     }
 
     // MARK: - Custom row
