@@ -42,6 +42,16 @@ never run the branch's v2, and the new column (`session_tags`) is never
 created. Renumber the branch's migration to the next free version and
 update `UserDatabaseMigrationTests`.
 
+Any new `ALTER TABLE ... ADD COLUMN` migration also breaks the upgrade
+fixtures. `ExploreSessionTests.test_migration_v1FileGainsTheTable_andKeepsItsData`
+and `SessionExerciseHintsPersistenceTests.test_v6File_upgrades_...` open a fresh
+DB (which already has every column), DROP each later column, then stamp an old
+`user_version`. If the fixture doesn't also drop the new column, the ALTER fails
+with "migration vN failed". Add a `DROP COLUMN` line to both fixtures. v8
+(`session_tags`) shipped in build 169 without this and went unnoticed, because
+the release workflow does not run unit tests. Run `PhaseTrainingTests` in full
+before tagging.
+
 ## 4. Duplicate methods across extension files
 
 Main splits screens into `+Cards` extension files. When a method was moved
