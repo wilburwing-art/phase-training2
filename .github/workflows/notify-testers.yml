@@ -1,0 +1,33 @@
+name: notify-testers
+
+# Release uploads are quiet (release.yml turns off auto-notify). Run this from
+# the Actions tab, or `gh workflow run notify-testers -f build=171`, for a
+# build worth announcing.
+
+on:
+  workflow_dispatch:
+    inputs:
+      build:
+        description: Build number (CFBundleVersion), e.g. 171
+        required: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - name: Write App Store Connect API key
+        env:
+          ASC_API_KEY_P8: ${{ secrets.ASC_API_KEY_P8 }}
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "$ASC_API_KEY_P8" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${ASC_API_KEY_ID}.p8
+          chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${ASC_API_KEY_ID}.p8
+      - name: Notify testers
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+        run: uv run scripts/asc/testflight_notify.py notify --build "${{ inputs.build }}"

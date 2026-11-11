@@ -243,6 +243,19 @@ jobs:
             exit 1
           fi
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Keep testers quiet for this build
+        # Uploads don't notify testers; run the notify-testers workflow for a
+        # build worth announcing. Must land before processing finishes.
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_KEY_ISSUER_ID: ${{ secrets.ASC_API_KEY_ISSUER_ID }}
+        run: |
+          BUILD=$(sed -n 's/.*CURRENT_PROJECT_VERSION: "\([0-9]*\)".*/\1/p' Project.yml | head -1)
+          uv run scripts/asc/testflight_notify.py quiet --build "$BUILD"
+
       - name: Clean up keychain
         if: always()
         run: |
