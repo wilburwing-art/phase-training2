@@ -81,3 +81,18 @@ If any of checks 1 to 4 finds a problem, do not fix the merge commit file by
 file. Branch from current main and cherry-pick the feature commits onto it.
 Renumber the migration, build with XcodeBuildMCP `build_sim`, then run the
 feature's test classes.
+
+## Before any push to main: run the two CI setup lints locally
+
+`.github/actions/ios-setup/action.yml` runs two checks before it builds, and a
+failure there ends both the unit and UI jobs in about 20 seconds with no test
+output (2026-11-11: an 18-commit push failed this way).
+
+```bash
+bash scripts/db/verify_coachdb_sync.sh      # refuses uncommitted db/source edits
+bash scripts/quality/verify_font_tokens.sh  # any .font(.custom( outside Theme/Typography.swift
+```
+
+The font lint failure was a September line, and the scheduled run on the
+previous commit was already red on it, so check `gh run list --branch main
+--workflow test --limit 3` for a red baseline before blaming your own diff.
