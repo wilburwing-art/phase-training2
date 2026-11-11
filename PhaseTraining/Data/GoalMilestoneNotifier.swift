@@ -114,7 +114,7 @@ enum GoalMilestoneNotifier {
 
             let content = UNMutableNotificationContent()
             content.title = "Goal reached"
-            content.body = "\(goal.templateId.label) — you did it."
+            content.body = "\(goal.templateId.label): you did it."
             content.sound = .default
             content.userInfo = ["deepLink": "phasetraining://progress"]
 

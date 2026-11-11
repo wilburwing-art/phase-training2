@@ -36,7 +36,7 @@ struct ProgressRecoverySection: View {
         let freshCount = Self.freshMainMuscleCount(rows: rows)
         return HStack(spacing: 8) {
             statBlock(
-                value: daysSince.map { "\($0)" } ?? "—",
+                value: daysSince.map { "\($0)" } ?? "-",
                 unit: daysSince == 1 ? "DAY" : "DAYS",
                 label: "SINCE LAST WORKOUT"
             )

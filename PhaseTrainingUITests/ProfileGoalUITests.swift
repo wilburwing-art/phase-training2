@@ -13,10 +13,10 @@ final class ProfileGoalUITests: XCTestCase {
         XCTAssertTrue(profile.waitForExistence(timeout: 10))
         profile.tap()
 
-        let row = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Goal")).firstMatch
+        let row = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Training focus")).firstMatch
         var swipes = 0
         while !row.isHittable && swipes < 6 { app.swipeUp(); swipes += 1 }
-        XCTAssertTrue(row.waitForExistence(timeout: 5), "Goal row should exist")
+        XCTAssertTrue(row.waitForExistence(timeout: 5), "Training focus row should exist")
         XCTAssertTrue(row.label.contains("Sport performance"), row.label)
         row.tap()
 

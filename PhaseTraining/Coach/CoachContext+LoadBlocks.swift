@@ -168,9 +168,9 @@ extension CoachContext {
             case .event:
                 status = "event"
             case .none:
-                status = session != nil ? "✓ unplanned session" : "—"
+                status = session != nil ? "✓ unplanned session" : "-"
             }
-            let title = planned?.title ?? "—"
+            let title = planned?.title ?? "-"
             lines.append("- \(label) \(short(date)) · \(title) → \(status)")
         }
         let summary = plannedSessions == 0

@@ -218,7 +218,7 @@ struct CompleteScreen: View {
     /// dash when nothing loaded was logged (bodyweight or cardio).
     private var volumeString: String {
         let v = session.workingVolume(usesImperial: memoryStore.memory.usesImperial)
-        guard v > 0 else { return "—" }
+        guard v > 0 else { return "-" }
         let f = NumberFormatter()
         f.numberStyle = .decimal
         f.maximumFractionDigits = 0
@@ -328,7 +328,7 @@ struct CompleteScreen: View {
             ForEach(Array(rows.enumerated()), id: \.element.id) { idx, ex in
                 let done = ex.sets.filter { $0.done }
                 let summary = done
-                    .map { "\($0.weight.isEmpty ? "—" : $0.weight)×\($0.reps.isEmpty ? "—" : $0.reps)" }
+                    .map { "\($0.weight.isEmpty ? "-" : $0.weight)×\($0.reps.isEmpty ? "-" : $0.reps)" }
                     .joined(separator: " · ")
                 let rpes = done.compactMap { Double($0.rpe) }
                 let rpeString: String? = {

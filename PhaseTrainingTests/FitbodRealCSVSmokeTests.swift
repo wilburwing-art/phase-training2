@@ -118,7 +118,7 @@ final class FitbodRealCSVSmokeTests: XCTestCase {
                 .map { StrengthStandards.epley1RM(weight: $0.weightLb, reps: $0.reps) }.max() ?? 0
             let name = coach.exercise(id: id)?.name ?? "#\(id)"
             lines.append(String(format: "%@: estimate %.0f, recent best %@, all-time %.0f",
-                                name, estimate, recentBest.map { String(format: "%.0f", $0) } ?? "—", peak))
+                                name, estimate, recentBest.map { String(format: "%.0f", $0) } ?? "-", peak))
             if let recentBest {
                 XCTAssertLessThanOrEqual(estimate, recentBest + 0.01, "\(name) estimate above the last 6 months")
             }
@@ -130,7 +130,7 @@ final class FitbodRealCSVSmokeTests: XCTestCase {
         for f in audit.flags.prefix(10) { lines.append("  flag \(f.exercise) \(f.date) \(Int(f.weightLb))x\(f.reps) \(f.reason)") }
         for name in ["Barbell Back Squat", "Lat Pulldown (Cable)", "Dumbbell Curl", "Barbell Bench Press"] {
             if let p = profile.profile(forExerciseNamed: name) {
-                lines.append("  \(name): step \(p.typicalStepLb.map { "\($0)" } ?? "—"), trend \(p.trend), plateau \(p.plateau)")
+                lines.append("  \(name): step \(p.typicalStepLb.map { "\($0)" } ?? "-"), trend \(p.trend), plateau \(p.plateau)")
             }
         }
 
@@ -189,7 +189,7 @@ final class FitbodRealCSVSmokeTests: XCTestCase {
 
     private func dateRange(_ r: FitbodCSVParser.ParseResult) -> String {
         let dates = r.sets.map(\.performedAt) + r.workouts.map(\.startTime)
-        guard let oldest = dates.min(), let newest = dates.max() else { return "—" }
+        guard let oldest = dates.min(), let newest = dates.max() else { return "-" }
         let f = ISO8601DateFormatter()
         return "\(f.string(from: oldest)) → \(f.string(from: newest))"
     }

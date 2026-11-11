@@ -36,18 +36,18 @@ struct Exercise: Identifiable, Hashable {
 
 extension Exercise {
     var modalityLabel: String {
-        (modality ?? "—").replacingOccurrences(of: "_", with: " ").capitalized
+        (modality ?? "-").replacingOccurrences(of: "_", with: " ").capitalized
     }
 
-    var difficultyLabel: String { (difficulty ?? "—").capitalized }
+    var difficultyLabel: String { (difficulty ?? "-").capitalized }
 
     /// Shared catalog meta line: "Modality · Difficulty[ · Compound]".
     /// Pass `includeCompound: false` for dense surfaces (the exercise
     /// picker) that drop the compound tag to keep the line short.
     func metaLabel(includeCompound: Bool = true) -> String {
         var parts: [String] = []
-        if modalityLabel != "—" { parts.append(modalityLabel) }
-        if difficultyLabel != "—" { parts.append(difficultyLabel) }
+        if modalityLabel != "-" { parts.append(modalityLabel) }
+        if difficultyLabel != "-" { parts.append(difficultyLabel) }
         if includeCompound && isCompound { parts.append("Compound") }
         return parts.joined(separator: " · ")
     }

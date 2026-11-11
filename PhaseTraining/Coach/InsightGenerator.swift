@@ -34,6 +34,9 @@ enum InsightGenerator {
         consentGranted: Bool,
         now: Date = Date()
     ) {
+        // coachAvailable first: a token-less build would otherwise build a full
+        // context snapshot and then fail at send.
+        guard CoachEntitlement.coachAvailable else { return }
         guard consentGranted, CoachEntitlement.proSatisfied() else { return }
         guard !inFlight else { return }
         guard !hasInsightForToday(memory: memoryStore.memory, now: now) else { return }

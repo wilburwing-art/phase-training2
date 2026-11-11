@@ -282,8 +282,8 @@ private struct ExerciseDetailContent: View {
 
     private var metaLine: String {
         var parts: [String] = []
-        if exercise.modalityLabel != "—" { parts.append(exercise.modalityLabel) }
-        if exercise.difficultyLabel != "—" { parts.append(exercise.difficultyLabel) }
+        if exercise.modalityLabel != "-" { parts.append(exercise.modalityLabel) }
+        if exercise.difficultyLabel != "-" { parts.append(exercise.difficultyLabel) }
         if let env = exercise.environment, !env.isEmpty {
             parts.append(env.replacingOccurrences(of: "_", with: " ").capitalized)
         }

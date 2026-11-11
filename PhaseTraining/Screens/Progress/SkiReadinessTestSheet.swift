@@ -141,7 +141,7 @@ struct SkiReadinessTestSheet: View {
                 .foregroundStyle(Color.ink3)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 10) {
-                TextField("—", text: text)
+                TextField("-", text: text)
                     .keyboardType(decimal ? .decimalPad : .numberPad)
                     .font(.scaled("JetBrainsMono-SemiBold", size: 20))
                     .foregroundStyle(Color.ink)

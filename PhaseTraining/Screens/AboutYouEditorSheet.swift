@@ -125,7 +125,7 @@ struct AboutYouEditorSheet: View {
 
     private var ageTextField: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
-            TextField("—", text: $ageText)
+            TextField("-", text: $ageText)
                 .focused($ageFocused)
                 .keyboardType(.numberPad)
                 .submitLabel(.done)

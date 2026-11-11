@@ -243,6 +243,8 @@ struct BodyWeightLogSheet: View {
                 Image(systemName: "trash")
                     .font(.system(size: 12))
                     .foregroundStyle(Color.ink3)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
                     .accessibilityLabel("Delete entry")
             }
             .buttonStyle(.plain)
@@ -264,7 +266,7 @@ struct BodyWeightLogSheet: View {
     }
 
     /// True when the input parses to a positive number — guards the Log
-    /// button so we don't write "0" or "—".
+    /// button so we don't write "0" or "-".
     private var canLog: Bool {
         guard let kg = parseInputAsKg(weightText) else { return false }
         return kg > 0

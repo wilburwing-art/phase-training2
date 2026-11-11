@@ -694,7 +694,7 @@ final class SessionStore: ObservableObject {
     // MARK: - Stats
 
     /// Mirrors `data.jsx:80-92` — total/done set counts + 1-decimal avg RPE.
-    /// Returns `"—"` for `avgRpe` when no done-set has a numeric RPE.
+    /// Returns `"-"` for `avgRpe` when no done-set has a numeric RPE.
     func stats(for session: ActiveSession) -> SessionStats {
         var totalSets = 0
         var doneSets = 0
@@ -719,7 +719,7 @@ final class SessionStore: ObservableObject {
             let avg = totalRpe / Double(rpeCount)
             avgRpe = String(format: "%.1f", avg)
         } else {
-            avgRpe = "—"
+            avgRpe = "-"
         }
         return SessionStats(totalSets: totalSets, doneSets: doneSets, avgRpe: avgRpe)
     }

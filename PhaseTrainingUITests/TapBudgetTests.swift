@@ -568,6 +568,8 @@ final class TapBudgetTests: XCTestCase {
         XCTAssertEqual(seen, expectedExercises,
                        "[\(counter.flow)] workout exercise count changed (expected \(expectedExercises))")
         counter.tap("log-all-workout")
+        // "Log all" asks first. The confirm is a real tap, so it counts.
+        app.alerts.buttons["Log all"].tap()
     }
 
     /// Tap each UNDONE set's check circle, exercise by exercise. Returns the

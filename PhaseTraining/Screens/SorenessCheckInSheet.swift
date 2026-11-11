@@ -4,6 +4,8 @@
 // today?" pill. Captures the three signals SorenessEntry already models:
 //   energy   ("low" | "normal" | "high")
 //   soreness ("none" | "mild" | "high")  — overall, single severity
+//   pain     (Bool)                       — sharp pain or a tweak in `areas`;
+//                                          the recovery model blocks those groups
 //   areas    ([String])                   — multi-select MuscleBucket slugs
 //                                          (chest/back/quads/...); pre-build-107
 //                                          this was joints (knee/shoulder/...).
@@ -27,6 +29,7 @@ struct SorenessCheckInSheet: View {
     @State private var energy: String? = nil
     @State private var severity: String? = nil
     @State private var areas: Set<String> = []
+    @State private var pain: Bool = false
     @State private var timeBudget: Int? = nil
     @State private var equipmentChanged: Bool = false
     @State private var existingEntryIndex: Int? = nil
@@ -141,7 +144,7 @@ struct SorenessCheckInSheet: View {
                     .foregroundStyle(Color.ink3)
                 Text("(optional)")
                     .font(.monoXS)
-                    .foregroundStyle(Color.ink3.opacity(0.6))
+                    .foregroundStyle(Color.ink3)
             }
             let columns = [GridItem(.adaptive(minimum: 100), spacing: 6)]
             LazyVGrid(columns: columns, alignment: .leading, spacing: 6) {
@@ -152,6 +155,17 @@ struct SorenessCheckInSheet: View {
                     .accessibilityIdentifier("soreness-area-\(opt.slug)")
                 }
             }
+            // Sharp pain or a tweak is a different signal from soreness: the
+            // flagged muscles are kept out of today's plan, not just eased.
+            // Only meaningful with at least one muscle chosen above.
+            chip(label: String(localized: "Sharp pain or a tweak in these", comment: "Pain toggle on the soreness check-in"),
+                 active: pain && !areas.isEmpty) {
+                pain.toggle()
+            }
+            .frame(maxWidth: .infinity)
+            .opacity(areas.isEmpty ? 0.5 : 1)
+            .disabled(areas.isEmpty)
+            .accessibilityIdentifier("soreness-pain")
         }
     }
 
@@ -163,7 +177,7 @@ struct SorenessCheckInSheet: View {
                     .foregroundStyle(Color.ink3)
                 Text("(optional)")
                     .font(.monoXS)
-                    .foregroundStyle(Color.ink3.opacity(0.6))
+                    .foregroundStyle(Color.ink3)
             }
             HStack(spacing: 6) {
                 ForEach(Self.timeBudgetOptions, id: \.value) { opt in
@@ -208,7 +222,7 @@ struct SorenessCheckInSheet: View {
             date: Date(),
             energy: energy,
             soreness: severity,
-            pain: false,
+            pain: pain && !areas.isEmpty,
             areas: Array(areas).sorted(),
             timeBudget: timeBudget,
             equipmentChanged: equipmentChanged
@@ -243,7 +257,7 @@ struct SorenessCheckInSheet: View {
     /// in-progress selections.
     private func rehydrateFromMemory() {
         let untouched = energy == nil && severity == nil && areas.isEmpty
-            && timeBudget == nil && !equipmentChanged && existingEntryIndex == nil
+            && !pain && timeBudget == nil && !equipmentChanged && existingEntryIndex == nil
         guard untouched else { return }
         let cal = Calendar.current
         let today = Date()
@@ -256,6 +270,7 @@ struct SorenessCheckInSheet: View {
         energy = entry.energy
         severity = entry.soreness
         areas = Set(entry.areas)
+        pain = entry.pain
         timeBudget = entry.timeBudget
         equipmentChanged = entry.equipmentChanged
     }

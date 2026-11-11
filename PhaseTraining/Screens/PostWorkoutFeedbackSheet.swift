@@ -112,7 +112,7 @@ struct PostWorkoutFeedbackSheet: View {
                     .foregroundStyle(Color.ink3)
                 Text("(optional)")
                     .font(.monoXS)
-                    .foregroundStyle(Color.ink3.opacity(0.6))
+                    .foregroundStyle(Color.ink3)
             }
             let columns = [GridItem(.adaptive(minimum: 100), spacing: 6)]
             LazyVGrid(columns: columns, alignment: .leading, spacing: 6) {

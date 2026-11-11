@@ -58,7 +58,7 @@ enum SessionTag: String, Codable, CaseIterable, Identifiable {
 struct SessionStats: Equatable {
     var totalSets: Int
     var doneSets: Int
-    var avgRpe: String // matches prototype's "—" sentinel when no RPEs logged
+    var avgRpe: String // matches prototype's "-" sentinel when no RPEs logged
 }
 
 /// A personal-record event: highest weight ever lifted at a given rep count

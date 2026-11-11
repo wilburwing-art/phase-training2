@@ -18,7 +18,7 @@ extension LogScreen {
             ? session.exercises[exIdx].prevSets[setIdx]
             : nil
         let prevLabel: String = {
-            guard let p = prevSet, !p.weight.isEmpty || !p.reps.isEmpty else { return "—" }
+            guard let p = prevSet, !p.weight.isEmpty || !p.reps.isEmpty else { return "-" }
             return "\(p.weight)×\(p.reps)"
         }()
 
@@ -75,7 +75,7 @@ extension LogScreen {
 
                 numCell(
                     text: $session.exercises[exIdx].sets[setIdx].reps,
-                    placeholder: "—",
+                    placeholder: "-",
                     done: set.done,
                     active: isActive
                 )
@@ -162,7 +162,7 @@ extension LogScreen {
         if showsWeightInput(exIdx: exIdx) {
             numCell(
                 text: $session.exercises[exIdx].sets[setIdx].weight,
-                placeholder: "—",
+                placeholder: "-",
                 done: done,
                 active: isActive
             )
@@ -249,7 +249,7 @@ extension LogScreen {
 
     @ViewBuilder
     private func effortCell(text: Binding<String>, done: Bool, active: Bool) -> some View {
-        let display = text.wrappedValue.isEmpty ? "—" : text.wrappedValue
+        let display = text.wrappedValue.isEmpty ? "-" : text.wrappedValue
         if done {
             Text(display)
                 .styled(.monoS)
@@ -281,7 +281,7 @@ extension LogScreen {
             }
             .menuStyle(.borderlessButton)
             // VoiceOver: this is a Menu, so without a label it reads its
-            // current text ("—") and nothing else.
+            // current text ("-") and nothing else.
             .accessibilityLabel("Effort")
             .accessibilityValue(text.wrappedValue.isEmpty ? "not set" : "RPE \(text.wrappedValue)")
         }

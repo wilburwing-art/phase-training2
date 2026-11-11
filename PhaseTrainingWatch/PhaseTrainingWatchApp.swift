@@ -100,16 +100,19 @@ struct RestRow: View {
                         .font(.title3.monospacedDigit())
                 }
                 Spacer()
-                Button("−15") { model.rest.shorten() }
+                Button("-15") { model.rest.shorten() }
                     .buttonStyle(.bordered)
+                    .accessibilityLabel("Shorten rest 15 seconds")
                 Button("+15") { model.rest.extend() }
                     .buttonStyle(.bordered)
+                    .accessibilityLabel("Extend rest 15 seconds")
                 Button {
                     model.rest.clear()
                 } label: {
                     Image(systemName: "forward.fill")
                 }
                 .buttonStyle(.bordered)
+                .accessibilityLabel("Skip rest")
             }
             .onChange(of: context.date) { _, date in model.rest.tick(at: date) }
         }
@@ -133,6 +136,9 @@ struct SetRow: View {
                     .foregroundStyle(set.done ? .green : .secondary)
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Set \(set.num)")
+            .accessibilityValue(set.done ? "done" : "not done")
+            .accessibilityHint("Double tap to mark \(set.done ? "not done" : "done")")
             NavigationLink {
                 SetDetailView(exercise: exercise, set: set)
             } label: {

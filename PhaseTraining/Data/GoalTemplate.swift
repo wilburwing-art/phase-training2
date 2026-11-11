@@ -47,7 +47,7 @@ enum GoalTemplate: String, Codable, CaseIterable, Identifiable {
         case .squatOnePointFiveXBodyweight: return "1RM squat ≥ 1.5× body weight"
         case .ohpThreeQuartersBodyweight:  return "1RM overhead press ≥ 0.75× body weight"
         case .fiveKUnder25:                return "A 5k run timed under 25:00"
-        case .climbsHundredPerMonth:       return "Averaging 25 climbing sessions a week is a lot — this is total climbs logged"
+        case .climbsHundredPerMonth:       return "Averaging 25 climbing sessions a week is a lot, so this counts total climbs logged"
         }
     }
 

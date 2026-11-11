@@ -158,7 +158,7 @@ struct InjuriesEditorSheet: View {
 
     /// Card per active injury — title + remove button + inline severity / side
     /// chip rows + optional onset date row. Each row shows every option as its
-    /// own chip (plus "—" for unset); one tap selects, tapping the selected
+    /// own chip (plus "-" for unset); one tap selects, tapping the selected
     /// chip clears. See `metaPicker`.
     private func injuryCard(_ injury: UserInjury) -> some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -247,7 +247,7 @@ struct InjuriesEditorSheet: View {
                 .styled(.micro)
                 .foregroundStyle(Color.ink3)
             HStack(spacing: 4) {
-                chip(label: "—", isSelected: selected == nil) {
+                chip(label: "-", isSelected: selected == nil) {
                     onSelect(nil)
                 }
                 ForEach(options, id: \.self) { opt in

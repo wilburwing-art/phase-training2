@@ -53,6 +53,8 @@ struct LogScreen: View {
     /// user.db, streaks and planner history. Cancel already confirms; the far
     /// more destructive action did not.
     @State private var showFinishConfirm = false
+    /// "Log all" marks every remaining set done as planned, so it asks first.
+    @State private var showLogAllConfirm = false
     /// PR 9 — "Stop early" is a distinct exit from Finish: it ends the
     /// session as an abandonment (<70% completion → rules-engine
     /// reshuffle, reason feeds the coach). nil = sheet closed.
@@ -155,6 +157,14 @@ struct LogScreen: View {
             Button("Keep going", role: .cancel) {}
         } message: {
             Text("Your in-progress sets won't be saved.")
+        }
+        .alert("Log all remaining sets?", isPresented: $showLogAllConfirm) {
+            Button("Log all") { logAllSetsAllExercises() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text(incompleteSetCount == 1
+                 ? "This marks the last set done as planned."
+                 : "This marks \(incompleteSetCount) sets done as planned.")
         }
         .alert("Finish workout?", isPresented: $showFinishConfirm) {
             Button("Finish") { onFinish() }
@@ -404,7 +414,7 @@ struct LogScreen: View {
                 // (rack-first users). Secondary styling keeps Finish the
                 // primary CTA. Hidden once everything's logged.
                 if anyUndone {
-                    Button(action: logAllSetsAllExercises) {
+                    Button { showLogAllConfirm = true } label: {
                         Text("Log all")
                             .font(.scaled("Inter-Regular", size: 13).weight(.bold))
                             .tracking(-0.01 * 13)

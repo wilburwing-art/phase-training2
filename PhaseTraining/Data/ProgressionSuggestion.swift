@@ -58,7 +58,7 @@ enum ProgressionSuggestion {
     struct Result: Equatable {
         let suggestedWeight: Double
         let delta: Double
-        /// Short tag for the meta line — "+5", "hold", "-5", or "—" when
+        /// Short tag for the meta line — "+5", "hold", "-5", or "-" when
         /// nothing to suggest.
         let label: String
         /// Free-text rationale for tooltips / accessibility.

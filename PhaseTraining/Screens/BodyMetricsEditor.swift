@@ -118,7 +118,7 @@ struct BodyMetricsEditor: View {
         HStack(spacing: 10) {
             inputCard(border: focus == .heightFeet) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    TextField("—", text: $heightFeetText)
+                    TextField("-", text: $heightFeetText)
                         .focused($focus, equals: .heightFeet)
                         .keyboardType(.numberPad)
                         .submitLabel(.next)
@@ -134,7 +134,7 @@ struct BodyMetricsEditor: View {
             }
             inputCard(border: focus == .heightInches) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    TextField("—", text: $heightInchesText)
+                    TextField("-", text: $heightInchesText)
                         .focused($focus, equals: .heightInches)
                         .keyboardType(.numberPad)
                         .submitLabel(.done)
@@ -154,7 +154,7 @@ struct BodyMetricsEditor: View {
     private var metricHeightField: some View {
         inputCard(border: focus == .heightCm) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                TextField("—", text: $heightCmText)
+                TextField("-", text: $heightCmText)
                     .focused($focus, equals: .heightCm)
                     .keyboardType(.numberPad)
                     .submitLabel(.done)
@@ -190,7 +190,7 @@ struct BodyMetricsEditor: View {
             }
             inputCard(border: focus == .weight) {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    TextField("—", text: $weightText)
+                    TextField("-", text: $weightText)
                         .focused($focus, equals: .weight)
                         .keyboardType(.decimalPad)
                         .font(.scaled("JetBrainsMono-SemiBold", size: 26))

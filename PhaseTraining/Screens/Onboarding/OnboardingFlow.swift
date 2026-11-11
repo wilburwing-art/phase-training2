@@ -42,20 +42,47 @@ enum OnboardingStep: Int, CaseIterable {
     /// Apple Health read access, asked here since 2026-09-18. It used to be
     /// opt-in behind Profile > Health & Imports > Sync, which a new install
     /// never found, so readiness and activity detection ran on nothing.
-    /// Skipped by `advance()`/`back()` where HealthKit is unavailable (iPad).
+    /// Left out of `sequence` where HealthKit is unavailable (iPad).
     case health
     /// Apple Guideline 5.1.2(i) consent gate for the AI Coach. Defaults to ON
     /// with explicit accept-via-Continue. If skipped on a fresh install the
     /// coach bubble never appears, which is the bug this step closes.
     case coachConsent
 
-    /// Numbered position shown to the user ("Step X of Y"). Welcome is step 1.
-    var humanIndex: Int { rawValue + 1 }
-    /// Denominator for "Step X of Y".
-    static var total: Int { OnboardingStep.allCases.count }
+    /// The steps this build and device actually show, in order.
+    ///
+    /// Health is dropped where HealthKit is unavailable (iPad). Coach consent
+    /// is dropped when the build carries no gateway token (every beta build):
+    /// asking for consent to a coach that cannot send records a yes for
+    /// nothing and leaves the tester looking for a feature that is absent.
+    static func sequence(healthAvailable: Bool, coachAvailable: Bool) -> [OnboardingStep] {
+        allCases.filter { step in
+            switch step {
+            case .health: return healthAvailable
+            case .coachConsent: return coachAvailable
+            default: return true
+            }
+        }
+    }
 
-    func next() -> OnboardingStep? { OnboardingStep(rawValue: rawValue + 1) }
-    func prev() -> OnboardingStep? { OnboardingStep(rawValue: rawValue - 1) }
+    /// `sequence` for the running build.
+    static let active: [OnboardingStep] = sequence(
+        healthAvailable: HKHealthStore.isHealthDataAvailable(),
+        coachAvailable: CoachEntitlement.coachAvailable)
+
+    /// Numbered position shown to the user ("Step X of Y"). Welcome is step 1.
+    var humanIndex: Int { (Self.active.firstIndex(of: self) ?? rawValue) + 1 }
+    /// Denominator for "Step X of Y".
+    static var total: Int { active.count }
+
+    func next(in steps: [OnboardingStep] = OnboardingStep.active) -> OnboardingStep? {
+        guard let i = steps.firstIndex(of: self), i + 1 < steps.count else { return nil }
+        return steps[i + 1]
+    }
+    func prev(in steps: [OnboardingStep] = OnboardingStep.active) -> OnboardingStep? {
+        guard let i = steps.firstIndex(of: self), i > 0 else { return nil }
+        return steps[i - 1]
+    }
 }
 
 // MARK: - Coordinator
@@ -131,9 +158,14 @@ struct OnboardingFlow: View {
     /// saved draft on the floor — the exact abandonment cliff the resume
     /// support exists to close, and worst for the users furthest along.
     private func resumeStep(rawValue: Int) -> OnboardingStep? {
-        if let exact = OnboardingStep(rawValue: rawValue) { return exact }
+        if let exact = OnboardingStep(rawValue: rawValue) {
+            // A draft saved on a step this build hides (coach consent saved by
+            // a coach build, resumed in a beta build) resumes on the last step
+            // shown, so `advance()` can still finish.
+            return OnboardingStep.active.contains(exact) ? exact : OnboardingStep.active.last
+        }
         guard rawValue > 0 else { return nil }
-        return OnboardingStep.allCases.last
+        return OnboardingStep.active.last
     }
 
     private func persistDraft(_ value: TrainingMemory, step: OnboardingStep) {
@@ -166,23 +198,18 @@ struct OnboardingFlow: View {
         }
     }
 
-    /// Advance one step. The LAST step calls `finish` directly rather than
-    /// advancing, so a nil `next()` here means a step wired to the wrong
-    /// callback, not the end of the flow.
+    /// Advance one step, or finish when the current step is the last one this
+    /// build shows. Which step is last depends on the build: coach consent
+    /// when the coach is present, Health (or seasons on iPad) when it is not.
     private func advance() {
-        guard var next = step.next() else { return }
-        if next == .health && !Self.healthAvailable, let after = next.next() { next = after }
+        guard let next = step.next() else { finish(); return }
         withAnimation(.easeInOut(duration: 0.22)) { step = next }
     }
 
     private func back() {
-        guard var prev = step.prev() else { return }
-        if prev == .health && !Self.healthAvailable, let before = prev.prev() { prev = before }
+        guard let prev = step.prev() else { return }
         withAnimation(.easeInOut(duration: 0.18)) { step = prev }
     }
-
-    /// iPad has no Health app; the step would offer a sheet that cannot appear.
-    private static let healthAvailable = HKHealthStore.isHealthDataAvailable()
 
     private func finish() {
         // The gate asks sport + season, both picked by hand, so they're stated

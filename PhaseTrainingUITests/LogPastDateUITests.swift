@@ -28,7 +28,10 @@ final class LogPastDateUITests: XCTestCase {
         XCTAssertTrue(chip.label.contains("60 min"), chip.label)
 
         let logAll = app.buttons["log-all-workout"]
-        if logAll.exists { logAll.tap() }
+        if logAll.exists {
+            logAll.tap()
+            app.alerts.buttons["Log all"].tap()
+        }
         app.buttons["log-finish"].tap()
 
         // DURATION reads the picked hour, not the few seconds this test took.

@@ -34,13 +34,13 @@ final class BodyMetricsTests: XCTestCase {
     }
 
     func test_formatWeight_handlesNilAndUnits() {
-        XCTAssertEqual(BodyMetrics.formatWeight(kg: nil, imperial: true), "—")
+        XCTAssertEqual(BodyMetrics.formatWeight(kg: nil, imperial: true), "-")
         XCTAssertEqual(BodyMetrics.formatWeight(kg: 80.0, imperial: false), "80.0 kg")
         XCTAssertEqual(BodyMetrics.formatWeight(kg: 80.0, imperial: true), "176.4 lb")
     }
 
     func test_formatHeight_handlesNilAndUnits() {
-        XCTAssertEqual(BodyMetrics.formatHeight(cm: nil, imperial: true), "—")
+        XCTAssertEqual(BodyMetrics.formatHeight(cm: nil, imperial: true), "-")
         XCTAssertEqual(BodyMetrics.formatHeight(cm: 178, imperial: false), "178 cm")
         XCTAssertEqual(BodyMetrics.formatHeight(cm: 178, imperial: true), "5′ 10″")
     }

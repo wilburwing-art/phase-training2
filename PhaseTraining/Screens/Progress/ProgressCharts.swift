@@ -1,8 +1,7 @@
 // ProgressCharts.swift — spark views for the Progress tab.
 //
 // Split out of ProgressScreen.swift (architecture item 9, pure move).
-// LineSpark / BodyWeightSpark are hand-drawn; ExerciseSparkline uses
-// Swift Charts. Access relaxed from file-private to internal so the
+// LineSpark / BodyWeightSpark are hand-drawn. Access relaxed from file-private to internal so the
 // ProgressScreen card extensions in this folder can use them.
 
 import SwiftUI
@@ -105,30 +104,5 @@ struct BodyWeightSpark: View {
                 }
             }
         }
-    }
-}
-
-// MARK: - ExerciseSparkline (Swift Charts — used by per-exercise card)
-
-struct ExerciseSparkline: View {
-    let points: [ProgressAggregates.SparkPoint]
-
-    var body: some View {
-        Chart {
-            ForEach(points) { p in
-                LineMark(x: .value("date", p.date), y: .value("weight", p.weight))
-                    .interpolationMethod(.monotone)
-                    .foregroundStyle(Color.accent)
-                    .lineStyle(StrokeStyle(lineWidth: 1.5, lineJoin: .round))
-            }
-            if let last = points.last {
-                PointMark(x: .value("date", last.date), y: .value("weight", last.weight))
-                    .foregroundStyle(Color.accent)
-                    .symbolSize(24)
-            }
-        }
-        .chartXAxis(.hidden)
-        .chartYAxis(.hidden)
-        .chartPlotStyle { $0.background(Color.clear) }
     }
 }

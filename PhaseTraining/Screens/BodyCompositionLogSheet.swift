@@ -301,6 +301,8 @@ struct BodyCompositionLogSheet: View {
                 Image(systemName: "trash")
                     .font(.system(size: 12))
                     .foregroundStyle(Color.ink3)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
                     .accessibilityLabel("Delete entry")
             }
             .buttonStyle(.plain)

@@ -183,7 +183,7 @@ struct ExerciseTile: View {
         case .handle:
             Image(systemName: "line.3.horizontal")
                 .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(Color.ink3.opacity(0.7))
+                .foregroundStyle(Color.ink3)
                 .frame(width: 14, alignment: .center)
 
         case .none:
@@ -206,7 +206,7 @@ struct ExerciseTile: View {
                     .font(.scaled("JetBrainsMono-Medium", size: 13))
                     .foregroundStyle(Color.ink)
                     .monospacedDigit()
-                Text(lastWeight.map { "\(formattedWeight($0)) \(unit)" } ?? "—")
+                Text(lastWeight.map { "\(formattedWeight($0)) \(unit)" } ?? "-")
                     .font(.scaled("JetBrainsMono-Regular", size: 10))
                     .foregroundStyle(Color.ink3)
                     .monospacedDigit()

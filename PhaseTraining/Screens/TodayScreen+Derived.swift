@@ -222,7 +222,7 @@ extension TodayScreen {
     }
 
     var daysAgoShort: String {
-        guard let prev = previous else { return "—" }
+        guard let prev = previous else { return "-" }
         let days = Calendar.current.dateComponents([.day], from: prev.startTime, to: Date()).day ?? 0
         return "\(days)d ago"
     }
@@ -263,7 +263,7 @@ extension TodayScreen {
                 }
             }
         }
-        let avgRpe = rpeCount > 0 ? String(format: "%.1f", totalRpe / Double(rpeCount)) : "—"
+        let avgRpe = rpeCount > 0 ? String(format: "%.1f", totalRpe / Double(rpeCount)) : "-"
         return (doneSets, avgRpe)
     }
 

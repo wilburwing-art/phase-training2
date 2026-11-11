@@ -134,7 +134,7 @@ struct ProfileScreen: View {
                                     value: seasonsSummary,
                                     icon: "calendar",
                                     action: { presentingSeasonsEditor = true })
-                        SettingsRow(label: "Goals",
+                        SettingsRow(label: "Performance goals",
                                     value: goalsSummary,
                                     icon: "target",
                                     action: { presentingGoalPicker = true })
@@ -187,9 +187,9 @@ struct ProfileScreen: View {
                                     value: experienceSummary,
                                     icon: "chart.line.uptrend.xyaxis",
                                     action: { presentingExperienceEditor = true })
-                        SettingsRow(label: "Goal",
+                        SettingsRow(label: "Training focus",
                                     value: store.memory.trainingGoal.label,
-                                    icon: "target",
+                                    icon: "scope",
                                     action: { presentingGoalEditor = true })
                         if store.memory.skisPrimary {
                             SettingsRow(label: "Discipline",
@@ -241,15 +241,25 @@ struct ProfileScreen: View {
                                     value: remindersSummary,
                                     icon: "bell",
                                     action: { presentingRemindersEditor = true })
-                        CoachSettingsRow()
+                        // No row in a build without a gateway token (every
+                        // beta build): the toggle would read "On" for a coach
+                        // that cannot send.
+                        if CoachEntitlement.coachAvailable {
+                            CoachSettingsRow()
+                        }
                         SettingsRow(label: "Health & Imports",
                                     value: healthImportsRowValue,
                                     icon: "heart.text.square",
                                     action: { presentingHealthImports = true })
-                        SettingsRow(label: "Subscription",
-                                    value: subscriptionRowValue,
-                                    icon: "sparkles",
-                                    action: { presentingPaywall = true })
+                        // Nothing is for sale until a gate closes or App Store
+                        // products load; before that the paywall is a dead end.
+                        if CoachEntitlement.proRequired || SupportEntitlement.proRequired
+                            || !subStore.products.isEmpty {
+                            SettingsRow(label: "Subscription",
+                                        value: subscriptionRowValue,
+                                        icon: "sparkles",
+                                        action: { presentingPaywall = true })
+                        }
                         SettingsRow(label: "Data",
                                     value: "Backup / Restore",
                                     icon: "externaldrive",
@@ -485,7 +495,7 @@ struct ProfileScreen: View {
                 )
                 tuningRow(
                     label: "DIFFICULTY",
-                    value: profile.preferredDifficulties.first?.uppercased() ?? "—",
+                    value: profile.preferredDifficulties.first?.uppercased() ?? "-",
                     matches: true,
                     actualHint: profile.preferredDifficulties.count > 1
                         ? "Fallback: \(profile.preferredDifficulties.dropFirst().joined(separator: ", "))"

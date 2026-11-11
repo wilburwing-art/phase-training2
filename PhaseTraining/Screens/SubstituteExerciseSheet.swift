@@ -248,7 +248,7 @@ struct SubstituteExerciseSheet: View {
     }
 
     private func metaLine(_ ex: Exercise) -> String {
-        let parts = [ex.modalityLabel, ex.difficultyLabel].filter { $0 != "—" }
+        let parts = [ex.modalityLabel, ex.difficultyLabel].filter { $0 != "-" }
         return parts.joined(separator: " · ")
     }
 

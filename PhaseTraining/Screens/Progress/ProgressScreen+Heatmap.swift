@@ -110,7 +110,7 @@ extension ProgressScreen {
                     .overlay(
                         Text("\(Calendar.current.component(.day, from: day.date))")
                             .font(.monoXS)
-                            .foregroundStyle(day.level >= 2 ? Color.accentInk : Color.ink3)
+                            .foregroundStyle(day.level >= 2 ? Color.accentInk : (day.level == 1 ? Color.ink : Color.ink2))
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 4)
@@ -156,7 +156,7 @@ extension ProgressScreen {
         switch level {
         case 0: return Color.lineSoft
         case 1: return Color.accent.opacity(0.25)
-        case 2: return Color.accent.opacity(0.45)
+        case 2: return Color.accent.opacity(0.55)
         case 3: return Color.accent.opacity(0.7)
         default: return Color.accent
         }

@@ -47,9 +47,9 @@ enum BodyMetrics {
     }
 
     /// Format a weight (stored in kg) for display in the user's unit system.
-    /// Returns "—" when nil so empty UI states are predictable.
+    /// Returns "-" when nil so empty UI states are predictable.
     static func formatWeight(kg: Double?, imperial: Bool) -> String {
-        guard let kg else { return "—" }
+        guard let kg else { return "-" }
         if imperial {
             let lb = kgToLb(kg)
             return String(format: "%.1f lb", lb)
@@ -78,7 +78,7 @@ enum BodyMetrics {
 
     /// Format a height (stored in cm) for display in the user's unit system.
     static func formatHeight(cm: Int?, imperial: Bool) -> String {
-        guard let cm else { return "—" }
+        guard let cm else { return "-" }
         if imperial {
             let (f, i) = cmToFeetInches(cm)
             return "\(f)′ \(i)″"

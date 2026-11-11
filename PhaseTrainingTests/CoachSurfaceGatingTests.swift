@@ -89,4 +89,28 @@ final class CoachSurfaceGatingTests: XCTestCase {
         XCTAssertFalse(CoachSettingsRow.showsLapsedNotice(consent: true, pro: false, requirePro: false))
         XCTAssertFalse(CoachSettingsRow.showsLapsedNotice(consent: true, pro: true, requirePro: false))
     }
+
+    // MARK: - Onboarding step sequence
+
+    func test_onboarding_coachBuild_endsOnConsent() {
+        let steps = OnboardingStep.sequence(healthAvailable: true, coachAvailable: true)
+        XCTAssertEqual(steps, [.welcome, .sports, .sportSeasons, .health, .coachConsent])
+    }
+
+    func test_onboarding_tokenlessBuild_neverAsksForCoachConsent() {
+        // Beta builds blank the gateway token. The consent step would record a
+        // yes for a coach that cannot send.
+        let steps = OnboardingStep.sequence(healthAvailable: true, coachAvailable: false)
+        XCTAssertFalse(steps.contains(.coachConsent))
+        XCTAssertEqual(steps.last, .health)
+        XCTAssertNil(OnboardingStep.health.next(in: steps),
+                     "the last shown step must have no next, so advance() finishes")
+    }
+
+    func test_onboarding_noHealthNoCoach_endsOnSeasons() {
+        let steps = OnboardingStep.sequence(healthAvailable: false, coachAvailable: false)
+        XCTAssertEqual(steps.last, .sportSeasons)
+        XCTAssertEqual(OnboardingStep.sports.next(in: steps), .sportSeasons)
+        XCTAssertEqual(OnboardingStep.sportSeasons.prev(in: steps), .sports)
+    }
 }

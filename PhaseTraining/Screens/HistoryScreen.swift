@@ -195,7 +195,7 @@ struct HistoryScreen: View {
             guard !rpes.isEmpty else { return nil }
             return rpes.reduce(0, +) / Double(rpes.count)
         }
-        guard !perSessionAvgs.isEmpty else { return "—" }
+        guard !perSessionAvgs.isEmpty else { return "-" }
         let avg = perSessionAvgs.reduce(0, +) / Double(perSessionAvgs.count)
         return String(format: "%.1f", avg)
     }
@@ -335,7 +335,7 @@ struct HistoryScreen: View {
         // Bodyweight rows log reps + done with NO weight — LogScreen collapses
         // the weight column to a "BW" label for them by design. Requiring a
         // non-empty weight dropped every push-up / plank / dip set, so the row
-        // rendered "—" and the reps the user did log were invisible in history.
+        // rendered "-" and the reps the user did log were invisible in history.
         let doneSets = ex.sets.filter { $0.done && (!$0.weight.isEmpty || ex.isBodyweight) }
         // `pr` flag is not present on LoggedExercise/LoggedSet today; skip badge.
         return VStack(alignment: .leading, spacing: 3) {
@@ -370,7 +370,7 @@ struct HistoryScreen: View {
     }
 
     private func setSummary(_ sets: [LoggedSet]) -> String {
-        guard !sets.isEmpty else { return "—" }
+        guard !sets.isEmpty else { return "-" }
         return sets.map { s in
             let core = "\(s.weight) × \(s.reps)"
             return s.rpe.isEmpty ? core : "\(core) @ \(s.rpe)"

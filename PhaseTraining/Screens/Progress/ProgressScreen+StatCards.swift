@@ -25,18 +25,19 @@ extension ProgressScreen {
         let prsThisMonth = prsInLastDays(30, in: agg.personalRecords)
         let total = agg.totalSessions
         return HStack(spacing: 8) {
-            statCell(label: "THIS WEEK", value: "\(thisWeek)", sub: "/ \(target)", emphasised: thisWeek >= target)
-            statCell(label: "STREAK", value: "\(streak)", sub: streak == 1 ? "wk" : "wks", emphasised: streak > 0)
-            statCell(label: "PRs · 30d", value: "\(prsThisMonth)", sub: nil, emphasised: prsThisMonth > 0)
-            statCell(label: "TOTAL", value: "\(total)", sub: nil, emphasised: false)
+            statCell(label: "WEEK", spoken: "This week", value: "\(thisWeek)", sub: "/ \(target)", emphasised: thisWeek >= target)
+            statCell(label: "STREAK", spoken: "Streak", value: "\(streak)", sub: streak == 1 ? "wk" : "wks", emphasised: streak > 0)
+            statCell(label: "PRs 30D", spoken: "Personal records, last 30 days", value: "\(prsThisMonth)", sub: nil, emphasised: prsThisMonth > 0)
+            statCell(label: "TOTAL", spoken: "Total sessions", value: "\(total)", sub: nil, emphasised: false)
         }
     }
 
-    private func statCell(label: String, value: String, sub: String?, emphasised: Bool) -> some View {
+    private func statCell(label: String, spoken: String, value: String, sub: String?, emphasised: Bool) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
                 .styled(.micro)
                 .foregroundStyle(Color.ink3)
+                .lineLimit(1)
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 Text(value)
                     .font(.scaled("SpaceGrotesk-SemiBold", size: 26))
@@ -51,7 +52,7 @@ extension ProgressScreen {
         }
         .padding(.vertical, 10)
         .padding(.horizontal, 10)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .background(Color.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 10)
@@ -61,7 +62,7 @@ extension ProgressScreen {
         // VoiceOver: "SESSIONS" / "12" / "this month" as three elements says
         // nothing. One element, label then value then qualifier.
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(label.capitalized), \(value)\(sub.map { ", \($0)" } ?? "")")
+        .accessibilityLabel("\(spoken), \(value)\(sub.map { ", \($0)" } ?? "")")
     }
 
     // MARK: - Sessions per week

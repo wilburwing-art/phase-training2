@@ -380,7 +380,7 @@ struct CustomRoutineEditSheet: View {
                 if let hint = Self.fieldBoundHint(for: label) {
                     Text(hint)
                         .styled(.micro)
-                        .foregroundStyle(Color.ink3.opacity(0.7))
+                        .foregroundStyle(Color.ink3)
                 }
             }
             TextField("", text: text)

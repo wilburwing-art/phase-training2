@@ -144,6 +144,8 @@ struct EditSessionSheet: View {
                         Capsule().stroke(Color.line, lineWidth: 0.5)
                     )
                     .clipShape(Capsule())
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel(isWarmup ? "Unmark warmup" : "Mark as warmup")

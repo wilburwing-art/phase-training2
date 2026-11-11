@@ -64,7 +64,7 @@ struct SupportPatternEditor: View {
                 .foregroundStyle(Color.ink)
                 .frame(width: 34, alignment: .leading)
             WrappingFlow(spacing: 6) {
-                OnboardingChip(label: "—", selected: magnitude(day) == nil,
+                OnboardingChip(label: "-", selected: magnitude(day) == nil,
                                action: { setMagnitude(day, nil) })
                 ForEach(SupportMagnitude.allCases, id: \.self) { mag in
                     OnboardingChip(label: mag.label, selected: magnitude(day) == mag,
