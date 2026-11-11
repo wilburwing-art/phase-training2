@@ -74,16 +74,32 @@ enum Planner {
         // No phase cap on lift days: SessionMix limits only the SPORT
         // sessions to the phase's dose, and the rest become complement days.
         let readinessCapped = applyReadinessLiftDayFloor(memory: biased, context: context)
-        var plan = generateUnbiased(
-            memory: readinessCapped,
-            overrides: overrides,
-            routines: routines,
-            recentlyPicked: recentlyPicked,
-            today: today,
-            calendar: calendar,
-            context: context,
-            strategy: strategy
-        )
+        func build(_ m: TrainingMemory) -> WeekPlan {
+            generateUnbiased(memory: m, overrides: overrides, routines: routines,
+                             recentlyPicked: recentlyPicked, today: today, calendar: calendar,
+                             context: context, strategy: strategy)
+        }
+        var plan = build(readinessCapped)
+        // Every week keeps a rest day (finding 8). A week the lift and sport
+        // days fill is planned again with one lift day fewer, so placement
+        // picks the free day and every lift day's index and session count
+        // (SessionMix) agree with the lift days the plan holds, which is the
+        // count every later rebuild passes back (PlanStore.applyRecovery).
+        // SessionMix holds the sport dose, so the day given up is a
+        // complement day whenever the week has one.
+        if !plan.days.contains(where: { $0.kind == .rest }), readinessCapped.liftDaysPerWeek > 1 {
+            var fewer = readinessCapped
+            fewer.liftDaysPerWeek -= 1
+            var retry = build(fewer)
+            if retry.days.contains(where: { $0.kind == .rest }) {
+                for i in retry.days.indices where retry.days[i].kind == .rest {
+                    guard let was = plan.days.first(where: { calendar.isDate($0.date, inSameDayAs: retry.days[i].date) }),
+                          was.kind == .lift else { continue }
+                    retry.days[i].generatedReason = restReason(was)
+                }
+                plan = retry
+            }
+        }
         // PR 10A — apply the arc LAST, after every other pass has placed
         // its slots. The deload transforms the finished plan rather than
         // participating in placement, so it can't be undone or double-
@@ -108,7 +124,49 @@ enum Planner {
                 calendar: calendar
             )
         }
-        return balanced
+        return reserveRestDay(plan: balanced)
+    }
+
+    /// Every week keeps at least one rest day: lift plus sport days top out at
+    /// six (finding 8 of the 2026-11-10 generator audit, where 504 of 720
+    /// five-day and 648 of 720 six-day requests came back as seven-day
+    /// weeks). `generate` plans a full week again with one lift day fewer;
+    /// this is the guard for a week a later pass filled again. Runs last, on
+    /// the finished week, so no placement pass can undo it.
+    ///
+    /// The day given up is the weakest planner-built one: a complement
+    /// session before a sport session, a complement that presses nothing
+    /// before one that carries the week's pressing (finding 11),
+    /// and then the one with the fewest sets (then the latest), so the
+    /// sport's own work and the heavier complement days stay. A protected
+    /// day is the user's own booking and is never touched. The reason line
+    /// says why the day is a rest day.
+    static func reserveRestDay(plan: WeekPlan) -> WeekPlan {
+        guard !plan.days.isEmpty, !plan.days.contains(where: { $0.kind == .rest }) else { return plan }
+        func key(_ i: Int) -> (Int, Int, Int) {
+            let w = plan.days[i].generatedWorkout.map { [$0] } ?? []
+            let presses = WorkoutGenerator.patternSets(w, SportSeasonGenerator.pushPatterns) > 0
+            return (presses ? 1 : 0, w.flatMap(\.exercises).reduce(0) { $0 + $1.sets }, -i)
+        }
+        let candidates = plan.days.indices.filter { !plan.days[$0].protected && plan.days[$0].kind == .lift }
+        let complements = candidates.filter { plan.days[$0].isComplementSession }
+        let pool = complements.isEmpty ? candidates : complements
+        guard let target = pool.min(by: { key($0) < key($1) }) else { return plan }
+        let dropped = plan.days[target]
+        var out = plan
+        out.days[target] = DayPlan(
+            date: dropped.date,
+            kind: .rest,
+            title: "Rest",
+            generatedReason: restReason(dropped)
+        )
+        return out
+    }
+
+    /// Why a lift day became the week's rest day.
+    static func restReason(_ dropped: DayPlan) -> String {
+        "Rest. Seven training days leaves no time to recover, so "
+            + (dropped.title.isEmpty ? "this session" : "your \(dropped.title) session") + " became a rest day"
     }
 
     /// PR 10D — soften the rotation on skip-streak weekdays: convert at

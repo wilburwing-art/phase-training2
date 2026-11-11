@@ -55,7 +55,8 @@ enum WorkoutGenerator {
         context: GeneratorContext = .empty,
         strategy: GeneratorStrategy = .auto,
         adjacentSportDay: Bool = false,
-        date: Date? = nil
+        date: Date? = nil,
+        balancePressing: Bool = true
     ) -> GeneratedWorkout {
         let recovery = date.map {
             MuscleRecovery.status(on: $0, exposures: context.muscleExposures,
@@ -73,14 +74,60 @@ enum WorkoutGenerator {
         // Sport session or complement session (SessionMix). Only the sport
         // sessions go to the authored routines and the sport's own engine
         // rules; they are numbered among themselves.
+        let family = SessionMix.family(forSport: memory.primarySport?.slug)
         let role = SessionMix.role(liftIndex: liftIndex, totalLifts: totalLifts,
-                                   phase: memory.seasonForPlanner,
-                                   family: SessionMix.family(forSport: memory.primarySport?.slug))
+                                   phase: memory.seasonForPlanner, family: family)
+        let pushFloor = SessionMix.pushFloor(liftIndex: liftIndex, totalLifts: max(1, totalLifts),
+                                             phase: memory.seasonForPlanner, family: family)
+        let pushSets: ClosedRange<Int>? = pushFloor > 0 ? pushFloor...Int.max : nil
         var sportIndex = liftIndex, sportSessions = max(1, totalLifts)
         switch role {
         case .complement(let slot) where memory.primarySport != nil:
-            return SportSeasonGenerator.generateSession(
-                athlete(), sessionIndex: 0, strategy: strategy, complement: slot)
+            let session = SportSeasonGenerator.generateSession(
+                athlete(), sessionIndex: 0, strategy: strategy, complement: slot, pushSets: pushSets)
+            // A climber's pressing complement day sets its presses against
+            // the rest of the week, so the week lands between 1:2 and 1:1
+            // push to pull (finding 11: 6.5 to 16.5 at three days, and as
+            // much as 17 to 3 for a beginner). The rest of the week is built
+            // the way the planner builds it, without this balancing, so the
+            // recursion stops at one level.
+            // A bodyweight-only climber is skipped: the catalog holds little
+            // pulling without a bar or board, and capping the presses to
+            // match it only shortens the session.
+            let pullKit = profile.allowedEquipmentSlugs.isEmpty
+                || !profile.allowedEquipmentSlugs.isDisjoint(with: SportSeasonGenerator.loadingEquipment)
+            guard balancePressing, pullKit, family == .upperDominant, totalLifts > 1,
+                  (slot.focus.demandWeights[.upperPush] ?? 0) > 0 else { return session }
+            let rest = (0..<totalLifts).filter { $0 != liftIndex }.map {
+                generateLift(liftIndex: $0, totalLifts: totalLifts, memory: memory, profile: profile,
+                             hashSeed: hashSeed, recentlyPicked: recentlyPicked, context: context,
+                             strategy: strategy, date: date, balancePressing: false)
+            }
+            let pushElsewhere = patternSets(rest, SportSeasonGenerator.pushPatterns)
+            let pullElsewhere = patternSets(rest, SessionMix.pullPatterns)
+            func balanced(_ slot: ComplementSlot, _ built: GeneratedWorkout? = nil) -> GeneratedWorkout {
+                let first = built ?? SportSeasonGenerator.generateSession(
+                    athlete(), sessionIndex: 0, strategy: strategy, complement: slot, pushSets: pushSets)
+                let pull = pullElsewhere + patternSets([first], SessionMix.pullPatterns)
+                guard pull > 0 else { return first }
+                let want = max(0, (pull + 1) / 2 - pushElsewhere)...max(0, pull - pushElsewhere)
+                guard !want.contains(patternSets([first], SportSeasonGenerator.pushPatterns)) else { return first }
+                return SportSeasonGenerator.generateSession(
+                    athlete(), sessionIndex: 0, strategy: strategy, complement: slot, pushSets: want)
+            }
+            let pressed = balanced(slot, session)
+            // A week capping cannot bring under 1:1 (a beginner's or home
+            // climber's sport sessions press as much as they pull, or the
+            // session's length floor gives the presses back) trains pulling
+            // beside the pressing that day. Only then, and never in-season or
+            // in maintenance, when the wall carries the pulling the lift sets
+            // do not count: rows the day before a climbing session cost that
+            // session its back and arms to the recovery gate.
+            let push = pushElsewhere + patternSets([pressed], SportSeasonGenerator.pushPatterns)
+            let pull = pullElsewhere + patternSets([pressed], SessionMix.pullPatterns)
+            guard push > pull, memory.seasonForPlanner != .inSeason, memory.seasonForPlanner != .maintenance,
+                  let upper = slot.focus.withPulling else { return pressed }
+            return balanced(ComplementSlot(focus: upper, repeatNumber: slot.repeatNumber))
         case .sport(let index, let of):
             sportIndex = index
             sportSessions = of
@@ -159,7 +206,15 @@ enum WorkoutGenerator {
         }
         return SportSeasonGenerator.generateSession(
             athlete(), sessionIndex: sportIndex, adjacentSportDay: adjacentSportDay,
-            sessionsInWeek: sportSessions, strategy: strategy)
+            sessionsInWeek: sportSessions, strategy: strategy, pushSets: pushSets)
+    }
+
+    /// Sets across `workouts` of exercises carrying any of `patterns`.
+    static func patternSets(_ workouts: [GeneratedWorkout], _ patterns: Set<String>) -> Int {
+        workouts.flatMap(\.exercises).filter { $0.exerciseId > 0 }.reduce(0) { total, e in
+            Set(CoachDatabase.shared.patternsForExercise(e.exerciseId)).isDisjoint(with: patterns)
+                ? total : total + e.sets
+        }
     }
 
     /// Generate a workout for a consolidated (merged) day. The season engine has

@@ -62,11 +62,20 @@ final class TrainingGoalTests: XCTestCase {
             for (slug, season) in cases {
                 let baseline = sessions(try memory(slug, season, goal: .sportPerformance))
                 let withGoal = sessions(try memory(slug, season, goal: goal))
-                XCTAssertEqual(withGoal.map { $0.exercises.map(\.exerciseId) },
-                               baseline.map { $0.exercises.map(\.exerciseId) },
-                               "\(goal) \(slug) \(season): the goal changed which movements were picked")
+                // The goal sets rest, and the session is fitted to its 60
+                // minutes (finding 4), so a goal may hold fewer or more
+                // movements than the baseline. Before the fit every goal had
+                // the baseline's list whatever the minutes. What holds: the
+                // goal never swaps a movement, so one list is an ordered
+                // subsequence of the other, and rows compare by movement.
                 for (w, b) in zip(withGoal, baseline) {
-                    for ((demand, ex), (_, bex)) in zip(pairs(w), pairs(b)) {
+                    let wi = w.exercises.map(\.exerciseId), bi = b.exercises.map(\.exerciseId)
+                    XCTAssertTrue(GeneratorCompositionTests.isSubsequence(wi, of: bi)
+                                    || GeneratorCompositionTests.isSubsequence(bi, of: wi),
+                                  "\(goal) \(slug) \(season): the goal changed which movements were picked: \(wi) vs \(bi)")
+                    let base = Dictionary(pairs(b).map { ($0.1.exerciseId, $0) }, uniquingKeysWith: { a, _ in a })
+                    for (demand, ex) in pairs(w) {
+                        guard let (_, bex) = base[ex.exerciseId] else { continue }
                         let hasProtocol = ex.reps == bex.reps && ex.restSeconds == bex.restSeconds
                             && ex.sets == bex.sets
                         if TrainingGoal.rebandable.contains(demand) {

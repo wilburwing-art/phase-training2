@@ -81,6 +81,38 @@ enum SessionMix {
         return .complement(ComplementSlot(focus: focus, repeatNumber: repeatNumber))
     }
 
+    /// Movement patterns counted as pulling when a climber's week balances
+    /// its pressing against them. Hangs count: `climbing-pull` is the
+    /// hangboard's pattern.
+    static let pullPatterns: Set<String> = ["horizontal-pull", "vertical-pull", "climbing-pull"]
+
+    /// Upper-push sets a legs-dominant week owes (finding 11 of the
+    /// 2026-11-10 audit: a two-day ski week pressed nothing all season).
+    static let weeklyPushFloor = 6
+
+    /// This lift day's share of the weekly push floor, 0 when it owes none.
+    ///
+    /// The complement days that press carry the floor; a week without one
+    /// (two to four ski days off-season, pre-season and event prep are all
+    /// sport sessions) spreads it over its sport sessions instead. Only the
+    /// legs-dominant family owes one: a climber's antagonist and complement
+    /// work already presses.
+    static func pushFloor(liftIndex: Int, totalLifts: Int, phase: SeasonPhase, family: Family) -> Int {
+        guard family == .legsDominant, totalLifts >= 2 else { return 0 }
+        let index = ((liftIndex % totalLifts) + totalLifts) % totalLifts
+        let roles = (0..<totalLifts).map { role(liftIndex: $0, totalLifts: totalLifts, phase: phase, family: family) }
+        let pressing = roles.indices.filter {
+            if case .complement(let slot) = roles[$0] { return (slot.focus.demandWeights[.upperPush] ?? 0) > 0 }
+            return false
+        }
+        let carriers = pressing.isEmpty
+            ? roles.indices.filter { if case .sport = roles[$0] { return true } else { return false } }
+            : pressing
+        guard let k = carriers.firstIndex(of: index) else { return 0 }
+        let share = weeklyPushFloor / carriers.count
+        return share + (k < weeklyPushFloor % carriers.count ? 1 : 0)
+    }
+
     /// Complement focuses for `count` complement days, in lift-index order.
     static func complementRotation(family: Family, count: Int) -> [ComplementFocus] {
         let base: [ComplementFocus]
@@ -141,6 +173,15 @@ enum ComplementFocus: String, CaseIterable, Equatable {
         case .legs:      return [.legStrength: 0.8, .core: 0.2]
         case .legsPush:  return [.legStrength: 0.5, .upperPush: 0.35, .core: 0.15]
         case .legsCore:  return [.legStrength: 0.6, .core: 0.4]
+        }
+    }
+
+    /// The upper-body focus that adds pulling to a pressing focus, for a
+    /// climber's week that already presses as much as it pulls.
+    var withPulling: ComplementFocus? {
+        switch self {
+        case .pushCore, .upperPush: return .upperBody
+        default: return nil
         }
     }
 

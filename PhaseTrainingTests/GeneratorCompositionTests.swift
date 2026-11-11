@@ -99,6 +99,14 @@ final class GeneratorCompositionTests: XCTestCase {
     /// Strength work reads fewer reps than size, and size fewer than
     /// endurance, row by row on the same movements. Non-strict: cited
     /// protocols and sport-quality demands keep their own numbers.
+    static func isSubsequence(_ a: [Int], of b: [Int]) -> Bool {
+        var it = b.makeIterator()
+        return a.allSatisfy { x in
+            while let y = it.next() { if y == x { return true } }
+            return false
+        }
+    }
+
     func test_goalDirection_strengthRepsAtMostSizeAtMostEndurance() {
         var compared = 0, moved = 0
         for slug in Self.sports {
@@ -108,17 +116,27 @@ final class GeneratorCompositionTests: XCTestCase {
                     let byGoal = [TrainingGoal.strength, .size, .endurance].map {
                         generate(memory(slug, phase: phase, goal: $0), slot: slot, readiness: nil, seed: seed)
                     }
-                    guard byGoal.allSatisfy({ $0.exercises.map(\.exerciseId) == byGoal[0].exercises.map(\.exerciseId) })
-                    else {
-                        XCTFail("[\(slug)/\(phase.rawValue)/\(slot)] the goal changed which movements were picked")
+                    // The goal sets rest (180 s strength, 45 s endurance), and
+                    // the session is fitted to its minutes, so a strength
+                    // session may hold fewer movements than an endurance one.
+                    // Before the fit (finding 4) all three had the same list
+                    // whatever the minutes. What holds: the goal never swaps
+                    // a movement, so each list is an ordered subsequence of
+                    // the longest, and rows compare on the movements shared.
+                    let lists = byGoal.map { $0.exercises.map(\.exerciseId) }
+                    let longest = lists.max { $0.count < $1.count } ?? []
+                    guard lists.allSatisfy({ Self.isSubsequence($0, of: longest) }) else {
+                        XCTFail("[\(slug)/\(phase.rawValue)/\(slot)] the goal changed which movements were picked: \(lists)")
                         continue
                     }
-                    for i in byGoal[0].exercises.indices {
-                        let reps = byGoal.map { Self.leadingNumber($0.exercises[i].reps) }
+                    let shared = byGoal[0].exercises.map(\.exerciseId).filter { id in lists.allSatisfy { $0.contains(id) } }
+                    for id in shared {
+                        let rows = byGoal.map { $0.exercises.first { $0.exerciseId == id }! }
+                        let reps = rows.map { Self.leadingNumber($0.reps) }
                         guard let s = reps[0], let z = reps[1], let e = reps[2] else { continue }
                         compared += 1
                         if s != e { moved += 1 }
-                        let name = byGoal[0].exercises[i].name
+                        let name = rows[0].name
                         XCTAssertLessThanOrEqual(s, z, "[\(slug)/\(phase.rawValue)/\(slot)] \(name): strength \(s) > size \(z)")
                         XCTAssertLessThanOrEqual(z, e, "[\(slug)/\(phase.rawValue)/\(slot)] \(name): size \(z) > endurance \(e)")
                     }

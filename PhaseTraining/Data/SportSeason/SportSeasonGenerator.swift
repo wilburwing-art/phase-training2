@@ -53,7 +53,8 @@ enum SportSeasonGenerator {
                                 adjacentSportDay: Bool = false,
                                 sessionsInWeek: Int = 1,
                                 strategy: GeneratorStrategy = .auto,
-                                complement: ComplementSlot? = nil) -> GeneratedWorkout {
+                                complement: ComplementSlot? = nil,
+                                pushSets: ClosedRange<Int>? = nil) -> GeneratedWorkout {
         // What the recovery gate cost this session: the blocked areas among
         // the movements the same session picks when nothing is blocked. The
         // pool alone would overstate it (a complement day's pool holds leg
@@ -65,7 +66,8 @@ enum SportSeasonGenerator {
             let ungated = generateSession(open, sessionIndex: sessionIndex,
                                           adjacentSportDay: adjacentSportDay,
                                           sessionsInWeek: sessionsInWeek,
-                                          strategy: strategy, complement: complement)
+                                          strategy: strategy, complement: complement,
+                                          pushSets: pushSets)
             let hit = ungated.exercises.reduce(into: Set<String>()) {
                 $0.formUnion(WorkoutGenerator.primaryMuscleBuckets(exerciseId: $1.exerciseId))
             }.intersection(athlete.blockedBuckets)
@@ -76,8 +78,8 @@ enum SportSeasonGenerator {
         // from the general-fitness pool instead of the sport's.
         let phaseRule = PhaseRule.resolve(sportSlug: athlete.sportSlug,
                                           variant: athlete.variant, season: athlete.season)
-        let rule = deloadAware(complement.map { phaseRule.complement($0.focus) } ?? phaseRule,
-                               athlete: athlete)
+        let rule = complement.map { phaseRule.complement($0.focus) } ?? phaseRule
+        let cycle = cycleStatus(athlete)
         let signature = complement == nil ? signatureDemand(athlete.sportSlug) : nil
         let sessionIndex = complement == nil ? sessionIndex : 0
         let sessionsInWeek = complement == nil ? sessionsInWeek : 1
@@ -97,8 +99,15 @@ enum SportSeasonGenerator {
         let weights = applyInjuryRedistribution(rule.demandWeights,
                                                 flagged: athlete.flaggedDemands,
                                                 available: Set(pool.flatMap(\.demands)))
-        let seed = "\(athlete.sportSlug)-\(athlete.season.rawValue)-w\(athlete.weekNumber)-s\(sessionIndex)"
-            + (complement.map { "-\($0.focus.rawValue)\($0.repeatNumber)" } ?? "")
+        let slotTag = "-s\(sessionIndex)" + (complement.map { "-\($0.focus.rawValue)\($0.repeatNumber)" } ?? "")
+        let seed = "\(athlete.sportSlug)-\(athlete.season.rawValue)-w\(athlete.weekNumber)" + slotTag
+        // Anchor lifts are seeded by the mesocycle block, not the week, so the
+        // same squat or press comes back in weeks 1 to 3 and the athlete can
+        // add load to it (finding 9). Accessories keep the weekly seed.
+        let cycleLength = MesocycleProgression.cycleLength(for: athlete.season)
+        let blockLength = cycleLength > 0 ? cycleLength : 4
+        let anchorSeed = "\(athlete.sportSlug)-\(athlete.season.rawValue)-b\((max(1, athlete.weekNumber) - 1) / blockLength)"
+            + slotTag
 
         let target = targetMovementCount(rule, preferredMinutes: athlete.preferredSessionMinutes)
         let slots = guaranteeSignature(
@@ -128,6 +137,36 @@ enum SportSeasonGenerator {
         var picks: [Pick] = []
         var used = Set<Int>()
         var shortfall = 0
+        // Pressing movements, read only when the week sets this session's
+        // push sets (see `pushSets` below).
+        let pushDemand: Demand = complement == nil ? .upperStrength : .upperPush
+        let pushFloor = pushSets?.lowerBound ?? 0
+        let pushCeiling = pushSets?.upperBound ?? Int.max
+        let pushIds: Set<Int> = pushSets != nil ? Set(pool.filter { m in
+            !Set(CoachDatabase.shared.patternsForExercise(m.exerciseId)).isDisjoint(with: Self.pushPatterns)
+        }.map(\.exerciseId)) : []
+        let squatIds = Set(pool.filter { m in
+            Self.heavyLegDemands.contains { m.serves($0) }
+                && CoachDatabase.shared.patternsForExercise(m.exerciseId).contains("squat")
+        }.map(\.exerciseId))
+        // Loadability (finding 6): when the athlete owns something to load a
+        // movement with, a strength slot prefers a barbell, dumbbell, machine
+        // or bar movement over a bodyweight one, and "(Knees)" and band
+        // regressions sink below both. Beginners keep the old ranking: the
+        // regressions are for them, and for the bodyweight tier.
+        let loadAware = athlete.experience != .beginner
+            && (athlete.availableEquipmentSlugs.isEmpty
+                || !athlete.availableEquipmentSlugs.isDisjoint(with: Self.loadingEquipment))
+        let loadRank: [Int: Int] = loadAware ? {
+            let reqs = CoachDatabase.shared.requiredEquipmentSlugs(forExerciseIds: Set(pool.map(\.exerciseId)))
+            return Dictionary(uniqueKeysWithValues: pool.map { m in
+                (m.exerciseId, Self.loadRank(m, required: reqs[m.exerciseId] ?? []))
+            })
+        }() : [:]
+        func squatCapped(_ m: SportMovement, _ demand: Demand, _ chosen: [Pick]) -> Bool {
+            Self.heavyLegDemands.contains(demand) && squatIds.contains(m.exerciseId)
+                && chosen.contains { Self.heavyLegDemands.contains($0.demand) && squatIds.contains($0.movement.exerciseId) }
+        }
         // SCARCEST DEMAND FIRST. A movement can serve several demands, so a
         // demand with one qualifying movement in the pool loses it to a demand
         // with six whenever the six-way slot happens to run first — and which
@@ -154,6 +193,8 @@ enum SportSeasonGenerator {
             // session index, so no cross-session state is needed.
             let excludeHangboard = demand == .fingerStrength
                 && sessionsInWeek >= 3 && sessionIndex >= 2
+            let isAnchor = anchorDemands.contains(demand)
+            let isStrengthSlot = loadAware && Self.strengthDemands.contains(demand)
             let candidates = pool
                 .filter { $0.serves(demand) && !used.contains($0.exerciseId) }
                 .filter { !excludeHangboard || !$0.name.localizedCaseInsensitiveContains("hangboard") }
@@ -171,6 +212,12 @@ enum SportSeasonGenerator {
                     // served.
                     let lp = lhs.primaryDemand == demand, rp = rhs.primaryDemand == demand
                     if lp != rp { return lp }
+                    // A session owing push sets fills its upper slot with a
+                    // press before a pull.
+                    if demand == pushDemand, !pushIds.isEmpty {
+                        let lq = pushIds.contains(lhs.exerciseId), rq = pushIds.contains(rhs.exerciseId)
+                        if lq != rq { return lq }
+                    }
                     // Sore tier: a movement that loads a sore muscle as its
                     // prime mover ranks below every other movement serving
                     // the same demand. Below the primary-demand check for the
@@ -178,11 +225,21 @@ enum SportSeasonGenerator {
                     // serves a demand, never whether it is served.
                     let ls = soreIds.contains(lhs.exerciseId), rs = soreIds.contains(rhs.exerciseId)
                     if ls != rs { return !ls }
+                    // Load tier, strength slots only. Below the primary-demand
+                    // and sore checks for the same reason they sit there: it
+                    // changes which movement serves a demand, never whether.
+                    if isStrengthSlot {
+                        let ll = loadRank[lhs.exerciseId] ?? 1, rl = loadRank[rhs.exerciseId] ?? 1
+                        if ll != rl { return ll < rl }
+                    }
                     // Rotation tier: 0 fresh, 1 recent, 2 rejected by the user
                     // (affinity <= sink threshold). A rejected movement still
                     // ranks inside its primary-demand group, so a demand whose
                     // only movement the user dislikes is still served.
-                    let lt = rotationTier(lhs, athlete), rt = rotationTier(rhs, athlete)
+                    // Anchors skip the recency tier for the same reason they
+                    // skip the weekly seed: last week's squat is this week's.
+                    let lt = rotationTier(lhs, athlete, anchor: isAnchor)
+                    let rt = rotationTier(rhs, athlete, anchor: isAnchor)
                     if lt != rt { return lt < rt }
                     if preferLowFatigue && lhs.fatigueCost != rhs.fatigueCost {
                         return lhs.fatigueCost < rhs.fatigueCost             // lighter first
@@ -192,36 +249,55 @@ enum SportSeasonGenerator {
                     // without defeating rotation.
                     let la = athlete.affinity(for: lhs.name), ra = athlete.affinity(for: rhs.name)
                     if la != ra { return la > ra }
-                    return djb2("\(seed)-\(demand.rawValue)-\(lhs.exerciseId)")
-                         < djb2("\(seed)-\(demand.rawValue)-\(rhs.exerciseId)")
+                    let tie = isAnchor ? anchorSeed : seed
+                    return djb2("\(tie)-\(demand.rawValue)-\(lhs.exerciseId)")
+                         < djb2("\(tie)-\(demand.rawValue)-\(rhs.exerciseId)")
                 }
-            for m in candidates.prefix(count) {
+            // One bilateral squat pattern among the heavy leg demands per
+            // session (finding 5: an eccentric back squat and a back squat in
+            // one session). A slot left with only another squat goes to the
+            // shortfall backfill below instead.
+            var taken = 0
+            for m in candidates where taken < count && !squatCapped(m, demand, picks) {
                 picks.append(Pick(movement: m, demand: demand))
                 used.insert(m.exerciseId)
+                taken += 1
             }
-            // Track the shortfall. `candidates.prefix(count)` of an empty or
-            // short list silently yields fewer movements and the slot is simply
-            // LOST — an equipment-restricted or injury-filtered athlete got a
-            // session below the documented 3-movement floor with no explanation.
-            shortfall += max(0, count - candidates.count)
+            // Track the shortfall. A short candidate list yields fewer
+            // movements and the slot is LOST: an equipment-restricted or
+            // injury-filtered athlete got a session below the documented
+            // 3-movement floor with no explanation.
+            shortfall += max(0, count - taken)
         }
 
         // Backfill from any demand that still has candidates, so the session
         // keeps its intended size. Ordered by the rule's own weights, so what
         // replaces a dropped slot is still phase-appropriate.
-        if shortfall > 0 {
-            var byWeight = rule.demandWeights.sorted { $0.value > $1.value }.map(\.key)
+        func backfillCandidates(_ chosen: [Pick]) -> [Pick] {
+            var byWeight = rule.demandWeights.sorted {
+                $0.value != $1.value ? $0.value > $1.value : $0.key.rawValue < $1.key.rawValue
+            }.map(\.key)
             // A complement day whose own demands ran dry (an injury that rules
             // out most pulling, say) backfills from the other upper-body and
             // core demands. Legs only when the focus already trains legs: a
-            // skier's complement day never turns into leg work.
+            // skier's complement day never turns into leg work. Pulling and
+            // arms only when the focus already trains them or the sport is
+            // legs-dominant, for the same reason: a climber's complement day
+            // filled with rows and curls leaves the next climbing session's
+            // back and biceps blocked by the recovery gate.
             if complement != nil {
-                var spare: [Demand] = [.core, .upperPush, .upperPull, .arms]
+                let climberSpare = SessionMix.family(forSport: athlete.sportSlug) == .upperDominant
+                var spare: [Demand] = [.core, .upperPush, .upperPull, .arms].filter {
+                    !climberSpare || ($0 != .upperPull && $0 != .arms) || rule.demandWeights[$0] != nil
+                }
                 if rule.demandWeights[.legStrength] != nil { spare.append(.legStrength) }
                 byWeight += spare.filter { !byWeight.contains($0) }
             }
-            outer: for demand in byWeight {
-                for m in pool.filter({ $0.serves(demand) && !used.contains($0.exerciseId) })
+            var out: [Pick] = []
+            var seen = Set(chosen.map(\.movement.exerciseId))
+            for demand in byWeight {
+                for m in pool.filter({ $0.serves(demand) && !seen.contains($0.exerciseId)
+                                        && !squatCapped($0, demand, chosen + out) })
                     .sorted(by: {
                         // Backfill only sinks rejected movements; it does not
                         // chase favorites, which would bypass rotation.
@@ -231,12 +307,14 @@ enum SportSeasonGenerator {
                         if ls != rs { return !ls }
                         return djb2("\(seed)-backfill-\($0.exerciseId)") < djb2("\(seed)-backfill-\($1.exerciseId)")
                     }) {
-                    picks.append(Pick(movement: m, demand: demand))
-                    used.insert(m.exerciseId)
-                    shortfall -= 1
-                    if shortfall == 0 { break outer }
+                    out.append(Pick(movement: m, demand: demand))
+                    seen.insert(m.exerciseId)
                 }
             }
+            return out
+        }
+        if shortfall > 0 {
+            picks += backfillCandidates(picks).prefix(shortfall)
         }
 
         picks = enforceFatigueCap(picks, cap: rule.sessionVolumeCap,
@@ -245,10 +323,126 @@ enum SportSeasonGenerator {
         let lightened = complement == nil && rule.deferToSport && adjacentSportDay
         if lightened { picks = lighten(picks) }
 
-        var exercises = picks.map {
-            prescribe($0.movement, demand: $0.demand, rule: rule, strategy: strategy, goal: athlete.goal,
-                      experience: athlete.experience, age: athlete.age)
+        // The build weeks of a progressive-overload block ramp the anchor
+        // lifts' effort; a deload week holds the band.
+        let rampWeek: Int? = rule.progression == .progressiveOverload
+            && (cycle.state == .build || cycle.state == .deloadNextWeek) ? cycle.weekOfCycle : nil
+        // The muscles the sport sessions train (RecoveryWeekProbeTests reads
+        // the same buckets).
+        let sportMuscles: Set<String> = SessionMix.family(forSport: athlete.sportSlug) == .upperDominant
+            ? ["back", "forearms", "biceps"] : ["quads", "hamstrings", "glutes"]
+        func row(_ p: Pick) -> Row {
+            let e = prescribe(p.movement, demand: p.demand, rule: rule, strategy: strategy, goal: athlete.goal,
+                              experience: athlete.experience, age: athlete.age, rampWeek: rampWeek)
+            // A cited protocol keeps its own sets; everything else may move
+            // within the athlete's ceiling while the session is fitted. On a
+            // complement day a movement that loads the sport's own muscles
+            // keeps its prescribed sets until the session cannot otherwise
+            // reach its length floor: the fit once raised a climber's
+            // Romanian deadlifts to five sets the day before a climbing
+            // session, and the recovery gate took that session's back.
+            let stretch = max(e.sets, athlete.experience == .beginner ? 3 : 5)
+            let held = complement != nil && !sportMuscles.isDisjoint(with: loadedBuckets(p.movement.exerciseId))
+            let ceiling = p.movement.protocolSets ?? (held ? e.sets : stretch)
+            // Training order is read from the goal-neutral prescription: the
+            // goal re-bands reps and RPE (endurance drops to RPE 6-7), and a
+            // goal must change how a movement is dosed, never where it sits.
+            let neutral = athlete.goal == .sportPerformance ? e
+                : prescribe(p.movement, demand: p.demand, rule: rule, strategy: strategy, goal: .sportPerformance,
+                            experience: athlete.experience, age: athlete.age, rampWeek: rampWeek)
+            return Row(pick: p, exercise: e, maxSets: ceiling, fixedSets: p.movement.protocolSets != nil,
+                       order: trainingOrder(p.demand, neutral),
+                       uncapped: held && p.movement.protocolSets == nil ? stretch : nil)
         }
+        var rows = picks.map(row)
+        // The week's pressing (finding 11). `pushSets` is the share of upper
+        // push sets this session owes: a legs-dominant week's floor
+        // (SessionMix.pushFloor), or the range that puts a climber's week
+        // between 1:2 and 1:1 push to pull. The floor goes to the pressing
+        // rows, adding a press from the pool when the rows held cannot reach
+        // it at their set ceilings, and fitting never trims below it. The
+        // ceiling caps the presses, dropping the last of them while more
+        // than three movements remain, and fitting adds no press past it.
+        if pushFloor > 0 {
+            while true {
+                let pressing = rows.indices.filter { pushIds.contains(rows[$0].pick.movement.exerciseId) }
+                if pressing.reduce(0, { $0 + rows[$1].maxSets }) >= pushFloor || pressing.count >= 3 {
+                    var owed = pushFloor
+                    for i in pressing { rows[i].floorSets = 0 }
+                    while owed > 0, let i = pressing.filter({ rows[$0].floorSets < rows[$0].maxSets })
+                        .min(by: { rows[$0].floorSets < rows[$1].floorSets }) {
+                        rows[i].floorSets += 1
+                        owed -= 1
+                    }
+                    for i in pressing { rows[i].exercise.sets = max(rows[i].exercise.sets, rows[i].floorSets) }
+                    break
+                }
+                let taken = Set(rows.map(\.pick.movement.exerciseId))
+                guard let press = pool
+                    .filter({ pushIds.contains($0.exerciseId) && !taken.contains($0.exerciseId) && $0.serves(pushDemand) })
+                    .sorted(by: {
+                        let l = loadRank[$0.exerciseId] ?? 1, r = loadRank[$1.exerciseId] ?? 1
+                        if l != r { return l < r }
+                        return djb2("\(anchorSeed)-press-\($0.exerciseId)") < djb2("\(anchorSeed)-press-\($1.exerciseId)")
+                    }).first
+                else {
+                    for i in pressing { rows[i].floorSets = rows[i].maxSets; rows[i].exercise.sets = rows[i].maxSets }
+                    break
+                }
+                rows.append(row(Pick(movement: press, demand: pushDemand)))
+            }
+        }
+        if pushCeiling < Int.max {
+            func pressing() -> [Int] { rows.indices.filter { pushIds.contains(rows[$0].pick.movement.exerciseId) } }
+            while pressing().count > pushCeiling, rows.count > 3, let last = pressing().last {
+                rows.remove(at: last)
+            }
+            var left = pushCeiling
+            var caps = Dictionary(uniqueKeysWithValues: pressing().map { ($0, 0) })
+            while left > 0, let i = caps.keys.filter({ caps[$0]! < rows[$0].maxSets })
+                .min(by: { caps[$0]! != caps[$1]! ? caps[$0]! < caps[$1]! : $0 < $1 }) {
+                caps[i]! += 1
+                left -= 1
+            }
+            for (i, cap) in caps {
+                rows[i].uncapped = rows[i].uncapped ?? rows[i].maxSets
+                rows[i].maxSets = max(1, cap)
+                rows[i].exercise.sets = min(rows[i].exercise.sets, rows[i].maxSets)
+            }
+        }
+        if let budget = athlete.preferredSessionMinutes {
+            rows = fitToBudget(rows, budget: budget, rule: rule, lightened: lightened,
+                               signature: signature,
+                               extra: { current in
+                                   let cost = current.reduce(0) { $0 + $1.pick.movement.fatigueCost }
+                                   return backfillCandidates(current.map(\.pick))
+                                       .first { cost + $0.movement.fatigueCost <= rule.sessionVolumeCap
+                                           && (pushCeiling == Int.max || !pushIds.contains($0.movement.exerciseId))
+                                           && !((athlete.season == .inSeason || athlete.season == .maintenance)
+                                                && $0.movement.fatigueCost >= 5) }
+                                       .map(row)
+                               })
+        }
+        // Mesocycle deload, after fitting so the fit cannot pad it back.
+        // Protocol sets stay as cited here and below.
+        if cycle.state == .deload {
+            for i in rows.indices where !rows[i].fixedSets {
+                rows[i].exercise.sets = max(1, Int((Double(rows[i].exercise.sets) * deloadSetsFactor).rounded()))
+            }
+        }
+        // The coach's intensity bias, clamped so a `push` can't run away and a
+        // `deload` can't zero the movement out. Rounded away from 1 so the
+        // bias always moves a two- or three-set row.
+        let setsMul = strategy.intensityBias.setsMultiplier
+        if setsMul != 1 {
+            for i in rows.indices where !rows[i].fixedSets {
+                let scaled = (Double(rows[i].exercise.sets) * setsMul).rounded(setsMul > 1 ? .up : .down)
+                rows[i].exercise.sets = max(1, Int(scaled))
+            }
+        }
+        picks = rows.map(\.pick)
+        let orderKeys = rows.map(\.order)
+        var exercises = rows.map(\.exercise)
         // Readiness x sets (T2-10). Same lerp(0.6, 1.0) curve makePickedRow
         // has used since Phase 2: a detrained user gets 60% of the sets, a
         // fully-ready one the full dose. nil means no data and no scaling;
@@ -269,6 +463,15 @@ enum SportSeasonGenerator {
             e.rpe = e.rpe.map { capRPE($0, to: 7.0) } ?? "7"
             return e
         }
+        // Training order (finding 5): explosive work first while fresh, then
+        // the heavy compounds heaviest first, then the rest, then core and
+        // prehab, then conditioning. Stable, so ties keep the pick order.
+        let ordered = zip(picks, exercises).enumerated().sorted {
+            let a = orderKeys[$0.offset], b = orderKeys[$1.offset]
+            return a != b ? a < b : $0.offset < $1.offset
+        }
+        picks = ordered.map(\.element.0)
+        exercises = ordered.map(\.element.1)
         return assemble(exercises, picks: picks, athlete: athlete, rule: rule,
                         sessionIndex: sessionIndex, lightened: lightened,
                         signatureUnavailable: signatureUnavailable,
@@ -471,56 +674,51 @@ enum SportSeasonGenerator {
         return s == "ski-mountaineering" ? .skimo : .inbounds
     }
 
-    /// Apply the mesocycle deload to a phase rule (T1-8).
-    ///
-    /// `MesocycleProgression` already knows whether this is a deload week; it
-    /// just had no consumer outside the badge, so a DELOAD pill sat above a
-    /// full-volume session. `weekNumber` is 1-indexed weeks into the phase and
-    /// is the same value the badge reads.
-    ///
-    /// Only `.deload` changes the prescription. `.taper` and `.peak` are
-    /// event-prep states the eventPrep rule already expresses through its own
-    /// weights and a cap of 14, and `.deloadNextWeek` is a warning, not a dose.
-    static func deloadAware(_ rule: PhaseRule, athlete: AthleteState) -> PhaseRule {
+    /// Where this week sits in its mesocycle (T1-8). `weekNumber` is
+    /// 1-indexed weeks into the phase, the same value the badge reads.
+    static func cycleStatus(_ athlete: AthleteState) -> MesocycleProgression.Status {
         let daysUntilPeak = athlete.targetObjectiveDate.map {
             Calendar.current.dateComponents([.day], from: Date(), to: $0).day ?? 0
         }
-        let status = MesocycleProgression.status(phase: athlete.season,
-                                                 weeksInPhase: athlete.weekNumber,
-                                                 daysUntilPeak: daysUntilPeak)
-        return status.state == .deload ? rule.deloaded() : rule
+        return MesocycleProgression.status(phase: athlete.season,
+                                           weeksInPhase: athlete.weekNumber,
+                                           daysUntilPeak: daysUntilPeak)
     }
+
+    /// The one deload dose, for every sport (finding 9, 2026-11-10 audit).
+    /// A deload week is the build week's session, same movements and RPE,
+    /// at this share of its sets: the badge says "Volume -30%, intensity
+    /// holds". It replaced re-resolving the session under the `.deload`
+    /// progression with a cut fatigue cap, which removed 46% of a ski week's
+    /// sets and 13% of a climbing week's because the cap bit differently on
+    /// each pool. `.taper` and `.peak` are expressed by the eventPrep rule's
+    /// own weights and cap, and `.deloadNextWeek` is a warning, not a dose.
+    static let deloadSetsFactor = 0.7
 
     private static func targetMovementCount(_ rule: PhaseRule,
                                             preferredMinutes: Int? = nil) -> Int {
-        // ~11 min per movement; clamp to a sane session shape.
-        //
-        // T2-7: honor the user's declared session length. This read ONLY the
-        // rule's own band, so `memory.sessionMinutes` had no effect on season
-        // workouts at all — "30 minutes" and "90 minutes" both produced the
-        // same ~63-minute off-season session. The phase rule still bounds the
-        // result: a 90-minute preference can't inflate an in-season taper past
-        // what the phase intends, and a 20-minute one can't drop below the
-        // 3-movement floor.
+        // T2-7: honor the user's declared session length. The phase rule's
+        // ceiling still bounds it (a 90-minute preference cannot inflate an
+        // in-season taper past what the phase intends), but its floor no
+        // longer does: a skier who has 30 minutes gets a 30-minute session,
+        // where clamping up to the rule's 50-minute floor used to hand them
+        // 44 to 56 (finding 4, 2026-11-10 audit).
         let ruleMinutes = rule.sessionMinutesTarget
-        let minutes = preferredMinutes.map {
-            min(max($0, ruleMinutes.lowerBound), ruleMinutes.upperBound)
-        } ?? ruleMinutes.upperBound
-        // ROUND, don't truncate. Integer division made the default profile a
-        // 4-movement session in every phase: sessionMinutes defaults to 45
-        // (TrainingMemory.swift), ski off-season clamps it UP to its 50-minute
-        // floor, and 50 / 11 truncates to 4. Every phase whose lower bound sits
-        // between 44 and 54 landed on the same number, which is why the
-        // eval report showed 4 movements everywhere and why any demand
-        // weighted under 0.25 could never be expressed (four slots, quarter
-        // granularity). 50 now rounds to 5.
-        //
-        // The 11-minute heuristic itself still over-estimates: `assemble`
-        // measures that same off-season session at ~33 min, about 8.25 per
-        // movement. Reconciling the two estimators is a separate change --
-        // this one only stops the truncation.
-        return max(3, min(6, Int((Double(minutes) / 11.0).rounded())))
+        let minutes = preferredMinutes.map { min($0, ruleMinutes.upperBound) } ?? ruleMinutes.upperBound
+        // ROUND, don't truncate (integer division once made every phase a
+        // 4-movement session). The divisor is what `assemble` measures one
+        // movement at, about 8 minutes; the 11 used before under-filled a
+        // 75-minute budget to 28 minutes on average. `fitToBudget` settles
+        // the remainder with sets.
+        // The fatigue cap bounds it too: more slots than the cap can hold only
+        // make `enforceFatigueCap` shed the heaviest movement, which in-season
+        // is the max-strength lift the phase exists to keep.
+        let capCount = max(4, Int(Double(rule.sessionVolumeCap) / 2.5))
+        return max(3, min(7, capCount, Int((Double(minutes) / minutesPerMovement).rounded())))
     }
+
+    /// Measured minutes per season-engine movement (sets x (rest + 40 s)).
+    static let minutesPerMovement = 8.0
 
     /// The generator's INTENDED per-session demand emphasis (normalized slot
     /// allocation). A K-slot session can only approximate a continuous weight
@@ -569,11 +767,62 @@ enum SportSeasonGenerator {
 
     // MARK: - Deterministic tiebreak
 
-    /// 0 fresh, 1 recently picked, 2 rejected by the user's affinity.
-    static func rotationTier(_ m: SportMovement, _ athlete: AthleteState) -> Int {
+    /// 0 fresh, 1 recently picked, 2 rejected by the user's affinity. An
+    /// anchor is never "recent": it is meant to repeat inside its block.
+    static func rotationTier(_ m: SportMovement, _ athlete: AthleteState, anchor: Bool = false) -> Int {
         if isRejected(m, athlete) { return 2 }
-        return athlete.recentMovementIDs.contains(m.exerciseId) ? 1 : 0
+        return !anchor && athlete.recentMovementIDs.contains(m.exerciseId) ? 1 : 0
     }
+
+    static let pushPatterns: Set<String> = ["horizontal-push", "vertical-push"]
+
+    /// Demands prescribed as loaded strength work (3 to 5 sets at RPE 7-8).
+    static let strengthDemands: Set<Demand> = [
+        .maxStrength, .upperStrength, .pullStrength, .legStrength, .upperPush, .upperPull,
+    ]
+
+    /// Equipment that puts load on a movement, or (bar, dip station, rings)
+    /// makes bodyweight a full strength load.
+    static let loadingEquipment: Set<String> = [
+        "barbell", "dumbbells", "kettlebell", "cable-machine", "landmine", "weight-plates",
+        "sandbag", "smith-machine", "leg-press", "hack-squat", "belt-squat", "leg-curl-machine",
+        "leg-extension", "lat-pulldown", "cable-crossover", "chest-press-machine",
+        "shoulder-press-machine", "hip-ad-ab-machine", "pull-up-bar", "dip-station",
+        "gymnastic-rings", "weight-vest",
+    ]
+
+    /// 0 loadable, 1 bodyweight, 2 a regression: a "(Knees)" variant or any
+    /// movement that needs a band.
+    static func loadRank(_ m: SportMovement, required: Set<String>) -> Int {
+        if m.name.localizedCaseInsensitiveContains("(knees)")
+            || required.contains(where: { $0.hasPrefix("band-") || $0 == "mini-band" }) { return 2 }
+        return required.isDisjoint(with: loadingEquipment) ? 1 : 0
+    }
+
+    /// Demands whose heavy picks may hold at most one bilateral squat.
+    static let heavyLegDemands: Set<Demand> = [.maxStrength, .eccentricLeg, .legStrength]
+
+    /// Sort key for a session's rows: explosive (tempo X) 0; a compound at
+    /// RPE 7+ is 1, ordered by its low rep count so the heaviest lift leads;
+    /// other strength and accessory work 2; core and prehab 3; conditioning 4.
+    private static func trainingOrder(_ demand: Demand, _ e: GeneratedExercise) -> (Int, Int) {
+        if e.tempo?.uppercased().contains("X") == true { return (0, 0) }
+        if demand == .aerobicUphill { return (4, 0) }
+        if demand == .core || demand == .prehab { return (3, 0) }
+        let rpeLow = Int(e.rpe?.prefix { $0.isNumber } ?? "") ?? 0
+        if e.isCompound, rpeLow >= 7, let reps = Int(e.reps.prefix { $0.isNumber }) {
+            return (1, reps)
+        }
+        return (2, 0)
+    }
+
+    /// Demands whose pick is the session's anchor lift: the loaded strength,
+    /// power and finger work a block progresses. Everything else is an
+    /// accessory and rotates week to week.
+    static let anchorDemands: Set<Demand> = [
+        .maxStrength, .upperStrength, .pullStrength, .legStrength, .upperPush, .upperPull,
+        .eccentricLeg, .fingerStrength, .contactStrength, .power,
+    ]
 
     static func isRejected(_ m: SportMovement, _ athlete: AthleteState) -> Bool {
         athlete.affinity(for: m.name) <= AthleteState.affinitySinkThreshold
@@ -609,6 +858,121 @@ enum SportSeasonGenerator {
     // MARK: - Fatigue cap
 
     private struct Pick { let movement: SportMovement; let demand: Demand }
+
+    /// A pick with its prescription, carried together so the session's
+    /// provenance (demand list) stays aligned with its exercise rows through
+    /// fitting and ordering.
+    private struct Row {
+        let pick: Pick
+        var exercise: GeneratedExercise
+        /// Most sets the fitting pass may raise this row to.
+        var maxSets: Int
+        /// A cited protocol's sets, which fitting never moves.
+        let fixedSets: Bool
+        /// Sort key for training order (`trainingOrder`).
+        let order: (Int, Int)
+        /// Sets this row holds toward the week's push floor; fitting never
+        /// trims below them.
+        var floorSets = 0
+        /// The ceiling a push cap or a held sport muscle replaced, given
+        /// back when the session cannot otherwise reach its length floor.
+        var uncapped: Int? = nil
+    }
+
+    /// Buckets a movement loads as a prime mover or a secondary one, the
+    /// two roles `MuscleFreshness` charges.
+    static func loadedBuckets(_ exerciseId: Int) -> Set<String> {
+        Set(CoachDatabase.shared.musclesForExercise(exerciseId)
+            .filter { $0.role == "primary" || $0.role == "secondary" }
+            .compactMap { MuscleBucket.bucket(forSlug: $0.slug)?.rawValue })
+    }
+
+    /// Minutes one row costs: work plus rest per set. The one estimator, used
+    /// by `assemble` for `estimatedMinutes` and by `fitToBudget`.
+    static func minutes(_ e: GeneratedExercise) -> Int {
+        Int(ceil(Double(e.sets) * (Double(e.restSeconds) + 40) / 60))
+    }
+
+    // MARK: - Session length
+
+    /// Fit a session to the athlete's declared minutes (finding 4 of the
+    /// 2026-11-10 generator audit: a 75-minute budget averaged 28 minutes and
+    /// a 30-minute ski session ran 44 to 56).
+    ///
+    /// The session is sized to `min(budget, phase ceiling)`: the phase's
+    /// `sessionMinutesTarget` still caps what a long budget can buy (T2-7), so
+    /// an in-season or deload session at a 75-minute budget stays a
+    /// 45-minute one.
+    ///
+    /// Over the budget: take sets off the row with the most, down to two, then
+    /// drop the last non-signature movement while more than three remain, then
+    /// go to one set. Under the goal (85% of that size, or its 60% floor for a
+    /// lightened sport-adjacent session, so it stays the shorter of the two):
+    /// raise sets first, fewest-set row first, up to each row's ceiling; only
+    /// when no row can rise add a movement, inside the phase's fatigue cap.
+    /// Nothing is raised or added past the budget itself.
+    private static func fitToBudget(_ input: [Row], budget: Int, rule: PhaseRule,
+                                    lightened: Bool, signature: Demand?,
+                                    extra: ([Row]) -> Row?) -> [Row] {
+        var rows = input
+        guard !rows.isEmpty, budget > 0 else { return rows }
+        func total() -> Int { rows.reduce(0) { $0 + minutes($1.exercise) } }
+        let size = Double(min(budget, rule.sessionMinutesTarget.upperBound))
+        let floor = Int((0.6 * size).rounded(.up))
+        let goal = lightened ? floor : max(floor, Int((0.85 * size).rounded()))
+
+        func trimOneSet(floorSets: Int) -> Bool {
+            guard let i = rows.indices
+                .filter({ !rows[$0].fixedSets && rows[$0].exercise.sets > max(floorSets, rows[$0].floorSets) })
+                .max(by: { rows[$0].exercise.sets != rows[$1].exercise.sets
+                    ? rows[$0].exercise.sets < rows[$1].exercise.sets : $0 < $1 })
+            else { return false }
+            rows[i].exercise.sets -= 1
+            return true
+        }
+        func dropOne() -> Bool {
+            guard rows.count > 3 else { return false }
+            let sigCount = signature.map { s in rows.filter { $0.pick.demand == s }.count } ?? 0
+            guard let i = rows.indices.reversed().first(where: {
+                rows[$0].floorSets == 0 && (rows[$0].pick.demand != signature || sigCount > 1)
+            }) else { return false }
+            rows.remove(at: i)
+            return true
+        }
+        while total() > budget {
+            if trimOneSet(floorSets: 2) || dropOne() || trimOneSet(floorSets: 1) { continue }
+            break
+        }
+
+        func raiseOneSet() -> Bool {
+            let room = budget - total()
+            guard let i = rows.indices
+                .filter({ i in
+                    var e = rows[i].exercise
+                    guard !rows[i].fixedSets, e.sets < rows[i].maxSets else { return false }
+                    let before = minutes(e)
+                    e.sets += 1
+                    return minutes(e) - before <= room
+                })
+                .min(by: { rows[$0].exercise.sets < rows[$1].exercise.sets })
+            else { return false }
+            rows[i].exercise.sets += 1
+            return true
+        }
+        while total() < goal {
+            if raiseOneSet() { continue }
+            guard rows.count < 8, let more = extra(rows),
+                  total() + minutes(more.exercise) <= budget else { break }
+            rows.append(more)
+        }
+        // Length outranks the push cap and the held sport muscles: a session
+        // still under its floor raises those rows to their own ceilings.
+        if total() < floor {
+            for i in rows.indices { if let c = rows[i].uncapped { rows[i].maxSets = c } }
+            while total() < floor, raiseOneSet() {}
+        }
+        return rows
+    }
 
     /// Drop highest-fatigue movements until Σ fatigueCost ≤ cap, never dropping
     /// the last carrier of a demand and keeping ≥3 movements. In-season also
@@ -649,19 +1013,20 @@ enum SportSeasonGenerator {
                                   strategy: GeneratorStrategy = .auto,
                                   goal: TrainingGoal = .sportPerformance,
                                   experience: ExperienceLevel = .intermediate,
-                                  age: Int? = nil) -> GeneratedExercise {
+                                  age: Int? = nil,
+                                  rampWeek: Int? = nil) -> GeneratedExercise {
         let mainLifts: Set<Demand> = [.maxStrength, .upperStrength, .pullStrength, .legStrength]
-        let scheme = DemandScheme.scheme(for: demand, progression: rule.progression, goal: goal)
+        var scheme = DemandScheme.scheme(for: demand, progression: rule.progression, goal: goal)
             .adjusted(experience: experience, age: age,
                       mainLift: mainLifts.contains(demand) && rule.progression == .progressiveOverload)
+        if let w = rampWeek, anchorDemands.contains(demand) { scheme = scheme.ramped(weekOfCycle: w) }
         let key = m.name.lowercased()
-        // Sets: the strategy's intensity bias, clamped so a `push` can't run
-        // away and a `deload` can't zero the movement out. A movement carrying
-        // a cited protocol (R3-9) keeps its own sets, reps and rest: the
-        // no-hang finger pull is 5 sets of 3 to 4 three-second pulls and was
-        // being served as 5x8s holds from the fingerStrength scheme.
-        let sets = m.protocolSets
-            ?? max(1, Int((Double(scheme.setsMid) * strategy.intensityBias.setsMultiplier).rounded()))
+        // A movement carrying a cited protocol (R3-9) keeps its own sets, reps
+        // and rest: the no-hang finger pull is 5 sets of 3 to 4 three-second
+        // pulls and was being served as 5x8s holds from the fingerStrength
+        // scheme. The strategy's set multiplier lands after `fitToBudget`,
+        // like readiness, so a coach's push or deload survives the fitting.
+        let sets = m.protocolSets ?? scheme.setsMid
         // A load target the coach named is appended to the notes rather than
         // replacing the injury caution, which is the one note that must survive.
         let loadNote = strategy.targetWeightOverrides[key].map { "target: \(Int($0.rounded())) lb" }
@@ -694,7 +1059,7 @@ enum SportSeasonGenerator {
                                  complement: ComplementSlot? = nil,
                                  easedAreas: [String] = [],
                                  skippedAreas: [String] = []) -> GeneratedWorkout {
-        let minutes = exercises.reduce(0) { $0 + Int(ceil(Double($1.sets) * (Double($1.restSeconds) + 40) / 60)) }
+        let minutes = exercises.reduce(0) { $0 + Self.minutes($1) }
         let demandMix = picks.map { $0.demand.rawValue }
         // No sport name: Today's caption already says it, and
         // "Skiing / Snowboarding · Pre-season — Session 4" ran to three lines

@@ -272,6 +272,26 @@ struct SetScheme: Codable, Hashable {
         return s
     }
 
+    /// The in-block ramp of a progressive-overload phase (finding 9 of the
+    /// 2026-11-10 audit: weeks 1 to 3 carried identical sets and RPE under a
+    /// "progressiveOverload" label). Effort climbs to the top of the band
+    /// over the build weeks of a 4-week block: week 1 one under the top,
+    /// week 2 the band itself, week 3 the top. "7-8" reads 7, 7-8, 8. Built
+    /// down from the top rather than up from it, so a beginner whose band
+    /// `adjusted` already capped at 7 still ramps (6, 6-7, 7) without
+    /// passing the cap.
+    func ramped(weekOfCycle: Int) -> SetScheme {
+        guard let top = intensityRPEHigh ?? intensityRPELow else { return self }
+        var s = self
+        let under = max(5, top - 1)
+        switch weekOfCycle {
+        case ...1: s.intensityRPELow = under; s.intensityRPEHigh = under
+        case 2:    s.intensityRPELow = under; s.intensityRPEHigh = top
+        default:   s.intensityRPELow = top;   s.intensityRPEHigh = top
+        }
+        return s
+    }
+
     private mutating func capRPE(at ceiling: Int) {
         if let lo = intensityRPELow { intensityRPELow = min(lo, ceiling) }
         if let hi = intensityRPEHigh { intensityRPEHigh = min(hi, ceiling) }
