@@ -307,4 +307,25 @@ final class ExerciseTaxonomyTests: XCTestCase {
         XCTAssertFalse(equipment.isEmpty)
         XCTAssertNil(filters.modality)
     }
+
+    // MARK: - Movement pattern coverage
+
+    /// Library and Swap filter by pattern, so a lift with none vanishes from
+    /// Push / Pull / Legs / Core. 108 lifts had none, Barbell Bench Press and
+    /// Pull-Up among them, until 2026-11-10.
+    func test_everyStrengthAndPowerLift_hasAMovementPattern() {
+        let db = CoachDatabase.shared
+        let missing = db.listExercises(modality: "strength").filter { db.patternsForExercise($0.id).isEmpty }.map(\.name)
+            + db.listExercises(modality: "power").filter { db.patternsForExercise($0.id).isEmpty }.map(\.name)
+        XCTAssertEqual(missing, [], "add rows to db/source/exercise_movement_patterns.json")
+    }
+
+    func test_categoryFilters_findTheStaples() {
+        let db = CoachDatabase.shared
+        for (cat, name) in [(MovementCategory.push, "Barbell Bench Press"), (.pull, "Pull-Up"),
+                            (.legs, "Leg Press"), (.core, "Crunch")] {
+            let names = db.searchExercises(patternSlugs: cat.memberPatternSlugs).exercises.map(\.name)
+            XCTAssertTrue(names.contains(name), "\(name) missing from \(cat)")
+        }
+    }
 }

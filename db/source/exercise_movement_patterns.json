@@ -2362,5 +2362,461 @@
   {
     "exercise_id": 1207,
     "movement_pattern_id": 12
+  },
+  {
+    "exercise_id": 900,
+    "movement_pattern_id": 10
+  },
+  {
+    "exercise_id": 901,
+    "movement_pattern_id": 10
+  },
+  {
+    "exercise_id": 902,
+    "movement_pattern_id": 10
+  },
+  {
+    "exercise_id": 903,
+    "movement_pattern_id": 10
+  },
+  {
+    "exercise_id": 904,
+    "movement_pattern_id": 11
+  },
+  {
+    "exercise_id": 905,
+    "movement_pattern_id": 11
+  },
+  {
+    "exercise_id": 906,
+    "movement_pattern_id": 11
+  },
+  {
+    "exercise_id": 906,
+    "movement_pattern_id": 30
+  },
+  {
+    "exercise_id": 907,
+    "movement_pattern_id": 10
+  },
+  {
+    "exercise_id": 908,
+    "movement_pattern_id": 11
+  },
+  {
+    "exercise_id": 909,
+    "movement_pattern_id": 11
+  },
+  {
+    "exercise_id": 910,
+    "movement_pattern_id": 30
+  },
+  {
+    "exercise_id": 911,
+    "movement_pattern_id": 1
+  },
+  {
+    "exercise_id": 911,
+    "movement_pattern_id": 30
+  },
+  {
+    "exercise_id": 912,
+    "movement_pattern_id": 30
+  },
+  {
+    "exercise_id": 913,
+    "movement_pattern_id": 1
+  },
+  {
+    "exercise_id": 913,
+    "movement_pattern_id": 30
+  },
+  {
+    "exercise_id": 914,
+    "movement_pattern_id": 30
+  },
+  {
+    "exercise_id": 915,
+    "movement_pattern_id": 30
+  },
+  {
+    "exercise_id": 916,
+    "movement_pattern_id": 1
+  },
+  {
+    "exercise_id": 917,
+    "movement_pattern_id": 1
+  },
+  {
+    "exercise_id": 918,
+    "movement_pattern_id": 1
+  },
+  {
+    "exercise_id": 919,
+    "movement_pattern_id": 2
+  },
+  {
+    "exercise_id": 920,
+    "movement_pattern_id": 2
+  },
+  {
+    "exercise_id": 921,
+    "movement_pattern_id": 1
+  },
+  {
+    "exercise_id": 922,
+    "movement_pattern_id": 15
+  },
+  {
+    "exercise_id": 923,
+    "movement_pattern_id": 15
+  },
+  {
+    "exercise_id": 924,
+    "movement_pattern_id": 15
+  },
+  {
+    "exercise_id": 925,
+    "movement_pattern_id": 15
+  },
+  {
+    "exercise_id": 926,
+    "movement_pattern_id": 14
+  },
+  {
+    "exercise_id": 927,
+    "movement_pattern_id": 14
+  },
+  {
+    "exercise_id": 928,
+    "movement_pattern_id": 14
+  },
+  {
+    "exercise_id": 930,
+    "movement_pattern_id": 14
+  },
+  {
+    "exercise_id": 931,
+    "movement_pattern_id": 2
+  },
+  {
+    "exercise_id": 932,
+    "movement_pattern_id": 2
+  },
+  {
+    "exercise_id": 933,
+    "movement_pattern_id": 7
+  },
+  {
+    "exercise_id": 934,
+    "movement_pattern_id": 1
+  },
+  {
+    "exercise_id": 935,
+    "movement_pattern_id": 1
+  },
+  {
+    "exercise_id": 936,
+    "movement_pattern_id": 4
+  },
+  {
+    "exercise_id": 937,
+    "movement_pattern_id": 5
+  },
+  {
+    "exercise_id": 938,
+    "movement_pattern_id": 1
+  },
+  {
+    "exercise_id": 939,
+    "movement_pattern_id": 1
+  },
+  {
+    "exercise_id": 940,
+    "movement_pattern_id": 1
+  },
+  {
+    "exercise_id": 941,
+    "movement_pattern_id": 1
+  },
+  {
+    "exercise_id": 942,
+    "movement_pattern_id": 6
+  },
+  {
+    "exercise_id": 943,
+    "movement_pattern_id": 3
+  },
+  {
+    "exercise_id": 944,
+    "movement_pattern_id": 3
+  },
+  {
+    "exercise_id": 945,
+    "movement_pattern_id": 3
+  },
+  {
+    "exercise_id": 946,
+    "movement_pattern_id": 17
+  },
+  {
+    "exercise_id": 947,
+    "movement_pattern_id": 17
+  },
+  {
+    "exercise_id": 948,
+    "movement_pattern_id": 17
+  },
+  {
+    "exercise_id": 949,
+    "movement_pattern_id": 17
+  },
+  {
+    "exercise_id": 950,
+    "movement_pattern_id": 17
+  },
+  {
+    "exercise_id": 951,
+    "movement_pattern_id": 17
+  },
+  {
+    "exercise_id": 952,
+    "movement_pattern_id": 17
+  },
+  {
+    "exercise_id": 953,
+    "movement_pattern_id": 13
+  },
+  {
+    "exercise_id": 954,
+    "movement_pattern_id": 13
+  },
+  {
+    "exercise_id": 955,
+    "movement_pattern_id": 13
+  },
+  {
+    "exercise_id": 956,
+    "movement_pattern_id": 13
+  },
+  {
+    "exercise_id": 957,
+    "movement_pattern_id": 10
+  },
+  {
+    "exercise_id": 958,
+    "movement_pattern_id": 11
+  },
+  {
+    "exercise_id": 959,
+    "movement_pattern_id": 11
+  },
+  {
+    "exercise_id": 960,
+    "movement_pattern_id": 16
+  },
+  {
+    "exercise_id": 961,
+    "movement_pattern_id": 16
+  },
+  {
+    "exercise_id": 962,
+    "movement_pattern_id": 15
+  },
+  {
+    "exercise_id": 963,
+    "movement_pattern_id": 16
+  },
+  {
+    "exercise_id": 964,
+    "movement_pattern_id": 16
+  },
+  {
+    "exercise_id": 965,
+    "movement_pattern_id": 10
+  },
+  {
+    "exercise_id": 966,
+    "movement_pattern_id": 10
+  },
+  {
+    "exercise_id": 967,
+    "movement_pattern_id": 10
+  },
+  {
+    "exercise_id": 968,
+    "movement_pattern_id": 20
+  },
+  {
+    "exercise_id": 969,
+    "movement_pattern_id": 20
+  },
+  {
+    "exercise_id": 970,
+    "movement_pattern_id": 23
+  },
+  {
+    "exercise_id": 971,
+    "movement_pattern_id": 23
+  },
+  {
+    "exercise_id": 973,
+    "movement_pattern_id": 20
+  },
+  {
+    "exercise_id": 974,
+    "movement_pattern_id": 20
+  },
+  {
+    "exercise_id": 975,
+    "movement_pattern_id": 20
+  },
+  {
+    "exercise_id": 975,
+    "movement_pattern_id": 24
+  },
+  {
+    "exercise_id": 976,
+    "movement_pattern_id": 20
+  },
+  {
+    "exercise_id": 976,
+    "movement_pattern_id": 24
+  },
+  {
+    "exercise_id": 979,
+    "movement_pattern_id": 17
+  },
+  {
+    "exercise_id": 1112,
+    "movement_pattern_id": 10
+  },
+  {
+    "exercise_id": 1114,
+    "movement_pattern_id": 10
+  },
+  {
+    "exercise_id": 1115,
+    "movement_pattern_id": 10
+  },
+  {
+    "exercise_id": 1116,
+    "movement_pattern_id": 10
+  },
+  {
+    "exercise_id": 1119,
+    "movement_pattern_id": 11
+  },
+  {
+    "exercise_id": 1126,
+    "movement_pattern_id": 14
+  },
+  {
+    "exercise_id": 1129,
+    "movement_pattern_id": 16
+  },
+  {
+    "exercise_id": 1130,
+    "movement_pattern_id": 16
+  },
+  {
+    "exercise_id": 1131,
+    "movement_pattern_id": 16
+  },
+  {
+    "exercise_id": 1132,
+    "movement_pattern_id": 16
+  },
+  {
+    "exercise_id": 1133,
+    "movement_pattern_id": 17
+  },
+  {
+    "exercise_id": 1137,
+    "movement_pattern_id": 17
+  },
+  {
+    "exercise_id": 1138,
+    "movement_pattern_id": 17
+  },
+  {
+    "exercise_id": 1141,
+    "movement_pattern_id": 17
+  },
+  {
+    "exercise_id": 1147,
+    "movement_pattern_id": 13
+  },
+  {
+    "exercise_id": 1149,
+    "movement_pattern_id": 11
+  },
+  {
+    "exercise_id": 1150,
+    "movement_pattern_id": 11
+  },
+  {
+    "exercise_id": 1151,
+    "movement_pattern_id": 11
+  },
+  {
+    "exercise_id": 1152,
+    "movement_pattern_id": 15
+  },
+  {
+    "exercise_id": 1153,
+    "movement_pattern_id": 15
+  },
+  {
+    "exercise_id": 1154,
+    "movement_pattern_id": 15
+  },
+  {
+    "exercise_id": 1155,
+    "movement_pattern_id": 15
+  },
+  {
+    "exercise_id": 1157,
+    "movement_pattern_id": 2
+  },
+  {
+    "exercise_id": 1165,
+    "movement_pattern_id": 3
+  },
+  {
+    "exercise_id": 1166,
+    "movement_pattern_id": 3
+  },
+  {
+    "exercise_id": 1167,
+    "movement_pattern_id": 3
+  },
+  {
+    "exercise_id": 1179,
+    "movement_pattern_id": 1
+  },
+  {
+    "exercise_id": 1183,
+    "movement_pattern_id": 6
+  },
+  {
+    "exercise_id": 1186,
+    "movement_pattern_id": 6
+  },
+  {
+    "exercise_id": 1204,
+    "movement_pattern_id": 20
+  },
+  {
+    "exercise_id": 1208,
+    "movement_pattern_id": 20
+  },
+  {
+    "exercise_id": 1209,
+    "movement_pattern_id": 20
+  },
+  {
+    "exercise_id": 1209,
+    "movement_pattern_id": 24
   }
 ]
