@@ -262,3 +262,15 @@ all of them. Routine coverage also has holes: mountaineering, hiking-trekking
 and thru-hiking have no `maintenance` (in-season) routine and trail-running no
 `build` (pre-season) one, so `AuthoredRoutineSelector.select` falls back to any
 phase.
+
+**Status, commit e0c2d24 (2026-11-11): the two notes above describe the code
+before that commit.** `PhaseRule.skiSlugs` and `climbingSlugs` are gone. Sport
+membership now lives in `SportProfile.swift` (rules table, signature demand,
+SessionMix family, two-sport eligibility, ski-card membership); add or change a
+sport there. `snowboarding` takes the ski row and is served by the season
+engine. Other authored-only sports resolve to `PhaseRule.general`, which
+deloads only in a deload week. Still true: mountaineering, hiking-trekking and
+thru-hiking have no in-season routine and trail-running no pre-season one.
+To print one profile's week for a before/after, a throwaway XCTest that calls
+`Planner.generate(memory:routines:[],today:)` and writes the days to /tmp takes
+about two minutes; delete it and re-run `xcodegen generate` afterwards.
