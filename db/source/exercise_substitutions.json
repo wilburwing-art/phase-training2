@@ -18,7 +18,7 @@
     "substitute_id": 56,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Endurance variant — same protocol, lower per-hang intensity."
+    "notes": "Endurance variant: same protocol, lower per-hang intensity."
   },
   {
     "exercise_id": 4,
@@ -60,7 +60,7 @@
     "substitute_id": 9,
     "context": "pre_event_safe",
     "similarity_score": 0.8,
-    "notes": "Seated cable row — same pattern, no spinal loading."
+    "notes": "Seated cable row: same pattern, no spinal loading."
   },
   {
     "exercise_id": 8,
@@ -249,7 +249,7 @@
     "substitute_id": 1,
     "context": "pre_event_safe",
     "similarity_score": 0.3,
-    "notes": "Weighted pull-up at moderate load is a pre-event option — safer than campus."
+    "notes": "Weighted pull-up at moderate load is a pre-event option: safer than campus."
   },
   {
     "exercise_id": 47,
@@ -284,7 +284,7 @@
     "substitute_id": 1,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Weighted pull-up — lower velocity, similar strength stimulus."
+    "notes": "Weighted pull-up: lower velocity, similar strength stimulus."
   },
   {
     "exercise_id": 48,
@@ -361,7 +361,7 @@
     "substitute_id": 4,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Static lock-off — same position, no release."
+    "notes": "Static lock-off: same position, no release."
   },
   {
     "exercise_id": 51,
@@ -403,7 +403,7 @@
     "substitute_id": 60,
     "context": "low_energy",
     "similarity_score": 0.75,
-    "notes": "Goblet squat — same pattern, ~40-50% the absolute load."
+    "notes": "Goblet squat: same pattern, ~40-50% the absolute load."
   },
   {
     "exercise_id": 57,
@@ -424,7 +424,7 @@
     "substitute_id": 450,
     "context": "equipment_swap",
     "similarity_score": 0.9,
-    "notes": "Front squat — same barbell + squat pattern, more quad-dominant emphasis."
+    "notes": "Front squat: same barbell + squat pattern, more quad-dominant emphasis."
   },
   {
     "exercise_id": 57,
@@ -466,7 +466,7 @@
     "substitute_id": 58,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Romanian deadlift — same pattern, half the CNS cost."
+    "notes": "Romanian deadlift: same pattern, half the CNS cost."
   },
   {
     "exercise_id": 59,
@@ -501,7 +501,7 @@
     "substitute_id": 58,
     "context": "lower_intensity",
     "similarity_score": 0.7,
-    "notes": "Romanian deadlift — same pattern, less ballistic CNS demand."
+    "notes": "Romanian deadlift: same pattern, less ballistic CNS demand."
   },
   {
     "exercise_id": 61,
@@ -529,7 +529,7 @@
     "substitute_id": 60,
     "context": "lower_intensity",
     "similarity_score": 0.65,
-    "notes": "Goblet squat bilateral — slightly less unilateral challenge."
+    "notes": "Goblet squat bilateral: slightly less unilateral challenge."
   },
   {
     "exercise_id": 101,
@@ -599,7 +599,7 @@
     "substitute_id": 115,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Cable wood chop — same pattern, no throw."
+    "notes": "Cable wood chop: same pattern, no throw."
   },
   {
     "exercise_id": 115,
@@ -662,7 +662,7 @@
     "substitute_id": 62,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Bulgarian split squat — same unilateral quad work."
+    "notes": "Bulgarian split squat: same unilateral quad work."
   },
   {
     "exercise_id": 129,
@@ -704,7 +704,7 @@
     "substitute_id": 62,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Bulgarian split squat — same pattern, no plyo."
+    "notes": "Bulgarian split squat: same pattern, no plyo."
   },
   {
     "exercise_id": 130,
@@ -823,7 +823,7 @@
     "substitute_id": 61,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Kettlebell swing — similar explosive triple extension."
+    "notes": "Kettlebell swing: similar explosive triple extension."
   },
   {
     "exercise_id": 217,
@@ -851,7 +851,7 @@
     "substitute_id": 114,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Medball rotational throw — less explosive."
+    "notes": "Medball rotational throw: less explosive."
   },
   {
     "exercise_id": 225,
@@ -914,7 +914,7 @@
     "substitute_id": 228,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Lateral shuffle — less rotational demand."
+    "notes": "Lateral shuffle: less rotational demand."
   },
   {
     "exercise_id": 230,
@@ -949,7 +949,7 @@
     "substitute_id": 49,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Box jump — removes reactive component."
+    "notes": "Box jump: removes reactive component."
   },
   {
     "exercise_id": 232,
@@ -1068,7 +1068,7 @@
     "substitute_id": 103,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Single-leg glute bridge — same pattern, bodyweight."
+    "notes": "Single-leg glute bridge: same pattern, bodyweight."
   },
   {
     "exercise_id": 305,
@@ -1096,7 +1096,7 @@
     "substitute_id": 61,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Kettlebell swing — same hinge, less technical CNS cost."
+    "notes": "Kettlebell swing: same hinge, less technical CNS cost."
   },
   {
     "exercise_id": 306,
@@ -1124,7 +1124,7 @@
     "substitute_id": 63,
     "context": "pre_event_safe",
     "similarity_score": 0.5,
-    "notes": "Pallof press — anti-rotation stays pre-event-safe."
+    "notes": "Pallof press: anti-rotation stays pre-event-safe."
   },
   {
     "exercise_id": 310,
@@ -1187,7 +1187,7 @@
     "substitute_id": 200,
     "context": "low_energy",
     "similarity_score": 0.55,
-    "notes": "Straight-arm pulldown — lighter antagonist stim."
+    "notes": "Straight-arm pulldown: lighter antagonist stim."
   },
   {
     "exercise_id": 312,
@@ -1243,7 +1243,7 @@
     "substitute_id": 58,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Romanian deadlift — same pattern, less front-load core demand."
+    "notes": "Romanian deadlift: same pattern, less front-load core demand."
   },
   {
     "exercise_id": 327,
@@ -1390,7 +1390,7 @@
     "substitute_id": 115,
     "context": "lower_intensity",
     "similarity_score": 0.9,
-    "notes": "Cable wood chop — equivalent, less explosive."
+    "notes": "Cable wood chop: equivalent, less explosive."
   },
   {
     "exercise_id": 349,
@@ -1432,14 +1432,14 @@
     "substitute_id": 349,
     "context": "equipment_swap",
     "similarity_score": 0.85,
-    "notes": "Cable high-to-low chop — mirror pattern."
+    "notes": "Cable high-to-low chop: mirror pattern."
   },
   {
     "exercise_id": 355,
     "substitute_id": 49,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Box jump — adds power but uses similar landing mechanics."
+    "notes": "Box jump: adds power but uses similar landing mechanics."
   },
   {
     "exercise_id": 355,
@@ -1453,7 +1453,7 @@
     "substitute_id": 60,
     "context": "low_energy",
     "similarity_score": 0.5,
-    "notes": "Goblet squat — eccentric quad loading without drop."
+    "notes": "Goblet squat: eccentric quad loading without drop."
   },
   {
     "exercise_id": 355,
@@ -1474,7 +1474,7 @@
     "substitute_id": 228,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Lateral shuffle — simpler footwork drill."
+    "notes": "Lateral shuffle: simpler footwork drill."
   },
   {
     "exercise_id": 359,
@@ -1495,7 +1495,7 @@
     "substitute_id": 228,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Lateral shuffle — same lateral mechanics with less COD."
+    "notes": "Lateral shuffle: same lateral mechanics with less COD."
   },
   {
     "exercise_id": 359,
@@ -1509,7 +1509,7 @@
     "substitute_id": 239,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Eccentric step-down (sagittal) — same eccentric principle."
+    "notes": "Eccentric step-down (sagittal): same eccentric principle."
   },
   {
     "exercise_id": 362,
@@ -1523,14 +1523,14 @@
     "substitute_id": 125,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Wall sit — bilateral isometric alternative."
+    "notes": "Wall sit: bilateral isometric alternative."
   },
   {
     "exercise_id": 370,
     "substitute_id": 10,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Dumbbell row — same pattern, less stroke-specific."
+    "notes": "Dumbbell row: same pattern, less stroke-specific."
   },
   {
     "exercise_id": 371,
@@ -1572,7 +1572,7 @@
     "substitute_id": 135,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Inverted row — bodyweight alternative."
+    "notes": "Inverted row: bodyweight alternative."
   },
   {
     "exercise_id": 373,
@@ -1593,7 +1593,7 @@
     "substitute_id": 63,
     "context": "pre_event_safe",
     "similarity_score": 0.5,
-    "notes": "Pallof press — anti-rotation with minimal fatigue."
+    "notes": "Pallof press: anti-rotation with minimal fatigue."
   },
   {
     "exercise_id": 374,
@@ -1614,7 +1614,7 @@
     "substitute_id": 114,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Medball rotational throw — similar pattern, less load."
+    "notes": "Medball rotational throw: similar pattern, less load."
   },
   {
     "exercise_id": 374,
@@ -1705,7 +1705,7 @@
     "substitute_id": 115,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Cable wood chop — similar rotational demand."
+    "notes": "Cable wood chop: similar rotational demand."
   },
   {
     "exercise_id": 392,
@@ -1761,7 +1761,7 @@
     "substitute_id": 62,
     "context": "lower_intensity",
     "similarity_score": 0.9,
-    "notes": "Bulgarian split squat — same pattern, neutral stance."
+    "notes": "Bulgarian split squat: same pattern, neutral stance."
   },
   {
     "exercise_id": 413,
@@ -1838,7 +1838,7 @@
     "substitute_id": 125,
     "context": "lower_intensity",
     "similarity_score": 0.6,
-    "notes": "Wall sit — quad isometric load without the eccentric stretch."
+    "notes": "Wall sit: quad isometric load without the eccentric stretch."
   },
   {
     "exercise_id": 422,
@@ -1852,7 +1852,7 @@
     "substitute_id": 228,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Lateral shuffle — change-of-direction without the full deceleration stop."
+    "notes": "Lateral shuffle: change-of-direction without the full deceleration stop."
   },
   {
     "exercise_id": 422,
@@ -1873,7 +1873,7 @@
     "substitute_id": 115,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Cable wood chop — same pattern, standing."
+    "notes": "Cable wood chop: same pattern, standing."
   },
   {
     "exercise_id": 429,
@@ -1943,7 +1943,7 @@
     "substitute_id": 58,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Romanian deadlift — same pattern at half CNS cost."
+    "notes": "Romanian deadlift: same pattern at half CNS cost."
   },
   {
     "exercise_id": 451,
@@ -1985,7 +1985,7 @@
     "substitute_id": 21,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Band pull-apart — similar pattern without DBs."
+    "notes": "Band pull-apart: similar pattern without DBs."
   },
   {
     "exercise_id": 452,
@@ -2013,7 +2013,7 @@
     "substitute_id": 10,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Dumbbell row — same unilateral pull."
+    "notes": "Dumbbell row: same unilateral pull."
   },
   {
     "exercise_id": 458,
@@ -2069,7 +2069,7 @@
     "substitute_id": 230,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Squat jump CMJ — vertical without the drop phase."
+    "notes": "Squat jump CMJ: vertical without the drop phase."
   },
   {
     "exercise_id": 469,
@@ -2153,7 +2153,7 @@
     "substitute_id": 131,
     "context": "low_energy",
     "similarity_score": 0.95,
-    "notes": "Hollow hold — same exercise, can be tucked."
+    "notes": "Hollow hold: same exercise, can be tucked."
   },
   {
     "exercise_id": 487,
@@ -2230,7 +2230,7 @@
     "substitute_id": 504,
     "context": "low_energy",
     "similarity_score": 0.55,
-    "notes": "Wall walk — easier step-up version."
+    "notes": "Wall walk: easier step-up version."
   },
   {
     "exercise_id": 491,
@@ -2272,7 +2272,7 @@
     "substitute_id": 48,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Explosive pull-up — the vertical pull of the muscle-up."
+    "notes": "Explosive pull-up: the vertical pull of the muscle-up."
   },
   {
     "exercise_id": 494,
@@ -2314,7 +2314,7 @@
     "substitute_id": 135,
     "context": "lower_intensity",
     "similarity_score": 0.9,
-    "notes": "Inverted row — same pattern, different setup."
+    "notes": "Inverted row: same pattern, different setup."
   },
   {
     "exercise_id": 499,
@@ -2503,7 +2503,7 @@
     "substitute_id": 64,
     "context": "lower_intensity",
     "similarity_score": 0.65,
-    "notes": "Farmer carry — same carry, no overhead demand."
+    "notes": "Farmer carry: same carry, no overhead demand."
   },
   {
     "exercise_id": 535,
@@ -2531,7 +2531,7 @@
     "substitute_id": 60,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Goblet squat — same pattern, lower load."
+    "notes": "Goblet squat: same pattern, lower load."
   },
   {
     "exercise_id": 537,
@@ -2594,7 +2594,7 @@
     "substitute_id": 217,
     "context": "lower_intensity",
     "similarity_score": 0.95,
-    "notes": "Full power clean — the canonical version."
+    "notes": "Full power clean: the canonical version."
   },
   {
     "exercise_id": 544,
@@ -2636,7 +2636,7 @@
     "substitute_id": 13,
     "context": "lower_intensity",
     "similarity_score": 0.55,
-    "notes": "Push-up — bilateral press pattern."
+    "notes": "Push-up: bilateral press pattern."
   },
   {
     "exercise_id": 545,
@@ -2720,7 +2720,7 @@
     "substitute_id": 60,
     "context": "lower_intensity",
     "similarity_score": 0.6,
-    "notes": "Goblet squat — same pattern, no drop."
+    "notes": "Goblet squat: same pattern, no drop."
   },
   {
     "exercise_id": 559,
@@ -2734,7 +2734,7 @@
     "substitute_id": 562,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Scapular retraction hold — similar position, less weight."
+    "notes": "Scapular retraction hold: similar position, less weight."
   },
   {
     "exercise_id": 562,
@@ -2755,7 +2755,7 @@
     "substitute_id": 21,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Band pull-apart — dynamic version."
+    "notes": "Band pull-apart: dynamic version."
   },
   {
     "exercise_id": 571,
@@ -2776,14 +2776,14 @@
     "substitute_id": 230,
     "context": "low_energy",
     "similarity_score": 0.55,
-    "notes": "Squat jump — power without sprint distance."
+    "notes": "Squat jump: power without sprint distance."
   },
   {
     "exercise_id": 577,
     "substitute_id": 234,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "A-skip to sprint — similar pattern, less reactive demand."
+    "notes": "A-skip to sprint: similar pattern, less reactive demand."
   },
   {
     "exercise_id": 577,
@@ -2979,7 +2979,7 @@
     "substitute_id": 715,
     "context": "lower_intensity",
     "similarity_score": 0.55,
-    "notes": "Roll and breakfall drill — movement skills at lower output."
+    "notes": "Roll and breakfall drill: movement skills at lower output."
   },
   {
     "exercise_id": 721,
@@ -3329,7 +3329,7 @@
     "substitute_id": 24,
     "context": "equipment_swap",
     "similarity_score": 0.8,
-    "notes": "Face pull when a cable stack is handy — same scap retraction with loadable resistance plus rotator-cuff work."
+    "notes": "Face pull when a cable stack is handy: same scap retraction with loadable resistance plus rotator-cuff work."
   },
   {
     "exercise_id": 21,
@@ -3350,35 +3350,35 @@
     "substitute_id": 343,
     "context": "home_friendly",
     "similarity_score": 0.68,
-    "notes": "Prone T raise when you have no band at all — gravity supplies the rear-delt resistance."
+    "notes": "Prone T raise when you have no band at all: gravity supplies the rear-delt resistance."
   },
   {
     "exercise_id": 21,
     "substitute_id": 344,
     "context": "equipment_swap",
     "similarity_score": 0.72,
-    "notes": "Bent-over reverse fly when no band is around — same rear-delt retraction with measurable dumbbell load."
+    "notes": "Bent-over reverse fly when no band is around: same rear-delt retraction with measurable dumbbell load."
   },
   {
     "exercise_id": 21,
     "substitute_id": 452,
     "context": "equipment_swap",
     "similarity_score": 0.72,
-    "notes": "Dumbbell reverse fly swap for the band — lets you progress rear-delt load in small jumps."
+    "notes": "Dumbbell reverse fly swap for the band: lets you progress rear-delt load in small jumps."
   },
   {
     "exercise_id": 23,
     "substitute_id": 18,
     "context": "home_friendly",
     "similarity_score": 0.58,
-    "notes": "Close-grip push-up when there is no equipment — compound pressing but the triceps still do the work."
+    "notes": "Close-grip push-up when there is no equipment: compound pressing but the triceps still do the work."
   },
   {
     "exercise_id": 23,
     "substitute_id": 544,
     "context": "equipment_swap",
     "similarity_score": 0.72,
-    "notes": "Skull crusher hits the same long head lying down — use when the overhead shoulder position is cranky."
+    "notes": "Skull crusher hits the same long head lying down: use when the overhead shoulder position is cranky."
   },
   {
     "exercise_id": 23,
@@ -3462,7 +3462,7 @@
     "substitute_id": 35,
     "context": "time_efficient",
     "similarity_score": 0.8,
-    "notes": "Prone W alone when short on time — keeps the highest-value letter of the flow."
+    "notes": "Prone W alone when short on time: keeps the highest-value letter of the flow."
   },
   {
     "exercise_id": 31,
@@ -3476,14 +3476,14 @@
     "substitute_id": 398,
     "context": "pre_event_safe",
     "similarity_score": 0.68,
-    "notes": "Wall slide as a standing option when lying prone is not practical — same lower-trap control."
+    "notes": "Wall slide as a standing option when lying prone is not practical: same lower-trap control."
   },
   {
     "exercise_id": 31,
     "substitute_id": 427,
     "context": "pre_event_safe",
     "similarity_score": 0.92,
-    "notes": "Same Y-T-W-L flow — direct swap for complete scapular control work."
+    "notes": "Same Y-T-W-L flow: direct swap for complete scapular control work."
   },
   {
     "exercise_id": 31,
@@ -3497,7 +3497,7 @@
     "substitute_id": 21,
     "context": "equipment_swap",
     "similarity_score": 0.68,
-    "notes": "Band pull-apart as a standing swap — same retraction without getting on the floor."
+    "notes": "Band pull-apart as a standing swap: same retraction without getting on the floor."
   },
   {
     "exercise_id": 35,
@@ -3511,7 +3511,7 @@
     "substitute_id": 343,
     "context": "pre_event_safe",
     "similarity_score": 0.85,
-    "notes": "Prone T is the sibling raise — slightly more mid-trap, same end-range retraction."
+    "notes": "Prone T is the sibling raise: slightly more mid-trap, same end-range retraction."
   },
   {
     "exercise_id": 35,
@@ -3539,7 +3539,7 @@
     "substitute_id": 2,
     "context": "time_efficient",
     "similarity_score": 0.55,
-    "notes": "Max hangs trade endurance for max finger strength — use sparingly inside an endurance block."
+    "notes": "Max hangs trade endurance for max finger strength: use sparingly inside an endurance block."
   },
   {
     "exercise_id": 56,
@@ -3588,7 +3588,7 @@
     "substitute_id": 101,
     "context": "equipment_swap",
     "similarity_score": 0.55,
-    "notes": "Barbell hip thrust when it is time to load the glutes heavy — bilateral, gym-based."
+    "notes": "Barbell hip thrust when it is time to load the glutes heavy: bilateral, gym-based."
   },
   {
     "exercise_id": 103,
@@ -3616,7 +3616,7 @@
     "substitute_id": 514,
     "context": "pre_event_safe",
     "similarity_score": 0.88,
-    "notes": "Same unilateral bridge — direct swap with a balance and control emphasis."
+    "notes": "Same unilateral bridge: direct swap with a balance and control emphasis."
   },
   {
     "exercise_id": 111,
@@ -3672,7 +3672,7 @@
     "substitute_id": 1180,
     "context": "equipment_swap",
     "similarity_score": 0.88,
-    "notes": "Dumbbell calf raise once bodyweight reps climb too high — add load, keep the pattern."
+    "notes": "Dumbbell calf raise once bodyweight reps climb too high: add load, keep the pattern."
   },
   {
     "exercise_id": 112,
@@ -3693,21 +3693,21 @@
     "substitute_id": 899,
     "context": "low_energy",
     "similarity_score": 0.8,
-    "notes": "Bridge-hip-escape flow covers the same shrimping mechanics with bridging added — good warm-up dose."
+    "notes": "Bridge-hip-escape flow covers the same shrimping mechanics with bridging added: good warm-up dose."
   },
   {
     "exercise_id": 123,
     "substitute_id": 694,
     "context": "pre_event_safe",
     "similarity_score": 0.78,
-    "notes": "B-skip adds the pawing leg extension — rotate it in for hamstring emphasis."
+    "notes": "B-skip adds the pawing leg extension: rotate it in for hamstring emphasis."
   },
   {
     "exercise_id": 123,
     "substitute_id": 809,
     "context": "pre_event_safe",
     "similarity_score": 0.9,
-    "notes": "Identical A-skip drill — direct swap for warm-up knee-drive mechanics."
+    "notes": "Identical A-skip drill: direct swap for warm-up knee-drive mechanics."
   },
   {
     "exercise_id": 125,
@@ -3721,21 +3721,21 @@
     "substitute_id": 600,
     "context": "pre_event_safe",
     "similarity_score": 0.9,
-    "notes": "Ski-tuck wall sit is the same quad isometric — direct swap."
+    "notes": "Ski-tuck wall sit is the same quad isometric: direct swap."
   },
   {
     "exercise_id": 125,
     "substitute_id": 619,
     "context": "pre_event_safe",
     "similarity_score": 0.82,
-    "notes": "Free-standing tuck hold when there is no wall — same quad endurance with more postural demand."
+    "notes": "Free-standing tuck hold when there is no wall: same quad endurance with more postural demand."
   },
   {
     "exercise_id": 125,
     "substitute_id": 824,
     "context": "pre_event_safe",
     "similarity_score": 0.75,
-    "notes": "In-run tuck isometric biases the calves alongside the quads — good ski-season variant."
+    "notes": "In-run tuck isometric biases the calves alongside the quads: good ski-season variant."
   },
   {
     "exercise_id": 125,
@@ -3749,14 +3749,14 @@
     "substitute_id": 221,
     "context": "pre_event_safe",
     "similarity_score": 0.72,
-    "notes": "Flutter kicks turn the hold dynamic — use to break long-hold monotony."
+    "notes": "Flutter kicks turn the hold dynamic: use to break long-hold monotony."
   },
   {
     "exercise_id": 131,
     "substitute_id": 486,
     "context": "pre_event_safe",
     "similarity_score": 0.92,
-    "notes": "Same hollow-body position — direct swap."
+    "notes": "Same hollow-body position: direct swap."
   },
   {
     "exercise_id": 131,
@@ -3819,7 +3819,7 @@
     "substitute_id": 1128,
     "context": "pre_event_safe",
     "similarity_score": 0.92,
-    "notes": "Same straight-arm pulldown — direct swap on any cable stack."
+    "notes": "Same straight-arm pulldown: direct swap on any cable stack."
   },
   {
     "exercise_id": 215,
@@ -3889,14 +3889,14 @@
     "substitute_id": 111,
     "context": "home_friendly",
     "similarity_score": 0.85,
-    "notes": "Same single-leg eccentric without dumbbells — the go-to on the road or at home."
+    "notes": "Same single-leg eccentric without dumbbells: the go-to on the road or at home."
   },
   {
     "exercise_id": 242,
     "substitute_id": 111,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Same single-leg eccentric without dumbbells — the go-to on the road or at home."
+    "notes": "Same single-leg eccentric without dumbbells: the go-to on the road or at home."
   },
   {
     "exercise_id": 242,
@@ -3938,28 +3938,28 @@
     "substitute_id": 5,
     "context": "equipment_swap",
     "similarity_score": 0.45,
-    "notes": "Assisted one-arm hangboard hang — only for athletes already comfortable with long two-arm hangs."
+    "notes": "Assisted one-arm hangboard hang: only for athletes already comfortable with long two-arm hangs."
   },
   {
     "exercise_id": 303,
     "substitute_id": 638,
     "context": "lower_intensity",
     "similarity_score": 0.72,
-    "notes": "Standard-bar hang loaded with a pack when no fat grips are around — easier on grip diameter."
+    "notes": "Standard-bar hang loaded with a pack when no fat grips are around: easier on grip diameter."
   },
   {
     "exercise_id": 323,
     "substitute_id": 833,
     "context": "home_friendly",
     "similarity_score": 0.35,
-    "notes": "Striking-rhythm fallback with a dowel when no heavy bag is available — keeps footwork and shoulders moving."
+    "notes": "Striking-rhythm fallback with a dowel when no heavy bag is available: keeps footwork and shoulders moving."
   },
   {
     "exercise_id": 323,
     "substitute_id": 833,
     "context": "lower_intensity",
     "similarity_score": 0.35,
-    "notes": "Striking-rhythm fallback with a dowel when no heavy bag is available — keeps footwork and shoulders moving."
+    "notes": "Striking-rhythm fallback with a dowel when no heavy bag is available: keeps footwork and shoulders moving."
   },
   {
     "exercise_id": 325,
@@ -4015,7 +4015,7 @@
     "substitute_id": 24,
     "context": "equipment_swap",
     "similarity_score": 0.62,
-    "notes": "Cable face pull when at the gym — adds rotator-cuff bias to the same retraction pattern."
+    "notes": "Cable face pull when at the gym: adds rotator-cuff bias to the same retraction pattern."
   },
   {
     "exercise_id": 343,
@@ -4064,7 +4064,7 @@
     "substitute_id": 31,
     "context": "pre_event_safe",
     "similarity_score": 0.92,
-    "notes": "Same four-position complex under a different name — swap freely."
+    "notes": "Same four-position complex under a different name: swap freely."
   },
   {
     "exercise_id": 427,
@@ -4113,7 +4113,7 @@
     "substitute_id": 618,
     "context": "age_friendly",
     "similarity_score": 0.48,
-    "notes": "Deficit raises trade rope reactivity for range — useful when joints need a break from bouncing."
+    "notes": "Deficit raises trade rope reactivity for range: useful when joints need a break from bouncing."
   },
   {
     "exercise_id": 467,
@@ -4162,7 +4162,7 @@
     "substitute_id": 1025,
     "context": "equipment_swap",
     "similarity_score": 0.68,
-    "notes": "Machine adduction when at the gym — dynamic loading on the same inner-thigh squeeze."
+    "notes": "Machine adduction when at the gym: dynamic loading on the same inner-thigh squeeze."
   },
   {
     "exercise_id": 600,
@@ -4183,14 +4183,14 @@
     "substitute_id": 619,
     "context": "time_efficient",
     "similarity_score": 0.85,
-    "notes": "Free-standing tuck hold — same ski position with no wall needed."
+    "notes": "Free-standing tuck hold: same ski position with no wall needed."
   },
   {
     "exercise_id": 600,
     "substitute_id": 824,
     "context": "pre_event_safe",
     "similarity_score": 0.8,
-    "notes": "In-run tuck iso adds calf demand to the same quad hold — fine even close to race day."
+    "notes": "In-run tuck iso adds calf demand to the same quad hold: fine even close to race day."
   },
   {
     "exercise_id": 600,
@@ -4295,7 +4295,7 @@
     "substitute_id": 239,
     "context": "home_friendly",
     "similarity_score": 0.88,
-    "notes": "Stair or curb version of the same slow descent — no box needed."
+    "notes": "Stair or curb version of the same slow descent: no box needed."
   },
   {
     "exercise_id": 603,
@@ -4323,7 +4323,7 @@
     "substitute_id": 362,
     "context": "low_energy",
     "similarity_score": 0.9,
-    "notes": "Same split-stance hold — swap directly, it is the identical stimulus."
+    "notes": "Same split-stance hold: swap directly, it is the identical stimulus."
   },
   {
     "exercise_id": 607,
@@ -4561,7 +4561,7 @@
     "substitute_id": 392,
     "context": "equipment_swap",
     "similarity_score": 0.82,
-    "notes": "Dumbbell single-leg hinge with rotation — same unilateral balance demand, finer load control."
+    "notes": "Dumbbell single-leg hinge with rotation: same unilateral balance demand, finer load control."
   },
   {
     "exercise_id": 629,
@@ -4589,7 +4589,7 @@
     "substitute_id": 112,
     "context": "time_efficient",
     "similarity_score": 0.9,
-    "notes": "Straight swap — same bodyweight raise; take sets closer to failure if reps stay lower."
+    "notes": "Straight swap: same bodyweight raise; take sets closer to failure if reps stay lower."
   },
   {
     "exercise_id": 636,
@@ -4750,7 +4750,7 @@
     "substitute_id": 221,
     "context": "lower_intensity",
     "similarity_score": 0.92,
-    "notes": "Same flutter kick without ankle weight — first stop when the loaded version is too much."
+    "notes": "Same flutter kick without ankle weight: first stop when the loaded version is too much."
   },
   {
     "exercise_id": 652,
@@ -4988,7 +4988,7 @@
     "substitute_id": 325,
     "context": "equipment_swap",
     "similarity_score": 0.85,
-    "notes": "Longer timed rounds — same hill-sim conditioning with a bigger engine demand."
+    "notes": "Longer timed rounds: same hill-sim conditioning with a bigger engine demand."
   },
   {
     "exercise_id": 682,
@@ -5016,7 +5016,7 @@
     "substitute_id": 1092,
     "context": "equipment_swap",
     "similarity_score": 0.68,
-    "notes": "Stair climber when no sled lane is open — same uphill leg demand."
+    "notes": "Stair climber when no sled lane is open: same uphill leg demand."
   },
   {
     "exercise_id": 694,
@@ -5030,14 +5030,14 @@
     "substitute_id": 809,
     "context": "pre_event_safe",
     "similarity_score": 0.8,
-    "notes": "Masters-paced A-skip — same drill family with a gentler progression."
+    "notes": "Masters-paced A-skip: same drill family with a gentler progression."
   },
   {
     "exercise_id": 694,
     "substitute_id": 809,
     "context": "age_friendly",
     "similarity_score": 0.8,
-    "notes": "Masters-paced A-skip — same drill family with a gentler progression."
+    "notes": "Masters-paced A-skip: same drill family with a gentler progression."
   },
   {
     "exercise_id": 695,
@@ -5408,7 +5408,7 @@
     "substitute_id": 131,
     "context": "equipment_swap",
     "similarity_score": 0.85,
-    "notes": "Same hollow position minus the arm pulses — direct swap."
+    "notes": "Same hollow position minus the arm pulses: direct swap."
   },
   {
     "exercise_id": 788,
@@ -5485,14 +5485,14 @@
     "substitute_id": 682,
     "context": "lower_recovery",
     "similarity_score": 0.58,
-    "notes": "Hill-drive stimulus with almost no eccentric pounding — handy close to race day."
+    "notes": "Hill-drive stimulus with almost no eccentric pounding: handy close to race day."
   },
   {
     "exercise_id": 808,
     "substitute_id": 692,
     "context": "time_efficient",
     "similarity_score": 0.85,
-    "notes": "Closest match — same uphill engine work, just continuous running instead of hike-run mixing."
+    "notes": "Closest match: same uphill engine work, just continuous running instead of hike-run mixing."
   },
   {
     "exercise_id": 808,
@@ -5555,7 +5555,7 @@
     "substitute_id": 238,
     "context": "equipment_swap",
     "similarity_score": 0.5,
-    "notes": "Same step pattern in reverse — emphasize a slow lower-down on each rep."
+    "notes": "Same step pattern in reverse: emphasize a slow lower-down on each rep."
   },
   {
     "exercise_id": 823,
@@ -5576,28 +5576,28 @@
     "substitute_id": 494,
     "context": "lower_intensity",
     "similarity_score": 0.84,
-    "notes": "Pure landing eccentric without the jump — keeps absorption quality when fatigued."
+    "notes": "Pure landing eccentric without the jump: keeps absorption quality when fatigued."
   },
   {
     "exercise_id": 823,
     "substitute_id": 559,
     "context": "lower_intensity",
     "similarity_score": 0.88,
-    "notes": "Same absorption drill with a simpler entry — good intro or warm-up version."
+    "notes": "Same absorption drill with a simpler entry: good intro or warm-up version."
   },
   {
     "exercise_id": 823,
     "substitute_id": 559,
     "context": "pre_event_safe",
     "similarity_score": 0.88,
-    "notes": "Same absorption drill with a simpler entry — good intro or warm-up version."
+    "notes": "Same absorption drill with a simpler entry: good intro or warm-up version."
   },
   {
     "exercise_id": 823,
     "substitute_id": 616,
     "context": "age_friendly",
     "similarity_score": 0.76,
-    "notes": "Landing on the box trims the drop height — easier on the knees in-season."
+    "notes": "Landing on the box trims the drop height: easier on the knees in-season."
   },
   {
     "exercise_id": 824,
@@ -5646,7 +5646,7 @@
     "substitute_id": 619,
     "context": "pre_event_safe",
     "similarity_score": 0.92,
-    "notes": "Direct swap — same deep tuck isometric without the in-run framing."
+    "notes": "Direct swap: same deep tuck isometric without the in-run framing."
   },
   {
     "exercise_id": 824,
@@ -5674,7 +5674,7 @@
     "substitute_id": 713,
     "context": "low_energy",
     "similarity_score": 0.68,
-    "notes": "Another flowing footwork chain — same easy-tempo coordination work."
+    "notes": "Another flowing footwork chain: same easy-tempo coordination work."
   },
   {
     "exercise_id": 826,
@@ -5702,7 +5702,7 @@
     "substitute_id": 551,
     "context": "age_friendly",
     "similarity_score": 0.8,
-    "notes": "Closest match — wall-supported isometric with the same adductor squeeze."
+    "notes": "Closest match: wall-supported isometric with the same adductor squeeze."
   },
   {
     "exercise_id": 830,
@@ -5730,7 +5730,7 @@
     "substitute_id": 824,
     "context": "pre_event_safe",
     "similarity_score": 0.62,
-    "notes": "Free-standing tuck hold — same deep isometric, narrower stance."
+    "notes": "Free-standing tuck hold: same deep isometric, narrower stance."
   },
   {
     "exercise_id": 835,
@@ -5758,14 +5758,14 @@
     "substitute_id": 765,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Same swing groove at controlled tempo — use it on easy or pre-round days."
+    "notes": "Same swing groove at controlled tempo: use it on easy or pre-round days."
   },
   {
     "exercise_id": 835,
     "substitute_id": 765,
     "context": "pre_event_safe",
     "similarity_score": 0.75,
-    "notes": "Same swing groove at controlled tempo — use it on easy or pre-round days."
+    "notes": "Same swing groove at controlled tempo: use it on easy or pre-round days."
   },
   {
     "exercise_id": 835,
@@ -5856,7 +5856,7 @@
     "substitute_id": 659,
     "context": "equipment_swap",
     "similarity_score": 0.75,
-    "notes": "Unilateral cable row through the paddle path — nearest loaded match."
+    "notes": "Unilateral cable row through the paddle path: nearest loaded match."
   },
   {
     "exercise_id": 844,
@@ -5891,7 +5891,7 @@
     "substitute_id": 788,
     "context": "low_energy",
     "similarity_score": 0.62,
-    "notes": "Stays in the pilates lane — swap in when you want endurance over control."
+    "notes": "Stays in the pilates lane: swap in when you want endurance over control."
   },
   {
     "exercise_id": 856,
@@ -5982,7 +5982,7 @@
     "substitute_id": 808,
     "context": "lower_recovery",
     "similarity_score": 0.45,
-    "notes": "Stays on fell terrain — ascent emphasis when the descent pounding isn't wanted."
+    "notes": "Stays on fell terrain: ascent emphasis when the descent pounding isn't wanted."
   },
   {
     "exercise_id": 876,
@@ -6031,7 +6031,7 @@
     "substitute_id": 536,
     "context": "time_efficient",
     "similarity_score": 0.85,
-    "notes": "Same clean-and-jerk engine — EMOM pacing instead of breath-cycle pacing."
+    "notes": "Same clean-and-jerk engine: EMOM pacing instead of breath-cycle pacing."
   },
   {
     "exercise_id": 888,
@@ -6052,7 +6052,7 @@
     "substitute_id": 1074,
     "context": "equipment_swap",
     "similarity_score": 0.62,
-    "notes": "Wide-grip cable row hits the same draw muscles — pause at the chest to mimic the hold."
+    "notes": "Wide-grip cable row hits the same draw muscles: pause at the chest to mimic the hold."
   },
   {
     "exercise_id": 888,
@@ -6080,7 +6080,7 @@
     "substitute_id": 770,
     "context": "pre_event_safe",
     "similarity_score": 0.78,
-    "notes": "Same shotgun swing family — follow-through emphasis with the same dowel."
+    "notes": "Same shotgun swing family: follow-through emphasis with the same dowel."
   },
   {
     "exercise_id": 889,
@@ -6164,21 +6164,21 @@
     "substitute_id": 7,
     "context": "equipment_swap",
     "similarity_score": 0.95,
-    "notes": "Same kneeling rollout logged under the bodyweight catalog — a direct one-for-one swap."
+    "notes": "Same kneeling rollout logged under the bodyweight catalog: a direct one-for-one swap."
   },
   {
     "exercise_id": 980,
     "substitute_id": 131,
     "context": "home_friendly",
     "similarity_score": 0.7,
-    "notes": "Isometric anti-extension stand-in that spares the lumbar spine — useful before competition or without a wheel."
+    "notes": "Isometric anti-extension stand-in that spares the lumbar spine: useful before competition or without a wheel."
   },
   {
     "exercise_id": 980,
     "substitute_id": 131,
     "context": "pre_event_safe",
     "similarity_score": 0.7,
-    "notes": "Isometric anti-extension stand-in that spares the lumbar spine — useful before competition or without a wheel."
+    "notes": "Isometric anti-extension stand-in that spares the lumbar spine: useful before competition or without a wheel."
   },
   {
     "exercise_id": 980,
@@ -6213,35 +6213,35 @@
     "substitute_id": 1058,
     "context": "home_friendly",
     "similarity_score": 0.65,
-    "notes": "Regression with a much shorter lever — same anti-extension demand when rollouts bother the low back."
+    "notes": "Regression with a much shorter lever: same anti-extension demand when rollouts bother the low back."
   },
   {
     "exercise_id": 980,
     "substitute_id": 1058,
     "context": "lower_intensity",
     "similarity_score": 0.65,
-    "notes": "Regression with a much shorter lever — same anti-extension demand when rollouts bother the low back."
+    "notes": "Regression with a much shorter lever: same anti-extension demand when rollouts bother the low back."
   },
   {
     "exercise_id": 980,
     "substitute_id": 1058,
     "context": "age_friendly",
     "similarity_score": 0.65,
-    "notes": "Regression with a much shorter lever — same anti-extension demand when rollouts bother the low back."
+    "notes": "Regression with a much shorter lever: same anti-extension demand when rollouts bother the low back."
   },
   {
     "exercise_id": 981,
     "substitute_id": 1026,
     "context": "age_friendly",
     "similarity_score": 0.85,
-    "notes": "First-choice swap — standard incline fly gives the same clavicular-pec stretch with a friendlier shoulder path than the full arc."
+    "notes": "First-choice swap: standard incline fly gives the same clavicular-pec stretch with a friendlier shoulder path than the full arc."
   },
   {
     "exercise_id": 981,
     "substitute_id": 1027,
     "context": "age_friendly",
     "similarity_score": 0.5,
-    "notes": "Fixed-path press when loaded fly positions bother the shoulder — trades the stretch for upper-chest pressing volume."
+    "notes": "Fixed-path press when loaded fly positions bother the shoulder: trades the stretch for upper-chest pressing volume."
   },
   {
     "exercise_id": 981,
@@ -6612,7 +6612,7 @@
     "substitute_id": 1136,
     "context": "equipment_swap",
     "similarity_score": 0.88,
-    "notes": "Machine preacher curl is the closest analog — same fixed-path curl with pad support."
+    "notes": "Machine preacher curl is the closest analog: same fixed-path curl with pad support."
   },
   {
     "exercise_id": 994,
@@ -6759,7 +6759,7 @@
     "substitute_id": 491,
     "context": "equipment_swap",
     "similarity_score": 0.72,
-    "notes": "Ring dip adds stability demand — use it when you want the harder variation."
+    "notes": "Ring dip adds stability demand: use it when you want the harder variation."
   },
   {
     "exercise_id": 998,
@@ -6787,14 +6787,14 @@
     "substitute_id": 987,
     "context": "home_friendly",
     "similarity_score": 0.8,
-    "notes": "Bench dip matches the beginner difficulty with feet on the floor — no band needed."
+    "notes": "Bench dip matches the beginner difficulty with feet on the floor: no band needed."
   },
   {
     "exercise_id": 999,
     "substitute_id": 987,
     "context": "equipment_swap",
     "similarity_score": 0.8,
-    "notes": "Bench dip matches the beginner difficulty with feet on the floor — no band needed."
+    "notes": "Bench dip matches the beginner difficulty with feet on the floor: no band needed."
   },
   {
     "exercise_id": 999,
@@ -6829,7 +6829,7 @@
     "substitute_id": 1004,
     "context": "equipment_swap",
     "similarity_score": 0.55,
-    "notes": "Machine press covers the pecs when every fly option is taken — compound, not isolation."
+    "notes": "Machine press covers the pecs when every fly option is taken: compound, not isolation."
   },
   {
     "exercise_id": 1000,
@@ -6955,7 +6955,7 @@
     "substitute_id": 217,
     "context": "lower_intensity",
     "similarity_score": 0.9,
-    "notes": "Power clean keeps the same pull with a higher catch — less mobility demand and load."
+    "notes": "Power clean keeps the same pull with a higher catch: less mobility demand and load."
   },
   {
     "exercise_id": 1005,
@@ -6976,14 +6976,14 @@
     "substitute_id": 1033,
     "context": "lower_intensity",
     "similarity_score": 0.62,
-    "notes": "Jump shrug is the simplest pull derivative — same hip snap, no catch to learn."
+    "notes": "Jump shrug is the simplest pull derivative: same hip snap, no catch to learn."
   },
   {
     "exercise_id": 1005,
     "substitute_id": 1033,
     "context": "time_efficient",
     "similarity_score": 0.62,
-    "notes": "Jump shrug is the simplest pull derivative — same hip snap, no catch to learn."
+    "notes": "Jump shrug is the simplest pull derivative: same hip snap, no catch to learn."
   },
   {
     "exercise_id": 1005,
@@ -7032,7 +7032,7 @@
     "substitute_id": 1033,
     "context": "lower_intensity",
     "similarity_score": 0.7,
-    "notes": "Drops the upright-row finish—use when the high pull bothers your shoulders but you still want explosive triple extension."
+    "notes": "Drops the upright-row finish: use when the high pull bothers your shoulders but you still want explosive triple extension."
   },
   {
     "exercise_id": 1009,
@@ -7046,7 +7046,7 @@
     "substitute_id": 1096,
     "context": "age_friendly",
     "similarity_score": 0.92,
-    "notes": "Sumo stance keeps the torso more upright—swap in when the conventional pull beats up your lower back."
+    "notes": "Sumo stance keeps the torso more upright: swap in when the conventional pull beats up your lower back."
   },
   {
     "exercise_id": 1010,
@@ -7130,7 +7130,7 @@
     "substitute_id": 1012,
     "context": "equipment_swap",
     "similarity_score": 0.88,
-    "notes": "Smith machine fixes the bar path—useful for solo work to failure."
+    "notes": "Smith machine fixes the bar path: useful for solo work to failure."
   },
   {
     "exercise_id": 1012,
@@ -7193,21 +7193,21 @@
     "substitute_id": 856,
     "context": "home_friendly",
     "similarity_score": 0.62,
-    "notes": "Closest floor match—slow segmental trunk flexion with no bench required."
+    "notes": "Closest floor match: slow segmental trunk flexion with no bench required."
   },
   {
     "exercise_id": 1013,
     "substitute_id": 1058,
     "context": "home_friendly",
     "similarity_score": 0.42,
-    "notes": "Plank covers anterior core without spinal flexion—kind to a cranky back or neck."
+    "notes": "Plank covers anterior core without spinal flexion: kind to a cranky back or neck."
   },
   {
     "exercise_id": 1013,
     "substitute_id": 1058,
     "context": "age_friendly",
     "similarity_score": 0.42,
-    "notes": "Plank covers anterior core without spinal flexion—kind to a cranky back or neck."
+    "notes": "Plank covers anterior core without spinal flexion: kind to a cranky back or neck."
   },
   {
     "exercise_id": 1013,
@@ -7242,14 +7242,14 @@
     "substitute_id": 1084,
     "context": "equipment_swap",
     "similarity_score": 0.75,
-    "notes": "Spider curl is just as cheat-proof—chest support replaces the drag path."
+    "notes": "Spider curl is just as cheat-proof: chest support replaces the drag path."
   },
   {
     "exercise_id": 1015,
     "substitute_id": 6,
     "context": "equipment_swap",
     "similarity_score": 0.62,
-    "notes": "Hanging lever twin—same rigid-body demand from a pull-up bar."
+    "notes": "Hanging lever twin: same rigid-body demand from a pull-up bar."
   },
   {
     "exercise_id": 1015,
@@ -7291,14 +7291,14 @@
     "substitute_id": 695,
     "context": "home_friendly",
     "similarity_score": 0.55,
-    "notes": "Easy outdoor run covers the same aerobic base when no machine is available—mind the added impact."
+    "notes": "Easy outdoor run covers the same aerobic base when no machine is available: mind the added impact."
   },
   {
     "exercise_id": 1017,
     "substitute_id": 24,
     "context": "equipment_swap",
     "similarity_score": 0.62,
-    "notes": "Face pull finishes in external rotation—solid cuff stand-in with a rear-delt bonus."
+    "notes": "Face pull finishes in external rotation: solid cuff stand-in with a rear-delt bonus."
   },
   {
     "exercise_id": 1017,
@@ -7312,7 +7312,7 @@
     "substitute_id": 376,
     "context": "equipment_swap",
     "similarity_score": 0.6,
-    "notes": "Hanging raise is the progression—same pattern under full-body tension on a bar."
+    "notes": "Hanging raise is the progression: same pattern under full-body tension on a bar."
   },
   {
     "exercise_id": 1018,
@@ -7431,7 +7431,7 @@
     "substitute_id": 20,
     "context": "lower_intensity",
     "similarity_score": 0.8,
-    "notes": "Pike push-up is the standard regression—same overhead line, less load."
+    "notes": "Pike push-up is the standard regression: same overhead line, less load."
   },
   {
     "exercise_id": 1022,
@@ -7473,14 +7473,14 @@
     "substitute_id": 550,
     "context": "home_friendly",
     "similarity_score": 0.58,
-    "notes": "Ball squeeze maintains groin strength at home—isometric and easy to recover from."
+    "notes": "Ball squeeze maintains groin strength at home: isometric and easy to recover from."
   },
   {
     "exercise_id": 1025,
     "substitute_id": 550,
     "context": "lower_intensity",
     "similarity_score": 0.58,
-    "notes": "Ball squeeze maintains groin strength at home—isometric and easy to recover from."
+    "notes": "Ball squeeze maintains groin strength at home: isometric and easy to recover from."
   },
   {
     "exercise_id": 1025,
@@ -7515,7 +7515,7 @@
     "substitute_id": 1026,
     "context": "equipment_swap",
     "similarity_score": 0.5,
-    "notes": "Incline fly keeps upper-pec tension when the press machine is taken—lighter and stricter."
+    "notes": "Incline fly keeps upper-pec tension when the press machine is taken: lighter and stricter."
   },
   {
     "exercise_id": 1027,
@@ -7634,7 +7634,7 @@
     "substitute_id": 1019,
     "context": "lower_intensity",
     "similarity_score": 0.65,
-    "notes": "Leg raise halves the coordination demand—use it when jackknives break down."
+    "notes": "Leg raise halves the coordination demand: use it when jackknives break down."
   },
   {
     "exercise_id": 1032,
@@ -7648,14 +7648,14 @@
     "substitute_id": 1035,
     "context": "home_friendly",
     "similarity_score": 0.58,
-    "notes": "Jumping jacks keep low-load conditioning going anywhere—gentler on coordination."
+    "notes": "Jumping jacks keep low-load conditioning going anywhere: gentler on coordination."
   },
   {
     "exercise_id": 1032,
     "substitute_id": 1035,
     "context": "lower_intensity",
     "similarity_score": 0.58,
-    "notes": "Jumping jacks keep low-load conditioning going anywhere—gentler on coordination."
+    "notes": "Jumping jacks keep low-load conditioning going anywhere: gentler on coordination."
   },
   {
     "exercise_id": 1033,
@@ -7760,7 +7760,7 @@
     "substitute_id": 48,
     "context": "age_friendly",
     "similarity_score": 0.68,
-    "notes": "Strict explosive reps keep bar speed without the kip's shoulder whip — fewer reps, cleaner mechanics."
+    "notes": "Strict explosive reps keep bar speed without the kip's shoulder whip: fewer reps, cleaner mechanics."
   },
   {
     "exercise_id": 1037,
@@ -7830,28 +7830,28 @@
     "substitute_id": 1018,
     "context": "home_friendly",
     "similarity_score": 0.78,
-    "notes": "Floor version when no captain's chair — easiest regression of the same knee-raise pattern."
+    "notes": "Floor version when no captain's chair: easiest regression of the same knee-raise pattern."
   },
   {
     "exercise_id": 1038,
     "substitute_id": 1018,
     "context": "lower_intensity",
     "similarity_score": 0.78,
-    "notes": "Floor version when no captain's chair — easiest regression of the same knee-raise pattern."
+    "notes": "Floor version when no captain's chair: easiest regression of the same knee-raise pattern."
   },
   {
     "exercise_id": 1038,
     "substitute_id": 1019,
     "context": "home_friendly",
     "similarity_score": 0.7,
-    "notes": "Straight-leg floor raise — slightly longer lever, zero equipment."
+    "notes": "Straight-leg floor raise: slightly longer lever, zero equipment."
   },
   {
     "exercise_id": 1039,
     "substitute_id": 1045,
     "context": "equipment_swap",
     "similarity_score": 0.8,
-    "notes": "Cable stack when you're in the gym — far easier to progress load than bands."
+    "notes": "Cable stack when you're in the gym: far easier to progress load than bands."
   },
   {
     "exercise_id": 1039,
@@ -7872,14 +7872,14 @@
     "substitute_id": 1048,
     "context": "equipment_swap",
     "similarity_score": 0.85,
-    "notes": "Heavier-band supinated version — same anchor setup with more lower-lat and biceps bias."
+    "notes": "Heavier-band supinated version: same anchor setup with more lower-lat and biceps bias."
   },
   {
     "exercise_id": 1040,
     "substitute_id": 376,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Slightly easier hanging raise — stop at hip height while building toward elbow contact."
+    "notes": "Slightly easier hanging raise: stop at hip height while building toward elbow contact."
   },
   {
     "exercise_id": 1040,
@@ -7942,14 +7942,14 @@
     "substitute_id": 488,
     "context": "lower_intensity",
     "similarity_score": 0.88,
-    "notes": "Standard regression — tuck the knees to shorten the lever while building compression strength."
+    "notes": "Standard regression: tuck the knees to shorten the lever while building compression strength."
   },
   {
     "exercise_id": 1041,
     "substitute_id": 488,
     "context": "home_friendly",
     "similarity_score": 0.88,
-    "notes": "Standard regression — tuck the knees to shorten the lever while building compression strength."
+    "notes": "Standard regression: tuck the knees to shorten the lever while building compression strength."
   },
   {
     "exercise_id": 1041,
@@ -7963,7 +7963,7 @@
     "substitute_id": 58,
     "context": "equipment_swap",
     "similarity_score": 0.88,
-    "notes": "Straight-bar RDL when no landmine attachment — same hinge with a freer bar path."
+    "notes": "Straight-bar RDL when no landmine attachment: same hinge with a freer bar path."
   },
   {
     "exercise_id": 1042,
@@ -8005,7 +8005,7 @@
     "substitute_id": 8,
     "context": "equipment_swap",
     "similarity_score": 0.8,
-    "notes": "Plain barbell row when no landmine — same pull but more lower-back demand."
+    "notes": "Plain barbell row when no landmine: same pull but more lower-back demand."
   },
   {
     "exercise_id": 1043,
@@ -8124,7 +8124,7 @@
     "substitute_id": 1046,
     "context": "equipment_swap",
     "similarity_score": 0.92,
-    "notes": "Same pulldown on a fixed frame — direct swap when the cable station is taken."
+    "notes": "Same pulldown on a fixed frame: direct swap when the cable station is taken."
   },
   {
     "exercise_id": 1045,
@@ -8152,7 +8152,7 @@
     "substitute_id": 1049,
     "context": "time_efficient",
     "similarity_score": 0.82,
-    "notes": "Same station — flip to a supinated grip for more lower-lat and biceps."
+    "notes": "Same station: flip to a supinated grip for more lower-lat and biceps."
   },
   {
     "exercise_id": 1046,
@@ -8257,7 +8257,7 @@
     "substitute_id": 1039,
     "context": "equipment_swap",
     "similarity_score": 0.85,
-    "notes": "Pronated medium-band version — same anchor, slightly different lat emphasis."
+    "notes": "Pronated medium-band version: same anchor, slightly different lat emphasis."
   },
   {
     "exercise_id": 1048,
@@ -8285,7 +8285,7 @@
     "substitute_id": 1045,
     "context": "time_efficient",
     "similarity_score": 0.9,
-    "notes": "Same station — flip to overhand when the supinated grip bothers elbows or wrists."
+    "notes": "Same station: flip to overhand when the supinated grip bothers elbows or wrists."
   },
   {
     "exercise_id": 1049,
@@ -8341,7 +8341,7 @@
     "substitute_id": 1052,
     "context": "equipment_swap",
     "similarity_score": 0.9,
-    "notes": "Dumbbell version when no bar — easier to bail and to load in small jumps."
+    "notes": "Dumbbell version when no bar: easier to bail and to load in small jumps."
   },
   {
     "exercise_id": 1050,
@@ -8425,7 +8425,7 @@
     "substitute_id": 1164,
     "context": "equipment_swap",
     "similarity_score": 0.8,
-    "notes": "Kettlebell walking lunge — same pattern with a travel stimulus."
+    "notes": "Kettlebell walking lunge: same pattern with a travel stimulus."
   },
   {
     "exercise_id": 1053,
@@ -8474,7 +8474,7 @@
     "substitute_id": 48,
     "context": "lower_intensity",
     "similarity_score": 0.75,
-    "notes": "Primary regression — chase pull height and speed before adding the transition."
+    "notes": "Primary regression: chase pull height and speed before adding the transition."
   },
   {
     "exercise_id": 1054,
@@ -8488,14 +8488,14 @@
     "substitute_id": 132,
     "context": "age_friendly",
     "similarity_score": 0.68,
-    "notes": "Isometric oblique work without repeated spinal flexion — kinder on the back."
+    "notes": "Isometric oblique work without repeated spinal flexion: kinder on the back."
   },
   {
     "exercise_id": 1055,
     "substitute_id": 1007,
     "context": "time_efficient",
     "similarity_score": 0.88,
-    "notes": "Direct floor swap hitting the same oblique line — no setup change."
+    "notes": "Direct floor swap hitting the same oblique line: no setup change."
   },
   {
     "exercise_id": 1055,
@@ -8565,7 +8565,7 @@
     "substitute_id": 128,
     "context": "lower_intensity",
     "similarity_score": 0.88,
-    "notes": "Box-depth pistol — the standard regression to control depth and balance."
+    "notes": "Box-depth pistol: the standard regression to control depth and balance."
   },
   {
     "exercise_id": 1057,
@@ -8593,7 +8593,7 @@
     "substitute_id": 131,
     "context": "pre_event_safe",
     "similarity_score": 0.7,
-    "notes": "Hollow hold when long planks stop being challenging — same anti-extension isometric, supine."
+    "notes": "Hollow hold when long planks stop being challenging: same anti-extension isometric, supine."
   },
   {
     "exercise_id": 1058,
@@ -8614,14 +8614,14 @@
     "substitute_id": 13,
     "context": "lower_intensity",
     "similarity_score": 0.5,
-    "notes": "Standard push-up when explosive work isn't appropriate — keeps the pattern, drops the power demand."
+    "notes": "Standard push-up when explosive work isn't appropriate: keeps the pattern, drops the power demand."
   },
   {
     "exercise_id": 1059,
     "substitute_id": 13,
     "context": "low_energy",
     "similarity_score": 0.5,
-    "notes": "Standard push-up when explosive work isn't appropriate — keeps the pattern, drops the power demand."
+    "notes": "Standard push-up when explosive work isn't appropriate: keeps the pattern, drops the power demand."
   },
   {
     "exercise_id": 1059,
@@ -8642,7 +8642,7 @@
     "substitute_id": 478,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Same explosive push-up pattern with a gentler landing — use while building to full plyo push-ups."
+    "notes": "Same explosive push-up pattern with a gentler landing: use while building to full plyo push-ups."
   },
   {
     "exercise_id": 1061,
@@ -8684,14 +8684,14 @@
     "substitute_id": 58,
     "context": "lower_intensity",
     "similarity_score": 0.65,
-    "notes": "RDL trades lockout overload for hamstring stretch — lighter, same hinge."
+    "notes": "RDL trades lockout overload for hamstring stretch: lighter, same hinge."
   },
   {
     "exercise_id": 1062,
     "substitute_id": 59,
     "context": "equipment_swap",
     "similarity_score": 0.75,
-    "notes": "Pull from the floor when no rack is free — expect lighter loads and more total fatigue."
+    "notes": "Pull from the floor when no rack is free: expect lighter loads and more total fatigue."
   },
   {
     "exercise_id": 1062,
@@ -8810,28 +8810,28 @@
     "substitute_id": 1140,
     "context": "equipment_swap",
     "similarity_score": 0.92,
-    "notes": "EZ-bar angle eases wrist strain — first swap if the straight bar bothers you."
+    "notes": "EZ-bar angle eases wrist strain: first swap if the straight bar bothers you."
   },
   {
     "exercise_id": 1064,
     "substitute_id": 1140,
     "context": "age_friendly",
     "similarity_score": 0.92,
-    "notes": "EZ-bar angle eases wrist strain — first swap if the straight bar bothers you."
+    "notes": "EZ-bar angle eases wrist strain: first swap if the straight bar bothers you."
   },
   {
     "exercise_id": 1065,
     "substitute_id": 1063,
     "context": "equipment_swap",
     "similarity_score": 0.8,
-    "notes": "Band version travels anywhere — no weights needed."
+    "notes": "Band version travels anywhere: no weights needed."
   },
   {
     "exercise_id": 1065,
     "substitute_id": 1063,
     "context": "home_friendly",
     "similarity_score": 0.8,
-    "notes": "Band version travels anywhere — no weights needed."
+    "notes": "Band version travels anywhere: no weights needed."
   },
   {
     "exercise_id": 1065,
@@ -8859,7 +8859,7 @@
     "substitute_id": 1140,
     "context": "equipment_swap",
     "similarity_score": 0.9,
-    "notes": "EZ-bar splits the difference — bilateral bar with a wrist-friendly angle."
+    "notes": "EZ-bar splits the difference: bilateral bar with a wrist-friendly angle."
   },
   {
     "exercise_id": 1066,
@@ -8936,14 +8936,14 @@
     "substitute_id": 673,
     "context": "low_energy",
     "similarity_score": 0.9,
-    "notes": "Same erg at a steady aerobic pace — the default swap on run-down days."
+    "notes": "Same erg at a steady aerobic pace: the default swap on run-down days."
   },
   {
     "exercise_id": 1068,
     "substitute_id": 673,
     "context": "lower_recovery",
     "similarity_score": 0.9,
-    "notes": "Same erg at a steady aerobic pace — the default swap on run-down days."
+    "notes": "Same erg at a steady aerobic pace: the default swap on run-down days."
   },
   {
     "exercise_id": 1069,
@@ -8957,7 +8957,7 @@
     "substitute_id": 692,
     "context": "home_friendly",
     "similarity_score": 0.68,
-    "notes": "Take the intervals outside — hill repeats need no machine and build the same engine."
+    "notes": "Take the intervals outside: hill repeats need no machine and build the same engine."
   },
   {
     "exercise_id": 1069,
@@ -8978,35 +8978,35 @@
     "substitute_id": 1110,
     "context": "lower_intensity",
     "similarity_score": 0.5,
-    "notes": "Walk when running is too much — same movement, a fraction of the impact."
+    "notes": "Walk when running is too much: same movement, a fraction of the impact."
   },
   {
     "exercise_id": 1069,
     "substitute_id": 1110,
     "context": "home_friendly",
     "similarity_score": 0.5,
-    "notes": "Walk when running is too much — same movement, a fraction of the impact."
+    "notes": "Walk when running is too much: same movement, a fraction of the impact."
   },
   {
     "exercise_id": 1069,
     "substitute_id": 1110,
     "context": "age_friendly",
     "similarity_score": 0.5,
-    "notes": "Walk when running is too much — same movement, a fraction of the impact."
+    "notes": "Walk when running is too much: same movement, a fraction of the impact."
   },
   {
     "exercise_id": 1070,
     "substitute_id": 60,
     "context": "equipment_swap",
     "similarity_score": 0.6,
-    "notes": "Goblet squat covers the pattern with one dumbbell — lighter, but doable anywhere."
+    "notes": "Goblet squat covers the pattern with one dumbbell: lighter, but doable anywhere."
   },
   {
     "exercise_id": 1070,
     "substitute_id": 60,
     "context": "home_friendly",
     "similarity_score": 0.6,
-    "notes": "Goblet squat covers the pattern with one dumbbell — lighter, but doable anywhere."
+    "notes": "Goblet squat covers the pattern with one dumbbell: lighter, but doable anywhere."
   },
   {
     "exercise_id": 1070,
@@ -9055,7 +9055,7 @@
     "substitute_id": 1072,
     "context": "equipment_swap",
     "similarity_score": 0.9,
-    "notes": "Dumbbells from the same seat — independent arms, no rack needed."
+    "notes": "Dumbbells from the same seat: independent arms, no rack needed."
   },
   {
     "exercise_id": 1071,
@@ -9076,7 +9076,7 @@
     "substitute_id": 1095,
     "context": "time_efficient",
     "similarity_score": 0.85,
-    "notes": "Standing strict press when no bench is free — adds trunk demand."
+    "notes": "Standing strict press when no bench is free: adds trunk demand."
   },
   {
     "exercise_id": 1071,
@@ -9111,14 +9111,14 @@
     "substitute_id": 1075,
     "context": "equipment_swap",
     "similarity_score": 0.8,
-    "notes": "Machine press fixes the path — good for pushing close to failure safely."
+    "notes": "Machine press fixes the path: good for pushing close to failure safely."
   },
   {
     "exercise_id": 1072,
     "substitute_id": 1075,
     "context": "age_friendly",
     "similarity_score": 0.8,
-    "notes": "Machine press fixes the path — good for pushing close to failure safely."
+    "notes": "Machine press fixes the path: good for pushing close to failure safely."
   },
   {
     "exercise_id": 1072,
@@ -9146,7 +9146,7 @@
     "substitute_id": 1028,
     "context": "equipment_swap",
     "similarity_score": 0.74,
-    "notes": "Incline dumbbell row — brace on the bench and pull wide to the upper back."
+    "notes": "Incline dumbbell row: brace on the bench and pull wide to the upper back."
   },
   {
     "exercise_id": 1074,
@@ -9265,7 +9265,7 @@
     "substitute_id": 132,
     "context": "pre_event_safe",
     "similarity_score": 0.58,
-    "notes": "Side plank trains the obliques isometrically — low soreness, nothing to anchor."
+    "notes": "Side plank trains the obliques isometrically: low soreness, nothing to anchor."
   },
   {
     "exercise_id": 1077,
@@ -9405,14 +9405,14 @@
     "substitute_id": 200,
     "context": "equipment_swap",
     "similarity_score": 0.48,
-    "notes": "Straight-arm pulldown variant — the same double-pole motion as strength-endurance work."
+    "notes": "Straight-arm pulldown variant: the same double-pole motion as strength-endurance work."
   },
   {
     "exercise_id": 1081,
     "substitute_id": 408,
     "context": "time_efficient",
     "similarity_score": 0.88,
-    "notes": "Structure it as intervals — same machine, denser conditioning dose."
+    "notes": "Structure it as intervals: same machine, denser conditioning dose."
   },
   {
     "exercise_id": 1081,
@@ -9440,14 +9440,14 @@
     "substitute_id": 1108,
     "context": "equipment_swap",
     "similarity_score": 0.65,
-    "notes": "Pushdowns when skullcrushers flare up the elbows — same extension, gentler."
+    "notes": "Pushdowns when skullcrushers flare up the elbows: same extension, gentler."
   },
   {
     "exercise_id": 1082,
     "substitute_id": 1108,
     "context": "age_friendly",
     "similarity_score": 0.65,
-    "notes": "Pushdowns when skullcrushers flare up the elbows — same extension, gentler."
+    "notes": "Pushdowns when skullcrushers flare up the elbows: same extension, gentler."
   },
   {
     "exercise_id": 1082,
@@ -9475,14 +9475,14 @@
     "substitute_id": 23,
     "context": "home_friendly",
     "similarity_score": 0.72,
-    "notes": "Overhead DB extension when no bench is free — same dumbbells, more long-head stretch."
+    "notes": "Overhead DB extension when no bench is free: same dumbbells, more long-head stretch."
   },
   {
     "exercise_id": 1083,
     "substitute_id": 544,
     "context": "equipment_swap",
     "similarity_score": 0.88,
-    "notes": "Generic skullcrusher slot — same lying extension when the dumbbell pair is taken."
+    "notes": "Generic skullcrusher slot: same lying extension when the dumbbell pair is taken."
   },
   {
     "exercise_id": 1083,
@@ -9566,14 +9566,14 @@
     "substitute_id": 1088,
     "context": "home_friendly",
     "similarity_score": 0.85,
-    "notes": "Plain air squat when you don't even have a band — same pattern, slightly less resistance."
+    "notes": "Plain air squat when you don't even have a band: same pattern, slightly less resistance."
   },
   {
     "exercise_id": 1086,
     "substitute_id": 1088,
     "context": "lower_intensity",
     "similarity_score": 0.85,
-    "notes": "Plain air squat when you don't even have a band — same pattern, slightly less resistance."
+    "notes": "Plain air squat when you don't even have a band: same pattern, slightly less resistance."
   },
   {
     "exercise_id": 1086,
@@ -9587,14 +9587,14 @@
     "substitute_id": 537,
     "context": "equipment_swap",
     "similarity_score": 0.75,
-    "notes": "Belt squat loads the same pattern with zero spinal compression — useful on heavy weeks."
+    "notes": "Belt squat loads the same pattern with zero spinal compression: useful on heavy weeks."
   },
   {
     "exercise_id": 57,
     "substitute_id": 537,
     "context": "lower_recovery",
     "similarity_score": 0.75,
-    "notes": "Belt squat loads the same pattern with zero spinal compression — useful on heavy weeks."
+    "notes": "Belt squat loads the same pattern with zero spinal compression: useful on heavy weeks."
   },
   {
     "exercise_id": 57,
@@ -9643,14 +9643,14 @@
     "substitute_id": 125,
     "context": "low_energy",
     "similarity_score": 0.48,
-    "notes": "Wall sit when joints are cranky — isometric quad work with minimal stress."
+    "notes": "Wall sit when joints are cranky: isometric quad work with minimal stress."
   },
   {
     "exercise_id": 1088,
     "substitute_id": 125,
     "context": "age_friendly",
     "similarity_score": 0.48,
-    "notes": "Wall sit when joints are cranky — isometric quad work with minimal stress."
+    "notes": "Wall sit when joints are cranky: isometric quad work with minimal stress."
   },
   {
     "exercise_id": 1088,
@@ -9671,7 +9671,7 @@
     "substitute_id": 60,
     "context": "lower_intensity",
     "similarity_score": 0.9,
-    "notes": "Goblet hold is the same squat with one DB braced at the chest — easiest swap."
+    "notes": "Goblet hold is the same squat with one DB braced at the chest: easiest swap."
   },
   {
     "exercise_id": 1089,
@@ -9692,7 +9692,7 @@
     "substitute_id": 1086,
     "context": "equipment_swap",
     "similarity_score": 0.72,
-    "notes": "Band squat for travel or garage days — same pattern with portable resistance."
+    "notes": "Band squat for travel or garage days: same pattern with portable resistance."
   },
   {
     "exercise_id": 1089,
@@ -9727,7 +9727,7 @@
     "substitute_id": 1070,
     "context": "equipment_swap",
     "similarity_score": 0.85,
-    "notes": "Leg press is the closest machine swap — same supported squat pattern."
+    "notes": "Leg press is the closest machine swap: same supported squat pattern."
   },
   {
     "exercise_id": 1090,
@@ -9755,7 +9755,7 @@
     "substitute_id": 1091,
     "context": "equipment_swap",
     "similarity_score": 0.8,
-    "notes": "Smith squat when the hack machine is taken — similar guided bar path."
+    "notes": "Smith squat when the hack machine is taken: similar guided bar path."
   },
   {
     "exercise_id": 1091,
@@ -9860,7 +9860,7 @@
     "substitute_id": 108,
     "context": "home_friendly",
     "similarity_score": 0.68,
-    "notes": "Bodyweight single-leg RDL when no band is around — adds balance work to the same hinge."
+    "notes": "Bodyweight single-leg RDL when no band is around: adds balance work to the same hinge."
   },
   {
     "exercise_id": 1093,
@@ -10196,7 +10196,7 @@
     "substitute_id": 1106,
     "context": "equipment_swap",
     "similarity_score": 0.86,
-    "notes": "Single heavy DB cradled overhead — same bilateral long-head stretch."
+    "notes": "Single heavy DB cradled overhead: same bilateral long-head stretch."
   },
   {
     "exercise_id": 1104,
@@ -10343,7 +10343,7 @@
     "substitute_id": 18,
     "context": "home_friendly",
     "similarity_score": 0.52,
-    "notes": "Close-grip push-ups when there's no equipment — bodyweight triceps finisher."
+    "notes": "Close-grip push-ups when there's no equipment: bodyweight triceps finisher."
   },
   {
     "exercise_id": 1108,
@@ -10938,21 +10938,21 @@
     "substitute_id": 543,
     "context": "equipment_swap",
     "similarity_score": 0.9,
-    "notes": "Free-weight preacher curl when the cable column is busy — same fixed-humerus isolation, minus the constant tension."
+    "notes": "Free-weight preacher curl when the cable column is busy: same fixed-humerus isolation, minus the constant tension."
   },
   {
     "exercise_id": 1134,
     "substitute_id": 993,
     "context": "equipment_swap",
     "similarity_score": 0.68,
-    "notes": "Standard machine curl when no preacher setup is free — less stretch bias but same strict biceps work."
+    "notes": "Standard machine curl when no preacher setup is free: less stretch bias but same strict biceps work."
   },
   {
     "exercise_id": 1134,
     "substitute_id": 993,
     "context": "time_efficient",
     "similarity_score": 0.68,
-    "notes": "Standard machine curl when no preacher setup is free — less stretch bias but same strict biceps work."
+    "notes": "Standard machine curl when no preacher setup is free: less stretch bias but same strict biceps work."
   },
   {
     "exercise_id": 1134,
@@ -10987,7 +10987,7 @@
     "substitute_id": 543,
     "context": "equipment_swap",
     "similarity_score": 0.92,
-    "notes": "Dumbbell or bar preacher curl on the same bench — direct swap when the EZ-bar is in use."
+    "notes": "Dumbbell or bar preacher curl on the same bench: direct swap when the EZ-bar is in use."
   },
   {
     "exercise_id": 1135,
@@ -11036,7 +11036,7 @@
     "substitute_id": 543,
     "context": "equipment_swap",
     "similarity_score": 0.9,
-    "notes": "Free-weight preacher curl when the machine is taken — same fixed-arm isolation."
+    "notes": "Free-weight preacher curl when the machine is taken: same fixed-arm isolation."
   },
   {
     "exercise_id": 1136,
@@ -11078,21 +11078,21 @@
     "substitute_id": 1063,
     "context": "equipment_swap",
     "similarity_score": 0.72,
-    "notes": "Band version for travel or light days — same pattern, lighter loading at the bottom."
+    "notes": "Band version for travel or light days: same pattern, lighter loading at the bottom."
   },
   {
     "exercise_id": 1139,
     "substitute_id": 1063,
     "context": "home_friendly",
     "similarity_score": 0.72,
-    "notes": "Band version for travel or light days — same pattern, lighter loading at the bottom."
+    "notes": "Band version for travel or light days: same pattern, lighter loading at the bottom."
   },
   {
     "exercise_id": 1139,
     "substitute_id": 1063,
     "context": "lower_intensity",
     "similarity_score": 0.72,
-    "notes": "Band version for travel or light days — same pattern, lighter loading at the bottom."
+    "notes": "Band version for travel or light days: same pattern, lighter loading at the bottom."
   },
   {
     "exercise_id": 1139,
@@ -11141,28 +11141,28 @@
     "substitute_id": 1063,
     "context": "equipment_swap",
     "similarity_score": 0.72,
-    "notes": "Band reverse curl when traveling or deloading — same overhand pattern, lighter stress."
+    "notes": "Band reverse curl when traveling or deloading: same overhand pattern, lighter stress."
   },
   {
     "exercise_id": 1140,
     "substitute_id": 1063,
     "context": "home_friendly",
     "similarity_score": 0.72,
-    "notes": "Band reverse curl when traveling or deloading — same overhand pattern, lighter stress."
+    "notes": "Band reverse curl when traveling or deloading: same overhand pattern, lighter stress."
   },
   {
     "exercise_id": 1140,
     "substitute_id": 1063,
     "context": "lower_intensity",
     "similarity_score": 0.72,
-    "notes": "Band reverse curl when traveling or deloading — same overhand pattern, lighter stress."
+    "notes": "Band reverse curl when traveling or deloading: same overhand pattern, lighter stress."
   },
   {
     "exercise_id": 1140,
     "substitute_id": 1064,
     "context": "equipment_swap",
     "similarity_score": 0.92,
-    "notes": "Straight-bar reverse curl is the direct swap — expect slightly more wrist strain."
+    "notes": "Straight-bar reverse curl is the direct swap: expect slightly more wrist strain."
   },
   {
     "exercise_id": 1140,
@@ -11190,21 +11190,21 @@
     "substitute_id": 1139,
     "context": "equipment_swap",
     "similarity_score": 0.85,
-    "notes": "Cable keeps tension constant through the rep — good for strict brachioradialis volume."
+    "notes": "Cable keeps tension constant through the rep: good for strict brachioradialis volume."
   },
   {
     "exercise_id": 1142,
     "substitute_id": 18,
     "context": "home_friendly",
     "similarity_score": 0.5,
-    "notes": "Close-grip push-ups finish the triceps with zero equipment — expect more chest involvement."
+    "notes": "Close-grip push-ups finish the triceps with zero equipment: expect more chest involvement."
   },
   {
     "exercise_id": 1142,
     "substitute_id": 18,
     "context": "time_efficient",
     "similarity_score": 0.5,
-    "notes": "Close-grip push-ups finish the triceps with zero equipment — expect more chest involvement."
+    "notes": "Close-grip push-ups finish the triceps with zero equipment: expect more chest involvement."
   },
   {
     "exercise_id": 1142,
@@ -11239,14 +11239,14 @@
     "substitute_id": 1108,
     "context": "equipment_swap",
     "similarity_score": 0.9,
-    "notes": "Cable pushdown is the same movement with steadier resistance — use it whenever a stack is free."
+    "notes": "Cable pushdown is the same movement with steadier resistance: use it whenever a stack is free."
   },
   {
     "exercise_id": 1143,
     "substitute_id": 23,
     "context": "equipment_swap",
     "similarity_score": 0.92,
-    "notes": "Dumbbell overhead extension is the same long-head movement — a direct one-to-one swap."
+    "notes": "Dumbbell overhead extension is the same long-head movement: a direct one-to-one swap."
   },
   {
     "exercise_id": 1143,
@@ -11323,7 +11323,7 @@
     "substitute_id": 544,
     "context": "equipment_swap",
     "similarity_score": 0.9,
-    "notes": "Same lying triceps extension — run it with whatever implement is on hand."
+    "notes": "Same lying triceps extension: run it with whatever implement is on hand."
   },
   {
     "exercise_id": 1145,
@@ -11337,21 +11337,21 @@
     "substitute_id": 1083,
     "context": "equipment_swap",
     "similarity_score": 0.9,
-    "notes": "Dumbbells allow a neutral grip — easier on the elbows during heavy extension blocks."
+    "notes": "Dumbbells allow a neutral grip: easier on the elbows during heavy extension blocks."
   },
   {
     "exercise_id": 1145,
     "substitute_id": 1083,
     "context": "age_friendly",
     "similarity_score": 0.9,
-    "notes": "Dumbbells allow a neutral grip — easier on the elbows during heavy extension blocks."
+    "notes": "Dumbbells allow a neutral grip: easier on the elbows during heavy extension blocks."
   },
   {
     "exercise_id": 1145,
     "substitute_id": 1146,
     "context": "equipment_swap",
     "similarity_score": 0.85,
-    "notes": "Cable version keeps tension at both stretch and lockout — good joint-friendly volume."
+    "notes": "Cable version keeps tension at both stretch and lockout: good joint-friendly volume."
   },
   {
     "exercise_id": 1146,
@@ -11372,7 +11372,7 @@
     "substitute_id": 544,
     "context": "equipment_swap",
     "similarity_score": 0.88,
-    "notes": "Standard lying triceps extension — same movement with any free-weight implement."
+    "notes": "Standard lying triceps extension: same movement with any free-weight implement."
   },
   {
     "exercise_id": 1146,
@@ -11407,14 +11407,14 @@
     "substitute_id": 546,
     "context": "equipment_swap",
     "similarity_score": 0.88,
-    "notes": "Dumbbell laterals are the universal stand-in when the machine is taken — same lateral-delt isolation."
+    "notes": "Dumbbell laterals are the universal stand-in when the machine is taken: same lateral-delt isolation."
   },
   {
     "exercise_id": 1148,
     "substitute_id": 546,
     "context": "home_friendly",
     "similarity_score": 0.88,
-    "notes": "Dumbbell laterals are the universal stand-in when the machine is taken — same lateral-delt isolation."
+    "notes": "Dumbbell laterals are the universal stand-in when the machine is taken: same lateral-delt isolation."
   },
   {
     "exercise_id": 1156,
@@ -11428,21 +11428,21 @@
     "substitute_id": 537,
     "context": "equipment_swap",
     "similarity_score": 0.7,
-    "notes": "Belt squat loads the legs without spinal compression — use when the back needs a break."
+    "notes": "Belt squat loads the legs without spinal compression: use when the back needs a break."
   },
   {
     "exercise_id": 1156,
     "substitute_id": 537,
     "context": "lower_recovery",
     "similarity_score": 0.7,
-    "notes": "Belt squat loads the legs without spinal compression — use when the back needs a break."
+    "notes": "Belt squat loads the legs without spinal compression: use when the back needs a break."
   },
   {
     "exercise_id": 1156,
     "substitute_id": 537,
     "context": "age_friendly",
     "similarity_score": 0.7,
-    "notes": "Belt squat loads the legs without spinal compression — use when the back needs a break."
+    "notes": "Belt squat loads the legs without spinal compression: use when the back needs a break."
   },
   {
     "exercise_id": 1156,
@@ -11470,35 +11470,35 @@
     "substitute_id": 1091,
     "context": "equipment_swap",
     "similarity_score": 0.92,
-    "notes": "Same guided-bar back squat under a different catalog name — fully interchangeable."
+    "notes": "Same guided-bar back squat under a different catalog name: fully interchangeable."
   },
   {
     "exercise_id": 1158,
     "substitute_id": 60,
     "context": "equipment_swap",
     "similarity_score": 0.7,
-    "notes": "Goblet squat for lighter days or home sessions — same upright quad-dominant shape."
+    "notes": "Goblet squat for lighter days or home sessions: same upright quad-dominant shape."
   },
   {
     "exercise_id": 1158,
     "substitute_id": 60,
     "context": "home_friendly",
     "similarity_score": 0.7,
-    "notes": "Goblet squat for lighter days or home sessions — same upright quad-dominant shape."
+    "notes": "Goblet squat for lighter days or home sessions: same upright quad-dominant shape."
   },
   {
     "exercise_id": 1158,
     "substitute_id": 60,
     "context": "lower_intensity",
     "similarity_score": 0.7,
-    "notes": "Goblet squat for lighter days or home sessions — same upright quad-dominant shape."
+    "notes": "Goblet squat for lighter days or home sessions: same upright quad-dominant shape."
   },
   {
     "exercise_id": 1158,
     "substitute_id": 450,
     "context": "equipment_swap",
     "similarity_score": 0.88,
-    "notes": "Free-bar front squat once your rack position is solid — same upright, quad-first pattern."
+    "notes": "Free-bar front squat once your rack position is solid: same upright, quad-first pattern."
   },
   {
     "exercise_id": 1158,
@@ -11547,7 +11547,7 @@
     "substitute_id": 450,
     "context": "equipment_swap",
     "similarity_score": 0.92,
-    "notes": "Barbell front squat when dumbbells run out of load — same upright, quad-dominant pattern."
+    "notes": "Barbell front squat when dumbbells run out of load: same upright, quad-dominant pattern."
   },
   {
     "exercise_id": 1159,
@@ -11638,7 +11638,7 @@
     "substitute_id": 1160,
     "context": "equipment_swap",
     "similarity_score": 0.88,
-    "notes": "Barbell version when no Smith machine is available — same split squat with free-weight load."
+    "notes": "Barbell version when no Smith machine is available: same split squat with free-weight load."
   },
   {
     "exercise_id": 1161,
@@ -11729,14 +11729,14 @@
     "substitute_id": 1052,
     "context": "equipment_swap",
     "similarity_score": 0.87,
-    "notes": "Dumbbell lunge swaps the bar for hand-held load — easier to bail and quicker to set up."
+    "notes": "Dumbbell lunge swaps the bar for hand-held load: easier to bail and quicker to set up."
   },
   {
     "exercise_id": 1163,
     "substitute_id": 1052,
     "context": "time_efficient",
     "similarity_score": 0.87,
-    "notes": "Dumbbell lunge swaps the bar for hand-held load — easier to bail and quicker to set up."
+    "notes": "Dumbbell lunge swaps the bar for hand-held load: easier to bail and quicker to set up."
   },
   {
     "exercise_id": 1163,
@@ -11806,7 +11806,7 @@
     "substitute_id": 238,
     "context": "equipment_swap",
     "similarity_score": 0.9,
-    "notes": "Generic loaded step-up — same movement with whatever implement is on hand."
+    "notes": "Generic loaded step-up: same movement with whatever implement is on hand."
   },
   {
     "exercise_id": 1168,
@@ -11855,7 +11855,7 @@
     "substitute_id": 59,
     "context": "equipment_swap",
     "similarity_score": 0.92,
-    "notes": "Conventional barbell pull once dumbbells max out — the natural progression."
+    "notes": "Conventional barbell pull once dumbbells max out: the natural progression."
   },
   {
     "exercise_id": 1170,
@@ -11918,21 +11918,21 @@
     "substitute_id": 1093,
     "context": "equipment_swap",
     "similarity_score": 0.68,
-    "notes": "Band straight-leg deadlift for travel or garage days — same hinge with band resistance."
+    "notes": "Band straight-leg deadlift for travel or garage days: same hinge with band resistance."
   },
   {
     "exercise_id": 1171,
     "substitute_id": 1093,
     "context": "home_friendly",
     "similarity_score": 0.68,
-    "notes": "Band straight-leg deadlift for travel or garage days — same hinge with band resistance."
+    "notes": "Band straight-leg deadlift for travel or garage days: same hinge with band resistance."
   },
   {
     "exercise_id": 1171,
     "substitute_id": 1093,
     "context": "lower_intensity",
     "similarity_score": 0.68,
-    "notes": "Band straight-leg deadlift for travel or garage days — same hinge with band resistance."
+    "notes": "Band straight-leg deadlift for travel or garage days: same hinge with band resistance."
   },
   {
     "exercise_id": 1171,
@@ -11988,14 +11988,14 @@
     "substitute_id": 1171,
     "context": "equipment_swap",
     "similarity_score": 0.88,
-    "notes": "Dumbbell version when the cable stack is taken — same hinge with free-weight loading."
+    "notes": "Dumbbell version when the cable stack is taken: same hinge with free-weight loading."
   },
   {
     "exercise_id": 1172,
     "substitute_id": 1171,
     "context": "home_friendly",
     "similarity_score": 0.88,
-    "notes": "Dumbbell version when the cable stack is taken — same hinge with free-weight loading."
+    "notes": "Dumbbell version when the cable stack is taken: same hinge with free-weight loading."
   },
   {
     "exercise_id": 1172,
@@ -12009,7 +12009,7 @@
     "substitute_id": 58,
     "context": "equipment_swap",
     "similarity_score": 0.9,
-    "notes": "Barbell RDL — the free-weight version with full stabilizer demand."
+    "notes": "Barbell RDL: the free-weight version with full stabilizer demand."
   },
   {
     "exercise_id": 1173,
@@ -12114,14 +12114,14 @@
     "substitute_id": 1175,
     "context": "equipment_swap",
     "similarity_score": 0.87,
-    "notes": "Machine hip thrust — faster setup, same glute-max drive."
+    "notes": "Machine hip thrust: faster setup, same glute-max drive."
   },
   {
     "exercise_id": 1174,
     "substitute_id": 1175,
     "context": "time_efficient",
     "similarity_score": 0.87,
-    "notes": "Machine hip thrust — faster setup, same glute-max drive."
+    "notes": "Machine hip thrust: faster setup, same glute-max drive."
   },
   {
     "exercise_id": 1174,
@@ -12135,7 +12135,7 @@
     "substitute_id": 101,
     "context": "equipment_swap",
     "similarity_score": 0.92,
-    "notes": "Barbell hip thrust — the free-weight standard when the machine is taken."
+    "notes": "Barbell hip thrust: the free-weight standard when the machine is taken."
   },
   {
     "exercise_id": 1175,
@@ -12191,7 +12191,7 @@
     "substitute_id": 101,
     "context": "equipment_swap",
     "similarity_score": 0.92,
-    "notes": "Barbell hip thrust — same lift with free-weight control."
+    "notes": "Barbell hip thrust: same lift with free-weight control."
   },
   {
     "exercise_id": 1176,
@@ -12282,14 +12282,14 @@
     "substitute_id": 1178,
     "context": "equipment_swap",
     "similarity_score": 0.92,
-    "notes": "Dumbbell across the hips — same bridge, quicker to set up than a bar."
+    "notes": "Dumbbell across the hips: same bridge, quicker to set up than a bar."
   },
   {
     "exercise_id": 1177,
     "substitute_id": 1178,
     "context": "time_efficient",
     "similarity_score": 0.92,
-    "notes": "Dumbbell across the hips — same bridge, quicker to set up than a bar."
+    "notes": "Dumbbell across the hips: same bridge, quicker to set up than a bar."
   },
   {
     "exercise_id": 1178,
@@ -12373,14 +12373,14 @@
     "substitute_id": 1182,
     "context": "equipment_swap",
     "similarity_score": 0.87,
-    "notes": "Standing calf machine — same raise with quick load changes."
+    "notes": "Standing calf machine: same raise with quick load changes."
   },
   {
     "exercise_id": 1180,
     "substitute_id": 1182,
     "context": "time_efficient",
     "similarity_score": 0.87,
-    "notes": "Standing calf machine — same raise with quick load changes."
+    "notes": "Standing calf machine: same raise with quick load changes."
   },
   {
     "exercise_id": 1181,
@@ -12415,14 +12415,14 @@
     "substitute_id": 1180,
     "context": "equipment_swap",
     "similarity_score": 0.88,
-    "notes": "Dumbbell version when no Smith machine — same raise with hand-held load."
+    "notes": "Dumbbell version when no Smith machine: same raise with hand-held load."
   },
   {
     "exercise_id": 1181,
     "substitute_id": 1180,
     "context": "home_friendly",
     "similarity_score": 0.88,
-    "notes": "Dumbbell version when no Smith machine — same raise with hand-held load."
+    "notes": "Dumbbell version when no Smith machine: same raise with hand-held load."
   },
   {
     "exercise_id": 1181,
@@ -12464,14 +12464,14 @@
     "substitute_id": 1180,
     "context": "equipment_swap",
     "similarity_score": 0.87,
-    "notes": "Dumbbell raise — same motion with minimal equipment."
+    "notes": "Dumbbell raise: same motion with minimal equipment."
   },
   {
     "exercise_id": 1182,
     "substitute_id": 1180,
     "context": "home_friendly",
     "similarity_score": 0.87,
-    "notes": "Dumbbell raise — same motion with minimal equipment."
+    "notes": "Dumbbell raise: same motion with minimal equipment."
   },
   {
     "exercise_id": 1182,
@@ -12513,14 +12513,14 @@
     "substitute_id": 1185,
     "context": "equipment_swap",
     "similarity_score": 0.9,
-    "notes": "Swap when no sturdy table is available — a towel over a latched door gives the same apparatus-free horizontal pull."
+    "notes": "Swap when no sturdy table is available: a towel over a latched door gives the same apparatus-free horizontal pull."
   },
   {
     "exercise_id": 1184,
     "substitute_id": 1185,
     "context": "time_efficient",
     "similarity_score": 0.9,
-    "notes": "Swap when no sturdy table is available — a towel over a latched door gives the same apparatus-free horizontal pull."
+    "notes": "Swap when no sturdy table is available: a towel over a latched door gives the same apparatus-free horizontal pull."
   },
   {
     "exercise_id": 1185,
@@ -12555,13 +12555,13 @@
     "substitute_id": 1184,
     "context": "equipment_swap",
     "similarity_score": 0.9,
-    "notes": "Use a sturdy table instead of the door when one is handy — same apparatus-free inverted row."
+    "notes": "Use a sturdy table instead of the door when one is handy: same apparatus-free inverted row."
   },
   {
     "exercise_id": 1185,
     "substitute_id": 1184,
     "context": "time_efficient",
     "similarity_score": 0.9,
-    "notes": "Use a sturdy table instead of the door when one is handy — same apparatus-free inverted row."
+    "notes": "Use a sturdy table instead of the door when one is handy: same apparatus-free inverted row."
   }
 ]

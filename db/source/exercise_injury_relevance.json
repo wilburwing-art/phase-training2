@@ -159,7 +159,7 @@
     "exercise_id": 111,
     "injury_id": 41,
     "role": "rehab_early",
-    "notes": "Achilles tendinopathy — Alfredson protocol."
+    "notes": "Achilles tendinopathy: Alfredson protocol."
   },
   {
     "exercise_id": 111,
@@ -291,7 +291,7 @@
     "exercise_id": 323,
     "injury_id": 50,
     "role": "contraindicated",
-    "notes": "Acute tennis elbow — cease bag work."
+    "notes": "Acute tennis elbow: cease bag work."
   },
   {
     "exercise_id": 323,
@@ -375,7 +375,7 @@
     "exercise_id": 420,
     "injury_id": 66,
     "role": "prehab",
-    "notes": "Reverse nordic lengthens rectus femoris and builds eccentric control — quad strain prevention."
+    "notes": "Reverse nordic lengthens rectus femoris and builds eccentric control: quad strain prevention."
   },
   {
     "exercise_id": 422,

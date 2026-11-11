@@ -97,6 +97,7 @@ enum WorkoutGenerator {
             let season = memory.seasonsBySport[sport] ?? memory.defaultSeason
             if let routineId = AuthoredRoutineSelector.select(
                     sportSlug: sport.slug, phase: season, sessionIndex: sportIndex,
+                    experience: memory.experience,
                     excludedExerciseIds: profile.excludedExerciseIds,
                     allowedEquipmentSlugs: profile.allowedEquipmentSlugs),
                let authored = AuthoredRoutine.workout(
@@ -113,6 +114,7 @@ enum WorkoutGenerator {
                !SportSeasonGenerator.supports(sport.slug),
                AuthoredRoutineSelector.select(
                     sportSlug: sport.slug, phase: season, sessionIndex: sportIndex,
+                    experience: memory.experience,
                     excludedExerciseIds: profile.excludedExerciseIds,
                     allowedEquipmentSlugs: profile.allowedEquipmentSlugs) != nil {
                 let focus = SessionMix.complementRotation(

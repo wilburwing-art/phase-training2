@@ -101,7 +101,43 @@ def renamed_without_alias(shipped_db, source_dir):
             if i in new and old[i] != new[i] and (i, old[i].lower()) not in aliases]
 
 
+# Columns the app shows to the user. The house style has no em or en dashes
+# in anything a person reads, so a build that finds one stops. Names are left
+# alone on purpose: a rename splits a user's history (see renamed_without_alias).
+DASH_FREE_COLUMNS = {
+    "exercises": ["description", "instructions", "cues", "time_efficient_variation",
+                  "age_considerations", "desk_worker_notes", "regression"],
+    "routines": ["description", "notes"],
+    "routine_exercises": ["notes"],
+    "exercise_substitutions": ["notes"],
+    "exercise_injury_relevance": ["notes"],
+    "injury_sport_prevalence": ["notes"],
+    "sport_movements": ["injury_caution"],
+    "sport_recovery_profiles": ["notes", "ideal_supplement_timing"],
+}
+
+
+def dashes_in_user_text():
+    found = []
+    for table, cols in DASH_FREE_COLUMNS.items():
+        path = SOURCE_DIR / f"{table}.json"
+        if not path.exists():
+            continue
+        for row in json.loads(path.read_text()):
+            for c in cols:
+                v = row.get(c)
+                for text in (v if isinstance(v, list) else [v]):
+                    if isinstance(text, str) and ("\u2014" in text or "\u2013" in text):
+                        found.append(f"{table}.{c} id={row.get('id', row.get('exercise_id'))}: {text[:70]!r}")
+    return found
+
+
 def build(allow_renames=False):
+    dashes = dashes_in_user_text()
+    if dashes:
+        sys.exit(f"Refusing to build: {len(dashes)} em or en dash(es) in user-visible text.\n"
+                 + "\n".join(f"  {d}" for d in dashes[:10])
+                 + "\nUse a comma, colon, period or parentheses.")
     if not SCHEMA_FILE.exists():
         sys.exit(f"schema not found: {SCHEMA_FILE}\nRun extract_to_source.py first.")
 

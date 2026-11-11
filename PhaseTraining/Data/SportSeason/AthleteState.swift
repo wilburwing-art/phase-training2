@@ -51,6 +51,10 @@ struct AthleteState: Equatable {
     /// build a state by hand keep the prior behavior.
     var preferredSessionMinutes: Int? = nil
 
+    /// Age in years from onboarding, nil when not given. Read by
+    /// `SetScheme.adjusted` (rest, effort and explosive volume at 60+).
+    var age: Int? = nil
+
     /// Readiness in [0, 1] from `GeneratorContext`, or nil when the context
     /// had no real data (`hasReadinessData == false`). The neutral 0.5
     /// sentinel must never arrive here as a number; nil is the only "no data"
@@ -158,6 +162,7 @@ struct AthleteState: Equatable {
             profile: profile
         )
         state.goal = memory.trainingGoal
+        state.age = memory.age
         state.easedBuckets = recovery.eased
         state.blockedBuckets = recovery.blocked
         return state

@@ -92,13 +92,39 @@ enum AuthoredRoutineSelector {
 
     /// `allowedEquipmentSlugs` follows the season engine's convention: empty
     /// means full gym / unrestricted.
+    /// Routines at or below the athlete's level. A beginner is never handed the
+    /// advanced campus block; an advanced athlete may take any routine.
+    ///
+    /// When every routine for the sport is above the athlete's level, an
+    /// engine-supported sport returns an empty list so the caller falls through
+    /// to the season engine (which gates movements by level itself). An
+    /// authored-only sport keeps the unfiltered list, because an empty day is
+    /// worse than a hard one there.
+    private static func routines(_ ids: [Int], for experience: ExperienceLevel?,
+                                 sportSlug: String) -> [Int] {
+        guard let experience, !ids.isEmpty else { return ids }
+        let rank: [String: Int] = ["beginner": 0, "intermediate": 1, "advanced": 2, "elite": 3]
+        let ceiling: Int
+        switch experience {
+        case .beginner: ceiling = 0
+        case .intermediate: ceiling = 1
+        case .advanced: return ids
+        }
+        let difficulty = CoachDatabase.shared.routineDifficulty(forIds: ids)
+        let fit = ids.filter { (rank[difficulty[$0] ?? "intermediate"] ?? 1) <= ceiling }
+        if !fit.isEmpty { return fit }
+        return SportSeasonGenerator.supports(sportSlug) ? [] : ids
+    }
+
     static func select(sportSlug: String, phase: SeasonPhase, sessionIndex: Int,
+                       experience: ExperienceLevel? = nil,
                        excludedExerciseIds: Set<Int> = [],
                        allowedEquipmentSlugs: Set<String> = []) -> Int? {
         guard isEnabled, shouldServeAuthored(sportSlug: sportSlug) else { return nil }
         let db = CoachDatabase.shared
-        var ids = viable(db.authoredRoutineIds(sportSlug: sportSlug,
-                                               phaseLabels: phaseLabels(for: phase)),
+        var ids = viable(routines(db.authoredRoutineIds(sportSlug: sportSlug,
+                                                        phaseLabels: phaseLabels(for: phase)),
+                                  for: experience, sportSlug: sportSlug),
                          excluding: excludedExerciseIds, allowed: allowedEquipmentSlugs)
         if ids.isEmpty {
             // Phase gap. A season-engine-supported sport (climbing pilot) falls
@@ -106,7 +132,8 @@ enum AuthoredRoutineSelector {
             // backstop, so broaden to any full-session routine for the sport —
             // an authored-served sport must never yield an empty day.
             guard !SportSeasonGenerator.supports(sportSlug) else { return nil }
-            ids = viable(db.authoredRoutineIds(sportSlug: sportSlug, phaseLabels: allPhaseLabels),
+            ids = viable(routines(db.authoredRoutineIds(sportSlug: sportSlug, phaseLabels: allPhaseLabels),
+                                  for: experience, sportSlug: sportSlug),
                          excluding: excludedExerciseIds, allowed: allowedEquipmentSlugs)
             if ids.isEmpty, SportCatalog.outdoorAuthoredSlugs.contains(sportSlug) {
                 // Last resort for a real outdoor sport with no content of its

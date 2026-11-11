@@ -23,7 +23,7 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 superset — balance the push"
+    "notes": "A2 superset, balance the push"
   },
   {
     "id": 5,
@@ -49,7 +49,7 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B2 reverse wrist curl — superset"
+    "notes": "B2 reverse wrist curl, superset"
   },
   {
     "id": 8,
@@ -712,7 +712,7 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Alfredson protocol — straight knee"
+    "notes": "Alfredson protocol, straight knee"
   },
   {
     "id": 165,
@@ -2961,7 +2961,7 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Barbell hip thrust — posterior chain activation"
+    "notes": "Barbell hip thrust, posterior chain activation"
   },
   {
     "id": 771,
@@ -3000,7 +3000,7 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Depth drop to stick — reactive prep"
+    "notes": "Depth drop to stick, reactive prep"
   },
   {
     "id": 777,
@@ -3013,7 +3013,7 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Back squat — heavy lower body"
+    "notes": "Back squat, heavy lower body"
   },
   {
     "id": 778,
@@ -3091,7 +3091,7 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Front squat — base lower power"
+    "notes": "Front squat, base lower power"
   },
   {
     "id": 816,
@@ -3143,7 +3143,7 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Trap bar deadlift — base posterior chain"
+    "notes": "Trap bar deadlift, base posterior chain"
   },
   {
     "id": 832,
@@ -3169,7 +3169,7 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg RDL — controlled"
+    "notes": "Single-leg RDL, controlled"
   },
   {
     "id": 848,
@@ -3247,7 +3247,7 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Squat jump CMJ — prep vertical"
+    "notes": "Squat jump CMJ, prep vertical"
   },
   {
     "id": 878,
@@ -3988,7 +3988,7 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Belt squat — main accessory"
+    "notes": "Belt squat, main accessory"
   },
   {
     "id": 1064,
@@ -4053,7 +4053,7 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Pallof press — anti-rotation"
+    "notes": "Pallof press, anti-rotation"
   },
   {
     "id": 1076,
@@ -4105,7 +4105,7 @@
     "rest": "3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Yoke walk — heavy"
+    "notes": "Yoke walk, heavy"
   },
   {
     "id": 1084,
@@ -4391,7 +4391,7 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Press — 60-80%, never miss"
+    "notes": "Press, 60-80%, never miss"
   },
   {
     "id": 1217,
@@ -4417,7 +4417,7 @@
     "rest": "2-3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Hinge — heavy but easy"
+    "notes": "Hinge, heavy but easy"
   },
   {
     "id": 1219,
@@ -4443,7 +4443,7 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Loaded carry — vary distance/load"
+    "notes": "Loaded carry, vary distance/load"
   },
   {
     "id": 1221,
@@ -5289,5 +5289,343 @@
     "tempo": null,
     "duration": null,
     "notes": "Calf, slow lowering"
+  },
+  {
+    "id": 1338,
+    "routine_id": 306,
+    "exercise_id": 60,
+    "position": 1,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "8-12",
+    "rest": "90 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Goblet squat"
+  },
+  {
+    "id": 1339,
+    "routine_id": 306,
+    "exercise_id": 925,
+    "position": 2,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "8-12",
+    "rest": "90 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Wide-grip lat pulldown"
+  },
+  {
+    "id": 1340,
+    "routine_id": 306,
+    "exercise_id": 13,
+    "position": 3,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "8-15",
+    "rest": "60 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Push-up"
+  },
+  {
+    "id": 1341,
+    "routine_id": 306,
+    "exercise_id": 135,
+    "position": 4,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "8-12",
+    "rest": "60 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Inverted row"
+  },
+  {
+    "id": 1342,
+    "routine_id": 306,
+    "exercise_id": 103,
+    "position": 5,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "8-12 per side",
+    "rest": "60 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Single-leg glute bridge"
+  },
+  {
+    "id": 1343,
+    "routine_id": 306,
+    "exercise_id": 24,
+    "position": 6,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "12-15",
+    "rest": "45 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Face pull for shoulder health"
+  },
+  {
+    "id": 1344,
+    "routine_id": 306,
+    "exercise_id": 974,
+    "position": 7,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "30-60 sec",
+    "rest": "45 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Front plank"
+  },
+  {
+    "id": 1345,
+    "routine_id": 307,
+    "exercise_id": 135,
+    "position": 1,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "8-12",
+    "rest": "60 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Inverted row, feet lower to make it easier"
+  },
+  {
+    "id": 1346,
+    "routine_id": 307,
+    "exercise_id": 925,
+    "position": 2,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "8-12",
+    "rest": "90 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Wide-grip lat pulldown"
+  },
+  {
+    "id": 1347,
+    "routine_id": 307,
+    "exercise_id": 638,
+    "position": 3,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "15-30 sec",
+    "rest": "75 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Bar hang, stop before the grip fails"
+  },
+  {
+    "id": 1348,
+    "routine_id": 307,
+    "exercise_id": 562,
+    "position": 4,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "6-8 x 10 sec",
+    "rest": "45 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Scapular retraction hold"
+  },
+  {
+    "id": 1349,
+    "routine_id": 307,
+    "exercise_id": 21,
+    "position": 5,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "15-20",
+    "rest": "30 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Band pull-apart"
+  },
+  {
+    "id": 1350,
+    "routine_id": 307,
+    "exercise_id": 13,
+    "position": 6,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "8-15",
+    "rest": "60 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Push-up"
+  },
+  {
+    "id": 1351,
+    "routine_id": 307,
+    "exercise_id": 132,
+    "position": 7,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "20-45 sec per side",
+    "rest": "45 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Side plank"
+  },
+  {
+    "id": 1352,
+    "routine_id": 308,
+    "exercise_id": 13,
+    "position": 1,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "8-15",
+    "rest": "60 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Push-up"
+  },
+  {
+    "id": 1353,
+    "routine_id": 308,
+    "exercise_id": 135,
+    "position": 2,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "8-12",
+    "rest": "60 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Inverted row"
+  },
+  {
+    "id": 1354,
+    "routine_id": 308,
+    "exercise_id": 24,
+    "position": 3,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "12-15",
+    "rest": "45 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Face pull"
+  },
+  {
+    "id": 1355,
+    "routine_id": 308,
+    "exercise_id": 17,
+    "position": 4,
+    "superset_group": null,
+    "sets": 2,
+    "reps": "12-15 per side",
+    "rest": "45 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Reverse wrist curl"
+  },
+  {
+    "id": 1356,
+    "routine_id": 308,
+    "exercise_id": 132,
+    "position": 5,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "20-45 sec per side",
+    "rest": "45 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Side plank"
+  },
+  {
+    "id": 1357,
+    "routine_id": 308,
+    "exercise_id": 1205,
+    "position": 6,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "8-12 per side",
+    "rest": "45 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Dead bug"
+  },
+  {
+    "id": 1358,
+    "routine_id": 309,
+    "exercise_id": 3,
+    "position": 1,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "6 hangs (7s on / 3s off)",
+    "rest": "2 min",
+    "tempo": null,
+    "duration": null,
+    "notes": "Hangboard repeaters on a comfortable edge"
+  },
+  {
+    "id": 1359,
+    "routine_id": 309,
+    "exercise_id": 922,
+    "position": 2,
+    "superset_group": null,
+    "sets": 4,
+    "reps": "5-10",
+    "rest": "2 min",
+    "tempo": null,
+    "duration": null,
+    "notes": "Pull-up"
+  },
+  {
+    "id": 1360,
+    "routine_id": 309,
+    "exercise_id": 60,
+    "position": 3,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "8-12",
+    "rest": "90 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Goblet squat"
+  },
+  {
+    "id": 1361,
+    "routine_id": 309,
+    "exercise_id": 1207,
+    "position": 4,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "8-12",
+    "rest": "60 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Decline push-up"
+  },
+  {
+    "id": 1362,
+    "routine_id": 309,
+    "exercise_id": 7,
+    "position": 5,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "8-12",
+    "rest": "90 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Ab wheel rollout"
+  },
+  {
+    "id": 1363,
+    "routine_id": 309,
+    "exercise_id": 24,
+    "position": 6,
+    "superset_group": null,
+    "sets": 3,
+    "reps": "12-15",
+    "rest": "45 sec",
+    "tempo": null,
+    "duration": null,
+    "notes": "Face pull"
   }
 ]

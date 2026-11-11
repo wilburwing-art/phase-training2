@@ -46,7 +46,7 @@
   },
   {
     "exercise_id": 7,
-    "equipment_id": 1,
+    "equipment_id": 111,
     "is_required": 1
   },
   {
@@ -1156,7 +1156,7 @@
   },
   {
     "exercise_id": 533,
-    "equipment_id": 1,
+    "equipment_id": 121,
     "is_required": 1
   },
   {
@@ -1566,7 +1566,7 @@
   },
   {
     "exercise_id": 682,
-    "equipment_id": 1,
+    "equipment_id": 121,
     "is_required": 1
   },
   {

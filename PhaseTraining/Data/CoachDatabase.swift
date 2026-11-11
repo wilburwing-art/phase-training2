@@ -1357,7 +1357,7 @@ final class CoachDatabase {
     }
 
     /// Batched modality / rep / duration lookup feeding `equipmentCategory`.
-    private func exerciseLoggingMeta(
+    func exerciseLoggingMeta(
         forExerciseIds ids: Set<Int>
     ) -> [Int: (modality: String?, defaultReps: String?, defaultDuration: String?)] { withLock {
         guard !ids.isEmpty, let db else { return [:] }
@@ -1474,6 +1474,24 @@ final class CoachDatabase {
         return ids
     } }
 
+    /// `routines.difficulty` for each id ("beginner" | "intermediate" |
+    /// "advanced" | "elite"), so the selector can keep an advanced block away
+    /// from a beginner. Ids with no row are absent.
+    func routineDifficulty(forIds ids: [Int]) -> [Int: String] { withLock {
+        guard let db, !ids.isEmpty else { return [:] }
+        let placeholders = ids.map { _ in "?" }.joined(separator: ",")
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, "SELECT id, difficulty FROM routines WHERE id IN (\(placeholders))",
+                                 -1, &stmt, nil) == SQLITE_OK else { return [:] }
+        defer { sqlite3_finalize(stmt) }
+        for (i, id) in ids.enumerated() { sqlite3_bind_int64(stmt, Int32(1 + i), Int64(id)) }
+        var out: [Int: String] = [:]
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            if let d = text(stmt, 1) { out[Int(sqlite3_column_int64(stmt, 0))] = d }
+        }
+        return out
+    } }
+
     /// Name + source attribution for a routine, for the authored workout's
     /// title + provenance line. nil when the id isn't a real routine.
     func authoredRoutineMeta(id: Int) -> (name: String, source: String?)? { withLock {
@@ -1537,7 +1555,8 @@ final class CoachDatabase {
         SELECT sm.exercise_id, sm.name, sm.demands, sm.allowed_phases,
                sm.allowed_variants, sm.fatigue_cost, sm.min_experience,
                sm.injury_caution, e.slug, e.is_compound, e.is_unilateral,
-               sm.protocol_sets, sm.protocol_reps, sm.protocol_rest_seconds
+               sm.protocol_sets, sm.protocol_reps, sm.protocol_rest_seconds,
+               e.default_reps
         FROM sport_movements sm
         JOIN exercises e ON e.id = sm.exercise_id
         WHERE sm.sport = ?
@@ -1575,7 +1594,8 @@ final class CoachDatabase {
                 isUnilateral: (intOrNil(stmt, 10) ?? 0) == 1,
                 protocolSets: intOrNil(stmt, 11),
                 protocolReps: text(stmt, 12),
-                protocolRestSeconds: intOrNil(stmt, 13)))
+                protocolRestSeconds: intOrNil(stmt, 13),
+                catalogReps: text(stmt, 14)))
         }
         return out
     } }

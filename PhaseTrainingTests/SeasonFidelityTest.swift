@@ -647,8 +647,10 @@ final class SeasonFidelityTest: XCTestCase {
                     XCTAssertGreaterThanOrEqual(lo, 10, "\(demand.rawValue) reps should be high, got \(ex.reps)")
                 }
             case .fingerStrength:
-                XCTAssertTrue(ex.reps.contains("hold"),
-                    "fingerStrength (\(ex.name)) should prescribe a hold, got \(ex.reps)")
+                // Timed, in whatever words: the scheme's "8s hold" or the
+                // catalog's own "7-10 sec" / "20-45 sec per hand".
+                XCTAssertNotNil(HoldProtocol.parse(ex.reps),
+                    "fingerStrength (\(ex.name)) should prescribe a timed hold, got \(ex.reps)")
             default:
                 break
             }
@@ -695,7 +697,7 @@ final class SeasonFidelityTest: XCTestCase {
                     for e in s.exercises {
                         let demand = map[e.exerciseId].map { " · \($0.rawValue)" } ?? ""
                         let tempo = e.tempo.map { " · tempo \($0)" } ?? ""
-                        md += "- \(e.name) — \(e.sets)×\(e.reps), \(e.restSeconds)s · RPE \(e.rpe ?? "—")\(tempo)\(demand)\n"
+                        md += "- \(e.name) — \(e.sets)×\(e.reps), \(e.restSeconds)s · RPE \(e.rpe ?? "-")\(tempo)\(demand)\n"
                     }
                     md += "\n"
                 }

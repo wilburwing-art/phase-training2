@@ -150,9 +150,42 @@ struct SetScheme: Codable, Hashable {
         if let hold = holdSeconds {
             return "\(hold)s hold"
         }
-        guard let lo = repsLow else { return "—" }
+        guard let lo = repsLow else { return "-" }
         if let hi = repsHigh, hi != lo { return "\(lo)-\(hi)" }
         return "\(lo)"
+    }
+
+    /// The reps string for a movement whose catalog row says `catalogReps`.
+    ///
+    /// The demand owns how MANY reps; the catalog owns what a rep IS. Without
+    /// this a Side Plank ("20-45 sec per side") was served as "10-15" from the
+    /// core band and a Farmer's Carry ("40-60 ft") as "10-15", and every
+    /// unilateral movement lost "per side".
+    ///
+    /// - plain count ("8-12", "3-5 reps") or nothing: the demand's band;
+    /// - count per side ("8-10 per side", "10-12/side", "8-10 per position"):
+    ///   the demand's band with the catalog's suffix;
+    /// - anything else (seconds, minutes, feet, metres, hangs, holds): the
+    ///   catalog string verbatim, which `HoldProtocol.parse` reads for the timer.
+    func reps(forCatalog catalogReps: String?) -> String {
+        guard let raw = catalogReps?.trimmingCharacters(in: .whitespaces), !raw.isEmpty else {
+            return repsString
+        }
+        let s = raw.lowercased()
+        let count = #"\d+(?:\s*-\s*\d+)?"#
+        if s.range(of: "^\(count)(?:\\s*reps?)?$", options: .regularExpression) != nil {
+            return repsString
+        }
+        let sides = ["per side", "/side", "each side", "per position", "per hand", "per arm", "per leg"]
+        if let side = sides.first(where: { s.hasSuffix($0) }),
+           s.range(of: "^\(count)\\s*\(NSRegularExpression.escapedPattern(for: side))$",
+                   options: .regularExpression) != nil {
+            // A hold demand has no count to lend the suffix to.
+            guard holdSeconds == nil else { return raw }
+            let suffix = (side == "/side" || side == "each side") ? "per side" : side
+            return "\(repsString) \(suffix)"
+        }
+        return raw
     }
 
     /// "6-7" / "8" / nil — the `GeneratedExercise.rpe` string.
@@ -193,6 +226,57 @@ struct SetScheme: Codable, Hashable {
         return s
     }
 
+    /// Age at which rest lengthens and explosive work shrinks.
+    static let masterAge = 60
+
+    /// Scale a phase-modulated scheme to the person doing it.
+    ///
+    /// The deleted legacy generator clamped beginners and the season engine
+    /// never replaced it: a 2026-11-10 sweep found intermediate and advanced
+    /// plans identical in 1,374 of 1,440 pairs and ages 19, 45 and 68
+    /// byte-identical.
+    /// - Beginner: at most 3 sets, RPE no higher than 7, and a rep floor of
+    ///   6-8 on ordinary strength work (power, holds and tempo work keep their
+    ///   own character, as `TrainingGoal.rebandable` does).
+    /// - Advanced: one extra set on the main strength demands, where `mainLift`.
+    /// - 60 and over: 30 s more rest, RPE no higher than 8, and one set fewer
+    ///   on explosive work.
+    func adjusted(experience: ExperienceLevel, age: Int?, mainLift: Bool) -> SetScheme {
+        var s = self
+        switch experience {
+        case .beginner:
+            s.setsHigh = min(s.setsHigh, 3)
+            s.setsLow = min(s.setsLow, s.setsHigh)
+            s.capRPE(at: 7)
+            if !explosiveConcentric, holdSeconds == nil, eccentricTempoSeconds == nil,
+               let lo = s.repsLow, lo < 6 {
+                s.repsLow = 6
+                s.repsHigh = max(s.repsHigh ?? 6, 8)
+            }
+        case .advanced:
+            if mainLift {
+                s.setsHigh = min(6, s.setsHigh + 1)
+                s.setsLow = min(s.setsHigh, s.setsLow + 1)
+            }
+        case .intermediate:
+            break
+        }
+        if let age, age >= Self.masterAge {
+            s.restSeconds += 30
+            s.capRPE(at: 8)
+            if explosiveConcentric {
+                s.setsHigh = max(2, s.setsHigh - 1)
+                s.setsLow = min(s.setsLow, s.setsHigh)
+            }
+        }
+        return s
+    }
+
+    private mutating func capRPE(at ceiling: Int) {
+        if let lo = intensityRPELow { intensityRPELow = min(lo, ceiling) }
+        if let hi = intensityRPEHigh { intensityRPEHigh = min(hi, ceiling) }
+    }
+
     /// Nudge the RPE band by `delta`, floored at 5 (nothing below light-moderate).
     private mutating func shiftRPE(by delta: Int) {
         if let lo = intensityRPELow { intensityRPELow = max(5, lo + delta) }
@@ -217,8 +301,9 @@ struct SportMovement: Hashable, Identifiable {
     let fatigueCost: Int
     let minExperienceRank: Int            // 0 novice … 2 advanced
     let injuryCaution: String?
-    // Joined catalog facts (the prescription itself is demand-driven — see
-    // DemandScheme — so the catalog's generic sets/reps/rest/tempo are not read).
+    // Joined catalog facts. Sets, rest, RPE and tempo are demand-driven (see
+    // DemandScheme). The rep COUNT is too, but the catalog's `default_reps`
+    // decides the unit: see `catalogReps`.
     let isCompound: Bool
     let isUnilateral: Bool
     /// A cited protocol that overrides the demand scheme's sets, reps and rest
@@ -226,6 +311,11 @@ struct SportMovement: Hashable, Identifiable {
     var protocolSets: Int? = nil
     var protocolReps: String? = nil
     var protocolRestSeconds: Int? = nil
+    /// The catalog's `default_reps`, read only for its unit. A timed, hold or
+    /// distance string ("20-45 sec per side", "40-60 ft") replaces the demand's
+    /// rep band, and a per-side count ("8-10 per side") lends its suffix to it.
+    /// See `SetScheme.reps(forCatalog:)`.
+    var catalogReps: String? = nil
 
     var primaryDemand: Demand? { demands.first }
     func serves(_ demand: Demand) -> Bool { demands.contains(demand) }

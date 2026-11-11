@@ -246,7 +246,8 @@ enum SportSeasonGenerator {
         if lightened { picks = lighten(picks) }
 
         var exercises = picks.map {
-            prescribe($0.movement, demand: $0.demand, rule: rule, strategy: strategy, goal: athlete.goal)
+            prescribe($0.movement, demand: $0.demand, rule: rule, strategy: strategy, goal: athlete.goal,
+                      experience: athlete.experience, age: athlete.age)
         }
         // Readiness x sets (T2-10). Same lerp(0.6, 1.0) curve makePickedRow
         // has used since Phase 2: a detrained user gets 60% of the sets, a
@@ -646,8 +647,13 @@ enum SportSeasonGenerator {
     /// movement's generic catalog default), modulated by the phase progression.
     private static func prescribe(_ m: SportMovement, demand: Demand, rule: PhaseRule,
                                   strategy: GeneratorStrategy = .auto,
-                                  goal: TrainingGoal = .sportPerformance) -> GeneratedExercise {
+                                  goal: TrainingGoal = .sportPerformance,
+                                  experience: ExperienceLevel = .intermediate,
+                                  age: Int? = nil) -> GeneratedExercise {
+        let mainLifts: Set<Demand> = [.maxStrength, .upperStrength, .pullStrength, .legStrength]
         let scheme = DemandScheme.scheme(for: demand, progression: rule.progression, goal: goal)
+            .adjusted(experience: experience, age: age,
+                      mainLift: mainLifts.contains(demand) && rule.progression == .progressiveOverload)
         let key = m.name.lowercased()
         // Sets: the strategy's intensity bias, clamped so a `push` can't run
         // away and a `deload` can't zero the movement out. A movement carrying
@@ -669,7 +675,7 @@ enum SportSeasonGenerator {
             pattern: nil,
             isCompound: m.isCompound,
             sets: sets,
-            reps: m.protocolReps ?? scheme.repsString,
+            reps: m.protocolReps ?? scheme.reps(forCatalog: m.catalogReps),
             restSeconds: m.protocolRestSeconds ?? scheme.restSeconds,
             notes: notes.isEmpty ? nil : notes,
             rpe: strategy.rpeOverrides[key] ?? scheme.rpeString,

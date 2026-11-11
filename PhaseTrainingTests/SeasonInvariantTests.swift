@@ -141,4 +141,122 @@ final class SeasonInvariantTests: XCTestCase {
         }
         print("SEASON-INVARIANT authored rows swapped for a bodyweight-only user: \(swapped)")
     }
+
+    // MARK: - Part C: a rep keeps the catalog's unit
+
+    func test_repsForCatalog_keepsUnitsAndSides() {
+        let core = SetScheme(setsLow: 2, setsHigh: 3, repsLow: 10, repsHigh: 15, restSeconds: 60)
+        let hold = SetScheme(setsLow: 4, setsHigh: 6, holdSeconds: 8, restSeconds: 120)
+        // A plain count, or nothing, leaves the demand's band alone.
+        XCTAssertEqual(core.reps(forCatalog: nil), "10-15")
+        XCTAssertEqual(core.reps(forCatalog: "8-12"), "10-15")
+        XCTAssertEqual(core.reps(forCatalog: "3-5 reps"), "10-15")
+        XCTAssertEqual(hold.reps(forCatalog: nil), "8s hold")
+        // Timed, hold and distance strings are served verbatim.
+        XCTAssertEqual(core.reps(forCatalog: "20-45 sec per side"), "20-45 sec per side")
+        XCTAssertEqual(core.reps(forCatalog: "40-60 ft"), "40-60 ft")
+        XCTAssertEqual(core.reps(forCatalog: "8-6-4 x 10 sec holds per side"), "8-6-4 x 10 sec holds per side")
+        XCTAssertEqual(hold.reps(forCatalog: "30-90 min"), "30-90 min")
+        XCTAssertEqual(hold.reps(forCatalog: "6 hangs (7s on / 3s off)"), "6 hangs (7s on / 3s off)")
+        // A per-side count keeps the demand's band and the catalog's suffix.
+        XCTAssertEqual(core.reps(forCatalog: "8-10 per side"), "10-15 per side")
+        XCTAssertEqual(core.reps(forCatalog: "10-12/side"), "10-15 per side")
+        XCTAssertEqual(core.reps(forCatalog: "8-10 per position"), "10-15 per position")
+        XCTAssertEqual(hold.reps(forCatalog: "3-4 per hand"), "3-4 per hand")
+    }
+
+    func test_seasonEngineRowsKeepTheCatalogUnit() {
+        // The 2026-11-10 sweep found Side Plank served as "10-15", Hollow Body
+        // Hold as "3x6-10" and Farmer's Carry as "10-15": 5,465 of 51,991
+        // season-engine rows, with "per side" dropped on 14,299 more. The fix
+        // for this lived in the legacy generator deleted in 449bd8d.
+        let plainBand = #"^\d+(\s*-\s*\d+)?$"#
+        let sides = ["per side", "/side", "each side", "per position", "per hand", "per arm", "per leg"]
+        var checked = 0
+        for c in grid {
+            let w = generate(c)
+            guard !w.provenance.hasPrefix("Authored") else { continue }
+            let rows = w.exercises.filter { $0.id.hasPrefix("ss-") && $0.exerciseId > 0 }
+            let catalog = CoachDatabase.shared.exerciseLoggingMeta(forExerciseIds: Set(rows.map(\.exerciseId)))
+            for ex in rows {
+                guard let raw = catalog[ex.exerciseId]?.defaultReps?.lowercased(), !raw.isEmpty else { continue }
+                let isPlain = raw.range(of: #"^\d+(\s*-\s*\d+)?(\s*reps?)?$"#, options: .regularExpression) != nil
+                guard !isPlain else { continue }
+                checked += 1
+                XCTAssertNil(ex.reps.range(of: plainBand, options: .regularExpression),
+                             "[\(c)] '\(ex.name)' is '\(raw)' in the catalog and was served as '\(ex.reps)'")
+                if sides.contains(where: { raw.hasSuffix($0) }) {
+                    XCTAssertTrue(ex.reps.lowercased().contains("per "),
+                                  "[\(c)] '\(ex.name)' lost its side: catalog '\(raw)', served '\(ex.reps)'")
+                }
+            }
+        }
+        XCTAssertGreaterThan(checked, 1000, "the grid should reach many unit-carrying rows; \(checked) means the check is not running")
+    }
+
+    // MARK: - Part D: experience and age change the prescription
+
+    func test_adjusted_beginnerIsCapped() {
+        let strength = SetScheme(setsLow: 3, setsHigh: 5, repsLow: 4, repsHigh: 6,
+                                 intensityRPELow: 7, intensityRPEHigh: 8, restSeconds: 120)
+        let b = strength.adjusted(experience: .beginner, age: nil, mainLift: true)
+        XCTAssertLessThanOrEqual(b.setsHigh, 3)
+        XCTAssertLessThanOrEqual(b.intensityRPEHigh ?? 0, 7)
+        XCTAssertGreaterThanOrEqual(b.repsLow ?? 0, 6)
+        // Power keeps its own reps.
+        let power = SetScheme(setsLow: 4, setsHigh: 6, repsLow: 2, repsHigh: 3,
+                              intensityRPELow: 7, intensityRPEHigh: 7,
+                              explosiveConcentric: true, restSeconds: 120)
+        XCTAssertEqual(power.adjusted(experience: .beginner, age: nil, mainLift: false).repsLow, 2)
+        // Holds keep their seconds.
+        let hold = SetScheme(setsLow: 4, setsHigh: 6, holdSeconds: 8, restSeconds: 120)
+        XCTAssertEqual(hold.adjusted(experience: .beginner, age: nil, mainLift: false).repsString, "8s hold")
+    }
+
+    func test_adjusted_totalSetsRiseWithExperienceAndFallWithAge() {
+        let strength = SetScheme(setsLow: 3, setsHigh: 5, repsLow: 4, repsHigh: 6,
+                                 intensityRPELow: 7, intensityRPEHigh: 8, restSeconds: 120)
+        func sets(_ e: ExperienceLevel, _ age: Int?) -> Int {
+            strength.adjusted(experience: e, age: age, mainLift: true).setsMid
+        }
+        XCTAssertLessThan(sets(.beginner, nil), sets(.intermediate, nil))
+        XCTAssertLessThan(sets(.intermediate, nil), sets(.advanced, nil))
+        let power = SetScheme(setsLow: 4, setsHigh: 6, repsLow: 2, repsHigh: 3,
+                              intensityRPELow: 7, intensityRPEHigh: 7,
+                              explosiveConcentric: true, restSeconds: 120)
+        let old = power.adjusted(experience: .intermediate, age: 68, mainLift: false)
+        let young = power.adjusted(experience: .intermediate, age: 25, mainLift: false)
+        XCTAssertLessThan(old.setsMid, young.setsMid)
+        XCTAssertGreaterThan(old.restSeconds, young.restSeconds)
+    }
+
+    func test_seasonEngine_beginnerPlansCarryLessThanAdvanced() {
+        var total: [ExperienceLevel: Int] = [:]
+        for c in grid where c.sport == "alpine-skiing" && c.equipment == [.fullGym] && c.minutes == 75 {
+            let w = generate(c)
+            guard !w.provenance.hasPrefix("Authored") else { continue }
+            total[c.experience, default: 0] += w.exercises.reduce(0) { $0 + $1.sets }
+        }
+        XCTAssertLessThan(total[.beginner] ?? 0, total[.advanced] ?? 0)
+    }
+
+    func test_beginnerClimberNeverGetsAdvancedAuthoredRoutine() {
+        for phase in SeasonPhase.allCases {
+            for i in 0..<4 {
+                guard let id = AuthoredRoutineSelector.select(sportSlug: "climbing", phase: phase,
+                                                              sessionIndex: i, experience: .beginner) else { continue }
+                let d = CoachDatabase.shared.routineDifficulty(forIds: [id])[id]
+                XCTAssertEqual(d, "beginner", "\(phase) slot \(i) served a \(d ?? "?") routine to a beginner")
+            }
+        }
+    }
+
+    func test_apparatusExercisesAreNotTaggedBodyweightOnly() {
+        // 2026-11-10 sweep: Ab Wheel Rollout and two sled pushes were tagged
+        // bodyweight, so a no-equipment user was prescribed them.
+        let needs = CoachDatabase.shared.requiredEquipmentSlugs(forExerciseIds: [7, 533, 682])
+        XCTAssertTrue(needs[7]?.contains("ab-wheel") == true, "Ab Wheel Rollout needs an ab wheel")
+        XCTAssertTrue(needs[533]?.contains("sled") == true && needs[682]?.contains("sled") == true)
+        XCTAssertFalse(needs[7]?.contains("bodyweight") == true)
+    }
 }

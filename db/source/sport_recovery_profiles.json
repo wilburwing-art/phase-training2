@@ -19,7 +19,7 @@
       "heavy_deadlift"
     ],
     "ideal_supplement_timing": "morning before afternoon ride; rest day ideal after hard intervals",
-    "notes": "Cycling is mostly repetitive knee extension under cardio load — legs need priority."
+    "notes": "Cycling is mostly repetitive knee extension under cardio load, legs need priority."
   },
   {
     "sport_id": 2,
@@ -133,7 +133,7 @@
       "grip_intensive"
     ],
     "ideal_supplement_timing": "rest day before race day; morning before evening pump-track session OK",
-    "notes": "BMX is sub-30s maximal sprints with gate starts, jumps, and crash risk — neural and power-dominant rather than aerobic."
+    "notes": "BMX is sub-30s maximal sprints with gate starts, jumps, and crash risk, neural and power-dominant rather than aerobic."
   },
   {
     "sport_id": 28,
@@ -152,7 +152,7 @@
       "heavy_squat"
     ],
     "ideal_supplement_timing": "same-day acceptable; rest day only after threshold/HIIT class",
-    "notes": "Indoor cycling is smooth, low-impact, quad-dominant cardio — no terrain, wind, or upper-body bracing, so recovery is faster than road."
+    "notes": "Indoor cycling is smooth, low-impact, quad-dominant cardio, no terrain, wind, or upper-body bracing, so recovery is faster than road."
   },
   {
     "sport_id": 30,
@@ -171,7 +171,7 @@
       "heavy_squat"
     ],
     "ideal_supplement_timing": "same-day acceptable; morning before afternoon ride",
-    "notes": "E-bike pedal-assist drops the cardio and neural cost of road/gravel — legs still do the work but the assist absorbs the surge cost on climbs and into-wind segments, so recovery is closer to indoor cycling than road."
+    "notes": "E-bike pedal-assist drops the cardio and neural cost of road/gravel, legs still do the work but the assist absorbs the surge cost on climbs and into-wind segments, so recovery is closer to indoor cycling than road."
   },
   {
     "sport_id": 50,
@@ -195,7 +195,7 @@
       "high_volume_plyo"
     ],
     "ideal_supplement_timing": "morning before afternoon run; rest day after long runs",
-    "notes": "Running recovery is impact-dominant — tendon and bone stress accumulates."
+    "notes": "Running recovery is impact-dominant, tendon and bone stress accumulates."
   },
   {
     "sport_id": 51,
@@ -340,7 +340,7 @@
       "high_volume_plyo"
     ],
     "ideal_supplement_timing": "rest day after long mountain runs",
-    "notes": "Mountain running stacks sustained climbing with eccentric quad load on the descents — recovery is longer than road running because of descent damage, shorter than ultra because the durations are smaller."
+    "notes": "Mountain running stacks sustained climbing with eccentric quad load on the descents, recovery is longer than road running because of descent damage, shorter than ultra because the durations are smaller."
   },
   {
     "sport_id": 66,
@@ -365,7 +365,7 @@
       "high_volume_plyo"
     ],
     "ideal_supplement_timing": "rest day after race or hard fell day",
-    "notes": "Fell running is the UK tradition of short steep climbs and technical unmarked descents — recovery cost mirrors mountain running with extra ankle/foot proprioceptive demand."
+    "notes": "Fell running is the UK tradition of short steep climbs and technical unmarked descents, recovery cost mirrors mountain running with extra ankle/foot proprioceptive demand."
   },
   {
     "sport_id": 67,
@@ -391,7 +391,7 @@
       "heavy_eccentric_quad"
     ],
     "ideal_supplement_timing": "two full rest days between hard sprint sessions",
-    "notes": "Masters sprinting (40+) keeps the high CNS and posterior-chain cost of maximal sprinting but recovers more slowly than youth athletes — hamstring strain risk is the dominant constraint, so heavy posterior-chain work the day before is contraindicated."
+    "notes": "Masters sprinting (40+) keeps the high CNS and posterior-chain cost of maximal sprinting but recovers more slowly than youth athletes, hamstring strain risk is the dominant constraint, so heavy posterior-chain work the day before is contraindicated."
   },
   {
     "sport_id": 68,
@@ -419,7 +419,7 @@
       "high_volume_plyo"
     ],
     "ideal_supplement_timing": "rest day after races; morning before evening rig practice OK",
-    "notes": "OCR stacks trail running with grip-endurance obstacles (rigs, monkey bars), carries, and climbs — recovery must cover both legs and pull/grip systems."
+    "notes": "OCR stacks trail running with grip-endurance obstacles (rigs, monkey bars), carries, and climbs, recovery must cover both legs and pull/grip systems."
   },
   {
     "sport_id": 71,
@@ -445,7 +445,7 @@
       "high_volume_plyo"
     ],
     "ideal_supplement_timing": "rest day after long-distance events; morning before evening training run OK",
-    "notes": "Foot orienteering is variable-pace running over unpredictable terrain (forest, bog, scree) with continuous map-reading — physical cost sits between trail and mountain running, plus a cognitive-fatigue tax that lingers."
+    "notes": "Foot orienteering is variable-pace running over unpredictable terrain (forest, bog, scree) with continuous map-reading, physical cost sits between trail and mountain running, plus a cognitive-fatigue tax that lingers."
   },
   {
     "sport_id": 72,
@@ -471,7 +471,7 @@
       "high_volume_pull"
     ],
     "ideal_supplement_timing": "rest day after race day; morning before evening training run OK",
-    "notes": "Canicross is running attached by waist harness to a pulling dog — adds constant forward tow plus unpredictable lateral jerks, recruiting upper back, core, and shoulder stabilizers on top of normal running load."
+    "notes": "Canicross is running attached by waist harness to a pulling dog, adds constant forward tow plus unpredictable lateral jerks, recruiting upper back, core, and shoulder stabilizers on top of normal running load."
   },
   {
     "sport_id": 100,
@@ -652,7 +652,7 @@
       "grip_intensive"
     ],
     "ideal_supplement_timing": "two-day recovery ideal",
-    "notes": "Trad adds stemming, chimneys, long approach hikes — legs and back also take a beating."
+    "notes": "Trad adds stemming, chimneys, long approach hikes, legs and back also take a beating."
   },
   {
     "sport_id": 108,
@@ -677,7 +677,7 @@
       "high_impact"
     ],
     "ideal_supplement_timing": "rest day or easy mobility only",
-    "notes": "Multi-pitch is full-day endurance — supplemental training should be minimal within 48h."
+    "notes": "Multi-pitch is full-day endurance, supplemental training should be minimal within 48h."
   },
   {
     "sport_id": 109,
@@ -790,7 +790,7 @@
       "campus"
     ],
     "ideal_supplement_timing": "rest day before any comp",
-    "notes": "Comp climbing demands peak output on-demand — treat recovery as part of performance."
+    "notes": "Comp climbing demands peak output on-demand, treat recovery as part of performance."
   },
   {
     "sport_id": 114,
@@ -947,7 +947,7 @@
       "high_volume_plyo"
     ],
     "ideal_supplement_timing": "rest day; morning before afternoon ascent acceptable for shorter peaks",
-    "notes": "Non-technical mountaineering is long-day hiking on Class 2 terrain with pack weight — endurance and posterior-chain dominant, no rope/tool overhead."
+    "notes": "Non-technical mountaineering is long-day hiking on Class 2 terrain with pack weight, endurance and posterior-chain dominant, no rope/tool overhead."
   },
   {
     "sport_id": 155,
@@ -976,7 +976,7 @@
       "overhead_pressing"
     ],
     "ideal_supplement_timing": "rest day or easy mobility only; two-day taper before alpine routes",
-    "notes": "Technical mountaineering adds rope work, tool swinging, glacier travel, and exposed climbing on top of the endurance base — shoulder, grip, and neural costs stack with cold and altitude."
+    "notes": "Technical mountaineering adds rope work, tool swinging, glacier travel, and exposed climbing on top of the endurance base, shoulder, grip, and neural costs stack with cold and altitude."
   },
   {
     "sport_id": 159,
@@ -1003,7 +1003,7 @@
       "high_intensity_conditioning"
     ],
     "ideal_supplement_timing": "rest day or easy mobility only; multi-day depletion accumulates across the trip",
-    "notes": "Expedition mountaineering is multi-week cumulative load at altitude with heavy packs and load-carries between camps — recovery is whole-system and slow."
+    "notes": "Expedition mountaineering is multi-week cumulative load at altitude with heavy packs and load-carries between camps, recovery is whole-system and slow."
   },
   {
     "sport_id": 163,
@@ -1031,7 +1031,7 @@
       "high_volume_plyo"
     ],
     "ideal_supplement_timing": "rest day or easy mobility only between tour days",
-    "notes": "Ski mountaineering combines long uphill skinning with technical downhill skiing at altitude — quads take a double hit (skin pushing + descent eccentric), and altitude/cold compound the systemic cost."
+    "notes": "Ski mountaineering combines long uphill skinning with technical downhill skiing at altitude, quads take a double hit (skin pushing + descent eccentric), and altitude/cold compound the systemic cost."
   },
   {
     "sport_id": 164,
@@ -1057,7 +1057,7 @@
       "high_volume_pull"
     ],
     "ideal_supplement_timing": "rest day before exposed routes; morning before short scrambles OK",
-    "notes": "Class 3-4 scrambling is unroped exposed climbing — grip and forearms drive the physical cost, but the dominant load is postural/neural from sustained focus over consequential terrain."
+    "notes": "Class 3-4 scrambling is unroped exposed climbing, grip and forearms drive the physical cost, but the dominant load is postural/neural from sustained focus over consequential terrain."
   },
   {
     "sport_id": 165,
@@ -1083,7 +1083,7 @@
       "heavy_squat"
     ],
     "ideal_supplement_timing": "rest day after technical canyons",
-    "notes": "Canyoneering combines rappels (grip + pull braking), down-climbing, swimming through cold pools, and route-finding — cold immersion adds a recovery tax beyond the muscular load alone."
+    "notes": "Canyoneering combines rappels (grip + pull braking), down-climbing, swimming through cold pools, and route-finding, cold immersion adds a recovery tax beyond the muscular load alone."
   },
   {
     "sport_id": 166,
@@ -1103,7 +1103,7 @@
       "heavy_squat"
     ],
     "ideal_supplement_timing": "same-day light activity OK; sleep is the primary adaptation driver",
-    "notes": "Altitude acclimatization is deliberately low-intensity — passive sleeping at altitude or easy hikes designed to drive hematological adaptation, not training stress. Avoid stacking hard sessions that compete for the same recovery resources."
+    "notes": "Altitude acclimatization is deliberately low-intensity, passive sleeping at altitude or easy hikes designed to drive hematological adaptation, not training stress. Avoid stacking hard sessions that compete for the same recovery resources."
   },
   {
     "sport_id": 200,
@@ -1356,7 +1356,7 @@
       "high_volume_plyo"
     ],
     "ideal_supplement_timing": "rest day or morning before evening randori",
-    "notes": "Judo combines high-grip demand with repeated throw impact — full-body fatigue accumulates quickly."
+    "notes": "Judo combines high-grip demand with repeated throw impact, full-body fatigue accumulates quickly."
   },
   {
     "sport_id": 266,
@@ -1454,7 +1454,7 @@
       "high_impact_plyo"
     ],
     "ideal_supplement_timing": "rest day or morning; shoulder and CNS freshness matter most",
-    "notes": "Boxers over-develop anterior shoulder and pec — supplemental work should tilt antagonist."
+    "notes": "Boxers over-develop anterior shoulder and pec, supplemental work should tilt antagonist."
   },
   {
     "sport_id": 275,
@@ -1481,7 +1481,7 @@
       "high_impact_plyo"
     ],
     "ideal_supplement_timing": "rest day before hard sparring; 48h minimum from heavy strength work",
-    "notes": "MMA is the most demanding recovery profile — grappling + striking + conditioning all stack."
+    "notes": "MMA is the most demanding recovery profile, grappling + striking + conditioning all stack."
   },
   {
     "sport_id": 277,
@@ -1667,7 +1667,7 @@
       "glycolytic_intervals"
     ],
     "ideal_supplement_timing": "morning before match",
-    "notes": "Singles adds sustained cardio and more court coverage than doubles — account for extra leg fatigue."
+    "notes": "Singles adds sustained cardio and more court coverage than doubles, account for extra leg fatigue."
   },
   {
     "sport_id": 343,
@@ -1687,7 +1687,7 @@
       "overhead_press_volume"
     ],
     "ideal_supplement_timing": "morning before match",
-    "notes": "Doubles is lower cardio load but same shoulder/rotational demand — the serve still taxes the cuff."
+    "notes": "Doubles is lower cardio load but same shoulder/rotational demand, the serve still taxes the cuff."
   },
   {
     "sport_id": 344,
@@ -1715,7 +1715,7 @@
       "glycolytic_intervals"
     ],
     "ideal_supplement_timing": "morning before match, or rest day",
-    "notes": "Clay adds extended rally lengths and sliding — adductors and calves take more load than hard court."
+    "notes": "Clay adds extended rally lengths and sliding, adductors and calves take more load than hard court."
   },
   {
     "sport_id": 345,
@@ -1809,7 +1809,7 @@
       "grip_intensive"
     ],
     "ideal_supplement_timing": "morning before game",
-    "notes": "Doubles is shorter rallies — focus on dinking wrist resilience and forehand shoulder."
+    "notes": "Doubles is shorter rallies, focus on dinking wrist resilience and forehand shoulder."
   },
   {
     "sport_id": 349,
@@ -1900,7 +1900,7 @@
       "shoulder_max"
     ],
     "ideal_supplement_timing": "morning before match",
-    "notes": "Doubles emphasizes quick overhead smashes — shoulder recovery is critical."
+    "notes": "Doubles emphasizes quick overhead smashes, shoulder recovery is critical."
   },
   {
     "sport_id": 353,
@@ -1995,7 +1995,7 @@
       "high_impact_plyo"
     ],
     "ideal_supplement_timing": "rest day before match",
-    "notes": "Beach tennis adds sand running — legs fatigue faster than on hard court; extra recovery needed."
+    "notes": "Beach tennis adds sand running, legs fatigue faster than on hard court; extra recovery needed."
   },
   {
     "sport_id": 380,
@@ -2046,7 +2046,7 @@
       "high_volume_pull"
     ],
     "ideal_supplement_timing": "rest day or morning before afternoon session",
-    "notes": "Kayakers sit flexed for hours — protect hip flexors and low back. The stroke is rotational, so rotational max work adds up quickly."
+    "notes": "Kayakers sit flexed for hours, protect hip flexors and low back. The stroke is rotational, so rotational max work adds up quickly."
   },
   {
     "sport_id": 390,
@@ -2095,7 +2095,7 @@
       "balance_max"
     ],
     "ideal_supplement_timing": "rest day or morning before evening paddle",
-    "notes": "SUP is uniquely core-heavy — all-day standing balance plus paddling layers deep core fatigue."
+    "notes": "SUP is uniquely core-heavy, all-day standing balance plus paddling layers deep core fatigue."
   },
   {
     "sport_id": 400,
@@ -2142,7 +2142,7 @@
       "rotational_max"
     ],
     "ideal_supplement_timing": "rest day",
-    "notes": "Dragon boat is a power sport with synchronized bursts — high CNS + rotational output demands full recovery."
+    "notes": "Dragon boat is a power sport with synchronized bursts, high CNS + rotational output demands full recovery."
   },
   {
     "sport_id": 404,
@@ -2244,7 +2244,7 @@
       "high_volume_press"
     ],
     "ideal_supplement_timing": "morning before afternoon session is OK",
-    "notes": "Bodyboarding is paddle- and kick-heavy but removes the pop-up power demand — recovery is faster than stand-up surfing."
+    "notes": "Bodyboarding is paddle- and kick-heavy but removes the pop-up power demand, recovery is faster than stand-up surfing."
   },
   {
     "sport_id": 427,
@@ -2266,7 +2266,7 @@
       "high_volume_lower"
     ],
     "ideal_supplement_timing": "morning before afternoon session is acceptable",
-    "notes": "Bodysurfing is primarily swim-paddle + kick — lowest power demand of the surf family, fastest recovery."
+    "notes": "Bodysurfing is primarily swim-paddle + kick, lowest power demand of the surf family, fastest recovery."
   },
   {
     "sport_id": 429,
@@ -2292,7 +2292,7 @@
       "rotational_max"
     ],
     "ideal_supplement_timing": "rest day; windsurfing is grip- and back-heavy",
-    "notes": "Windsurfing layers grip endurance with full-body isometric sailing posture — back and forearms take the brunt."
+    "notes": "Windsurfing layers grip endurance with full-body isometric sailing posture, back and forearms take the brunt."
   },
   {
     "sport_id": 432,
@@ -2394,7 +2394,7 @@
       "balance_max"
     ],
     "ideal_supplement_timing": "rest day or morning before afternoon session",
-    "notes": "Wakesurfing is ropeless post-pop — lower grip/shoulder load than wakeboarding, primary demand is legs and core."
+    "notes": "Wakesurfing is ropeless post-pop, lower grip/shoulder load than wakeboarding, primary demand is legs and core."
   },
   {
     "sport_id": 480,
@@ -2438,7 +2438,7 @@
       "heavy_deadlift"
     ],
     "ideal_supplement_timing": "rest day after long sessions",
-    "notes": "Triathlon etc. cumulatively load multiple systems — recovery must span them all."
+    "notes": "Triathlon etc. cumulatively load multiple systems, recovery must span them all."
   },
   {
     "sport_id": 501,
@@ -2535,7 +2535,7 @@
       "max_plyos"
     ],
     "ideal_supplement_timing": "rest day; 48h+ from heavy jumps before matches",
-    "notes": "Volleyball is jump-heavy and spike-heavy — both knees and shoulders accumulate wear. Schedule overhead push and plyos well away from match day."
+    "notes": "Volleyball is jump-heavy and spike-heavy, both knees and shoulders accumulate wear. Schedule overhead push and plyos well away from match day."
   },
   {
     "sport_id": 541,
@@ -2627,7 +2627,7 @@
       "max_plyos"
     ],
     "ideal_supplement_timing": "rest day or easy upper body",
-    "notes": "Ultimate is long-duration cutting + sprinting. Treat it like soccer — hamstrings and adductors dominate injury rates."
+    "notes": "Ultimate is long-duration cutting + sprinting. Treat it like soccer, hamstrings and adductors dominate injury rates."
   },
   {
     "sport_id": 545,
@@ -2652,7 +2652,7 @@
       "high_volume_contact"
     ],
     "ideal_supplement_timing": "two full rest days ideal",
-    "notes": "Rugby combines high-eccentric running demand with full-contact load. Recovery budget is the largest of any sport here — prioritize sleep and nutrition over volume."
+    "notes": "Rugby combines high-eccentric running demand with full-contact load. Recovery budget is the largest of any sport here, prioritize sleep and nutrition over volume."
   },
   {
     "sport_id": 549,
@@ -2724,7 +2724,7 @@
       "high_volume_rotational"
     ],
     "ideal_supplement_timing": "rest day for bowling arm; keep lumbar loading light the day before",
-    "notes": "Cricket — especially fast bowling — creates high lumbar rotational load plus shoulder throw demand. Fast bowlers are the highest-risk demographic."
+    "notes": "Cricket, especially fast bowling, creates high lumbar rotational load plus shoulder throw demand. Fast bowlers are the highest-risk demographic."
   },
   {
     "sport_id": 555,
@@ -2745,7 +2745,7 @@
       "max_throws"
     ],
     "ideal_supplement_timing": "morning of is acceptable for most rec players",
-    "notes": "Low-to-moderate intensity rec sport — recovery is close to everyday activity. Watch for sprinting-related hamstring issues in older players."
+    "notes": "Low-to-moderate intensity rec sport, recovery is close to everyday activity. Watch for sprinting-related hamstring issues in older players."
   },
   {
     "sport_id": 556,
@@ -2864,7 +2864,7 @@
       "contact_training"
     ],
     "ideal_supplement_timing": "rest day before bouts; light day before practice",
-    "notes": "Roller derby is contact + lateral skating — highest recovery cost in the skating family."
+    "notes": "Roller derby is contact + lateral skating, highest recovery cost in the skating family."
   },
   {
     "sport_id": 588,
@@ -2932,7 +2932,7 @@
       "heavy_lower_body"
     ],
     "ideal_supplement_timing": "morning of is acceptable",
-    "notes": "Sandboarding is lower-impact than wheeled variants — sandy landings absorb."
+    "notes": "Sandboarding is lower-impact than wheeled variants, sandy landings absorb."
   },
   {
     "sport_id": 600,
@@ -3058,7 +3058,7 @@
       "max_neural"
     ],
     "ideal_supplement_timing": "rest day before heavy gymnastics sessions",
-    "notes": "Adult gymnastics is extremely CNS-demanding — handstands, levers, vaults require long recovery."
+    "notes": "Adult gymnastics is extremely CNS-demanding, handstands, levers, vaults require long recovery."
   },
   {
     "sport_id": 614,
@@ -3266,7 +3266,7 @@
       "max_effort",
       "heavy_compound"
     ],
-    "ideal_supplement_timing": "split-routine specific — avoid the target muscle in last 36h",
+    "ideal_supplement_timing": "split-routine specific, avoid the target muscle in last 36h",
     "notes": "Bodybuilding recovery is muscle-specific rather than CNS-specific. Most splits allow training the next day on a different muscle group."
   },
   {
@@ -3317,7 +3317,7 @@
       "high_impact"
     ],
     "ideal_supplement_timing": "rest day; Highland events combine throws + strongman-style demands",
-    "notes": "Highland Games athletes train rotational power, grip, and heavy lifting — recovery costs resemble strongman with added rotational shoulder stress."
+    "notes": "Highland Games athletes train rotational power, grip, and heavy lifting, recovery costs resemble strongman with added rotational shoulder stress."
   },
   {
     "sport_id": 660,
@@ -3405,7 +3405,7 @@
       "heavy_grip_work"
     ],
     "ideal_supplement_timing": "morning of is acceptable",
-    "notes": "Catamaran sailing demands sustained hiking out on the wire — quads and core accumulate fatigue."
+    "notes": "Catamaran sailing demands sustained hiking out on the wire, quads and core accumulate fatigue."
   },
   {
     "sport_id": 664,
@@ -3468,7 +3468,7 @@
       "neck_overload"
     ],
     "ideal_supplement_timing": "rest day; similar to paragliding plus sustained arm load",
-    "notes": "Hang gliding adds sustained arm and grip demand to the paraglider profile — sustained upper-body isometric work."
+    "notes": "Hang gliding adds sustained arm and grip demand to the paraglider profile, sustained upper-body isometric work."
   },
   {
     "sport_id": 690,
@@ -3537,7 +3537,7 @@
       "high_volume_metcon"
     ],
     "ideal_supplement_timing": "rest day or easy mobility only",
-    "notes": "Endurance riding is long-duration saddle work — quads, adductors, and core fatigue accumulate over hours."
+    "notes": "Endurance riding is long-duration saddle work, quads, adductors, and core fatigue accumulate over hours."
   },
   {
     "sport_id": 693,
@@ -3610,7 +3610,7 @@
       "plyometric_work"
     ],
     "ideal_supplement_timing": "rest day before a competition; morning OK for training rides",
-    "notes": "Show jumping adds impact loading on the landing side of each jump — quads and adductors take the hit."
+    "notes": "Show jumping adds impact loading on the landing side of each jump, quads and adductors take the hit."
   },
   {
     "sport_id": 696,
@@ -3747,7 +3747,7 @@
       "max_rotational_power"
     ],
     "ideal_supplement_timing": "morning of is acceptable",
-    "notes": "Skeet shooting demands fast crossing swings — rotational stability + scapular control dominate."
+    "notes": "Skeet shooting demands fast crossing swings, rotational stability + scapular control dominate."
   },
   {
     "sport_id": 720,
@@ -3769,7 +3769,7 @@
       "heavy_grip_work"
     ],
     "ideal_supplement_timing": "morning of is acceptable for most disciplines",
-    "notes": "Fishing/hunting recovery varies widely — from low-demand fly casting to brutal backcountry pack-outs."
+    "notes": "Fishing/hunting recovery varies widely, from low-demand fly casting to brutal backcountry pack-outs."
   },
   {
     "sport_id": 721,
@@ -3791,7 +3791,7 @@
       "max_shoulder_fatigue"
     ],
     "ideal_supplement_timing": "morning of is acceptable",
-    "notes": "Fly fishing is repetitive overhead casting — wrist, elbow, and shoulder accumulate overuse over long days."
+    "notes": "Fly fishing is repetitive overhead casting, wrist, elbow, and shoulder accumulate overuse over long days."
   },
   {
     "sport_id": 722,
@@ -3865,7 +3865,7 @@
       "high_impact"
     ],
     "ideal_supplement_timing": "rest day; pack-outs destroy legs for multiple days",
-    "notes": "Backcountry hunting is the highest-recovery-demand outdoor sport — multi-day ruck loads on rugged terrain create deep fatigue."
+    "notes": "Backcountry hunting is the highest-recovery-demand outdoor sport, multi-day ruck loads on rugged terrain create deep fatigue."
   },
   {
     "sport_id": 730,
@@ -3887,7 +3887,7 @@
       "high_impact_plyo"
     ],
     "ideal_supplement_timing": "morning of acceptable for social dance; rest day before performance",
-    "notes": "Dance recovery varies by genre — performance days warrant a day before."
+    "notes": "Dance recovery varies by genre, performance days warrant a day before."
   },
   {
     "sport_id": 731,
@@ -3968,7 +3968,7 @@
       "high_impact_plyo"
     ],
     "ideal_supplement_timing": "rest day or light day before performance",
-    "notes": "Contemporary dance combines athletic leaps, floor work, and spinal articulation — higher recovery cost."
+    "notes": "Contemporary dance combines athletic leaps, floor work, and spinal articulation, higher recovery cost."
   },
   {
     "sport_id": 735,
@@ -3991,7 +3991,7 @@
       "lateral_plyo"
     ],
     "ideal_supplement_timing": "rest day before battle/competition; morning of OK for class",
-    "notes": "Hip-hop dance is explosive and impact-heavy — treat competition days like sport events."
+    "notes": "Hip-hop dance is explosive and impact-heavy, treat competition days like sport events."
   },
   {
     "sport_id": 736,
@@ -4013,7 +4013,7 @@
       "high_impact_plyo"
     ],
     "ideal_supplement_timing": "rest day before rehearsal or performance",
-    "notes": "Irish dance is calf- and foot-dominant with extreme cardiovascular demand — full day of rest before heavy sessions."
+    "notes": "Irish dance is calf- and foot-dominant with extreme cardiovascular demand, full day of rest before heavy sessions."
   },
   {
     "sport_id": 750,
@@ -4033,7 +4033,7 @@
       "high_impact"
     ],
     "ideal_supplement_timing": "morning of is acceptable",
-    "notes": "Catch-all for miscellaneous outdoor sports — recovery profile varies widely."
+    "notes": "Catch-all for miscellaneous outdoor sports, recovery profile varies widely."
   },
   {
     "sport_id": 751,
@@ -4120,6 +4120,6 @@
       "max_effort"
     ],
     "ideal_supplement_timing": "rest day before a run; bikejoring is cardio-intensive for the handler",
-    "notes": "Bikejoring — dog pulls cyclist — is cardiovascular + reactive. Handler manages the dog and bike simultaneously."
+    "notes": "Bikejoring, dog pulls cyclist, is cardiovascular + reactive. Handler manages the dog and bike simultaneously."
   }
 ]
