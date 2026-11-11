@@ -340,8 +340,13 @@ enum PlanValidator {
         if let override = overrides.override(on: day.date), let focus = override.liftFocus {
             return focus
         }
-        guard let title = day.generatedWorkout?.title else { return nil }
-        let lower = title.lowercased()
+        guard let workout = day.generatedWorkout else { return nil }
+        // An authored routine's title is a program name, and words in it
+        // ("Splitboard Pre-Season Strength B: Hinge, Power, Upper") list what
+        // the session mixes rather than naming its focus. Reading "upper" out
+        // of it counted a full-body session as an upper day.
+        guard !workout.provenance.hasPrefix("Authored") else { return nil }
+        let lower = workout.title.lowercased()
         if lower.contains("push")        { return .push }
         if lower.contains("pull")        { return .pull }
         if lower.contains("leg")         { return .legs }

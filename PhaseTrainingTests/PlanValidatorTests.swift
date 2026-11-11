@@ -209,6 +209,21 @@ final class PlanValidatorTests: XCTestCase {
         XCTAssertEqual(issues[0].patternKey, "push")
     }
 
+    func test_singlePatternOverload_authoredRoutineNameIsNotAFocus() {
+        // Reported 2026-11-11: two "Upper body" days plus "Splitboard
+        // Pre-Season Strength B: Hinge, Power, Upper" read as three upper days.
+        var p = plan(
+            [.lift, .rest, .lift, .rest, .lift, .rest, .rest],
+            focusTitle: ["Upper body", nil, "Upper body", nil,
+                         "Splitboard Pre-Season Strength B: Hinge, Power, Upper", nil, nil]
+        )
+        p.days[4].generatedWorkout?.provenance = "Authored program"
+        XCTAssertEqual(
+            PlanValidator.singlePatternOverload(
+                plan: p, overrides: WeekOverrides(weekStart: monday())).count, 0
+        )
+    }
+
     func test_singlePatternOverload_silentWithTwo() {
         let p = plan(
             [.lift, .lift, .rest, .rest, .rest, .rest, .rest],
