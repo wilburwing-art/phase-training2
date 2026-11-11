@@ -86,29 +86,29 @@ mountaineering, trail running, hiking, thru-hiking) resolves to
 capped at 45 minutes, and its complement days inherit it. Decisions made
 2026-11-11: 1A and 2A below.
 
-- [ ] One sport-profile table that every per-sport decision reads: rules, signature demand, complement emphasis, two-sport eligibility. About ten places decide ski or climbing membership today (listed in `phase-training-season-generator-engine-pitfalls`), and two of them add snowboarding by hand.
-- [ ] 1A: snowboarding uses the ski rules, the same plan "Skiing / Snowboarding" gets.
-- [ ] 2A: a general season rule for the other authored-only sports' complement days (build off-season, hold pre-season, maintain in-season, deload only in a real deload week). Test: no non-deload week serves deload sets to any plannable sport.
-- [ ] Signature demands for the authored-only sports, so a session keeps the movement the sport needs most.
-- [ ] Complement emphasis for mountaineering (upper back and trunk with the legs).
-- [ ] Rebuild-role mismatch: CNS balance, the arc deload and skip-streak de-emphasis turn lift days into rest after generation, so a later rebuild assigns sport and complement roles from the wrong count. Move them to regenerate the week with the changed inputs, as the rest-day reserve now does.
+- [x] One sport-profile table that every per-sport decision reads: rules, signature demand, complement emphasis, two-sport eligibility. About ten places decide ski or climbing membership today (listed in `phase-training-season-generator-engine-pitfalls`), and two of them add snowboarding by hand.
+- [x] 1A: snowboarding uses the ski rules, the same plan "Skiing / Snowboarding" gets.
+- [x] 2A: a general season rule for the other authored-only sports' complement days (build off-season, hold pre-season, maintain in-season, deload only in a real deload week). Test: no non-deload week serves deload sets to any plannable sport.
+- [x] Signature demands for the authored-only sports, so a session keeps the movement the sport needs most.
+- [x] Complement emphasis for mountaineering (upper back and trunk with the legs).
+- [x] Rebuild-role mismatch: CNS balance, the arc deload and skip-streak de-emphasis turn lift days into rest after generation, so a later rebuild assigns sport and complement roles from the wrong count. Move them to regenerate the week with the changed inputs, as the rest-day reserve now does.
 - [ ] Content: in-season routines for mountaineering, hiking-trekking and thru-hiking (0 today) and a pre-season routine for trail running (0 today). Until then the selector serves another phase's routine.
 
 ## Phase 4: signals that do nothing (about 3 days)
 
 - [x] Check-in pain is hard-coded false (`SorenessCheckInSheet.swift:211`), so four readers never fire. Add the toggle (2 h).
-- [ ] Swaps, favorites, dislikes and the PatternEngine "Stop planning it" accept reach only the season engine. Authored-routine days, which serve most sports, ignore them, and the user is told it was handled (5 h).
-- [ ] One-tap "How did it feel" reaches only coach text; the planner reads only the opt-in sheet. Map feel into the planner's difficulty signal (3 h).
-- [ ] Check-in energy (the only required field), time budget and equipment-changed have no plan effect. Wire energy to a one-day ease and time budget to today's regen, or make energy optional (5 h).
-- [ ] Post-workout hurt areas are joints; recovery reads muscle buckets. Map joints to buckets; delete the always-false `ranLong` (3 h).
-- [ ] Imported Hevy RPE does not reach progression, which the last backlog claimed it did (3 h).
+- [x] Swaps, favorites, dislikes and the PatternEngine "Stop planning it" accept reach only the season engine. Authored-routine days, which serve most sports, ignore them, and the user is told it was handled (5 h).
+- [x] One-tap "How did it feel" reaches only coach text; the planner reads only the opt-in sheet. Map feel into the planner's difficulty signal (3 h).
+- [x] Check-in energy (the only required field), time budget and equipment-changed have no plan effect. Wire energy to a one-day ease and time budget to today's regen, or make energy optional (5 h).
+- [x] Post-workout hurt areas are joints; recovery reads muscle buckets. Map joints to buckets; delete the always-false `ranLong` (3 h).
+- [x] Imported Hevy RPE does not reach progression, which the last backlog claimed it did (3 h).
 
 ## Phase 5: reach (about 1.5 days)
 
-- [ ] Generated warm-up ramp (40/60/80%) is dropped by `toWorkoutTemplate` and never shows in Log (5 to 7 h).
-- [ ] First body-weight and body-composition entry is Profile-only and the Progress cards hide until one exists. Add a prompt row on Progress (1.5 h).
-- [ ] Injuries are Profile-only with no prompt. Add "Injury or pain?" to the exercise action sheet and a setup checklist row (3 h).
-- [ ] Offer the weekly reminder after the first check-in or first completed session (2 h).
+- [x] Generated warm-up ramp (40/60/80%) is dropped by `toWorkoutTemplate` and never shows in Log (5 to 7 h).
+- [x] First body-weight and body-composition entry is Profile-only and the Progress cards hide until one exists. Add a prompt row on Progress (1.5 h).
+- [x] Injuries are Profile-only with no prompt. Add "Injury or pain?" to the exercise action sheet and a setup checklist row (3 h).
+- [x] Offer the weekly reminder after the first check-in or first completed session (2 h).
 
 ## Phase 6: features competitors ship (about 6 days)
 
