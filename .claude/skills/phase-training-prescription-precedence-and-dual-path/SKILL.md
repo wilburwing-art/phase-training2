@@ -55,3 +55,20 @@ two places. Examples this session: readiness/deload/sore/dislike/budget (T0.1,
 commit aaf8cb9) and equipment-dislike matching (T1.7, commit 5a591f1) both had to
 be added to `pickAccessoryByName` separately. Before declaring a generator fix
 done, grep for a second prescribe/filter path and apply it there.
+
+## Status 2026-11-10: the legacy fixes are gone, and both traps are back in the season engine
+
+Commit 449bd8d deleted the legacy `WorkoutGenerator.prescription()` path along with the
+`isNumericRepBand` unit fix (b9c4527) and the beginner set/RPE clamp. The live path is
+`SportSeasonGenerator.prescribe`, which sets `reps: m.protocolReps ?? scheme.repsString`
+and never reads the catalog's `default_reps`. A 4,958-week sweep measured the result:
+- 5,465 of 51,991 rows show rep counts for timed, hold or distance work (Side Plank
+  "10-15", Hollow Body Hold "3x6-10"), and "per side" is dropped on 14,299 rows.
+- Intermediate and advanced athletes get identical prescriptions in 1,374 of 1,440
+  pairs, and `age` is read nowhere under `SportSeason/`.
+
+The authored-routine path keeps the units ("10 per side", "40-60 ft"), so the dual-path
+rule now applies to the season engine and the authored routines. Re-apply both fixes in
+`prescribe` and `SetScheme.modulated`, and pin them with invariant tests, because the
+deleted tests were the only thing that held them. See
+`audits/2026-11-10-gap-round/generator.md`.
