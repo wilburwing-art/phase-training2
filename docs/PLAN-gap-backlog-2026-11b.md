@@ -49,7 +49,7 @@ failures, 28.4% line coverage, Data layer 85.8%).
 
 Comes before Phase 3 because Phase 3 changes the weights and exercises the app suggests.
 
-- [ ] Generator invariants, written to fail on today's code (the old sweep and invariant tests were deleted in 449bd8d):
+- [x] Generator invariants, written to fail on today's code (the old sweep and invariant tests were deleted in 449bd8d):
   - catalog reps with a unit (sec, ft, per side) keep it in the plan;
   - beginner total sets <= intermediate <= advanced; age 70 <= age 32;
   - `estimatedMinutes` within budget + 5 and >= 0.6 x budget for 30 to 75;
@@ -57,24 +57,42 @@ Comes before Phase 3 because Phase 3 changes the weights and exercises the app s
   - no advanced authored routine for a beginner, no repeated routine id in a week;
   - no power movement after an RPE 7+ movement.
   (4 h; folds the per-finding tests below into one suite.)
-- [ ] `SessionStore+GoalMetrics` (0 of 51 lines), which feeds every goal progress bar (2 h).
-- [ ] `PlanStore.regenerateToday` (21%) and refresh paths (3 h).
-- [ ] LLM plan refinement (16%): edited and logged days untouched, bad response leaves plan as is (4 h).
-- [ ] Phone-side Watch sync `apply` (24%): duplicate and out-of-order messages do not drop sets (4 h).
-- [ ] `BackupCoordinator.eraseAllData` empties every store and key; export then restore round trip (3 h).
+- [x] `SessionStore+GoalMetrics` (0 of 51 lines), which feeds every goal progress bar (2 h).
+- [x] `PlanStore.regenerateToday` (21%) and refresh paths (3 h).
+- [x] LLM plan refinement (16%): edited and logged days untouched, bad response leaves plan as is (4 h).
+- [x] Phone-side Watch sync `apply` (24%): duplicate and out-of-order messages do not drop sets (4 h).
+- [x] `BackupCoordinator.eraseAllData` empties every store and key; export then restore round trip (3 h).
 
 ## Phase 3: generator (changes suggested weights, about 3.5 days)
 
 - [x] Season engine turns timed, hold and distance work into rep counts (Side Plank 10-15, Hollow Body Hold 3x6-10): 5,465 of 51,991 rows, and "per side" dropped on 14,299. Keep non-numeric catalog reps verbatim; the fix lived in the deleted legacy generator (3 h).
 - [x] Authored climbing ignores experience: 59% of beginner sessions include campus or weighted pull work, one note reads "advanced only", and the same routine repeats in 81 of 122 two-session weeks. Filter by difficulty, rotate inside the week, add RPE (3 h).
 - [x] Experience and age do not change prescription: intermediate and advanced identical in 1,374 of 1,440 pairs; ages 19, 45 and 68 byte-identical. Add experience and age modifiers in `SetScheme.modulated` (5 h).
-- [ ] Session budget: a 75-minute budget averages 28 minutes, a 30-minute ski budget gets 44 to 56. Recalibrate minutes per movement and let the budget lower the phase floor (3 h).
-- [ ] 5 and 6 lift-day requests give seven-day weeks with no rest (504 of 720, 648 of 720). Reserve one rest day (2 h).
-- [ ] Heaviest lift sits in the last two slots in 20 of 36 ski sessions. Sort by training order after picking (2 h).
-- [ ] Complement strength slots for gym users get knee push-ups and bodyweight lunges at RPE 7-8 (512 of 1,818 heavy-slot rows). Rank by loadability when equipment allows (3 h).
-- [ ] No progression inside a block: weeks 1 to 3 flat and the press exercise changes weekly. Fix anchor lifts per block, add a weekly ramp, one deload factor (4 h).
-- [ ] Weekly push floor: two-day skiers get zero pressing; climbers run push to pull at 1:2.5 (2 h).
-- [ ] Injury tags are thin for tennis elbow (4), stinger (5), finger pulley (6), hip flexor (10). Tagging pass plus clinical review (3 h plus review).
+- [x] Session budget: a 75-minute budget averages 28 minutes, a 30-minute ski budget gets 44 to 56. Recalibrate minutes per movement and let the budget lower the phase floor (3 h).
+- [x] 5 and 6 lift-day requests give seven-day weeks with no rest (504 of 720, 648 of 720). Reserve one rest day (2 h).
+- [x] Heaviest lift sits in the last two slots in 20 of 36 ski sessions. Sort by training order after picking (2 h).
+- [x] Complement strength slots for gym users get knee push-ups and bodyweight lunges at RPE 7-8 (512 of 1,818 heavy-slot rows). Rank by loadability when equipment allows (3 h).
+- [x] No progression inside a block: weeks 1 to 3 flat and the press exercise changes weekly. Fix anchor lifts per block, add a weekly ramp, one deload factor (4 h).
+- [x] Weekly push floor: two-day skiers get zero pressing; climbers run push to pull at 1:2.5 (2 h).
+- [x] Injury tags are thin for tennis elbow (4), stinger (5), finger pulley (6), hip flexor (10). Tagging pass plus clinical review (3 h plus review).
+
+## Phase 3b: sports without their own rules (about 1.5 days, after Phase 4)
+
+Found 2026-11-11 from an owner report: a snowboarder's "Upper body" days were
+3 movements, 1 to 2 sets, about 14 minutes. Only the ski and climbing sports
+have season rules. Every other plannable sport (snowboarding, mountain biking,
+mountaineering, trail running, hiking, thru-hiking) resolves to
+`skiing[.maintenance]` in every season (`PhaseRule.resolve`), a deload rule
+capped at 45 minutes, and its complement days inherit it. Decisions made
+2026-11-11: 1A and 2A below.
+
+- [ ] One sport-profile table that every per-sport decision reads: rules, signature demand, complement emphasis, two-sport eligibility. About ten places decide ski or climbing membership today (listed in `phase-training-season-generator-engine-pitfalls`), and two of them add snowboarding by hand.
+- [ ] 1A: snowboarding uses the ski rules, the same plan "Skiing / Snowboarding" gets.
+- [ ] 2A: a general season rule for the other authored-only sports' complement days (build off-season, hold pre-season, maintain in-season, deload only in a real deload week). Test: no non-deload week serves deload sets to any plannable sport.
+- [ ] Signature demands for the authored-only sports, so a session keeps the movement the sport needs most.
+- [ ] Complement emphasis for mountaineering (upper back and trunk with the legs).
+- [ ] Rebuild-role mismatch: CNS balance, the arc deload and skip-streak de-emphasis turn lift days into rest after generation, so a later rebuild assigns sport and complement roles from the wrong count. Move them to regenerate the week with the changed inputs, as the rest-day reserve now does.
+- [ ] Content: in-season routines for mountaineering, hiking-trekking and thru-hiking (0 today) and a pre-season routine for trail running (0 today). Until then the selector serves another phase's routine.
 
 ## Phase 4: signals that do nothing (about 3 days)
 
