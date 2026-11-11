@@ -472,6 +472,15 @@ enum SportSeasonGenerator {
         }
         picks = ordered.map(\.element.0)
         exercises = ordered.map(\.element.1)
+        // Warm-up ramp on the session's first max- or upper-strength
+        // compound, unless its prime mover is part-recovered. The legacy
+        // generator did this for its first slot; this path never did.
+        let rampDemands: Set<Demand> = [.maxStrength, .upperStrength]
+        for i in exercises.indices where rampDemands.contains(picks[i].demand) {
+            guard exercises[i].isCompound, !soreIds.contains(exercises[i].exerciseId) else { continue }
+            exercises[i].warmUpSets = WarmUpSet.standardRamp
+            break
+        }
         return assemble(exercises, picks: picks, athlete: athlete, rule: rule,
                         sessionIndex: sessionIndex, lightened: lightened,
                         signatureUnavailable: signatureUnavailable,

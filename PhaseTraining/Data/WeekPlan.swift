@@ -163,6 +163,14 @@ struct WarmUpSet: Codable, Hashable {
     /// e.g. 40, 60, 80 — relative to the first working set's load.
     var loadPctOfWorking: Int
     var restSeconds: Int
+
+    /// The 40/60/80 percent ramp both generators prescribe for the first
+    /// compound lift of a session.
+    static let standardRamp: [WarmUpSet] = [
+        WarmUpSet(reps: 5, loadPctOfWorking: 40, restSeconds: 60),
+        WarmUpSet(reps: 5, loadPctOfWorking: 60, restSeconds: 60),
+        WarmUpSet(reps: 3, loadPctOfWorking: 80, restSeconds: 90),
+    ]
 }
 
 struct GeneratedExercise: Codable, Hashable, Identifiable {
@@ -288,7 +296,8 @@ extension GeneratedWorkout {
                     rpe: gex.rpe,
                     tempo: gex.tempo,
                     supersetGroup: gex.supersetGroup,
-                    repsLabel: gex.reps
+                    repsLabel: gex.reps,
+                    warmUpSets: gex.warmUpSets
                 )
             }
         )

@@ -16,27 +16,57 @@ extension ProgressScreen {
     //
     // The TrainingMemory.bodyWeightLog series surfaces here as a compact
     // sparkline + delta read-out. Tapping the card opens
-    // BodyWeightLogSheet for a richer log + chart. Hidden entirely when
-    // the user has never logged a weight — empty state would just be
-    // noise on Progress. Mirrors the volume card's hand-drawn LineSpark
-    // for consistency with the rest of the screen.
+    // BodyWeightLogSheet for a richer log + chart. Before the first entry
+    // the card is a one-line prompt row that opens the same sheet, so the
+    // feature is findable from the tab where its trend reads. Mirrors the
+    // volume card's hand-drawn LineSpark for consistency.
 
     var bodyWeightTrendCard: some View {
         let log = memoryStore.memory.bodyWeightLog.sorted { $0.date < $1.date }
         return Group {
             if log.isEmpty {
-                EmptyView()
+                bodyPromptRow(title: "Log body weight",
+                              identifier: "progress-body-weight-prompt") {
+                    presentingBodyWeightSheet = true
+                }
             } else {
                 Button { presentingBodyWeightSheet = true } label: {
                     bodyWeightCardBody(log: log)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("progress-body-weight-card")
-                .sheet(isPresented: $presentingBodyWeightSheet) {
-                    BodyWeightLogSheet().environmentObject(memoryStore)
-                }
             }
         }
+        .sheet(isPresented: $presentingBodyWeightSheet) {
+            BodyWeightLogSheet().environmentObject(memoryStore)
+        }
+    }
+
+    /// One-line "Log ..." row shown in place of a body card with no entries.
+    private func bodyPromptRow(title: String, identifier: String,
+                               action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Text(title)
+                    .styled(.body)
+                    .foregroundStyle(Color.ink2)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.ink3)
+            }
+            .padding(.horizontal, 14)
+            .frame(minHeight: 44)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.surface)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(title)
+        .accessibilityHint("Opens the log")
+        .accessibilityIdentifier(identifier)
     }
 
     private func bodyWeightCardBody(log: [BodyWeightEntry]) -> some View {
@@ -88,23 +118,26 @@ extension ProgressScreen {
     // Symmetric with bodyWeightTrendCard but for BF% + lean mass. Each
     // series is optional per entry — DEXA users log both, scale users
     // log just BF% — so the card renders whichever sparklines have data.
-    // Hidden entirely when the user has never logged a composition reading.
+    // Before the first reading it is a one-line prompt row.
 
     var bodyCompositionTrendCard: some View {
         let log = memoryStore.memory.bodyCompositionLog.sorted { $0.date < $1.date }
         return Group {
             if log.isEmpty {
-                EmptyView()
+                bodyPromptRow(title: "Log body composition",
+                              identifier: "progress-body-composition-prompt") {
+                    presentingBodyCompositionSheet = true
+                }
             } else {
                 Button { presentingBodyCompositionSheet = true } label: {
                     bodyCompositionCardBody(log: log)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("progress-body-composition-card")
-                .sheet(isPresented: $presentingBodyCompositionSheet) {
-                    BodyCompositionLogSheet().environmentObject(memoryStore)
-                }
             }
+        }
+        .sheet(isPresented: $presentingBodyCompositionSheet) {
+            BodyCompositionLogSheet().environmentObject(memoryStore)
         }
     }
 

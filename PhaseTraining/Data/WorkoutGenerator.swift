@@ -335,11 +335,7 @@ enum WorkoutGenerator {
         }()
         // Warm-up ramp only for the first compound primary, and not when sore.
         let warmUps: [WarmUpSet]? = (slotIdx == 0 && picked.isCompound && !isMuscleSoreForExercise(picked, memory: memory))
-            ? [
-                WarmUpSet(reps: 5, loadPctOfWorking: 40, restSeconds: 60),
-                WarmUpSet(reps: 5, loadPctOfWorking: 60, restSeconds: 60),
-                WarmUpSet(reps: 3, loadPctOfWorking: 80, restSeconds: 90),
-              ]
+            ? WarmUpSet.standardRamp
             : nil
         let row = GeneratedExercise(
             id: "\(hashSeed)-\(slotIdx)-\(picked.id)",

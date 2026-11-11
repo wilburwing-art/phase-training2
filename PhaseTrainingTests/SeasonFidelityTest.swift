@@ -443,6 +443,26 @@ final class SeasonFidelityTest: XCTestCase {
         }
     }
 
+    /// The engine ramps the first max- or upper-strength compound: never more
+    /// than one row per session, always a compound, and at least one session
+    /// across the sports carries it.
+    func test_warmUpRamp_onFirstStrengthCompound() {
+        var rampedSessions = 0
+        for f in sports {
+            let a = athlete(f, season: .offSeason)
+            for s in SportSeasonGenerator.generateWeek(a) {
+                let ramped = s.exercises.filter { $0.warmUpSets != nil }
+                XCTAssertLessThanOrEqual(ramped.count, 1, "[\(f.slug)] more than one ramp in a session")
+                for ex in ramped {
+                    XCTAssertTrue(ex.isCompound, "[\(f.slug)] ramp on non-compound \(ex.name)")
+                    XCTAssertEqual(ex.warmUpSets, WarmUpSet.standardRamp)
+                }
+                rampedSessions += ramped.count
+            }
+        }
+        XCTAssertGreaterThan(rampedSessions, 0, "season engine never prescribed a ramp")
+    }
+
     /// Check 5 — injury logic: a contraindicated exercise never appears.
     func test_check5_injury_gate() {
         for f in sports {

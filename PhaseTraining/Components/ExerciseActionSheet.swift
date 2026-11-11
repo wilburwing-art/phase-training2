@@ -37,6 +37,7 @@ struct ExerciseActionSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var showDeleteConfirm = false
+    @State private var showInjuries = false
 
     var body: some View {
         NavigationStack {
@@ -117,6 +118,11 @@ struct ExerciseActionSheet: View {
                             dismiss()
                         }
                         .accessibilityIdentifier("exercise-action-avoid")
+                        divider
+                        row(icon: "bandage", label: "Injury or pain?") {
+                            showInjuries = true
+                        }
+                        .accessibilityIdentifier("exercise-action-injury")
                         if let onDelete {
                             divider
                             row(icon: "trash", label: "Delete from workout",
@@ -137,6 +143,9 @@ struct ExerciseActionSheet: View {
                     Button("Done") { dismiss() }
                         .foregroundStyle(Color.ink2)
                 }
+            }
+            .sheet(isPresented: $showInjuries) {
+                InjuriesEditorSheet().environmentObject(memoryStore)
             }
             .alert("Delete from workout?", isPresented: $showDeleteConfirm) {
                 Button("Delete", role: .destructive) {

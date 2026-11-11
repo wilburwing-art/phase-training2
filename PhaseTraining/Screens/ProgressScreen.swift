@@ -151,6 +151,13 @@ struct ProgressScreen: View {
             SorenessCheckInPill()
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
+            // Body entries need no session either; this is the first place
+            // a new user looks for a trend.
+            VStack(spacing: 8) {
+                bodyWeightTrendCard
+                bodyCompositionTrendCard
+            }
+            .padding(.horizontal, 20)
             Spacer()
         }
     }

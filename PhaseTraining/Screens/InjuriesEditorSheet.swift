@@ -53,6 +53,7 @@ struct InjuriesEditorSheet: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .onDisappear { ReachPrompts.markInjuriesAnswered() }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }

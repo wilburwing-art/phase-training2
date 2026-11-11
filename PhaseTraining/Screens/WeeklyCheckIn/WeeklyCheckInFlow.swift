@@ -123,6 +123,9 @@ struct WeeklyCheckInFlow: View {
     @State private var previewLikelihoods: [SessionLikelihood] = []
     /// Computed once on entry so accepting one card does not reshuffle the rest.
     @State private var suggestions: [Suggestion] = []
+    /// One-time offer to turn on the Sunday reminder, shown after the first
+    /// accepted check-in.
+    @State private var showReminderOffer = false
 
     var body: some View {
         ZStack {
@@ -132,6 +135,17 @@ struct WeeklyCheckInFlow: View {
                 .transition(.opacity.combined(with: .move(edge: .trailing)))
         }
         .onAppear(perform: hydrateFromOverrides)
+        .alert("Get a weekly reminder?", isPresented: $showReminderOffer) {
+            Button("Turn on") {
+                Task {
+                    _ = await WeeklyReminderScheduler.enable()
+                    onDismiss()
+                }
+            }
+            Button("Not now", role: .cancel) { onDismiss() }
+        } message: {
+            Text("A Sunday evening nudge to plan next week.")
+        }
     }
 
     @ViewBuilder
@@ -269,6 +283,9 @@ struct WeeklyCheckInFlow: View {
     private func accept() {
         guard let plan = previewPlan else { onDismiss(); return }
         let weekStart = Self.nextWeekStart()
+        let offerReminder = ReachPrompts.shouldOfferReminder(
+            priorCheckInCount: memoryStore.memory.weeklyCheckIns.count,
+            reminderEnabled: WeeklyReminderScheduler.isEnabled)
         // Commit everything together, exactly once, on accept, all stamped for
         // NEXT week. Writing the draft into `planStore.overrides` (this week's)
         // silently discarded it: PlanStore resets overrides whose weekStart
@@ -292,7 +309,12 @@ struct WeeklyCheckInFlow: View {
         // accepted is what gets stored.
         nextOverrides.weekTone = draft.derivedWeekTone
         planStore.stagePlan(plan, overrides: nextOverrides)
-        onDismiss()
+        if offerReminder {
+            ReachPrompts.markReminderOffered()
+            showReminderOffer = true
+        } else {
+            onDismiss()
+        }
     }
 
     private var composedIntent: String? {

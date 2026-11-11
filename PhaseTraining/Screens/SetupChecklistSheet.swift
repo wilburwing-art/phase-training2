@@ -17,6 +17,14 @@ struct SetupChecklistSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var editing: ProfileField?
+    @State private var editingInjuries = false
+    @AppStorage(ReachPrompts.injuriesAnsweredKey) private var injuriesOpened = false
+
+    /// Injuries are a safety filter rather than a plan input, so they sit
+    /// outside `ProfileField` and show here only until answered.
+    private var injuriesUnanswered: Bool {
+        !injuriesOpened && !ReachPrompts.injuriesAnswered(memory: store.memory)
+    }
 
     var body: some View {
         NavigationStack {
@@ -29,6 +37,7 @@ struct SetupChecklistSheet: View {
                             ForEach(ProfileField.allCases) { field in
                                 row(field)
                             }
+                            if injuriesUnanswered { injuriesRow }
                         }
                     }
                     .padding(.horizontal, 20)
@@ -48,6 +57,9 @@ struct SetupChecklistSheet: View {
         .presentationDetents([.medium, .large])
         .presentationBackground(Color.bg)
         .preferredColorScheme(.dark)
+        .sheet(isPresented: $editingInjuries) {
+            InjuriesEditorSheet().environmentObject(store)
+        }
         .sheet(item: $editing) { field in
             ProfileFieldEditorHost(field: field)
                 .environmentObject(store)
@@ -57,7 +69,9 @@ struct SetupChecklistSheet: View {
     private var intro: some View {
         let remaining = store.memory.assumedFields.count
         return Text(remaining == 0
-                    ? "Every input below is one you set. Nothing here is a guess."
+                    ? (injuriesUnanswered
+                       ? "Every plan input is one you set. Injuries are the one question left."
+                       : "Every input below is one you set. Nothing here is a guess.")
                     : "Your plan starts from these. We guessed \(remaining) of them; set them and the plan gets closer.")
             .styled(.body)
             .foregroundStyle(Color.ink2)
@@ -111,5 +125,44 @@ struct SetupChecklistSheet: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("setup-checklist-row-\(field.rawValue)")
+    }
+
+    private var injuriesRow: some View {
+        Button {
+            editingInjuries = true
+        } label: {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "bandage")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(Color.ink3)
+                    .frame(width: 24)
+                    .padding(.top, 2)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Injuries")
+                        .styled(.displayS)
+                        .foregroundStyle(Color.ink)
+                    Text("Not asked yet")
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink2)
+                    Text("Anything that hurts is filtered out of your plan.")
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.ink3)
+                    .padding(.top, 4)
+            }
+            .padding(14)
+            .frame(minHeight: 44)
+            .background(Color.surface)
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.line, lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Injuries, not asked yet")
+        .accessibilityIdentifier("setup-checklist-row-injuries")
     }
 }

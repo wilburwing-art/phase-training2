@@ -14,9 +14,7 @@ extension LogScreen {
     @ViewBuilder
     func setRow(exIdx: Int, setIdx: Int, isActive: Bool) -> some View {
         let set = session.exercises[exIdx].sets[setIdx]
-        let prevSet = session.exercises[exIdx].prevSets.indices.contains(setIdx)
-            ? session.exercises[exIdx].prevSets[setIdx]
-            : nil
+        let prevSet = session.exercises[exIdx].previousSet(forRow: setIdx)
         let prevLabel: String = {
             guard let p = prevSet, !p.weight.isEmpty || !p.reps.isEmpty else { return "-" }
             return "\(p.weight)×\(p.reps)"

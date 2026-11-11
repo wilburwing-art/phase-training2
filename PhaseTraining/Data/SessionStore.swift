@@ -443,8 +443,11 @@ final class SessionStore: ObservableObject {
                 ? hangboardLoad?(ex.name).flatMap { $0.addedLb > 0 ? $0.addedLb : nil }
                 : nil
 
-            let sets: [LoggedSet] = (0..<ex.targetSets).map { i in
-                let prevSet: LoggedSet? = (prevEx?.sets.indices.contains(i) ?? false) ? prevEx?.sets[i] : nil
+            // Last session's working sets only: its ramp rows are not the
+            // targets for today's first working set.
+            let prevWorking = (prevEx?.sets ?? []).filter { !$0.isWarmup }
+            let working: [LoggedSet] = (0..<ex.targetSets).map { i in
+                let prevSet: LoggedSet? = prevWorking.indices.contains(i) ? prevWorking[i] : nil
                 if let hangLoad {
                     return LoggedSet(num: i + 1, weight: Self.weightString(hangLoad),
                                      reps: prevSet.map { $0.reps } ?? String(ex.targetReps),
@@ -461,6 +464,13 @@ final class SessionStore: ObservableObject {
                     rpe: "",
                     done: false
                 )
+            }
+            let ramp = ex.unit == LoggedExercise.bodyweightUnit ? []
+                : Self.warmUpRows(ex.warmUpSets ?? [], firstWorkingWeight: working.first?.weight ?? "", unit: ex.unit)
+            let sets: [LoggedSet] = (ramp + working).enumerated().map { i, set in
+                var numbered = set
+                numbered.num = i + 1
+                return numbered
             }
             return LoggedExercise(
                 id: ex.id,
@@ -490,6 +500,23 @@ final class SessionStore: ObservableObject {
             feel: nil,
             note: nil
         )
+    }
+
+    /// Warm-up rows for a generated ramp: each step's reps, at its percent of
+    /// the first working set's weight rounded to a loadable step (5 lb, 2.5 kg).
+    /// A missing or unparsable working weight leaves the weight box empty. Rows
+    /// carry `isWarmup`, so PR, volume and e1RM math skip them.
+    static func warmUpRows(_ ramp: [WarmUpSet], firstWorkingWeight: String, unit: String) -> [LoggedSet] {
+        let working = Double(firstWorkingWeight.trimmingCharacters(in: .whitespaces)).flatMap { $0 > 0 ? $0 : nil }
+        let step = unit.lowercased() == "kg" ? 2.5 : 5.0
+        return ramp.map { w in
+            var weight = ""
+            if let working {
+                let loadable = max(step, (working * Double(w.loadPctOfWorking) / 100 / step).rounded() * step)
+                weight = weightString(loadable)
+            }
+            return LoggedSet(num: 0, weight: weight, reps: String(w.reps), rpe: "", done: false, isWarmup: true)
+        }
     }
 
     /// "5", "12.5": a weight box value without a trailing ".0".

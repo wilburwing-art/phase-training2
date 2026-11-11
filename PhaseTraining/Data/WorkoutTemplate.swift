@@ -27,13 +27,18 @@ struct ExerciseTemplate: Identifiable, Codable, Equatable {
     /// timed hold as that many reps; this keeps the text for Log and the hold
     /// timer. Nil for plain rep counts.
     var repsLabel: String? = nil
+    /// Generated warm-up ramp for this lift. Session start inserts one
+    /// warm-up row per step ahead of the working sets. Nil on payloads
+    /// written before the field existed and on lifts with no ramp.
+    var warmUpSets: [WarmUpSet]? = nil
 
     /// Convenience init so the upper-1 template + everywhere else that
     /// constructs an ExerciseTemplate without coaching hints stays unchanged.
     init(id: String, name: String, type: String?, unit: String,
          targetSets: Int, targetReps: Int, rest: Int,
          rpe: String? = nil, tempo: String? = nil,
-         supersetGroup: Int? = nil, repsLabel: String? = nil) {
+         supersetGroup: Int? = nil, repsLabel: String? = nil,
+         warmUpSets: [WarmUpSet]? = nil) {
         self.id = id
         self.name = name
         self.type = type
@@ -45,6 +50,7 @@ struct ExerciseTemplate: Identifiable, Codable, Equatable {
         self.tempo = tempo
         self.supersetGroup = supersetGroup
         self.repsLabel = ExerciseTemplate.nonNumeric(repsLabel)
+        self.warmUpSets = (warmUpSets?.isEmpty ?? true) ? nil : warmUpSets
     }
 
     /// The label only when it says more than a number ("8", "8-10" carry

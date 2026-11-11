@@ -15,6 +15,19 @@ extension LoggedExercise {
     }
 }
 
+extension LoggedExercise {
+    /// The previous session's set to show beside row `setIdx`. Warm-up rows
+    /// have none, and a working row pairs with the previous working set at
+    /// the same position, so a ramp ahead of the working sets does not shift
+    /// the comparison.
+    func previousSet(forRow setIdx: Int) -> LoggedSet? {
+        guard sets.indices.contains(setIdx), !sets[setIdx].isWarmup else { return nil }
+        let position = sets[..<setIdx].filter { !$0.isWarmup }.count
+        let prevWorking = prevSets.filter { !$0.isWarmup }
+        return prevWorking.indices.contains(position) ? prevWorking[position] : nil
+    }
+}
+
 extension ActiveSession {
     /// Total load moved: weight × reps over done working sets, in the lifter's
     /// unit. Warm-ups are left out. A bodyweight row counts only its added load
