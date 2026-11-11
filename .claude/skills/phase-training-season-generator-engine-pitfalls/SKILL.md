@@ -235,3 +235,18 @@ Also the scripting slip that cost a round here: anchoring an edit on
 earlier and rewrote the ski block's search window. Anchor on the declaration
 with its type (`static let climbing:`), and assert the key you are about to
 change appears exactly once inside the located block.
+
+## Complement days for an authored-only sport run on the deload rule
+
+Traced 2026-11-11 from an owner report ("3 exercises for upper body seems
+light"): primary sport `snowboarding`, pre-season, advanced, full gym, 60 min.
+`PhaseRule.resolve` knows only `skiSlugs` and `climbingSlugs`; every other slug
+gets `skiing[.maintenance]` whatever the season. That rule is `.deload`,
+`sessionMinutesTarget 30...45`, `sessionVolumeCap 8`. SessionMix complement
+days (`Upper body`, etc.) inherit it through `phaseRule.complement(focus)`, so
+for every authored-only sport they come out as: 60 min clamped to 45, 4
+movements, fatigue cap trims to 3, deload sets (setsLow - 1, RPE - 2), about
+14 minutes. The authored routine on the same week looks normal, which hides it.
+`snowboarding` is not in `skiSlugs` while `snow-sports` is, so the two picker
+entries plan differently (see audits/2026-11-10-gap-round/reach.md item 5).
+Check which rule a complement day resolved to before tuning session length.
