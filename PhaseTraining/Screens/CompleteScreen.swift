@@ -419,7 +419,7 @@ struct CompleteScreen: View {
             if active { tags.remove(tag) } else { tags.insert(tag) }
         } label: {
             Text(tag.label)
-                .font(.custom("JetBrainsMono-Medium", size: 11))
+                .font(.scaled("JetBrainsMono-Medium", size: 11))
                 .foregroundStyle(active ? Color.accentInk : Color.ink2)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
