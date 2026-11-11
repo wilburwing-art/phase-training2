@@ -498,9 +498,7 @@ enum SportSeasonGenerator {
     static let complementPoolSlug = "general-fitness"
 
     static func poolSlug(for sportSlug: String) -> String {
-        if PhaseRule.skiSlugs.contains(sportSlug) { return "alpine-skiing" }
-        if PhaseRule.climbingSlugs.contains(sportSlug) { return "climbing" }
-        return sportSlug
+        SportProfile.of(sportSlug).poolSlug(for: sportSlug)
     }
 
     private static func filteredPool(_ athlete: AthleteState, phase: SeasonPhase,
@@ -653,23 +651,21 @@ enum SportSeasonGenerator {
     /// check 2 and protected by the fatigue cap). Ski = eccentricLeg,
     /// climbing = fingerStrength.
     static func signatureDemand(_ sportSlug: String) -> Demand? {
-        if PhaseRule.skiSlugs.contains(sportSlug) { return .eccentricLeg }
-        if PhaseRule.climbingSlugs.contains(sportSlug) { return .fingerStrength }
-        return nil
+        SportProfile.of(sportSlug).signature
     }
 
     /// Sports the season engine generates for. The live Planner routes these to
     /// `generateSession`; everything else falls through to the legacy generator.
     static func supports(_ sportSlug: String?) -> Bool {
         guard let s = sportSlug else { return false }
-        return PhaseRule.skiSlugs.contains(s) || PhaseRule.climbingSlugs.contains(s)
+        return SportProfile.of(s).usesSeasonEngine
     }
 
     /// Default variant until the variant picker lands (M4): ski → inbounds,
     /// climbing → sportRoute.
     static func defaultVariant(forSport sportSlug: String?) -> SportVariant {
         guard let s = sportSlug else { return .inbounds }
-        if PhaseRule.climbingSlugs.contains(s) { return .sportRoute }
+        if SportProfile.of(s).rules == .climbing { return .sportRoute }
         // A ski-mountaineering primary trained as a resort skier until 2026-11.
         return s == "ski-mountaineering" ? .skimo : .inbounds
     }

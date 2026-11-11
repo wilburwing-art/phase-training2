@@ -33,7 +33,7 @@ enum SkiSeason {
     static let countedTypes: Set<HKWorkoutActivityType> = [.downhillSkiing, .snowboarding, .snowSports]
 
     static func isSkiSport(_ slug: String) -> Bool {
-        PhaseRule.skiSlugs.contains(slug) || slug == "snowboarding"
+        SportProfile.of(slug).isSki
     }
 
     /// Aug 1 on or before `now`.

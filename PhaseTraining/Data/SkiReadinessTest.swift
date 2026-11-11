@@ -87,6 +87,6 @@ struct SkiReadinessTest: Codable, Identifiable, Hashable {
 extension TrainingMemory {
     /// True for a lifter who skis or rides, the audience for the ski cards.
     var skis: Bool {
-        sports.contains { PhaseRule.skiSlugs.contains($0.slug) || $0.slug == "snowboarding" }
+        sports.contains { SportProfile.of($0.slug).isSki }
     }
 }

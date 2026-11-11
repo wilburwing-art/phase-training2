@@ -55,7 +55,7 @@ struct OnboardingSportSeasonsScreen: View {
     /// this only appears for a ski/snow primary sport — the highest-intent
     /// moment to discover the two-sport feature.
     private var showSupport: Bool {
-        PhaseRule.skiSlugs.contains(draft.primarySport?.slug ?? "")
+        SportProfile.of(draft.primarySport?.slug).supportFeature
     }
 
     private var supportSection: some View {

@@ -945,7 +945,7 @@ extension Weekday {
 
 extension TrainingMemory {
     /// True when the primary sport is a ski sport (the disciplines apply).
-    var skisPrimary: Bool { PhaseRule.skiSlugs.contains(primarySport?.slug ?? "") }
+    var skisPrimary: Bool { SportProfile.of(primarySport?.slug).isSki }
 
     /// The variant the engine plans with: the chosen ski discipline for a ski
     /// primary, else the sport's default. Every generator call site reads this.

@@ -28,11 +28,14 @@ enum SessionMix {
     enum Family: Equatable {
         case legsDominant
         case upperDominant
+        /// Legs-dominant, and the sport carries a pack: complement days lead
+        /// with the upper back and the trunk (mountaineering). Every rule that
+        /// is not about the rotation treats it as legs-dominant.
+        case legsAndCarry
     }
 
     static func family(forSport slug: String?) -> Family {
-        guard let slug else { return .legsDominant }
-        return PhaseRule.climbingSlugs.contains(slug) ? .upperDominant : .legsDominant
+        SportProfile.of(slug).family
     }
 
     /// Sport sessions per week (Wilbur, 2026-10-28). The rest of the lift
@@ -95,10 +98,10 @@ enum SessionMix {
     /// The complement days that press carry the floor; a week without one
     /// (two to four ski days off-season, pre-season and event prep are all
     /// sport sessions) spreads it over its sport sessions instead. Only the
-    /// legs-dominant family owes one: a climber's antagonist and complement
+    /// legs-dominant families owe one: a climber's antagonist and complement
     /// work already presses.
     static func pushFloor(liftIndex: Int, totalLifts: Int, phase: SeasonPhase, family: Family) -> Int {
-        guard family == .legsDominant, totalLifts >= 2 else { return 0 }
+        guard family != .upperDominant, totalLifts >= 2 else { return 0 }
         let index = ((liftIndex % totalLifts) + totalLifts) % totalLifts
         let roles = (0..<totalLifts).map { role(liftIndex: $0, totalLifts: totalLifts, phase: phase, family: family) }
         let pressing = roles.indices.filter {
@@ -123,6 +126,9 @@ enum SessionMix {
         case (.upperDominant, 1): base = [.legsPush]
         case (.upperDominant, 2): base = [.legsCore, .pushCore]
         case (.upperDominant, _): base = [.legs, .upperPush, .legsCore]
+        case (.legsAndCarry, 1):  base = [.backCore]
+        case (.legsAndCarry, 2):  base = [.pullCore, .backCore]
+        case (.legsAndCarry, _):  base = [.pullCore, .backCore, .coreArms]
         }
         guard count > 0 else { return base }
         return (0..<count).map { base[$0 % base.count] }
@@ -145,6 +151,7 @@ struct ComplementSlot: Equatable {
 enum ComplementFocus: String, CaseIterable, Equatable {
     case upperBody, pushCore, pullArms, upperPush, upperPull, coreArms
     case legs, legsPush, legsCore
+    case pullCore, backCore
 
     /// Session title. It names the focus on purpose: `PlanValidator.resolveFocus`
     /// reads push / pull / leg / upper from the title.
@@ -159,6 +166,8 @@ enum ComplementFocus: String, CaseIterable, Equatable {
         case .legs:      return "Legs"
         case .legsPush:  return "Legs + push"
         case .legsCore:  return "Legs + core"
+        case .pullCore:  return "Pull + core"
+        case .backCore:  return "Upper back + core"
         }
     }
 
@@ -173,6 +182,8 @@ enum ComplementFocus: String, CaseIterable, Equatable {
         case .legs:      return [.legStrength: 0.8, .core: 0.2]
         case .legsPush:  return [.legStrength: 0.5, .upperPush: 0.35, .core: 0.15]
         case .legsCore:  return [.legStrength: 0.6, .core: 0.4]
+        case .pullCore:  return [.upperPull: 0.6, .core: 0.4]
+        case .backCore:  return [.upperPull: 0.45, .core: 0.35, .upperPush: 0.2]
         }
     }
 
@@ -187,9 +198,9 @@ enum ComplementFocus: String, CaseIterable, Equatable {
 
     var workoutFocus: WorkoutFocus {
         switch self {
-        case .upperBody, .coreArms: return .upper
-        case .pushCore, .upperPush: return .push
-        case .pullArms, .upperPull: return .pull
+        case .upperBody, .coreArms, .backCore: return .upper
+        case .pushCore, .upperPush:            return .push
+        case .pullArms, .upperPull, .pullCore: return .pull
         case .legs, .legsCore:      return .legs
         case .legsPush:             return .fullBodyA
         }

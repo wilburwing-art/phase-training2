@@ -19,7 +19,10 @@ final class GeneratorWeekInvariantTests: XCTestCase {
         }
     }
 
-    static let sports = ["alpine-skiing", "ski-mountaineering", "climbing"]
+    /// Snowboarding plans on the ski engine and trail running is an
+    /// authored-only sport whose complement days run on `PhaseRule.general`
+    /// (Phase 3b); both are engine sessions to every check below.
+    static let sports = ["alpine-skiing", "ski-mountaineering", "climbing", "snowboarding", "trail-running"]
     static let equipTiers: [(String, [Equipment])] = [
         ("bw", [.bodyweight]), ("homebar", [.dumbbells, .pullUpBar, .bands]), ("gym", [.fullGym])]
 

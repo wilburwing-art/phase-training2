@@ -100,7 +100,7 @@ final class AuthoredRoutineTests: XCTestCase {
     func testPlannableIncludesEngineAndOutdoorAuthoredSports() {
         XCTAssertTrue(SportCatalog.isPlannable("alpine-skiing"), "ski = engine-supported")
         XCTAssertTrue(SportCatalog.isPlannable("climbing"), "climbing = engine-supported")
-        XCTAssertTrue(SportCatalog.isPlannable("snowboarding"), "outdoor authored w/ coverage")
+        XCTAssertTrue(SportCatalog.isPlannable("snowboarding"), "snowboarding = engine-supported (1A)")
         XCTAssertTrue(SportCatalog.isPlannable("mountain-biking"), "outdoor authored w/ coverage")
     }
 
@@ -148,20 +148,23 @@ final class AuthoredRoutineTests: XCTestCase {
         }
     }
 
-    // MARK: - Phase 3: distilled snowboarding routines are served
+    // MARK: - Snowboarding plans on the ski engine (Phase 3b, 1A)
 
-    func testSnowboardingPreSeasonServesDistilledRoutines() {
-        // Phase 3 landed splitboard pre-season Strength A (#295) + B (#296);
-        // two lift slots rotate through them.
-        XCTAssertEqual(
-            AuthoredRoutineSelector.select(sportSlug: "snowboarding", phase: .preSeason, sessionIndex: 0), 295)
-        XCTAssertEqual(
-            AuthoredRoutineSelector.select(sportSlug: "snowboarding", phase: .preSeason, sessionIndex: 1), 296)
-    }
-
-    func testSnowboardingInSeasonServesMaintenance() {
-        XCTAssertEqual(
-            AuthoredRoutineSelector.select(sportSlug: "snowboarding", phase: .inSeason, sessionIndex: 0), 297)
+    /// The splitboard routines (#295, #296, #297 and #70) stay in the library
+    /// under snowboarding; the planner no longer serves them, as it serves no
+    /// authored routine to snow-sports.
+    func testSnowboardingIsNotServedAuthoredRoutines() {
+        let db = CoachDatabase.shared
+        let library = db.authoredRoutineIds(sportSlug: "snowboarding",
+                                            phaseLabels: AuthoredRoutineSelector.allPhaseLabels)
+        XCTAssertTrue(Set([295, 296, 297]).isSubset(of: Set(library)), "\(library)")
+        XCTAssertFalse(AuthoredRoutineSelector.shouldServeAuthored(sportSlug: "snowboarding"))
+        for phase in SeasonPhase.allCases {
+            for slot in 0..<3 {
+                XCTAssertNil(AuthoredRoutineSelector.select(sportSlug: "snowboarding", phase: phase,
+                                                            sessionIndex: slot), "\(phase) slot \(slot)")
+            }
+        }
     }
 
     func testDistilledSnowboardRoutineBuildsRunnableWorkout() {
@@ -179,12 +182,12 @@ final class AuthoredRoutineTests: XCTestCase {
         XCTAssertTrue((workout?.title ?? "").contains("Splitboard"))
     }
 
-    func testSnowboardingPrimaryGeneratesAuthoredNonEmptyPlan() {
+    func testAuthoredOnlyPrimaryGeneratesAuthoredNonEmptyPlan() {
         // Full integration: an unsupported-but-plannable primary sport produces
         // a real plan (default weekly shape) whose lift days are filled from
         // authored routines — never the season engine's empty Rest.
         var m = TrainingMemory()
-        let sb = Sport.resolve(slug: "snowboarding")
+        let sb = Sport.resolve(slug: "mountain-biking")
         m.primarySport = sb
         m.sports = [sb]
         m.seasonsBySport = [sb: .preSeason]
@@ -194,7 +197,7 @@ final class AuthoredRoutineTests: XCTestCase {
         m.liftDaysPerWeek = 3
         let plan = Planner.generate(memory: m, routines: [])
         let liftDays = plan.days.filter { $0.kind == .lift }
-        XCTAssertFalse(liftDays.isEmpty, "snowboarding should still get lift days (default shape)")
+        XCTAssertFalse(liftDays.isEmpty, "mountain biking should still get lift days (default shape)")
         for d in liftDays where d.isComplementSession {
             XCTAssertFalse(d.generatedWorkout?.exercises.isEmpty ?? true, "complement day must not be empty")
         }
@@ -202,9 +205,9 @@ final class AuthoredRoutineTests: XCTestCase {
         // (SessionMix) come from the general pool.
         for d in liftDays where !d.isComplementSession {
             XCTAssertFalse(d.generatedWorkout?.exercises.isEmpty ?? true,
-                           "snowboard lift day must not be empty")
+                           "MTB lift day must not be empty")
             XCTAssertTrue(d.generatedWorkout?.provenance.contains("Authored") ?? false,
-                          "snowboard lift day should be authored: \(d.generatedWorkout?.provenance ?? "nil")")
+                          "MTB lift day should be authored: \(d.generatedWorkout?.provenance ?? "nil")")
         }
     }
 
@@ -216,14 +219,6 @@ final class AuthoredRoutineTests: XCTestCase {
         XCTAssertTrue(ids.contains(298), "Easy Strength (#298) should be the general-fitness base")
     }
 
-    func testSnowboardingOffSeasonRotationIncludesEasyStrength() {
-        // Off-season maps to [off_season, base]; snowboarding now carries its
-        // splitboard off-season (#70) + the Easy Strength base (#298).
-        let served = (0..<4).compactMap {
-            AuthoredRoutineSelector.select(sportSlug: "snowboarding", phase: .offSeason, sessionIndex: $0)
-        }
-        XCTAssertTrue(served.contains(298), "Easy Strength should rotate into snowboarding off-season")
-    }
 
     func testEasyStrengthBuildsRunnableWorkout() {
         var memory = TrainingMemory()

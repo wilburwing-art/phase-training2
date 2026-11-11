@@ -47,7 +47,7 @@ enum AuthoredRoutineSelector {
     /// season engine even though the engine supports climbing. Ski/snowboard
     /// (also engine-supported) are intentionally NOT here — the flagship season
     /// experience stays unchanged until authored ski content is curated.
-    static var pilotSports: Set<String> { PhaseRule.climbingSlugs }
+    static var pilotSports: Set<String> { SportProfile.slugs(.climbing) }
 
     /// Which sports get authored serving:
     ///  - the pilot sports (climbing), where we prefer authored over the engine;
@@ -56,7 +56,7 @@ enum AuthoredRoutineSelector {
     /// A season-engine-supported sport that isn't piloted (ski/snowboard) keeps
     /// the engine.
     static func shouldServeAuthored(sportSlug: String) -> Bool {
-        if pilotSports.contains(sportSlug) { return true }
+        if SportProfile.of(sportSlug).authoredOverEngine { return true }
         return !SportSeasonGenerator.supports(sportSlug)
     }
 
@@ -177,10 +177,7 @@ enum SportCatalog {
     /// authored coverage. Ski + climbing come via the season engine; these come
     /// via authored coach.db routines (Phase 3 distillation). Grow this as more
     /// outdoor content is distilled.
-    static let outdoorAuthoredSlugs: Set<String> = [
-        "snowboarding", "mountain-biking", "mountaineering",
-        "trail-running", "hiking-trekking", "thru-hiking",
-    ]
+    static let outdoorAuthoredSlugs: Set<String> = SportProfile.slugs(.general)
 
     /// True when the app can plan for `slug` as primary: season-engine supported
     /// OR an outdoor authored sport that actually has curated routines. The

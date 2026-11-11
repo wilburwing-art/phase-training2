@@ -362,7 +362,7 @@ final class SeasonFidelityTest: XCTestCase {
     /// must resolve somewhere real, so adding a variant to Sport.catalog can
     /// never silently ship an empty pool.
     func test_everySupportedSlug_aliasesToASeededPool() {
-        for slug in PhaseRule.skiSlugs.union(PhaseRule.climbingSlugs) {
+        for slug in SportProfile.slugs(.ski).union(SportProfile.slugs(.climbing)) {
             let resolved = SportSeasonGenerator.poolSlug(for: slug)
             XCTAssertGreaterThanOrEqual(
                 CoachDatabase.shared.sportMovements(sport: resolved).count, 20,
@@ -586,20 +586,20 @@ final class SeasonFidelityTest: XCTestCase {
     }
 
     func test_migration_keeps_outdoor_authored_primary() {
-        // Snowboarding isn't season-engine supported but is now plannable
+        // Mountain biking isn't season-engine supported but is plannable
         // (authored coverage) → the gate must keep it, not re-onboard.
         let suite = "season-migration-outdoor-test"
         let defaults = UserDefaults(suiteName: suite)!
         defaults.removePersistentDomain(forName: suite)
         let store = MemoryStore(defaults: defaults)
         store.update {
-            $0.sports = [Sport.resolve(slug: "snowboarding")]
-            $0.primarySport = Sport.resolve(slug: "snowboarding")
+            $0.sports = [Sport.resolve(slug: "mountain-biking")]
+            $0.primarySport = Sport.resolve(slug: "mountain-biking")
             $0.onboardedAt = Date()
         }
         store.migrateToSupportedSportGate()
-        XCTAssertNotNil(store.memory.onboardedAt, "snowboarding is plannable — must NOT be re-onboarded")
-        XCTAssertEqual(store.memory.primarySport?.slug, "snowboarding")
+        XCTAssertNotNil(store.memory.onboardedAt, "mountain biking is plannable, must NOT be re-onboarded")
+        XCTAssertEqual(store.memory.primarySport?.slug, "mountain-biking")
     }
 
     // MARK: - Prescription tracks the slot demand (not the generic catalog)

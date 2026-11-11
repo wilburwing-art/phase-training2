@@ -38,8 +38,10 @@ final class FilterCompositionTests: XCTestCase {
     private static let gear: [[Equipment]] = [[.bodyweight], [.dumbbells], [.dumbbells, .pullUpBar]]
 
     func test_everyPlannableSportSurvivesInjuryAndEquipmentTogether() {
+        // Snowboarding plans on the ski engine since Phase 3b and left the
+        // authored-only list; it stays in the grid as the second engine ski.
         let plannable = SportCatalog.outdoorAuthoredSlugs.sorted()
-            + ["alpine-skiing", "climbing"]
+            + ["alpine-skiing", "snowboarding", "climbing"]
         var checked = 0, declaredEmpty = 0
 
         for slug in plannable {

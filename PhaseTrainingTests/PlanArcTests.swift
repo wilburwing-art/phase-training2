@@ -6,8 +6,9 @@
 //     the streak and the current week being excluded.
 //   - The deload decision: fires at 3 build weeks, blocked by cooldown,
 //     blocked by too little history.
-//   - Planner.applyDeload: trims lift days to ≥2, marks the recovery day,
-//     re-prescribes at reduced volume, preserves the lift rotation.
+//   - The deload week (Planner.demoteForDeload + scaleForDeload): one lift
+//     day fewer (keeping 2 or more), the recovery day marked, the week
+//     planned for that many lift days, then sets at reduced volume.
 //
 // Glue mirrors PlanHistoryTests (PR 4's test shape).
 
@@ -203,20 +204,26 @@ final class PlanArcTests: XCTestCase {
             .deload)
     }
 
-    // MARK: - Planner.applyDeload
+    // MARK: - The deload week
 
     /// Minimal memory + catalog for plan generation. A primary sport
     /// gives the generator real candidates (probe-verified: a bare
     /// no-sport memory produces 0-exercise workouts in the test env).
-    private func generatePlan(deload: Bool) -> WeekPlan {
+    private func generatePlan(deload: Bool, liftDays: Int = 4, off: Set<Weekday> = []) -> WeekPlan {
         var memory = TrainingMemory()
         memory.primarySport = Sport.resolve(slug: "climbing")
         memory.seasonsBySport = [memory.primarySport!: .offSeason]
         memory.equipment = [.fullGym]
-        memory.liftDaysPerWeek = 4
+        memory.liftDaysPerWeek = liftDays
         memory.sessionMinutes = 60
+        var overrides: WeekOverrides?
+        if !off.isEmpty {
+            overrides = WeekOverrides(weekStart: monday(0))
+            overrides?.unavailableDays = off
+        }
         return Planner.generate(
             memory: memory,
+            overrides: overrides,
             routines: CoachDatabase.shared.listRoutines(),
             today: monday(0),
             deloadWeek: deload
@@ -245,30 +252,35 @@ final class PlanArcTests: XCTestCase {
         XCTAssertLessThan(deloadSets, normalSets)
     }
 
-    /// PR 10A review fix: the deload must NOT re-run the generator.
-    /// Exercise picks, order, and recipes are identical to the non-deload
-    /// plan; only set counts shrink. This is what keeps a deload week
-    /// anchored to the same authored-coach workouts the user has been
-    /// running (no "Bench → Dumbbell Bench" in-slot swaps mid-arc).
-    func test_applyDeload_preservesExerciseSelection() {
-        let normal = generatePlan(deload: false)
+    /// A deload week is the week planned with the recovery day off and one
+    /// lift day fewer, at reduced sets: the same exercises in the same order
+    /// as that week, never a second pick (no "Bench to Dumbbell Bench" swaps
+    /// mid-arc). Planning the week again, rather than turning a finished
+    /// day into rest, is what keeps each lift day's index and session count
+    /// in line with the lift days the plan holds (Phase 3b item 6), so a
+    /// later rebuild of one day keeps its role.
+    func test_applyDeload_isTheWeekWithTheRecoveryDayOff() {
         let deload = generatePlan(deload: true)
-        let cal = Calendar.current
+        guard let recovery = deload.days.first(where: { $0.title == "Recovery" }) else {
+            return XCTFail("no recovery day")
+        }
+        let lifts = deload.days.filter { $0.kind == .lift }.count
+        let reference = generatePlan(deload: false, liftDays: lifts,
+                                     off: [Weekday.from(date: recovery.date, calendar: cal)])
         for dDay in deload.days where dDay.kind == .lift {
             guard let dWorkout = dDay.generatedWorkout else {
                 return XCTFail("deload lift day missing workout")
             }
-            // Find the matching day in the normal plan by calendar date.
-            guard let nDay = normal.days.first(where: {
+            guard let rDay = reference.days.first(where: {
                 cal.isDate($0.date, inSameDayAs: dDay.date)
-            }), let nWorkout = nDay.generatedWorkout else {
-                return XCTFail("no matching normal-plan day for \(dDay.date)")
+            }), let rWorkout = rDay.generatedWorkout else {
+                return XCTFail("no matching reference day for \(dDay.date)")
             }
             XCTAssertEqual(dWorkout.exercises.map(\.name),
-                           nWorkout.exercises.map(\.name),
+                           rWorkout.exercises.map(\.name),
                            "deload must not change exercise selection")
-            for (d, n) in zip(dWorkout.exercises, nWorkout.exercises) {
-                XCTAssertLessThanOrEqual(d.sets, n.sets)
+            for (d, r) in zip(dWorkout.exercises, rWorkout.exercises) {
+                XCTAssertLessThanOrEqual(d.sets, r.sets)
                 XCTAssertGreaterThanOrEqual(d.sets, 1)
             }
         }

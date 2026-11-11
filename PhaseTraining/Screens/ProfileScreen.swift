@@ -151,7 +151,7 @@ struct ProfileScreen: View {
                         // the row while the planner kept stamping climbing days
                         // onto rest slots and lightening lift days, with no
                         // reachable UI to turn it off.
-                        if PhaseRule.skiSlugs.contains(store.memory.primarySport?.slug ?? "")
+                        if SportProfile.of(store.memory.primarySport?.slug).supportFeature
                             || !(store.memory.supportPattern?.isEmpty ?? true) {
                             SettingsRow(label: "Support sport",
                                         value: supportSummary,

@@ -1107,7 +1107,7 @@ final class PlanStoreSeamsTests: XCTestCase {
     /// both a full gym and a bodyweight-only profile, and that at least one
     /// sample survives.
     func test_wheelSamplesAreDistinctForEveryPlannableSport() {
-        let sports = SportCatalog.outdoorAuthoredSlugs.sorted() + ["alpine-skiing", "climbing"]
+        let sports = SportCatalog.outdoorAuthoredSlugs.sorted() + ["alpine-skiing", "snowboarding", "climbing"]
         for slug in sports where SportCatalog.isPlannable(slug) {
             for gear in [[Equipment.fullGym], [.bodyweight]] {
                 var mem = TrainingMemory()

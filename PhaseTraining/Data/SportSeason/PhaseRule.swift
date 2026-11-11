@@ -39,22 +39,17 @@ struct PhaseRule: Equatable {
             sessionMinutesTarget: sessionMinutesTarget)
     }
 
-    /// Resolve the rule for an athlete. Skiing + climbing are implemented;
-    /// other sports fall back to the low-fatigue transition rule.
+    /// Resolve the rule for an athlete from the sport's `SportProfile.rules`.
     static func resolve(sportSlug: String, variant: SportVariant, season: SeasonPhase) -> PhaseRule {
-        if skiSlugs.contains(sportSlug) {
+        switch SportProfile.of(sportSlug).rules {
+        case .ski:
             return (skiing[season] ?? skiing[.maintenance]!).applyingVariantOverride(variant)
-        }
-        if climbingSlugs.contains(sportSlug) {
+        case .climbing:
             return (climbing[season] ?? climbing[.maintenance]!).applyingVariantOverride(variant)
+        case .general:
+            return general[season] ?? general[.maintenance]!
         }
-        return skiing[.maintenance]!   // safe low-fatigue default for unsupported sports
     }
-
-    static let skiSlugs: Set<String> = ["alpine-skiing", "ski-mountaineering", "snow-sports"]
-    static let climbingSlugs: Set<String> = ["climbing", "bouldering", "sport-climbing",
-                                             "trad-climbing", "alpine-climbing", "ice-climbing",
-                                             "mixed-climbing"]
 
     // MARK: - Skiing / inbounds baseline (SPEC §3.2)
 
@@ -241,6 +236,65 @@ struct PhaseRule: Equatable {
             ],
             progression: .autoregulateHold,
             sessionVolumeCap: 12,
+            deferToSport: true,
+            sessionMinutesTarget: 35...55),
+    ]
+
+    // MARK: - General: the authored-only sports (Phase 3b, owner decision 2A)
+    //
+    // Mountain biking, mountaineering, trail running, hiking and thru-hiking
+    // serve authored routines on their sport days, so this table sets the dose
+    // of their complement days (SessionMix): build off-season, hold pre-season,
+    // maintain in-season and between seasons, taper for an event. Until
+    // 2026-11-11 these sports resolved to `skiing[.maintenance]`, a `.deload`
+    // rule capped at 45 minutes, in every season. A deload week is
+    // MesocycleProgression's call (`SportSeasonGenerator.deloadSetsFactor`) and
+    // never comes from this table. No demand weights: no engine sport session
+    // reads them, and a complement day brings its own mix.
+
+    static let general: [SeasonPhase: PhaseRule] = [
+        .offSeason: PhaseRule(
+            objective: "Build strength beside the sport's base",
+            sessionsPerWeek: 2...4,
+            demandWeights: [:],
+            progression: .progressiveOverload,
+            sessionVolumeCap: 24,
+            deferToSport: false,
+            sessionMinutesTarget: 50...75),
+
+        .preSeason: PhaseRule(
+            objective: "Hold strength while the sport's volume builds",
+            sessionsPerWeek: 2...3,
+            demandWeights: [:],
+            progression: .autoregulateHold,
+            sessionVolumeCap: 22,
+            deferToSport: false,
+            sessionMinutesTarget: 45...70),
+
+        .inSeason: PhaseRule(
+            objective: "Maintain strength through the season",
+            sessionsPerWeek: 1...2,
+            demandWeights: [:],
+            progression: .maintainMinimal,
+            sessionVolumeCap: 10,
+            deferToSport: true,
+            sessionMinutesTarget: 30...45),
+
+        .maintenance: PhaseRule(
+            objective: "Maintain strength between seasons",
+            sessionsPerWeek: 1...2,
+            demandWeights: [:],
+            progression: .maintainMinimal,
+            sessionVolumeCap: 10,
+            deferToSport: true,
+            sessionMinutesTarget: 30...45),
+
+        .eventPrep: PhaseRule(
+            objective: "Taper to the objective: keep strength, shed fatigue",
+            sessionsPerWeek: 2...3,
+            demandWeights: [:],
+            progression: .autoregulateHold,
+            sessionVolumeCap: 14,
             deferToSport: true,
             sessionMinutesTarget: 35...55),
     ]

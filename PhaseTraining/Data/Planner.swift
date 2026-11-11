@@ -78,12 +78,13 @@ enum Planner {
         // No phase cap on lift days: SessionMix limits only the SPORT
         // sessions to the phase's dose, and the rest become complement days.
         let readinessCapped = applyReadinessLiftDayFloor(memory: biased, context: context)
-        func build(_ m: TrainingMemory) -> WeekPlan {
-            generateUnbiased(memory: m, overrides: overrides, routines: routines,
+        func build(_ m: TrainingMemory, _ o: WeekOverrides? = overrides) -> WeekPlan {
+            generateUnbiased(memory: m, overrides: o, routines: routines,
                              recentlyPicked: recentlyPicked, today: today, calendar: calendar,
                              context: context, strategy: strategy)
         }
-        var plan = build(readinessCapped)
+        var base = readinessCapped
+        var plan = build(base)
         // Every week keeps a rest day (finding 8). A week the lift and sport
         // days fill is planned again with one lift day fewer, so placement
         // picks the free day and every lift day's index and session count
@@ -91,8 +92,8 @@ enum Planner {
         // count every later rebuild passes back (PlanStore.applyRecovery).
         // SessionMix holds the sport dose, so the day given up is a
         // complement day whenever the week has one.
-        if !plan.days.contains(where: { $0.kind == .rest }), readinessCapped.liftDaysPerWeek > 1 {
-            var fewer = readinessCapped
+        if !plan.days.contains(where: { $0.kind == .rest }), base.liftDaysPerWeek > 1 {
+            var fewer = base
             fewer.liftDaysPerWeek -= 1
             var retry = build(fewer)
             if retry.days.contains(where: { $0.kind == .rest }) {
@@ -102,33 +103,56 @@ enum Planner {
                     retry.days[i].generatedReason = restReason(was)
                 }
                 plan = retry
+                base = fewer
             }
         }
-        // PR 10A — apply the arc LAST, after every other pass has placed
-        // its slots. The deload transforms the finished plan rather than
-        // participating in placement, so it can't be undone or double-
-        // applied by the shape/override/taper passes above.
+        // Four passes give a lift day up after placement: the arc deload
+        // (PR 10A), the CNS budget (PR 10C, no 3+ consecutive high-CNS days),
+        // the skip-streak de-emphasis (PR 10D), and the rest-day guard for a
+        // week the retry above could not free (sport and event days fill it
+        // at any lift count). Each one picks its day on
+        // the finished week, as before. The week is then planned again with
+        // those days off and that many lift days fewer, the way the rest-day
+        // reserve does above, so every lift day's index and session count
+        // agree with the lift days the plan holds (Phase 3b item 6: a day
+        // turned into rest in place left the count one high, and a later
+        // `applyRecovery` rebuilt complement days as sport sessions). The
+        // passes run again on the new week; a CNS relocation, which keeps the
+        // lift count, stands as it is. A day the user booked (protected) is
+        // still changed in place, as before.
+        var arcDemotion = deloadWeek
+        var givenUp: [DayPlan] = []
+        for attempt in 0...3 {
+            var passed = plan
+            if arcDemotion { passed = demoteForDeload(plan: passed, calendar: calendar) }
+            passed = CNSBudgetEngine.balance(plan: passed)
+            if !deEmphasizedWeekdays.isEmpty {
+                passed = applySkipStreakBias(plan: passed, weekdays: deEmphasizedWeekdays, calendar: calendar)
+            }
+            passed = reserveRestDay(plan: passed)
+            let demoted = passed.days.filter { d in
+                d.kind == .rest && plan.days.contains {
+                    calendar.isDate($0.date, inSameDayAs: d.date) && $0.kind == .lift && !$0.protected
+                }
+            }
+            guard !demoted.isEmpty, attempt < 3 else { plan = passed; break }
+            givenUp += demoted
+            arcDemotion = false
+            var fewer = base
+            fewer.liftDaysPerWeek = max(0, base.liftDaysPerWeek - givenUp.count)
+            var off = overrides ?? WeekOverrides(weekStart: plan.days.first?.date ?? today)
+            off.unavailableDays.formUnion(givenUp.map { Weekday.from(date: $0.date, calendar: calendar) })
+            plan = build(fewer, off)
+            for day in givenUp {
+                guard let i = plan.days.firstIndex(where: { calendar.isDate($0.date, inSameDayAs: day.date) }) else { continue }
+                plan.days[i] = day
+            }
+        }
+        // The arc's volume cut, on the week's final lift days.
         if deloadWeek {
-            plan = applyDeload(plan: plan, calendar: calendar)
+            plan = scaleForDeload(plan: plan)
         }
-        // PR 10C — CNS budget: no 3+ consecutive high-CNS days. Runs on
-        // the FINISHED plan (after taper + arc) so any reshuffle those
-        // passes caused gets re-balanced. Sport/event days are protected
-        // — only planner-generated lift days are demotable.
-        var balanced = CNSBudgetEngine.balance(plan: plan)
-        // PR 10D — apply the skip-streak bias AFTER balancing, so the
-        // de-emphasis is the final word on the streak weekday (the CNS
-        // pass wouldn't re-add a lift there anyway, but the ordering
-        // makes the contract explicit: streak de-emphasis never loses
-        // to placement passes).
-        if !deEmphasizedWeekdays.isEmpty {
-            balanced = applySkipStreakBias(
-                plan: balanced,
-                weekdays: deEmphasizedWeekdays,
-                calendar: calendar
-            )
-        }
-        return reserveRestDay(plan: balanced)
+        return plan
     }
 
     /// Every week keeps at least one rest day: lift plus sport days top out at
@@ -201,62 +225,48 @@ enum Planner {
         return out
     }
 
-    /// PR 10A — transform a finished plan into a deload week.
-    ///
-    /// Two moves, both silent per spec §6.1:
-    ///   1. Prescriptions: every generated lift workout is re-generated
-    ///      with the `.deload` intensity bias (sets ×0.7, clamped ≥1 by
-    ///      the existing prescription path). The lift rotation (focus per
-    ///      index) is preserved — the deload trims VOLUME, it doesn't
-    ///      change which muscles the week trains.
-    ///   2. One lift day demoted to a recovery rest day, choosing the
-    ///      lift day whose demotion leaves the week most balanced
-    ///      (maximizes remaining inter-lift spacing). Only when 3+ lifts
-    ///      remain after demotion is disallowed... i.e. only demote when
-    ///      the week has 3+ lifts so ≥2 remain.
-    static func applyDeload(plan: WeekPlan,
-                            calendar: Calendar = .current) -> WeekPlan {
+    /// PR 10A, the arc deload's day off: one lift day becomes a recovery
+    /// rest day, the one whose loss leaves the remaining lift days most
+    /// evenly spaced (largest minimum gap; the latest date on a tie). Only
+    /// when the week has 3+ lifts, so 2 or more remain. `generate` then plans
+    /// the week again with that day off.
+    static func demoteForDeload(plan: WeekPlan,
+                                calendar: Calendar = .current) -> WeekPlan {
         var out = plan
         let liftIdxs = out.days.indices.filter { out.days[$0].kind == .lift }
-
-        // (1) demote one lift day to a recovery rest day.
-        if liftIdxs.count >= 3 {
-            // Candidate demotions: keep-2 balance score = min pairwise gap
-            // between remaining lift dates (larger min gap = more balanced).
-            // Deterministic tiebreak: latest date wins.
-            var best: (idx: Int, score: Int)? = nil
-            for drop in liftIdxs {
-                let remaining = liftIdxs.filter { $0 != drop }
-                    .map { calendar.startOfDay(for: out.days[$0].date).timeIntervalSince1970 }
-                    .sorted()
-                guard remaining.count >= 2 else { continue }
-                var gaps: [Double] = []
-                for i in 1..<remaining.count {
-                    gaps.append(remaining[i] - remaining[i - 1])
-                }
-                let minGap = Int((gaps.min() ?? 0) / 86_400)
-                if best == nil || minGap > best!.score {
-                    best = (drop, minGap)
-                }
+        guard liftIdxs.count >= 3 else { return out }
+        var best: (idx: Int, score: Int)? = nil
+        for drop in liftIdxs {
+            let remaining = liftIdxs.filter { $0 != drop }
+                .map { calendar.startOfDay(for: out.days[$0].date).timeIntervalSince1970 }
+                .sorted()
+            guard remaining.count >= 2 else { continue }
+            var gaps: [Double] = []
+            for i in 1..<remaining.count {
+                gaps.append(remaining[i] - remaining[i - 1])
             }
-            if let drop = best?.idx {
-                out.days[drop] = DayPlan(
-                    date: out.days[drop].date,
-                    kind: .rest,
-                    title: "Recovery",
-                    generatedReason: "Recovery day. You've trained hard the last few weeks"
-                )
+            let minGap = Int((gaps.min() ?? 0) / 86_400)
+            if best == nil || minGap > best!.score {
+                best = (drop, minGap)
             }
         }
+        if let drop = best?.idx {
+            out.days[drop] = DayPlan(
+                date: out.days[drop].date,
+                kind: .rest,
+                title: "Recovery",
+                generatedReason: "Recovery day. You've trained hard the last few weeks"
+            )
+        }
+        return out
+    }
 
-        // (1) trim prescriptions on surviving lift days. Scale the
-        // ALREADY-GENERATED workouts in place rather than re-running the
-        // generator: same exercises, same order, same recipes — only the
-        // set counts shrink by the .deload multiplier (×0.7, clamped
-        // 1-8, identical to IntensityBias.deload in makePickedRow). A
-        // re-generate would shift the deterministic in-slot picks
-        // (Bench → Dumbbell Bench class swaps) and break the continuity
-        // the authored recipes are meant to provide.
+    /// PR 10A, the arc deload's volume: every lift day's sets at x0.7
+    /// (clamped 1-8, identical to IntensityBias.deload in makePickedRow).
+    /// Scales the generated workouts in place: same exercises, same order,
+    /// only the set counts shrink.
+    static func scaleForDeload(plan: WeekPlan) -> WeekPlan {
+        var out = plan
         for idx in out.days.indices where out.days[idx].kind == .lift {
             guard var workout = out.days[idx].generatedWorkout else { continue }
             for e in workout.exercises.indices {
@@ -1072,7 +1082,7 @@ enum Planner {
         // and lightening lift days via the deconflict pass. ProfileScreen now
         // also keeps the row reachable whenever a pattern exists, so the user
         // can clear it; this stops it applying where it was never authored.
-        guard PhaseRule.skiSlugs.contains(memory.primarySport?.slug ?? "") else { return }
+        guard SportProfile.of(memory.primarySport?.slug).supportFeature else { return }
         let primaryVariant = memory.primaryVariant
         let supportSport = Sport.catalog.first { $0.slug == pattern.sportSlug }
         let verb = pattern.sportSlug == "climbing" ? "climb" : "train \(supportSport?.name ?? pattern.sportSlug)"
