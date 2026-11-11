@@ -250,3 +250,15 @@ movements, fatigue cap trims to 3, deload sets (setsLow - 1, RPE - 2), about
 `snowboarding` is not in `skiSlugs` while `snow-sports` is, so the two picker
 entries plan differently (see audits/2026-11-10-gap-round/reach.md item 5).
 Check which rule a complement day resolved to before tuning session length.
+
+Sport membership is decided in about ten places, not one (counted 2026-11-11):
+`PhaseRule.resolve`, `SportSeasonGenerator.supports` and `signatureDemand`,
+`SessionMix.family`, `AuthoredRoutine.outdoorAuthoredSlugs`, `Planner` support
+deconflict (ski only), `OnboardingSportSeasonsScreen.showSupport`,
+`ProfileScreen` support row, `TrainingMemory.skisPrimary`, and two places that
+add `snowboarding` to the ski set by hand (`SkiSeason.swift:36`,
+`SkiReadinessTest.swift:90`). Changing which sports count as ski means touching
+all of them. Routine coverage also has holes: mountaineering, hiking-trekking
+and thru-hiking have no `maintenance` (in-season) routine and trail-running no
+`build` (pre-season) one, so `AuthoredRoutineSelector.select` falls back to any
+phase.
