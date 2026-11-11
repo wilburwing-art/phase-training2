@@ -20,8 +20,7 @@
 //                                          subscription, PlanEdit pipeline
 //                                          (propose / apply / applyWorkoutDiff),
 //                                          drag-drop swap, drift detection,
-//                                          targeted regeneration (regenerateToday
-//                                          / regenerateWeek / consolidateWeek* /
+//                                          targeted regeneration (consolidateWeek* /
 //                                          migrateIfStale)
 //   PlanStore+Generation.swift             weekly generate, custom-routine
 //                                          composition, generator-context build
@@ -493,7 +492,13 @@ final class PlanStore: ObservableObject {
         sessionPlaces = []
         midWeekReshuffleCount = 0
         midWeekConsolidationCount = 0
+        // A staged next week from before the erase would otherwise be
+        // promoted into the fresh install on the next foreground.
+        pendingPlan = nil
+        pendingOverrides = nil
         defaults.removeObject(forKey: Self.planKey)
+        defaults.removeObject(forKey: Self.pendingPlanKey)
+        defaults.removeObject(forKey: Self.pendingOverridesKey)
         defaults.removeObject(forKey: Self.overridesKey)
         defaults.removeObject(forKey: Self.pastPlansKey)
         defaults.removeObject(forKey: Self.planOverridesKey)
@@ -773,69 +778,6 @@ final class PlanStore: ObservableObject {
 
     // MARK: - Targeted regeneration (Phase 15c)
     //
-    // The full `generate(from:)` rewrites the entire week. These finer-grained
-    // entry points let the user re-roll just today's workout (variety / "I want
-    // something different") or refresh the whole week against the current
-    // profile (drift after a Profile edit) without losing the rest of the plan.
-
-    /// Replace one day's generated workout with a freshly composed one. Keeps
-    /// the rest of the week intact. No-op if today isn't in the current plan,
-    /// the day isn't lift / mobility, or the day is protected (user-pinned).
-    ///
-    /// `salt` lets the caller force a fresh deterministic pick when re-rolling
-    /// the same day (default = current timestamp, so each tap produces a new
-    /// workout). Tests pass a fixed salt for repeatability.
-    func regenerateToday(memory: TrainingMemory,
-                         today: Date = Date(),
-                         salt: String? = nil) {
-        guard var plan = plan else { return }
-        let cal = Calendar.current
-        guard let idx = plan.days.firstIndex(where: { cal.isDate($0.date, inSameDayAs: today) })
-        else { return }
-
-        let day = plan.days[idx]
-        guard !day.protected else { return }
-        guard day.kind == .lift else { return }
-
-        let profile = DemographicProfile.from(memory)
-        let saltValue = salt ?? String(Int(Date().timeIntervalSince1970))
-        let seed = "\(memory.planInputsHash)-regen-\(saltValue)"
-        let recentIds = recentPicks?.recentlyPickedIds() ?? []
-        let context = buildGeneratorContext(memory: memory, today: today)
-
-        // Re-derive this lift's index so push/pull/legs rotation stays
-        // coherent if the user has multiple lifts in the week.
-        let liftDays = plan.days.filter { $0.kind == .lift }
-        let liftIndex = liftDays.firstIndex(where: { cal.isDate($0.date, inSameDayAs: today) }) ?? 0
-        let workout = WorkoutGenerator.generateLift(
-            liftIndex: liftIndex,
-            totalLifts: liftDays.count,
-            memory: memory,
-            profile: profile,
-            hashSeed: seed,
-            recentlyPicked: recentIds,
-            context: context,
-            date: today
-        )
-
-        plan.days[idx].generatedWorkout = workout
-        plan.days[idx].title = workout.title
-        plan.days[idx].routineId = nil
-        plan.days[idx].generatedReason = workout.provenance
-
-        // NOTE: do NOT touch inputsHash here — only one day was regenerated.
-        // If memory has drifted since the last full generate, the other six
-        // days are still stale and the drift banner must keep firing.
-        self.plan = plan
-        savePlan()
-    }
-
-    /// Regenerate the full week against current memory. Convenience alias for
-    /// `generate(from:)` named for the drift-resolution UI surfaces.
-    @discardableResult
-    func regenerateWeek(memory: TrainingMemory, today: Date = Date()) -> WeekPlan {
-        generate(from: memory, today: today)
-    }
 
     /// Which constraint blocked `consolidateWeek` from applying. Threaded to
     /// the Today no-op alert so the user sees why the week couldn't absorb
@@ -866,7 +808,7 @@ final class PlanStore: ObservableObject {
     /// today-onward lift days are re-planned to N-1 via `WeekConsolidator`,
     /// each survivor is regenerated as a (possibly merged) workout via
     /// `WorkoutGenerator.generateConsolidated`, and the surplus day drops to
-    /// rest. Direct-mutation + savePlan, mirroring `regenerateToday` (the
+    /// rest. Direct-mutation + savePlan, mirroring `consolidateWeek` (the
     /// `PlanEdit` seam has no set-workout op). Gated by the 1/week cap.
     /// Returns nil when it applied, else the constraint that blocked it.
     func consolidateWeekDetailed(memory: TrainingMemory,

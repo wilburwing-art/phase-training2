@@ -50,8 +50,9 @@ extension SessionStore {
             entry.sport.slug == "running" || entry.sport.slug.contains("run")
         }
         guard !candidates.isEmpty else { return nil }
+        // "5k" as its own token: "15k" and "25k" contain the substring.
         let fives = candidates.filter {
-            ($0.note ?? "").lowercased().contains("5k")
+            ($0.note ?? "").lowercased().range(of: #"(?<![0-9.])5\s?k\b"#, options: .regularExpression) != nil
         }
         guard !fives.isEmpty else { return nil }
         return Double(fives.map(\.durationMinutes).min()! * 60)

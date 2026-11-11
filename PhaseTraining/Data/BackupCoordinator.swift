@@ -41,9 +41,9 @@ final class BackupCoordinator: ObservableObject {
         }
     }
 
-    func exportBackup() {
+    func exportBackup(defaults: UserDefaults = .standard, userDB: UserDatabase = .defaultStore()) {
         do {
-            let envelope = BackupManager.snapshot()
+            let envelope = BackupManager.snapshot(defaults: defaults, userDB: userDB)
             let url = try BackupManager.writeTempFile(envelope)
             exportURL = url
             presentingShare = true
@@ -80,10 +80,12 @@ final class BackupCoordinator: ObservableObject {
         store: MemoryStore,
         planStore: PlanStore,
         sessionStore: SessionStore,
-        customStore: CustomRoutineStore
+        customStore: CustomRoutineStore,
+        defaults: UserDefaults = .standard,
+        userDB: UserDatabase = .shared
     ) {
         do {
-            try BackupManager.restore(envelope, into: .standard)
+            try BackupManager.restore(envelope, into: defaults, userDB: userDB)
             store.reload()
             planStore.reloadFromDefaults()
             sessionStore.reload()
@@ -117,9 +119,11 @@ final class BackupCoordinator: ObservableObject {
         sportLogStore: SportLogStore,
         recentPicks: RecentPicksStore,
         conversation: CoachConversationStore,
-        activityDetection: ActivityDetectionStore
+        activityDetection: ActivityDetectionStore,
+        defaults: UserDefaults = .standard,
+        userDB: UserDatabase? = nil
     ) {
-        MemoryStore.wipeAllUserData()
+        MemoryStore.wipeAllUserData(defaults: defaults, userDB: userDB)
         store.reset()
         sessionStore.clearInMemoryState()
         customStore.reload()

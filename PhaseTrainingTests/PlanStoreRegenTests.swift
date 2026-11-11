@@ -50,68 +50,6 @@ final class PlanStoreRegenTests: XCTestCase {
                       "Experience change should drift the plan")
     }
 
-    // MARK: - regenerateWeek
-
-    func test_regenerateWeek_clearsDrift() {
-        let (store, today) = makeStore()
-        var memory = gymMemory()
-        _ = store.generate(from: memory, today: today)
-
-        memory.equipment = [.bodyweight]    // drift
-        XCTAssertTrue(store.needsRegeneration(for: memory))
-
-        _ = store.regenerateWeek(memory: memory, today: today)
-        XCTAssertFalse(store.needsRegeneration(for: memory),
-                       "regenerateWeek should pull the plan's inputs hash in line with memory")
-    }
-
-    func test_regenerateWeek_reflectsNewEquipment() {
-        let (store, today) = makeStore()
-        var memory = gymMemory()
-        _ = store.generate(from: memory, today: today)
-
-        // Pre-condition: with fullGym, plan likely has gym exercises.
-        memory.equipment = [.bodyweight]
-        _ = store.regenerateWeek(memory: memory, today: today)
-
-        let allExerciseIds = store.plan?.days
-            .compactMap(\.generatedWorkout)
-            .flatMap(\.exercises)
-            .map(\.exerciseId) ?? []
-        for id in allExerciseIds {
-            let env = CoachDatabase.shared.exercise(id: id)?.environment
-            XCTAssertNotEqual(env, "gym",
-                "After regenerateWeek with bodyweight equipment, exercise \(id) should not be gym-tagged")
-        }
-    }
-
-    // MARK: - regenerateToday
-
-    func test_regenerateToday_mutatesOnlyTodaySlot() {
-        let (store, today) = makeStore()
-        let memory = gymMemory()
-        _ = store.generate(from: memory, today: today)
-
-        let originalDays = store.plan?.days.map { ($0.date, $0.title) } ?? []
-
-        // Re-roll today with a fixed salt for repeatability.
-        store.regenerateToday(memory: memory, today: today, salt: "test-1")
-
-        let newDays = store.plan?.days ?? []
-        XCTAssertEqual(originalDays.count, newDays.count)
-
-        let cal = Calendar.current
-        for (idx, day) in newDays.enumerated() {
-            if cal.isDate(day.date, inSameDayAs: today) {
-                // Today changed — title may or may not differ depending on
-                // whether the new pick happens to land on the same exercises.
-                continue
-            }
-            XCTAssertEqual(day.title, originalDays[idx].1,
-                "Non-today day at idx \(idx) should be untouched")
-        }
-    }
-
     // MARK: - migrateIfStale (build ≤35 → 36+ schema migration)
 
     func test_migrateIfStale_replacesRoutineIdDaysWithGeneratedWorkouts() {
@@ -170,18 +108,5 @@ final class PlanStoreRegenTests: XCTestCase {
         XCTAssertNil(store.plan)
         store.migrateIfStale(memory: gymMemory(), today: today)
         XCTAssertNil(store.plan, "Migration should not synthesize a plan from nothing")
-    }
-
-    func test_regenerateToday_isNoopOnRestDay() {
-        let (store, today) = makeStore()
-        var memory = gymMemory()
-        // Force today to be rest.
-        memory.liftDaysPerWeek = 0
-        _ = store.generate(from: memory, today: today)
-
-        let originalTitle = store.plan?.today()?.title
-        store.regenerateToday(memory: memory, today: today, salt: "x")
-        XCTAssertEqual(store.plan?.today()?.title, originalTitle,
-                       "Rest day should be untouched by regenerateToday")
     }
 }

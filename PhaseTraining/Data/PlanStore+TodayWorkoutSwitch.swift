@@ -12,7 +12,7 @@
 //
 //  So this writes the SAME persisted seam (overrides.customRoutineByDate, so
 //  the choice still survives a later regeneration) and then applies the change
-//  to the one day directly, per the regenerateToday mutation pattern.
+//  to the one day directly, per the direct-mutation pattern (mutate plan.days, then savePlan).
 //
 //  Restoring is why DisplacedPlan exists. Clearing the override and
 //  re-deriving the day gives a DIFFERENT workout, which from the outside looks

@@ -93,13 +93,30 @@ extension PlanStore {
     /// from the refinement loop so these rules are unit-testable without a
     /// live CoachClient.
     func refinementCandidates(in plan: WeekPlan) -> [(index: Int, day: DayPlan)] {
-        plan.days.enumerated().compactMap { idx, day in
+        // A day the user already trained keeps the workout they did; rewriting
+        // it would change what the plan says happened.
+        let cal = Calendar.current
+        let trainedDays = Set((sessionStore?.savedSessions ?? []).map { cal.startOfDay(for: $0.startTime) })
+        return plan.days.enumerated().compactMap { idx, day in
             guard day.kind == .lift else { return nil }
+            guard !trainedDays.contains(cal.startOfDay(for: day.date)) else { return nil }
             guard day.generatedWorkout != nil else { return nil }
             if day.generatedWorkout?.refinedByLLMAt != nil { return nil }
             if overrides.customRoutineId(for: day.date) != nil { return nil }
             return (idx, day)
         }
+    }
+
+    // MARK: - Client seam
+
+    /// One build_workout stream per day. Tests substitute a stub; the default
+    /// is the live CoachClient call.
+    typealias RefinementStream = @Sendable (_ system: String, _ context: String, _ prompt: String)
+        -> AsyncThrowingStream<CoachClient.StreamPart, Error>
+
+    static let liveRefinementStream: RefinementStream = { system, context, prompt in
+        CoachClient().stream(cachedSystem: system, perTurnContext: context, history: [],
+                             userMessage: prompt, tools: [CoachTools.buildWorkout])
     }
 
     // MARK: - Core refinement loop
@@ -108,7 +125,8 @@ extension PlanStore {
     /// Parallel via TaskGroup; per-day failures stay silent and keep the
     /// deterministic baseline visible.
     @MainActor
-    func refineCurrentPlanWithLLM(memory: TrainingMemory) async {
+    func refineCurrentPlanWithLLM(memory: TrainingMemory,
+                                  stream: @escaping RefinementStream = PlanStore.liveRefinementStream) async {
         guard let snapshotPlan = plan else { return }
         let sessions = sessionStore?.savedSessions ?? []
         // Build 99: sport logs feed the refinement snapshot too, so each
@@ -160,7 +178,8 @@ extension PlanStore {
                         profile: profile,
                         sessions: sessions,
                         sportLogs: sportLogs,
-                        snapshot: snapshot
+                        snapshot: snapshot,
+                        stream: stream
                     )
                     return (idx, refined)
                 }
@@ -185,7 +204,8 @@ extension PlanStore {
         profile: DemographicProfile,
         sessions: [SavedSession],
         sportLogs: [SportLogEntry],
-        snapshot: String
+        snapshot: String,
+        stream makeStream: RefinementStream
     ) async -> GeneratedWorkout? {
         guard let existing = day.generatedWorkout else { return nil }
 
@@ -202,13 +222,10 @@ extension PlanStore {
         Refine the planned workout for \(dateStr) (focus: \(existing.title)). Keep the focus consistent with the week's plan but personalize the exercise picks, intensity, and prescriptions to the user's recent sessions, soreness, and goals. Call build_workout exactly once.
         """
 
-        let client = CoachClient()
-        let stream = client.stream(
-            cachedSystem: CoachSystemPrompt.cachedHeader,
-            perTurnContext: CoachSystemPrompt.contextBlock(snapshot: snapshot),
-            history: [],
-            userMessage: userPrompt,
-            tools: [CoachTools.buildWorkout]
+        let stream = makeStream(
+            CoachSystemPrompt.cachedHeader,
+            CoachSystemPrompt.contextBlock(snapshot: snapshot),
+            userPrompt
         )
 
         var toolCallData: Data?

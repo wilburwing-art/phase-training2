@@ -129,19 +129,29 @@ final class WatchSyncCoordinator: NSObject, ObservableObject {
     func apply(_ events: [WatchSyncEvent]) {
         guard let active = store.active else {
             // Nothing in progress: a start from the watch is adopted as is,
-            // with the watch's start time, so its set events line up.
-            // Anything else has nothing to apply to.
-            for event in events {
-                if case .sessionStarted(let session) = event.kind, store.active == nil {
-                    Self.log.notice("session started from the watch: \(session.name, privacy: .public)")
-                    store.saveActive(session)
-                    state = WatchSyncState(sessionStart: session.startTime)
-                    state.appliedEventIds.insert(event.id)
-                    persist(state)
-                } else {
-                    Self.log.notice("event dropped: no active session")
-                }
+            // with the watch's start time, so its set events line up. The
+            // events after it in the same batch belong to that session (a
+            // whole workout arrives in one batch when the phone was out of
+            // reach throughout), so they are applied to it rather than dropped.
+            // A start this phone already applied is a redelivery of a session
+            // that has since ended, and adopting it would reopen that session.
+            guard let i = events.firstIndex(where: {
+                if case .sessionStarted = $0.kind { return !state.appliedEventIds.contains($0.id) }
+                return false
+            }), case .sessionStarted(let session) = events[i].kind else {
+                Self.log.notice("events dropped: no active session")
+                return
             }
+            Self.log.notice("session started from the watch: \(session.name, privacy: .public)")
+            var next = WatchSyncState(sessionStart: session.startTime)
+            // Carried forward so a redelivered old start is recognised. The
+            // cap keeps years of sessions from piling up in UserDefaults.
+            if state.appliedEventIds.count < 2_000 { next.appliedEventIds = state.appliedEventIds }
+            next.appliedEventIds.insert(events[i].id)
+            store.saveActive(session)
+            persist(next)
+            let rest = Array(events[(i + 1)...])
+            if !rest.isEmpty { apply(rest) }
             return
         }
         let outcome = WatchSyncReducer.apply(events, to: active, state: state)

@@ -348,7 +348,7 @@ struct ProfileScreen: View {
             }
         }) {
             DataEditorSheet(
-                onExport: { pendingDataAction = backup.exportBackup },
+                onExport: { pendingDataAction = { backup.exportBackup() } },
                 onImport: { pendingDataAction = { backup.presentingImporter = true } },
                 onExportCSV: sessionStore.savedSessions.isEmpty ? nil : {
                     let sessions = sessionStore.savedSessions
