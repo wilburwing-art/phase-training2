@@ -170,3 +170,17 @@ then on retry `accessing build database ".../XCBuildData/build.db": disk I/O err
 a cleanup tool) deleted `~/Library/Developer/Xcode/DerivedData` while the build ran. The tell:
 `du -sh ~/Library/Developer/Xcode/DerivedData` reports a few MB on a project that normally holds
 gigabytes, while `df` shows free space. Re-run once; the next build starts from scratch and passes.
+
+## The IOSurface line can sit next to a real crash
+
+2026-11-11: two full runs ended `** TEST FAILED **` with 0 failures, about half
+the tests executed, `IOSurfaceClientSetSurfaceNotify failed e00002c7` and
+`Restarting after unexpected exit, crash, or test timeout`. That matches the
+flake above, but it was not one: both times the runner died inside the same
+test, `PlanStoreLLMRefinementTests.testResultIsDroppedWhenAFresherPlanReplacedTheOneRefined`,
+which called `MainActor.assumeIsolated` from a stream closure that does not run
+on the main actor. That trap kills the process.
+
+Before calling it a flake, find the test that was running when it died:
+`grep -n "Restarting after" -B8 log | grep started | tail -1`. If two runs
+die in the same test, the cause is that test. A flake moves around.
