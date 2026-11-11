@@ -151,7 +151,7 @@ final class ReadinessEventsTests: XCTestCase {
         let fb = FeedbackEntry(
             date: now().addingTimeInterval(-1 * 86_400),
             sessionId: "x", difficulty: "right",
-            hurtAreas: ["shoulder"], ranLong: false, notes: nil
+            hurtAreas: ["shoulder"], notes: nil
         )
         let ctx = build(soreness: [sore], feedback: [fb])
         XCTAssertFalse(ctx.hasReadinessData,

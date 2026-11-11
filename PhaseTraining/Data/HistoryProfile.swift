@@ -71,6 +71,8 @@ struct HistoryProfile: Equatable {
         let date: Date
         let weightLb: Double
         let reps: Int
+        /// Reps in reserve, from logged RIR or RPE, native or imported.
+        var rir: Double? = nil
     }
 
     /// One workout's best estimated 1RM, in lb.
@@ -98,6 +100,11 @@ struct HistoryProfile: Equatable {
         let latestBest: SetRecord
         /// Up to `recentPoints` session-best estimates, oldest first.
         let recentBests: [Point]
+        /// What the last two attempts' completion says about the next
+        /// load: soften (-5%) when they averaged under 80% of the asked
+        /// sets, amplify (+5 lb) when both hit every set and target rep.
+        /// Native sessions only, since imports carry no target sets.
+        var autoregulation: AutoregulationEngine.Adjustment = .neutral
     }
 
     /// Keyed like every per-exercise map (`ExerciseKey`).
@@ -150,6 +157,7 @@ struct HistoryProfile: Equatable {
         let date: Date
         let weightLb: Double
         let reps: Int
+        let rir: Double?
     }
 
     static func build(sessions: [SavedSession], imported: [ImportedSet], now: Date) -> HistoryProfile {
@@ -166,7 +174,8 @@ struct HistoryProfile: Equatable {
                 for (s, set) in ex.sets.enumerated() where set.done && !set.isWarmup {
                     guard let w = set.weightValue, w > 0, let r = set.repsValue, r > 0 else { continue }
                     entries.append(Entry(id: "\(session.id)-\(e)-\(s)", key: key, name: ex.name,
-                                         date: session.startTime, weightLb: w, reps: r))
+                                         date: session.startTime, weightLb: w, reps: r,
+                                         rir: set.effortRIR))
                 }
             }
         }
@@ -177,7 +186,8 @@ struct HistoryProfile: Equatable {
             guard let id = set.exerciseId, let kg = set.weight, kg > 0, let r = set.reps, r > 0 else { continue }
             if catalogNames[id] == nil { catalogNames[id] = catalog.exercise(id: id)?.name ?? set.exerciseNameRaw }
             entries.append(Entry(id: set.id, key: "id:\(id)", name: catalogNames[id]!,
-                                 date: set.performedAt, weightLb: kg * kgToLb, reps: r))
+                                 date: set.performedAt, weightLb: kg * kgToLb, reps: r,
+                                 rir: effortRIR(rir: set.rir, rpe: set.rpe)))
         }
 
         let flags = clean(entries)
@@ -194,10 +204,12 @@ struct HistoryProfile: Equatable {
         let detraining = detrainingRate(byKey.values.map { $0.map { ($0.date, $0.weightLb, $0.reps) } },
                                         layoffs: layoffs)
 
+        let attempts = GeneratorContext.buildAttemptHistory(sessions: sessions, now: now)
         var exercises: [String: ExerciseProfile] = [:]
         for (key, rows) in byKey {
-            guard let p = profile(rows, excluded: excludedByKey[key] ?? 0, now: now,
+            guard var p = profile(rows, excluded: excludedByKey[key] ?? 0, now: now,
                                   perWeek: detraining.perWeek) else { continue }
+            p.autoregulation = AutoregulationEngine.classify(ExerciseKey.lookup(attempts, name: p.name) ?? [])
             if key.hasPrefix("id:") {
                 exercises[key] = p
                 if rawNames[key] == nil {
@@ -212,6 +224,14 @@ struct HistoryProfile: Equatable {
         return HistoryProfile(exercises: exercises,
                               audit: Audit(flags: flags.sorted { $0.date > $1.date }, layoffs: layoffs),
                               detraining: detraining)
+    }
+
+    /// Imported effort in the same terms as `LoggedSet.effortRIR`: the logged
+    /// RIR, else 10 minus a logged RPE (1-10).
+    static func effortRIR(rir: Double?, rpe: Double?) -> Double? {
+        if let rir, rir >= 0 { return rir }
+        if let rpe, rpe > 0, rpe <= 10 { return 10 - rpe }
+        return nil
     }
 
     /// One pair per (break, exercise) trained on both sides of it: the median
@@ -301,7 +321,7 @@ struct HistoryProfile: Equatable {
 
     private static func profile(_ rows: [Entry], excluded: Int, now: Date, perWeek: Double) -> ExerciseProfile? {
         guard let last = rows.map(\.date).max() else { return nil }
-        let estimate = ProvenStrength.estimate(rows.map { .init(date: $0.date, weightLb: $0.weightLb, reps: $0.reps) },
+        let estimate = ProvenStrength.estimate(rows.map { .init(date: $0.date, weightLb: $0.weightLb, reps: $0.reps, rir: $0.rir) },
                                                now: now, perWeek: perWeek)
 
         // Session-best estimated 1RM, oldest first.
@@ -336,7 +356,7 @@ struct HistoryProfile: Equatable {
                                typicalStepLb: typicalStep, lastTrained: last,
                                bestE1RM: best.e1rm, bestDate: best.date,
                                workouts: bests.count, excludedSets: excluded,
-                               latestBest: SetRecord(date: latest.date, weightLb: latest.weightLb, reps: latest.reps),
+                               latestBest: SetRecord(date: latest.date, weightLb: latest.weightLb, reps: latest.reps, rir: latest.rir),
                                recentBests: bests.suffix(recentPoints).map { Point(date: $0.date, e1rm: $0.e1rm) })
     }
 

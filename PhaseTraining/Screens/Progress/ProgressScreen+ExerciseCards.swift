@@ -228,11 +228,6 @@ extension ProgressScreen {
                     if let d = entry.difficulty {
                         difficultyChip(d)
                     }
-                    if entry.ranLong {
-                        Text("RAN LONG")
-                            .styled(.micro)
-                            .foregroundStyle(Color.ink3)
-                    }
                     if !entry.hurtAreas.isEmpty {
                         Text("HURT: \(entry.hurtAreas.joined(separator: ", "))")
                             .styled(.micro)

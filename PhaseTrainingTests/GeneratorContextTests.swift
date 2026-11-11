@@ -92,7 +92,7 @@ final class GeneratorContextTests: XCTestCase {
             sessionId: "x",
             difficulty: "right",
             hurtAreas: ["Shoulder"],
-            ranLong: false, notes: nil
+            notes: nil
         )
         let ctx = GeneratorContext.from(
             sessions: [], soreness: [sore], feedback: [fb], now: now,

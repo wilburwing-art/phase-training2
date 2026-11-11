@@ -64,6 +64,7 @@ extension PlanStore {
             // honored.
             previousFeedback: memory.feedback,
             recentSportLogs: sportLogStore?.entries ?? [],
+            recentSessions: sessionStore?.savedSessions ?? [],
             recentlyPicked: recentPicks?.recentlyPickedIds() ?? [],
             today: today,
             context: context,

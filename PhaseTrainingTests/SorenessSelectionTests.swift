@@ -312,4 +312,124 @@ final class SorenessSelectionTests: XCTestCase {
         XCTAssertTrue(rebuilt.blockedAreas?.contains("quads") ?? false, "\(rebuilt.blockedAreas ?? [])")
         XCTAssertEqual(soreCount(rebuilt, "quads"), 0, rebuilt.exercises.map(\.name).joined(separator: ", "))
     }
+
+    // MARK: - Check-in energy and time chip (P4 item 3)
+
+    private func lift(_ m: TrainingMemory, on date: Date, index: Int = 0, lifts: Int = 3) -> GeneratedWorkout {
+        WorkoutGenerator.generateLift(
+            liftIndex: index, totalLifts: lifts, memory: m, profile: DemographicProfile.from(m),
+            hashSeed: m.planInputsHash, date: date)
+    }
+
+    private func checkIn(_ date: Date, energy: String = "normal", time: Int? = nil) -> SorenessEntry {
+        SorenessEntry(date: date, energy: energy, soreness: "none", areas: [], timeBudget: time)
+    }
+
+    func test_lowEnergyCheckIn_easesTodaysSession() throws {
+        for slug in ["alpine-skiing", "mountain-biking"] {
+            var m = try memory(sport: slug, season: .preSeason)
+            let normal = lift(m, on: monday())
+            m.soreness = [checkIn(monday(), energy: "low")]
+            let eased = lift(m, on: monday())
+            XCTAssertEqual(eased.easedForLowEnergy, true, slug)
+            XCTAssertNil(normal.easedForLowEnergy, slug)
+            XCTAssertEqual(eased.exercises.count, normal.exercises.count, slug)
+            for (i, (a, b)) in zip(eased.exercises, normal.exercises).enumerated() {
+                XCTAssertEqual(a.exerciseId, b.exerciseId, slug)
+                XCTAssertEqual(a.sets, i == 0 ? b.sets : max(1, b.sets - 1), "\(slug) \(a.name)")
+                let top = (a.rpe ?? "").split(whereSeparator: { !$0.isNumber && $0 != "." })
+                    .compactMap { Double($0) }.max() ?? 7
+                XCTAssertLessThanOrEqual(top, 7, "\(slug) \(a.name) rpe \(a.rpe ?? "nil")")
+            }
+        }
+    }
+
+    func test_lowEnergyDoesNotCarryToTheNextDay() throws {
+        var m = try memory(sport: "alpine-skiing", season: .preSeason)
+        m.soreness = [checkIn(monday(), energy: "low")]
+        XCTAssertNil(lift(m, on: day(1)).easedForLowEnergy)
+    }
+
+    func test_timeChip_shortensTodaysSession() throws {
+        for slug in ["alpine-skiing", "mountain-biking"] {
+            var m = try memory(sport: slug, season: .preSeason)
+            m.sessionMinutes = 90
+            let full = lift(m, on: monday())
+            m.soreness = [checkIn(monday(), time: 30)]
+            let short = lift(m, on: monday())
+            XCTAssertEqual(short.timeBudgetMinutes, 30, slug)
+            XCTAssertLessThan(short.estimatedMinutes, full.estimatedMinutes, slug)
+        }
+    }
+
+    func test_applyRecovery_rebuildsTodayForTheTimeChipAndLeavesOtherDays() throws {
+        var m = try memory(sport: "alpine-skiing", season: .preSeason)
+        m.sessionMinutes = 90
+        let store = freshStore()
+        _ = store.generate(from: m, today: monday())
+        let before = try XCTUnwrap(store.plan?.days)
+        guard let todayIdx = before.firstIndex(where: {
+            $0.kind == .lift && Calendar.current.isDate($0.date, inSameDayAs: monday())
+        }) else { throw XCTSkip("no lift on the anchor Monday") }
+
+        m.soreness = [checkIn(monday(), energy: "low", time: 30)]
+        store.applyRecovery(memory: m, today: monday())
+        let after = try XCTUnwrap(store.plan?.days)
+        XCTAssertEqual(after[todayIdx].generatedWorkout?.timeBudgetMinutes, 30)
+        XCTAssertEqual(after[todayIdx].generatedWorkout?.easedForLowEnergy, true)
+        XCTAssertLessThan(after[todayIdx].generatedWorkout?.estimatedMinutes ?? .max,
+                          before[todayIdx].generatedWorkout?.estimatedMinutes ?? 0)
+        for i in before.indices where i != todayIdx {
+            XCTAssertEqual(after[i].generatedWorkout?.timeBudgetMinutes, nil)
+        }
+        store.applyRecovery(memory: m, today: monday())
+        XCTAssertEqual(store.plan?.days, after, "a second apply changed something")
+    }
+
+    // MARK: - Post-workout hurt areas (P4 item 4)
+
+    private func hurt(_ areas: [String], hoursBefore: Double, of date: Date) -> FeedbackEntry {
+        FeedbackEntry(date: date.addingTimeInterval(-hoursBefore * 3600), sessionId: nil,
+                      difficulty: "right", hurtAreas: areas, notes: nil)
+    }
+
+    func test_hurtKnee_easesQuadsAndHamstringsForThirtySixHours() {
+        let tue = day(1)   // anchored at noon
+        let fresh = MuscleRecovery.status(on: tue, exposures: [], soreness: [],
+                                          feedback: [hurt(["knee"], hoursBefore: 20, of: tue)], now: monday())
+        XCTAssertEqual(fresh.eased, ["quads", "hamstrings"])
+        XCTAssertTrue(fresh.blocked.isEmpty)
+        let stale = MuscleRecovery.status(on: tue, exposures: [], soreness: [],
+                                          feedback: [hurt(["knee"], hoursBefore: 40, of: tue)], now: monday())
+        XCTAssertTrue(stale.eased.isEmpty)
+    }
+
+    func test_everyHurtJointMapsToRealBuckets() {
+        for joint in ["knee", "shoulder", "lower back", "elbow", "wrist", "neck", "hip", "ankle"] {
+            let b = MuscleRecovery.buckets(forHurtArea: joint)
+            XCTAssertFalse(b.isEmpty, joint)
+            XCTAssertTrue(b.isSubset(of: MuscleBucket.sorenessPrimarySlugs), joint)
+        }
+        XCTAssertTrue(MuscleRecovery.buckets(forHurtArea: "bench").isEmpty)
+    }
+
+    func test_hurtKnee_changesTheNextLegSession() throws {
+        var m = try memory(sport: "alpine-skiing", season: .offSeason)
+        let when = day(1)
+        let before = lift(m, on: when)
+        m.feedback = [hurt(["knee"], hoursBefore: 20, of: when)]
+        let after = lift(m, on: when)
+        XCTAssertEqual(Set(after.soreAreas ?? []), ["quads", "hamstrings"])
+        XCTAssertNil(before.soreAreas)
+    }
+
+    func test_feedbackEntry_decodesStoredPayloadWithRanLong() throws {
+        let json = """
+        {"id":"\(UUID().uuidString)","date":0,"sessionId":"a","difficulty":"right",
+         "hurtAreas":["knee"],"ranLong":true,"notes":"n"}
+        """
+        let entry = try JSONDecoder().decode(FeedbackEntry.self, from: Data(json.utf8))
+        XCTAssertEqual(entry.hurtAreas, ["knee"])
+        XCTAssertEqual(entry.notes, "n")
+    }
 }

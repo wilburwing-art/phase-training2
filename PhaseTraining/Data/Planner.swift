@@ -26,7 +26,7 @@ enum Planner {
     /// `PlanStore.migrateIfStale` rebuilds any plan stamped lower (or not at
     /// all) on the next launch. Leave it alone for changes that only matter
     /// from the next week on.
-    static let version = 3
+    static let version = 4
 
     static func generate(
         memory: TrainingMemory,
@@ -38,6 +38,9 @@ enum Planner {
         // schedule a full lifting week on top, trim one lift day. Defaulted
         // so existing callers (tests, previews) don't have to thread it.
         recentSportLogs: [SportLogEntry] = [],
+        // The one-tap "How did it feel" rating on each saved session. Read as
+        // a difficulty vote when the session has no FeedbackEntry of its own.
+        recentSessions: [SavedSession] = [],
         recentlyPicked: Set<Int> = [],
         today: Date = Date(),
         calendar: Calendar = .current,
@@ -62,6 +65,7 @@ enum Planner {
             memory: memory,
             feedback: previousFeedback,
             sportLogs: recentSportLogs,
+            sessions: recentSessions,
             calendar: calendar,
             now: today
         )
@@ -295,14 +299,30 @@ enum Planner {
         memory: TrainingMemory,
         feedback: [FeedbackEntry],
         sportLogs: [SportLogEntry] = [],
+        sessions: [SavedSession] = [],
         calendar: Calendar = .current,
         now: Date = Date()
     ) -> TrainingMemory {
         let cutoff = calendar.date(byAdding: .day, value: -7, to: now) ?? Date.distantPast
 
         let recentFb = feedback.filter { $0.date >= cutoff }
-        let tooHard = recentFb.filter { $0.difficulty == "too_hard" }.count
-        let tooEasy = recentFb.filter { $0.difficulty == "too_easy" }.count
+        var tooHard = Double(recentFb.filter { $0.difficulty == "too_hard" }.count)
+        var tooEasy = Double(recentFb.filter { $0.difficulty == "too_easy" }.count)
+
+        // One-tap feel ratings. A session that also has a rated FeedbackEntry
+        // (same template, same day) is counted once, through the entry. An
+        // abandoned session stores its stop reason in `feel`, which none of
+        // these labels match, so it contributes nothing.
+        let rated = recentFb.filter { $0.difficulty != nil }
+        for session in sessions where session.endTime >= cutoff && session.endTime <= now {
+            guard let weight = feelWeight(session.feel) else { continue }
+            let alreadyCounted = rated.contains {
+                $0.sessionId == session.templateId
+                    && calendar.isDate($0.date, inSameDayAs: session.endTime)
+            }
+            if alreadyCounted { continue }
+            if weight > 0 { tooHard += weight } else { tooEasy -= weight }
+        }
 
         // Distinct calendar days with at least one HARD sport log. Mirrors
         // GeneratorContext.recentHardSportDays — we recompute here rather
@@ -325,6 +345,18 @@ enum Planner {
             adjusted.liftDaysPerWeek = min(6, adjusted.liftDaysPerWeek + 1)
         }
         return adjusted
+    }
+
+    /// Difficulty vote of a Complete-screen feel label: positive is too hard,
+    /// negative too easy, nil neutral. "Hard" counts half, so two of them are
+    /// one "Too much".
+    static func feelWeight(_ feel: String?) -> Double? {
+        switch feel {
+        case "Too much": return 1
+        case "Hard": return 0.5
+        case "Too easy": return -1
+        default: return nil
+        }
     }
 
     /// PR 5 (weekly-coach roadmap) — merge a `WeekTone` into the

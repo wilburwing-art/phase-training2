@@ -78,4 +78,92 @@ final class ProgressionSuggestionProfileTests: XCTestCase {
         XCTAssertEqual(missed?.basis, .lastSession)
         XCTAssertEqual(missed?.suggestedWeight, 180, "missed by 2 backs off as before")
     }
+
+    // MARK: - Autoregulation reaches the on-screen suggestion (P4 item 5)
+
+    private func attempt(_ name: String, daysAgo: Double, done: Int, of target: Int,
+                         weight: Double = 100, reps: Int = 5, now: Date) -> SavedSession {
+        let when = now.addingTimeInterval(-daysAgo * 86_400)
+        let sets = (0..<target).map { i in
+            LoggedSet(num: i + 1, weight: "\(Int(weight))", reps: "\(reps)", rpe: "", done: i < done)
+        }
+        return SavedSession(templateId: "t", name: name, category: "c", startTime: when,
+                            exercises: [LoggedExercise(id: "e", name: name, type: nil, unit: "lbs",
+                                                       targetSets: target, targetReps: reps, rest: 90,
+                                                       sets: sets, prevSets: [])],
+                            feel: nil, note: nil, endTime: when, duration: 1800)
+    }
+
+    private func suggestion(_ sessions: [SavedSession], now: Date) -> ProgressionSuggestion.Result? {
+        let profile = HistoryProfile.build(sessions: sessions, imported: [], now: now)
+        let last = sessions.first!.exercises[0]
+        return ProgressionSuggestion.suggest(
+            prevSets: last.sets, targetReps: 5, exerciseName: "Zz Squat", unit: "lb",
+            profile: profile.profile(forExerciseNamed: "Zz Squat"))
+    }
+
+    func test_twoSessionsUnderEightyPercentSoftenTheSuggestion() throws {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let weak = [attempt("Zz Squat", daysAgo: 2, done: 3, of: 5, now: now),
+                    attempt("Zz Squat", daysAgo: 6, done: 3, of: 5, now: now)]
+        let ok = [attempt("Zz Squat", daysAgo: 2, done: 4, of: 5, now: now),
+                  attempt("Zz Squat", daysAgo: 6, done: 4, of: 5, now: now)]
+        let eased = try XCTUnwrap(suggestion(weak, now: now))
+        let normal = try XCTUnwrap(suggestion(ok, now: now))
+        XCTAssertEqual(normal.suggestedWeight, 105, "80% completion is not under the bar")
+        XCTAssertEqual(eased.suggestedWeight, 97.5, "105 less 5%, snapped down to 2.5")
+        XCTAssertLessThan(eased.suggestedWeight, normal.suggestedWeight)
+    }
+
+    func test_twoCleanSessionsAmplifyTheSuggestion() throws {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let strong = [attempt("Zz Squat", daysAgo: 2, done: 5, of: 5, now: now),
+                      attempt("Zz Squat", daysAgo: 6, done: 5, of: 5, now: now)]
+        let r = try XCTUnwrap(suggestion(strong, now: now))
+        XCTAssertEqual(r.suggestedWeight, 110, "105 plus 5 lb")
+    }
+
+    func test_aSingleWeakSessionChangesNothing() throws {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let one = [attempt("Zz Squat", daysAgo: 2, done: 2, of: 5, now: now)]
+        let r = try XCTUnwrap(suggestion(one, now: now))
+        XCTAssertEqual(r.suggestedWeight, 105)
+    }
+
+    // MARK: - Imported effort steers suggestions (P4 item 6)
+
+    private func importedHistory(rir: Double?, rpe: Double?, now: Date) throws -> HistoryProfile.ExerciseProfile {
+        guard let squat = CoachDatabase.shared.exerciseId(forImportName: "Back Squat") else {
+            throw XCTSkip("no Back Squat in the catalog")
+        }
+        let kg = 225 * ImportUnitCorrection.kgPerLb
+        let sets = (0..<3).map { i in
+            ImportedSet(id: "s\(i)", source: .fitbodCSV, exerciseId: squat, exerciseNameRaw: "Back Squat",
+                        performedAt: now.addingTimeInterval(-3 * 86_400), setNum: i + 1,
+                        weight: kg, reps: 5, rir: rir, rpe: rpe)
+        }
+        let profile = HistoryProfile.build(sessions: [], imported: sets, now: now)
+        return try XCTUnwrap(profile.profile(forExerciseNamed: "Back Squat"))
+    }
+
+    func test_importedEffortReachesTheProfile() throws {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        XCTAssertEqual(try importedHistory(rir: 3, rpe: nil, now: now).latestBest.rir, 3)
+        XCTAssertEqual(try importedHistory(rir: nil, rpe: 7, now: now).latestBest.rir, 3, "RPE 7 is 3 in reserve")
+        XCTAssertEqual(try importedHistory(rir: nil, rpe: 7, now: now).estimate?.rir, 3)
+        XCTAssertNil(try importedHistory(rir: nil, rpe: nil, now: now).latestBest.rir)
+    }
+
+    func test_importedEasySetsRaiseTheFirstSuggestion() throws {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        func load(_ p: HistoryProfile.ExerciseProfile) throws -> Double {
+            let est = try XCTUnwrap(p.estimate)
+            return try XCTUnwrap(ProgressionSuggestion.fromHistory(est, targetReps: 5, unit: "lb")).suggestedWeight
+        }
+        let unrated = try load(importedHistory(rir: nil, rpe: nil, now: now))
+        let easy = try load(importedHistory(rir: 3, rpe: nil, now: now))
+        let failure = try load(importedHistory(rir: 0, rpe: nil, now: now))
+        XCTAssertGreaterThan(easy, unrated)
+        XCTAssertEqual(failure, unrated, "a set at failure is taken as it stands")
+    }
 }

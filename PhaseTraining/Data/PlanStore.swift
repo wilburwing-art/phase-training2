@@ -938,9 +938,12 @@ final class PlanStore: ObservableObject {
             if context == nil { context = buildGeneratorContext(memory: memory, today: today) }
             let ctx = context ?? .empty
             let wanted = MuscleRecovery.status(on: day.date, exposures: ctx.muscleExposures,
-                                               soreness: memory.soreness, now: today)
+                                               soreness: memory.soreness,
+                                               feedback: memory.feedback, now: today)
             guard Set(existing.soreAreas ?? []) != wanted.eased
-                    || Set(existing.blockedAreas ?? []) != wanted.blocked else { continue }
+                    || Set(existing.blockedAreas ?? []) != wanted.blocked
+                    || (existing.easedForLowEnergy ?? false) != wanted.lowEnergy
+                    || existing.timeBudgetMinutes != wanted.timeBudget else { continue }
             // The day's own picks are not "recent" to itself, so only the
             // unrecovered movements give way.
             let workout = WorkoutGenerator.generateLift(

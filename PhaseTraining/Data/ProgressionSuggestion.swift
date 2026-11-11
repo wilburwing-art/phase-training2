@@ -53,6 +53,8 @@ enum ProgressionSuggestion {
 
     /// At or above this many reps in reserve, a hit earns the bigger jump.
     static let easyRIR = 3.0
+    /// Most reps in reserve `fromHistory` credits to an easy set.
+    static let maxEffortCreditReps = 4.0
 
     /// What to render on the exercise tile.
     struct Result: Equatable {
@@ -143,7 +145,15 @@ enum ProgressionSuggestion {
     /// bodyweight estimates or a non-numeric target.
     static func fromHistory(_ prior: PriorBest, targetReps: Int, unit: String) -> Result? {
         guard prior.weight > 0, prior.reps > 0, targetReps > 0 else { return nil }
-        let e1rm = StrengthStandards.epley1RM(weight: prior.weight, reps: prior.reps)
+        var e1rm = StrengthStandards.epley1RM(weight: prior.weight, reps: prior.reps)
+        // Effort the way a native hit steers the next weight: a set with 3 or
+        // more reps in reserve was not a max effort, so its 1RM is read at the
+        // reps it had left (capped, so a loose RPE cannot inflate the load).
+        // A set at or near failure is taken as it stands.
+        if let rir = prior.rir, rir >= easyRIR, prior.reps > 1 {
+            let spare = min(rir, maxEffortCreditReps)
+            e1rm *= (1 + (Double(prior.reps) + spare) / 30) / (1 + Double(prior.reps) / 30)
+        }
         var load = e1rm / (1 + Double(targetReps) / 30)
         let step: Double
         if unit.lowercased() == "kg" {
@@ -210,7 +220,39 @@ enum ProgressionSuggestion {
         }
         let step = personalStep(profile: profile, workingWeight: prior.weight, unit: unit,
                                 compound: isCompound(name: exerciseName))
-        return suggest(prior: prior, exerciseName: exerciseName, unit: unit, bump: step)
+        return regulated(suggest(prior: prior, exerciseName: exerciseName, unit: unit, bump: step),
+                         by: profile.autoregulation, unit: unit)
+    }
+
+    /// Completion pattern over the last two sessions (`AutoregulationEngine`):
+    /// two attempts averaging under 80% of the asked sets soften the number
+    /// 5% (snapped down to the unit's small step), and two attempts that hit
+    /// every set and target rep add 5 lb (2.5 kg). A back-off is never
+    /// overridden, and an amplify never turns a hold into a bump, the same
+    /// limits the generator's own weight note carries.
+    static func regulated(_ result: Result?, by adjustment: AutoregulationEngine.Adjustment,
+                          unit: String) -> Result? {
+        guard let r = result, adjustment.isActive else { return result }
+        let kg = unit.lowercased() == "kg"
+        let prior = r.suggestedWeight - r.delta
+        switch adjustment {
+        case .soften where r.delta >= 0:
+            let step = kg ? 1.25 : 2.5
+            let eased = max(0, ((r.suggestedWeight * adjustment.loadMultiplier + 1e-6) / step).rounded(.down) * step)
+            let delta = eased - prior
+            return Result(suggestedWeight: eased, delta: delta,
+                          label: delta == 0 ? "hold" : signedLabel(delta),
+                          rationale: "Under 80% of your sets done in the last two sessions. Eased 5%.",
+                          basis: r.basis)
+        case .amplify where r.delta > 0:
+            let add = kg ? 2.5 : adjustment.flatAddLb
+            return Result(suggestedWeight: r.suggestedWeight + add, delta: r.delta + add,
+                          label: signedLabel(r.delta + add),
+                          rationale: "Every set and rep landed in the last two sessions. Bump \(formatBump(r.delta + add, unit: unit)).",
+                          basis: r.basis)
+        default:
+            return result
+        }
     }
 
     /// The lifter's usual jump (`HistoryProfile.typicalStepLb`) in `unit`,

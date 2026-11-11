@@ -112,6 +112,9 @@ struct PriorBest: Equatable {
     let weight: Double      // lb
     let reps: Int
     let date: Date
+    /// Reps in reserve on the set this stands for, when the lifter logged
+    /// RIR or RPE (native or imported). Read by `ProgressionSuggestion.fromHistory`.
+    var rir: Double? = nil
 }
 
 /// Keys for the per-exercise maps (`priorBest`, `lastAttempt`).

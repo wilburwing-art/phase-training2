@@ -82,10 +82,12 @@ enum AuthoredRoutineSelector {
     /// cannot equip is swapped for a curated substitute they can, or dropped,
     /// and a routine that thins below the floor is skipped for the next one.
     private static func viable(_ ids: [Int], excluding excluded: Set<Int>,
-                               allowed: Set<String>) -> [Int] {
-        guard !excluded.isEmpty || !allowed.isEmpty else { return ids }
+                               allowed: Set<String>,
+                               preferences: RoutinePreferences) -> [Int] {
+        guard !excluded.isEmpty || !allowed.isEmpty || !preferences.isEmpty else { return ids }
         return ids.filter { id in
-            AuthoredRoutine.resolvedRows(forRoutineId: id, excluded: excluded, allowed: allowed)
+            AuthoredRoutine.resolvedRows(forRoutineId: id, excluded: excluded, allowed: allowed,
+                                         preferences: preferences)
                 .count >= minimumMovements
         }
     }
@@ -119,13 +121,15 @@ enum AuthoredRoutineSelector {
     static func select(sportSlug: String, phase: SeasonPhase, sessionIndex: Int,
                        experience: ExperienceLevel? = nil,
                        excludedExerciseIds: Set<Int> = [],
-                       allowedEquipmentSlugs: Set<String> = []) -> Int? {
+                       allowedEquipmentSlugs: Set<String> = [],
+                       preferences: RoutinePreferences = .none) -> Int? {
         guard isEnabled, shouldServeAuthored(sportSlug: sportSlug) else { return nil }
         let db = CoachDatabase.shared
         var ids = viable(routines(db.authoredRoutineIds(sportSlug: sportSlug,
                                                         phaseLabels: phaseLabels(for: phase)),
                                   for: experience, sportSlug: sportSlug),
-                         excluding: excludedExerciseIds, allowed: allowedEquipmentSlugs)
+                         excluding: excludedExerciseIds, allowed: allowedEquipmentSlugs,
+                         preferences: preferences)
         if ids.isEmpty {
             // Phase gap. A season-engine-supported sport (climbing pilot) falls
             // THROUGH to the engine. An unsupported authored sport has no engine
@@ -134,7 +138,8 @@ enum AuthoredRoutineSelector {
             guard !SportSeasonGenerator.supports(sportSlug) else { return nil }
             ids = viable(routines(db.authoredRoutineIds(sportSlug: sportSlug, phaseLabels: allPhaseLabels),
                                   for: experience, sportSlug: sportSlug),
-                         excluding: excludedExerciseIds, allowed: allowedEquipmentSlugs)
+                         excluding: excludedExerciseIds, allowed: allowedEquipmentSlugs,
+                         preferences: preferences)
             if ids.isEmpty, SportCatalog.outdoorAuthoredSlugs.contains(sportSlug) {
                 // Last resort for a real outdoor sport with no content of its
                 // own: the universal cross-sport base (Easy Strength). Gated on
@@ -152,7 +157,8 @@ enum AuthoredRoutineSelector {
                 // reason and points at Profile, so the floor applies here too
                 // and falling through is the better answer.
                 ids = viable(db.authoredRoutineIds(sportSlug: genericBaseSlug, phaseLabels: allPhaseLabels),
-                             excluding: excludedExerciseIds, allowed: allowedEquipmentSlugs)
+                             excluding: excludedExerciseIds, allowed: allowedEquipmentSlugs,
+                         preferences: preferences)
             }
         }
         guard !ids.isEmpty else { return nil }
@@ -184,6 +190,33 @@ enum SportCatalog {
         guard outdoorAuthoredSlugs.contains(slug) else { return false }
         return !CoachDatabase.shared.authoredRoutineIds(
             sportSlug: slug, phaseLabels: AuthoredRoutineSelector.allPhaseLabels).isEmpty
+    }
+}
+
+/// What the user has said about specific exercises, as the authored-routine
+/// path reads it: the same dislike substring test and sunk-affinity threshold
+/// the season engine applies through `AthleteState`.
+struct RoutinePreferences: Equatable {
+    var dislikedNameKeywords: [String] = []
+    var affinities: [String: Int] = [:]
+
+    static let none = RoutinePreferences()
+
+    var isEmpty: Bool {
+        dislikedNameKeywords.isEmpty
+            && !affinities.values.contains { $0 <= AthleteState.affinitySinkThreshold }
+    }
+
+    static func from(_ memory: TrainingMemory) -> RoutinePreferences {
+        RoutinePreferences(
+            dislikedNameKeywords: AthleteState.dislikedKeywords(memory.dislikes),
+            affinities: AthleteState.lowercasedAffinities(memory.exerciseAffinities))
+    }
+
+    func rejects(_ name: String) -> Bool {
+        let lower = name.lowercased()
+        if (affinities[lower] ?? 0) <= AthleteState.affinitySinkThreshold { return true }
+        return dislikedNameKeywords.contains { lower.contains($0) }
     }
 }
 
@@ -235,7 +268,8 @@ enum AuthoredRoutine {
     /// user (R2-05). The selector's floor and `workout` both read this so the
     /// two never disagree about what a routine holds for this user.
     static func resolvedRows(forRoutineId routineId: Int,
-                             excluded: Set<Int>, allowed: Set<String>) -> [ResolvedRow] {
+                             excluded: Set<Int>, allowed: Set<String>,
+                             preferences: RoutinePreferences = .none) -> [ResolvedRow] {
         let db = CoachDatabase.shared
         let rows = db.exercises(forRoutineId: routineId)
             .filter { !excluded.contains($0.exerciseId) }
@@ -243,21 +277,28 @@ enum AuthoredRoutine {
             ResolvedRow(row: r, exerciseId: r.exerciseId, name: r.name,
                         swappedFrom: nil, missingEquipment: [])
         }
-        guard !allowed.isEmpty, !rows.isEmpty else { return rows.map(plain) }
+        guard (!allowed.isEmpty || !preferences.isEmpty), !rows.isEmpty else { return rows.map(plain) }
 
-        let reqs = db.requiredEquipmentSlugs(forExerciseIds: Set(rows.map(\.exerciseId)))
-        func usable(_ need: Set<String>) -> Bool { need.isEmpty || need.isSubset(of: allowed) }
+        let reqs = allowed.isEmpty ? [:]
+            : db.requiredEquipmentSlugs(forExerciseIds: Set(rows.map(\.exerciseId)))
+        func usable(_ need: Set<String>) -> Bool {
+            allowed.isEmpty || need.isEmpty || need.isSubset(of: allowed)
+        }
         var taken = Set(rows.map(\.exerciseId))
         var names: [String: String] = [:]
         var out: [ResolvedRow] = []
         for r in rows {
             let need = reqs[r.exerciseId] ?? []
-            if usable(need) { out.append(plain(r)); continue }
+            // A disliked or sunk exercise goes the same way as one the user
+            // cannot equip: a curated substitute, else the row is dropped.
+            if usable(need) && !preferences.rejects(r.name) { out.append(plain(r)); continue }
             let subs = db.substitutes(forExerciseId: r.exerciseId)
-            let subReqs = db.requiredEquipmentSlugs(forExerciseIds: Set(subs.map(\.id)))
+            let subReqs = allowed.isEmpty ? [:]
+                : db.requiredEquipmentSlugs(forExerciseIds: Set(subs.map(\.id)))
             let pick = subs
                 .filter { !excluded.contains($0.id) && !taken.contains($0.id)
-                          && usable(subReqs[$0.id] ?? []) }
+                          && usable(subReqs[$0.id] ?? [])
+                          && !preferences.rejects($0.exercise.name) }
                 .min { a, b in
                     let ra = a.contexts.contains(where: equipmentContexts.contains) ? 0 : 1
                     let rb = b.contexts.contains(where: equipmentContexts.contains) ? 0 : 1
@@ -265,17 +306,19 @@ enum AuthoredRoutine {
                 }
             guard let pick else { continue }
             taken.insert(pick.id)
-            if names.isEmpty { names = db.equipmentNameBySlug() }
+            let missing = need.subtracting(allowed).sorted()
+            if names.isEmpty, !missing.isEmpty { names = db.equipmentNameBySlug() }
             out.append(ResolvedRow(
                 row: r, exerciseId: pick.id, name: pick.exercise.name, swappedFrom: r.name,
-                missingEquipment: need.subtracting(allowed).sorted().map { names[$0] ?? $0 }))
+                missingEquipment: allowed.isEmpty ? [] : missing.map { names[$0] ?? $0 }))
         }
         return out
     }
 
-    static func resolvedRows(forRoutineId routineId: Int, profile: DemographicProfile) -> [ResolvedRow] {
+    static func resolvedRows(forRoutineId routineId: Int, profile: DemographicProfile,
+                             preferences: RoutinePreferences = .none) -> [ResolvedRow] {
         resolvedRows(forRoutineId: routineId, excluded: profile.excludedExerciseIds,
-                     allowed: profile.allowedEquipmentSlugs)
+                     allowed: profile.allowedEquipmentSlugs, preferences: preferences)
     }
 
     static func workout(
@@ -284,10 +327,12 @@ enum AuthoredRoutine {
         context: GeneratorContext,
         focus: WorkoutFocus,
         profile: DemographicProfile,
-        blockedBuckets: Set<String> = []
+        blockedBuckets: Set<String> = [],
+        timeBudget: Int? = nil
     ) -> GeneratedWorkout? {
         let db = CoachDatabase.shared
-        let all = resolvedRows(forRoutineId: routineId, profile: profile)
+        let all = resolvedRows(forRoutineId: routineId, profile: profile,
+                               preferences: RoutinePreferences.from(memory))
         guard !all.isEmpty else { return nil }
         // Rule one: drop rows whose prime mover is still recovering. Under
         // three rows left is not the authored session any more, so the caller
@@ -300,7 +345,7 @@ enum AuthoredRoutine {
         }
         guard !rows.isEmpty, skipped.isEmpty || rows.count >= 3 else { return nil }
 
-        let exercises: [GeneratedExercise] = rows.map { rr in
+        var exercises: [GeneratedExercise] = rows.map { rr in
             let re = rr.row
             let reps = re.reps ?? "8-12"
             // A swapped row says so, and what the original needed, so the user
@@ -338,13 +383,23 @@ enum AuthoredRoutine {
 
         // R3-12: a duration-based row ("1x20 min", "2x3 flights" is not one) is
         // its own minutes, not sets x 90 s; the rest estimate at 90 s per set.
-        let estMin = max(15, exercises.reduce(0) { acc, ex in
+        func seconds(_ ex: GeneratedExercise) -> Int {
             if let m = ex.reps.range(of: #"(\d+)\s*-?\s*(\d+)?\s*min"#, options: .regularExpression) {
                 let nums = ex.reps[m].split(whereSeparator: { !$0.isNumber }).compactMap { Int($0) }
-                if let top = nums.last { return acc + ex.sets * top * 60 }
+                if let top = nums.last { return ex.sets * top * 60 }
             }
-            return acc + ex.sets * 90
-        } / 60)
+            return ex.sets * 90
+        }
+        // A same-day time chip: the authored order puts the main work first,
+        // so trailing rows give way until the session fits, never below the
+        // movement floor.
+        if let budget = timeBudget {
+            while exercises.count > AuthoredRoutineSelector.minimumMovements,
+                  exercises.reduce(0, { $0 + seconds($1) }) / 60 > budget {
+                exercises.removeLast()
+            }
+        }
+        let estMin = max(15, exercises.reduce(0) { $0 + seconds($1) } / 60)
         let meta = db.authoredRoutineMeta(id: routineId)
         let provenance = meta?.source.map { "Authored · \($0)" } ?? "Authored program"
         var summary = "\(exercises.count) movements · ~\(estMin) min"

@@ -471,4 +471,63 @@ final class AuthoredRoutineTests: XCTestCase {
     func testSeasonEnginePathNeverServesContraindicatedExercise() {
         assertNoContraindicated(sportSlug: "alpine-skiing", injurySlug: "acl-injury")
     }
+
+    // MARK: - Preferences reach authored days (P4 item 1)
+
+    private func mtbMemory() -> TrainingMemory {
+        var memory = TrainingMemory()
+        memory.equipment = [.fullGym]
+        memory.primarySport = Sport.resolve(slug: "mountain-biking")
+        return memory
+    }
+
+    private func authoredNames(_ memory: TrainingMemory) -> [String] {
+        AuthoredRoutine.workout(
+            forRoutineId: 299, memory: memory, context: .empty, focus: .fullBodyA,
+            profile: DemographicProfile.from(memory))?.exercises.map(\.name) ?? []
+    }
+
+    func testSunkAffinityRemovesRowFromAuthoredDay() {
+        var memory = mtbMemory()
+        let before = authoredNames(memory)
+        guard let target = before.first else { return XCTFail("routine 299 built nothing") }
+        memory.exerciseAffinities[target.lowercased()] = AthleteState.affinitySinkThreshold
+        let after = authoredNames(memory)
+        XCTAssertFalse(after.contains(target), "a sunk exercise must not be served")
+        XCTAssertGreaterThanOrEqual(after.count, AuthoredRoutineSelector.minimumMovements)
+    }
+
+    func testDislikeKeywordRemovesRowFromAuthoredDay() {
+        var memory = mtbMemory()
+        guard let target = authoredNames(memory).first(where: { $0.contains("Lunge") }) else {
+            return XCTFail("routine 299 has no lunge row")
+        }
+        memory.dislikes = ["lunge"]
+        XCTAssertFalse(authoredNames(memory).contains { $0.lowercased().contains("lunge") },
+                       "\(target) matches a dislike and must not be served or substituted in")
+    }
+
+    func testMildNegativeAffinityDoesNotRemoveRow() {
+        var memory = mtbMemory()
+        guard let target = authoredNames(memory).first else { return XCTFail("empty") }
+        memory.exerciseAffinities[target.lowercased()] = AthleteState.affinitySinkThreshold + 1
+        XCTAssertTrue(authoredNames(memory).contains(target))
+    }
+
+    func testPreferencesApplyBeforeTheMinimumMovementFloor() {
+        // Rejecting every row with no usable substitute thins a routine below
+        // the floor, so the selector must skip it rather than serve it.
+        let memory = mtbMemory()
+        let profile = DemographicProfile.from(memory)
+        let rows = AuthoredRoutine.resolvedRows(forRoutineId: 299, profile: profile)
+        var prefs = RoutinePreferences.none
+        for r in rows { prefs.affinities[r.name.lowercased()] = AthleteState.affinitySinkThreshold }
+        let thinned = AuthoredRoutine.resolvedRows(forRoutineId: 299, profile: profile, preferences: prefs)
+        XCTAssertFalse(thinned.contains { prefs.rejects($0.name) })
+        if thinned.count < AuthoredRoutineSelector.minimumMovements {
+            XCTAssertNotEqual(
+                AuthoredRoutineSelector.select(sportSlug: "mountain-biking", phase: .preSeason, sessionIndex: 0,
+                                               preferences: prefs), 299)
+        }
+    }
 }

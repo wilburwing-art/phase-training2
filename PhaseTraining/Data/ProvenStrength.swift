@@ -27,6 +27,8 @@ enum ProvenStrength {
         let date: Date
         let weightLb: Double
         let reps: Int
+        /// Reps in reserve, when logged.
+        var rir: Double? = nil
     }
 
     static let workoutsConsidered = 3
@@ -98,7 +100,7 @@ enum ProvenStrength {
         let reps = latest.best.reps
         // Inverse of StrengthStandards.epley1RM, which treats 1 rep as the 1RM.
         let weight = reps == 1 ? e1rm : e1rm / (1 + Double(reps) / 30)
-        return PriorBest(weight: weight, reps: reps, date: latest.date)
+        return PriorBest(weight: weight, reps: reps, date: latest.date, rir: latest.best.rir)
     }
 
     private static func epley(_ e: Evidence) -> Double {

@@ -862,6 +862,69 @@ final class PlannerTests: XCTestCase {
         )
     }
 
+    private func savedSession(feel: String?, daysAgo: Int, templateId: String = "t") -> SavedSession {
+        let end = Calendar.current.date(byAdding: .day, value: -daysAgo, to: Date())!
+        return SavedSession(templateId: templateId, name: "Lift", category: "lift",
+                            startTime: end.addingTimeInterval(-3600), exercises: [],
+                            feel: feel, note: nil, endTime: end, duration: 3600)
+    }
+
+    func test_recentSignalBias_tooMuchFeelTwice_trimsOneLiftDay() {
+        var memory = TrainingMemory()
+        memory.liftDaysPerWeek = 4
+        let sessions = [savedSession(feel: "Too much", daysAgo: 1),
+                        savedSession(feel: "Too much", daysAgo: 3)]
+        let adjusted = Planner.applyRecentSignalBias(memory: memory, feedback: [], sessions: sessions)
+        XCTAssertEqual(adjusted.liftDaysPerWeek, 3)
+    }
+
+    func test_recentSignalBias_tooEasyFeelTwice_expandsOneLiftDay() {
+        var memory = TrainingMemory()
+        memory.liftDaysPerWeek = 3
+        let sessions = [savedSession(feel: "Too easy", daysAgo: 1),
+                        savedSession(feel: "Too easy", daysAgo: 2)]
+        let adjusted = Planner.applyRecentSignalBias(memory: memory, feedback: [], sessions: sessions)
+        XCTAssertEqual(adjusted.liftDaysPerWeek, 4)
+    }
+
+    func test_recentSignalBias_hardCountsHalf() {
+        var memory = TrainingMemory()
+        memory.liftDaysPerWeek = 4
+        let one = Planner.applyRecentSignalBias(
+            memory: memory, feedback: [],
+            sessions: [savedSession(feel: "Hard", daysAgo: 1), savedSession(feel: "Hard", daysAgo: 2),
+                       savedSession(feel: "Hard", daysAgo: 3)])
+        XCTAssertEqual(one.liftDaysPerWeek, 4, "three Hards are 1.5 votes, under the threshold of 2")
+        let two = Planner.applyRecentSignalBias(
+            memory: memory, feedback: [],
+            sessions: (1...4).map { savedSession(feel: "Hard", daysAgo: $0) })
+        XCTAssertEqual(two.liftDaysPerWeek, 3)
+    }
+
+    func test_recentSignalBias_neutralAndAbandonedFeelsAreIgnored() {
+        var memory = TrainingMemory()
+        memory.liftDaysPerWeek = 4
+        let sessions = ["Right", "Easy", "Pain", "Felt off", nil, "Too much"].enumerated().map {
+            savedSession(feel: $0.element, daysAgo: $0.offset + 1)
+        }
+        let adjusted = Planner.applyRecentSignalBias(memory: memory, feedback: [], sessions: sessions)
+        XCTAssertEqual(adjusted.liftDaysPerWeek, 4, "one Too much is below the threshold")
+    }
+
+    func test_recentSignalBias_feelIsNotDoubleCountedWithFeedbackEntry() {
+        var memory = TrainingMemory()
+        memory.liftDaysPerWeek = 4
+        let s1 = savedSession(feel: "Too much", daysAgo: 1, templateId: "a")
+        let s2 = savedSession(feel: "Too much", daysAgo: 2, templateId: "b")
+        let fb = FeedbackEntry(date: s1.endTime, sessionId: "a", difficulty: "too_hard")
+        // Entry for a plus the feel for b is two votes. Without the dedupe it would be three, and
+        // with only the entry and no feel for b it is one: assert the exact boundary.
+        let two = Planner.applyRecentSignalBias(memory: memory, feedback: [fb], sessions: [s1, s2])
+        XCTAssertEqual(two.liftDaysPerWeek, 3)
+        let one = Planner.applyRecentSignalBias(memory: memory, feedback: [fb], sessions: [s1])
+        XCTAssertEqual(one.liftDaysPerWeek, 4, "s1 is already counted through its entry")
+    }
+
     func test_recentSignalBias_threeHardSportDays_trimsOneLiftDay() {
         var memory = TrainingMemory()
         memory.liftDaysPerWeek = 4
@@ -921,7 +984,6 @@ final class PlannerTests: XCTestCase {
                 sessionId: nil,
                 difficulty: "too_hard",
                 hurtAreas: [],
-                ranLong: false,
                 notes: nil
             )
         }

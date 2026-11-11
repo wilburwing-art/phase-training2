@@ -175,7 +175,6 @@ struct PostWorkoutFeedbackSheet: View {
             sessionId: sessionId,
             difficulty: difficulty,
             hurtAreas: Array(hurtAreas).sorted(),
-            ranLong: false,
             notes: trimmedNotes.isEmpty ? nil : trimmedNotes
         )
         memoryStore.update { $0.feedback.append(entry) }

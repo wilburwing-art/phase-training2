@@ -412,7 +412,6 @@ enum CoachContext {
             for f in feedback {
                 var parts: [String] = ["\(short(f.date))"]
                 if let d = f.difficulty { parts.append("felt \(d.replacingOccurrences(of: "_", with: " "))") }
-                if f.ranLong { parts.append("ran long") }
                 if !f.hurtAreas.isEmpty { parts.append("hurt: \(f.hurtAreas.joined(separator: ", "))") }
                 if let n = f.notes, !n.isEmpty { parts.append("note: \(sanitizeFreeText(n))") }
                 lines.append("- " + parts.joined(separator: " · "))

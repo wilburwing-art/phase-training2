@@ -135,6 +135,12 @@ struct GeneratedWorkout: Codable, Hashable {
     /// The blocked areas that actually cost this session a movement. Today
     /// names these.
     var skippedAreas: [String]? = nil
+    /// Check-in stamps, compared by `PlanStore.applyRecovery` the way
+    /// `soreAreas` is. `easedForLowEnergy` is true when a same-day "low
+    /// energy" check-in eased the session; `timeBudgetMinutes` is the same-day
+    /// time chip it was fitted to. Nil on older plans.
+    var easedForLowEnergy: Bool? = nil
+    var timeBudgetMinutes: Int? = nil
 }
 
 /// Why this exercise ended up in the workout. Default is `.recipe` — the

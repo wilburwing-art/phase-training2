@@ -246,6 +246,7 @@ struct WeeklyCheckInFlow: View {
             routines: routines,
             previousFeedback: Array(memoryStore.memory.feedback.suffix(20)),
             recentSportLogs: sportLogStore.entries,
+            recentSessions: planStore.sessionStore?.savedSessions ?? [],
             today: Self.nextWeekStart(),
             // Without context the readiness lift-day floor defaults to neutral,
             // so the check-in regen silently ignored detrained-state capping

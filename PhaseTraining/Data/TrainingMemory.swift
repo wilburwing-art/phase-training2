@@ -885,7 +885,6 @@ struct FeedbackEntry: Codable, Identifiable, Hashable {
     /// "too_easy" | "right" | "too_hard" — kept loose for now.
     var difficulty: String?
     var hurtAreas: [String] = []
-    var ranLong: Bool = false
     var notes: String?
 }
 

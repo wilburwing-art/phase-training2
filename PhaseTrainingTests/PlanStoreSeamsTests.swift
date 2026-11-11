@@ -380,7 +380,7 @@ final class PlanStoreSeamsTests: XCTestCase {
             sessionId: "s1",
             difficulty: "right",
             hurtAreas: ["Shoulder"],
-            ranLong: false, notes: nil
+            notes: nil
         )]
 
         let ctx = store.makeGeneratorContext(memory: memory, today: today, includeParkedSignals: true)

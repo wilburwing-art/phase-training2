@@ -309,12 +309,10 @@ struct ProgressScreen: View {
                           sessionId: "upper-1",
                           difficulty: "too_hard",
                           hurtAreas: ["bench"],
-                          ranLong: false,
                           notes: "Shoulder ached on press"),
             FeedbackEntry(date: now.addingTimeInterval(-3 * 86400),
                           sessionId: "upper-1",
                           difficulty: "right",
-                          ranLong: true,
                           notes: nil)
         ]
     }

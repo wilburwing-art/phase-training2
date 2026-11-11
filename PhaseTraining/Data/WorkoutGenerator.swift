@@ -58,13 +58,56 @@ enum WorkoutGenerator {
         date: Date? = nil,
         balancePressing: Bool = true
     ) -> GeneratedWorkout {
+        var workout = buildLift(
+            liftIndex: liftIndex, totalLifts: totalLifts, memory: memory, profile: profile,
+            hashSeed: hashSeed, recentlyPicked: recentlyPicked, context: context,
+            strategy: strategy, adjacentSportDay: adjacentSportDay, date: date,
+            balancePressing: balancePressing)
+        // The check-in's energy answer. The time chip is applied while the
+        // session is built (`buildLift`), because it changes what is picked.
+        guard let date, !workout.exercises.isEmpty else { return workout }
+        let status = MuscleRecovery.status(on: date, exposures: context.muscleExposures,
+                                           soreness: memory.soreness, feedback: memory.feedback)
+        workout.timeBudgetMinutes = status.timeBudget
+        if status.lowEnergy {
+            easeForLowEnergy(&workout)
+        }
+        return workout
+    }
+
+    /// A low-energy day: RPE capped at 7 on every movement, and one fewer set
+    /// (floor one) on every movement except the lead lift, which keeps its
+    /// sets so the day still has its anchor.
+    static func easeForLowEnergy(_ workout: inout GeneratedWorkout) {
+        for i in workout.exercises.indices {
+            if i > 0 { workout.exercises[i].sets = max(1, workout.exercises[i].sets - 1) }
+            workout.exercises[i].rpe = workout.exercises[i].rpe.map { capRPE($0, to: 7.0) } ?? "7"
+        }
+        workout.easedForLowEnergy = true
+    }
+
+    private static func buildLift(
+        liftIndex: Int,
+        totalLifts: Int,
+        memory: TrainingMemory,
+        profile: DemographicProfile,
+        hashSeed: String,
+        recentlyPicked: Set<Int>,
+        context: GeneratorContext,
+        strategy: GeneratorStrategy,
+        adjacentSportDay: Bool,
+        date: Date?,
+        balancePressing: Bool
+    ) -> GeneratedWorkout {
         let recovery = date.map {
             MuscleRecovery.status(on: $0, exposures: context.muscleExposures,
-                                  soreness: memory.soreness)
+                                  soreness: memory.soreness, feedback: memory.feedback)
         } ?? .none
         func athlete() -> AthleteState {
-            AthleteState.from(
-                memory,
+            var m = memory
+            if let budget = recovery.timeBudget { m.sessionMinutes = budget }
+            return AthleteState.from(
+                m,
                 variant: memory.primaryVariant,
                 weekNumber: memory.weeksInCurrentPhase ?? 1,
                 recentMovementIDs: recentlyPicked,
@@ -146,12 +189,14 @@ enum WorkoutGenerator {
                     sportSlug: sport.slug, phase: season, sessionIndex: sportIndex,
                     experience: memory.experience,
                     excludedExerciseIds: profile.excludedExerciseIds,
-                    allowedEquipmentSlugs: profile.allowedEquipmentSlugs),
+                    allowedEquipmentSlugs: profile.allowedEquipmentSlugs,
+                    preferences: RoutinePreferences.from(memory)),
                let authored = AuthoredRoutine.workout(
                     forRoutineId: routineId, memory: memory, context: context,
                     focus: WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts),
                     profile: profile,
-                    blockedBuckets: recovery.blocked) {
+                    blockedBuckets: recovery.blocked,
+                    timeBudget: recovery.timeBudget) {
                 return authored
             }
             // The authored session trains muscles that are still recovering
@@ -163,7 +208,8 @@ enum WorkoutGenerator {
                     sportSlug: sport.slug, phase: season, sessionIndex: sportIndex,
                     experience: memory.experience,
                     excludedExerciseIds: profile.excludedExerciseIds,
-                    allowedEquipmentSlugs: profile.allowedEquipmentSlugs) != nil {
+                    allowedEquipmentSlugs: profile.allowedEquipmentSlugs,
+                    preferences: RoutinePreferences.from(memory)) != nil {
                 let focus = SessionMix.complementRotation(
                     family: SessionMix.family(forSport: sport.slug), count: 1)[0]
                 return SportSeasonGenerator.generateSession(
