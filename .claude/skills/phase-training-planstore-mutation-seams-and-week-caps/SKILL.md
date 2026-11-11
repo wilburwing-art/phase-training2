@@ -117,3 +117,15 @@ rebuilt: `seedWeekPlan` and the others construct `WeekPlan(...)`, so they come
 out stamped current with no call-site edits. A seed that writes raw JSON
 without the key would be rebuilt on launch. Tests:
 `PlanStoreSeamsTests` "Planner version stamp".
+
+## Demoting a lift day after generation breaks rebuilds
+
+Found in Phase 3, 2026-11-11. Rebuild paths (`PlanStore.applyRecovery` and
+others) regenerate a day with `totalLifts` = the plan's CURRENT lift-day count.
+SessionMix assigns sport vs complement roles from that count, so a week whose
+lift day was turned into rest after `Planner.generate` rebuilds with different
+roles: complement days come back as sport sessions. The rest-day reserve now
+avoids it by regenerating the whole week with `liftDaysPerWeek - 1`. CNS
+balance, the arc deload and skip-streak de-emphasis still demote after the fact
+and carry the same mismatch (open). Change the week's inputs and regenerate;
+do not demote a day in place.
