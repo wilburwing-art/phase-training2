@@ -100,7 +100,7 @@ final class AuthoredRoutineTests: XCTestCase {
     func testPlannableIncludesEngineAndOutdoorAuthoredSports() {
         XCTAssertTrue(SportCatalog.isPlannable("alpine-skiing"), "ski = engine-supported")
         XCTAssertTrue(SportCatalog.isPlannable("climbing"), "climbing = engine-supported")
-        XCTAssertTrue(SportCatalog.isPlannable("snowboarding"), "snowboarding = engine-supported (1A)")
+        XCTAssertTrue(SportCatalog.isPlannable("snowboarding"), "snowboarding is plannable")
         XCTAssertTrue(SportCatalog.isPlannable("mountain-biking"), "outdoor authored w/ coverage")
     }
 
@@ -148,22 +148,39 @@ final class AuthoredRoutineTests: XCTestCase {
         }
     }
 
-    // MARK: - Snowboarding plans on the ski engine (Phase 3b, 1A)
+    // MARK: - Snowboarding sport days are served as written
 
-    /// The splitboard routines (#295, #296, #297 and #70) stay in the library
-    /// under snowboarding; the planner no longer serves them, as it serves no
-    /// authored routine to snow-sports.
-    func testSnowboardingIsNotServedAuthoredRoutines() {
-        let db = CoachDatabase.shared
-        let library = db.authoredRoutineIds(sportSlug: "snowboarding",
-                                            phaseLabels: AuthoredRoutineSelector.allPhaseLabels)
-        XCTAssertTrue(Set([295, 296, 297]).isSubset(of: Set(library)), "\(library)")
-        XCTAssertFalse(AuthoredRoutineSelector.shouldServeAuthored(sportSlug: "snowboarding"))
-        for phase in SeasonPhase.allCases {
-            for slot in 0..<3 {
-                XCTAssertNil(AuthoredRoutineSelector.select(sportSlug: "snowboarding", phase: phase,
-                                                            sessionIndex: slot), "\(phase) slot \(slot)")
-            }
+    func testSnowboardingIsServedItsWrittenRoutines() {
+        XCTAssertTrue(AuthoredRoutineSelector.shouldServeAuthored(sportSlug: "snowboarding"))
+        let a = AuthoredRoutineSelector.select(sportSlug: "snowboarding", phase: .preSeason, sessionIndex: 0)
+        let b = AuthoredRoutineSelector.select(sportSlug: "snowboarding", phase: .preSeason, sessionIndex: 1)
+        XCTAssertEqual(Set([a, b].compactMap { $0 }), [295, 296], "Splitboard Pre-Season Strength A and B")
+    }
+
+    /// "As written" is a property: with no injury, full equipment, no
+    /// preference and no same-day check-in, the served day is the routine's
+    /// own rows, in order, with its own sets and reps. The engine may change a
+    /// written day only for the listed reasons (injury, equipment, a sunk or
+    /// disliked exercise, an unrecovered muscle, a same-day check-in), and
+    /// each of those has its own test in this file and SorenessSelectionTests.
+    func testWrittenRoutineIsServedExactlyAsWritten() throws {
+        var memory = TrainingMemory()
+        memory.primarySport = Sport.resolve(slug: "snowboarding")
+        memory.defaultSeason = .preSeason
+        if let s = memory.primarySport { memory.seasonsBySport = [s: .preSeason] }
+        memory.experience = .advanced
+        memory.equipment = [.fullGym]
+        memory.sessionMinutes = 60
+        memory.liftDaysPerWeek = 3
+        let profile = DemographicProfile.from(memory)
+        for id in [295, 296] {
+            let written = CoachDatabase.shared.exercises(forRoutineId: id)
+            let served = try XCTUnwrap(AuthoredRoutine.workout(
+                forRoutineId: id, memory: memory, context: .empty,
+                focus: .fullBodyA, profile: profile))
+            XCTAssertEqual(served.exercises.map(\.exerciseId), written.map(\.exerciseId), "routine \(id): order and membership")
+            XCTAssertEqual(served.exercises.map(\.sets), written.map { $0.sets ?? 0 }, "routine \(id): sets")
+            XCTAssertEqual(served.exercises.map(\.reps), written.map { $0.reps ?? "" }, "routine \(id): reps")
         }
     }
 

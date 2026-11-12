@@ -31,7 +31,7 @@ final class SportProfileTests: XCTestCase {
         }
     }
 
-    // MARK: - 2. Snowboarding plans as snow-sports (1A)
+    // MARK: - 2. Snowboarding: ski row, written sport days
 
     private func memory(_ slug: String, _ season: SeasonPhase, exp: ExperienceLevel = .intermediate,
                         equipment: [Equipment] = [.fullGym], days: Int = 3, minutes: Int = 60,
@@ -53,11 +53,18 @@ final class SportProfileTests: XCTestCase {
         return m
     }
 
-    /// Same rule, same engine, same week shape, same roles and movement counts
-    /// as "Skiing / Snowboarding", with Discipline and the two-sport feature.
-    func test_snowboardingPlansAsSnowSports() {
+    /// Snowboarding shares the ski row for everything except who builds the
+    /// sport days: same rule, pool, disciplines and two-sport feature, and the
+    /// same week shape. Its sport days are the written splitboard routines;
+    /// its complement days come from the engine under the ski rule.
+    func test_snowboardingFollowsTheSkiRowWithWrittenSportDays() {
         let board = SportProfile.of("snowboarding"), snow = SportProfile.of("snow-sports")
-        XCTAssertEqual(board, snow)
+        XCTAssertEqual(board.rules, snow.rules)
+        XCTAssertEqual(board.signature, snow.signature)
+        XCTAssertEqual(board.family, snow.family)
+        XCTAssertEqual(board.supportFeature, snow.supportFeature)
+        XCTAssertTrue(board.authoredOverEngine)
+        XCTAssertFalse(snow.authoredOverEngine)
         XCTAssertTrue(SportSeasonGenerator.supports("snowboarding"))
         XCTAssertEqual(SportSeasonGenerator.poolSlug(for: "snowboarding"), "alpine-skiing")
         let routines = CoachDatabase.shared.listRoutines()
@@ -75,24 +82,22 @@ final class SportProfileTests: XCTestCase {
                 XCTAssertEqual(a.primaryVariant, .park)
                 let pa = Planner.generate(memory: a, routines: routines, today: Self.monday)
                 let pb = Planner.generate(memory: b, routines: routines, today: Self.monday)
-                let label = "\(season) \(days)d"
-                XCTAssertEqual(pa.days.map(\.kind), pb.days.map(\.kind), label)
-                XCTAssertEqual(pa.days.map { $0.kind == .lift ? $0.title : "" },
-                               pb.days.map { $0.kind == .lift ? $0.title : "" }, label)
-                // The seed carries the slug, so the two pick different
-                // movements of the same demands, and a session's length fit
-                // can then keep one movement more or fewer.
-                for (da, db) in zip(pa.days, pb.days) {
-                    let ca = da.generatedWorkout?.exercises.count ?? 0
-                    let cb = db.generatedWorkout?.exercises.count ?? 0
-                    XCTAssertLessThanOrEqual(abs(ca - cb), 1, "\(label) \(da.title): \(ca) against \(cb)")
-                }
-                for d in pa.days where d.kind == .lift {
-                    XCTAssertFalse(d.generatedWorkout?.provenance.hasPrefix("Authored") ?? true,
-                                   "\(label) '\(d.title)' served an authored routine")
-                }
+                XCTAssertEqual(pa.days.map(\.kind), pb.days.map(\.kind), "\(season) \(days)d")
             }
         }
+        // Pre-season has two written routines (Splitboard A and B), so a
+        // three-day week serves both and builds one complement day.
+        let week = Planner.generate(memory: memory("snowboarding", .preSeason, exp: .advanced, days: 3),
+                                    routines: routines, today: Self.monday)
+        let lifts = week.days.filter { $0.kind == .lift }.compactMap(\.generatedWorkout)
+        let written = lifts.filter { $0.provenance.hasPrefix("Authored") }
+        XCTAssertEqual(written.count, 2, "\(lifts.map(\.title))")
+        XCTAssertTrue(written.allSatisfy { $0.title.hasPrefix("Splitboard Pre-Season Strength") },
+                      "\(written.map(\.title))")
+        let complement = lifts.filter { !$0.provenance.hasPrefix("Authored") }
+        XCTAssertEqual(complement.count, 1)
+        XCTAssertGreaterThanOrEqual(complement.first?.exercises.count ?? 0, 5,
+                                    "the complement day follows the pre-season rule, not a deload")
     }
 
     // MARK: - 3. A season rule for the authored-only sports (2A)

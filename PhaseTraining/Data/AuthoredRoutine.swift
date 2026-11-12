@@ -43,11 +43,12 @@ enum AuthoredRoutineSelector {
         }
     }
 
-    /// Climbing is the deliberate pilot: we prefer authored content over the
-    /// season engine even though the engine supports climbing. Ski/snowboard
-    /// (also engine-supported) are intentionally NOT here — the flagship season
-    /// experience stays unchanged until authored ski content is curated.
-    static var pilotSports: Set<String> { SportProfile.slugs(.climbing) }
+    /// Sports the engine could build that are served written routines first:
+    /// climbing and snowboarding. Skiing joins when it has routines for every
+    /// season (it has two today, none in-season).
+    static var pilotSports: Set<String> {
+        Set(SportProfile.table.filter { $0.value.authoredOverEngine }.keys)
+    }
 
     /// Which sports get authored serving:
     ///  - the pilot sports (climbing), where we prefer authored over the engine;

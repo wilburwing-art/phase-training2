@@ -35,11 +35,16 @@ struct SportProfile: Equatable {
     /// The primary/support two-sport feature: the onboarding section, the
     /// Profile row and the planner's deconflict pass.
     let supportFeature: Bool
+    /// Written routines are served on sport days ahead of the engine, for a
+    /// sport the engine could also build. The engine fills in only where no
+    /// routine fits the season, level, equipment or injuries.
+    var writtenFirst: Bool = false
 
     /// The season engine builds this sport's sessions.
     var usesSeasonEngine: Bool { rules != .general }
-    /// Authored routines are preferred over the engine (climbing pilot).
-    var authoredOverEngine: Bool { rules == .climbing }
+    /// Authored routines are preferred over the engine: climbing, and any
+    /// sport marked `writtenFirst`.
+    var authoredOverEngine: Bool { rules == .climbing || writtenFirst }
     /// A ski or board sport: the disciplines, the ski readiness card and the
     /// SkiSeason Health summary.
     var isSki: Bool { rules == .ski }
@@ -84,10 +89,14 @@ struct SportProfile: Equatable {
         "alpine-skiing": ski,
         "ski-mountaineering": ski,
         "snow-sports": ski,
-        // Owner decision 1A (2026-11-11): plans exactly as "Skiing /
-        // Snowboarding" (snow-sports) does. The splitboard routines stay in
-        // the library and are no longer served as the plan's sport sessions.
-        "snowboarding": ski,
+        // Owner decision, 2026-11-11: sport days are the written splitboard
+        // routines, served as written; the engine fills a season with none.
+        // Everything else follows the ski row: the complement days' rule, the
+        // disciplines, the two-sport feature and the ski cards. (An earlier
+        // call the same day put the sport days on the engine too, and was
+        // reversed: written programs come first.)
+        "snowboarding": SportProfile(rules: .ski, signature: .eccentricLeg, family: .legsDominant,
+                                     supportFeature: true, writtenFirst: true),
 
         "climbing": climb,
         "bouldering": climb,
