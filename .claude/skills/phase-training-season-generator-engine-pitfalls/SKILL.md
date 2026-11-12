@@ -267,8 +267,10 @@ phase.
 before that commit.** `PhaseRule.skiSlugs` and `climbingSlugs` are gone. Sport
 membership now lives in `SportProfile.swift` (rules table, signature demand,
 SessionMix family, two-sport eligibility, ski-card membership); add or change a
-sport there. `snowboarding` takes the ski row and is served by the season
-engine. Other authored-only sports resolve to `PhaseRule.general`, which
+sport there. `snowboarding` takes the ski row with `writtenFirst` (commit 6540995): its sport
+days are the written splitboard routines and only its complement days come
+from the engine. Moving a sport's sport days onto the engine was tried and
+reversed the same day; the owner wants written routines first. Other authored-only sports resolve to `PhaseRule.general`, which
 deloads only in a deload week. Still true: mountaineering, hiking-trekking and
 thru-hiking have no in-season routine and trail-running no pre-season one.
 To print one profile's week for a before/after, a throwaway XCTest that calls
