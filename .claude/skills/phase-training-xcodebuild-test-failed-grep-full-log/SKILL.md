@@ -184,3 +184,13 @@ on the main actor. That trap kills the process.
 Before calling it a flake, find the test that was running when it died:
 `grep -n "Restarting after" -B8 log | grep started | tail -1`. If two runs
 die in the same test, the cause is that test. A flake moves around.
+
+## A third cause of runner restarts: two test runs on one simulator
+
+2026-11-12: a full unit run died 9 times ("Restarting after unexpected exit"),
+each time in a different generator test, with 275 of 1,860 tests executed and
+0 failures. A background agent was running its own `xcodebuild test` against
+the same simulator UDID, and each install replaced the other's app. A re-run on
+the other simulator passed clean. So: restarts that move between tests, with
+another xcodebuild alive (`pgrep -fl xcodebuild`), mean a shared simulator.
+Give every concurrent run its own UDID as well as its own derived-data path.
