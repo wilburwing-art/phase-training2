@@ -225,3 +225,26 @@ so fix the app rather than the test: a shared `@FocusState`, a
 `ToolbarItemGroup(placement: .keyboard)` Done button with its own id, and
 `.scrollDismissesKeyboard(.interactively)` on the ScrollView. The test taps
 `<sheet>-keyboard-done` between fields.
+
+## Run the UI suite the way CI builds it: `PHASETRAINING_BETA=1`
+
+2026-11-11. A local build carries the coach gateway token; CI and beta builds do
+not, and several surfaces differ (the onboarding coach consent step, the
+Profile coach row, the bubble). Five onboarding UI tests passed locally and
+hung in CI. CI runs with `-retry-tests-on-failure -test-iterations 3`, so a few
+hanging tests triple their wait, the job hits its 60-minute limit, GitHub marks
+it cancelled, and the job log is then gone (`BlobNotFound`), leaving no failure
+list. Reproduce locally without retries instead:
+
+```bash
+PHASETRAINING_BETA=1 xcodebuild test -project PhaseTraining.xcodeproj -scheme PhaseTraining \
+  -destination 'platform=iOS Simulator,id=<udid>' -derivedDataPath /tmp/claude-501/dd-ui \
+  -only-testing:PhaseTrainingUITests CODE_SIGNING_ALLOWED=NO > /tmp/claude-501/ui.log 2>&1
+grep -E "error:|Test Case .* failed|Executed [0-9]+ tests|\*\* TEST" /tmp/claude-501/ui.log
+```
+
+93 tests took 22 minutes on the local simulator. Any change that adds an alert
+or a row to onboarding, Log, Progress or the weekly check-in needs this run
+before pushing: a new alert blocks the next tap, and a renamed label breaks a
+`staticTexts["..."]` lookup. A tap added to a core flow (a confirm) must be
+counted in TapBudgetTests with `tapAlertButton`, and its reference raised.
