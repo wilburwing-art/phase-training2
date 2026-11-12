@@ -68,3 +68,7 @@ proposed_aliases.json
 
 # XcodeGen/xcodebuild local derived data
 .derived/
+
+# Research reports that quote licensed plan archives verbatim. Local only
+# (owner decision 2026-11-11); do not commit or push.
+audits/2026-11-11-execution-styles/
