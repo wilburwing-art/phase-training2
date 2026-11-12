@@ -33,14 +33,16 @@ final class SkiCardsUITests: XCTestCase {
         XCTAssertTrue(start.waitForExistence(timeout: 5))
         start.tap()
         let count = app.staticTexts["hold-timer-count"]
-        let held = NSPredicate(format: "label == '1'")
-        XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: held, evaluatedWith: count)], timeout: 6), .completed,
+        // Any count of 1 or more. Waiting for exactly "1" gave the poll a
+        // one-second window, which a slow CI runner missed on all three tries.
+        let held = NSPredicate(format: "label MATCHES '[1-9][0-9]*'")
+        XCTAssertEqual(XCTWaiter.wait(for: [expectation(for: held, evaluatedWith: count)], timeout: 10), .completed,
                        "the stopwatch counts up after the get-ready")
         app.buttons["hold-timer-stop"].tap()
         let balance = app.textFields["ski-test-balance-left"]
         XCTAssertTrue(balance.waitForExistence(timeout: 5))
-        XCTAssertTrue(["1", "2"].contains(balance.value as? String ?? ""),
-                      "Stop writes the seconds held into the field; got \(String(describing: balance.value))")
+        XCTAssertGreaterThanOrEqual(Int(balance.value as? String ?? "") ?? 0, 1,
+                                    "Stop writes the seconds held into the field; got \(String(describing: balance.value))")
 
         wallSit.tap()
         wallSit.typeText("90")
