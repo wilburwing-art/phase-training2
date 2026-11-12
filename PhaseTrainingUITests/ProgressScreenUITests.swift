@@ -31,7 +31,7 @@ final class ProgressScreenUITests: XCTestCase {
         openProgress(in: app)
 
         // Above the fold.
-        XCTAssertTrue(app.staticTexts["THIS WEEK"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.staticTexts["WEEK"].waitForExistence(timeout: 5),
                       "stat strip should render" + elementDump(app))
         XCTAssertTrue(app.staticTexts["TOTAL"].exists)
 

@@ -34,10 +34,12 @@ final class OnboardingLandingUITests: XCTestCase {
         shot.lifetime = .keepAlways
         add(shot)
         step(app, "onboarding-continue-health")
-        // Consent is gated (T0-5): pick an option or Continue never enables.
-        step(app, "onboarding-consent-off")
-        // Last step of the gate — its Continue commits and dismisses.
-        step(app, "onboarding-continue-coachConsent", timeout: 15)
+        // The consent step exists only in a build that carries a coach token.
+        // CI and beta builds have none, and there Health's Continue finishes.
+        if app.buttons["onboarding-consent-off"].waitForExistence(timeout: 4) {
+            app.buttons["onboarding-consent-off"].tap()
+            step(app, "onboarding-continue-coachConsent", timeout: 15)
+        }
 
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 15),
                       "finishing the gate should drop straight into the main tabs")

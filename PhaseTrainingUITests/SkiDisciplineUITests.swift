@@ -30,8 +30,12 @@ final class SkiDisciplineUITests: XCTestCase {
         step(app, "onboarding-continue-sportSeasons")
         step(app, "onboarding-health-off")
         step(app, "onboarding-continue-health")
-        step(app, "onboarding-consent-off")
-        step(app, "onboarding-continue-coachConsent", timeout: 15)
+        // The consent step exists only in a build that carries a coach token.
+        // CI and beta builds have none, and there Health's Continue finishes.
+        if app.buttons["onboarding-consent-off"].waitForExistence(timeout: 4) {
+            app.buttons["onboarding-consent-off"].tap()
+            step(app, "onboarding-continue-coachConsent", timeout: 15)
+        }
 
         let profile = app.tabBars.buttons["Profile"]
         XCTAssertTrue(profile.waitForExistence(timeout: 10))

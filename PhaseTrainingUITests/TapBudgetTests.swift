@@ -92,7 +92,7 @@ final class TapBudgetTests: XCTestCase {
         /// all" tap in the two end-to-end "from Today" flows (each is overhead
         /// + 1, independent of exercise count). Finish AUTO-SAVES and lands on
         /// the summary — no separate Save tap, no feedback Skip.
-        static let fullFlowOverhead = 2
+        static let fullFlowOverhead = 3
     }
 
     override func setUpWithError() throws {
@@ -103,8 +103,9 @@ final class TapBudgetTests: XCTestCase {
 
     /// From inside LogScreen with the seeded session: log the WHOLE workout with
     /// the single header "Log all" button, then Finish. Reference: 1 Log-all +
-    /// 1 Finish = 2 (independent of exercise count — that's the point of the
-    /// whole-workout button vs the per-exercise shortcut).
+    /// 1 confirm + 1 Finish = 3 (independent of exercise count, which is the
+    /// point of the whole-workout button vs the per-exercise shortcut). It was
+    /// 2 until Log all gained its confirm on 2026-11-11.
     func testTapBudget_logWorkout_inWorkout() throws {
         let app = launchInLog()
         var counter = TapCounter(app: app, flow: "log-workout-in-workout")
@@ -112,7 +113,7 @@ final class TapBudgetTests: XCTestCase {
         logAllWorkout(&counter, expectedExercises: Seed.supersetsExercises)
         counter.tap("log-finish")
 
-        recordTapBudget(counter, reference: 2)
+        recordTapBudget(counter, reference: 3)
     }
 
     // MARK: - 2. Log a workout (full, Today → saved, no plan)
@@ -310,19 +311,22 @@ final class TapBudgetTests: XCTestCase {
         counter.tap("onboarding-continue-sportSeasons")
         counter.tap("onboarding-health-off")                      // health (gated, no sheet)
         counter.tap("onboarding-continue-health")
-        // Consent is the second gated step (T0-5): neither option is
-        // pre-selected, so Continue stays disabled until the user picks one.
-        // Declining keeps the walk offline and costs the same single tap.
-        counter.tap("onboarding-consent-off")
-        // Last step: this Continue commits the profile, generates the week and
-        // dismisses. Generation is synchronous but not instant on a cold sim.
-        counter.tapWhenEnabled("onboarding-continue-coachConsent", timeout: 15)
+        // Consent is a gated step (T0-5) that exists only in a build carrying a
+        // coach token. CI and beta builds have none, and there Health's
+        // Continue is the last tap. With it, declining costs one pick and one
+        // Continue.
+        let consentShown = app.buttons["onboarding-consent-off"].waitForExistence(timeout: 4)
+        if consentShown {
+            counter.tap("onboarding-consent-off")
+            counter.tapWhenEnabled("onboarding-continue-coachConsent", timeout: 15)
+        }
 
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 15),
                       "finishing the gate should dismiss onboarding into the main tabs")
 
-        // 8 since 2026-09-18: the Health step is one pick + one Continue.
-        recordTapBudget(counter, reference: 8)
+        // 8 with the consent step (one Health pick and Continue since
+        // 2026-09-18, one consent pick and Continue), 6 without it.
+        recordTapBudget(counter, reference: consentShown ? 8 : 6)
     }
 
     // MARK: - 11. Weekly check-in → regenerated plan
@@ -350,6 +354,11 @@ final class TapBudgetTests: XCTestCase {
         // Record the count first — it's complete once Accept is tapped, so the
         // CI marker emits even if the dismissal smoke-check below is slow.
         recordTapBudget(counter, reference: 6)
+
+        // The first accepted check-in offers the weekly reminder once. It is a
+        // one-time prompt, so it stays out of the recurring flow's budget.
+        let offer = app.alerts.buttons["Not now"]
+        if offer.waitForExistence(timeout: 4) { offer.tap() }
 
         // Smoke-check that Accept dismissed the sheet back to the app. Generous
         // timeout: sheet-dismiss animation + a11y teardown can lag on a cold sim.
@@ -568,8 +577,9 @@ final class TapBudgetTests: XCTestCase {
         XCTAssertEqual(seen, expectedExercises,
                        "[\(counter.flow)] workout exercise count changed (expected \(expectedExercises))")
         counter.tap("log-all-workout")
-        // "Log all" asks first. The confirm is a real tap, so it counts.
-        app.alerts.buttons["Log all"].tap()
+        // "Log all" asks first (2026-11-11). The confirm is a real tap the
+        // lifter makes, so it counts against the budget.
+        counter.tapAlertButton("Log all")
     }
 
     /// Tap each UNDONE set's check circle, exercise by exercise. Returns the
@@ -685,6 +695,16 @@ struct TapCounter {
         let idx = min(Int((Double(sorted.count) * 0.95).rounded(.up)) - 1,
                       sorted.count - 1)
         return sorted[max(0, idx)]
+    }
+
+    /// Tap an alert's button by its label, counting it.
+    mutating func tapAlertButton(_ label: String, timeout: TimeInterval = 6,
+                                 file: StaticString = #file, line: UInt = #line) {
+        let b = app.alerts.buttons[label]
+        XCTAssertTrue(b.waitForExistence(timeout: timeout),
+                      "[\(flow)] alert button '\(label)' should appear", file: file, line: line)
+        b.tap()
+        noteTap()
     }
 
     /// Tap a button by accessibility id, counting it.
