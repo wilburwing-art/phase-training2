@@ -48,7 +48,7 @@ struct HistoryCheckSheet: View {
 
                         if !audit.layoffs.isEmpty {
                             VStack(alignment: .leading, spacing: 6) {
-                                Text("BREAKS OVER 8 WEEKS")
+                                Text("BREAKS LONGER THAN 8 WEEKS")
                                     .styled(.micro)
                                     .foregroundStyle(Color.ink3)
                                 Text("Estimates start lighter after a break and catch up as you log.")
@@ -61,7 +61,7 @@ struct HistoryCheckSheet: View {
                                         .accessibilityIdentifier("history-check-detraining")
                                 }
                                 ForEach(Array(audit.layoffs.enumerated()), id: \.offset) { _, gap in
-                                    Text("\(Self.date.string(from: gap.from)) → \(Self.date.string(from: gap.to)) · \(gap.days) days")
+                                    Text("\(Self.date.string(from: gap.from)) → \(Self.date.string(from: gap.to)) · \(Self.length(days: gap.days))")
                                         .font(.monoXS)
                                         .foregroundStyle(Color.ink2)
                                 }
@@ -74,6 +74,9 @@ struct HistoryCheckSheet: View {
             }
             .navigationTitle("History check")
             .navigationBarTitleDisplayMode(.inline)
+            // Opaque bar: rows no longer show through the title as they scroll.
+            .toolbarBackground(Color.bg, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }.foregroundStyle(Color.accent)
@@ -89,13 +92,33 @@ struct HistoryCheckSheet: View {
     static func rateLine(_ d: ProvenStrength.DetrainingRate, totalBreaks: Int = 0) -> String? {
         guard d.isPersonal, let measured = d.measured else { return nil }
         func pct(_ x: Double) -> String { String(format: "%.1f%%", max(0, x) * 100) }
-        let bound = measured < d.perWeek ? ", the gentlest we allow"
-            : measured > d.perWeek ? ", the steepest we allow" : ""
         let rest = totalBreaks - d.breaks
         let why = rest > 0
             ? " The other \(rest) didn't have the same lift logged just before and just after, so they couldn't be measured."
             : ""
-        return "In \(d.breaks) past breaks you lost about \(pct(measured)) a week.\(why) Estimates use \(pct(d.perWeek))\(bound)."
+        // The app keeps the rate inside a range. When the lifter's own number
+        // falls outside it, say which end was used and why the two differ.
+        let used: String
+        if measured < d.perWeek {
+            used = " That is less than the smallest loss the app assumes, so estimates use \(pct(d.perWeek)) a week."
+        } else if measured > d.perWeek {
+            used = " That is more than the largest loss the app assumes, so estimates use \(pct(d.perWeek)) a week."
+        } else {
+            used = " Estimates use that rate."
+        }
+        return "In \(d.breaks) past breaks you lost about \(pct(measured)) of your strength a week.\(why)\(used)"
+    }
+
+    /// A break's length in the unit a person would say it in: weeks under
+    /// three months, months after ("71 days" is 10 weeks, "469 days" is 15
+    /// months).
+    static func length(days: Int) -> String {
+        if days < 90 {
+            let weeks = max(1, Int((Double(days) / 7).rounded()))
+            return weeks == 1 ? "1 week" : "\(weeks) weeks"
+        }
+        let months = Int((Double(days) / 30.44).rounded())
+        return "\(months) months"
     }
 
     private var groups: [(exercise: String, flags: [HistoryProfile.Flag])] {
@@ -172,7 +195,7 @@ struct HistoryCheckRow: View {
             parts.append("\(audit.duplicateBlocks) duplicate \(audit.duplicateBlocks == 1 ? "workout" : "workouts")")
         }
         if !audit.layoffs.isEmpty {
-            parts.append("\(audit.layoffs.count) \(audit.layoffs.count == 1 ? "break" : "breaks") over 8 weeks")
+            parts.append("\(audit.layoffs.count) \(audit.layoffs.count == 1 ? "break" : "breaks") longer than 8 weeks")
         }
         if parts.isEmpty { return onlyWhenNotable ? nil : "Nothing looked wrong" }
         return parts.joined(separator: ", ").capitalizedFirst

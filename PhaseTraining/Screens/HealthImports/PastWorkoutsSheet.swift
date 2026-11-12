@@ -43,6 +43,9 @@ struct PastWorkoutsSheet: View {
             }
             .navigationTitle("Past workouts")
             .navigationBarTitleDisplayMode(.inline)
+            // Opaque bar: rows no longer show through the title as they scroll.
+            .toolbarBackground(Color.bg, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }

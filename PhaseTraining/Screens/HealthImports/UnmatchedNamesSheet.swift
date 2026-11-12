@@ -15,6 +15,7 @@ struct UnmatchedNamesSheet: View {
     /// Catalog search hits per name, filled off the main thread: 60-odd
     /// searches block the sheet if run inline.
     @State private var suggestions: [String: [Exercise]] = [:]
+    @State private var showTail = false
     @State private var matching: MatchTarget?
 
     private struct MatchTarget: Identifiable {
@@ -34,12 +35,14 @@ struct UnmatchedNamesSheet: View {
                             .styled(.body)
                             .foregroundStyle(Color.ink2)
                             .fixedSize(horizontal: false, vertical: true)
+                        let split = Self.split(names)
                         LazyVStack(spacing: 0) {
-                            ForEach(names, id: \.name) { item in
+                            ForEach(showTail ? names : split.main, id: \.name) { item in
                                 nameRow(item)
                                 Rectangle().fill(Color.lineSoft).frame(height: 0.5)
                             }
                         }
+                        if !showTail, !split.tail.isEmpty { tailRow(split.tail) }
                         if !ignored.isEmpty { ignoredSection }
                     }
                     .padding(.horizontal, 20)
@@ -49,6 +52,9 @@ struct UnmatchedNamesSheet: View {
             }
             .navigationTitle("Unmatched names")
             .navigationBarTitleDisplayMode(.inline)
+            // Opaque bar: rows no longer show through the title as they scroll.
+            .toolbarBackground(Color.bg, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
@@ -97,9 +103,43 @@ struct UnmatchedNamesSheet: View {
         .padding(.vertical, 12)
     }
 
+    /// Names logged for fewer than this many sets are folded into one row.
+    static let tailThreshold = 5
+
+    /// The list as shown: names worth matching one by one, and the long tail.
+    /// A 64-name import had 44 names under 5 sets, which buried the 20 that
+    /// carry most of the history. A short tail (3 names or fewer) stays in the
+    /// main list, since folding it would save nothing.
+    static func split(_ names: [(name: String, sets: Int)])
+        -> (main: [(name: String, sets: Int)], tail: [(name: String, sets: Int)]) {
+        let tail = names.filter { $0.sets < tailThreshold }
+        guard tail.count > 3 else { return (names, []) }
+        return (names.filter { $0.sets >= tailThreshold }, tail)
+    }
+
+    private func tailRow(_ tail: [(name: String, sets: Int)]) -> some View {
+        let sets = tail.reduce(0) { $0 + $1.sets }
+        return VStack(alignment: .leading, spacing: 8) {
+            Text("\(tail.count) more names with under \(Self.tailThreshold) sets each (\(sets) sets in all)")
+                .font(.scaled("Inter-Regular", size: 14))
+                .foregroundStyle(Color.ink)
+                .fixedSize(horizontal: false, vertical: true)
+            FlowChips {
+                chip("Show them", systemImage: "chevron.down") { showTail = true }
+                    .accessibilityIdentifier("unmatched-tail-show")
+                chip("Set all aside", systemImage: "tray.and.arrow.down") {
+                    for item in tail { UserDatabase.shared.setImportNameIgnored(item.name, true) }
+                    reload()
+                }
+                .accessibilityIdentifier("unmatched-tail-set-aside")
+            }
+        }
+        .padding(.vertical, 12)
+    }
+
     private var ignoredSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("NOT A LIFT")
+            Text("SET ASIDE")
                 .styled(.micro)
                 .foregroundStyle(Color.ink3)
                 .padding(.top, 10)

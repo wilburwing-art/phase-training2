@@ -55,7 +55,7 @@ final class DetrainingRateTests: XCTestCase {
         XCTAssertEqual(p.detraining.perWeek, 0.015)
         XCTAssertEqual(try XCTUnwrap(p.detraining.measured), 0.025, accuracy: 1e-9)
         XCTAssertEqual(HistoryCheckSheet.rateLine(p.detraining),
-                       "In 3 past breaks you lost about 2.5% a week. Estimates use 1.5%, the steepest we allow.")
+                       "In 3 past breaks you lost about 2.5% of your strength a week. That is more than the largest loss the app assumes, so estimates use 1.5% a week.")
     }
 
     func test_tinyLossesClampToTheGentlestRate() throws {
@@ -63,14 +63,33 @@ final class DetrainingRateTests: XCTestCase {
         XCTAssertEqual(p.detraining.perWeek, 0.005)
         XCTAssertEqual(try XCTUnwrap(p.detraining.measured), 0.005 / 6, accuracy: 1e-9)
         XCTAssertEqual(HistoryCheckSheet.rateLine(p.detraining),
-                       "In 3 past breaks you lost about 0.1% a week. Estimates use 0.5%, the gentlest we allow.")
+                       "In 3 past breaks you lost about 0.1% of your strength a week. That is less than the smallest loss the app assumes, so estimates use 0.5% a week.")
     }
 
     /// 12 breaks listed, 5 measured: say why the other 7 were not used.
     func test_rateLineExplainsUnmeasuredBreaks() {
         let p = comebacks(breaks: 3, exercises: 4, back: 199)
         XCTAssertEqual(HistoryCheckSheet.rateLine(p.detraining, totalBreaks: 10),
-                       "In 3 past breaks you lost about 0.1% a week. The other 7 didn't have the same lift logged just before and just after, so they couldn't be measured. Estimates use 0.5%, the gentlest we allow.")
+                       "In 3 past breaks you lost about 0.1% of your strength a week. The other 7 didn't have the same lift logged just before and just after, so they couldn't be measured. That is less than the smallest loss the app assumes, so estimates use 0.5% a week.")
+    }
+
+    func test_breakLengthReadsInWeeksThenMonths() {
+        XCTAssertEqual(HistoryCheckSheet.length(days: 58), "8 weeks")
+        XCTAssertEqual(HistoryCheckSheet.length(days: 71), "10 weeks")
+        XCTAssertEqual(HistoryCheckSheet.length(days: 92), "3 months")
+        XCTAssertEqual(HistoryCheckSheet.length(days: 181), "6 months")
+        XCTAssertEqual(HistoryCheckSheet.length(days: 469), "15 months")
+    }
+
+    func test_unmatchedListFoldsALongTail() {
+        let names: [(name: String, sets: Int)] = [("A", 50), ("B", 9), ("C", 4), ("D", 3), ("E", 2), ("F", 1)]
+        let split = UnmatchedNamesSheet.split(names)
+        XCTAssertEqual(split.main.map(\.name), ["A", "B"])
+        XCTAssertEqual(split.tail.map(\.name), ["C", "D", "E", "F"])
+        // Three or fewer small names are not worth a fold.
+        let short = UnmatchedNamesSheet.split(Array(names.prefix(5)))
+        XCTAssertEqual(short.main.count, 5)
+        XCTAssertTrue(short.tail.isEmpty)
     }
 
     func test_matchLineCountsSetsNotNames() {
