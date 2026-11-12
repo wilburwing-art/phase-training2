@@ -103,6 +103,25 @@ extension LogScreen {
                         Label("Plate calculator", systemImage: "circle.grid.cross")
                     }
                 }
+                // Pairing changes which sets are owed this round, so it is
+                // offered only while this exercise still has sets to do.
+                if !allDone, let next = SupersetEditing.nextIndex(
+                    session.exercises, after: exIdx, groupOf: { $0.supersetGroup }) {
+                    Button {
+                        SupersetEditing.pairWithNext(&session.exercises, at: exIdx,
+                                                     group: \.supersetGroup)
+                    } label: {
+                        Label("Superset with \(session.exercises[next].name)", systemImage: "link")
+                    }
+                }
+                if inSuperset {
+                    Button(role: .destructive) {
+                        SupersetEditing.remove(&session.exercises, at: exIdx,
+                                               group: \.supersetGroup)
+                    } label: {
+                        Label("Remove from superset", systemImage: "link.badge.minus")
+                    }
+                }
             }
 
             // A timed prescription ("8s hold", "6 hangs (7s on / 3s off)") used

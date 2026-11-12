@@ -152,3 +152,64 @@ enum SupersetGrouping {
         return s
     }
 }
+
+// MARK: - Editing
+
+/// Create and break supersets on any list that carries a `supersetGroup`.
+/// Log uses it mid-workout; the indices are source-order indices into the
+/// caller's array.
+enum SupersetEditing {
+    /// Source index of the row drawn right after `index`'s row (or after
+    /// its whole group when it already has one). Nil for the last row.
+    static func nextIndex<Element>(
+        _ items: [Element], after index: Int, groupOf: (Element) -> Int?
+    ) -> Int? {
+        guard items.indices.contains(index) else { return nil }
+        let rendered = SupersetGrouping.layout(items, groupOf: groupOf)
+        let own = groupOf(items[index])
+        guard let lastOfMine = rendered.lastIndex(where: {
+            $0.originalIndex == index || (own != nil && $0.supersetGroup == own)
+        }), rendered.indices.contains(lastOfMine + 1) else { return nil }
+        return rendered[lastOfMine + 1].originalIndex
+    }
+
+    /// Pair the row at `index` with the row drawn after it. An existing
+    /// group on either side grows; two groups merge. Returns false when
+    /// there is no next row.
+    @discardableResult
+    static func pairWithNext<Element>(
+        _ items: inout [Element], at index: Int, group: WritableKeyPath<Element, Int?>
+    ) -> Bool {
+        guard let next = nextIndex(items, after: index, groupOf: { $0[keyPath: group] }) else {
+            return false
+        }
+        let mine = items[index][keyPath: group]
+        let theirs = items[next][keyPath: group]
+        switch (mine, theirs) {
+        case (nil, nil):
+            let fresh = (items.compactMap { $0[keyPath: group] }.max() ?? 0) + 1
+            items[index][keyPath: group] = fresh
+            items[next][keyPath: group] = fresh
+        case (nil, let g?):
+            items[index][keyPath: group] = g
+        case (let g?, nil):
+            items[next][keyPath: group] = g
+        case (let g?, let other?):
+            for i in items.indices where items[i][keyPath: group] == other {
+                items[i][keyPath: group] = g
+            }
+        }
+        return true
+    }
+
+    /// Take the row out of its superset. A group left with one member is
+    /// dissolved, since one exercise is no superset.
+    static func remove<Element>(
+        _ items: inout [Element], at index: Int, group: WritableKeyPath<Element, Int?>
+    ) {
+        guard items.indices.contains(index), let g = items[index][keyPath: group] else { return }
+        items[index][keyPath: group] = nil
+        let rest = items.indices.filter { items[$0][keyPath: group] == g }
+        if rest.count == 1 { items[rest[0]][keyPath: group] = nil }
+    }
+}

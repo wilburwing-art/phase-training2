@@ -114,6 +114,59 @@ final class ProgressScreenUITests: XCTestCase {
                       "See all sessions should present HistoryScreen" + elementDump(app))
     }
 
+    /// History search narrows the list, a session saves to the Library once,
+    /// and Repeat lands in Log with the session's exercises.
+    func test_history_searchSaveAsRoutineAndRepeat() throws {
+        let app = launch(seed: "--seed-progress-demo")
+        openProgress(in: app)
+
+        let seeAll = app.buttons["progress-see-all-sessions"]
+        XCTAssertTrue(scrollTo(seeAll, in: app), "See all sessions should be reachable")
+        seeAll.tap()
+
+        let search = app.textFields["history-search"]
+        XCTAssertTrue(search.waitForExistence(timeout: 5),
+                      "History should show a search field" + elementDump(app))
+        XCTAssertTrue(app.staticTexts["7 SESSIONS"].exists, "seed has seven sessions")
+
+        search.tap()
+        search.typeText("zzzz")
+        XCTAssertTrue(app.staticTexts["NO MATCHES"].waitForExistence(timeout: 3),
+                      "a query matching nothing should say so" + elementDump(app))
+        XCTAssertTrue(app.staticTexts["0 SESSIONS"].exists)
+        add(XCTAttachment(screenshot: app.screenshot()))
+
+        app.buttons["history-clear-filters"].tap()
+        search.tap()
+        search.typeText("squat\n")
+        XCTAssertTrue(app.staticTexts["7 SESSIONS"].waitForExistence(timeout: 3),
+                      "every seeded session has a squat" + elementDump(app))
+
+        let toggles = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'history-toggle-'"))
+        XCTAssertGreaterThan(toggles.count, 0)
+        toggles.element(boundBy: 0).tap()
+
+        let save = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'history-save-routine-'")).firstMatch
+        XCTAssertTrue(save.waitForExistence(timeout: 3),
+                      "an expanded session should offer Save as routine" + elementDump(app))
+        add(XCTAttachment(screenshot: app.screenshot()))
+        save.tap()
+        // The button carries its own accessibility label, so the visible
+        // "Saved to Library" title is read through `label`.
+        let saved = NSPredicate(format: "label CONTAINS 'saved to Library' AND isEnabled == false")
+        expectation(for: saved, evaluatedWith: save)
+        waitForExpectations(timeout: 3)
+        add(XCTAttachment(screenshot: app.screenshot()))
+
+        app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'history-repeat-'")).firstMatch.tap()
+        XCTAssertTrue(app.buttons["log-finish"].waitForExistence(timeout: 10),
+                      "Repeat should open Log" + elementDump(app))
+        XCTAssertTrue(app.staticTexts["log-exercise-name-0"].waitForExistence(timeout: 3))
+        add(XCTAttachment(screenshot: app.screenshot()))
+    }
+
     func test_bodyWeightCard_opensItsLogSheet() throws {
         let app = launch(seed: "--seed-progress-demo")
         openProgress(in: app)

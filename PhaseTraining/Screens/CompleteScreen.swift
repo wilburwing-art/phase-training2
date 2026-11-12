@@ -65,6 +65,9 @@ struct CompleteScreen: View {
     /// workout already saved) — the user taps "Add details" to open it, which
     /// is the only thing that captures a FeedbackEntry for the coach/planner.
     @State private var showFeedbackSheet = false
+    @EnvironmentObject private var customStore: CustomRoutineStore
+    /// True once this session has been copied into the Library.
+    @State private var savedAsRoutine = false
 
     init(session: ActiveSession, onSave: @escaping () -> Void, onDiscard: (() -> Void)? = nil) {
         self.session = session
@@ -177,7 +180,10 @@ struct CompleteScreen: View {
 
             VStack(spacing: 10) {
                 doneButton
-                feedbackButton
+                HStack(spacing: 0) {
+                    feedbackButton
+                    saveRoutineButton
+                }
                 if onDiscard != nil {
                     discardButton
                 }
@@ -549,6 +555,28 @@ struct CompleteScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("complete-feedback")
+    }
+
+    /// Copy the finished session into the Library as a saved workout.
+    /// Hidden when nothing was logged or the record was discarded.
+    @ViewBuilder
+    private var saveRoutineButton: some View {
+        if let saved, !discarded, !saved.exercises.isEmpty {
+            Button {
+                customStore.save(saved.asCustomRoutine(exerciseId: ExerciseNameLookup.catalogId))
+                savedAsRoutine = true
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            } label: {
+                Text(savedAsRoutine ? "Saved to Library" : "Save as routine")
+                    .font(.scaled("Inter-Regular", size: 13).weight(.medium))
+                    .foregroundStyle(savedAsRoutine ? Color.ink3 : Color.accent)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+            }
+            .buttonStyle(.plain)
+            .disabled(savedAsRoutine)
+            .accessibilityIdentifier("complete-save-routine")
+        }
     }
 
     private var discardButton: some View {

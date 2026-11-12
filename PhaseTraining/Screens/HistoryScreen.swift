@@ -6,6 +6,8 @@ import SwiftUI
 struct HistoryScreen: View {
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject var memoryStore: MemoryStore
+    @EnvironmentObject private var customStore: CustomRoutineStore
+    @EnvironmentObject private var tabSelection: TabSelectionStore
     /// Build 92: now presented as a sheet from the Progress tab's "See
     /// all" link, not pushed from TodayTab. Uses Environment dismiss so
     /// it works in any presentation context.
@@ -21,6 +23,12 @@ struct HistoryScreen: View {
 
     @State private var expanded: Set<TimeInterval> = []
     @State private var editingSession: SavedSession?
+    @State private var filter = HistoryFilter()
+    /// Sessions saved to the Library from this screen, so the button can
+    /// read "Saved" instead of offering a second copy.
+    @State private var savedAsRoutine: Set<TimeInterval> = []
+    /// Session waiting on the "replace the workout in progress?" confirm.
+    @State private var repeatTarget: SavedSession?
 
     init(initialExerciseFilter: String? = nil) {
         self.initialExerciseFilter = initialExerciseFilter
@@ -30,6 +38,12 @@ struct HistoryScreen: View {
     /// (`store.displaySessions`) when no filter is set, otherwise narrowed to
     /// sessions containing the named exercise.
     private var displayedSessions: [SavedSession] {
+        filter.apply(to: scopedSessions)
+    }
+
+    /// The list before search and tag filtering: everything, or the sessions
+    /// containing the drilled-in exercise.
+    private var scopedSessions: [SavedSession] {
         let all = store.displaySessions(usesImperial: memoryStore.memory.usesImperial)
         guard let name = initialExerciseFilter else { return all }
         return all.filter { sess in
@@ -48,13 +62,28 @@ struct HistoryScreen: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
 
-            if displayedSessions.isEmpty {
+            if scopedSessions.isEmpty {
                 emptyState
             } else {
                 content
             }
         }
         .background(Color.bg.ignoresSafeArea())
+        .confirmationDialog(
+            "Replace the workout in progress?",
+            isPresented: Binding(
+                get: { repeatTarget != nil },
+                set: { if !$0 { repeatTarget = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("Replace and start", role: .destructive) {
+                if let target = repeatTarget { performRepeat(target) }
+            }
+            Button("Cancel", role: .cancel) { repeatTarget = nil }
+        } message: {
+            Text("The sets logged in the current workout will be lost.")
+        }
         .sheet(item: $editingSession) { session in
             EditSessionSheet(session: session)
                 .environmentObject(store)
@@ -121,6 +150,12 @@ struct HistoryScreen: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
 
+                searchBar
+                    .padding(.horizontal, 20)
+                    .padding(.top, 14)
+
+                tagFilterRow
+
                 summaryStrip
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
@@ -131,19 +166,122 @@ struct HistoryScreen: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
 
-                LazyVStack(spacing: 0) {
-                    ForEach(Array(sessions.enumerated()), id: \.element.id) { idx, session in
-                        sessionRow(
-                            session: session,
-                            isLast: idx == sessions.count - 1
-                        )
+                if sessions.isEmpty {
+                    noMatches
+                } else {
+                    LazyVStack(spacing: 0) {
+                        ForEach(Array(sessions.enumerated()), id: \.element.id) { idx, session in
+                            sessionRow(
+                                session: session,
+                                isLast: idx == sessions.count - 1
+                            )
+                        }
                     }
+                    .padding(.horizontal, 20)
                 }
-                .padding(.horizontal, 20)
 
                 Spacer().frame(height: 40)
             }
         }
+    }
+
+    // MARK: - Search and tag filter
+
+    private var searchBar: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Color.ink3)
+            TextField("", text: $filter.query,
+                      prompt: Text("Search name, exercise, note or month").foregroundColor(Color.ink3))
+                .styled(.body)
+                .foregroundStyle(Color.ink)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(.search)
+                .accessibilityIdentifier("history-search")
+            if !filter.query.isEmpty {
+                Button { filter.query = "" } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(Color.ink3)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                        .accessibilityLabel("Clear search")
+                }
+                .buttonStyle(.plain)
+                .frame(width: 20, height: 20)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color.surface)
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    /// One chip per tag that some session in the list carries. Hidden when
+    /// no session is tagged.
+    @ViewBuilder
+    private var tagFilterRow: some View {
+        let present = HistoryFilter.tagsPresent(in: scopedSessions)
+        if !present.isEmpty {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 6) {
+                    ForEach(present) { tag in
+                        tagFilterChip(tag)
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+            .padding(.top, 10)
+        }
+    }
+
+    private func tagFilterChip(_ tag: SessionTag) -> some View {
+        let active = filter.tags.contains(tag)
+        return Button {
+            if active { filter.tags.remove(tag) } else { filter.tags.insert(tag) }
+        } label: {
+            Text(tag.label)
+                .font(.scaled("JetBrainsMono-Medium", size: 11))
+                .foregroundStyle(active ? Color.accentInk : Color.ink2)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(active ? Color.accent : Color.elevated)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(active ? Color.clear : Color.line, lineWidth: 0.5)
+                )
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("history-tag-\(tag.rawValue)")
+        .accessibilityAddTraits(active ? .isSelected : [])
+    }
+
+    private var noMatches: some View {
+        VStack(spacing: 10) {
+            Text("NO MATCHES")
+                .styled(.micro)
+                .foregroundColor(.ink2)
+            Button {
+                filter = HistoryFilter()
+            } label: {
+                Text("Clear search and filters")
+                    .styled(.body)
+                    .foregroundColor(.accent)
+                    .frame(minHeight: 44)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("history-clear-filters")
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 40)
     }
 
     // MARK: - Summary strip (sessions / total sets / avg RPE)
@@ -254,22 +392,8 @@ struct HistoryScreen: View {
                         .padding(.top, 8)
                         .accessibilityIdentifier("history-imported-\(session.id)")
                 } else {
-                    Button(action: { editingSession = session }) {
-                        Text("Edit session")
-                            .styled(.monoS)
-                            .foregroundColor(.ink2)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 12)
-                            .frame(maxWidth: .infinity)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.line, lineWidth: 0.5)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Edit \(session.name)")
-                    .accessibilityIdentifier("history-edit-\(session.id)")
-                    .padding(.top, 8)
+                    sessionActions(session)
+                        .padding(.top, 8)
                 }
             }
         }
@@ -279,6 +403,82 @@ struct HistoryScreen: View {
                 Rectangle().fill(Color.lineSoft).frame(height: 0.5)
             }
         }
+    }
+
+    // MARK: - Session actions (native sessions only)
+
+    @ViewBuilder
+    private func sessionActions(_ session: SavedSession) -> some View {
+        let canReuse = !session.exercises.isEmpty
+        VStack(spacing: 8) {
+            if canReuse {
+                HStack(spacing: 8) {
+                    // Repeat switches tabs, so it is offered only from the
+                    // full History list. The exercise drill-in sits on top
+                    // of another sheet that would stay open over the Log.
+                    if initialExerciseFilter == nil {
+                        actionButton("Repeat", id: "history-repeat-\(session.id)",
+                                     label: "Repeat \(session.name)") {
+                            requestRepeat(session)
+                        }
+                    }
+                    let saved = savedAsRoutine.contains(session.id)
+                    actionButton(saved ? "Saved to Library" : "Save as routine",
+                                 id: "history-save-routine-\(session.id)",
+                                 label: saved ? "\(session.name) saved to Library"
+                                              : "Save \(session.name) as a routine") {
+                        saveAsRoutine(session)
+                    }
+                    .disabled(saved)
+                }
+            }
+            actionButton("Edit session", id: "history-edit-\(session.id)",
+                         label: "Edit \(session.name)") {
+                editingSession = session
+            }
+        }
+    }
+
+    private func actionButton(_ title: String, id: String, label: String,
+                              action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .styled(.monoS)
+                .foregroundColor(.ink2)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .frame(maxWidth: .infinity)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.line, lineWidth: 0.5)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+        .accessibilityIdentifier(id)
+    }
+
+    private func requestRepeat(_ session: SavedSession) {
+        if store.active != nil {
+            repeatTarget = session
+        } else {
+            performRepeat(session)
+        }
+    }
+
+    /// Start the session again and hand off to Today, where TodayTab routes
+    /// a fresh active session to the Log.
+    private func performRepeat(_ session: SavedSession) {
+        store.saveActive(store.createSession(from: session.repeatTemplate()))
+        repeatTarget = nil
+        tabSelection.selected = .today
+        dismiss()
+    }
+
+    private func saveAsRoutine(_ session: SavedSession) {
+        customStore.save(session.asCustomRoutine(exerciseId: ExerciseNameLookup.catalogId))
+        savedAsRoutine.insert(session.id)
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 
     private var dot: some View {
@@ -501,5 +701,7 @@ struct HistoryScreen: View {
     return HistoryScreen()
         .environmentObject(store)
         .environmentObject(MemoryStore())
+        .environmentObject(CustomRoutineStore(defaults: UserDefaults(suiteName: "preview-history")!))
+        .environmentObject(TabSelectionStore())
         .preferredColorScheme(.dark)
 }
