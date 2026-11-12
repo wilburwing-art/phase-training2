@@ -1654,5 +1654,77 @@
     "source": "common_name",
     "notes": "common name",
     "created_at": "2026-11-10 00:00:00"
+  },
+  {
+    "id": 208,
+    "exercise_id": 922,
+    "alias": "Wide Grip Pull Up",
+    "source": "common_name",
+    "notes": "Fitbod export name",
+    "created_at": "2026-11-12 00:00:00"
+  },
+  {
+    "id": 209,
+    "exercise_id": 924,
+    "alias": "V-Bar Pull Up",
+    "source": "common_name",
+    "notes": "Fitbod export name",
+    "created_at": "2026-11-12 00:00:00"
+  },
+  {
+    "id": 210,
+    "exercise_id": 969,
+    "alias": "Decline Sit Up",
+    "source": "common_name",
+    "notes": "Fitbod export name",
+    "created_at": "2026-11-12 00:00:00"
+  },
+  {
+    "id": 211,
+    "exercise_id": 970,
+    "alias": "Decline Russian Twists",
+    "source": "common_name",
+    "notes": "Fitbod export name",
+    "created_at": "2026-11-12 00:00:00"
+  },
+  {
+    "id": 212,
+    "exercise_id": 950,
+    "alias": "Incline Hammer Curl",
+    "source": "common_name",
+    "notes": "Fitbod export name",
+    "created_at": "2026-11-12 00:00:00"
+  },
+  {
+    "id": 213,
+    "exercise_id": 376,
+    "alias": "Vertical Leg Raise",
+    "source": "common_name",
+    "notes": "Fitbod export name",
+    "created_at": "2026-11-12 00:00:00"
+  },
+  {
+    "id": 214,
+    "exercise_id": 1017,
+    "alias": "Cable Shoulder External Rotation",
+    "source": "common_name",
+    "notes": "Fitbod export name",
+    "created_at": "2026-11-12 00:00:00"
+  },
+  {
+    "id": 215,
+    "exercise_id": 130,
+    "alias": "Lunge Jump",
+    "source": "common_name",
+    "notes": "Fitbod export name",
+    "created_at": "2026-11-12 00:00:00"
+  },
+  {
+    "id": 216,
+    "exercise_id": 1206,
+    "alias": "Scissor Crossover Kick",
+    "source": "common_name",
+    "notes": "Fitbod export name",
+    "created_at": "2026-11-12 00:00:00"
   }
 ]

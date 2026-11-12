@@ -48,6 +48,30 @@ final class ImportMaintenanceTests: XCTestCase {
         XCTAssertNil(coach.exerciseId(forImportName: "Machine Zz Press"), "extra words still miss")
     }
 
+    /// Fitbod names from a 64-name unmatched list (2026-11-12) that are the
+    /// same movement as a catalog exercise under another name. Each is an
+    /// alias in db/source/exercise_aliases.json. Variants that change the load
+    /// (single-leg, cable against machine, a dumbbell thruster) are left
+    /// unmatched on purpose: a wrong match would feed weight suggestions.
+    func test_resolver_matchesFitbodNamesAddedAsAliases() {
+        let coach = CoachDatabase.shared
+        let pairs = [
+            ("Wide Grip Pull Up", "Pull-Up"), ("V-Bar Pull Up", "Neutral-Grip Pull-Up"),
+            ("Decline Sit Up", "Sit-Up"), ("Decline Russian Twists", "Russian Twist"),
+            ("Incline Hammer Curl", "Hammer Curl"), ("Vertical Leg Raise", "Hanging Leg Raise"),
+            ("Cable Shoulder External Rotation", "External Rotation"),
+            ("Lunge Jump", "Split Squat Jump"), ("Scissor Crossover Kick", "Scissor Kick"),
+        ]
+        for (fitbod, catalog) in pairs {
+            let want = coach.exerciseId(forImportName: catalog)
+            XCTAssertNotNil(want, "catalog has no \(catalog)")
+            XCTAssertEqual(coach.exerciseId(forImportName: fitbod), want, "\(fitbod) -> \(catalog)")
+        }
+        for unmatched in ["Single Leg Leg Extension", "Cable Hip Adduction", "Dumbbell Squat To Shoulder Press"] {
+            XCTAssertNil(coach.exerciseId(forImportName: unmatched), "\(unmatched) changes the load and stays unmatched")
+        }
+    }
+
     /// Fitbod names with a same-movement, same-equipment catalog row under a
     /// different name. Variants (Decline Push Up, Wide Grip Pull Up, Incline
     /// Hammer Curl) are deliberately left unmatched for the user to pick.
