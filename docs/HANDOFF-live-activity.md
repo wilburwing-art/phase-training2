@@ -21,9 +21,11 @@ the profile's name and App ID match.
 To recreate the profile (new distribution certificate, expiry):
 
 1. Identifiers: App ID `com.phasetraining.app.widgets`, team A2Z2RXR65P,
-   explicit, no extra capabilities. Live Activities need only the
-   `NSSupportsLiveActivities` plist key; there is no App Group and no push
-   entitlement.
+   explicit, with the App Groups capability set to
+   `group.com.phasetraining.app` (added 2026-11-13 for the Today widget; the
+   app's App ID `com.phasetraining.app` carries the same group, so its profile
+   `BUILD_PROVISION_PROFILE_BASE64` must include it too). Live Activities need
+   only the `NSSupportsLiveActivities` plist key; there is no push entitlement.
 2. Profiles: an iOS App Store distribution profile for that App ID on the
    Apple Distribution certificate, named `PhaseTraining Widgets App Store`.
 3. Base64-encode the .mobileprovision into

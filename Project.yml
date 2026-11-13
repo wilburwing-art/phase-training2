@@ -232,6 +232,7 @@ targets:
     sources:
       - path: PhaseTrainingWidgets
       - path: Shared/LiveActivity
+      - path: Shared/Widget
     info:
       path: PhaseTrainingWidgets/Info.plist
       properties:
@@ -249,6 +250,7 @@ targets:
         SKIP_INSTALL: YES
         ENABLE_PREVIEWS: YES
         SWIFT_VERSION: "5.9"
+        CODE_SIGN_ENTITLEMENTS: PhaseTrainingWidgets/PhaseTrainingWidgets.entitlements
       configs:
         Release:
           CODE_SIGN_STYLE: Manual
