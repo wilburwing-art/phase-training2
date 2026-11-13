@@ -82,7 +82,7 @@ struct KettleView: View {
 
     var body: some View {
         Group {
-            if animated && !reduceMotion {
+            if animated && !Motion.isReduced(reduceMotion) {
                 TimelineView(.animation) { timeline in
                     canvas(at: timeline.date.timeIntervalSinceReferenceDate)
                 }

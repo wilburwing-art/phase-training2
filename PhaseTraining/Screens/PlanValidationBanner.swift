@@ -34,12 +34,12 @@ struct PlanValidationBanner: View {
                         issue: issue,
                         isExpanded: expandedIssueID == issue.id,
                         onTap: {
-                            withAnimation(.easeInOut(duration: 0.18)) {
+                            withMotion(.easeInOut(duration: 0.18), .movement) {
                                 expandedIssueID = (expandedIssueID == issue.id) ? nil : issue.id
                             }
                         },
                         onAcknowledge: {
-                            withAnimation(.easeInOut(duration: 0.2)) {
+                            withMotion(.easeInOut(duration: 0.2), .movement) {
                                 onAcknowledge(issue)
                                 if expandedIssueID == issue.id {
                                     expandedIssueID = nil
@@ -50,7 +50,7 @@ struct PlanValidationBanner: View {
                 }
                 if hiddenCount > 0 {
                     Button(action: {
-                        withAnimation(.easeInOut(duration: 0.18)) { showAll.toggle() }
+                        withMotion(.easeInOut(duration: 0.18), .movement) { showAll.toggle() }
                     }) {
                         Text(showAll ? "Show fewer" : "+\(hiddenCount) more")
                             .styled(.monoXS)

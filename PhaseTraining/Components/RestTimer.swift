@@ -33,6 +33,7 @@ struct RestTimer: View {
     /// retroactively shortening/extending the existing window.
     var onSetDuration: ((Int) -> Void)? = nil
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var pulse = false
     @State private var showCustomSheet = false
     @State private var customText: String = ""
@@ -54,11 +55,11 @@ struct RestTimer: View {
                 .fill(expired ? Color.ok : Color.accent)
                 .frame(width: 7, height: 7)
                 .opacity(pulse ? 0.35 : 1.0)
-                .animation(
-                    .easeInOut(duration: 1.6).repeatForever(autoreverses: true),
-                    value: pulse
-                )
-                .onAppear { pulse = true }
+                .motion(Motion.pulse(duration: 1.6), .movement, value: pulse)
+                .onAppear { pulse = !Motion.isReduced(reduceMotion) }
+                .onChange(of: reduceMotion) { _, reduced in
+                    pulse = !Motion.isReduced(reduced)
+                }
 
             Text(expired ? "DONE" : "REST")
                 .styled(.micro)
@@ -87,7 +88,7 @@ struct RestTimer: View {
                 .strokeBorder(expired ? Color.ok : Color.accentBorder, lineWidth: expired ? 1.0 : 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .animation(.easeInOut(duration: 0.2), value: expired)
+        .motion(.easeInOut(duration: 0.2), .fade, value: expired)
         .alert("Custom rest", isPresented: $showCustomSheet) {
             TextField("Seconds", text: $customText)
                 .keyboardType(.numberPad)

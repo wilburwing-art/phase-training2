@@ -26,6 +26,7 @@ import SwiftUI
 import UIKit
 
 struct LogScreen: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     // T2-1 / T2-3 (declared here: LogSetRow.swift is an extension and
     // cannot hold stored properties). Column widths were hard pixel frames sized for the fixed
     // 13.5pt mono font. Now that the type scales with Dynamic Type these have
@@ -358,10 +359,10 @@ struct LogScreen: View {
                     NowPlayingCard(model: nowPlaying)
                         .padding(.horizontal, 20)
                         .padding(.bottom, 8)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .transition(Motion.transition(.move(edge: .bottom).combined(with: .opacity), reduced: Motion.isReduced(reduceMotion)))
                 }
             }
-            .animation(.easeInOut(duration: 0.25), value: nowPlaying.state)
+            .motion(.easeInOut(duration: 0.25), .fade, value: nowPlaying.state)
         }
     }
 
@@ -466,7 +467,7 @@ struct LogScreen: View {
                     Rectangle()
                         .fill(Color.accent)
                         .frame(width: max(0, geo.size.width * progress))
-                        .animation(.easeInOut(duration: 0.3), value: progress)
+                        .motion(.easeInOut(duration: 0.3), .movement, value: progress)
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 2, style: .continuous))
             }

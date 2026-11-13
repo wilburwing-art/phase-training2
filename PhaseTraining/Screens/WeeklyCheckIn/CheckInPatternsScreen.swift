@@ -125,7 +125,7 @@ struct CheckInPatternsScreen: View {
     }
 
     private func remove(_ s: Suggestion) {
-        withAnimation(.easeInOut(duration: 0.18)) {
+        withMotion(.easeInOut(duration: 0.18), .movement) {
             suggestions.removeAll { $0.id == s.id }
         }
     }

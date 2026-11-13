@@ -94,7 +94,7 @@ struct RootTabView: View {
             CoachBubble()
                 .padding(.bottom, 56)  // clear the tab bar
                 .allowsHitTesting(true)
-                .animation(.easeInOut(duration: 0.2), value: tabSelection.selected)
+                .motion(.easeInOut(duration: 0.2), .fade, value: tabSelection.selected)
         }
         .sheet(isPresented: $conv.presented) {
             CoachDrawer()

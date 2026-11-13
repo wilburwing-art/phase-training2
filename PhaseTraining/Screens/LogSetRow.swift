@@ -195,7 +195,7 @@ extension LogScreen {
     @ViewBuilder
     private func bodyweightCell(exIdx: Int, setIdx: Int, done: Bool) -> some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.15)) {
+            withMotion(.easeInOut(duration: 0.15), .movement) {
                 weightEntryExercises.insert(exIdx)
             }
             UISelectionFeedbackGenerator().selectionChanged()

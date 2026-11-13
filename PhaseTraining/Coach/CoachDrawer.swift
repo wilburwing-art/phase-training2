@@ -533,7 +533,7 @@ struct CoachDrawer: View {
     }
 
     private func scrollToBottom(_ proxy: ScrollViewProxy) {
-        withAnimation(.easeOut(duration: 0.15)) {
+        withMotion(.easeOut(duration: 0.15), .movement) {
             proxy.scrollTo("bottom", anchor: .bottom)
         }
     }

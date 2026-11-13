@@ -63,7 +63,7 @@ struct MissedWorkoutBanner: View {
 
             HStack(spacing: 8) {
                 if proposedDiff != nil {
-                    Button(action: { withAnimation(.easeInOut(duration: 0.18)) { expanded.toggle() } }) {
+                    Button(action: { withMotion(.easeInOut(duration: 0.18), .movement) { expanded.toggle() } }) {
                         Text(expanded ? "Hide changes" : "See changes")
                             .styled(.monoXS)
                             .foregroundStyle(Color.ink2)

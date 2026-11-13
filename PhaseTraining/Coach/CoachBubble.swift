@@ -20,6 +20,7 @@
 import SwiftUI
 
 struct CoachBubble: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var conv: CoachConversationStore
     @EnvironmentObject private var tabSelection: TabSelectionStore
     @EnvironmentObject private var sessionStore: SessionStore
@@ -41,7 +42,7 @@ struct CoachBubble: View {
             }
             .padding(.trailing, 16)
             .padding(.bottom, 8)
-            .transition(.opacity.combined(with: .scale(scale: 0.8)))
+            .transition(Motion.transition(.opacity.combined(with: .scale(scale: 0.8)), reduced: Motion.isReduced(reduceMotion)))
         }
     }
 
@@ -129,7 +130,7 @@ private struct CoachAvatarStyle: ButtonStyle {
         .frame(width: art, height: art)
         .contentShape(Rectangle())
         .scaleEffect(configuration.isPressed ? 0.92 : 1)
-        .animation(.spring(response: 0.2, dampingFraction: 0.7),
+        .motion(.spring(response: 0.2, dampingFraction: 0.7), .movement,
                    value: configuration.isPressed)
     }
 }

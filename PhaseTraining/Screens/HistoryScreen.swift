@@ -371,7 +371,7 @@ struct HistoryScreen: View {
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.ink3)
                         .rotationEffect(.degrees(isExpanded ? 180 : 0))
-                        .animation(.easeInOut(duration: 0.2), value: isExpanded)
+                        .motion(.easeInOut(duration: 0.2), .movement, value: isExpanded)
                         .padding(.top, 4)
                 }
                 .contentShape(Rectangle())

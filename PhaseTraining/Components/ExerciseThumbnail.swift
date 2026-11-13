@@ -25,6 +25,7 @@ struct ExerciseThumbnail: View {
     let urlString: String?
     var size: CGFloat = 44
     var cornerRadius: CGFloat = 8
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Bundle-first. Falls through to the URL path if no bundled WebP exists
     /// for this id. There is no URL-only init on purpose: promoting an
@@ -42,7 +43,7 @@ struct ExerciseThumbnail: View {
     var body: some View {
         Group {
             if let bundled = bundledImage {
-                if let end = bundledEndImage {
+                if let end = bundledEndImage, !Motion.isReduced(reduceMotion) {
                     // Generated start/end pair: flip between the two frames
                     // so the row reads as the movement. TimelineView is torn
                     // down with the row when it scrolls off a LazyVStack, so
@@ -56,7 +57,7 @@ struct ExerciseThumbnail: View {
                             .clipped()
                             .id(showEnd)
                             .transition(.opacity)
-                            .animation(.easeInOut(duration: 0.25), value: showEnd)
+                            .motion(.easeInOut(duration: 0.25), .fade, value: showEnd)
                     }
                 } else {
                     Image(uiImage: bundled)
@@ -239,6 +240,7 @@ final class BundledExerciseImage {
 struct LineArtHero: View {
     let start: UIImage
     let end: UIImage?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Seconds each position is held; the fade takes `fade` of that.
     static let hold: TimeInterval = 1.6
@@ -247,7 +249,7 @@ struct LineArtHero: View {
 
     var body: some View {
         Group {
-            if let end {
+            if let end, !Motion.isReduced(reduceMotion) {
                 TimelineView(.periodic(from: .now, by: Self.hold)) { context in
                     let showEnd = Int(context.date.timeIntervalSinceReferenceDate / Self.hold) % 2 == 1
                     Image(uiImage: showEnd ? end : start)
@@ -255,7 +257,7 @@ struct LineArtHero: View {
                         .scaledToFit()
                         .id(showEnd)
                         .transition(.opacity)
-                        .animation(.easeInOut(duration: Self.fade), value: showEnd)
+                        .motion(.easeInOut(duration: Self.fade), .fade, value: showEnd)
                 }
             } else {
                 Image(uiImage: start)

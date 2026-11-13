@@ -71,6 +71,6 @@ struct TodayTab: View {
     }
 
     private func transition(_ next: TodayRoute) {
-        withAnimation(.easeInOut(duration: 0.18)) { route = next }
+        withMotion(.easeInOut(duration: 0.18), .fade) { route = next }
     }
 }

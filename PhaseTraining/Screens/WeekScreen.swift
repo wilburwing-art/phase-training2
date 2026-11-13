@@ -174,7 +174,7 @@ struct WeekScreen: View {
                 .task(id: move) {
                     try? await Task.sleep(for: .seconds(6))
                     if planStore.lastMove == move {
-                        withAnimation(.easeInOut(duration: 0.2)) { planStore.lastMove = nil }
+                        withMotion(.easeInOut(duration: 0.2), .movement) { planStore.lastMove = nil }
                     }
                 }
             }
@@ -590,8 +590,8 @@ private struct DayRow: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .opacity(isSelfTarget ? 0.55 : 1.0)
-        .animation(.easeOut(duration: 0.12), value: isTargeted)
-        .animation(.easeOut(duration: 0.12), value: isSelfTarget)
+        .motion(.easeOut(duration: 0.12), .fade, value: isTargeted)
+        .motion(.easeOut(duration: 0.12), .fade, value: isSelfTarget)
         // VoiceOver read this as up to six elements ("TUE", "9", a badge, the
         // title, a lock glyph, ...). One element, in speaking order, with the
         // full weekday rather than the three-letter strip. The parent's

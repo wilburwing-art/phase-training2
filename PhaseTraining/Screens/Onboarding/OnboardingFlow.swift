@@ -88,6 +88,7 @@ enum OnboardingStep: Int, CaseIterable {
 // MARK: - Coordinator
 
 struct OnboardingFlow: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var store: MemoryStore
     @EnvironmentObject private var planStore: PlanStore
     @State private var step: OnboardingStep = .welcome
@@ -99,7 +100,7 @@ struct OnboardingFlow: View {
             Color.bg.ignoresSafeArea()
             content
                 .id(step) // forces transition each step
-                .transition(.opacity.combined(with: .move(edge: .trailing)))
+                .transition(Motion.transition(.opacity.combined(with: .move(edge: .trailing)), reduced: Motion.isReduced(reduceMotion)))
         }
         .onAppear(perform: restoreOrStartFresh)
         // Persist on every step change and whenever the app leaves the
@@ -203,12 +204,12 @@ struct OnboardingFlow: View {
     /// when the coach is present, Health (or seasons on iPad) when it is not.
     private func advance() {
         guard let next = step.next() else { finish(); return }
-        withAnimation(.easeInOut(duration: 0.22)) { step = next }
+        withMotion(.easeInOut(duration: 0.22), .fade) { step = next }
     }
 
     private func back() {
         guard let prev = step.prev() else { return }
-        withAnimation(.easeInOut(duration: 0.18)) { step = prev }
+        withMotion(.easeInOut(duration: 0.18), .fade) { step = prev }
     }
 
     private func finish() {
@@ -354,7 +355,7 @@ struct OnboardingProgressBar: View {
                 Rectangle()
                     .fill(Color.accent)
                     .frame(width: geo.size.width * fillFraction, height: 2)
-                    .animation(.easeInOut(duration: 0.25), value: step)
+                    .motion(.easeInOut(duration: 0.25), .movement, value: step)
             }
         }
         .frame(height: 2)

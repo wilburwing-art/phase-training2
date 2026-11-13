@@ -110,6 +110,7 @@ enum WeeklyCheckInStep: Int, CaseIterable {
 // MARK: - Coordinator
 
 struct WeeklyCheckInFlow: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var memoryStore: MemoryStore
     @EnvironmentObject private var planStore: PlanStore
     @EnvironmentObject private var sportLogStore: SportLogStore
@@ -132,7 +133,7 @@ struct WeeklyCheckInFlow: View {
             Color.bg.ignoresSafeArea()
             content
                 .id(step)
-                .transition(.opacity.combined(with: .move(edge: .trailing)))
+                .transition(Motion.transition(.opacity.combined(with: .move(edge: .trailing)), reduced: Motion.isReduced(reduceMotion)))
         }
         .onAppear(perform: hydrateFromOverrides)
         .alert("Get a weekly reminder?", isPresented: $showReminderOffer) {
@@ -223,7 +224,7 @@ struct WeeklyCheckInFlow: View {
         guard var next = step.next() else { return }
         if next == .missed { next = next.next() ?? next }
         if next == .patterns, suggestions.isEmpty { next = next.next() ?? next }
-        withAnimation(.easeInOut(duration: 0.22)) { step = next }
+        withMotion(.easeInOut(duration: 0.22), .fade) { step = next }
     }
 
     private func back() {
@@ -234,7 +235,7 @@ struct WeeklyCheckInFlow: View {
         if prev == .patterns, suggestions.isEmpty { prev = prev.prev() ?? prev }
         if prev == .missed, planStore.pendingMissedWorkouts().isEmpty { return }
         if prev == .patterns, suggestions.isEmpty { return }
-        withAnimation(.easeInOut(duration: 0.18)) { step = prev }
+        withMotion(.easeInOut(duration: 0.18), .fade) { step = prev }
     }
 
     private func regenerateAndAdvance() {
@@ -458,7 +459,7 @@ struct CheckInScaffold<Content: View>: View {
                     Rectangle()
                         .fill(Color.accent)
                         .frame(width: geo.size.width * fillFraction, height: 2)
-                        .animation(.easeInOut(duration: 0.25), value: step)
+                        .motion(.easeInOut(duration: 0.25), .movement, value: step)
                 }
             }
             .frame(height: 2)

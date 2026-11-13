@@ -81,7 +81,6 @@ struct WorkoutTitleWheel: View {
     let onSeeAll: () -> Void
 
     @State private var scrolledId: String?
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private static let haptics = UISelectionFeedbackGenerator()
 
@@ -175,8 +174,7 @@ struct WorkoutTitleWheel: View {
                 Capsule()
                     .fill(option.id == selectedId ? Color.accent : Color.line)
                     .frame(width: option.id == selectedId ? 14 : 5, height: 3)
-                    .animation(reduceMotion ? nil : .easeInOut(duration: 0.18),
-                               value: selectedId)
+                    .motion(.easeInOut(duration: 0.18), .movement, value: selectedId)
             }
             Button(action: onSeeAll) {
                 Text("SEE ALL")
