@@ -15,6 +15,9 @@ name: release
 #   P12_PASSWORD                   — password set when exporting the .p12
 #   BUILD_PROVISION_PROFILE_BASE64 — base64 of the App Store .mobileprovision
 #                                    downloaded from developer.apple.com
+#   BUILD_WIDGET_PROVISION_PROFILE_BASE64 — base64 of the App Store profile for
+#                                    com.phasetraining.app.widgets (the
+#                                    rest-timer Live Activity extension)
 #   KEYCHAIN_PASSWORD              — random string (any value); creates a
 #                                    temporary keychain on the runner
 #   ASC_API_KEY_P8                 — base64 of the App Store Connect .p8
@@ -144,6 +147,29 @@ jobs:
           fi
           echo "WATCH_PROFILE_NAME=$WATCH_PROFILE_NAME" >> "$GITHUB_ENV"
 
+      - name: Install widget extension provisioning profile
+        # The widget extension (the rest-timer Live Activity) signs with its
+        # own App Store profile. A missing secret fails here, in words, before
+        # the archive step can fail on it twenty minutes later.
+        env:
+          BUILD_WIDGET_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_WIDGET_PROVISION_PROFILE_BASE64 }}
+        run: |
+          if [ -z "$BUILD_WIDGET_PROVISION_PROFILE_BASE64" ]; then
+            echo "::error::BUILD_WIDGET_PROVISION_PROFILE_BASE64 is not set. Create an App Store profile for com.phasetraining.app.widgets named 'PhaseTraining Widgets App Store' and store it base64-encoded as that repo secret (docs/HANDOFF-live-activity.md)."
+            exit 1
+          fi
+          PROFILE_PATH=$RUNNER_TEMP/build_widget_pp.mobileprovision
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          echo "$BUILD_WIDGET_PROVISION_PROFILE_BASE64" | base64 --decode > "$PROFILE_PATH"
+          mkdir -p "$PROFILES_DIR"
+          cp "$PROFILE_PATH" "$PROFILES_DIR/"
+          WIDGET_PROFILE_NAME=$(security cms -D -i "$PROFILE_PATH" | plutil -extract Name xml1 -o - - | sed -n 's/.*<string>\(.*\)<\/string>.*/\1/p')
+          echo "Resolved widget profile name: $WIDGET_PROFILE_NAME"
+          if [ "$WIDGET_PROFILE_NAME" != "PhaseTraining Widgets App Store" ]; then
+            echo "::warning::Widget profile name '$WIDGET_PROFILE_NAME' differs from Project.yml's pinned 'PhaseTraining Widgets App Store'."
+          fi
+          echo "WIDGET_PROFILE_NAME=$WIDGET_PROFILE_NAME" >> "$GITHUB_ENV"
+
       - name: Write ExportOptions.plist
         run: |
           mkdir -p build
@@ -168,6 +194,8 @@ jobs:
                   <string>${PROFILE_NAME}</string>
                   <key>com.phasetraining.app.watchkitapp</key>
                   <string>${WATCH_PROFILE_NAME}</string>
+                  <key>com.phasetraining.app.widgets</key>
+                  <string>${WIDGET_PROFILE_NAME}</string>
               </dict>
               <key>destination</key>
               <string>export</string>

@@ -43,6 +43,8 @@
 	<string>PhaseTraining saves each workout you finish to Apple Health as a strength-training workout (start, end and, from Apple Watch, heart rate), so it counts toward your rings and shows in the Fitness app. Each session is saved once. PhaseTraining never edits or deletes anything else in Health.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>When you start a workout, PhaseTraining takes one approximate location (to about 100 meters) so it can learn the places you train, like your gym or the crag, and later offer the right version of a session there. It never tracks you in the background or while you train, and the location stays on your device.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>UIAppFonts</key>
 	<array>
 		<string>SpaceGrotesk-Regular.ttf</string>

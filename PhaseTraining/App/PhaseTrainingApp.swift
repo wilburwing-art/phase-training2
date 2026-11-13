@@ -713,6 +713,15 @@ struct PhaseTrainingApp: App {
                 .environmentObject(sportLog)
                 .environmentObject(subscriptions)
                 .environmentObject(activityDetection)
+                .onReceive(session.$active) { active in
+                    // Workout finished, discarded or abandoned: end the rest Live Activity.
+                    if active == nil { RestActivityCenter.shared.sessionEnded() }
+                }
+                .task {
+                    // Rest state is not persisted, so an activity left over from a
+                    // previous process has nothing driving it.
+                    RestActivityCenter.shared.appLaunched()
+                }
                 .task {
                     // Sync products + entitlement state once on launch.
                     // Cheap and safe to call on every cold start.

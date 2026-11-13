@@ -137,6 +137,11 @@ struct LogScreen: View {
             // Auto-save on every mutation (per README.md:286).
             store.saveActive(newValue)
         }
+        .onChange(of: rest) { _, _ in
+            // Lock Screen / Dynamic Island rest timer. One report covers start,
+            // +15, -15, a new rest and skip; the expiry notification is untouched.
+            RestActivityCenter.shared.sync(liveActivitySnapshot())
+        }
         .onReceive(store.$active) { external in
             // A change that did not come from this screen: the watch marked a
             // set (WatchSyncCoordinator). Our own edits round-trip as the same

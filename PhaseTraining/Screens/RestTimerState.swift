@@ -18,7 +18,7 @@ import UserNotifications
 /// Initial duration is `ex.rest`; +15 increments `duration` so the countdown
 /// extends. Skip clears all fields. Auto-clears when remaining hits 0 (UI just
 /// hides; stale state is overwritten on next toggle).
-struct RestTimerState {
+struct RestTimerState: Equatable {
     /// Exercise index (into `session.exercises`) the active rest is anchored
     /// to. nil = no active rest.
     var exIdx: Int? = nil
@@ -244,5 +244,22 @@ extension LogScreen {
         // or laid screen-down on a bench.
         let haptic = UINotificationFeedbackGenerator()
         haptic.notificationOccurred(.success)
+        // Lock Screen countdown flips to "Rest done" (no-op without a Live Activity).
+        RestActivityCenter.shared.restExpired()
+    }
+
+    /// The rest on screen, for the Live Activity coordinator. nil when no rest
+    /// is anchored. An already-expired rest still reports (the coordinator
+    /// shows it as done) until the next set or the end of the workout clears it.
+    func liveActivitySnapshot() -> RestSnapshot? {
+        guard let exIdx = rest.exIdx, let setIdx = rest.setIdx,
+              let started = rest.startedAt, let duration = rest.duration,
+              session.exercises.indices.contains(exIdx) else { return nil }
+        let ex = session.exercises[exIdx]
+        return RestSnapshot(workoutName: session.name,
+                            exerciseName: ex.name,
+                            setNumber: setIdx + 1,
+                            totalSets: ex.sets.count,
+                            endDate: started.addingTimeInterval(TimeInterval(duration)))
     }
 }

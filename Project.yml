@@ -93,6 +93,8 @@ targets:
       # The watch companion (PLAN-watch.md). xcodegen embeds a watchOS app
       # dependency into the iOS bundle's Watch/ directory.
       - target: PhaseTrainingWatch
+      # Lock Screen / Dynamic Island rest timer (Live Activity).
+      - target: PhaseTrainingWidgets
     info:
       path: PhaseTraining/Info.plist
       properties:
@@ -114,6 +116,8 @@ targets:
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         UIRequiresFullScreen: true
+        # Rest timer Live Activity (PhaseTrainingWidgets). Local updates only.
+        NSSupportsLiveActivities: true
         UIStatusBarStyle: UIStatusBarStyleLightContent
         UIUserInterfaceStyle: Dark
         ITSAppUsesNonExemptEncryption: false
@@ -217,6 +221,39 @@ targets:
           CODE_SIGN_STYLE: Manual
           CODE_SIGN_IDENTITY: "Apple Distribution"
           PROVISIONING_PROFILE_SPECIFIER: "PhaseTraining Watch App Store"
+          DEVELOPMENT_TEAM: A2Z2RXR65P
+
+  # Rest-timer Live Activity (Lock Screen + Dynamic Island). Release signing
+  # needs its own App ID and App Store profile; see docs/HANDOFF-live-activity.md.
+  PhaseTrainingWidgets:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: PhaseTrainingWidgets
+      - path: Shared/LiveActivity
+    info:
+      path: PhaseTrainingWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: Phase Training
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.phasetraining.app.widgets
+        TARGETED_DEVICE_FAMILY: "1"
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        GENERATE_INFOPLIST_FILE: NO
+        SKIP_INSTALL: YES
+        ENABLE_PREVIEWS: YES
+        SWIFT_VERSION: "5.9"
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Apple Distribution"
+          PROVISIONING_PROFILE_SPECIFIER: "PhaseTraining Widgets App Store"
           DEVELOPMENT_TEAM: A2Z2RXR65P
 
   PhaseTrainingTests:
