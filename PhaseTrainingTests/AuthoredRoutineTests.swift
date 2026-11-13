@@ -228,6 +228,69 @@ final class AuthoredRoutineTests: XCTestCase {
         }
     }
 
+    // MARK: - Phase 3b coverage: every served sport has its own routine in every phase
+
+    /// Sports whose days come from written routines: the sport profile table,
+    /// filtered by the app's own gates. A season-engine sport with no routine
+    /// in any phase (alpine, ice, mixed and trad climbing today) is built by
+    /// the engine and never reaches the phase fallback, so it is out of scope;
+    /// one with routines in any phase must have them in every phase.
+    private var authoredServedPlannableSports: [String] {
+        SportProfile.table.keys
+            .filter { slug in
+                guard SportCatalog.isPlannable(slug),
+                      AuthoredRoutineSelector.shouldServeAuthored(sportSlug: slug) else { return false }
+                if !SportSeasonGenerator.supports(slug) { return true }
+                return !CoachDatabase.shared.authoredRoutineIds(
+                    sportSlug: slug, phaseLabels: AuthoredRoutineSelector.allPhaseLabels).isEmpty
+            }
+            .sorted()
+    }
+
+    func testEveryServedSportHasAServableRoutineInEveryPhase() {
+        let sports = authoredServedPlannableSports
+        let phases = SeasonPhase.allCases
+        XCTAssertFalse(sports.isEmpty)
+        XCTAssertFalse(phases.isEmpty)
+        XCTAssertTrue(sports.contains("mountaineering"))
+        XCTAssertTrue(phases.contains(.inSeason))
+
+        for sport in sports {
+            for phase in phases {
+                let cell = "\(sport)/\(phase.rawValue)"
+                let ownPool = CoachDatabase.shared.authoredRoutineIds(
+                    sportSlug: sport, phaseLabels: AuthoredRoutineSelector.phaseLabels(for: phase))
+                let picked = AuthoredRoutineSelector.select(sportSlug: sport, phase: phase, sessionIndex: 0)
+                XCTAssertTrue(picked.map(ownPool.contains) ?? false,
+                              "\(cell): selector returned \(String(describing: picked)), own pool \(ownPool)")
+            }
+        }
+    }
+
+    func testInSeasonMountaineeringWeekServesThe3bRoutines() {
+        XCTAssertEqual(
+            Set([0, 1].compactMap {
+                AuthoredRoutineSelector.select(sportSlug: "mountaineering", phase: .inSeason, sessionIndex: $0)
+            }),
+            [310, 311])
+
+        var m = TrainingMemory()
+        let sport = Sport.resolve(slug: "mountaineering")
+        m.primarySport = sport
+        m.sports = [sport]
+        m.seasonsBySport = [sport: .inSeason]
+        m.defaultSeason = .inSeason
+        m.experience = .intermediate
+        m.equipment = [.fullGym]
+        m.liftDaysPerWeek = 3
+        let plan = Planner.generate(memory: m, routines: [])
+        let served = plan.days
+            .filter { $0.kind == .lift && !$0.isComplementSession }
+            .compactMap { $0.generatedWorkout?.authoredRoutineId }
+        XCTAssertFalse(served.isEmpty, "in-season mountaineering week has no authored sport day")
+        XCTAssertTrue(Set(served).isSubset(of: [310, 311]), "served \(served)")
+    }
+
     // MARK: - Easy Strength: the generic cross-sport base
 
     func testEasyStrengthIsTheGeneralFitnessBase() {
