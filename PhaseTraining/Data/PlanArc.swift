@@ -7,9 +7,11 @@
 // as a build week or not, and when enough build weeks stack up, tells the
 // planner to generate a deload week.
 //
-// Spec: PLAN-weekly-coach.md §6.1 — invisible to the user, no "Week 3 of 4"
-// indicator. The deload expresses itself only through lighter prescriptions
-// (fewer sets) and one demoted recovery day.
+// Spec: PLAN-weekly-coach.md §6.1: no "Week 3 of 4" indicator. The deload
+// expresses itself through lighter prescriptions (fewer sets) and, with three
+// or more lift days, one demoted recovery day. The week is labelled DELOAD on
+// Today and carries a notice on Week, and the lifter can decline it (decided
+// 2026-11-13). The per-week fact is stored as WeekOverrides.arcDeload.
 //
 // Pure logic — no persistence, no PlanStore dependency. The caller
 // (PlanStore+Generation) supplies snapshots + sessions and persists the
@@ -25,7 +27,39 @@ enum PlanArcSignal: Equatable {
     case deload
 }
 
+/// How the arc deload resolves for one week.
+struct ArcWeek: Equatable {
+    /// Pass `deloadWeek: true` to Planner.generate.
+    var deloadWeek: Bool
+    /// This week counts as the deload for the four-week cooldown.
+    var startsCooldown: Bool
+}
+
 enum PlanArc {
+
+    /// Resolve the stored choice and the week tone into what generate does.
+    /// A nil tone is Typical.
+    ///
+    /// Recovery tone already cuts sets by 0.7; stacking the arc deload on top
+    /// gave about 0.49. The lifter's Recovery week is the deload, so the arc
+    /// adds nothing and the cooldown starts.
+    ///
+    /// Build tone is the lifter saying the week is hard. The arc stands down
+    /// while the tone is Build and the cooldown does not start. Picking another
+    /// tone later brings the deload back, because `applied` is still stored.
+    static func resolve(choice: ArcDeloadChoice?, tone: WeekTone?) -> ArcWeek {
+        guard choice == .applied else {
+            return ArcWeek(deloadWeek: false, startsCooldown: false)
+        }
+        switch tone {
+        case .recovery:
+            return ArcWeek(deloadWeek: false, startsCooldown: true)
+        case .build:
+            return ArcWeek(deloadWeek: false, startsCooldown: false)
+        case .typical, .busy, nil:
+            return ArcWeek(deloadWeek: true, startsCooldown: true)
+        }
+    }
 
     /// A week counts as a BUILD week when the user both showed up and did
     /// meaningful work. The bar is deliberately modest — the goal is to

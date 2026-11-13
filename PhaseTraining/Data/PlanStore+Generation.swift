@@ -30,21 +30,29 @@ extension PlanStore {
         )
     }
 
-    /// A generated plan reads as a deload week when it carries the
-    /// deload recovery day. Cheap + robust marker for the marker write.
-    func isDeloadPlan(_ p: WeekPlan) -> Bool {
-        p.days.contains {
-            $0.kind == .rest && $0.title == "Recovery"
-        }
+    /// True when the arc deload is what makes this week lighter.
+    var isArcDeloadWeek: Bool {
+        PlanArc.resolve(choice: overrides.arcDeload, tone: overrides.weekTone).deloadWeek
+    }
+
+    /// "Train normally this week": regenerate without the arc deload.
+    func declineArcDeload(memory: TrainingMemory, today: Date = Date()) {
+        updateOverrides(memory: memory, today: today) { $0.arcDeload = .declined }
     }
 
     func generate(from memory: TrainingMemory, today: Date = Date()) -> WeekPlan {
         let routines = CoachDatabase.shared.listRoutines()
         let context = buildGeneratorContext(memory: memory, today: today)
-        // PR 10A — decide the arc for this regen BEFORE generating, so
-        // Planner.generate can apply the deload transform, and remember
-        // the decision locally for the marker write below.
-        let arcSignal = planArcSignal(today: today)
+        // PR 10A: decide the arc for this regen BEFORE generating. The
+        // first generate of a week records the arc's verdict on the week's
+        // overrides; a stored choice is never re-evaluated, so later regens
+        // that week (tone, swaps, memory changes) keep the same answer.
+        let weekStart = today.startOfTrainingWeek()
+        if overrides.arcDeload == nil, planArcSignal(today: today) == .deload {
+            overrides.arcDeload = .applied
+            saveOverrides()
+        }
+        let arc = PlanArc.resolve(choice: overrides.arcDeload, tone: overrides.weekTone)
         // PR 10D — skip-streak: de-emphasize the weekday the user has
         // missed 3+ times. Computed from the same log the missed-workout
         // autopilot reads.
@@ -68,7 +76,7 @@ extension PlanStore {
             recentlyPicked: recentPicks?.recentlyPickedIds() ?? [],
             today: today,
             context: context,
-            deloadWeek: arcSignal == .deload,
+            deloadWeek: arc.deloadWeek,
             deEmphasizedWeekdays: skipStreakWeekday.map { [$0] } ?? []
         )
         // Build 105: apply CustomRoutine overrides AFTER Planner.generate()
@@ -81,12 +89,18 @@ extension PlanStore {
         // PR 4: snapshot every generated plan into history (idempotent by
         // weekStart — a same-week regen replaces the prior entry).
         snapshotCurrentPlan(now: today)
-        // PR 10A — remember deload weeks so PlanArc's cooldown can't fire
-        // two deloads within 4 weeks. Persisted alongside the other plan
-        // keys; cleared by resetAll.
-        if arcSignal == .deload, isDeloadPlan(pWithCustoms) {
-            defaults.set(today.timeIntervalSince1970,
+        // PR 10A: remember the deload week (by its week start) so PlanArc's
+        // cooldown can't fire two deloads within 4 weeks. When this week does
+        // not count as the deload (declined, or Build tone), drop a marker
+        // this week wrote: the arc could only fire because the earlier marker
+        // was absent or at least four weeks old. Cleared by resetAll.
+        if arc.startsCooldown {
+            defaults.set(weekStart.timeIntervalSince1970,
                          forKey: Self.lastDeloadWeekKey)
+        } else if let stored = defaults.object(forKey: Self.lastDeloadWeekKey) as? Double,
+                  Calendar.current.isDate(Date(timeIntervalSince1970: stored),
+                                          inSameDayAs: weekStart) {
+            defaults.removeObject(forKey: Self.lastDeloadWeekKey)
         }
         // Build 98: kick off background LLM refinement for consent-on
         // users. Deterministic plan above renders immediately; the

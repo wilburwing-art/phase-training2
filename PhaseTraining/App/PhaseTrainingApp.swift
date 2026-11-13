@@ -72,6 +72,12 @@ struct PhaseTrainingApp: App {
         if ProcessInfo.processInfo.arguments.contains("--seed-sport-demo") {
             Self.seedSportDemo()
         }
+        //   --seed-arc-deload → this week's overrides carry arcDeload = applied,
+        //     so the Week tab shows the arc deload notice and Today reads
+        //     DELOAD. Pairs with --seed-plan-demo.
+        if ProcessInfo.processInfo.arguments.contains("--seed-arc-deload") {
+            Self.seedArcDeload()
+        }
         //   --seed-saved-workouts → three CustomRoutines, so Today's title
         //     wheel has somewhere to scroll TO. Without saved workouts the
         //     wheel has one stop and is deliberately not rendered, so this is
@@ -295,6 +301,15 @@ struct PhaseTrainingApp: App {
         encoder.dateEncodingStrategy = .secondsSince1970
         if let data = try? encoder.encode(session) {
             UserDefaults.standard.set(data, forKey: "pt_active_session")
+        }
+    }
+
+    /// --seed-arc-deload: the current week's overrides with the arc deload applied.
+    private static func seedArcDeload() {
+        var overrides = WeekOverrides(weekStart: Date().startOfTrainingWeek())
+        overrides.arcDeload = .applied
+        if let data = try? PlanStore.encoder().encode(overrides) {
+            UserDefaults.standard.set(data, forKey: PlanStore.overridesKey)
         }
     }
 

@@ -330,6 +330,31 @@ final class WeekOverridesClearTests: XCTestCase {
         XCTAssertEqual(decoded.customRoutineId(for: day(1)), "tue-routine")
     }
 
+    /// arcDeload follows the same Optional rule: an old payload without the
+    /// key decodes, and the rest of the week survives.
+    func test_decodesLegacyPayloadWithoutArcDeloadKey() throws {
+        var o = freshOverrides()
+        o.customRoutineByDate = [day(1): "tue-routine"]
+        o.weekTone = .busy
+        o.arcDeload = .applied
+
+        let enc = JSONEncoder()
+        enc.dateEncodingStrategy = .secondsSince1970
+        var json = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: try enc.encode(o)) as? [String: Any])
+        XCTAssertNotNil(json["arcDeload"])
+        json.removeValue(forKey: "arcDeload")
+        let legacy = try JSONSerialization.data(withJSONObject: json)
+
+        let dec = JSONDecoder()
+        dec.dateDecodingStrategy = .secondsSince1970
+        let decoded = try dec.decode(WeekOverrides.self, from: legacy)
+
+        XCTAssertNil(decoded.arcDeload)
+        XCTAssertEqual(decoded.weekTone, .busy)
+        XCTAssertEqual(decoded.customRoutineId(for: day(1)), "tue-routine")
+    }
+
     func test_clearDate_dropsKeptLiftIndex() {
         var o = freshOverrides()
         o.setKeptLiftIndex(1, for: day(2))

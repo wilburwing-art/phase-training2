@@ -204,6 +204,28 @@ final class PlanArcTests: XCTestCase {
             .deload)
     }
 
+    // MARK: - Resolver
+
+    func test_resolve_truthTable() {
+        func check(_ choice: ArcDeloadChoice?, _ tone: WeekTone?,
+                   deload: Bool, cooldown: Bool,
+                   file: StaticString = #filePath, line: UInt = #line) {
+            XCTAssertEqual(PlanArc.resolve(choice: choice, tone: tone),
+                           ArcWeek(deloadWeek: deload, startsCooldown: cooldown),
+                           "choice \(String(describing: choice)) tone \(String(describing: tone))",
+                           file: file, line: line)
+        }
+        for tone in [nil] + WeekTone.allCases.map(Optional.some) {
+            check(nil, tone, deload: false, cooldown: false)
+            check(.declined, tone, deload: false, cooldown: false)
+        }
+        check(.applied, nil, deload: true, cooldown: true)
+        check(.applied, .typical, deload: true, cooldown: true)
+        check(.applied, .busy, deload: true, cooldown: true)
+        check(.applied, .recovery, deload: false, cooldown: true)
+        check(.applied, .build, deload: false, cooldown: false)
+    }
+
     // MARK: - The deload week
 
     /// Minimal memory + catalog for plan generation. A primary sport

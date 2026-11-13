@@ -1,6 +1,6 @@
 ---
 name: phase-training-periodization-model-no-auto-deload
-description: Map of phase-training2's periodization/season data model and the load-bearing fact that there is NO auto-scheduled mesocycle or deload — weekTone==.recovery is the only real "deload this week" signal. Use before building or surfacing any phase/mesocycle/deload UI (badges, countdowns, "week N of M") in the phase-training family, so you don't fabricate a feature the data layer doesn't support.
+description: Map of phase-training2's periodization/season data model and the load-bearing fact that there is NO mesocycle or week counter; the only deloads are the PlanArc deload after three build weeks (WeekOverrides.arcDeload) and weekTone==.recovery. Use before building or surfacing any phase/mesocycle/deload UI (badges, countdowns, "week N of M") in the phase-training family, so you don't fabricate a feature the data layer doesn't support.
 when-to-use: When asked to surface, build, or extend phase / season / mesocycle / deload / periodization UI in phase-training2 (or phase-training / workout-plan). Trigger on "phase badge", "show the mesocycle", "deload indicator", "where are we in the block", "week 3 of 4". Skip for unrelated lift/log/catalog work.
 ---
 
@@ -15,9 +15,9 @@ The app is named for periodization, but the model is lighter than "mesocycle" im
 - `weekTone: WeekTone?` on `PlanStore.overrides` (`WeekOverrides.swift:221`) — per-week dial: typical / recovery / build / busy, user-picked on the **Week tab**. `.recovery` maps to the generator's `.deload` intensity bias.
 
 ## The landmine
-There is **NO** mesocycle week counter ("week 3 of 4") and **NO** auto-scheduled deload. Deload = the user choosing Recovery tone for that week. So:
-- DO surface: phase label, event-prep peak countdown, and `DELOAD` derived from `weekTone == .recovery`.
-- DON'T fabricate: "week N of M", "deload next week", auto-progressing blocks. Building those means building a new mesocycle model first — a separate, larger piece of work. Flag it; don't fake it.
+There is **NO** mesocycle week counter ("week 3 of 4") and no block model. There is one automatic deload: `PlanArc` applies it after three build weeks in a row, with a four-week cooldown. It is stored per week as `WeekOverrides.arcDeload` (`applied` or `declined`), shown as DELOAD on Today and as a notice with a "Train normally" button on Week. The other deload is the user choosing Recovery tone for the week. So:
+- DO surface: phase label, event-prep peak countdown, and `DELOAD` for a Recovery-tone week or an arc deload week (`PlanStore.isArcDeloadWeek`).
+- DON'T fabricate: "week N of M", "deload next week", auto-progressing blocks. Building those means building a new mesocycle model first, a separate and larger piece of work. Flag it; don't fake it.
 
 ## Surfacing notes
 - Prior state (pre-2026-06): phase showed only in Profile + `SeasonsEditorSheet` + check-in. The Today header eyebrow was the first main-surface placement.

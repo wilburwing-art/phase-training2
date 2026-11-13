@@ -148,6 +148,15 @@ enum WeekTone: String, Codable, Hashable, CaseIterable {
     }
 }
 
+// MARK: - ArcDeloadChoice
+
+/// What the lifter's week does with the arc deload (PlanArc).
+/// Raw-string cases: never remove one without a migration.
+enum ArcDeloadChoice: String, Codable, Hashable {
+    case applied   // the arc fired for this week and the week is lighter
+    case declined  // the lifter tapped "Train normally"
+}
+
 // MARK: - DayKindOverride
 //
 // User-forced kind for a specific date. Survives plan regeneration. The
@@ -272,6 +281,11 @@ struct WeekOverrides: Codable {
     /// Planner hands the remaining indices to the other lift days.
     /// MUST stay Optional (weekTone pattern), see displacedPlanByDate.
     var keptLiftIndexByDate: [Date: Int]?
+    /// What this week does with the arc deload. nil = the arc has not fired
+    /// for this week. Week-level, so `clearDate(_:)` leaves it alone, and the
+    /// week rollover replaces the whole struct, which is the reset it needs.
+    /// MUST stay Optional (weekTone pattern), see displacedPlanByDate.
+    var arcDeload: ArcDeloadChoice?
 
     init(weekStart: Date) {
         self.weekStart = weekStart

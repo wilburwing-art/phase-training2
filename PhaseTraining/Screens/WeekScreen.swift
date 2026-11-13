@@ -179,6 +179,14 @@ struct WeekScreen: View {
                 }
             }
 
+            if planStore.isArcDeloadWeek {
+                ArcDeloadBanner(
+                    onDecline: { planStore.declineArcDeload(memory: memory.memory) }
+                )
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+            }
+
             GeometryReader { geo in
                 let spacing: CGFloat = 6
                 let rowH = max(48, (geo.size.height - spacing * 6) / 7)
@@ -290,6 +298,48 @@ struct WeekScreen: View {
 
     private func isToday(_ date: Date) -> Bool {
         Calendar.current.isDateInToday(date)
+    }
+}
+
+// MARK: - ArcDeloadBanner
+
+/// Shown while the arc deload is what makes the week lighter. It stays until
+/// the lifter declines; picking the Recovery tone is the way back to the light
+/// week.
+private struct ArcDeloadBanner: View {
+    let onDecline: () -> Void
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Text("Three hard weeks in a row, so this week is lighter")
+                .styled(.monoXS)
+                .foregroundStyle(Color.ink)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityIdentifier("arc-deload-notice")
+
+            Button(action: onDecline) {
+                Text("Train normally")
+                    .styled(.monoXS)
+                    .foregroundStyle(Color.accentInk)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Train normally this week")
+            .accessibilityIdentifier("arc-deload-decline")
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(Color.surface)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(Color.line, lineWidth: 0.5)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 }
 

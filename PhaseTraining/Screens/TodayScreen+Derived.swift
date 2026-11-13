@@ -152,18 +152,24 @@ extension TodayScreen {
     /// Trailing eyebrow text — the periodization phase. This is the app's
     /// namesake context (off-/pre-/in-season, event prep, maintenance), which
     /// previously surfaced only in Profile and the season editor. Appends
-    /// DELOAD when this week's tone is Recovery — the only honest deload
-    /// signal available (it's user-picked on the Week tab; there's no
-    /// auto-scheduled mesocycle deload to read).
+    /// DELOAD for a Recovery-tone week and for a week the arc made lighter
+    /// (three build weeks in a row, see PlanArc).
     var phaseEyebrow: String {
-        var s = memoryStore.memory.seasonForPlanner.compactLabel.uppercased()
+        Self.eyebrow(
+            seasonLabel: memoryStore.memory.seasonForPlanner.compactLabel,
+            sportShortName: memoryStore.memory.primarySport?.shortName,
+            showsDeload: planStore.overrides.weekTone == .recovery || planStore.isArcDeloadWeek)
+    }
+
+    static func eyebrow(seasonLabel: String, sportShortName: String?, showsDeload: Bool) -> String {
+        var s = seasonLabel.uppercased()
         // Identity first: "SKIING · PRE-SEASON" says who is training before
         // what phase they are in (2026-10-13). `shortName` keeps "Skiing /
         // Snowboarding" to one word so the row stays beside the date.
-        if let sport = memoryStore.memory.primarySport {
-            s = sport.shortName.uppercased() + " · " + s
+        if let sportShortName {
+            s = sportShortName.uppercased() + " · " + s
         }
-        if planStore.overrides.weekTone == .recovery { s += " · DELOAD" }
+        if showsDeload { s += " · DELOAD" }
         return s
     }
 

@@ -772,6 +772,13 @@ final class PlanStore: ObservableObject {
         guard sessionStore?.active == nil else { return }
         captureRolloverIfNeeded(today: today)
         promotePendingIfDue(today: today)
+        // A store that lived through the rollover still holds last week's
+        // overrides. Start the new week clean, as init does on a relaunch.
+        let thisWeek = today.startOfTrainingWeek()
+        if !Calendar.current.isDate(overrides.weekStart, inSameDayAs: thisWeek) {
+            overrides = WeekOverrides(weekStart: thisWeek)
+            saveOverrides()
+        }
         guard !planCoversCurrentWeek(today: today) else { return }
         _ = generate(from: memory, today: today)
     }
