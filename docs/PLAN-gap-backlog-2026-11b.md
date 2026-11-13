@@ -153,7 +153,7 @@ Items 1 and 2 fit one build (172) with the three finished today, the two planner
 
 ## Later, not scheduled
 
-- 21 more tap targets under 44pt; one shared modifier (3 h).
+- Closed 2026-11-13, no code change: 21 more tap targets under 44pt; one shared modifier (3 h). Measured on the iPhone 17 Pro simulator, iOS 26.4: the unmodified 28pt discard button on Log took taps up to 28pt from its centre on the left and below and missed from 32pt, and the unmodified 32pt play button on a Library saved-workout row took a tap 4pt above its circle and started the workout, with the row's own tap not firing. A `tapTarget` modifier was built on all 21 sites and a UI test passed the same with and without it at both sites, so it was discarded. iOS 17 and 18 were not measured. Design and the two test recipes: `docs/briefs/tap-targets.md`, `docs/briefs/tap-targets-followup.md`.
 - Reduce Motion: 2 of 28 animation sites respect it, and the rest dot pulses forever (2 h).
 - Dynamic Type: 4 fixed-size text sites (2 h), 173 fixed-size icons (6 h).
 - Chart accessibility labels and descriptors (2 h); `lineStrong` border token for inputs (2 h).
