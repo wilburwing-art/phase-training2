@@ -17,7 +17,7 @@ failures, 28.4% line coverage, Data layer 85.8%).
 - [ ] **Physiology reader.** Nightly HRV, resting HR and sleep capture works end to end and nothing reads it. The 2026-10-24 twin review that gates the reader has no recorded outcome. Record it or set a new date. Competitors JuggernautAI, TrainHeroic and Pedestal all sell readiness adjustment.
 - [ ] **Dead or unwired logic (part decided 2026-11-12: delete `Planner.pickRoutine` and `Planner.applyFeedbackBias`, both deleted the same day with their private filter helpers and `CoachDatabase.requiredEquipmentSlugs(forRoutineId:)`; `AutoregulationEngine` still open).** `Planner.pickRoutine` (0/79 lines) and `Planner.applyFeedbackBias` (a wrapper over the live `applyRecentSignalBias`) have no caller. `AutoregulationEngine` output lands only in notes no screen shows. Wire or delete each.
 - [x] **Snowboarding (decided 2026-11-11, 1A in Phase 3b: snowboarding uses the ski rules).** "Snowboarding" and "Skiing / Snowboarding" are separate sports; only the second gets Discipline, Support sport and the season engine. Pick the intended behaviour.
-- [ ] **Deload suggestion.** Does the earlier no-auto-deload decision still stand? If so, a one-tap suggestion card after three build weeks is still open (6 to 8 h).
+- [x] **Deload suggestion (decided 2026-11-13: keep the automatic deload and label it, Phase 7).** Does the earlier no-auto-deload decision still stand? If so, a one-tap suggestion card after three build weeks is still open (6 to 8 h). The premise was out of date: `PlanArc` has applied a deload after three build weeks since 2026-09-10 (58fee2b) and shows nothing for it.
 
 ## Phase 1: quick fixes (one build, about 1.5 days)
 
@@ -150,6 +150,29 @@ Steps (about 4 to 5 h, an estimate made without reading the source sessions):
 5. Done 2026-11-13, Today widget included. **Lock Screen rest timer** (14 to 20 h, then 6 for a Today widget). Last because it is the only item that adds a target: a widget extension in `Project.yml`, an App ID and provisioning profile in the portal, and a new profile secret in `release.yml`, the same portal work the watch target needed. Simulators show Live Activities, so the build can be checked before the portal step.
 
 Items 1 and 2 fit one build (172) with the three finished today, the two planner deletions and the Phase 3b content. Items 3 and 4 both change `user.db` and should not land in the same build as each other.
+
+## Phase 7: label the automatic deload (decided 2026-11-13, not started)
+
+- [ ] Show the arc deload and let the lifter decline it (3 to 4 h, an estimate made without reading the Week tab code).
+
+Problem: after three build weeks in a row (`PlanArc.buildWeeksBeforeDeload`, four-week cooldown), `Planner.generate` turns one lift day into a rest day titled "Recovery" and cuts sets on the other lift days (`demoteForDeload`, `scaleForDeload`). No screen says so. `PlanArc.swift` cites `PLAN-weekly-coach.md` section 6.1, "invisible to the user"; this decision replaces that. The Today eyebrow shows DELOAD only for a user-picked Recovery tone (`TodayScreen+Derived.swift`, `phaseEyebrow`).
+
+Done when:
+- a week generated with `arcSignal == .deload` shows DELOAD in the Today eyebrow, as a Recovery-tone week does;
+- the Week tab carries one line with the reason ("Three hard weeks in a row, so this week is lighter") and a "Train normally this week" action;
+- that action regenerates the week without the deload, the choice survives later regens of the same week, and the four-week cooldown is not started by a declined deload;
+- a test covers each of the three, and the existing `PlanArc` tests pass.
+
+Design points to settle in the brief:
+- Where the "this week is an arc deload" fact is stored. Today it is inferred from a rest day titled "Recovery" (`PlanStore.isDeloadPlan`) and a `lastDeloadWeekKey` timestamp. The decline needs a per-week flag, most likely on `WeekOverrides`, which already holds `weekTone`.
+- What happens when the lifter has picked the Build tone for a week the arc wants to deload. Not checked.
+- How often the arc fires for real users. Not measured.
+
+Out of scope: a "week N of M" counter, changing the three-week rule or the cooldown, readiness or RPE as extra triggers.
+
+Also in the same change: correct the `phaseEyebrow` comment and the `phase-training-periodization-model-no-auto-deload` skill, both of which say no automatic deload exists.
+
+Load before starting: `phase-training-planstore-mutation-seams-and-week-caps`, `phase-training-overrides-persist-intent-not-output`, `phase-training-tab-time-horizon-rule`.
 
 ## Later, not scheduled
 
