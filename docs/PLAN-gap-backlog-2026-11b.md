@@ -92,7 +92,7 @@ capped at 45 minutes, and its complement days inherit it. Decisions made
 - [x] Signature demands for the authored-only sports, so a session keeps the movement the sport needs most.
 - [x] Complement emphasis for mountaineering (upper back and trunk with the legs).
 - [x] Rebuild-role mismatch: CNS balance, the arc deload and skip-streak de-emphasis turn lift days into rest after generation, so a later rebuild assigns sport and complement roles from the wrong count. Move them to regenerate the week with the changed inputs, as the rest-day reserve now does.
-- [ ] Content: in-season routines for mountaineering, hiking-trekking and thru-hiking (0 today) and a pre-season routine for trail running (0 today). Until then the selector serves another phase's routine.
+- [x] Content: in-season routines for mountaineering, hiking-trekking and thru-hiking (0 today) and a pre-season routine for trail running (0 today). Done 2026-11-12: routines 310 to 317, two per cell, distilled from MTI In-Season Flex, Mountaineering & Hiking Prep and Ultra Running Pre-Season (`scripts/db/distill_inseason_outdoor.py`). The thru-hiking cell uses Flex sessions because 4 of the 7 blocks in the Thru Hike plan's strength day have no catalog exercise. `testEveryServedSportHasAServableRoutineInEveryPhase` holds every sport that serves written routines to its own phase pool. Alpine, ice, mixed and trad climbing have no routine in any phase and are built by the season engine, so the test leaves them out.
 
 ### Phase 3b content, the plan (decided 2026-11-12)
 
@@ -138,13 +138,13 @@ Steps (about 4 to 5 h, an estimate made without reading the source sessions):
 - [x] History search and tag filter (3 to 4 h). Done 2026-11-12: search over session name, exercise names, notes, tag labels and month or year; chips for the tags that occur.
 - [ ] "Last exported" on the Data row plus a nudge, then a weekly iCloud Drive write (3 h, then 8 h). First half done 2026-11-12: the Profile Data row reads "Never exported", "Exported Nov 3", or "N workouts not backed up" in the accent colour at 10 or more since the last export (`BackupStatus`). The date is stamped when the share sheet reports a finished activity, so a cancelled share and the CSV export leave it alone. The iCloud Drive write is open and needs the owner call on the container entitlement.
 - [ ] Custom exercises in `user.db`, never picked by the generator (10 to 14 h).
-- [ ] Set types: drop and failure alongside warmup (8 to 10 h).
+- [x] Set types: drop and failure alongside warmup (8 to 10 h). Done 2026-11-12 (6fdba29): `LoggedSet.setType`, `user.db` v10. Failure sets count toward PRs and e1RM, drop sets do not; both count toward volume. The watch shows the type and cannot change it. The `isWarmup` key is still written to session JSON for older watch and phone builds. Imported Hevy and Strong drop sets still feed imported PR baselines. The Log menu, History edit pill and watch caption were not checked in the simulator.
 
 ### Phase 6, what is left and in what order (planned 2026-11-12)
 
 1. Done 2026-11-12. **Superset in the day preview** (1 h). Two rows in `ExerciseActionSheet`, calling `SupersetEditing` on the template's exercises. Done when a pair made in the preview starts in Log as A1 and A2.
 2. Done 2026-11-12 except the iCloud write. **"Last exported" on the Data row** (3 h). Store the export date when `BackupCoordinator` hands the envelope to the share sheet; show it on the Profile Data row; nudge after 10 new sessions since the last export. Done when the row reads a date after an export and "Never" before one. The weekly iCloud Drive write (8 h) is a second step and needs an owner call on the iCloud container entitlement.
-3. **Set types** (8 to 10 h). Replace `LoggedSet.isWarmup` with a `setType` (normal, warmup, drop, failure) decoded tolerantly from old payloads, a `user.db` migration, and the watch payload, which shares `Shared/Models/SessionModels.swift`. Decided 2026-11-12: drop sets do not count toward PRs.
+3. Done 2026-11-12. **Set types** (8 to 10 h). Replace `LoggedSet.isWarmup` with a `setType` (normal, warmup, drop, failure) decoded tolerantly from old payloads, a `user.db` migration, and the watch payload, which shares `Shared/Models/SessionModels.swift`. Decided 2026-11-12: drop sets do not count toward PRs.
 4. **Custom exercises** (10 to 14 h). A `user_exercises` table merged into picker results only. Done when a custom exercise can be added from the picker's empty state, logged, shown in History and exported, and a generator sweep never picks one.
 5. **Lock Screen rest timer** (14 to 20 h, then 6 for a Today widget). Last because it is the only item that adds a target: a widget extension in `Project.yml`, an App ID and provisioning profile in the portal, and a new profile secret in `release.yml`, the same portal work the watch target needed. Simulators show Live Activities, so the build can be checked before the portal step.
 
