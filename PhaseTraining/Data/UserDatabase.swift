@@ -281,6 +281,20 @@ final class UserDatabase {
             "ALTER TABLE session_sets ADD COLUMN set_type TEXT NOT NULL DEFAULT 'normal'",
             "UPDATE session_sets SET set_type = 'warmup' WHERE is_warmup = 1",
             "ALTER TABLE session_sets DROP COLUMN is_warmup"
+        ]),
+        // v11 — the user's own exercises (UserDatabase+UserExercises.swift).
+        // AUTOINCREMENT so a deleted row id is never reissued: a saved routine
+        // pointing at `-id` must not rebind to a different exercise later.
+        (11, [
+            """
+            CREATE TABLE IF NOT EXISTS user_exercises (
+              id             INTEGER PRIMARY KEY AUTOINCREMENT,
+              name           TEXT NOT NULL COLLATE NOCASE UNIQUE,
+              muscle_bucket  TEXT,
+              notes          TEXT,
+              created_at     REAL NOT NULL
+            )
+            """
         ])
     ]
 

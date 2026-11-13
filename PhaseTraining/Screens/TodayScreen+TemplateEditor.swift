@@ -247,7 +247,7 @@ extension TodayScreen {
         // squat's history under the new name; reusing `old.unit` carried the
         // bodyweight sentinel across, collapsing the weight column on a barbell
         // lift (and forcing a weight field onto a reps-only movement).
-        let category = CoachDatabase.shared.equipmentCategory(forExerciseIds: [picked.id])[picked.id]
+        let category = LoggedExercise.equipmentCategory(forPicked: picked)
         newExercises[idx] = ExerciseTemplate(
             id: "gex-\(picked.id)", name: picked.name, type: picked.modality,
             unit: LoggedExercise.unit(for: category),

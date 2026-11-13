@@ -405,21 +405,26 @@ extension UserDatabase {
     } }
 
     /// Canonical "delete every user-owned row" path for the SQLite layer:
-    /// saved sessions, custom routines, and imported-workout history. Paired
-    /// with `MemoryStore.wipeAllUserData` (the UserDefaults side) so the full
-    /// "Erase all my data" flow clears both stores. Single transaction so a
-    /// crash mid-wipe can't leave a half-deleted tree.
-    func wipeAll() { withLock {
-        guard let db else { return }
-        sqlite3_exec(db, "BEGIN", nil, nil, nil)
-        for table in ["session_sets", "session_exercises", "sessions",
-                      "user_routine_exercises", "user_routines",
-                      "imported_sets", "imported_workouts",
-                      "explore_sessions", "import_name_map", "import_name_ignored"] {
-            sqlite3_exec(db, "DELETE FROM \(table)", nil, nil, nil)
+    /// saved sessions, custom routines, imported-workout history and custom
+    /// exercises. Paired with `MemoryStore.wipeAllUserData` (the UserDefaults
+    /// side) so the full "Erase all my data" flow clears both stores. Single
+    /// transaction so a crash mid-wipe can't leave a half-deleted tree.
+    func wipeAll() {
+        withLock {
+            guard let db else { return }
+            sqlite3_exec(db, "BEGIN", nil, nil, nil)
+            for table in ["session_sets", "session_exercises", "sessions",
+                          "user_routine_exercises", "user_routines",
+                          "imported_sets", "imported_workouts",
+                          "explore_sessions", "import_name_map", "import_name_ignored",
+                          "user_exercises"] {
+                sqlite3_exec(db, "DELETE FROM \(table)", nil, nil, nil)
+            }
+            sqlite3_exec(db, "COMMIT", nil, nil, nil)
         }
-        sqlite3_exec(db, "COMMIT", nil, nil, nil)
-    } }
+        // Cached custom-exercise hits would outlive the erase.
+        ExerciseLookupCache.shared.reset()
+    }
 
     // MARK: - PR aggregation (replaces in-memory walks in SessionStore)
 

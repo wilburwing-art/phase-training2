@@ -102,6 +102,11 @@ final class BackupCoordinatorTests: XCTestCase {
         w.db.setImportName("Mystery Lift", exerciseId: 11)
         w.db.recordExploreSession(ExploreSession(surface: .library, startedAt: start, endedAt: start,
                                                  query: "squat", resultCount: 3))
+        // Two rows with a gap in the ids, so the restore has to keep ids to match.
+        let dropped = try? w.db.createUserExercise(name: "Zorblax Dropped", muscleBucket: nil, notes: nil).get()
+        _ = try? w.db.createUserExercise(name: "Zorblax Sled Push", muscleBucket: .quads, notes: "turf").get()
+        _ = try? w.db.createUserExercise(name: "Zorblax Band Row", muscleBucket: .back, notes: nil).get()
+        if let dropped { w.db.deleteUserExercise(id: dropped.id) }
 
         // Keys with no store API in this file, plus the unprefixed ones the sweep names.
         w.defaults.set(Data("x".utf8), forKey: "pt_coach_archive_2026-01-01")
@@ -142,6 +147,7 @@ final class BackupCoordinatorTests: XCTestCase {
         XCTAssertFalse(w.db.allImportedWorkouts().isEmpty)
         XCTAssertFalse(w.db.importNameMap().isEmpty)
         XCTAssertFalse(w.db.listExploreSessions().isEmpty)
+        XCTAssertEqual(w.db.listUserExercises().count, 2)
         XCTAssertTrue(w.defaults.dictionaryRepresentation().keys.contains { $0.hasPrefix("pt_") })
         let blank = world()
         XCTAssertNotEqual(try normalized(BackupManager.snapshot(defaults: w.defaults, userDB: w.db)),
@@ -182,6 +188,7 @@ final class BackupCoordinatorTests: XCTestCase {
         XCTAssertTrue(w.db.allImportedSets().isEmpty)
         XCTAssertTrue(w.db.importNameMap().isEmpty)
         XCTAssertTrue(w.db.listExploreSessions().isEmpty)
+        XCTAssertTrue(w.db.listUserExercises().isEmpty)
         let leftover = w.defaults.dictionaryRepresentation().keys.filter { $0.hasPrefix("pt_") }.sorted()
         XCTAssertEqual(leftover, [], "pt_ keys survived the wipe")
         for key in MemoryStore.unprefixedKeys {
@@ -277,6 +284,7 @@ final class BackupCoordinatorTests: XCTestCase {
         XCTAssertEqual(dst.custom.routines.map(\.name), ["My push"])
         XCTAssertNotNil(dst.plan.plan)
         XCTAssertEqual(dst.db.allImportedSets().count, 2)
+        XCTAssertEqual(dst.db.listUserExercises(), src.db.listUserExercises(), "same rows with the same ids")
     }
 
     func testRoundTripEnvelopeCarriesTheSlicesThisTestFilled() throws {
@@ -290,6 +298,7 @@ final class BackupCoordinatorTests: XCTestCase {
         XCTAssertEqual(e.recentPicks.count, 2)
         XCTAssertEqual(e.importedWorkouts.count, 1)
         XCTAssertEqual(e.importedSets.count, 2)
+        XCTAssertEqual(e.userExercises?.count, 2)
         XCTAssertNotNil(e.pendingPlan)
     }
 

@@ -14,7 +14,7 @@ CREATE TABLE session_sets (
               reps               TEXT NOT NULL,
               rpe                TEXT NOT NULL,
               done               INTEGER NOT NULL,
-              is_warmup          INTEGER NOT NULL DEFAULT 0, rir TEXT NOT NULL DEFAULT '',
+              rir TEXT NOT NULL DEFAULT '', set_type TEXT NOT NULL DEFAULT 'normal',
               PRIMARY KEY (session_start, exercise_position, num),
               FOREIGN KEY (session_start, exercise_position)
                 REFERENCES session_exercises(session_start, position) ON DELETE CASCADE
@@ -25,17 +25,17 @@ CREATE TABLE session_sets (
 
 ## Columns
 
-| Name              | Type    | Default | Nullable | Children | Parents                                   | Comment |
-| ----------------- | ------- | ------- | -------- | -------- | ----------------------------------------- | ------- |
-| session_start     | INTEGER |         | false    |          | [session_exercises](session_exercises.md) |         |
-| exercise_position | INTEGER |         | false    |          | [session_exercises](session_exercises.md) |         |
-| num               | INTEGER |         | false    |          |                                           |         |
-| weight            | TEXT    |         | false    |          |                                           |         |
-| reps              | TEXT    |         | false    |          |                                           |         |
-| rpe               | TEXT    |         | false    |          |                                           |         |
-| done              | INTEGER |         | false    |          |                                           |         |
-| is_warmup         | INTEGER | 0       | false    |          |                                           |         |
-| rir               | TEXT    | ''      | false    |          |                                           |         |
+| Name              | Type    | Default  | Nullable | Children | Parents                                   | Comment |
+| ----------------- | ------- | -------- | -------- | -------- | ----------------------------------------- | ------- |
+| session_start     | INTEGER |          | false    |          | [session_exercises](session_exercises.md) |         |
+| exercise_position | INTEGER |          | false    |          | [session_exercises](session_exercises.md) |         |
+| num               | INTEGER |          | false    |          |                                           |         |
+| weight            | TEXT    |          | false    |          |                                           |         |
+| reps              | TEXT    |          | false    |          |                                           |         |
+| rpe               | TEXT    |          | false    |          |                                           |         |
+| done              | INTEGER |          | false    |          |                                           |         |
+| rir               | TEXT    | ''       | false    |          |                                           |         |
+| set_type          | TEXT    | 'normal' | false    |          |                                           |         |
 
 ## Constraints
 
@@ -68,8 +68,8 @@ erDiagram
   TEXT reps
   TEXT rpe
   INTEGER done
-  INTEGER is_warmup
   TEXT rir
+  TEXT set_type
 }
 "session_exercises" {
   INTEGER session_start PK

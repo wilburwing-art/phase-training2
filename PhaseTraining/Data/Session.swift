@@ -13,6 +13,24 @@ extension LoggedExercise {
     static func unit(for category: EquipmentCategory?) -> String {
         category == .repsOnly ? bodyweightUnit : "lbs"
     }
+
+    /// Equipment categories for exercise ids headed into a logged or template
+    /// row. A custom exercise (negative id) has no catalog row, which the
+    /// catalog lookup would classify as `.repsOnly`, hiding the weight field.
+    /// It is an ordinary externally loaded lift, so it takes `.machineOther`,
+    /// the catch-all loaded category.
+    static func equipmentCategories(forExerciseIds ids: Set<Int>,
+                                    catalog: CoachDatabase = .shared) -> [Int: EquipmentCategory] {
+        let custom = ids.filter { $0 < 0 }
+        var out = catalog.equipmentCategory(forExerciseIds: ids.subtracting(custom))
+        for id in custom { out[id] = .machineOther }
+        return out
+    }
+
+    static func equipmentCategory(forPicked ex: Exercise,
+                                  catalog: CoachDatabase = .shared) -> EquipmentCategory? {
+        equipmentCategories(forExerciseIds: [ex.id], catalog: catalog)[ex.id]
+    }
 }
 
 extension LoggedExercise {

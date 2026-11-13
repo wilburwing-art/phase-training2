@@ -93,6 +93,7 @@ erDiagram
   TEXT feel
   TEXT note
   TEXT mood
+  TEXT session_tags
 }
 "session_sets" {
   INTEGER session_start PK
@@ -102,8 +103,8 @@ erDiagram
   TEXT reps
   TEXT rpe
   INTEGER done
-  INTEGER is_warmup
   TEXT rir
+  TEXT set_type
 }
 ```
 

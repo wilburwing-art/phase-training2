@@ -26,6 +26,11 @@ struct ExercisePickerSheet: View {
     /// What a pick means here, for the A3 explore log. Required so every
     /// caller states it rather than inheriting a wrong default.
     let conversion: ExploreConversionKind
+    /// Merge the user's custom exercises into the results. UnmatchedNamesSheet
+    /// turns it off: a pick there lands in import_name_map, and a custom
+    /// exercise's negative id resolves to no catalog row, so the matched sets
+    /// leave the Unmatched list while History keeps showing the raw import name.
+    var includesCustomExercises: Bool = true
     let onPick: (Exercise) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -35,6 +40,7 @@ struct ExercisePickerSheet: View {
     @State private var detailExercise: Exercise? = nil
     @State private var recorder = ExploreRecorder(surface: .exercisePicker)
     @State private var showingFilterSheet = false
+    @State private var creatingName: CreateRequest? = nil
     /// Cached catalog query results — refreshed on appear and whenever a
     /// query input (search / filters) changes, instead of re-running
     /// listExercises on every render. Same caching pattern as
@@ -46,11 +52,49 @@ struct ExercisePickerSheet: View {
     /// don't look like a bug.
     @State private var broadenedPastFilters = false
 
+    private struct CreateRequest: Identifiable {
+        let name: String
+        var id: String { name }
+    }
+
+    private var trimmedQuery: String { query.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    private func pick(_ ex: Exercise) {
+        recorder.converted(conversion, itemKind: .exercise, id: String(ex.id), name: ex.name)
+        onPick(ex)
+        dismiss()
+    }
+
+    private func createButton(_ label: String) -> some View {
+        Button {
+            creatingName = CreateRequest(name: trimmedQuery)
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "plus.circle")
+                    .font(.system(size: 14, weight: .medium))
+                Text(label)
+                    .styled(.body)
+                    .multilineTextAlignment(.leading)
+                Spacer(minLength: 0)
+            }
+            .foregroundStyle(Color.accent)
+            .padding(14)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .background(Color.surface)
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("picker-create-custom")
+    }
+
     private func reloadResults() {
         let outcome = ExerciseSearch.run(
             query: query,
             filters: filters,
-            userSportSlugs: memoryStore.memory.sports.map(\.slug)
+            userSportSlugs: memoryStore.memory.sports.map(\.slug),
+            userDB: includesCustomExercises ? ExerciseLookupCache.shared.userDB : nil
         )
         results = query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? ExerciseSearch.preferenceOrdered(outcome.exercises,
@@ -78,9 +122,19 @@ struct ExercisePickerSheet: View {
                                     .multilineTextAlignment(.center)
                                     .padding(.horizontal, 16)
                                     .padding(.top, 40)
+                                if includesCustomExercises {
+                                    createButton(trimmedQuery.isEmpty
+                                                 ? "Create a custom exercise"
+                                                 : "Create \u{201C}\(trimmedQuery)\u{201D}")
+                                        .padding(.top, 8)
+                                }
                             } else {
                                 if broadenedPastFilters { broadenedBanner }
                                 ForEach(results) { ex in row(ex) }
+                                if includesCustomExercises,
+                                   let offer = CustomExerciseOffer.trailingRowQuery(query: query, results: results) {
+                                    createButton("Can\u{2019}t find it? Create \u{201C}\(offer)\u{201D}")
+                                }
                             }
                         }
                         .padding(.horizontal, 20)
@@ -97,8 +151,13 @@ struct ExercisePickerSheet: View {
                         .foregroundStyle(Color.accent)
                 }
             }
-            .sheet(item: $detailExercise) { ex in
+            .sheet(item: $detailExercise, onDismiss: reloadResults) { ex in
                 ExerciseDetailSheet(exercise: ex)
+            }
+            .sheet(item: $creatingName) { req in
+                CustomExerciseCreateSheet(initialName: req.name, initialBucket: filters.bucket) { ex in
+                    pick(ex)
+                }
             }
             .sheet(isPresented: $showingFilterSheet) {
                 ExerciseFilterSheet(filters: $filters)
@@ -161,6 +220,7 @@ struct ExercisePickerSheet: View {
                 .foregroundStyle(Color.ink)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
+                .accessibilityIdentifier("picker-search")
             if !query.isEmpty {
                 Button { query = "" } label: {
                     Image(systemName: "xmark.circle.fill")
@@ -226,25 +286,13 @@ struct ExercisePickerSheet: View {
     }
 
     private func chip(_ label: String, selected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(label)
-                .styled(.micro)
-                .foregroundStyle(selected ? Color.accentInk : Color.ink2)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(selected ? Color.accent : Color.surface)
-                .overlay(RoundedRectangle(cornerRadius: 6).stroke(selected ? Color.clear : Color.line, lineWidth: 0.5))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-        }
-        .buttonStyle(.plain)
+        SelectableChip(label: label, selected: selected, action: action)
     }
 
     private func row(_ ex: Exercise) -> some View {
         HStack(alignment: .center, spacing: 8) {
             Button {
-                recorder.converted(conversion, itemKind: .exercise, id: String(ex.id), name: ex.name)
-                onPick(ex)
-                dismiss()
+                pick(ex)
             } label: {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(ex.name)
@@ -252,7 +300,7 @@ struct ExercisePickerSheet: View {
                         .foregroundStyle(Color.ink)
                         .multilineTextAlignment(.leading)
                         .accessibilityIdentifier("picker-row-name-\(ex.name)")
-                    Text(ex.metaLabel(includeCompound: false))
+                    Text(ex.isCustom ? "Custom" : ex.metaLabel(includeCompound: false))
                         .font(.monoXS)
                         .foregroundStyle(Color.ink3)
                 }
@@ -286,5 +334,27 @@ struct ExercisePickerSheet: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Show details for \(ex.name)")
         }
+    }
+}
+
+/// Rounded-rect toggle chip shared by the picker's muscle strip and the
+/// custom-exercise sheet.
+struct SelectableChip: View {
+    let label: String
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(label)
+                .styled(.micro)
+                .foregroundStyle(selected ? Color.accentInk : Color.ink2)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(selected ? Color.accent : Color.surface)
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(selected ? Color.clear : Color.line, lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+        }
+        .buttonStyle(.plain)
     }
 }

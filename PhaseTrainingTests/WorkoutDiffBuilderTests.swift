@@ -135,4 +135,23 @@ final class WorkoutDiffBuilderTests: XCTestCase {
         XCTAssertEqual(diff.after.exercises[2].sets, 5)
         XCTAssertEqual(diff.after.exercises[1].name, "Overhead Press", "Untouched exercise unchanged")
     }
+
+    // MARK: - swap to a custom exercise
+
+    /// The user named their own exercise, so the swap keeps its name and
+    /// carries its negative id (catalog ids are positive, 0 is unresolved).
+    func testSwapToACustomExerciseCarriesItsNegativeIdAndName() throws {
+        let db = UserDatabase(path: ":memory:")
+        let made = try db.createUserExercise(name: "Zorblax Floor Press", muscleBucket: .chest, notes: nil).get()
+        let saved = ExerciseLookupCache.shared.userDB
+        ExerciseLookupCache.shared.userDB = db
+        defer { ExerciseLookupCache.shared.userDB = saved }
+
+        let diff = WorkoutDiffBuilder.diff(
+            for: proposal([WorkoutChange(op: "swap", fromName: "Bench Press", toName: "zorblax floor press")]),
+            workout: fixtureWorkout())
+        let after = diff.after.exercises[0]
+        XCTAssertEqual(after.exerciseId, -Int(made.id))
+        XCTAssertEqual(after.name, "Zorblax Floor Press", "the stored custom name, not the model's casing")
+    }
 }

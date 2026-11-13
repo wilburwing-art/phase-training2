@@ -476,7 +476,7 @@ struct HistoryScreen: View {
     }
 
     private func saveAsRoutine(_ session: SavedSession) {
-        customStore.save(session.asCustomRoutine(exerciseId: ExerciseNameLookup.catalogId))
+        customStore.save(session.asCustomRoutine(exerciseId: ExerciseNameLookup.anyId))
         savedAsRoutine.insert(session.id)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
     }

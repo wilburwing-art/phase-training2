@@ -67,7 +67,8 @@ struct UnmatchedNamesSheet: View {
         .onAppear(perform: reload)
         .task { await loadSuggestions() }
         .sheet(item: $matching) { target in
-            ExercisePickerSheet(title: "Match \u{201C}\(target.name)\u{201D}", conversion: .matchImport) { exercise in
+            ExercisePickerSheet(title: "Match \u{201C}\(target.name)\u{201D}", conversion: .matchImport,
+                                includesCustomExercises: false) { exercise in
                 match(target.name, to: exercise)
             }
         }

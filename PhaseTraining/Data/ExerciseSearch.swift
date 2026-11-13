@@ -35,14 +35,29 @@ enum ExerciseSearch {
     /// Run `query` under `filters`, falling back to the unfiltered catalog when
     /// a non-empty query finds nothing under them.
     ///
+    /// Custom exercises from `userDB` go first in every result, sorted by
+    /// name. They carry a name and an optional bucket, nothing else, so in
+    /// the filtered pass they match only when no catalog-only filter
+    /// (category, modality, difficulty, environment, compound) is set and the
+    /// bucket, if set, is theirs. A custom match under the filters is a real
+    /// hit and stops the broadening; in the broadened pass only the text rule
+    /// applies. `tier` keeps reporting the catalog tier.
+    ///
     /// - Parameters:
     ///   - userSportSlugs: the user's sports, used only when
     ///     `filters.hideOtherSports` is on.
+    ///   - userDB: where custom exercises come from. Nil searches the
+    ///     catalog only.
     static func run(query: String,
                     filters: ExerciseFilters,
-                    userSportSlugs: [String] = []) -> Result {
+                    userSportSlugs: [String] = [],
+                    userDB: UserDatabase? = nil) -> Result {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         let db = CoachDatabase.shared
+
+        let customTextHits = (userDB?.listUserExercises() ?? [])
+            .filter { customMatches($0.name, query: trimmed) }
+        let customFiltered = customTextHits.filter { customPasses($0, filters: filters) }
 
         let filtered = db.searchExercises(
             search: trimmed.isEmpty ? nil : trimmed,
@@ -54,6 +69,8 @@ enum ExerciseSearch {
             compoundOnly: filters.compoundOnly,
             userSportSlugs: filters.hideOtherSports ? userSportSlugs : []
         )
+        let filteredResult = Result(exercises: customFiltered.map(\.exercise) + filtered.exercises,
+                                    broadenedPastFilters: false, tier: filtered.tier)
 
         // Only a typed query earns the fallback. An empty result with an empty
         // search box means the filters themselves are too tight, which the
@@ -64,13 +81,13 @@ enum ExerciseSearch {
         // user typed may well be sitting in the catalog just outside the
         // filter. Swapping a squat and searching "dumbbell shoulder press"
         // partial-matches every dumbbell leg movement; the real answer is
-        // Dumbbell Overhead Press, one filter away.
+        // Dumbbell Overhead Press, one filter away. A custom exercise that
+        // matches under the filters is a real hit, so it never broadens.
         guard !trimmed.isEmpty,
               narrows(filters, userSportSlugs: userSportSlugs),
+              customFiltered.isEmpty,
               filtered.exercises.isEmpty || filtered.tier == .partial
-        else {
-            return Result(exercises: filtered.exercises, broadenedPastFilters: false, tier: filtered.tier)
-        }
+        else { return filteredResult }
 
         let wide = db.searchExercises(
             search: trimmed,
@@ -82,15 +99,32 @@ enum ExerciseSearch {
             compoundOnly: nil,
             userSportSlugs: []
         )
-        guard !wide.exercises.isEmpty else {
-            return Result(exercises: filtered.exercises, broadenedPastFilters: false, tier: filtered.tier)
-        }
+        guard !wide.exercises.isEmpty || !customTextHits.isEmpty else { return filteredResult }
         // Dropping the filters has to buy something. When the filtered rows are
-        // already as good a match as the wide ones, keep the narrower set.
-        guard filtered.exercises.isEmpty || wide.tier < filtered.tier else {
-            return Result(exercises: filtered.exercises, broadenedPastFilters: false, tier: filtered.tier)
-        }
-        return Result(exercises: wide.exercises, broadenedPastFilters: true, tier: wide.tier)
+        // already as good a match as the wide ones, keep the narrower set. A
+        // custom text hit is a literal match, so it beats `.partial` rows.
+        // Every custom text hit here is one the filters excluded: a custom
+        // that passed them returned above without broadening.
+        guard filtered.exercises.isEmpty || wide.tier < filtered.tier || !customTextHits.isEmpty
+        else { return filteredResult }
+        return Result(exercises: customTextHits.map(\.exercise) + wide.exercises,
+                      broadenedPastFilters: true, tier: wide.tier)
+    }
+
+    /// Every whitespace-separated token of `query` appears in `name`, ignoring
+    /// case. An empty query matches everything.
+    static func customMatches(_ name: String, query: String) -> Bool {
+        query.split(whereSeparator: { $0.isWhitespace })
+            .allSatisfy { name.range(of: $0, options: .caseInsensitive) != nil }
+    }
+
+    /// Filtered-pass rule for a custom exercise: only the bucket filter can
+    /// match it; any catalog-only filter excludes it. `hideOtherSports` does not.
+    private static func customPasses(_ ex: UserExercise, filters: ExerciseFilters) -> Bool {
+        guard filters.category == nil, filters.modality == nil, filters.difficulty == nil,
+              filters.environment == nil, filters.compoundOnly == nil else { return false }
+        guard let bucket = filters.bucket else { return true }
+        return ex.muscleBucket == bucket.rawValue
     }
 
     /// Browse order for an EMPTY search box: exercises the user has chosen

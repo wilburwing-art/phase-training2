@@ -270,7 +270,7 @@ struct LogScreen: View {
         if let modality = picked.modality, !modality.isEmpty {
             session.exercises[idx].type = picked.modalityLabel
         }
-        let category = CoachDatabase.shared.equipmentCategory(forExerciseIds: [picked.id])[picked.id]
+        let category = LoggedExercise.equipmentCategory(forPicked: picked)
         session.exercises[idx].unit = LoggedExercise.unit(for: category)
         session.exercises[idx].prevSets = store.previousSets(forExerciseNamed: picked.name)
         // Remember the swap so the generator favors the chosen exercise (and,
@@ -702,9 +702,8 @@ struct LogScreen: View {
         let newEx = LoggedExercise(
             id: "ad-hoc-\(UUID().uuidString.prefix(8))",
             name: picked.name,
-            type: picked.modalityLabel,
-            unit: LoggedExercise.unit(for: CoachDatabase.shared
-                .equipmentCategory(forExerciseIds: [picked.id])[picked.id]),
+            type: (picked.modality?.isEmpty == false) ? picked.modalityLabel : nil,
+            unit: LoggedExercise.unit(for: LoggedExercise.equipmentCategory(forPicked: picked)),
             targetSets: target,
             targetReps: reps,
             rest: 90,

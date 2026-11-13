@@ -1,4 +1,5 @@
 import Foundation
+import os
 import SQLite3
 
 final class CoachDatabase {
@@ -282,6 +283,24 @@ final class CoachDatabase {
         return body()
     }
 
+    private static let log = Logger(subsystem: "com.phasetraining.app", category: "coach-db")
+
+    /// Diagnostic only. The reads below turn every SQLite error into an empty
+    /// result, so an intermittent failure reads as "no rows". This names the
+    /// code and message at the site; return values are unchanged.
+    private func logReadFailure(_ site: String, db: OpaquePointer) {
+        let code = sqlite3_extended_errcode(db)
+        let message = String(cString: sqlite3_errmsg(db))
+        Self.log.error("read failed at \(site, privacy: .public): code \(code) \(message, privacy: .public)")
+        NSLog("[coach-db] read failed at %@: code %d %@", site, code, message)
+    }
+
+    /// Same channel, for an import index that came back with no keys.
+    private func logEmptyIndex(_ name: String) {
+        Self.log.error("\(name, privacy: .public) built empty; not cached")
+        NSLog("[coach-db] %@ built empty; not cached", name)
+    }
+
     private init() {
         guard let path = Bundle.main.path(forResource: "coach", ofType: "db") else { return }
         let flags = SQLITE_OPEN_READONLY | SQLITE_OPEN_FULLMUTEX
@@ -491,7 +510,10 @@ final class CoachDatabase {
         sql += " ORDER BY name ASC"
 
         var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else {
+            logReadFailure("listExercises(search:modality:) prepare", db: db)
+            return []
+        }
         defer { sqlite3_finalize(stmt) }
 
         var bindIdx: Int32 = 1
@@ -505,7 +527,12 @@ final class CoachDatabase {
         }
 
         var out: [Exercise] = []
-        while sqlite3_step(stmt) == SQLITE_ROW {
+        while true {
+            let rc = sqlite3_step(stmt)
+            guard rc == SQLITE_ROW else {
+                if rc != SQLITE_DONE { logReadFailure("listExercises(search:modality:) step", db: db) }
+                break
+            }
             out.append(decodeExercise(stmt))
         }
         return out
@@ -712,8 +739,14 @@ final class CoachDatabase {
             sql += " ORDER BY e.name ASC"
         }
 
+        // The fuzzy/partial candidate re-query below re-enters here with
+        // search: nil, so its failures log as "search: nil".
+        let site = searchTerm == nil ? "searchExercises(search: nil)" : "searchExercises(search: term)"
         var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return ([], .substring) }
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else {
+            logReadFailure("\(site) prepare", db: db)
+            return ([], .substring)
+        }
         defer { sqlite3_finalize(stmt) }
         for (i, b) in binds.enumerated() {
             let idx = Int32(i + 1)
@@ -724,7 +757,12 @@ final class CoachDatabase {
         }
 
         var out: [Exercise] = []
-        while sqlite3_step(stmt) == SQLITE_ROW {
+        while true {
+            let rc = sqlite3_step(stmt)
+            guard rc == SQLITE_ROW else {
+                if rc != SQLITE_DONE { logReadFailure("\(site) step", db: db) }
+                break
+            }
             out.append(decodeExercise(stmt))
         }
 
@@ -771,10 +809,17 @@ final class CoachDatabase {
         FROM exercises WHERE id = ?
         """
         var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return nil }
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else {
+            logReadFailure("exercise(id:) prepare", db: db)
+            return nil
+        }
         defer { sqlite3_finalize(stmt) }
         sqlite3_bind_int64(stmt, 1, Int64(id))
-        guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
+        let rc = sqlite3_step(stmt)
+        guard rc == SQLITE_ROW else {
+            if rc != SQLITE_DONE { logReadFailure("exercise(id:) step", db: db) }
+            return nil
+        }
         return decodeExercise(stmt)
     } }
 
@@ -1364,13 +1409,21 @@ final class CoachDatabase {
         let placeholders = ids.map { _ in "?" }.joined(separator: ",")
         let sql = "SELECT id, modality, default_reps, default_duration FROM exercises WHERE id IN (\(placeholders))"
         var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [:] }
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else {
+            logReadFailure("exerciseLoggingMeta prepare", db: db)
+            return [:]
+        }
         defer { sqlite3_finalize(stmt) }
         for (i, id) in ids.enumerated() {
             sqlite3_bind_int64(stmt, Int32(i + 1), Int64(id))
         }
         var out: [Int: (modality: String?, defaultReps: String?, defaultDuration: String?)] = [:]
-        while sqlite3_step(stmt) == SQLITE_ROW {
+        while true {
+            let rc = sqlite3_step(stmt)
+            guard rc == SQLITE_ROW else {
+                if rc != SQLITE_DONE { logReadFailure("exerciseLoggingMeta step", db: db) }
+                break
+            }
             let exId = Int(sqlite3_column_int64(stmt, 0))
             out[exId] = (text(stmt, 1), text(stmt, 2), text(stmt, 3))
         }
@@ -1656,9 +1709,17 @@ final class CoachDatabase {
         ]
         for sql in sources {
             var stmt: OpaquePointer?
-            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { continue }
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else {
+                logReadFailure("importTokenIndex prepare", db: db)
+                continue
+            }
             defer { sqlite3_finalize(stmt) }
-            while sqlite3_step(stmt) == SQLITE_ROW {
+            while true {
+                let rc = sqlite3_step(stmt)
+                guard rc == SQLITE_ROW else {
+                    if rc != SQLITE_DONE { logReadFailure("importTokenIndex step", db: db) }
+                    break
+                }
                 guard let c = sqlite3_column_text(stmt, 0) else { continue }
                 let key = Self.tokenSetImportName(String(cString: c))
                 let id = Int(sqlite3_column_int64(stmt, 1))
@@ -1671,7 +1732,9 @@ final class CoachDatabase {
                 }
             }
         }
-        importTokenIndex = index
+        // The catalog always has names, so an empty build means a failed read.
+        // Caching it would disable this tier for the life of the process.
+        if index.isEmpty { logEmptyIndex("importTokenIndex") } else { importTokenIndex = index }
         return index
     }
 
@@ -1688,9 +1751,17 @@ final class CoachDatabase {
         ]
         for sql in sources {
             var stmt: OpaquePointer?
-            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { continue }
+            guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else {
+                logReadFailure("importNameIndex prepare", db: db)
+                continue
+            }
             defer { sqlite3_finalize(stmt) }
-            while sqlite3_step(stmt) == SQLITE_ROW {
+            while true {
+                let rc = sqlite3_step(stmt)
+                guard rc == SQLITE_ROW else {
+                    if rc != SQLITE_DONE { logReadFailure("importNameIndex step", db: db) }
+                    break
+                }
                 guard let c = sqlite3_column_text(stmt, 0) else { continue }
                 let key = Self.foldImportName(String(cString: c))
                 if !key.isEmpty, index[key] == nil {
@@ -1698,7 +1769,8 @@ final class CoachDatabase {
                 }
             }
         }
-        importNameIndex = index
+        // Same rule as importTokenIndex: an empty build is a failed read.
+        if index.isEmpty { logEmptyIndex("importNameIndex") } else { importNameIndex = index }
         return index
     }
 

@@ -219,6 +219,12 @@
           "name": "mood",
           "type": "TEXT",
           "nullable": true
+        },
+        {
+          "name": "session_tags",
+          "type": "TEXT",
+          "nullable": false,
+          "default": "'[]'"
         }
       ],
       "indexes": [
@@ -251,7 +257,7 @@
           ]
         }
       ],
-      "def": "CREATE TABLE sessions (\n              start_time   INTEGER PRIMARY KEY,\n              template_id  TEXT NOT NULL,\n              name         TEXT NOT NULL,\n              category     TEXT NOT NULL,\n              end_time     INTEGER NOT NULL,\n              duration     INTEGER NOT NULL,\n              feel         TEXT,\n              note         TEXT\n            , mood TEXT)"
+      "def": "CREATE TABLE sessions (\n              start_time   INTEGER PRIMARY KEY,\n              template_id  TEXT NOT NULL,\n              name         TEXT NOT NULL,\n              category     TEXT NOT NULL,\n              end_time     INTEGER NOT NULL,\n              duration     INTEGER NOT NULL,\n              feel         TEXT,\n              note         TEXT\n            , mood TEXT, session_tags TEXT NOT NULL DEFAULT '[]')"
     },
     {
       "name": "session_exercises",
@@ -433,16 +439,16 @@
           "nullable": false
         },
         {
-          "name": "is_warmup",
-          "type": "INTEGER",
-          "nullable": false,
-          "default": "0"
-        },
-        {
           "name": "rir",
           "type": "TEXT",
           "nullable": false,
           "default": "''"
+        },
+        {
+          "name": "set_type",
+          "type": "TEXT",
+          "nullable": false,
+          "default": "'normal'"
         }
       ],
       "indexes": [
@@ -512,7 +518,7 @@
           ]
         }
       ],
-      "def": "CREATE TABLE session_sets (\n              session_start      INTEGER NOT NULL,\n              exercise_position  INTEGER NOT NULL,\n              num                INTEGER NOT NULL,\n              weight             TEXT NOT NULL,\n              reps               TEXT NOT NULL,\n              rpe                TEXT NOT NULL,\n              done               INTEGER NOT NULL,\n              is_warmup          INTEGER NOT NULL DEFAULT 0, rir TEXT NOT NULL DEFAULT '',\n              PRIMARY KEY (session_start, exercise_position, num),\n              FOREIGN KEY (session_start, exercise_position)\n                REFERENCES session_exercises(session_start, position) ON DELETE CASCADE\n            )"
+      "def": "CREATE TABLE session_sets (\n              session_start      INTEGER NOT NULL,\n              exercise_position  INTEGER NOT NULL,\n              num                INTEGER NOT NULL,\n              weight             TEXT NOT NULL,\n              reps               TEXT NOT NULL,\n              rpe                TEXT NOT NULL,\n              done               INTEGER NOT NULL,\n              rir TEXT NOT NULL DEFAULT '', set_type TEXT NOT NULL DEFAULT 'normal',\n              PRIMARY KEY (session_start, exercise_position, num),\n              FOREIGN KEY (session_start, exercise_position)\n                REFERENCES session_exercises(session_start, position) ON DELETE CASCADE\n            )"
     },
     {
       "name": "imported_workouts",
@@ -877,6 +883,110 @@
         }
       ],
       "def": "CREATE TABLE import_name_map (\n              name_raw     TEXT PRIMARY KEY,\n              exercise_id  INTEGER NOT NULL\n            )"
+    },
+    {
+      "name": "import_name_ignored",
+      "type": "table",
+      "columns": [
+        {
+          "name": "name_raw",
+          "type": "TEXT",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sqlite_autoindex_import_name_ignored_1",
+          "def": "PRIMARY KEY (name_raw)",
+          "table": "import_name_ignored",
+          "columns": [
+            "name_raw"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "name_raw",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (name_raw)",
+          "table": "import_name_ignored",
+          "columns": [
+            "name_raw"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_import_name_ignored_1",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (name_raw)",
+          "table": "import_name_ignored",
+          "columns": [
+            "name_raw"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE import_name_ignored (name_raw TEXT PRIMARY KEY)"
+    },
+    {
+      "name": "user_exercises",
+      "type": "table",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "nullable": false
+        },
+        {
+          "name": "muscle_bucket",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "REAL",
+          "nullable": false
+        }
+      ],
+      "indexes": [
+        {
+          "name": "sqlite_autoindex_user_exercises_1",
+          "def": "UNIQUE (name)",
+          "table": "user_exercises",
+          "columns": [
+            "name"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "name": "id",
+          "type": "PRIMARY KEY",
+          "def": "PRIMARY KEY (id)",
+          "table": "user_exercises",
+          "columns": [
+            "id"
+          ]
+        },
+        {
+          "name": "sqlite_autoindex_user_exercises_1",
+          "type": "UNIQUE",
+          "def": "UNIQUE (name)",
+          "table": "user_exercises",
+          "columns": [
+            "name"
+          ]
+        }
+      ],
+      "def": "CREATE TABLE user_exercises (\n              id             INTEGER PRIMARY KEY AUTOINCREMENT,\n              name           TEXT NOT NULL COLLATE NOCASE UNIQUE,\n              muscle_bucket  TEXT,\n              notes          TEXT,\n              created_at     REAL NOT NULL\n            )"
     }
   ],
   "relations": [

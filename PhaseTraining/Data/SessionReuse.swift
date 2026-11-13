@@ -42,8 +42,9 @@ extension SavedSession {
     }
 
     /// The session as a saved workout for the Library. `exerciseId` resolves
-    /// a catalog id from an exercise name; an unmatched name stores 0, which
-    /// still runs as a session and only loses substitutes and the image.
+    /// an id from an exercise name (catalog, or negative for a custom
+    /// exercise); an unmatched name stores 0, which still runs as a session
+    /// and only loses substitutes and the image.
     func asCustomRoutine(named routineName: String? = nil,
                          now: Date = Date(),
                          exerciseId: (String) -> Int?) -> CustomRoutine {
@@ -86,12 +87,16 @@ extension LoggedExercise {
     }
 }
 
-/// Catalog id for an exercise name, exact match ignoring case.
+/// Exercise id for an exercise name, exact match ignoring case, for writing
+/// `CustomRoutineExercise.exerciseId`: the catalog id first, then the user's
+/// custom exercise as `-rowId` (read from the same store as
+/// `ExerciseLookupCache`). Nil when neither matches.
 enum ExerciseNameLookup {
-    static func catalogId(_ name: String) -> Int? {
+    static func anyId(_ name: String) -> Int? {
         CoachDatabase.shared
             .listExercises(search: name)
             .first { $0.name.caseInsensitiveCompare(name) == .orderedSame }?.id
+            ?? ExerciseLookupCache.shared.userDB?.userExercise(named: name)?.exercise.id
     }
 }
 

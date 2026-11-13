@@ -17,7 +17,12 @@ struct BackupEnvelope: Codable {
     /// history. v1 envelopes still decode — every added field is optional with
     /// a default — so an older backup restores exactly as it did before, just
     /// without the slices it never carried.
-    static let currentSchemaVersion = 2
+    ///
+    /// v3 adds `userExercises` (the user.db custom exercises). The bump is what
+    /// makes an older build refuse a v3 file with `schemaUnsupported`; without
+    /// it that build would drop the custom exercises and report success. v1
+    /// and v2 files still restore, to an empty custom-exercise table.
+    static let currentSchemaVersion = 3
     /// TrainingMemory's schema version in the running app. Pinned into each
     /// export (`memorySchemaVersion`) so a later restore can tell when a
     /// backup predates fields the current memory schema carries.
@@ -83,6 +88,12 @@ struct BackupEnvelope: Codable {
     /// the Health grant is per device, so a new phone asks again on tap.
     var physiologyNights: [PhysiologyNight] = []
 
+    // MARK: - v3 additions
+
+    /// `user_exercises` rows with their row ids, so saved routines that point
+    /// at `-id` still resolve after a restore. Nil in v1 and v2 files.
+    var userExercises: [UserExercise]?
+
     /// True when the embedded memory predates the app's current
     /// TrainingMemory schema — fields added since were decoded as defaults,
     /// not real values. Informational only: stale backups still restore
@@ -126,6 +137,8 @@ struct BackupEnvelope: Codable {
         importedWorkouts = try c.decodeIfPresent([ImportedWorkout].self, forKey: .importedWorkouts) ?? []
         importedSets = try c.decodeIfPresent([ImportedSet].self, forKey: .importedSets) ?? []
         physiologyNights = try c.decodeIfPresent([PhysiologyNight].self, forKey: .physiologyNights) ?? []
+        // v3 — absent in every v1 and v2 backup.
+        userExercises = try c.decodeIfPresent([UserExercise].self, forKey: .userExercises)
     }
 
     /// Memberwise init, restored because declaring `init(from:)` suppresses it.
@@ -152,7 +165,8 @@ struct BackupEnvelope: Codable {
          recentPicks: [String: Date] = [:],
          importedWorkouts: [ImportedWorkout] = [],
          importedSets: [ImportedSet] = [],
-         physiologyNights: [PhysiologyNight] = []) {
+         physiologyNights: [PhysiologyNight] = [],
+         userExercises: [UserExercise]? = nil) {
         self.schemaVersion = schemaVersion
         self.memorySchemaVersion = memorySchemaVersion
         self.exportedAt = exportedAt
@@ -177,6 +191,7 @@ struct BackupEnvelope: Codable {
         self.importedWorkouts = importedWorkouts
         self.importedSets = importedSets
         self.physiologyNights = physiologyNights
+        self.userExercises = userExercises
     }
 }
 
@@ -187,6 +202,7 @@ enum BackupError: Error, LocalizedError {
     enum RestorePhase: String {
         case routines = "custom workouts"
         case sessions = "workout history"
+        case customExercises = "custom exercises"
         case settingsAndMemory = "profile and plan"
     }
 
@@ -230,6 +246,7 @@ enum BackupManager {
         // 1. SQLite first (bigger, slower, internally locked).
         let savedSessions = userDB.listSavedSessions()
         let customRoutines = userDB.listRoutines()
+        let userExercises = userDB.listUserExercises()
         // 2. UserDefaults last, back-to-back.
         let memory: TrainingMemory? = decodeIfPresent(defaults: defaults, key: "pt_training_memory")
         let activeSession: ActiveSession? = decodeIfPresent(defaults: defaults, key: "pt_active_session")
@@ -271,7 +288,8 @@ enum BackupManager {
             recentPicks: recentPicks,
             importedWorkouts: userDB.allImportedWorkouts(),
             importedSets: userDB.allImportedSets(),
-            physiologyNights: physiologyNights
+            physiologyNights: physiologyNights,
+            userExercises: userExercises
         )
     }
 
@@ -334,6 +352,7 @@ enum BackupManager {
         // changes nothing.
         let priorRoutines = userDB.listRoutines()
         let priorSessions = userDB.listSavedSessions()
+        let priorUserExercises = userDB.listUserExercises()
         userDB.clearAll()
         for routine in envelope.customRoutines { userDB.save(routine) }
         userDB.clearAllSessions()
@@ -346,13 +365,27 @@ enum BackupManager {
         userDB.clearAllImports()
         userDB.insertImportedWorkouts(envelope.importedWorkouts)
         userDB.insertImportedSets(envelope.importedSets)
+        // Custom exercises keep their row ids. A v1/v2 envelope carries none,
+        // so the table ends empty, same as the other destructive slices.
+        let userExercises = envelope.userExercises ?? []
+        userDB.clearUserExercises()
+        for ex in userExercises { userDB.insertUserExercise(ex) }
+        ExerciseLookupCache.shared.reset()
+        let restoreRollBack = {
+            rollBack(userDB, routines: priorRoutines, sessions: priorSessions,
+                     userExercises: priorUserExercises)
+        }
         if userDB.routineCount() != envelope.customRoutines.count {
-            rollBack(userDB, routines: priorRoutines, sessions: priorSessions)
+            restoreRollBack()
             throw BackupError.restoreIncomplete(.routines)
         }
         if userDB.savedSessionCount() != envelope.savedSessions.count {
-            rollBack(userDB, routines: priorRoutines, sessions: priorSessions)
+            restoreRollBack()
             throw BackupError.restoreIncomplete(.sessions)
+        }
+        if userDB.userExerciseCount() != userExercises.count {
+            restoreRollBack()
+            throw BackupError.restoreIncomplete(.customExercises)
         }
 
         // UserDefaults half gets the same all-or-nothing contract: capture
@@ -407,7 +440,7 @@ enum BackupManager {
                     defaults.removeObject(forKey: key)
                 }
             }
-            rollBack(userDB, routines: priorRoutines, sessions: priorSessions)
+            restoreRollBack()
             throw BackupError.restoreIncomplete(.settingsAndMemory)
         }
     }
@@ -418,11 +451,15 @@ enum BackupManager {
     /// primary keys) leave the prior data intact.
     private static func rollBack(_ userDB: UserDatabase,
                                  routines: [CustomRoutine],
-                                 sessions: [SavedSession]) {
+                                 sessions: [SavedSession],
+                                 userExercises: [UserExercise]) {
         userDB.clearAll()
         for routine in routines { userDB.save(routine) }
         userDB.clearAllSessions()
         for session in sessions { userDB.saveSession(session) }
+        userDB.clearUserExercises()
+        for ex in userExercises { userDB.insertUserExercise(ex) }
+        ExerciseLookupCache.shared.reset()
     }
 
     // MARK: - Helpers

@@ -56,4 +56,12 @@ final class EraseAllDataTests: XCTestCase {
         db.wipeAll()
         XCTAssertTrue(db.listRoutines().isEmpty)
     }
+
+    func test_userDatabaseWipeAll_clearsCustomExercises() throws {
+        let db = UserDatabase(path: ":memory:")
+        _ = try db.createUserExercise(name: "Zorblax Sled Push", muscleBucket: .quads, notes: nil).get()
+        XCTAssertFalse(db.listUserExercises().isEmpty)
+        db.wipeAll()
+        XCTAssertTrue(db.listUserExercises().isEmpty)
+    }
 }

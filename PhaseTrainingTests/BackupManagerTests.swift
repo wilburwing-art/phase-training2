@@ -344,7 +344,7 @@ final class BackupManagerTests: XCTestCase {
         db.insertImportedSets(sets)
 
         let envelope = BackupManager.snapshot(defaults: original, userDB: db)
-        XCTAssertEqual(envelope.schemaVersion, 2)
+        XCTAssertEqual(envelope.schemaVersion, BackupEnvelope.currentSchemaVersion)
         XCTAssertEqual(envelope.sportLogs.count, 1, "sport logs must be captured")
         XCTAssertEqual(envelope.importedSets.count, 3, "imported sets must be captured")
 
@@ -397,5 +397,82 @@ final class BackupManagerTests: XCTestCase {
         XCTAssertTrue(decoded.sportLogs.isEmpty)
         XCTAssertTrue(decoded.importedSets.isEmpty)
         XCTAssertTrue(decoded.reminderEnabled)
+    }
+
+    // MARK: - v3 envelope (custom exercises)
+
+    func test_v3RoundTrip_keepsCustomExercisesWithTheirIds() throws {
+        let src = UserDatabase(path: ":memory:")
+        let a = try src.createUserExercise(name: "Zorblax Sled Push", muscleBucket: .quads, notes: "turf").get()
+        let b = try src.createUserExercise(name: "Zorblax Band Row", muscleBucket: nil, notes: nil).get()
+        src.deleteUserExercise(id: a.id)
+        let c = try src.createUserExercise(name: "Zorblax Carry", muscleBucket: .core, notes: nil).get()
+        XCTAssertEqual(src.listUserExercises().map(\.id).sorted(), [b.id, c.id], "fixture: a gap in the ids")
+
+        let envelope = BackupManager.snapshot(defaults: freshDefaults("v3-src"), userDB: src)
+        XCTAssertEqual(envelope.schemaVersion, 3)
+        XCTAssertEqual(envelope.userExercises?.count, 2)
+
+        let dst = UserDatabase(path: ":memory:")
+        _ = try dst.createUserExercise(name: "Zorblax Local Only", muscleBucket: nil, notes: nil).get()
+        let decoded = try BackupManager.decode(try BackupManager.encode(envelope))
+        try BackupManager.restore(decoded, into: freshDefaults("v3-dst"), userDB: dst)
+
+        XCTAssertEqual(dst.listUserExercises(), src.listUserExercises(),
+                       "same rows, same ids, and the target device's own row is gone")
+        XCTAssertEqual(dst.userExercise(id: c.id)?.exercise.id, -Int(c.id))
+    }
+
+    /// A v2 file has no userExercises key. It decodes, and restoring it is
+    /// destructive like every other slice: the table ends empty.
+    func test_v2Envelope_withoutCustomExercises_restoresToAnEmptyTable() throws {
+        let v2JSON = """
+        {"schemaVersion":2,"exportedAt":0,"savedSessions":[],"customRoutines":[],
+         "reminderEnabled":false,"sportLogs":[],"importedSets":[],"importedWorkouts":[]}
+        """
+        let decoded = try BackupManager.decode(Data(v2JSON.utf8))
+        XCTAssertEqual(decoded.schemaVersion, 2)
+        XCTAssertNil(decoded.userExercises)
+
+        let db = UserDatabase(path: ":memory:")
+        _ = try db.createUserExercise(name: "Zorblax Stale", muscleBucket: nil, notes: nil).get()
+        try BackupManager.restore(decoded, into: freshDefaults("v2-restore"), userDB: db)
+        XCTAssertTrue(db.listUserExercises().isEmpty)
+    }
+
+    func test_decode_rejectsSchemaVersion4() {
+        let v4JSON = """
+        {"schemaVersion":4,"exportedAt":0,"savedSessions":[],"customRoutines":[],"reminderEnabled":false}
+        """
+        XCTAssertThrowsError(try BackupManager.decode(Data(v4JSON.utf8))) { err in
+            guard case BackupError.schemaUnsupported(4) = err else {
+                return XCTFail("Expected schemaUnsupported(4), got \(err)")
+            }
+        }
+    }
+
+    /// Two rows on one id can't both land, so the restore must stop and put
+    /// the prior rows back in every table it touched.
+    func test_restore_failingCustomExerciseInsert_keepsPriorData() throws {
+        let defaults = freshDefaults()
+        let db = UserDatabase(path: ":memory:")
+        let prior = try db.createUserExercise(name: "Zorblax Keep", muscleBucket: .back, notes: nil).get()
+        db.save(CustomRoutine(id: "keep", name: "Old push", exercises: [], createdAt: Date()))
+
+        let clash = UserExercise(id: 7, name: "Zorblax One", muscleBucket: nil, notes: nil,
+                                 createdAt: Date(timeIntervalSince1970: 0))
+        var other = clash
+        other.name = "Zorblax Two"
+        let envelope = BackupEnvelope(exportedAt: Date(), memory: nil, savedSessions: [], activeSession: nil,
+                                      customRoutines: [], plan: nil, overrides: nil, reminderEnabled: false,
+                                      userExercises: [clash, other])
+
+        XCTAssertThrowsError(try BackupManager.restore(envelope, into: defaults, userDB: db)) { err in
+            guard case BackupError.restoreIncomplete(.customExercises) = err else {
+                return XCTFail("Expected restoreIncomplete(.customExercises), got \(err)")
+            }
+        }
+        XCTAssertEqual(db.listUserExercises(), [prior])
+        XCTAssertEqual(db.listRoutines().map(\.id), ["keep"])
     }
 }

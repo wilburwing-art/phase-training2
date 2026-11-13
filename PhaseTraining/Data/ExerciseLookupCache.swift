@@ -22,8 +22,9 @@
 
 import Foundation
 
-/// Per-name resolved bundle. nil fields mean coach.db has no row by that
-/// name (custom-routine entries with no DB linkage, user-added one-offs).
+/// Per-name resolved bundle. nil fields mean neither coach.db nor the user's
+/// custom exercises have a row by that name (a free-typed one-off). A custom
+/// exercise resolves with its own bucket and no photo.
 struct ExerciseLookup {
     let exercise: Exercise?
     let bucket: MuscleBucket?
@@ -36,6 +37,15 @@ final class ExerciseLookupCache {
 
     private var entries: [String: ExerciseLookup] = [:]
     private let lock = NSLock()
+
+    /// Where custom exercises are read from after both catalog attempts miss.
+    /// `.shared` in production; under XCTest and previews an isolated empty
+    /// in-memory store, so a test never reads the simulator's real user.db.
+    /// Tests that need custom names assign their own store. Assigning clears
+    /// the cache, since cached misses may now resolve.
+    var userDB: UserDatabase? = UserDatabase.defaultStore() {
+        didSet { reset() }
+    }
 
     private init() {}
 
@@ -80,7 +90,10 @@ final class ExerciseLookupCache {
         lookup(name: name).exercise?.id
     }
 
-    /// Test-only / preview hook to clear all cached resolutions.
+    /// Clear all cached resolutions. Called by UserDatabase whenever the
+    /// custom-exercise table changes (create, delete, restore, clear, erase),
+    /// because cached misses for a new name and cached hits for a deleted one
+    /// would otherwise outlive the change. Also a test and preview hook.
     func reset() {
         lock.lock()
         entries.removeAll()
@@ -106,7 +119,14 @@ final class ExerciseLookupCache {
            let id = CoachDatabase.shared.exerciseId(forImportName: name) {
             dbEx = CoachDatabase.shared.exercise(id: id)
         }
+        // Custom exercises last, so the catalog always wins a name tie.
+        // Creation already refuses catalog names; this is the read-side guard.
         guard let dbEx else {
+            if let custom = userDB?.userExercise(named: name) {
+                return ExerciseLookup(exercise: custom.exercise,
+                                      bucket: custom.muscleBucket.flatMap(MuscleBucket.init(rawValue:)),
+                                      thumbnailURL: nil)
+            }
             return ExerciseLookup(exercise: nil, bucket: nil, thumbnailURL: nil)
         }
         let muscles = CoachDatabase.shared.musclesForExercise(dbEx.id)

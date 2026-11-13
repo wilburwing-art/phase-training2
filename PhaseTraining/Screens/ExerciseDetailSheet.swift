@@ -63,6 +63,8 @@ private struct ExerciseDetailContent: View {
     @State private var similar: [Exercise] = []
     @EnvironmentObject private var memoryStore: MemoryStore
     @EnvironmentObject private var sessionStore: SessionStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var confirmingDelete = false
 
     /// What the lifter's own history says about this exercise; nil hides the
     /// section (no loaded history yet, or bodyweight only).
@@ -89,7 +91,7 @@ private struct ExerciseDetailContent: View {
                     }
                 }
                 if let desc = exercise.description, !desc.isEmpty {
-                    section(title: "Overview") {
+                    section(title: exercise.isCustom ? "Notes" : "Overview") {
                         Text(desc)
                             .styled(.body)
                             .foregroundStyle(Color.ink2)
@@ -159,6 +161,7 @@ private struct ExerciseDetailContent: View {
                         }
                     }
                 }
+                if exercise.isCustom { deleteButton }
             }
             .padding(.horizontal, 20)
             .padding(.top, 18)
@@ -175,7 +178,18 @@ private struct ExerciseDetailContent: View {
                 muscles = CoachDatabase.shared.musclesForExercise(exercise.id)
             }
         }
+        .confirmationDialog("Delete \(exercise.name)?", isPresented: $confirmingDelete,
+                            titleVisibility: .visible) {
+            Button("Delete exercise", role: .destructive) {
+                ExerciseLookupCache.shared.userDB?.deleteUserExercise(id: Int64(-exercise.id))
+                dismiss()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Sessions you have logged with it stay in History.")
+        }
         .task(id: exercise.id) {
+            guard !exercise.isCustom else { return }
             let target = exercise
             let allowed = DemographicProfile.from(memoryStore.memory).allowedEquipmentSlugs
             let found = await Task.detached(priority: .utility) { () -> [Exercise] in
@@ -281,6 +295,7 @@ private struct ExerciseDetailContent: View {
     }
 
     private var metaLine: String {
+        if exercise.isCustom { return "Custom exercise" }
         var parts: [String] = []
         if exercise.modalityLabel != "-" { parts.append(exercise.modalityLabel) }
         if exercise.difficultyLabel != "-" { parts.append(exercise.difficultyLabel) }
@@ -295,6 +310,23 @@ private struct ExerciseDetailContent: View {
             if exercise.isCompound { badge("Compound") }
             if exercise.isUnilateral { badge("Unilateral") }
         }
+    }
+
+    private var deleteButton: some View {
+        Button(role: .destructive) {
+            confirmingDelete = true
+        } label: {
+            Text("Delete exercise")
+                .styled(.body)
+                .foregroundStyle(Color.danger)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .background(Color.surface)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("custom-exercise-delete")
     }
 
     @ViewBuilder

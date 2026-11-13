@@ -52,8 +52,9 @@ final class GeneratorWeekInvariantTests: XCTestCase {
 
     struct Week { let cell: Cell; let plan: WeekPlan }
 
-    private func plan(_ c: Cell, routines: [BundledRoutineRow]) -> Week {
+    private func plan(_ c: Cell, routines: [BundledRoutineRow], affinities: Set<String> = []) -> Week {
         var m = TrainingMemory()
+        m.exerciseAffinities = Dictionary(uniqueKeysWithValues: affinities.map { ($0, 5) })
         let sport = Sport.catalog.first { $0.slug == c.sport } ?? Sport(slug: c.sport, name: c.sport)
         m.primarySport = sport
         m.sports = [sport]
@@ -383,5 +384,65 @@ final class GeneratorWeekInvariantTests: XCTestCase {
         XCTAssertGreaterThan(checked, 180, "only \(checked) climbing weeks checked")
         print("[GWI] push-pull: \(bad.count) of \(checked) climbing weeks outside 1:2 to 1:1")
         XCTAssertTrue(bad.isEmpty, "\(bad.count) of \(checked) weeks outside 1:2 to 1:1, first: \(bad.prefix(3))")
+    }
+
+    // MARK: - Custom exercises stay out of generated weeks
+
+    /// Custom exercises live in user.db and surface only through the picker
+    /// and ExerciseLookupCache. The generator reaches that cache (prescription
+    /// keys through `ExerciseKey`), so the test points the cache at a store
+    /// full of custom exercises, gives them positive affinities the way swaps
+    /// would, and checks no generated week ever carries one. No user-built
+    /// routines: those are the user's own program and are served as written.
+    func test_customExercisesNeverAppearInGeneratedWeeks() throws {
+        try XCTSkipUnless(CoachDatabase.shared.isOpen, "coach.db not bundled")
+        let userDB = UserDatabase(path: ":memory:")
+        let rows: [(String, MuscleBucket?)] = [
+            ("Zorblax Quad Smash", .quads), ("Zorblax Back Builder", .back),
+            ("Zorblax Chest Fly", .chest), ("Zorblax Core Thing", .core), ("Zorblax No Bucket", nil)]
+        for (name, bucket) in rows {
+            _ = try userDB.createUserExercise(name: name, muscleBucket: bucket, notes: nil).get()
+        }
+        let customNames = Set(userDB.listUserExercises().map { $0.name.lowercased() })
+        XCTAssertEqual(customNames.count, rows.count)
+
+        let saved = ExerciseLookupCache.shared.userDB
+        ExerciseLookupCache.shared.userDB = userDB
+        defer { ExerciseLookupCache.shared.userDB = saved }
+        XCTAssertEqual(ExerciseLookupCache.shared.exercise(forName: "Zorblax Quad Smash")?.isCustom, true,
+                       "fixture: the generator's lookup path can see the custom store")
+
+        let sports = Sport.catalog.filter { SportCatalog.isPlannable($0.slug) }
+        XCTAssertGreaterThan(sports.count, 5, "plannable sports: \(sports.map(\.slug))")
+        let routines = CoachDatabase.shared.listRoutines()
+        var cells = 0, exercises = 0
+        var bad: [String] = []
+        for sport in sports { for season in SeasonPhase.allCases {
+            for exp in [ExperienceLevel.beginner, .advanced] {
+                for (equipName, equip) in [("gym", [Equipment.fullGym]), ("bw", [Equipment.bodyweight])] {
+                    let cell = Cell(sport: sport.slug, season: season, exp: exp, equipName: equipName,
+                                    equip: equip, days: 4, minutes: 45, week: 1)
+                    let week = plan(cell, routines: routines, affinities: customNames)
+                    cells += 1
+                    for day in week.plan.days {
+                        for e in day.generatedWorkout?.exercises ?? [] {
+                            exercises += 1
+                            if e.exerciseId < 0 || customNames.contains(e.name.lowercased()) {
+                                bad.append("[\(cell)] \(day.kind) \(e.name) id \(e.exerciseId)")
+                            }
+                        }
+                    }
+                }
+            }
+        } }
+        XCTAssertGreaterThan(exercises, cells, "the grid generated almost nothing")
+        XCTAssertTrue(bad.isEmpty, "\(bad.count) custom rows in generated weeks, first: \(bad.prefix(3))")
+
+        // CoachDatabase, which every generator pool reads, stays catalog-only.
+        XCTAssertNil(CoachDatabase.shared.exercise(id: -1))
+        for name in customNames {
+            XCTAssertTrue(CoachDatabase.shared.searchExercises(search: name).exercises
+                .allSatisfy { !$0.isCustom && $0.name.lowercased() != name }, name)
+        }
     }
 }

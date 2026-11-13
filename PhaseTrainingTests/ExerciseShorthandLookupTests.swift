@@ -27,9 +27,17 @@ final class ExerciseShorthandLookupTests: XCTestCase {
         ("Lateral Raise",    "Dumbbell Lateral Raise"),
     ]
 
+    private var savedUserDB: UserDatabase?
+
     override func setUp() {
         super.setUp()
+        savedUserDB = ExerciseLookupCache.shared.userDB
         ExerciseLookupCache.shared.reset()
+    }
+
+    override func tearDown() {
+        ExerciseLookupCache.shared.userDB = savedUserDB
+        super.tearDown()
     }
 
     func testShorthandResolvesToItsCanonicalExercise() {
@@ -60,5 +68,64 @@ final class ExerciseShorthandLookupTests: XCTestCase {
     /// onto a plausible neighbour.
     func testUnknownNameDoesNotResolve() {
         XCTAssertNil(ExerciseLookupCache.shared.exerciseID(forName: "Zorble Press"))
+    }
+
+    /// The cache stores misses. A custom exercise created after its name was
+    /// looked up must still resolve, with its own bucket and no photo.
+    func testCustomExerciseResolvesAfterAnEarlierMiss() throws {
+        let db = UserDatabase(path: ":memory:")
+        ExerciseLookupCache.shared.userDB = db
+        let name = "Zorblax Sled Drag"
+        XCTAssertNil(ExerciseLookupCache.shared.exercise(forName: name), "fixture: a miss gets cached first")
+
+        let made = try db.createUserExercise(name: name, muscleBucket: .glutes, notes: nil).get()
+
+        let hit = ExerciseLookupCache.shared.lookup(name: name.lowercased())
+        XCTAssertEqual(hit.exercise?.id, -Int(made.id))
+        XCTAssertEqual(hit.exercise?.isCustom, true)
+        XCTAssertEqual(hit.bucket, .glutes)
+        XCTAssertNil(hit.thumbnailURL)
+        XCTAssertEqual(ExerciseNameLookup.anyId(name), -Int(made.id))
+
+        db.deleteUserExercise(id: made.id)
+        XCTAssertNil(ExerciseLookupCache.shared.exercise(forName: name), "a deleted custom stops resolving")
+        XCTAssertNil(ExerciseNameLookup.anyId(name))
+    }
+
+    /// Catalog names keep resolving to the catalog with a custom store attached.
+    func testCatalogStillWinsWithACustomStoreAttached() throws {
+        let db = UserDatabase(path: ":memory:")
+        _ = try db.createUserExercise(name: "Zorblax Sled Drag", muscleBucket: .glutes, notes: nil).get()
+        ExerciseLookupCache.shared.userDB = db
+        XCTAssertEqual(ExerciseLookupCache.shared.exerciseID(forName: "Barbell Bench Press"), 900)
+        XCTAssertEqual(ExerciseNameLookup.anyId("Barbell Bench Press"), 900)
+    }
+
+    /// A wipe empties user_exercises; the cached hit must go with it.
+    func testEraseDropsACachedCustomHit() throws {
+        let db = UserDatabase(path: ":memory:")
+        ExerciseLookupCache.shared.userDB = db
+        _ = try db.createUserExercise(name: "Zorblax Sled Drag", muscleBucket: .glutes, notes: nil).get()
+        XCTAssertEqual(ExerciseLookupCache.shared.exercise(forName: "Zorblax Sled Drag")?.isCustom, true)
+        db.wipeAll()
+        XCTAssertNil(ExerciseLookupCache.shared.exercise(forName: "Zorblax Sled Drag"))
+    }
+
+    /// Restore resets the cache once after its insert loop, so a cached miss
+    /// for a restored name resolves afterwards.
+    func testRestoreMakesARestoredCustomNameResolve() throws {
+        let db = UserDatabase(path: ":memory:")
+        ExerciseLookupCache.shared.userDB = db
+        XCTAssertNil(ExerciseLookupCache.shared.exercise(forName: "Zorblax Restored"), "fixture: cached miss")
+        let row = UserExercise(id: 9, name: "Zorblax Restored", muscleBucket: "back", notes: nil,
+                               createdAt: Date(timeIntervalSince1970: 1_700_000_000))
+        let envelope = BackupEnvelope(exportedAt: Date(), memory: nil, savedSessions: [], activeSession: nil,
+                                      customRoutines: [], plan: nil, overrides: nil, reminderEnabled: false,
+                                      userExercises: [row])
+        let suite = "ExerciseShorthandLookupTests.\(UUID().uuidString)"
+        defer { UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite) }
+        try BackupManager.restore(envelope, into: UserDefaults(suiteName: suite)!, userDB: db)
+        XCTAssertEqual(ExerciseLookupCache.shared.exercise(forName: "Zorblax Restored")?.id, -9)
+        XCTAssertEqual(ExerciseLookupCache.shared.bucket(forName: "Zorblax Restored"), .back)
     }
 }

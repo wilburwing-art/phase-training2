@@ -3,7 +3,7 @@
 //
 // Two paths matter:
 //  1. Fresh install: every migration runs; v10 replaces is_warmup with
-//     set_type.
+//     set_type; v11 adds user_exercises.
 //  2. Pre-versioning upgrade: a legacy user.db (user_version = 0, session_sets
 //     WITHOUT is_warmup) gets the column via the explicit existence check,
 //     then v1 no-ops over the live schema and v10 backfills set_type.
@@ -164,6 +164,52 @@ final class UserDatabaseMigrationTests: XCTestCase {
             Int64($0.startTime.timeIntervalSince1970) == start
         })
         XCTAssertEqual(loaded.exercises.first?.sets.map(\.setType), [.warmup, .normal])
+    }
+
+    // MARK: - v11 user_exercises
+
+    func test_freshInstall_hasUserExercisesWithItsFiveColumns() {
+        let db = UserDatabase(path: path)
+        XCTAssertNil(db.unavailableReason)
+        XCTAssertEqual(columns(of: "user_exercises"),
+                       ["id", "name", "muscle_bucket", "notes", "created_at"])
+    }
+
+    func test_v10File_upgradesToV11_andKeepsSessions() throws {
+        let start: Int64 = 1_780_000_000
+        do {
+            let v = UserDatabase(path: path)
+            let db = try XCTUnwrap(v.db)
+            XCTAssertEqual(sqlite3_exec(db, "DROP TABLE user_exercises", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(sqlite3_exec(db, "PRAGMA user_version = 10", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(sqlite3_exec(db, """
+                INSERT INTO sessions(start_time, template_id, name, category, end_time, duration)
+                VALUES (\(start), 't', 'Old', 'lift', \(start + 1800), 1800);
+                INSERT INTO session_exercises(session_start, position, exercise_template_id, name, type, unit,
+                                              target_sets, target_reps, rest, prev_sets_json)
+                VALUES (\(start), 0, 'sq', 'Back Squat', 'Barbell', 'lbs', 2, 5, 180, '[]');
+                INSERT INTO session_sets(session_start, exercise_position, num, weight, reps, rpe, done, rir, set_type)
+                VALUES (\(start), 0, 1, '95', '5', '', 1, '', 'warmup');
+                INSERT INTO session_sets(session_start, exercise_position, num, weight, reps, rpe, done, rir, set_type)
+                VALUES (\(start), 0, 2, '225', '5', '', 1, '', 'normal');
+                """, nil, nil, nil), SQLITE_OK, "v10 fixture insert failed; check the column lists")
+        }
+        XCTAssertEqual(userVersion(), 10)
+        XCTAssertEqual(columns(of: "user_exercises"), [], "fixture: v10 has no user_exercises")
+
+        let reopened = UserDatabase(path: path)
+        XCTAssertNil(reopened.unavailableReason)
+        XCTAssertEqual(userVersion(), UserDatabase.latestSchemaVersion)
+        XCTAssertEqual(columns(of: "user_exercises"),
+                       ["id", "name", "muscle_bucket", "notes", "created_at"])
+        let loaded = try XCTUnwrap(reopened.listSavedSessions().first {
+            Int64($0.startTime.timeIntervalSince1970) == start
+        })
+        XCTAssertEqual(loaded.exercises.map(\.name), ["Back Squat"])
+        XCTAssertEqual(loaded.exercises.first?.sets.map(\.weight), ["95", "225"])
+        XCTAssertEqual(loaded.exercises.first?.sets.map(\.setType), [.warmup, .normal])
+        XCTAssertNoThrow(try reopened.createUserExercise(name: "Zorblax", muscleBucket: nil, notes: nil).get(),
+                         "the upgraded table accepts writes")
     }
 
     // MARK: - Re-open is a no-op

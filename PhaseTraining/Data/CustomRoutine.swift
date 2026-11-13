@@ -78,7 +78,7 @@ extension CustomRoutine {
     /// it the same way it consumes bundled routines.
     func toWorkoutTemplate() -> WorkoutTemplate {
         // Reps-only movements log as bodyweight (no weight input on the log row).
-        let categories = CoachDatabase.shared.equipmentCategory(
+        let categories = LoggedExercise.equipmentCategories(
             forExerciseIds: Set(exercises.map(\.exerciseId)))
         return WorkoutTemplate(
             id: "custom-\(id)",

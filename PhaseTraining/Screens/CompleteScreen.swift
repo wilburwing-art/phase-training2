@@ -563,7 +563,7 @@ struct CompleteScreen: View {
     private var saveRoutineButton: some View {
         if let saved, !discarded, !saved.exercises.isEmpty {
             Button {
-                customStore.save(saved.asCustomRoutine(exerciseId: ExerciseNameLookup.catalogId))
+                customStore.save(saved.asCustomRoutine(exerciseId: ExerciseNameLookup.anyId))
                 savedAsRoutine = true
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             } label: {

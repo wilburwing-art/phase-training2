@@ -17,24 +17,25 @@ CREATE TABLE sessions (
               duration     INTEGER NOT NULL,
               feel         TEXT,
               note         TEXT
-            , mood TEXT)
+            , mood TEXT, session_tags TEXT NOT NULL DEFAULT '[]')
 ```
 
 </details>
 
 ## Columns
 
-| Name        | Type    | Default | Nullable | Children                                  | Comment |
-| ----------- | ------- | ------- | -------- | ----------------------------------------- | ------- |
-| start_time  | INTEGER |         | true     | [session_exercises](session_exercises.md) |         |
-| template_id | TEXT    |         | false    |                                           |         |
-| name        | TEXT    |         | false    |                                           |         |
-| category    | TEXT    |         | false    |                                           |         |
-| end_time    | INTEGER |         | false    |                                           |         |
-| duration    | INTEGER |         | false    |                                           |         |
-| feel        | TEXT    |         | true     |                                           |         |
-| note        | TEXT    |         | true     |                                           |         |
-| mood        | TEXT    |         | true     |                                           |         |
+| Name         | Type    | Default | Nullable | Children                                  | Comment |
+| ------------ | ------- | ------- | -------- | ----------------------------------------- | ------- |
+| start_time   | INTEGER |         | true     | [session_exercises](session_exercises.md) |         |
+| template_id  | TEXT    |         | false    |                                           |         |
+| name         | TEXT    |         | false    |                                           |         |
+| category     | TEXT    |         | false    |                                           |         |
+| end_time     | INTEGER |         | false    |                                           |         |
+| duration     | INTEGER |         | false    |                                           |         |
+| feel         | TEXT    |         | true     |                                           |         |
+| note         | TEXT    |         | true     |                                           |         |
+| mood         | TEXT    |         | true     |                                           |         |
+| session_tags | TEXT    | '[]'    | false    |                                           |         |
 
 ## Constraints
 
@@ -66,6 +67,7 @@ erDiagram
   TEXT feel
   TEXT note
   TEXT mood
+  TEXT session_tags
 }
 "session_exercises" {
   INTEGER session_start PK

@@ -526,7 +526,7 @@ struct DayWorkoutPreviewSheet: View {
             exercises: template.exercises.enumerated().map { idx, ex in
                 CustomRoutineExercise(
                     id: UUID().uuidString,
-                    exerciseId: lookupExerciseId(forName: ex.name) ?? 0,
+                    exerciseId: ExerciseNameLookup.anyId(ex.name) ?? 0,
                     name: ex.name,
                     position: idx + 1,
                     sets: ex.targetSets,
@@ -542,16 +542,6 @@ struct DayWorkoutPreviewSheet: View {
         didSave = true
         let haptic = UINotificationFeedbackGenerator()
         haptic.notificationOccurred(.success)
-    }
-
-    /// Resolve a coach.db exerciseId by name so the saved CustomRoutine can
-    /// later look up substitutes / image / detail. Returns nil when no exact
-    /// name match exists (the saved row stays usable as a session template
-    /// either way; substitution lookup just degrades).
-    private func lookupExerciseId(forName name: String) -> Int? {
-        CoachDatabase.shared
-            .listExercises(search: name)
-            .first { $0.name.caseInsensitiveCompare(name) == .orderedSame }?.id
     }
 
     private static func parseRepsLeading(_ s: String?) -> Int? {

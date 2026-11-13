@@ -10,13 +10,15 @@ On-device workout history (Documents/user.db). Schema from the migrations in Pha
 | --------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
 | [user_routines](user_routines.md)                   | 5       |                                                                                                                                                                                              | table |
 | [user_routine_exercises](user_routine_exercises.md) | 9       |                                                                                                                                                                                              | table |
-| [sessions](sessions.md)                             | 9       | One saved native workout. start_time (epoch seconds) is the session id, referenced from UserDefaults by DayOutcome.sessionId, WeekPlanSnapshot.actualSessionIDs and FeedbackEntry.sessionId. | table |
+| [sessions](sessions.md)                             | 10      | One saved native workout. start_time (epoch seconds) is the session id, referenced from UserDefaults by DayOutcome.sessionId, WeekPlanSnapshot.actualSessionIDs and FeedbackEntry.sessionId. | table |
 | [session_exercises](session_exercises.md)           | 14      |                                                                                                                                                                                              | table |
 | [session_sets](session_sets.md)                     | 9       |                                                                                                                                                                                              | table |
 | [imported_workouts](imported_workouts.md)           | 8       | HealthKit or CSV workouts, keyed by the source's own UUID so re-import is idempotent. Unioned with sessions in GeneratorContext.                                                             | table |
 | [imported_sets](imported_sets.md)                   | 12      | Set-level CSV history. Attached to imported_workouts by performed_at proximity in Swift, not by FK.                                                                                          | table |
 | [explore_sessions](explore_sessions.md)             | 10      | One row per visit to a browse surface (ExploreSession.swift). Not included in the backup envelope.                                                                                           | table |
 | [import_name_map](import_name_map.md)               | 2       |                                                                                                                                                                                              | table |
+| [import_name_ignored](import_name_ignored.md)       | 1       |                                                                                                                                                                                              | table |
+| [user_exercises](user_exercises.md)                 | 5       |                                                                                                                                                                                              | table |
 
 ## Relations
 
@@ -55,6 +57,7 @@ erDiagram
   TEXT feel
   TEXT note
   TEXT mood
+  TEXT session_tags
 }
 "session_exercises" {
   INTEGER session_start PK
@@ -80,8 +83,8 @@ erDiagram
   TEXT reps
   TEXT rpe
   INTEGER done
-  INTEGER is_warmup
   TEXT rir
+  TEXT set_type
 }
 "imported_workouts" {
   TEXT id PK
@@ -122,6 +125,16 @@ erDiagram
 "import_name_map" {
   TEXT name_raw PK
   INTEGER exercise_id
+}
+"import_name_ignored" {
+  TEXT name_raw PK
+}
+"user_exercises" {
+  INTEGER id
+  TEXT name
+  TEXT muscle_bucket
+  TEXT notes
+  REAL created_at
 }
 ```
 
