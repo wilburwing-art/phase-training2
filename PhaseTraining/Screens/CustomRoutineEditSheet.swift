@@ -281,7 +281,7 @@ struct CustomRoutineEditSheet: View {
                 Button(role: .destructive) {
                     removeFromSuperset(id: exercise.wrappedValue.id)
                 } label: {
-                    Label("Remove from superset", systemImage: "link.badge.minus")
+                    Label("Remove from superset", systemImage: "minus.circle")
                 }
             }
         }

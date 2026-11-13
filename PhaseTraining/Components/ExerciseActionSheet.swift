@@ -31,6 +31,13 @@ struct ExerciseActionSheet: View {
     var onShowDetails: (() -> Void)? = nil
     var onShowHistory: (() -> Void)? = nil
     var onShowReplace: (() -> Void)? = nil
+    /// Name of the row drawn after this one. Set it together with
+    /// `onSupersetWithNext` to offer the pairing; nil hides the row (last
+    /// row, or a screen whose list has no superset groups).
+    var supersetNextName: String? = nil
+    var onSupersetWithNext: (() -> Void)? = nil
+    /// Non-nil only when this row is already in a superset.
+    var onRemoveFromSuperset: (() -> Void)? = nil
     var onDelete: (() -> Void)? = nil
 
     @EnvironmentObject private var memoryStore: MemoryStore
@@ -87,6 +94,22 @@ struct ExerciseActionSheet: View {
                                 dismiss()
                                 onShowReplace()
                             }
+                            divider
+                        }
+                        if let supersetNextName, let onSupersetWithNext {
+                            row(icon: "link", label: "Superset with \(supersetNextName)") {
+                                dismiss()
+                                onSupersetWithNext()
+                            }
+                            .accessibilityIdentifier("exercise-action-superset-next")
+                            divider
+                        }
+                        if let onRemoveFromSuperset {
+                            row(icon: "minus.circle", label: "Remove from superset") {
+                                dismiss()
+                                onRemoveFromSuperset()
+                            }
+                            .accessibilityIdentifier("exercise-action-superset-remove")
                             divider
                         }
                         // The two affinity rows show the running score so a

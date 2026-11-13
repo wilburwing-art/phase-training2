@@ -1377,30 +1377,6 @@ final class CoachDatabase {
         return out
     } }
 
-    /// Union of required equipment slugs across every exercise in a bundled
-    /// routine. Used to vet a routine before recommending it to a user with
-    /// a constrained equipment set.
-    func requiredEquipmentSlugs(forRoutineId routineId: Int) -> Set<String> { withLock {
-        guard let db else { return [] }
-        let sql = """
-        SELECT DISTINCT eq.slug
-        FROM routine_exercises re
-        JOIN exercise_equipment ee ON ee.exercise_id = re.exercise_id
-        JOIN equipment eq ON eq.id = ee.equipment_id
-        WHERE re.routine_id = ?
-          AND ee.is_required = 1
-        """
-        var stmt: OpaquePointer?
-        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
-        defer { sqlite3_finalize(stmt) }
-        sqlite3_bind_int64(stmt, 1, Int64(routineId))
-        var result: Set<String> = []
-        while sqlite3_step(stmt) == SQLITE_ROW {
-            if let slug = text(stmt, 0) { result.insert(slug) }
-        }
-        return result
-    } }
-
     func exercises(forRoutineId routineId: Int) -> [RoutineExercise] { withLock {
         guard let db else { return [] }
         let sql = """

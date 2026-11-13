@@ -18,7 +18,7 @@
 //
 // NOTE: `statedFields` must never enter `planInputsHash`. It does not affect
 // generation, and that hash is BOTH the auto-regen trigger and the
-// `deterministicPick` seed — presentation state in it would reshuffle the whole
+// generator's `hashSeed` — presentation state in it would reshuffle the whole
 // week for nothing. (That is the mistake the era axis's `"er:"` component was
 // making before it was deleted.)
 

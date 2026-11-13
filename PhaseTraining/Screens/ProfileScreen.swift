@@ -261,8 +261,13 @@ struct ProfileScreen: View {
                                         action: { presentingPaywall = true })
                         }
                         SettingsRow(label: "Data",
-                                    value: "Backup / Restore",
+                                    value: BackupStatus.rowValue(
+                                        lastExport: backup.lastBackupExport,
+                                        sessions: sessionStore.savedSessions),
                                     icon: "externaldrive",
+                                    valueTint: BackupStatus.needsNudge(
+                                        lastExport: backup.lastBackupExport,
+                                        sessions: sessionStore.savedSessions) ? .accent : .ink3,
                                     action: { presentingDataEditor = true })
                         SettingsRow(label: "Privacy Policy",
                                     value: "What the app reads and sends",
@@ -394,7 +399,9 @@ struct ProfileScreen: View {
         // child-sheet dismissal.
         .sheet(isPresented: $backup.presentingShare) {
             if let url = backup.exportURL {
-                ShareSheet(items: [url])
+                ShareSheet(items: [url]) { completed in
+                    backup.shareFinished(completed: completed)
+                }
             }
         }
         .fileImporter(

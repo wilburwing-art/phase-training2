@@ -26,6 +26,16 @@ final class BackupCoordinator: ObservableObject {
     // destructive overwrite. Restore only runs after explicit confirmation.
     @Published var pendingRestore: BackupEnvelope? = nil
     @Published var confirmingRestore = false
+    /// When a full backup last left the app through the share sheet. Nil
+    /// until the first one. Drives the Profile Data row.
+    @Published private(set) var lastBackupExport: Date?
+    /// The share sheet also carries the CSV export, which cannot restore the
+    /// app and so does not count as a backup.
+    private var sharingBackup = false
+
+    init(defaults: UserDefaults = .standard) {
+        lastBackupExport = BackupStatus.lastExport(defaults: defaults)
+    }
 
     // MARK: - Backup / restore
 
@@ -35,6 +45,7 @@ final class BackupCoordinator: ObservableObject {
         do {
             exportURL = try WorkoutCSVExporter.writeTempFile(
                 WorkoutCSVExporter.csv(sessions: sessions, usesImperial: usesImperial))
+            sharingBackup = false
             presentingShare = true
         } catch {
             backupError = "Couldn't write the CSV: \(error.localizedDescription)"
@@ -46,10 +57,20 @@ final class BackupCoordinator: ObservableObject {
             let envelope = BackupManager.snapshot(defaults: defaults, userDB: userDB)
             let url = try BackupManager.writeTempFile(envelope)
             exportURL = url
+            sharingBackup = true
             presentingShare = true
         } catch {
             backupError = (error as? BackupError)?.errorDescription ?? error.localizedDescription
         }
+    }
+
+    /// The share sheet closed. A backup the user saved or sent somewhere
+    /// stamps the export date; a cancelled share and a CSV export do not.
+    func shareFinished(completed: Bool, defaults: UserDefaults = .standard, now: Date = Date()) {
+        defer { sharingBackup = false }
+        guard completed, sharingBackup else { return }
+        BackupStatus.recordExport(at: now, defaults: defaults)
+        lastBackupExport = now
     }
 
     func handleImport(_ result: Result<[URL], Error>) {
@@ -124,6 +145,7 @@ final class BackupCoordinator: ObservableObject {
         userDB: UserDatabase? = nil
     ) {
         MemoryStore.wipeAllUserData(defaults: defaults, userDB: userDB)
+        lastBackupExport = nil
         store.reset()
         sessionStore.clearInMemoryState()
         customStore.reload()
@@ -132,5 +154,53 @@ final class BackupCoordinator: ObservableObject {
         recentPicks.clear()
         conversation.resetAll()
         activityDetection.reset()
+    }
+}
+
+// MARK: - Backup status
+
+/// When the last backup was exported and how much has been logged since.
+/// The date lives in UserDefaults under a `pt_` key, so "Erase all data"
+/// clears it. `BackupManager.snapshot` does not read the key, so a backup
+/// file never carries its own export date.
+enum BackupStatus {
+    static let lastExportKey = "pt_last_backup_export_at"
+    /// Workouts logged since the last export before the Data row asks for one.
+    static let nudgeThreshold = 10
+
+    static func lastExport(defaults: UserDefaults = .standard) -> Date? {
+        guard let stamp = defaults.object(forKey: lastExportKey) as? Double else { return nil }
+        return Date(timeIntervalSince1970: stamp)
+    }
+
+    static func recordExport(at date: Date = Date(), defaults: UserDefaults = .standard) {
+        defaults.set(date.timeIntervalSince1970, forKey: lastExportKey)
+    }
+
+    /// Workouts finished after `lastExport`; all of them when there has been
+    /// no export.
+    static func sessionsSince(_ lastExport: Date?, sessions: [SavedSession]) -> Int {
+        guard let lastExport else { return sessions.count }
+        return sessions.filter { $0.endTime > lastExport }.count
+    }
+
+    static func needsNudge(lastExport: Date?, sessions: [SavedSession]) -> Bool {
+        sessionsSince(lastExport, sessions: sessions) >= nudgeThreshold
+    }
+
+    /// Value text for the Profile Data row.
+    static func rowValue(lastExport: Date?, sessions: [SavedSession],
+                         now: Date = Date(), calendar: Calendar = .current,
+                         locale: Locale = .current) -> String {
+        let pending = sessionsSince(lastExport, sessions: sessions)
+        if pending >= nudgeThreshold { return "\(pending) workouts not backed up" }
+        guard let lastExport else { return "Never exported" }
+        let sameYear = calendar.component(.year, from: lastExport) == calendar.component(.year, from: now)
+        var style = Date.FormatStyle.dateTime.month(.abbreviated).day()
+        if !sameYear { style = style.year() }
+        style.locale = locale
+        style.calendar = calendar
+        style.timeZone = calendar.timeZone
+        return "Exported \(lastExport.formatted(style))"
     }
 }

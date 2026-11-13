@@ -320,4 +320,76 @@ final class BackupCoordinatorTests: XCTestCase {
         XCTAssertFalse(c.restoreCompleted)
         XCTAssertEqual(MemoryStore(defaults: w.defaults).memory.age, 50)
     }
+
+    // MARK: - Last exported
+
+    private func session(endingAt t: TimeInterval) -> SavedSession {
+        let d = Date(timeIntervalSince1970: t)
+        return SavedSession(templateId: "a", name: "A", category: "c", startTime: d,
+                            exercises: [], feel: nil, note: nil, endTime: d, duration: 0)
+    }
+
+    func testACompletedBackupShareStampsTheExportDate() {
+        let w = world()
+        let c = BackupCoordinator(defaults: w.defaults)
+        XCTAssertNil(c.lastBackupExport)
+        c.exportBackup(defaults: w.defaults, userDB: w.db)
+        if let url = c.exportURL { tempFiles.append(url) }
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        c.shareFinished(completed: true, defaults: w.defaults, now: now)
+        XCTAssertEqual(c.lastBackupExport, now)
+        XCTAssertEqual(BackupStatus.lastExport(defaults: w.defaults), now)
+        XCTAssertEqual(BackupCoordinator(defaults: w.defaults).lastBackupExport, now)
+    }
+
+    func testACancelledShareAndACSVExportLeaveTheExportDateUnset() {
+        let w = world()
+        let c = BackupCoordinator(defaults: w.defaults)
+        c.exportBackup(defaults: w.defaults, userDB: w.db)
+        if let url = c.exportURL { tempFiles.append(url) }
+        c.shareFinished(completed: false, defaults: w.defaults)
+        XCTAssertNil(c.lastBackupExport)
+
+        c.exportWorkoutsCSV(sessions: [session(endingAt: 1_000)], usesImperial: true)
+        if let url = c.exportURL { tempFiles.append(url) }
+        c.shareFinished(completed: true, defaults: w.defaults)
+        XCTAssertNil(c.lastBackupExport)
+        XCTAssertNil(BackupStatus.lastExport(defaults: w.defaults))
+    }
+
+    func testTheBackupFileDoesNotCarryTheExportDateAndEraseClearsIt() {
+        let w = world()
+        BackupStatus.recordExport(at: Date(timeIntervalSince1970: 5_000), defaults: w.defaults)
+        let c = BackupCoordinator(defaults: w.defaults)
+        XCTAssertNotNil(c.lastBackupExport)
+        c.eraseAllData(store: w.memory, planStore: w.plan, sessionStore: w.sessions,
+                       customStore: w.custom, sportLogStore: w.sportLog,
+                       recentPicks: w.recentPicks, conversation: w.conversation,
+                       activityDetection: w.activity, defaults: w.defaults, userDB: w.db)
+        XCTAssertNil(c.lastBackupExport)
+        XCTAssertNil(BackupStatus.lastExport(defaults: w.defaults))
+    }
+
+    func testDataRowReadsNeverThenADateThenTheBacklog() {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        let locale = Locale(identifier: "en_US")
+        let now = Date(timeIntervalSince1970: 1_794_441_600)      // 2026-11-12 UTC
+        let exported = Date(timeIntervalSince1970: 1_793_664_000) // 2026-11-03 UTC
+        func row(_ last: Date?, _ sessions: [SavedSession]) -> String {
+            BackupStatus.rowValue(lastExport: last, sessions: sessions, now: now,
+                                  calendar: cal, locale: locale)
+        }
+        XCTAssertEqual(row(nil, []), "Never exported")
+        XCTAssertEqual(row(exported, []), "Exported Nov 3")
+        XCTAssertEqual(row(Date(timeIntervalSince1970: 1_762_128_000), []), "Exported Nov 3, 2025")
+
+        let before = (0..<12).map { session(endingAt: exported.timeIntervalSince1970 - Double($0 + 1) * 60) }
+        let after = (0..<10).map { session(endingAt: exported.timeIntervalSince1970 + Double($0 + 1) * 60) }
+        XCTAssertEqual(row(exported, before + Array(after.prefix(9))), "Exported Nov 3")
+        XCTAssertFalse(BackupStatus.needsNudge(lastExport: exported, sessions: before + Array(after.prefix(9))))
+        XCTAssertEqual(row(exported, before + after), "10 workouts not backed up")
+        XCTAssertTrue(BackupStatus.needsNudge(lastExport: exported, sessions: before + after))
+        XCTAssertEqual(row(nil, before), "12 workouts not backed up")
+    }
 }

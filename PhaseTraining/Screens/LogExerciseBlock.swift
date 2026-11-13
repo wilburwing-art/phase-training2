@@ -119,7 +119,7 @@ extension LogScreen {
                         SupersetEditing.remove(&session.exercises, at: exIdx,
                                                group: \.supersetGroup)
                     } label: {
-                        Label("Remove from superset", systemImage: "link.badge.minus")
+                        Label("Remove from superset", systemImage: "minus.circle")
                     }
                 }
             }

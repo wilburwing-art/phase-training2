@@ -74,4 +74,23 @@ final class SupersetEditingTests: XCTestCase {
         let labels = SupersetGrouping.layout(r) { $0.group }.map(\.label)
         XCTAssertEqual(labels, ["A1", "A2"])
     }
+
+    /// The day preview pairs `ExerciseTemplate` rows; the group has to reach
+    /// Log, where the pair is drawn as A1 and A2.
+    @MainActor
+    func test_pairMadeOnATemplateStartsInLogAsOneSuperset() {
+        let suite = "superset-editing-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        var exercises = ["Bench Press", "Barbell Row", "Plank"].enumerated().map { i, name in
+            ExerciseTemplate(id: "e\(i)", name: name, type: nil, unit: "lbs",
+                             targetSets: 3, targetReps: 8, rest: 90)
+        }
+        XCTAssertTrue(SupersetEditing.pairWithNext(&exercises, at: 0, group: \.supersetGroup))
+        let template = WorkoutTemplate(id: "t", name: "T", category: "c", exercises: exercises)
+        let store = SessionStore(defaults: defaults, userDB: UserDatabase(path: ":memory:"))
+        let session = store.createSession(from: template)
+        let laidOut = SupersetGrouping.layout(session.exercises) { $0.supersetGroup }
+        XCTAssertEqual(laidOut.map(\.label), ["A1", "A2", nil])
+    }
 }

@@ -15,8 +15,8 @@ failures, 28.4% line coverage, Data layer 85.8%).
 - [x] **Coach in TestFlight (decided 2026-11-11: coach stays off until the app is ready).** `release.yml:61` defaults to beta, which blanks the gateway token, yet onboarding consent, the Profile coach toggle and `InsightGenerator` never check `CoachEntitlement.coachAvailable`. Testers enable a coach that cannot send. Decide whether testers get the coach; the guard in Phase 1 is right either way.
 - [ ] **Pricing and the paid line.** `proRequired = false` everywhere, product IDs are placeholders, StoreKit config says $2.99/mo and $24.99/yr. The AI and periodization apps list $12.99 to $34.99/mo. Decide what is paid before wiring products.
 - [ ] **Physiology reader.** Nightly HRV, resting HR and sleep capture works end to end and nothing reads it. The 2026-10-24 twin review that gates the reader has no recorded outcome. Record it or set a new date. Competitors JuggernautAI, TrainHeroic and Pedestal all sell readiness adjustment.
-- [ ] **Dead or unwired logic.** `Planner.pickRoutine` (0/79 lines) and `Planner.applyFeedbackBias` (a wrapper over the live `applyRecentSignalBias`) have no caller. `AutoregulationEngine` output lands only in notes no screen shows. Wire or delete each.
-- [ ] **Snowboarding.** "Snowboarding" and "Skiing / Snowboarding" are separate sports; only the second gets Discipline, Support sport and the season engine. Pick the intended behaviour.
+- [ ] **Dead or unwired logic (part decided 2026-11-12: delete `Planner.pickRoutine` and `Planner.applyFeedbackBias`, both deleted the same day with their private filter helpers and `CoachDatabase.requiredEquipmentSlugs(forRoutineId:)`; `AutoregulationEngine` still open).** `Planner.pickRoutine` (0/79 lines) and `Planner.applyFeedbackBias` (a wrapper over the live `applyRecentSignalBias`) have no caller. `AutoregulationEngine` output lands only in notes no screen shows. Wire or delete each.
+- [x] **Snowboarding (decided 2026-11-11, 1A in Phase 3b: snowboarding uses the ski rules).** "Snowboarding" and "Skiing / Snowboarding" are separate sports; only the second gets Discipline, Support sport and the season engine. Pick the intended behaviour.
 - [ ] **Deload suggestion.** Does the earlier no-auto-deload decision still stand? If so, a one-tap suggestion card after three build weeks is still open (6 to 8 h).
 
 ## Phase 1: quick fixes (one build, about 1.5 days)
@@ -94,6 +94,26 @@ capped at 45 minutes, and its complement days inherit it. Decisions made
 - [x] Rebuild-role mismatch: CNS balance, the arc deload and skip-streak de-emphasis turn lift days into rest after generation, so a later rebuild assigns sport and complement roles from the wrong count. Move them to regenerate the week with the changed inputs, as the rest-day reserve now does.
 - [ ] Content: in-season routines for mountaineering, hiking-trekking and thru-hiking (0 today) and a pre-season routine for trail running (0 today). Until then the selector serves another phase's routine.
 
+### Phase 3b content, the plan (decided 2026-11-12)
+
+Problem: four sport and phase cells have no servable routine, so `AuthoredRoutineSelector` falls back to any phase. An in-season mountaineer gets base or pre-season volume in the weeks they also climb. Checked in coach.db 2026-11-12: mountaineering and thru-hiking have 0 `maintenance` routines; hiking-trekking has one (#81, goal `mobility`) that the full-session filter excludes; trail running has 0 `build` routines.
+
+Owner decisions: distil from the MTI and Uphill Athlete archive (training-kb: "Mountain Athlete In-Season Flex", "Thru Hike Training Plan", "Mountaineering & Hiking Prep"), with the September credit line ("...; movement selection adapted by Phase Training (date)").
+
+Done when:
+- each of the four cells has 2 routines (8 total), so a two-lift week does not repeat one session;
+- a test asserts every plannable sport has at least one servable routine in every phase;
+- `AuthoredRoutineTests` passes and a generated in-season mountaineering week names the new routines.
+
+Out of scope: new exercises (they need generated images), endurance or hike days, selector changes, thickening the existing routines.
+
+Steps (about 4 to 5 h, an estimate made without reading the source sessions):
+1. Pull the source sessions from training-kb and draft the 8 routines as a table. Stop for the owner's OK.
+2. `scripts/db/distill_inseason_outdoor.py` on the `distill_mtb_preseason.py` template, catalog exercises only, `phase` = `maintenance` (in-season) or `build` (trail running pre-season), goal outside the excluded set, 25 minutes or longer.
+3. `python3 scripts/db/build_db.py`; commit the JSON and both db copies together.
+4. Coverage test, then `-only-testing:PhaseTrainingTests/AuthoredRoutineTests`.
+5. Tick the box above.
+
 ## Phase 4: signals that do nothing (about 3 days)
 
 - [x] Check-in pain is hard-coded false (`SorenessCheckInSheet.swift:211`), so four readers never fire. Add the toggle (2 h).
@@ -114,21 +134,21 @@ capped at 45 minutes, and its complement days inherit it. Decisions made
 
 - [ ] Lock Screen rest timer (Live Activity). Strong, Hevy, JuggernautAI, Boostcamp and Lattice have one; Phase Training has a notification only. Then a Today widget (14 to 20 h, plus 6).
 - [x] Repeat a session and save it as a routine from History and Complete (4 to 5 h). Done 2026-11-12: Repeat and Save as routine on an expanded History row, Save as routine on Complete. Native sessions only. Repeat is hidden in the exercise drill-in History, which sits on another sheet.
-- [ ] Superset with next, from Log and the day preview (3 h). Log half done 2026-11-12 (exercise long-press menu: "Superset with <next>" and "Remove from superset", `SupersetEditing`). The day preview half is open: its rows open `ExerciseActionSheet`, which needs two new rows.
+- [x] Superset with next, from Log and the day preview (3 h). Done 2026-11-12: Log has it on the exercise long-press menu, the day preview on `ExerciseActionSheet` ("Superset with <next>" and "Remove from superset", both through `SupersetEditing`). In the preview the group now survives an edit, a replace and Save to library. Today's own exercise list does not offer it.
 - [x] History search and tag filter (3 to 4 h). Done 2026-11-12: search over session name, exercise names, notes, tag labels and month or year; chips for the tags that occur.
-- [ ] "Last exported" on the Data row plus a nudge, then a weekly iCloud Drive write (3 h, then 8 h).
+- [ ] "Last exported" on the Data row plus a nudge, then a weekly iCloud Drive write (3 h, then 8 h). First half done 2026-11-12: the Profile Data row reads "Never exported", "Exported Nov 3", or "N workouts not backed up" in the accent colour at 10 or more since the last export (`BackupStatus`). The date is stamped when the share sheet reports a finished activity, so a cancelled share and the CSV export leave it alone. The iCloud Drive write is open and needs the owner call on the container entitlement.
 - [ ] Custom exercises in `user.db`, never picked by the generator (10 to 14 h).
 - [ ] Set types: drop and failure alongside warmup (8 to 10 h).
 
 ### Phase 6, what is left and in what order (planned 2026-11-12)
 
-1. **Superset in the day preview** (1 h). Two rows in `ExerciseActionSheet`, calling `SupersetEditing` on the template's exercises. Done when a pair made in the preview starts in Log as A1 and A2.
-2. **"Last exported" on the Data row** (3 h). Store the export date when `BackupCoordinator` hands the envelope to the share sheet; show it on the Profile Data row; nudge after 10 new sessions since the last export. Done when the row reads a date after an export and "Never" before one. The weekly iCloud Drive write (8 h) is a second step and needs an owner call on the iCloud container entitlement.
-3. **Set types** (8 to 10 h). Replace `LoggedSet.isWarmup` with a `setType` (normal, warmup, drop, failure) decoded tolerantly from old payloads, a `user.db` migration, and the watch payload, which shares `Shared/Models/SessionModels.swift`. Open question for the owner: do drop sets count toward PRs? The report says no.
+1. Done 2026-11-12. **Superset in the day preview** (1 h). Two rows in `ExerciseActionSheet`, calling `SupersetEditing` on the template's exercises. Done when a pair made in the preview starts in Log as A1 and A2.
+2. Done 2026-11-12 except the iCloud write. **"Last exported" on the Data row** (3 h). Store the export date when `BackupCoordinator` hands the envelope to the share sheet; show it on the Profile Data row; nudge after 10 new sessions since the last export. Done when the row reads a date after an export and "Never" before one. The weekly iCloud Drive write (8 h) is a second step and needs an owner call on the iCloud container entitlement.
+3. **Set types** (8 to 10 h). Replace `LoggedSet.isWarmup` with a `setType` (normal, warmup, drop, failure) decoded tolerantly from old payloads, a `user.db` migration, and the watch payload, which shares `Shared/Models/SessionModels.swift`. Decided 2026-11-12: drop sets do not count toward PRs.
 4. **Custom exercises** (10 to 14 h). A `user_exercises` table merged into picker results only. Done when a custom exercise can be added from the picker's empty state, logged, shown in History and exported, and a generator sweep never picks one.
 5. **Lock Screen rest timer** (14 to 20 h, then 6 for a Today widget). Last because it is the only item that adds a target: a widget extension in `Project.yml`, an App ID and provisioning profile in the portal, and a new profile secret in `release.yml`, the same portal work the watch target needed. Simulators show Live Activities, so the build can be checked before the portal step.
 
-Items 1 and 2 fit one build with the three finished today. Items 3 and 4 both change `user.db` and should not land in the same build as each other.
+Items 1 and 2 fit one build (172) with the three finished today, the two planner deletions and the Phase 3b content. Items 3 and 4 both change `user.db` and should not land in the same build as each other.
 
 ## Later, not scheduled
 

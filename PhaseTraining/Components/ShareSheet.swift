@@ -11,9 +11,15 @@ import SwiftUI
 /// via the UIKit bridge.
 struct ShareSheet: UIViewControllerRepresentable {
     let items: [Any]
+    /// Called once when the sheet closes. True when the user finished an
+    /// activity (Save to Files, AirDrop, Mail); false when they cancelled.
+    var onComplete: ((Bool) -> Void)? = nil
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
+        let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
+        let onComplete = onComplete
+        controller.completionWithItemsHandler = { _, completed, _, _ in onComplete?(completed) }
+        return controller
     }
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}

@@ -115,7 +115,13 @@ struct DayWorkoutPreviewSheet: View {
                 ExerciseDetailSheet(exercise: ex)
             }
             .sheet(item: $actionSheetExIdx.exerciseSheetItem) { wrapped in
-                let exerciseName = template?.exercises[wrapped.index].name ?? "Exercise"
+                let exercises = template?.exercises ?? []
+                let exerciseName = exercises.indices.contains(wrapped.index)
+                    ? exercises[wrapped.index].name : "Exercise"
+                let nextIdx = SupersetEditing.nextIndex(
+                    exercises, after: wrapped.index, groupOf: { $0.supersetGroup })
+                let inSuperset = exercises.indices.contains(wrapped.index)
+                    && exercises[wrapped.index].supersetGroup != nil
                 ExerciseActionSheet(
                     exerciseName: exerciseName,
                     onEdit: { editingExIdx = wrapped.index },
@@ -124,6 +130,9 @@ struct DayWorkoutPreviewSheet: View {
                     },
                     onShowHistory: { historyFilterExerciseName = exerciseName },
                     onShowReplace: { swappingExIdx = wrapped.index },
+                    supersetNextName: nextIdx.map { exercises[$0].name },
+                    onSupersetWithNext: nextIdx == nil ? nil : { supersetWithNext(at: wrapped.index) },
+                    onRemoveFromSuperset: inSuperset ? { removeFromSuperset(at: wrapped.index) } : nil,
                     onDelete: { deleteExercise(at: wrapped.index) }
                 )
             }
@@ -315,6 +324,25 @@ struct DayWorkoutPreviewSheet: View {
         )
     }
 
+    /// Pair the exercise at `idx` with the row drawn after it. The group
+    /// rides the template into `SessionStore.createSession`, so the pair
+    /// starts in Log as A1 and A2.
+    private func supersetWithNext(at idx: Int) {
+        guard let tmpl = template else { return }
+        var exercises = tmpl.exercises
+        guard SupersetEditing.pairWithNext(&exercises, at: idx, group: \.supersetGroup) else { return }
+        template = WorkoutTemplate(id: tmpl.id, name: tmpl.name,
+                                   category: tmpl.category, exercises: exercises)
+    }
+
+    private func removeFromSuperset(at idx: Int) {
+        guard let tmpl = template else { return }
+        var exercises = tmpl.exercises
+        SupersetEditing.remove(&exercises, at: idx, group: \.supersetGroup)
+        template = WorkoutTemplate(id: tmpl.id, name: tmpl.name,
+                                   category: tmpl.category, exercises: exercises)
+    }
+
     /// Trailing row inside the exercise card — opens the picker with no
     /// pre-filter and appends the picked exercise to the template.
     private var addExerciseRow: some View {
@@ -446,7 +474,8 @@ struct DayWorkoutPreviewSheet: View {
             targetReps: reps,
             rest: rest,
             rpe: old.rpe,
-            tempo: old.tempo
+            tempo: old.tempo,
+            supersetGroup: old.supersetGroup
         )
         template = WorkoutTemplate(
             id: tmpl.id,
@@ -467,7 +496,8 @@ struct DayWorkoutPreviewSheet: View {
             unit: old.unit,
             targetSets: picked.defaultSets ?? old.targetSets,
             targetReps: Self.parseRepsLeading(picked.defaultReps) ?? old.targetReps,
-            rest: Self.parseRestSeconds(picked.defaultRest) ?? old.rest
+            rest: Self.parseRestSeconds(picked.defaultRest) ?? old.rest,
+            supersetGroup: old.supersetGroup
         )
         template = WorkoutTemplate(
             id: tmpl.id,
@@ -502,7 +532,8 @@ struct DayWorkoutPreviewSheet: View {
                     sets: ex.targetSets,
                     reps: String(ex.targetReps),
                     rest: "\(ex.rest)s",
-                    notes: nil
+                    notes: nil,
+                    supersetGroup: ex.supersetGroup
                 )
             },
             createdAt: Date()

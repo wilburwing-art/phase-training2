@@ -13,6 +13,9 @@ struct SettingsRow: View {
     let label: String
     let value: String
     var icon: String? = nil
+    /// Colour of the value text. The Data row uses the accent when a backup
+    /// is overdue.
+    var valueTint: Color = .ink3
     let action: () -> Void
 
     var body: some View {
@@ -30,7 +33,7 @@ struct SettingsRow: View {
                 Spacer(minLength: 8)
                 Text(value)
                     .styled(.body)
-                    .foregroundStyle(Color.ink3)
+                    .foregroundStyle(valueTint)
                     .multilineTextAlignment(.trailing)
                     .lineLimit(1)
                     .truncationMode(.tail)
