@@ -17,12 +17,23 @@ final class WorkingVolumeTests: XCTestCase {
 
     func test_countsDoneWorkingSetsOnly() {
         let s = session([ex("lbs", [
-            LoggedSet(num: 1, weight: "95", reps: "5", rpe: "", done: true, isWarmup: true),
+            LoggedSet(num: 1, weight: "95", reps: "5", rpe: "", done: true, setType: .warmup),
             LoggedSet(num: 2, weight: "135", reps: "5", rpe: "", done: true),
             LoggedSet(num: 3, weight: "135", reps: "5", rpe: "", done: true),
             LoggedSet(num: 4, weight: "135", reps: "5", rpe: "", done: false),
         ])])
         XCTAssertEqual(s.workingVolume(usesImperial: true), 1350)
+    }
+
+    func test_dropAndFailureSetsAddVolume_warmupDoesNot() {
+        let s = session([ex("lbs", [
+            LoggedSet(num: 1, weight: "95", reps: "5", rpe: "", done: true, setType: .warmup),
+            LoggedSet(num: 2, weight: "135", reps: "5", rpe: "", done: true),
+            LoggedSet(num: 3, weight: "100", reps: "10", rpe: "", done: true, setType: .drop),
+            LoggedSet(num: 4, weight: "135", reps: "4", rpe: "", done: true, setType: .failure),
+        ])])
+        let expected: Double = 675 + 1000 + 540
+        XCTAssertEqual(s.workingVolume(usesImperial: true), expected)
     }
 
     func test_bodyweightCountsAddedLoadOnly() {

@@ -24,7 +24,7 @@ final class LoggedSetRIRTests: XCTestCase {
     }
 
     func test_rir_roundTripsThroughJSON() throws {
-        let original = LoggedSet(num: 2, weight: "185", reps: "5", rpe: "9", done: true, isWarmup: false, rir: "2")
+        let original = LoggedSet(num: 2, weight: "185", reps: "5", rpe: "9", done: true, rir: "2")
         let data = try encoder().encode(original)
         let decoded = try decoder().decode(LoggedSet.self, from: data)
         XCTAssertEqual(decoded.rir, "2")

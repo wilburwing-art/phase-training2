@@ -164,6 +164,9 @@ final class ExploreSessionTests: XCTestCase {
             }
             // And v8's session tags.
             XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE sessions DROP COLUMN session_tags", nil, nil, nil), SQLITE_OK)
+            // And v10's set_type, which replaced is_warmup.
+            XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE session_sets DROP COLUMN set_type", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE session_sets ADD COLUMN is_warmup INTEGER NOT NULL DEFAULT 0", nil, nil, nil), SQLITE_OK)
             XCTAssertEqual(sqlite3_exec(db, "PRAGMA user_version = 1", nil, nil, nil), SQLITE_OK)
             XCTAssertEqual(sqlite3_exec(db, """
                 INSERT INTO user_routines (id, name, created_at, updated_at) VALUES ('keep-me', 'Keep', 0, 0)

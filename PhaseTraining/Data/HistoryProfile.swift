@@ -171,7 +171,7 @@ struct HistoryProfile: Equatable {
             for (e, ex) in session.exercises.enumerated() {
                 let key = ExerciseKey.id(for: ex.name) ?? ExerciseKey.raw(ex.name)
                 rawNames[key, default: []].insert(ExerciseKey.raw(ex.name))
-                for (s, set) in ex.sets.enumerated() where set.done && !set.isWarmup {
+                for (s, set) in ex.sets.enumerated() where set.done && set.countsForStrength {
                     guard let w = set.weightValue, w > 0, let r = set.repsValue, r > 0 else { continue }
                     entries.append(Entry(id: "\(session.id)-\(e)-\(s)", key: key, name: ex.name,
                                          date: session.startTime, weightLb: w, reps: r,

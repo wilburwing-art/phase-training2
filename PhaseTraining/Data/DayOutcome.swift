@@ -109,7 +109,7 @@ extension DayOutcome {
             ?? (plannedDay?.generatedWorkout?.authoredRoutineId ?? plannedDay?.routineId)
 
         let completed = session.exercises.reduce(0) { total, ex in
-            total + ex.sets.filter { $0.done && !$0.isWarmup }.count
+            total + ex.sets.filter { $0.done && $0.isWorkingSet }.count
         }
 
         var outcome = DayOutcome(
@@ -150,7 +150,7 @@ extension DayOutcome {
                         outcome.dropped.append(gex.name)
                         continue
                     }
-                    let didWork = logged.sets.contains { $0.done && !$0.isWarmup }
+                    let didWork = logged.sets.contains { $0.done && $0.isWorkingSet }
                     if !didWork {
                         outcome.dropped.append(gex.name)
                     } else if logged.name.caseInsensitiveCompare(gex.name) != .orderedSame {
@@ -159,7 +159,7 @@ extension DayOutcome {
                 }
                 outcome.added = session.exercises
                     .filter { !plannedIds.contains($0.id) }
-                    .filter { $0.sets.contains { $0.done && !$0.isWarmup } }
+                    .filter { $0.sets.contains { $0.done && $0.isWorkingSet } }
                     .map(\.name)
                 let untouched = outcome.swaps.isEmpty && outcome.dropped.isEmpty
                     && outcome.added.isEmpty

@@ -72,7 +72,7 @@ extension SavedSession {
 extension LoggedExercise {
     /// Completed working sets, or the planned count when none were ticked.
     var workingSetCount: Int {
-        let done = sets.filter { $0.done && !$0.isWarmup }.count
+        let done = sets.filter { $0.done && $0.countsForStrength }.count
         return done > 0 ? done : max(1, targetSets)
     }
 
@@ -81,7 +81,7 @@ extension LoggedExercise {
     /// with a written prescription ("8s hold") keeps its planned count.
     var repsToCarry: Int {
         if repsLabel != nil { return targetReps }
-        let first = sets.first { $0.done && !$0.isWarmup }
+        let first = sets.first { $0.done && $0.countsForStrength }
         return first?.repsValue.flatMap { $0 > 0 ? $0 : nil } ?? targetReps
     }
 }

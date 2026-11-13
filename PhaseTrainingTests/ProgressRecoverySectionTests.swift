@@ -211,7 +211,7 @@ final class ProgressRecoverySectionTests: XCTestCase {
                     id: "bench", name: "Barbell Bench Press", type: nil, unit: "lbs",
                     targetSets: 1, targetReps: 5, rest: 90,
                     sets: [LoggedSet(num: 1, weight: "135", reps: "5",
-                                     rpe: "", done: true, isWarmup: false)],
+                                     rpe: "", done: true)],
                     prevSets: []
                 )
             ],

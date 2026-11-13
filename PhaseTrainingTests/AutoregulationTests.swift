@@ -114,7 +114,7 @@ final class AutoregulationTests: XCTestCase {
                         targetReps: 5, doneSets: 2, weight: 225, reps: 5)
         // A done warmup set must not count toward completion.
         s.exercises[0].sets.append(LoggedSet(num: 9, weight: "135", reps: "5",
-                                             rpe: "", done: true, isWarmup: true))
+                                             rpe: "", done: true, setType: .warmup))
         let hist = GeneratorContext.buildAttemptHistory(sessions: [s], now: d1)
         XCTAssertEqual(hist["squat"]?.first?.completion ?? 0, 2.0 / 3.0, accuracy: 0.0001)
     }

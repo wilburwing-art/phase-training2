@@ -28,7 +28,7 @@ extension PlanStore {
     func recordLoggedPicks(_ session: SavedSession) {
         let db = CoachDatabase.shared
         let ids = session.exercises
-            .filter { $0.sets.contains { $0.done && !$0.isWarmup } }
+            .filter { $0.sets.contains { $0.done && $0.isWorkingSet } }
             .compactMap { ex in
                 db.listExercises(search: ex.name)
                     .first { $0.name.caseInsensitiveCompare(ex.name) == .orderedSame }?.id

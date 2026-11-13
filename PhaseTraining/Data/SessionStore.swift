@@ -445,7 +445,7 @@ final class SessionStore: ObservableObject {
 
             // Last session's working sets only: its ramp rows are not the
             // targets for today's first working set.
-            let prevWorking = (prevEx?.sets ?? []).filter { !$0.isWarmup }
+            let prevWorking = (prevEx?.sets ?? []).filter { $0.countsForStrength }
             let working: [LoggedSet] = (0..<ex.targetSets).map { i in
                 let prevSet: LoggedSet? = prevWorking.indices.contains(i) ? prevWorking[i] : nil
                 if let hangLoad {
@@ -505,7 +505,7 @@ final class SessionStore: ObservableObject {
     /// Warm-up rows for a generated ramp: each step's reps, at its percent of
     /// the first working set's weight rounded to a loadable step (5 lb, 2.5 kg).
     /// A missing or unparsable working weight leaves the weight box empty. Rows
-    /// carry `isWarmup`, so PR, volume and e1RM math skip them.
+    /// carry `setType = .warmup`, so PR, volume and e1RM math skip them.
     static func warmUpRows(_ ramp: [WarmUpSet], firstWorkingWeight: String, unit: String) -> [LoggedSet] {
         let working = Double(firstWorkingWeight.trimmingCharacters(in: .whitespaces)).flatMap { $0 > 0 ? $0 : nil }
         let step = unit.lowercased() == "kg" ? 2.5 : 5.0
@@ -515,7 +515,7 @@ final class SessionStore: ObservableObject {
                 let loadable = max(step, (working * Double(w.loadPctOfWorking) / 100 / step).rounded() * step)
                 weight = weightString(loadable)
             }
-            return LoggedSet(num: 0, weight: weight, reps: String(w.reps), rpe: "", done: false, isWarmup: true)
+            return LoggedSet(num: 0, weight: weight, reps: String(w.reps), rpe: "", done: false, setType: .warmup)
         }
     }
 
@@ -645,7 +645,7 @@ final class SessionStore: ObservableObject {
         var emitted: Set<String> = []
         for ex in exercises {
             // Warmup sets excluded — never count as PRs.
-            for set in ex.sets where set.done && !set.isWarmup {
+            for set in ex.sets where set.done && set.countsForStrength {
                 let reps = set.repsValue ?? 0
                 let weight = set.weightValue ?? 0
                 guard reps > 0, weight > 0 else { continue }

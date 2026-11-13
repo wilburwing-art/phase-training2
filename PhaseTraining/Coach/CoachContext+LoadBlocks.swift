@@ -62,7 +62,7 @@ extension CoachContext {
     /// (weight × reps per set, top RPE) so it can decide whether to push
     /// or hold each lift today.
     ///
-    /// Working sets only — warmups + un-done sets are filtered out.
+    /// Working sets only — warmups, drop sets and un-done sets are filtered out.
     /// Sessions older than 14 days are skipped (signal stales fast).
     /// Compact format: weights collapse when constant ("185 × 5,5,5,4,3"),
     /// expand when varied ("185×5, 190×3, 195×1").
@@ -81,7 +81,7 @@ extension CoachContext {
         for session in recent {
             var lines: [String] = []
             for ex in session.exercises {
-                let workingSets = ex.sets.filter { $0.done && !$0.isWarmup }
+                let workingSets = ex.sets.filter { $0.done && $0.countsForStrength }
                 guard !workingSets.isEmpty else { continue }
                 // T2-9: exercise names are user-authorable (ad-hoc adds,
                 // custom routines) and reached the prompt raw.

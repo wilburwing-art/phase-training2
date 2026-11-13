@@ -91,7 +91,7 @@ final class ProgressionSuggestionTests: XCTestCase {
     // MARK: - priorPerformance extraction (pyramid / top-set fix)
 
     private func set(_ weight: String, _ reps: String, done: Bool = true, warmup: Bool = false) -> LoggedSet {
-        LoggedSet(num: 1, weight: weight, reps: reps, rpe: "", done: done, isWarmup: warmup)
+        LoggedSet(num: 1, weight: weight, reps: reps, rpe: "", done: done, setType: warmup ? .warmup : .normal)
     }
 
     func test_priorPerformance_pyramidPicksHeaviestSetThatMetTarget() {
@@ -120,6 +120,13 @@ final class ProgressionSuggestionTests: XCTestCase {
         let prior = ProgressionSuggestion.priorPerformance(from: prev, targetReps: 8)!
         XCTAssertEqual(prior.weight, 185)
         XCTAssertEqual(prior.repsAchieved, 5)  // the heaviest set's reps
+    }
+
+    func test_priorPerformance_dropSetIsNotThePriorTopSet() {
+        let drop = LoggedSet(num: 3, weight: "225", reps: "8", rpe: "", done: true, setType: .drop)
+        let prev = [set("185", "8"), set("185", "8"), drop]
+        let prior = ProgressionSuggestion.priorPerformance(from: prev, targetReps: 8)!
+        XCTAssertEqual(prior.weight, 185)
     }
 
     func test_priorPerformance_excludesWarmupsAndUndone() {

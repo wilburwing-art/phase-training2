@@ -79,8 +79,8 @@ final class CoachContextSnapshotDetailTests: XCTestCase {
                     id: "e3", name: "Bench", type: nil, unit: "lb",
                     targetSets: 5, targetReps: 5, rest: 90,
                     sets: [
-                        LoggedSet(num: 1, weight: "45", reps: "10", rpe: "", done: true, isWarmup: true),
-                        LoggedSet(num: 2, weight: "135", reps: "5", rpe: "6", done: true, isWarmup: true),
+                        LoggedSet(num: 1, weight: "45", reps: "10", rpe: "", done: true, setType: .warmup),
+                        LoggedSet(num: 2, weight: "135", reps: "5", rpe: "6", done: true, setType: .warmup),
                         LoggedSet(num: 3, weight: "185", reps: "5", rpe: "8", done: true),
                         LoggedSet(num: 4, weight: "185", reps: "5", rpe: "8", done: true),
                         LoggedSet(num: 5, weight: "185", reps: "5", rpe: "9", done: false)  // skipped

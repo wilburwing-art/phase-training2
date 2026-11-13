@@ -274,6 +274,13 @@ final class UserDatabase {
         // exercise id; survives clearing imports like import_name_map.
         (9, [
             "CREATE TABLE IF NOT EXISTS import_name_ignored (name_raw TEXT PRIMARY KEY)"
+        ]),
+        // v10 — set types (normal, warmup, drop, failure) replace the warmup flag.
+        // Backfill from is_warmup, then drop it so set_type is the only source.
+        (10, [
+            "ALTER TABLE session_sets ADD COLUMN set_type TEXT NOT NULL DEFAULT 'normal'",
+            "UPDATE session_sets SET set_type = 'warmup' WHERE is_warmup = 1",
+            "ALTER TABLE session_sets DROP COLUMN is_warmup"
         ])
     ]
 
@@ -288,9 +295,9 @@ final class UserDatabase {
         let current = currentUserVersion()
         // Legacy shim, pre-versioning installs only: builds before is_warmup
         // created session_sets without it, and v1's IF NOT EXISTS won't touch
-        // the existing table. Explicit column-existence check, run once on the
-        // 0 → 1 transition — replaces the old run-ALTER-every-launch-and-
-        // swallow-the-duplicate-error pattern.
+        // the existing table. v10's backfill reads is_warmup, so the column
+        // must exist first; v10 then drops it. Explicit column-existence check,
+        // run once on the 0 → 1 transition.
         if current == 0 { addWarmupColumnIfMissing() }
         for migration in Self.migrations where migration.version > current {
             if !apply(migration: migration) {
@@ -338,9 +345,9 @@ final class UserDatabase {
         return 0
     }
 
-    /// Add is_warmup to a pre-versioning session_sets that lacks it. A fresh
-    /// install never reaches the ALTER (the table is absent here; v1's CREATE
-    /// includes the column).
+    /// Add is_warmup to a pre-versioning session_sets that lacks it, because
+    /// v10's backfill reads it. A fresh install never reaches the ALTER (the
+    /// table is absent here; v1's CREATE includes the column).
     private func addWarmupColumnIfMissing() {
         guard let db else { return }
         var stmt: OpaquePointer?

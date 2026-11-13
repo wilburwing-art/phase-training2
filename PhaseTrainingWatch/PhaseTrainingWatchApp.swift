@@ -136,14 +136,14 @@ struct SetRow: View {
                     .foregroundStyle(set.done ? .green : .secondary)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Set \(set.num)")
+            .accessibilityLabel(set.setType == .normal ? "Set \(set.num)" : "\(set.setType.label) set \(set.num)")
             .accessibilityValue(set.done ? "done" : "not done")
             .accessibilityHint("Double tap to mark \(set.done ? "not done" : "done")")
             NavigationLink {
                 SetDetailView(exercise: exercise, set: set)
             } label: {
                 VStack(alignment: .leading) {
-                    Text("Set \(set.num)")
+                    Text(set.setType == .normal ? "Set \(set.num)" : "\(set.setType.label) · Set \(set.num)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text(SetDetailView.label(weight: set.weight, reps: set.reps, unit: exercise.displayUnit))

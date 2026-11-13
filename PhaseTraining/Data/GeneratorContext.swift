@@ -153,7 +153,7 @@ enum ExerciseKey {
 /// the one question progression needs: at the heaviest weight lifted, how
 /// many reps landed against how many were asked.
 struct LastAttempt: Equatable {
-    let weight: Double      // lb, heaviest completed non-warmup set
+    let weight: Double      // lb, heaviest completed normal or failure set
     let reps: Int           // best reps at that weight
     let targetReps: Int     // what the session asked for
     let date: Date
@@ -403,7 +403,7 @@ extension GeneratorContext {
     /// Newest-first. One Attempt per SESSION containing the exercise:
     /// completion = done working sets / target sets for that exercise in
     /// that session; reps = best reps at the heaviest completed weight.
-    /// Warmup sets excluded (matching the other history builders).
+    /// Warmup and drop sets excluded (matching the other history builders).
     /// Window: 4 weeks, matching the other history signals.
     static func buildAttemptHistory(sessions: [SavedSession],
                                     now: Date = Date()) -> [String: [AutoregulationEngine.Attempt]] {
@@ -415,7 +415,7 @@ extension GeneratorContext {
                 var doneSets = 0
                 var bestW = 0.0
                 var bestR = 0
-                for set in ex.sets where set.done && !set.isWarmup {
+                for set in ex.sets where set.done && set.countsForStrength {
                     doneSets += 1
                     let w = set.weightValue ?? 0
                     let r = set.repsValue ?? 0
@@ -445,7 +445,7 @@ extension GeneratorContext {
                 let key = ex.name.lowercased()
                 guard out[key] == nil else { continue }
                 var bestW = 0.0, bestR = 0
-                for set in ex.sets where set.done && !set.isWarmup {
+                for set in ex.sets where set.done && set.countsForStrength {
                     let w = set.weightValue ?? 0, r = set.repsValue ?? 0
                     guard w > 0, r > 0 else { continue }
                     if w > bestW || (w == bestW && r > bestR) { bestW = w; bestR = r }
@@ -478,7 +478,7 @@ extension GeneratorContext {
                 // loadless set as a rep-progression signal. A 0 logged on a
                 // loaded lift is missing data, not a bodyweight PR.
                 let bestReps = ex.sets
-                    .filter { $0.done && !$0.isWarmup && ($0.weightValue ?? 0) == 0 }
+                    .filter { $0.done && $0.countsForStrength && ($0.weightValue ?? 0) == 0 }
                     .compactMap(\.repsValue).max() ?? 0
                 guard bestReps > 0 else { continue }
                 ExerciseKey.store(PriorBest(weight: 0, reps: bestReps, date: session.startTime),
@@ -529,9 +529,9 @@ extension GeneratorContext {
             for ex in session.exercises {
                 let key = ex.name.lowercased()
                 var bestEpley = 0.0
-                // Warmup sets excluded — stagnation detection compares working
+                // Warmup and drop sets excluded — stagnation detection compares working
                 // 1RM-equivalents over time.
-                for set in ex.sets where set.done && !set.isWarmup {
+                for set in ex.sets where set.done && set.countsForStrength {
                     let w = set.weightValue ?? 0
                     let r = set.repsValue ?? 0
                     guard w > 0, r > 0 else { continue }

@@ -75,7 +75,7 @@ final class ProgressAggregatesCharacterizationTests: XCTestCase {
             for ex in s.exercises {
                 var bestThisSession: Double = 0
                 var hasWeightedSet = false
-                for set in ex.sets where set.done && !set.isWarmup {
+                for set in ex.sets where set.done && set.countsForStrength {
                     if let w = set.weightValue, w > 0 {
                         hasWeightedSet = true
                         if w > bestThisSession { bestThisSession = w }
@@ -83,7 +83,7 @@ final class ProgressAggregatesCharacterizationTests: XCTestCase {
                 }
                 if !hasWeightedSet { continue }
                 var entry = agg[ex.name] ?? Agg(unit: ex.displayUnit, setCount: 0, perSession: [])
-                entry.setCount += ex.sets.filter { $0.done && !$0.isWarmup }.count
+                entry.setCount += ex.sets.filter { $0.done && $0.isWorkingSet }.count
                 entry.perSession.append((s.startTime, bestThisSession))
                 agg[ex.name] = entry
             }
@@ -116,7 +116,7 @@ final class ProgressAggregatesCharacterizationTests: XCTestCase {
             id: name, name: name, type: nil, unit: unit,
             targetSets: sets.count, targetReps: 5, rest: 90,
             sets: sets.enumerated().map { i, s in
-                LoggedSet(num: i + 1, weight: s.weight, reps: s.reps, rpe: "", done: s.done, isWarmup: s.warmup)
+                LoggedSet(num: i + 1, weight: s.weight, reps: s.reps, rpe: "", done: s.done, setType: s.warmup ? .warmup : .normal)
             },
             prevSets: []
         )
@@ -253,7 +253,7 @@ final class ProgressAggregatesCharacterizationTests: XCTestCase {
         let legacyVolume: [Double] = legacyWeeklyBuckets(sessions: sessions, weeks: 8, now: now) { session, _ in
             session.exercises.reduce(0.0) { acc, ex in
                 acc + ex.sets.reduce(0.0) { a, set in
-                    guard set.done, !set.isWarmup,
+                    guard set.done, set.isWorkingSet,
                           let w = set.weightValue,
                           let r = set.repsValue else { return a }
                     return a + (w * Double(r))
@@ -264,7 +264,7 @@ final class ProgressAggregatesCharacterizationTests: XCTestCase {
 
         // volumeCard set-count fallback: verbatim legacy closure.
         let legacySetCounts: [Double] = legacyWeeklyBuckets(sessions: sessions, weeks: 8, now: now) { s, _ in
-            Double(s.exercises.reduce(0) { $0 + $1.sets.filter { $0.done && !$0.isWarmup }.count })
+            Double(s.exercises.reduce(0) { $0 + $1.sets.filter { $0.done && $0.isWorkingSet }.count })
         }
         XCTAssertEqual(agg.weeklySetCounts, legacySetCounts)
 

@@ -234,7 +234,7 @@ final class MuscleFreshnessTests: XCTestCase {
 
     func test_warmupSets_doNotFatigue() {
         var ex = loggedExercise(name: "Bench Press", done: true)
-        ex.sets[0].isWarmup = true
+        ex.sets[0].setType = .warmup
         let rows = MuscleFreshness.rows(
             from: [savedSession(exercises: [ex], hoursAgo: 1)],
             now: now,

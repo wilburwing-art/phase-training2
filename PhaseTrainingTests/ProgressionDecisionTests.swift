@@ -52,7 +52,7 @@ final class ProgressionDecisionTests: XCTestCase {
 
     func test_buildLastAttempt_takesHeaviestWorkingSetOfMostRecentSession() {
         func set(_ w: String, _ r: String, warm: Bool = false) -> LoggedSet {
-            LoggedSet(num: 1, weight: w, reps: r, rpe: "", done: true, isWarmup: warm)
+            LoggedSet(num: 1, weight: w, reps: r, rpe: "", done: true, setType: warm ? .warmup : .normal)
         }
         func ex(_ sets: [LoggedSet], target: Int) -> LoggedExercise {
             LoggedExercise(id: "sq", name: "Back Squat", type: "Barbell", unit: "lbs",

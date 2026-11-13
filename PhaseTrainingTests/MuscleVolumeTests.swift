@@ -102,8 +102,8 @@ final class MuscleVolumeTests: XCTestCase {
             id: "Bench Press", name: "Bench Press", type: nil, unit: "lbs",
             targetSets: 2, targetReps: 5, rest: 90,
             sets: [
-                LoggedSet(num: 1, weight: "95",  reps: "5", rpe: "", done: true, isWarmup: true),
-                LoggedSet(num: 2, weight: "225", reps: "5", rpe: "", done: true, isWarmup: false),
+                LoggedSet(num: 1, weight: "95",  reps: "5", rpe: "", done: true, setType: .warmup),
+                LoggedSet(num: 2, weight: "225", reps: "5", rpe: "", done: true),
             ],
             prevSets: []
         )

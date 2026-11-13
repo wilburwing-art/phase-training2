@@ -88,7 +88,7 @@ enum MuscleFreshness {
         return sessions.compactMap { session in
             var loads: [String: Double] = [:]
             for ex in session.exercises {
-                let sets = Double(ex.sets.filter { $0.done && !$0.isWarmup }.count)
+                let sets = Double(ex.sets.filter { $0.done && $0.isWorkingSet }.count)
                 guard sets > 0 else { continue }
                 let info: MuscleVolume.ResolvedExercise?
                 if let cached = resolved[ex.name] {

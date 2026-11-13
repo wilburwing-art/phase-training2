@@ -54,6 +54,17 @@ final class BackupManagerTests: XCTestCase {
             feel: nil, note: nil
         )
         sessionStore.saveActive(active)
+        let dropSession = SavedSession(
+            templateId: "t2", name: "Bench", category: "cat",
+            startTime: Date(timeIntervalSince1970: 1_780_000_000),
+            exercises: [LoggedExercise(
+                id: "bench", name: "Bench Press", type: nil, unit: "lbs", targetSets: 2, targetReps: 5, rest: 90,
+                sets: [LoggedSet(num: 1, weight: "135", reps: "5", rpe: "", done: true),
+                       LoggedSet(num: 2, weight: "100", reps: "10", rpe: "", done: true, setType: .drop)],
+                prevSets: [])],
+            feel: nil, note: nil, endTime: Date(timeIntervalSince1970: 1_780_003_600), duration: 3600
+        )
+        sessionStore.saveAll([dropSession])
 
         let customStore = CustomRoutineStore(defaults: original, userDB: originalDB)
         customStore.save(CustomRoutine(
@@ -81,6 +92,7 @@ final class BackupManagerTests: XCTestCase {
         XCTAssertEqual(restoredMemory.memory.equipment, [.dumbbells, .pullUpBar])
         XCTAssertTrue(restoredMemory.isOnboarded)
 
+        XCTAssertEqual(restoredSession.savedSessions.first?.exercises.first?.sets.map(\.setType), [.normal, .drop])
         XCTAssertNotNil(restoredSession.active)
         XCTAssertEqual(restoredSession.active?.templateId, "t1")
 

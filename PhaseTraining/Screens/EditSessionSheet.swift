@@ -126,20 +126,24 @@ struct EditSessionSheet: View {
             get: { draft.exercises[exIdx].sets[setIdx] },
             set: { draft.exercises[exIdx].sets[setIdx] = $0 }
         )
-        let isWarmup = setBinding.wrappedValue.isWarmup
+        let setType = setBinding.wrappedValue.setType
         return HStack(spacing: 8) {
-            // Warmup toggle — tap "W" pill flips isWarmup. Filled when set is
-            // a warmup; outlined otherwise. Excluding warmups from PR/volume/
-            // 1RM math is enforced downstream (UserDatabase, MuscleVolume,
-            // StrengthStandards, GeneratorContext).
-            Button {
-                draft.exercises[exIdx].sets[setIdx].isWarmup.toggle()
+            // Set type menu: the pill shows the type's letter (blank for a
+            // normal set) and opens a menu of normal, warmup, drop, failure.
+            Menu {
+                ForEach(SetType.allCases, id: \.self) { type in
+                    Button {
+                        draft.exercises[exIdx].sets[setIdx].setType = type
+                    } label: {
+                        Label(type.label, systemImage: type == setType ? "checkmark" : type.symbol)
+                    }
+                }
             } label: {
-                Text("W")
+                Text(setType.badge ?? "-")
                     .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(isWarmup ? Color.bg : Color.ink3)
+                    .foregroundStyle(setType == .normal ? Color.ink3 : Color.bg)
                     .frame(width: 18, height: 14)
-                    .background(isWarmup ? Color.ink3 : Color.clear)
+                    .background(setType == .normal ? Color.clear : (setType == .warmup ? Color.ink3 : Color.ink2))
                     .overlay(
                         Capsule().stroke(Color.line, lineWidth: 0.5)
                     )
@@ -148,7 +152,7 @@ struct EditSessionSheet: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(isWarmup ? "Unmark warmup" : "Mark as warmup")
+            .accessibilityLabel("Set type, \(setType.label)")
 
             Text("\(setBinding.wrappedValue.num)")
                 .styled(.monoXS)
@@ -165,7 +169,7 @@ struct EditSessionSheet: View {
                 .labelsHidden()
                 .scaleEffect(0.85)
         }
-        .opacity(isWarmup ? 0.6 : 1.0)
+        .opacity(setType == .warmup ? 0.6 : 1.0)
     }
 
     private func field(text: Binding<String>, placeholder: String, width: CGFloat, keyboard: UIKeyboardType) -> some View {

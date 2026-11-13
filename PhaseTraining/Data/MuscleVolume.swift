@@ -69,7 +69,7 @@ enum MuscleVolume {
 
                 // Warmup sets excluded — volume aggregation reflects working
                 // sets only. Warmups distort weekly volume comparisons.
-                for set in ex.sets where set.done && !set.isWarmup {
+                for set in ex.sets where set.done && set.isWorkingSet {
                     let reps = Double(set.repsValue ?? 0)
                     let weight = set.weightValue ?? 0
                     guard reps > 0, weight > 0 else { continue }

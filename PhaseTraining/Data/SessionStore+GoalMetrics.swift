@@ -26,7 +26,7 @@ extension SessionStore {
         for s in savedSessions {
             for ex in s.exercises {
                 var best1RM = 0.0
-                for set in ex.sets where set.done && !set.isWarmup {
+                for set in ex.sets where set.done && set.countsForStrength {
                     guard let w = set.weightValue, let r = set.repsValue,
                           w > 0, r > 0 else { continue }
                     let e = StrengthStandards.epley1RM(weight: w, reps: r)

@@ -15,7 +15,7 @@ final class SessionReuseTests: XCTestCase {
     }
 
     private func set(_ n: Int, _ w: String, _ r: String, done: Bool = true, warmup: Bool = false) -> LoggedSet {
-        LoggedSet(num: n, weight: w, reps: r, rpe: "", done: done, isWarmup: warmup)
+        LoggedSet(num: n, weight: w, reps: r, rpe: "", done: done, setType: warmup ? .warmup : .normal)
     }
 
     private func exercise(_ name: String, sets: [LoggedSet], targetSets: Int = 3, targetReps: Int = 8,

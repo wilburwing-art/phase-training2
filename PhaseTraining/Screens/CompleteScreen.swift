@@ -334,7 +334,7 @@ struct CompleteScreen: View {
             ForEach(Array(rows.enumerated()), id: \.element.id) { idx, ex in
                 let done = ex.sets.filter { $0.done }
                 let summary = done
-                    .map { "\($0.weight.isEmpty ? "-" : $0.weight)×\($0.reps.isEmpty ? "-" : $0.reps)" }
+                    .map { "\($0.setType.badge.map { "\($0) " } ?? "")\($0.weight.isEmpty ? "-" : $0.weight)×\($0.reps.isEmpty ? "-" : $0.reps)" }
                     .joined(separator: " · ")
                 let rpes = done.compactMap { Double($0.rpe) }
                 let rpeString: String? = {

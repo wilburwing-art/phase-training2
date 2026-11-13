@@ -196,8 +196,8 @@ final class SessionStorePRTests: XCTestCase {
             id: "Bench Press", name: "Bench Press", type: nil, unit: "lbs",
             targetSets: 2, targetReps: 5, rest: 90,
             sets: [
-                LoggedSet(num: 1, weight: "999", reps: "5", rpe: "", done: true, isWarmup: true),
-                LoggedSet(num: 2, weight: "135", reps: "5", rpe: "", done: true, isWarmup: false),
+                LoggedSet(num: 1, weight: "999", reps: "5", rpe: "", done: true, setType: .warmup),
+                LoggedSet(num: 2, weight: "135", reps: "5", rpe: "", done: true),
             ],
             prevSets: []
         )
@@ -215,8 +215,8 @@ final class SessionStorePRTests: XCTestCase {
             id: "Bench Press", name: "Bench Press", type: nil, unit: "lbs",
             targetSets: 2, targetReps: 5, rest: 90,
             sets: [
-                LoggedSet(num: 1, weight: "315", reps: "5", rpe: "", done: true, isWarmup: true),
-                LoggedSet(num: 2, weight: "135", reps: "5", rpe: "", done: true, isWarmup: false),
+                LoggedSet(num: 1, weight: "315", reps: "5", rpe: "", done: true, setType: .warmup),
+                LoggedSet(num: 2, weight: "135", reps: "5", rpe: "", done: true),
             ],
             prevSets: []
         )
@@ -233,5 +233,54 @@ final class SessionStorePRTests: XCTestCase {
         XCTAssertEqual(events.count, 1, "Only the working set should produce a PR event")
         XCTAssertEqual(events.first?.weight, 135,
                        "Historical-walk PR must come from the working set, not the warmup")
+    }
+
+    private func benchExercise(_ sets: [LoggedSet]) -> LoggedExercise {
+        LoggedExercise(id: "Bench Press", name: "Bench Press", type: nil, unit: "lbs",
+                       targetSets: sets.count, targetReps: 5, rest: 90, sets: sets, prevSets: [])
+    }
+
+    private func benchSession(_ sets: [LoggedSet]) -> SavedSession {
+        let now = Date()
+        return SavedSession(templateId: "t", name: "Bench Press", category: "",
+                            startTime: now.addingTimeInterval(-3600), exercises: [benchExercise(sets)],
+                            feel: nil, note: nil, endTime: now, duration: 3600)
+    }
+
+    func test_dropSet_neverCountsAsPR_inProgressFlow() {
+        let store = freshStore()
+        let logged = benchExercise([
+            LoggedSet(num: 1, weight: "135", reps: "5", rpe: "", done: true),
+            LoggedSet(num: 2, weight: "999", reps: "5", rpe: "", done: true, setType: .drop),
+        ])
+        let prs = store.personalRecords(in: [logged])
+        XCTAssertEqual(prs.count, 1)
+        XCTAssertEqual(prs.first?.weight, 135, "the heavier drop set must not set the PR")
+    }
+
+    func test_dropSet_neverCountsAsPR_acrossHistory() {
+        let defaults = UserDefaults(suiteName: "SessionStorePRTests.dropAcrossHistory")!
+        defaults.removePersistentDomain(forName: "SessionStorePRTests.dropAcrossHistory")
+        let db = UserDatabase(path: ":memory:")
+        let store = SessionStore(defaults: defaults, userDB: db)
+        store.saveAll([benchSession([
+            LoggedSet(num: 1, weight: "135", reps: "5", rpe: "", done: true),
+            LoggedSet(num: 2, weight: "315", reps: "5", rpe: "", done: true, setType: .drop),
+        ])])
+        let events = store.allPersonalRecords()
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events.first?.weight, 135)
+        XCTAssertEqual(db.bestWeightsByExerciseAndReps()["Bench Press"]?[5], 135)
+        XCTAssertEqual(db.qualifyingSetsForPRs().map(\.weight), [135])
+    }
+
+    func test_failureSet_countsAsPR() {
+        let store = freshStore()
+        let logged = benchExercise([
+            LoggedSet(num: 1, weight: "135", reps: "5", rpe: "", done: true),
+            LoggedSet(num: 2, weight: "145", reps: "4", rpe: "", done: true, setType: .failure),
+        ])
+        let prs = store.personalRecords(in: [logged])
+        XCTAssertEqual(prs.first { $0.reps == 4 }?.weight, 145, "the failure set is a PR at its own rep count")
     }
 }

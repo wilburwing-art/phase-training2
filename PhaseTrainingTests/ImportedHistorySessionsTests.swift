@@ -53,7 +53,7 @@ final class ImportedHistorySessionsTests: XCTestCase {
         let squatEx = try XCTUnwrap(sessions[1].exercises.first { $0.name == sq.name })
         XCTAssertEqual(squatEx.sets.map(\.weight), ["185", "185"])
         XCTAssertEqual(squatEx.unit, "lbs")
-        XCTAssertTrue(squatEx.sets.allSatisfy { $0.done && !$0.isWarmup })
+        XCTAssertTrue(squatEx.sets.allSatisfy { $0.done && $0.isWorkingSet })
         XCTAssertEqual(sessions[1].importSource, .fitbodCSV)
         XCTAssertEqual(sessions[1].name, "Fitbod workout")
         XCTAssertNil(native(sq.name, weight: "1", reps: "1", at: a).importSource)

@@ -36,7 +36,7 @@ final class DayOutcomeTests: XCTestCase {
         var out: [LoggedSet] = []
         for i in 0..<warmups {
             var s = LoggedSet(num: i + 1, weight: "45", reps: "10", rpe: "", done: true)
-            s.isWarmup = true
+            s.setType = .warmup
             out.append(s)
         }
         for i in 0..<total {

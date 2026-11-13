@@ -34,9 +34,9 @@ struct LogScreen: View {
     @ScaledMetric(relativeTo: .footnote) var setNumWidth: CGFloat = 22
     @ScaledMetric(relativeTo: .footnote) var labelWidth: CGFloat = 58
     @ScaledMetric(relativeTo: .footnote) var effortWidth: CGFloat = 52
-    @ScaledMetric(relativeTo: .caption2) var warmupPillWidth: CGFloat = 18
-    @ScaledMetric(relativeTo: .caption2) var warmupPillHeight: CGFloat = 14
-    @ScaledMetric(relativeTo: .caption2) var warmupPillFont: CGFloat = 9
+    @ScaledMetric(relativeTo: .caption2) var setTypePillWidth: CGFloat = 18
+    @ScaledMetric(relativeTo: .caption2) var setTypePillHeight: CGFloat = 14
+    @ScaledMetric(relativeTo: .caption2) var setTypePillFont: CGFloat = 9
 
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject private var memoryStore: MemoryStore
@@ -558,15 +558,14 @@ struct LogScreen: View {
         onFinish()
     }
 
-    /// Long-press menu hook on a set row. Flips the warmup flag, which is
-    /// the single source of truth for the PR / volume / 1RM exclusion path
-    /// (see UserDatabase.bestWeightsByExerciseAndReps, MuscleVolume,
-    /// StrengthStandards). UI re-renders pick up smaller font + dimmed
-    /// opacity + leading "W" pill automatically via the @State binding.
-    func toggleWarmup(exIdx: Int, setIdx: Int) {
+    /// Long-press menu hook on a set row. `setType` is the single source for
+    /// which reads count the set (see `SetType.isWorkingSet` and
+    /// `countsForStrength`).
+    func setSetType(exIdx: Int, setIdx: Int, _ type: SetType) {
         guard session.exercises.indices.contains(exIdx),
-              session.exercises[exIdx].sets.indices.contains(setIdx) else { return }
-        session.exercises[exIdx].sets[setIdx].isWarmup.toggle()
+              session.exercises[exIdx].sets.indices.contains(setIdx),
+              session.exercises[exIdx].sets[setIdx].setType != type else { return }
+        session.exercises[exIdx].sets[setIdx].setType = type
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 

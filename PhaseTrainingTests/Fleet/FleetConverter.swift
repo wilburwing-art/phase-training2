@@ -154,7 +154,7 @@ enum FleetConverter {
         let exercises = s.exercises.enumerated().map { i, ex -> LoggedExercise in
             let sets = ex.sets.enumerated().map { n, set in
                 LoggedSet(num: n + 1, weight: weightString(set.weight), reps: String(set.reps),
-                          rpe: "", done: set.done, isWarmup: set.warmup)
+                          rpe: "", done: set.done, setType: set.warmup ? .warmup : .normal)
             }
             let id = ex.plannedId.map { DayOutcome.plannedIdPrefix + $0 } ?? "fleet-added-\(dayKey)-\(i)"
             return LoggedExercise(id: id, name: ex.name, type: nil, unit: "lbs",

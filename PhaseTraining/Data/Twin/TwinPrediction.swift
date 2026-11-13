@@ -30,14 +30,14 @@ enum TwinInputs {
 
     static let poundsPerKilogram = 2.20462
 
-    /// Native sessions: done, non-warmup sets. Weight strings are pounds by
+    /// Native sessions: done normal and failure sets. Weight strings are pounds by
     /// the app's logging convention; an empty or unparseable weight is
     /// bodyweight.
     static func sets(from sessions: [SavedSession]) -> [LoadSet] {
         sessions.flatMap { s in
             s.exercises.flatMap { ex in
                 ex.sets.compactMap { set -> LoadSet? in
-                    guard set.done, !set.isWarmup, let reps = set.repsValue, reps > 0 else { return nil }
+                    guard set.done, set.countsForStrength, let reps = set.repsValue, reps > 0 else { return nil }
                     return LoadSet(date: s.startTime, exercise: ex.name,
                                    weight: max(0, set.weightValue ?? 0), reps: reps)
                 }

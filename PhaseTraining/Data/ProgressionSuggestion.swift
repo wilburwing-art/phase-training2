@@ -85,10 +85,10 @@ enum ProgressionSuggestion {
     /// target 8) doesn't read as a missed target and trigger a spurious
     /// BACK OFF. Falls back to the heaviest set overall only when no set hit
     /// the target — there the user genuinely failed and a hold/back-off is
-    /// the right call. Warm-ups and undone sets are excluded.
+    /// the right call. Warm-ups, drop sets and undone sets are excluded.
     static func priorPerformance(from prevSets: [LoggedSet], targetReps: Int) -> PriorPerformance? {
         let working = prevSets
-            .filter { $0.done && !$0.isWarmup }
+            .filter { $0.done && $0.countsForStrength }
             .compactMap { set -> (weight: Double, reps: Int, rir: Double?)? in
                 guard let w = set.weightValue, w > 0,
                       let r = set.repsValue, r > 0 else { return nil }

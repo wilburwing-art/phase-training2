@@ -94,8 +94,8 @@ extension UserDatabase {
     /// least one completed WORKING set with a non-empty weight. Indexed
     /// lookup replacing the O(N×M) cross-session scan in SessionStore.
     ///
-    /// Warmup sets excluded — progressive-overload autofill should reflect
-    /// the user's last working weight, not the warmup ramp.
+    /// Warmup and drop sets excluded — progressive-overload autofill should
+    /// reflect the user's last working weight, not the warmup ramp or a drop.
     func mostRecentExerciseByName(_ name: String) -> LoggedExercise? { withLock {
         guard let db else { return nil }
         let sql = """
@@ -107,7 +107,7 @@ extension UserDatabase {
             WHERE ss.session_start = se.session_start
               AND ss.exercise_position = se.position
               AND ss.done = 1
-              AND ss.is_warmup = 0
+              AND ss.set_type IN ('normal', 'failure')
               AND ss.weight <> ''
           )
         ORDER BY se.session_start DESC
@@ -239,7 +239,7 @@ extension UserDatabase {
 
     private func loadSetsLocked(sessionStart: Int64, position: Int) -> [LoggedSet] {
         guard let db else { return [] }
-        let sql = "SELECT num, weight, reps, rpe, done, is_warmup, rir FROM session_sets WHERE session_start = ? AND exercise_position = ? ORDER BY num ASC"
+        let sql = "SELECT num, weight, reps, rpe, done, set_type, rir FROM session_sets WHERE session_start = ? AND exercise_position = ? ORDER BY num ASC"
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
         defer { sqlite3_finalize(stmt) }
@@ -253,7 +253,7 @@ extension UserDatabase {
                 reps: text(stmt, 2) ?? "",
                 rpe: text(stmt, 3) ?? "",
                 done: sqlite3_column_int64(stmt, 4) == 1,
-                isWarmup: sqlite3_column_int64(stmt, 5) == 1,
+                setType: text(stmt, 5).flatMap(SetType.init(rawValue:)) ?? .normal,
                 rir: text(stmt, 6) ?? ""
             ))
         }
@@ -332,7 +332,7 @@ extension UserDatabase {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         let setSQL = """
-        INSERT INTO session_sets(session_start, exercise_position, num, weight, reps, rpe, done, is_warmup, rir)
+        INSERT INTO session_sets(session_start, exercise_position, num, weight, reps, rpe, done, set_type, rir)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         let enc = JSONEncoder()
@@ -374,7 +374,7 @@ extension UserDatabase {
                     sqlite3_bind_text(sStmt, 5, set.reps, -1, SQLITE_TRANSIENT_USER)
                     sqlite3_bind_text(sStmt, 6, set.rpe, -1, SQLITE_TRANSIENT_USER)
                     sqlite3_bind_int64(sStmt, 7, set.done ? 1 : 0)
-                    sqlite3_bind_int64(sStmt, 8, set.isWarmup ? 1 : 0)
+                    sqlite3_bind_text(sStmt, 8, set.setType.rawValue, -1, SQLITE_TRANSIENT_USER)
                     sqlite3_bind_text(sStmt, 9, set.rir, -1, SQLITE_TRANSIENT_USER)
                     if sqlite3_step(sStmt) != SQLITE_DONE { ok = false }
                 } else {
@@ -440,7 +440,7 @@ extension UserDatabase {
     /// these in lock-step with the Swift parser prevents the live PR path
     /// (personalRecords(in:)) from disagreeing with this baseline.
     ///
-    /// Warmup sets excluded — never count as PRs.
+    /// Warmup and drop sets excluded — never count as PRs.
     func qualifyingSetsForPRs() -> [PRSetRow] { withLock {
         guard let db else { return [] }
         let sql = """
@@ -453,7 +453,7 @@ extension UserDatabase {
           ON se.session_start = ss.session_start
          AND se.position = ss.exercise_position
         WHERE ss.done = 1
-          AND ss.is_warmup = 0
+          AND ss.set_type IN ('normal', 'failure')
           AND ss.weight <> ''
           AND ss.reps GLOB '[0-9]*'
           AND CAST(REPLACE(ss.weight, ',', '.') AS REAL) > 0
@@ -479,7 +479,7 @@ extension UserDatabase {
     /// by `personalRecords(in:excludingSessionId:)` when comparing a
     /// just-saved session against pre-existing history).
     ///
-    /// Warmup sets excluded — never count as PRs.
+    /// Warmup and drop sets excluded — never count as PRs.
     func bestWeightsByExerciseAndReps(excludingSessionStart: Int64? = nil) -> [String: [Int: Double]] { withLock {
         guard let db else { return [:] }
         var sql = """
@@ -491,7 +491,7 @@ extension UserDatabase {
           ON se.session_start = ss.session_start
          AND se.position = ss.exercise_position
         WHERE ss.done = 1
-          AND ss.is_warmup = 0
+          AND ss.set_type IN ('normal', 'failure')
           AND ss.weight <> ''
           AND ss.reps GLOB '[0-9]*'
           AND CAST(REPLACE(ss.weight, ',', '.') AS REAL) > 0

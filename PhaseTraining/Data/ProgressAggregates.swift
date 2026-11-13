@@ -117,13 +117,13 @@ struct ProgressAggregates {
             // Warmup sets excluded — VOLUME / WEEK reflects working sets only.
             weeklyVolume[idx] += session.exercises.reduce(0.0) { acc, ex in
                 acc + ex.sets.reduce(0.0) { a, set in
-                    guard set.done, !set.isWarmup,
+                    guard set.done, set.isWorkingSet,
                           let w = set.weightValue,
                           let r = set.repsValue else { return a }
                     return a + (w * Double(r))
                 }
             }
-            weeklySetCounts[idx] += Double(session.exercises.reduce(0) { $0 + $1.sets.filter { $0.done && !$0.isWarmup }.count })
+            weeklySetCounts[idx] += Double(session.exercises.reduce(0) { $0 + $1.sets.filter { $0.done && $0.isWorkingSet }.count })
         }
 
         self.totalSessions = sessions.count
@@ -182,9 +182,9 @@ struct ProgressAggregates {
             for ex in s.exercises {
                 var bestThisSession: Double = 0
                 var hasWeightedSet = false
-                // Warmup sets excluded — per-exercise best-weight sparkline
-                // tracks working sets only.
-                for set in ex.sets where set.done && !set.isWarmup {
+                // Warmup and drop sets excluded — per-exercise best-weight sparkline
+                // tracks strength sets only.
+                for set in ex.sets where set.done && set.countsForStrength {
                     if let w = set.weightValue, w > 0 {
                         hasWeightedSet = true
                         if w > bestThisSession { bestThisSession = w }
@@ -192,7 +192,7 @@ struct ProgressAggregates {
                 }
                 if !hasWeightedSet { continue }
                 var entry = agg[ex.name] ?? Agg(unit: ex.displayUnit, setCount: 0, perSession: [])
-                entry.setCount += ex.sets.filter { $0.done && !$0.isWarmup }.count
+                entry.setCount += ex.sets.filter { $0.done && $0.isWorkingSet }.count
                 entry.perSession.append((s.startTime, bestThisSession))
                 agg[ex.name] = entry
             }

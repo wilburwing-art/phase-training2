@@ -16,15 +16,18 @@ extension LoggedExercise {
 }
 
 extension LoggedExercise {
-    /// The previous session's set to show beside row `setIdx`. Warm-up rows
-    /// have none, and a working row pairs with the previous working set at
-    /// the same position, so a ramp ahead of the working sets does not shift
-    /// the comparison.
+    /// The previous session's set to show beside row `setIdx`. Warm-up rows have
+    /// none. A drop row pairs with the previous session's drop set at the same
+    /// position among drops; a normal or failure row pairs with the previous
+    /// normal or failure set at its position, so a ramp or a drop set does not
+    /// shift the comparison.
     func previousSet(forRow setIdx: Int) -> LoggedSet? {
-        guard sets.indices.contains(setIdx), !sets[setIdx].isWarmup else { return nil }
-        let position = sets[..<setIdx].filter { !$0.isWarmup }.count
-        let prevWorking = prevSets.filter { !$0.isWarmup }
-        return prevWorking.indices.contains(position) ? prevWorking[position] : nil
+        guard sets.indices.contains(setIdx), sets[setIdx].setType != .warmup else { return nil }
+        let isDrop = sets[setIdx].setType == .drop
+        let sameClass: (LoggedSet) -> Bool = isDrop ? { $0.setType == .drop } : { $0.countsForStrength }
+        let position = sets[..<setIdx].filter(sameClass).count
+        let prev = prevSets.filter(sameClass)
+        return prev.indices.contains(position) ? prev[position] : nil
     }
 }
 
@@ -42,7 +45,7 @@ extension ActiveSession {
             default: factor = 1
             }
             return total + ex.sets.reduce(0) { sum, set in
-                guard set.done, !set.isWarmup,
+                guard set.done, set.isWorkingSet,
                       let w = set.weightValue, w > 0,
                       let r = set.repsValue, r > 0 else { return sum }
                 return sum + w * Double(r) * factor

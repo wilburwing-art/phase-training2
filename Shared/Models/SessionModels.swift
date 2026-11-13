@@ -10,19 +10,57 @@
 
 import Foundation
 
+/// What kind of set a row is. Raw values are persisted (session_sets.set_type,
+/// session JSON, backups, watch messages): never rename one.
+enum SetType: String, CaseIterable, Hashable {
+    case normal, warmup, drop, failure
+
+    /// Counts as work done: volume, set counts, muscle exposure, "did any work".
+    var isWorkingSet: Bool { self != .warmup }
+
+    /// Feeds strength reads: PRs, e1RM, strength standards, progression input,
+    /// last-weight autofill. Drop sets are excluded from PRs (owner, 2026-11-12)
+    /// and from the rest because a reduced load under fatigue understates strength.
+    var countsForStrength: Bool { self == .normal || self == .failure }
+
+    var label: String {
+        switch self {
+        case .normal: "Normal"
+        case .warmup: "Warmup"
+        case .drop: "Drop"
+        case .failure: "Failure"
+        }
+    }
+
+    /// Letter shown in place of the set number. Nil for a normal set.
+    var badge: String? {
+        switch self {
+        case .normal: nil
+        case .warmup: "W"
+        case .drop: "D"
+        case .failure: "F"
+        }
+    }
+
+    /// SF Symbol for menus.
+    var symbol: String {
+        switch self {
+        case .normal: "circle"
+        case .warmup: "flame"
+        case .drop: "arrow.down.right"
+        case .failure: "bolt.fill"
+        }
+    }
+}
+
 struct LoggedSet: Codable, Equatable {
     var num: Int
     var weight: String
     var reps: String
     var rpe: String
     var done: Bool
-    /// Marks a warm-up set. Warmup sets are tracked + displayed in the log
-    /// but EXCLUDED from PR detection, volume aggregation, and Epley 1RM
-    /// math (see UserDatabase.bestWeightsByExerciseAndReps, MuscleVolume,
-    /// StrengthStandards, GeneratorContext.buildStagnantExercises). Optional
-    /// on decode so pre-build-100 sessions round-trip cleanly without a
-    /// JSON migration; defaults to false.
-    var isWarmup: Bool = false
+    /// Normal, warmup, drop or failure. See `SetType` for which reads count each.
+    var setType: SetType = .normal
     /// Reps-in-reserve (build 103). Distinct from RPE: RIR records how many
     /// reps the user had left in the tank ("3 RIR" = could have done 3
     /// more). RIR is the vocabulary hypertrophy autoregulation is written
@@ -33,16 +71,21 @@ struct LoggedSet: Codable, Equatable {
     var rir: String = ""
 
     enum CodingKeys: String, CodingKey {
-        case num, weight, reps, rpe, done, isWarmup, rir
+        case num, weight, reps, rpe, done, setType, rir
+        /// Wire compatibility. Builds before set types read and write only this
+        /// Bool. Decoded as the fallback when `setType` is absent or unknown, and
+        /// written on encode so an older watch or phone that echoes a session
+        /// back (watch `sessionStarted`, backup restore) keeps its warmups.
+        case legacyIsWarmup = "isWarmup"
     }
 
-    init(num: Int, weight: String, reps: String, rpe: String, done: Bool, isWarmup: Bool = false, rir: String = "") {
+    init(num: Int, weight: String, reps: String, rpe: String, done: Bool, setType: SetType = .normal, rir: String = "") {
         self.num = num
         self.weight = weight
         self.reps = reps
         self.rpe = rpe
         self.done = done
-        self.isWarmup = isWarmup
+        self.setType = setType
         self.rir = rir
     }
 
@@ -53,8 +96,22 @@ struct LoggedSet: Codable, Equatable {
         self.reps = try c.decode(String.self, forKey: .reps)
         self.rpe = try c.decode(String.self, forKey: .rpe)
         self.done = try c.decode(Bool.self, forKey: .done)
-        self.isWarmup = (try? c.decode(Bool.self, forKey: .isWarmup)) ?? false
+        let legacyWarmup = (try? c.decode(Bool.self, forKey: .legacyIsWarmup)) ?? false
+        let raw = try? c.decode(String.self, forKey: .setType)
+        self.setType = raw.flatMap(SetType.init(rawValue:)) ?? (legacyWarmup ? .warmup : .normal)
         self.rir = (try? c.decode(String.self, forKey: .rir)) ?? ""
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(num, forKey: .num)
+        try c.encode(weight, forKey: .weight)
+        try c.encode(reps, forKey: .reps)
+        try c.encode(rpe, forKey: .rpe)
+        try c.encode(done, forKey: .done)
+        try c.encode(setType.rawValue, forKey: .setType)
+        try c.encode(setType == .warmup, forKey: .legacyIsWarmup)
+        try c.encode(rir, forKey: .rir)
     }
 }
 
@@ -87,6 +144,9 @@ extension Array where Element == LoggedSet {
 }
 
 extension LoggedSet {
+    var isWorkingSet: Bool { setType.isWorkingSet }
+    var countsForStrength: Bool { setType.countsForStrength }
+
     /// Best-effort numeric load from the free-text `weight` field. The logger
     /// accepts raw text, so values arrive as "135", " 135 ", "+25", "60kg",
     /// "1,250", or "BW". `Double(weight)` rejects everything but a bare number,
@@ -109,6 +169,7 @@ extension LoggedSet {
     var effortRIR: Double? {
         if let r = Self.leadingNumber(rir), r >= 0 { return r }
         if let p = Self.leadingNumber(rpe), p > 0, p <= 10 { return 10 - p }
+        if setType == .failure { return 0 }
         return nil
     }
 

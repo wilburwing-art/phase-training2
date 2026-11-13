@@ -32,7 +32,12 @@ enum WorkoutCSVExporter {
                 var working = 0
                 for set in ex.sets where set.done {
                     let order: String
-                    if set.isWarmup { order = "W" } else { working += 1; order = "\(working)" }
+                    switch set.setType {
+                    case .warmup: order = "W"
+                    case .drop: order = "D"
+                    case .failure: order = "F"
+                    case .normal: working += 1; order = "\(working)"
+                    }
                     let fields = [
                         date.string(from: session.startTime),
                         session.name,

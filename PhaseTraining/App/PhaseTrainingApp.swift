@@ -614,7 +614,7 @@ struct PhaseTrainingApp: App {
             targetSets: sets, targetReps: reps, rest: 120,
             sets: (1...sets).map { i in
                 LoggedSet(num: i, weight: "\(weight)", reps: "\(reps)",
-                          rpe: "8", done: true, isWarmup: false)
+                          rpe: "8", done: true)
             },
             prevSets: []
         )

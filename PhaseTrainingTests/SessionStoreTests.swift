@@ -286,9 +286,9 @@ final class SessionStoreTests: XCTestCase {
 
     // MARK: - Gate test 1: warmup flags and bodyweight sets survive a save/load
 
-    /// `isWarmup` appeared in eight test files and none of them was this one.
-    /// The flag gates PR detection, volume aggregation and the Epley math, so a
-    /// round-trip that silently dropped it would promote a warmup ramp to a PR.
+    /// The set type gates PR detection, volume aggregation and the Epley math,
+    /// so a round-trip that lost it would promote a warmup ramp or a drop set
+    /// to a PR.
     func testWarmupAndBodyweightSetsRoundTripThroughSaveAndReload() {
         // Completed sessions live in SQLite (UserDatabase), not UserDefaults.
         // Both stores must share ONE database file: `:memory:` is
@@ -301,14 +301,23 @@ final class SessionStoreTests: XCTestCase {
         let store = SessionStore(defaults: defaults, userDB: db)
         var session = store.createSession(templateId: "upper-1")
 
-        // First exercise: set 1 is a warmup, set 2 is a working set.
-        session.exercises[0].sets[0].isWarmup = true
+        // First exercise: warmup, normal, drop, failure.
+        XCTAssertGreaterThanOrEqual(session.exercises[0].sets.count, 4, "the template needs four sets for this test")
+        session.exercises[0].sets[0].setType = .warmup
         session.exercises[0].sets[0].weight = "95"
         session.exercises[0].sets[0].reps = "8"
         session.exercises[0].sets[0].done = true
         session.exercises[0].sets[1].weight = "185"
         session.exercises[0].sets[1].reps = "5"
         session.exercises[0].sets[1].done = true
+        session.exercises[0].sets[2].setType = .drop
+        session.exercises[0].sets[2].weight = "135"
+        session.exercises[0].sets[2].reps = "10"
+        session.exercises[0].sets[2].done = true
+        session.exercises[0].sets[3].setType = .failure
+        session.exercises[0].sets[3].weight = "185"
+        session.exercises[0].sets[3].reps = "4"
+        session.exercises[0].sets[3].done = true
         // Second exercise (pull-up): a bodyweight set with no load.
         session.exercises[1].sets[0].weight = ""
         session.exercises[1].sets[0].reps = "10"
@@ -323,8 +332,8 @@ final class SessionStoreTests: XCTestCase {
         XCTAssertNotNil(saved)
         guard let saved else { return }
 
-        XCTAssertTrue(saved.exercises[0].sets[0].isWarmup, "warmup flag must survive save/load")
-        XCTAssertFalse(saved.exercises[0].sets[1].isWarmup)
+        XCTAssertEqual(saved.exercises[0].sets.prefix(4).map(\.setType), [.warmup, .normal, .drop, .failure],
+                       "set types must survive save/load")
         XCTAssertEqual(saved.exercises[0].sets[1].weight, "185")
         XCTAssertEqual(saved.exercises[1].sets[0].weight, "", "an empty bodyweight load must not be rewritten")
         XCTAssertEqual(saved.exercises[1].sets[0].reps, "10")
@@ -364,5 +373,20 @@ final class SessionStoreTests: XCTestCase {
         XCTAssertEqual(oldestFirst[2].mood, "worse")
         // The newest-by-template query is a separate SELECT.
         XCTAssertEqual(reloaded.getPreviousSession(templateId: "upper-1")?.mood, "worse")
+    }
+
+    func test_previousSet_pairsDropWithDrop() {
+        func set(_ n: Int, _ w: String, _ t: SetType) -> LoggedSet {
+            LoggedSet(num: n, weight: w, reps: "5", rpe: "", done: true, setType: t)
+        }
+        let ex = LoggedExercise(
+            id: "bench", name: "Bench Press", type: nil, unit: "lbs", targetSets: 2, targetReps: 5, rest: 90,
+            sets: [set(1, "", .warmup), set(2, "", .normal), set(3, "", .drop), set(4, "", .failure)],
+            prevSets: [set(1, "95", .warmup), set(2, "135", .normal), set(3, "100", .drop), set(4, "140", .failure)]
+        )
+        XCTAssertNil(ex.previousSet(forRow: 0))
+        XCTAssertEqual(ex.previousSet(forRow: 1)?.weight, "135")
+        XCTAssertEqual(ex.previousSet(forRow: 2)?.weight, "100", "a drop row pairs with the previous drop")
+        XCTAssertEqual(ex.previousSet(forRow: 3)?.weight, "140", "a failure row pairs with the previous normal or failure set at its position")
     }
 }

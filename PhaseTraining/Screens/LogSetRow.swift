@@ -36,17 +36,17 @@ extension LogScreen {
             }
 
             HStack(spacing: 4) {
-                if set.isWarmup {
-                    // "W" pill replaces the set-number for warmup sets.
-                    // Visually flags the row as a non-counting ramp set.
-                    Text("W")
-                        .font(.system(size: warmupPillFont, weight: .bold))
+                if let badge = set.setType.badge {
+                    // A letter pill replaces the set number for any non-normal
+                    // set (W warmup, D drop, F failure).
+                    Text(badge)
+                        .font(.system(size: setTypePillFont, weight: .bold))
                         .foregroundStyle(Color.bg)
-                        .frame(width: warmupPillWidth, height: warmupPillHeight)
-                        .background(Color.ink3)
+                        .frame(width: setTypePillWidth, height: setTypePillHeight)
+                        .background(set.setType == .warmup ? Color.ink3 : Color.ink2)
                         .clipShape(Capsule())
                         .frame(width: setNumWidth, alignment: .center)
-                        .accessibilityLabel("Warmup set")
+                        .accessibilityLabel("\(set.setType.label) set, \(set.num)")
                 } else {
                     Text("\(set.num)")
                         .styled(.monoXS)
@@ -108,11 +108,12 @@ extension LogScreen {
         }
         .padding(.vertical, 6)
         // Warmup sets dim slightly so the working sets read as the primary
-        // content — the "W" pill carries the distinction, so keep the dim
-        // light enough that weight/reps stay readable mid-workout.
-        // Toggle via the contextMenu below.
+        // content. Drop and failure rows count as work, so they stay at full
+        // opacity. The "W" pill carries the distinction, so keep the dim light
+        // enough that weight/reps stay readable mid-workout. The type is set
+        // from the contextMenu below.
         .font(.callout)
-        .opacity(set.isWarmup ? 0.85 : 1.0)
+        .opacity(set.setType == .warmup ? 0.85 : 1.0)
         .contentShape(Rectangle())
         // Tap a logged set to re-open it for editing (e.g. adding an RPE the
         // user forgot). Only fires when set.done — un-done rows already
@@ -137,11 +138,20 @@ extension LogScreen {
                 Label(set.rir.isEmpty ? "Set RIR…" : "RIR · \(set.rir)",
                       systemImage: "gauge.with.dots.needle.bottom.50percent")
             }
-            Button {
-                toggleWarmup(exIdx: exIdx, setIdx: setIdx)
+            Menu {
+                ForEach(SetType.allCases, id: \.self) { type in
+                    Button {
+                        setSetType(exIdx: exIdx, setIdx: setIdx, type)
+                    } label: {
+                        if type == set.setType {
+                            Label(type.label, systemImage: "checkmark")
+                        } else {
+                            Label(type.label, systemImage: type.symbol)
+                        }
+                    }
+                }
             } label: {
-                Label(set.isWarmup ? "Unmark warmup" : "Mark as warmup",
-                      systemImage: "flame")
+                Label("Set type · \(set.setType.label)", systemImage: set.setType.symbol)
             }
             Button(role: .destructive) {
                 deleteSet(exIdx: exIdx, setIdx: setIdx)

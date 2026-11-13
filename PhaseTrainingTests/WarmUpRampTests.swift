@@ -17,7 +17,7 @@ final class WarmUpRampTests: XCTestCase {
         // 54 -> 55, 81 -> 80, 108 -> 110.
         XCTAssertEqual(rows.map(\.weight), ["55", "80", "110"])
         XCTAssertEqual(rows.map(\.reps), ["5", "5", "3"])
-        XCTAssertTrue(rows.allSatisfy { $0.isWarmup && !$0.done })
+        XCTAssertTrue(rows.allSatisfy { $0.setType == .warmup && !$0.done })
     }
 
     func test_rampRowsUseKgStep() {
@@ -29,7 +29,7 @@ final class WarmUpRampTests: XCTestCase {
         for blank in ["", "  ", "abc", "0"] {
             let rows = SessionStore.warmUpRows(WarmUpSet.standardRamp, firstWorkingWeight: blank, unit: "lbs")
             XCTAssertEqual(rows.count, 3)
-            XCTAssertTrue(rows.allSatisfy { $0.weight.isEmpty && $0.isWarmup }, "weight '\(blank)'")
+            XCTAssertTrue(rows.allSatisfy { $0.weight.isEmpty && $0.setType == .warmup }, "weight '\(blank)'")
         }
     }
 
@@ -47,7 +47,7 @@ final class WarmUpRampTests: XCTestCase {
         let session = store.createSession(from: template(ramp: WarmUpSet.standardRamp))
         let sets = session.exercises[0].sets
         XCTAssertEqual(sets.count, 6)
-        XCTAssertEqual(sets.map(\.isWarmup), [true, true, true, false, false, false])
+        XCTAssertEqual(sets.map(\.setType), [.warmup, .warmup, .warmup, .normal, .normal, .normal])
         XCTAssertEqual(sets.map(\.num), [1, 2, 3, 4, 5, 6])
         XCTAssertEqual(session.exercises[0].targetSets, 3, "target counts working sets only")
     }
@@ -56,7 +56,7 @@ final class WarmUpRampTests: XCTestCase {
         let store = freshStore()
         let session = store.createSession(from: template(ramp: nil))
         XCTAssertEqual(session.exercises[0].sets.count, 3)
-        XCTAssertTrue(session.exercises[0].sets.allSatisfy { !$0.isWarmup })
+        XCTAssertTrue(session.exercises[0].sets.allSatisfy { $0.setType != .warmup })
     }
 
     func test_bodyweightRowGetsNoRamp() {
@@ -130,15 +130,15 @@ final class WarmUpRampTests: XCTestCase {
 
     func test_previousSetSkipsRampOnBothSides() {
         let prev = [
-            LoggedSet(num: 1, weight: "50", reps: "5", rpe: "", done: true, isWarmup: true),
+            LoggedSet(num: 1, weight: "50", reps: "5", rpe: "", done: true, setType: .warmup),
             LoggedSet(num: 2, weight: "135", reps: "5", rpe: "", done: true),
             LoggedSet(num: 3, weight: "140", reps: "5", rpe: "", done: true),
         ]
         let ex = LoggedExercise(
             id: "e", name: "Bench", type: nil, unit: "lbs", targetSets: 2, targetReps: 5, rest: 90,
             sets: [
-                LoggedSet(num: 1, weight: "55", reps: "5", rpe: "", done: false, isWarmup: true),
-                LoggedSet(num: 2, weight: "80", reps: "5", rpe: "", done: false, isWarmup: true),
+                LoggedSet(num: 1, weight: "55", reps: "5", rpe: "", done: false, setType: .warmup),
+                LoggedSet(num: 2, weight: "80", reps: "5", rpe: "", done: false, setType: .warmup),
                 LoggedSet(num: 3, weight: "135", reps: "5", rpe: "", done: false),
                 LoggedSet(num: 4, weight: "140", reps: "5", rpe: "", done: false),
             ],

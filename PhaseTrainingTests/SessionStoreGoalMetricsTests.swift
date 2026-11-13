@@ -27,7 +27,7 @@ final class SessionStoreGoalMetricsTests: XCTestCase {
     }
 
     private func set(_ w: String, _ r: String, done: Bool = true, warmup: Bool = false) -> LoggedSet {
-        LoggedSet(num: 1, weight: w, reps: r, rpe: "", done: done, isWarmup: warmup)
+        LoggedSet(num: 1, weight: w, reps: r, rpe: "", done: done, setType: warmup ? .warmup : .normal)
     }
 
     private func session(daysAgo: Int, _ exercises: [(String, [LoggedSet])]) -> SavedSession {

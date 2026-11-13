@@ -9,7 +9,7 @@ final class WorkoutCSVExporterTests: XCTestCase {
     private let t = Date(timeIntervalSince1970: 1_750_000_000)
 
     private func s(_ n: Int, _ w: String, _ r: String, done: Bool = true, warm: Bool = false, rpe: String = "") -> LoggedSet {
-        LoggedSet(num: n, weight: w, reps: r, rpe: rpe, done: done, isWarmup: warm)
+        LoggedSet(num: n, weight: w, reps: r, rpe: rpe, done: done, setType: warm ? .warmup : .normal)
     }
 
     private func session(_ exercises: [LoggedExercise], note: String? = nil, start: Date? = nil) -> SavedSession {
@@ -41,6 +41,17 @@ final class WorkoutCSVExporterTests: XCTestCase {
         XCTAssertEqual(r[2][5], "225")
         XCTAssertEqual(r[2][11], "8")
         XCTAssertEqual(r[1][2], "52m")
+    }
+
+    func test_dropAndFailure_setOrderIsDAndF() {
+        func typed(_ n: Int, _ t: SetType) -> LoggedSet {
+            LoggedSet(num: n, weight: "100", reps: "5", rpe: "", done: true, setType: t)
+        }
+        let csv = WorkoutCSVExporter.csv(sessions: [session([
+            ex("Bench Press", [typed(1, .normal), typed(2, .drop), typed(3, .failure), typed(4, .normal)])
+        ])], usesImperial: true)
+        let r = rows(csv)
+        XCTAssertEqual(r.dropFirst().map { $0[4] }, ["1", "D", "F", "2"], "D and F rows do not consume a number")
     }
 
     func test_bodyweightWeightIsBlank_andKgConvertsForAPoundUser() {

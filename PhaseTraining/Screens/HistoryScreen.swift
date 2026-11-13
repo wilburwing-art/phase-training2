@@ -317,7 +317,7 @@ struct HistoryScreen: View {
 
     private var totalDoneSetsAllSessions: Int {
         displayedSessions.reduce(0) { acc, sess in
-            acc + sess.exercises.reduce(0) { $0 + $1.sets.filter { $0.done && !$0.isWarmup }.count }
+            acc + sess.exercises.reduce(0) { $0 + $1.sets.filter { $0.done && $0.isWorkingSet }.count }
         }
     }
 
@@ -572,7 +572,7 @@ struct HistoryScreen: View {
     private func setSummary(_ sets: [LoggedSet]) -> String {
         guard !sets.isEmpty else { return "-" }
         return sets.map { s in
-            let core = "\(s.weight) × \(s.reps)"
+            let core = (s.setType.badge.map { "\($0) " } ?? "") + "\(s.weight) × \(s.reps)"
             return s.rpe.isEmpty ? core : "\(core) @ \(s.rpe)"
         }.joined(separator: " · ")
     }
@@ -606,7 +606,7 @@ struct HistoryScreen: View {
     }
 
     private func doneSetCount(_ session: SavedSession) -> Int {
-        session.exercises.reduce(0) { $0 + $1.sets.filter { $0.done && !$0.isWarmup }.count }
+        session.exercises.reduce(0) { $0 + $1.sets.filter { $0.done && $0.isWorkingSet }.count }
     }
 
     private func dateLabel(_ date: Date) -> String {

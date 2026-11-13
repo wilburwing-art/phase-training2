@@ -2,11 +2,11 @@
 // migration runner in UserDatabase.
 //
 // Two paths matter:
-//  1. Fresh install: v1 creates the full current schema (is_warmup in the
-//     CREATE) and stamps user_version = 1.
+//  1. Fresh install: every migration runs; v10 replaces is_warmup with
+//     set_type.
 //  2. Pre-versioning upgrade: a legacy user.db (user_version = 0, session_sets
 //     WITHOUT is_warmup) gets the column via the explicit existence check,
-//     then v1 no-ops over the live schema and stamps 1.
+//     then v1 no-ops over the live schema and v10 backfills set_type.
 //
 // Uses a temp FILE path (not :memory:) so a second raw-SQLite connection can
 // inspect what UserDatabase wrote — and so the legacy fixture can be staged
@@ -67,15 +67,17 @@ final class UserDatabaseMigrationTests: XCTestCase {
 
     // MARK: - Fresh install
 
-    func test_freshInstall_stampsLatestVersion_withWarmupInCreate() {
+    func test_freshInstall_stampsLatestVersion_withSetTypeNotWarmup() {
         let db = UserDatabase(path: path)
         XCTAssertTrue(db.isOpen)
 
         XCTAssertEqual(userVersion(), UserDatabase.latestSchemaVersion,
                        "fresh install must run every migration")
         let cols = sessionSetsColumns()
-        XCTAssertTrue(cols.contains("is_warmup"),
-                      "v1 CREATE must include is_warmup; got \(cols)")
+        XCTAssertTrue(cols.contains("set_type"),
+                      "v10 must add set_type; got \(cols)")
+        XCTAssertFalse(cols.contains("is_warmup"),
+                       "v10 must drop is_warmup; got \(cols)")
         XCTAssertTrue(sessionsColumns().contains("mood"),
                       "v3 must add sessions.mood on a fresh install; got \(sessionsColumns())")
     }
@@ -113,20 +115,55 @@ final class UserDatabaseMigrationTests: XCTestCase {
 
         XCTAssertEqual(userVersion(), UserDatabase.latestSchemaVersion,
                        "a pre-versioning file must be upgraded through every migration")
-        XCTAssertTrue(sessionSetsColumns().contains("is_warmup"),
-                      "legacy session_sets must gain is_warmup via the existence check")
+        XCTAssertTrue(sessionSetsColumns().contains("set_type"),
+                      "legacy session_sets must end with set_type")
+        XCTAssertFalse(sessionSetsColumns().contains("is_warmup"),
+                       "v10 drops is_warmup after the shim added it")
         XCTAssertTrue(sessionsColumns().contains("mood"),
                       "legacy sessions must gain mood via v3")
 
-        // The pre-existing row survives with the DEFAULT 0 backfill.
-        let warmup: Int32? = withRawDB { db in
+        // The pre-existing row survives as a normal set.
+        let setType: String? = withRawDB { db in
             var stmt: OpaquePointer?
             defer { sqlite3_finalize(stmt) }
-            guard sqlite3_prepare_v2(db, "SELECT is_warmup FROM session_sets WHERE session_start = 1", -1, &stmt, nil) == SQLITE_OK,
-                  sqlite3_step(stmt) == SQLITE_ROW else { return Int32(-1) }
-            return sqlite3_column_int(stmt, 0)
+            guard sqlite3_prepare_v2(db, "SELECT set_type FROM session_sets WHERE session_start = 1", -1, &stmt, nil) == SQLITE_OK,
+                  sqlite3_step(stmt) == SQLITE_ROW,
+                  let c = sqlite3_column_text(stmt, 0) else { return "" }
+            return String(cString: c)
         }
-        XCTAssertEqual(warmup, 0)
+        XCTAssertEqual(setType, "normal")
+    }
+
+    // MARK: - v10 backfill
+
+    func test_v9File_backfillsWarmupIntoSetType() throws {
+        let start: Int64 = 1_780_000_000
+        do {
+            let v = UserDatabase(path: path)
+            let db = try XCTUnwrap(v.db)
+            XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE session_sets DROP COLUMN set_type", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE session_sets ADD COLUMN is_warmup INTEGER NOT NULL DEFAULT 0", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(sqlite3_exec(db, "PRAGMA user_version = 9", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(sqlite3_exec(db, """
+                INSERT INTO sessions(start_time, template_id, name, category, end_time, duration)
+                VALUES (\(start), 't', 'Old', 'lift', \(start + 1800), 1800);
+                INSERT INTO session_exercises(session_start, position, exercise_template_id, name, type, unit,
+                                              target_sets, target_reps, rest, prev_sets_json)
+                VALUES (\(start), 0, 'sq', 'Back Squat', 'Barbell', 'lbs', 2, 5, 180, '[]');
+                INSERT INTO session_sets(session_start, exercise_position, num, weight, reps, rpe, done, is_warmup, rir)
+                VALUES (\(start), 0, 1, '95', '5', '', 1, 1, '');
+                INSERT INTO session_sets(session_start, exercise_position, num, weight, reps, rpe, done, is_warmup, rir)
+                VALUES (\(start), 0, 2, '225', '5', '', 1, 0, '');
+                """, nil, nil, nil), SQLITE_OK, "v9 fixture insert failed; check the column lists")
+        }
+
+        let reopened = UserDatabase(path: path)
+        XCTAssertNil(reopened.unavailableReason)
+        XCTAssertFalse(sessionSetsColumns().contains("is_warmup"))
+        let loaded = try XCTUnwrap(reopened.listSavedSessions().first {
+            Int64($0.startTime.timeIntervalSince1970) == start
+        })
+        XCTAssertEqual(loaded.exercises.first?.sets.map(\.setType), [.warmup, .normal])
     }
 
     // MARK: - Re-open is a no-op

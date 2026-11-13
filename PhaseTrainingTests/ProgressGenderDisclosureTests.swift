@@ -167,7 +167,7 @@ final class ProgressGenderDisclosureTests: XCTestCase {
             id: "bench", name: "Barbell Bench Press", type: nil, unit: "lbs",
             targetSets: 1, targetReps: reps, rest: 90,
             sets: [LoggedSet(num: 1, weight: "\(Int(weightLb))", reps: "\(reps)",
-                             rpe: "", done: true, isWarmup: false)],
+                             rpe: "", done: true)],
             prevSets: []
         )
         return SavedSession(

@@ -146,8 +146,13 @@ final class WatchSyncReducerTests: XCTestCase {
         let e = done("squat", 2, at: 60, weight: "140", reps: "6")
         let data = try JSONEncoder().encode(e)
         XCTAssertEqual(try JSONDecoder().decode(WatchSyncEvent.self, from: data), e)
-        let started = WatchSyncEvent(sessionStart: start, kind: .sessionStarted(session()), at: start)
-        XCTAssertEqual(try JSONDecoder().decode(WatchSyncEvent.self, from: try JSONEncoder().encode(started)), started)
+        var withDrop = session()
+        withDrop.exercises[0].sets[2].setType = .drop
+        let started = WatchSyncEvent(sessionStart: start, kind: .sessionStarted(withDrop), at: start)
+        let echoed = try JSONDecoder().decode(WatchSyncEvent.self, from: try JSONEncoder().encode(started))
+        XCTAssertEqual(echoed, started)
+        guard case .sessionStarted(let back) = echoed.kind else { return XCTFail("expected sessionStarted") }
+        XCTAssertEqual(back.exercises[0].sets[2].setType, .drop)
         let ctx = WatchSyncContext(activeSession: nil, plannedSession: session(), sentAt: t(1))
         XCTAssertEqual(try JSONDecoder().decode(WatchSyncContext.self, from: try JSONEncoder().encode(ctx)), ctx)
     }
