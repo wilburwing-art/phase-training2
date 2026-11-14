@@ -47,7 +47,7 @@ struct EquipmentEditorSheet: View {
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .background(currentTier == tier ? Color.accentWash : Color.surface)
                                     .overlay(RoundedRectangle(cornerRadius: 12)
-                                        .stroke(currentTier == tier ? Color.accentBorder : Color.line, lineWidth: 0.5))
+                                        .stroke(currentTier == tier ? Color.accentBorder : Color.lineStrong, lineWidth: 0.5))
                                     .clipShape(RoundedRectangle(cornerRadius: 12))
                                 }
                                 .buttonStyle(.plain)

@@ -135,7 +135,7 @@ struct PostWorkoutFeedbackSheet: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.surface)
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.line, lineWidth: 0.5)
+                    .stroke(Color.lineStrong, lineWidth: 0.5)
 
                 if notes.isEmpty {
                     Text("Anything to remember?")
@@ -202,7 +202,7 @@ struct PostWorkoutFeedbackSheet: View {
                 .background(active ? Color.accent : Color.elevated)
                 .overlay(
                     RoundedRectangle(cornerRadius: 6)
-                        .stroke(active ? Color.clear : Color.line, lineWidth: 0.5)
+                        .stroke(active ? Color.clear : Color.lineStrong, lineWidth: 0.5)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 6))
         }

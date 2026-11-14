@@ -13,6 +13,8 @@ extension Color {
     // Borders / dividers
     static let line     = Color(red: 0x2A / 255, green: 0x2E / 255, blue: 0x35 / 255) // #2A2E35
     static let lineSoft = Color(red: 0x1F / 255, green: 0x22 / 255, blue: 0x29 / 255) // #1F2229
+    // Outline of a control that holds or selects a value. 3.74:1 on bg, 3.44:1 on surface, 3.14:1 on elevated.
+    static let lineStrong = Color(red: 0x68 / 255, green: 0x6C / 255, blue: 0x75 / 255) // #686C75
 
     // Ink (text)
     static let ink  = Color(red: 0xF5 / 255, green: 0xF5 / 255, blue: 0xF0 / 255) // #F5F5F0

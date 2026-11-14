@@ -424,7 +424,7 @@ struct OnboardingChip: View {
                 .background(selected ? Color.accent : Color.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 999)
-                        .stroke(selected ? Color.clear : Color.line, lineWidth: 0.5)
+                        .stroke(selected ? Color.clear : Color.lineStrong, lineWidth: 0.5)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 999))
         }
@@ -475,7 +475,7 @@ struct OnboardingPickRow: View {
             .background(selected ? Color.accentWash : Color.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: 14)
-                    .stroke(selected ? Color.accentBorder : Color.line, lineWidth: 0.5)
+                    .stroke(selected ? Color.accentBorder : Color.lineStrong, lineWidth: 0.5)
             )
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }

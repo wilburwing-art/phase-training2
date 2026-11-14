@@ -269,7 +269,7 @@ struct InjuriesEditorSheet: View {
                 .padding(.vertical, 5)
                 .background(isSelected ? Color.accent : Color.elevated)
                 .clipShape(Capsule())
-                .overlay(Capsule().stroke(isSelected ? Color.accent : Color.line, lineWidth: 0.5))
+                .overlay(Capsule().stroke(isSelected ? Color.accent : Color.lineStrong, lineWidth: 0.5))
         }
         .buttonStyle(.plain)
     }
@@ -293,7 +293,7 @@ struct InjuriesEditorSheet: View {
         }
         .padding(.leading, 12).padding(.trailing, 10).padding(.vertical, 8)
         .background(Color.elevated)
-        .overlay(RoundedRectangle(cornerRadius: 999).stroke(Color.line, lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 999).stroke(Color.lineStrong, lineWidth: 0.5))
         .clipShape(RoundedRectangle(cornerRadius: 999))
     }
 

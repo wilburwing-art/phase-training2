@@ -55,7 +55,7 @@ struct AbandonReasonSheet: View {
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .stroke(reason == r ? Color.accentBorder : Color.line, lineWidth: 1)
+                                    .stroke(reason == r ? Color.accentBorder : Color.lineStrong, lineWidth: 1)
                             )
                         }
                         .buttonStyle(.plain)
@@ -75,7 +75,7 @@ struct AbandonReasonSheet: View {
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color.line, lineWidth: 1)
+                            .stroke(Color.lineStrong, lineWidth: 1)
                     )
                     .padding(.horizontal, 20)
                     .padding(.top, 14)

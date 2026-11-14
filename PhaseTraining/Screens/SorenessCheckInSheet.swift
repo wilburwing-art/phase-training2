@@ -288,7 +288,7 @@ struct SorenessCheckInSheet: View {
                 .background(active ? Color.accent : Color.elevated)
                 .overlay(
                     RoundedRectangle(cornerRadius: 6)
-                        .stroke(active ? Color.clear : Color.line, lineWidth: 0.5)
+                        .stroke(active ? Color.clear : Color.lineStrong, lineWidth: 0.5)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 6))
         }

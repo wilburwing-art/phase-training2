@@ -742,7 +742,7 @@ private struct WeekToneChip: View {
             .background(tone == nil ? Color.surface : Color.accentWash)
             .overlay(
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .strokeBorder(tone == nil ? Color.line : Color.accentBorder,
+                    .strokeBorder(tone == nil ? Color.lineStrong : Color.accentBorder,
                                   lineWidth: 0.5)
             )
             .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
@@ -835,7 +835,7 @@ private struct ToneCard: View {
             .background(isSelected ? Color.accent : Color.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(isSelected ? Color.clear : Color.line, lineWidth: 0.5)
+                    .strokeBorder(isSelected ? Color.clear : Color.lineStrong, lineWidth: 0.5)
             )
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }

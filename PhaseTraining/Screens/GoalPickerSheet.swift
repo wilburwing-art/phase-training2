@@ -73,7 +73,7 @@ struct GoalPickerSheet: View {
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .stroke(isOn ? Color.accentBorder : Color.line, lineWidth: 1)
+                                    .stroke(isOn ? Color.accentBorder : Color.lineStrong, lineWidth: 1)
                             )
                         }
                         .buttonStyle(.plain)

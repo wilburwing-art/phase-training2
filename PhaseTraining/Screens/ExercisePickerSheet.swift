@@ -234,7 +234,7 @@ struct ExercisePickerSheet: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(Color.surface)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.lineStrong, lineWidth: 0.5))
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .padding(.horizontal, 20)
         .padding(.top, 12)
@@ -270,7 +270,7 @@ struct ExercisePickerSheet: View {
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
                 .background(filters.secondaryCount > 0 ? Color.accent : Color.surface)
-                .overlay(RoundedRectangle(cornerRadius: 6).stroke(filters.secondaryCount > 0 ? Color.clear : Color.line, lineWidth: 0.5))
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(filters.secondaryCount > 0 ? Color.clear : Color.lineStrong, lineWidth: 0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 6))
             }
             .buttonStyle(.plain)
@@ -352,7 +352,7 @@ struct SelectableChip: View {
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
                 .background(selected ? Color.accent : Color.surface)
-                .overlay(RoundedRectangle(cornerRadius: 6).stroke(selected ? Color.clear : Color.line, lineWidth: 0.5))
+                .overlay(RoundedRectangle(cornerRadius: 6).stroke(selected ? Color.clear : Color.lineStrong, lineWidth: 0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 6))
         }
         .buttonStyle(.plain)

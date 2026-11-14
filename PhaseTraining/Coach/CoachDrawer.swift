@@ -238,7 +238,7 @@ struct CoachDrawer: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 10)
                     .background(Color.surface)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.lineStrong, lineWidth: 0.5))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .focused($inputFocused)
                     .submitLabel(.send)

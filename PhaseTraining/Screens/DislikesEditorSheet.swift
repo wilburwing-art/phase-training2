@@ -91,7 +91,7 @@ struct DislikesEditorSheet: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 12)
                     .background(Color.surface)
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.lineStrong, lineWidth: 0.5))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .onSubmit {
                         commit(input: input, items: items, onAdd: onAdd)
@@ -128,7 +128,7 @@ struct DislikesEditorSheet: View {
                         }
                         .padding(.leading, 12).padding(.trailing, 10).padding(.vertical, 8)
                         .background(Color.elevated)
-                        .overlay(RoundedRectangle(cornerRadius: 999).stroke(Color.line, lineWidth: 0.5))
+                        .overlay(RoundedRectangle(cornerRadius: 999).stroke(Color.lineStrong, lineWidth: 0.5))
                         .clipShape(RoundedRectangle(cornerRadius: 999))
                     }
                 }

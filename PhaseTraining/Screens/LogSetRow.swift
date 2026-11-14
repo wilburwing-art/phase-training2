@@ -235,7 +235,7 @@ extension LogScreen {
                 .background(active ? Color.accent.opacity(0.06) : Color.elevated)
                 .overlay(
                     RoundedRectangle(cornerRadius: 7, style: .continuous)
-                        .strokeBorder(active ? Color.accentBorder : Color.line, lineWidth: 0.5)
+                        .strokeBorder(active ? Color.accentBorder : Color.lineStrong, lineWidth: 0.5)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
         }
@@ -282,7 +282,7 @@ extension LogScreen {
                     .background(active ? Color.accent.opacity(0.06) : Color.elevated)
                     .overlay(
                         RoundedRectangle(cornerRadius: 7, style: .continuous)
-                            .strokeBorder(active ? Color.accentBorder : Color.line, lineWidth: 0.5)
+                            .strokeBorder(active ? Color.accentBorder : Color.lineStrong, lineWidth: 0.5)
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
                     .contentShape(Rectangle())
@@ -309,7 +309,7 @@ extension LogScreen {
                         .scaledSystemFont(11, weight: .heavy, within: 22)
                         .foregroundStyle(Color.bg)
                 } else {
-                    Circle().strokeBorder(Color.line, lineWidth: 1.5)
+                    Circle().strokeBorder(Color.lineStrong, lineWidth: 1.5)
                 }
             }
             .frame(width: 22, height: 22)

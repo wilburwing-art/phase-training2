@@ -52,6 +52,7 @@ struct StyleGuidePreview: View {
             .init(name: "elevated",      hex: "#1C1F24",   color: .elevated,    inkOnTop: .ink),
             .init(name: "line",          hex: "#2A2E35",   color: .line,        inkOnTop: .ink),
             .init(name: "lineSoft",      hex: "#1F2229",   color: .lineSoft,    inkOnTop: .ink),
+            .init(name: "lineStrong",    hex: "#686C75",   color: .lineStrong,  inkOnTop: .ink),
             .init(name: "ink",           hex: "#F5F5F0",   color: .ink,         inkOnTop: .bg),
             .init(name: "ink2",          hex: "#B5B7BD",   color: .ink2,        inkOnTop: .bg),
             .init(name: "ink3",          hex: "#83868E",   color: .ink3,        inkOnTop: .bg),

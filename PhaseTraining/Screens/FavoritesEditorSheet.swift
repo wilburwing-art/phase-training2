@@ -95,7 +95,7 @@ struct FavoritesEditorSheet: View {
         }
         .padding(.leading, 12).padding(.trailing, 10).padding(.vertical, 8)
         .background(Color.elevated)
-        .overlay(RoundedRectangle(cornerRadius: 999).stroke(Color.line, lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 999).stroke(Color.lineStrong, lineWidth: 0.5))
         .clipShape(RoundedRectangle(cornerRadius: 999))
     }
 

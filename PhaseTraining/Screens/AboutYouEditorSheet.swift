@@ -141,7 +141,7 @@ struct AboutYouEditorSheet: View {
         .padding(.vertical, 10)
         .padding(.horizontal, 14)
         .background(Color.surface)
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(ageFocused ? Color.accent : Color.line, lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(ageFocused ? Color.accent : Color.lineStrong, lineWidth: 0.5))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 

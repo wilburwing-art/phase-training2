@@ -72,7 +72,7 @@ struct CheckInFeedbackScreen: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.surface)
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.line, lineWidth: 0.5)
+                    .stroke(Color.lineStrong, lineWidth: 0.5)
                 if text.wrappedValue.isEmpty {
                     Text(placeholder)
                         .font(.scaled("Inter-Regular", size: 13))

@@ -91,6 +91,7 @@ struct CustomExerciseCreateSheet: View {
                 .frame(minHeight: 44)
                 .background(Color.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.lineStrong, lineWidth: 0.5))
                 .focused($nameFocused)
                 .submitLabel(.done)
                 .onChange(of: name) { _, _ in error = nil }
@@ -130,6 +131,7 @@ struct CustomExerciseCreateSheet: View {
                 .padding(12)
                 .background(Color.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.lineStrong, lineWidth: 0.5))
                 .accessibilityIdentifier("custom-exercise-notes")
         }
     }

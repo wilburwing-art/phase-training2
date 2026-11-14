@@ -395,7 +395,7 @@ struct CompleteScreen: View {
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(active ? Color.clear : Color.line, lineWidth: 0.5)
+                        .stroke(active ? Color.clear : Color.lineStrong, lineWidth: 0.5)
                 )
         }
         .buttonStyle(.plain)
@@ -436,7 +436,7 @@ struct CompleteScreen: View {
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(active ? Color.clear : Color.line, lineWidth: 0.5)
+                        .stroke(active ? Color.clear : Color.lineStrong, lineWidth: 0.5)
                 )
         }
         .buttonStyle(.plain)
@@ -452,7 +452,7 @@ struct CompleteScreen: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.surface)
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.line, lineWidth: 0.5)
+                    .stroke(Color.lineStrong, lineWidth: 0.5)
 
                 if note.isEmpty {
                     Text("Tap to add a note...")

@@ -188,7 +188,7 @@ struct SportLogSheet: View {
                 .padding(.vertical, 10)
                 .background(selected ? Color.accent : Color.bg)
                 .overlay(RoundedRectangle(cornerRadius: 10)
-                    .stroke(selected ? Color.clear : Color.line, lineWidth: 0.5))
+                    .stroke(selected ? Color.clear : Color.lineStrong, lineWidth: 0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)
@@ -205,7 +205,7 @@ struct SportLogSheet: View {
                 .frame(minHeight: 80)
                 .padding(8)
                 .background(Color.bg)
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.lineStrong, lineWidth: 0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .foregroundStyle(Color.ink)
                 .scaledSystemFont(15)

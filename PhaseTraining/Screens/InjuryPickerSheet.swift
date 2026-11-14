@@ -106,7 +106,7 @@ struct InjuryPickerSheet: View {
         .padding(.horizontal, 14)
         .frame(height: 42)
         .background(Color.surface)
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.lineStrong, lineWidth: 0.5))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
@@ -144,7 +144,7 @@ struct InjuryPickerSheet: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(isSelected ? Color.accentWash : Color.surface)
             .overlay(RoundedRectangle(cornerRadius: 10)
-                .stroke(isSelected ? Color.accentBorder : Color.line, lineWidth: 0.5))
+                .stroke(isSelected ? Color.accentBorder : Color.lineStrong, lineWidth: 0.5))
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)

@@ -52,7 +52,7 @@ struct CheckInIntentScreen: View {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(Color.surface)
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.line, lineWidth: 0.5)
+                    .stroke(Color.lineStrong, lineWidth: 0.5)
                 if draft.intentText.isEmpty {
                     Text("Press into bench, ease off squats…")
                         .font(.scaled("Inter-Regular", size: 13))

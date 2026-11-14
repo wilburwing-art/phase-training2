@@ -216,7 +216,7 @@ struct HistoryScreen: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
         .background(Color.surface)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.lineStrong, lineWidth: 0.5))
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
@@ -254,7 +254,7 @@ struct HistoryScreen: View {
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(active ? Color.clear : Color.line, lineWidth: 0.5)
+                        .stroke(active ? Color.clear : Color.lineStrong, lineWidth: 0.5)
                 )
                 .frame(minHeight: 44)
                 .contentShape(Rectangle())

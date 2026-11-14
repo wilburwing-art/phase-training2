@@ -96,7 +96,7 @@ struct PlateCalculatorSheet: View {
         .background(Color.surface)
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.line, lineWidth: 0.5)
+                .stroke(Color.lineStrong, lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
@@ -163,7 +163,7 @@ struct PlateCalculatorSheet: View {
             .background(Color.elevated)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.line, lineWidth: 0.5)
+                    .stroke(Color.lineStrong, lineWidth: 0.5)
             )
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }

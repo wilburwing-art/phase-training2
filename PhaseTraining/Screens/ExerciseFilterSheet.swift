@@ -166,7 +166,7 @@ struct ExerciseFilterSheet: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
                         .background(selected == item.slug ? Color.accent : Color.surface)
-                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(selected == item.slug ? Color.clear : Color.line, lineWidth: 0.5))
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(selected == item.slug ? Color.clear : Color.lineStrong, lineWidth: 0.5))
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)

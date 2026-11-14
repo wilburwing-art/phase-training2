@@ -147,7 +147,7 @@ struct EditSessionSheet: View {
                     .frame(width: setTypePillWidth, height: setTypePillHeight)
                     .background(setType == .normal ? Color.clear : (setType == .warmup ? Color.ink3 : Color.ink2))
                     .overlay(
-                        Capsule().stroke(Color.line, lineWidth: 0.5)
+                        Capsule().stroke(Color.lineStrong, lineWidth: 0.5)
                     )
                     .clipShape(Capsule())
                     .frame(width: 44, height: 44)
@@ -187,7 +187,7 @@ struct EditSessionSheet: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 6)
-                    .stroke(Color.line, lineWidth: 0.5)
+                    .stroke(Color.lineStrong, lineWidth: 0.5)
             )
     }
 

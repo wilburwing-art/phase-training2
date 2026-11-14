@@ -44,7 +44,7 @@ struct RemindersEditorSheet: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(remindersOn ? Color.accentWash : Color.surface)
                             .overlay(RoundedRectangle(cornerRadius: 12)
-                                .stroke(remindersOn ? Color.accentBorder : Color.line, lineWidth: 0.5))
+                                .stroke(remindersOn ? Color.accentBorder : Color.lineStrong, lineWidth: 0.5))
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                         .buttonStyle(.plain)

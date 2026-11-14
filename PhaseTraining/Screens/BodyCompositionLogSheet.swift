@@ -93,7 +93,7 @@ struct BodyCompositionLogSheet: View {
                 .background(Color.elevated)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.line, lineWidth: 0.5)
+                        .stroke(Color.lineStrong, lineWidth: 0.5)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             TextField("Note (optional)", text: $noteText)
@@ -104,7 +104,7 @@ struct BodyCompositionLogSheet: View {
                 .background(Color.elevated)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.line, lineWidth: 0.5)
+                        .stroke(Color.lineStrong, lineWidth: 0.5)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             Button(action: logEntry) {
@@ -146,7 +146,7 @@ struct BodyCompositionLogSheet: View {
             .background(Color.elevated)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.line, lineWidth: 0.5)
+                    .stroke(Color.lineStrong, lineWidth: 0.5)
             )
             .clipShape(RoundedRectangle(cornerRadius: 10))
         }

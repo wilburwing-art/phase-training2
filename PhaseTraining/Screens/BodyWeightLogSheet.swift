@@ -97,7 +97,7 @@ struct BodyWeightLogSheet: View {
                     .background(Color.elevated)
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.line, lineWidth: 0.5)
+                            .stroke(Color.lineStrong, lineWidth: 0.5)
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .accessibilityIdentifier("body-weight-log-input")
@@ -113,7 +113,7 @@ struct BodyWeightLogSheet: View {
                 .background(Color.elevated)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.line, lineWidth: 0.5)
+                        .stroke(Color.lineStrong, lineWidth: 0.5)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             Button(action: logEntry) {

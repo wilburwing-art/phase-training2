@@ -75,7 +75,7 @@ private struct FocusChip: View {
                 .background(isSelected ? Color.accent : Color.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .strokeBorder(isSelected ? Color.clear : Color.line, lineWidth: 0.5)
+                        .strokeBorder(isSelected ? Color.clear : Color.lineStrong, lineWidth: 0.5)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         }
