@@ -31,7 +31,7 @@
           },
           "localizations" : [
             {
-              "description" : "Two-sport planning and the AI coach",
+              "description" : "Two-sport planning around your season",
               "displayName" : "Pro Monthly",
               "locale" : "en_US"
             }
@@ -56,7 +56,7 @@
           },
           "localizations" : [
             {
-              "description" : "Two-sport planning, AI coach, best value",
+              "description" : "Two-sport planning, best value",
               "displayName" : "Pro Annual",
               "locale" : "en_US"
             }

@@ -1,9 +1,16 @@
 # Decision: does the AI Coach ship in the first App Store release?
 
-Open. Raised 2026-09-21 while drafting the store listing, written up
-2026-09-26 against build 144. Nothing is being built on this until it is
-answered. The rest of the submission work (privacy policy, paywall terms,
-screenshots, listing copy) is done and does not depend on it.
+**Decided 2026-11-13 (Wilbur): no. Option A.** The first App Store release
+ships without the coach. Raised 2026-09-21 while drafting the store listing,
+written up 2026-09-26 against build 144.
+
+What carries the decision: `release.yml` blanks the gateway token unless the
+repo variable `PHASETRAINING_BETA` is `0`, and `CoachEntitlement.coachAvailable`
+hides the Coach row, the consent step, the bubble, the daily insight and the
+two coach rows on the paywall when the token is empty. The variable is unset
+as of 2026-11-13, so the store build needs no new flag. Listing copy, StoreKit
+descriptions and review notes were cut the same day. B or C is reopened once
+there are subscribers to measure.
 
 ## Why this is a decision and not a task
 

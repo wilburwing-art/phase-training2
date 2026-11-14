@@ -14,7 +14,7 @@ were counted. Numbers come from the shipped `coach.db` (580 exercises,
 
 **Promotional text** (170, editable without a new build):
 
-> Plan your lifting week around the sport you actually do. 580 illustrated exercises, season phases, Apple Health import, and a coach that can move your week.
+> Plan your lifting week around the sport you actually do. 580 illustrated exercises, season phases and Apple Health import.
 
 **Description** (4000):
 
@@ -42,10 +42,10 @@ were counted. Numbers come from the shipped `coach.db` (580 exercises,
 > Declare an injury, its side and severity, and the exercises that would aggravate it are filtered out. Dislike a movement and it stops appearing.
 >
 > PRIVATE BY DEFAULT
-> Your data lives on your phone. No account, no analytics, no tracking. Nothing leaves the device unless you turn on the AI Coach.
+> Your data lives on your phone. No account, no analytics, no tracking. Nothing leaves the device unless you export it.
 >
 > PHASE TRAINING PRO
-> Two-sport planning that de-conflicts your primary and support sports, season-phase programming, and an AI coach you can talk to: it can shift your week, swap a lift, and give weekly insights and recovery feedback. The coach is off until you switch it on and agree to what it sends.
+> Two-sport planning that de-conflicts your primary and support sports, and season-phase programming.
 >
 > Pro is an auto-renewing subscription, monthly or yearly, with a one-week free trial. Payment is charged to your Apple ID at confirmation. It renews automatically unless cancelled at least 24 hours before the end of the current period, and you can manage or cancel it in your Apple ID settings.
 > Terms of Use: https://www.apple.com/legal/internet-services/itunes/dev/stdeula/
@@ -55,7 +55,7 @@ were counted. Numbers come from the shipped `coach.db` (580 exercises,
 
 **Keywords** (100, comma-separated, no spaces):
 
-> workout,planner,strength,climbing,skiing,gym,log,periodization,season,coach,lifting,mountain,sport
+> workout,planner,strength,climbing,skiing,gym,log,periodization,season,trail,lifting,mountain,sport
 
 Do not repeat words already in the name or subtitle ("training", "phase"); Apple indexes those already.
 
@@ -76,10 +76,10 @@ Do not repeat words already in the name or subtitle ("training", "phase"); Apple
 
 | product id | reference name | display name (30) | description (45) | price | period | intro offer |
 |---|---|---|---|---|---|---|
-| com.phasetraining.app.pro_monthly | Pro Monthly | Pro Monthly | Two-sport planning and the AI coach | $2.99 | 1 month | 1 week free |
-| com.phasetraining.app.pro_yearly | Pro Annual | Pro Annual | Two-sport planning, AI coach, best value | $24.99 (proposed) | 1 year | 1 week free |
+| com.phasetraining.app.pro_monthly | Pro Monthly | Pro Monthly | Two-sport planning around your season | $2.99 | 1 month | 1 week free |
+| com.phasetraining.app.pro_yearly | Pro Annual | Pro Annual | Two-sport planning, best value | $24.99 | 1 year | 1 week free |
 
-The yearly price is a proposal (about seven months of monthly); the owner asked for $3/month and did not set a yearly price. Both products need a review screenshot of the paywall (docs/store, or the `paywall-terms` attachment from `PaywallHeroUITests`) and a review note.
+Prices decided 2026-11-13: $2.99 monthly as the owner asked, $24.99 yearly (about seven months of monthly), one week free on both. Revisit both when the coach comes back behind Pro, since each coach turn costs money and two-sport planning costs nothing to serve. Both products need a review screenshot of the paywall (docs/store, or the `paywall-terms` attachment from `PaywallHeroUITests`) and a review note.
 
 ## App Privacy questionnaire
 
@@ -90,7 +90,7 @@ Collected data, all "used for App Functionality", "not linked to the user", "not
 - Health & Fitness → Fitness: logged workouts, sets, RPE, soreness.
 - Sensitive Info: none. Contact Info: none. Identifiers: none. Usage Data: none. Diagnostics: none.
 
-Third party: when the user turns on the AI Coach, the training context is sent to Anthropic through the developer's Cloudflare AI Gateway. Declare this under the Health & Fitness types as data the developer collects for app functionality; it is opt-in, off by default, and the privacy policy lists every field. No tracking, no advertising, `NSPrivacyTracking` is false in the manifest.
+Third party: none in the first store release, which ships without the AI Coach (decided 2026-11-13). In the build that brings the coach back, declare the training context sent to Anthropic through the developer's Cloudflare AI Gateway under the Health & Fitness types as data the developer collects for app functionality; it is opt-in, off by default, and the privacy policy lists every field. No tracking, no advertising, `NSPrivacyTracking` is false in the manifest.
 
 ## App Review notes
 
@@ -102,18 +102,18 @@ Third party: when the user turns on the AI Coach, the training context is sent t
 >
 > Apple Music: the Log screen shows a transport card for the currently playing track. It only appears while music is playing, and the media-library permission is requested only when the tester taps "Show controls".
 >
-> Pro features (two-sport planning, AI Coach) unlock with the sandbox subscription from Profile → Subscription. The AI Coach is off by default; turn it on from Profile → AI Coach and accept the consent screen, which lists what is sent. Coach replies are generated by Anthropic Claude through our gateway; no account is needed and no personal identifiers are sent.
+> Pro (two-sport planning) unlocks with the sandbox subscription from Profile → Subscription.
 >
 > To reach a populated app quickly: complete setup with any sport, then Today → Start workout.
 
 ## Before submitting
 
-- **Open decision: does the coach ship at all in the first release?** See
-  `DECISION-coach-at-launch.md`. Every install shares one gateway token that
-  bills one Anthropic account, with no per-user metering. If the answer is
-  "not yet", cut the PHASE TRAINING PRO coach wording above, the coach
-  paragraph in the review notes, and the AI Coach line from the subscription
-  descriptions.
-- Both Pro gates ship "held open" (`CoachEntitlement`, `SupportEntitlement`, `proRequired` false) so everything is free until the products exist. Decide whether the first store build charges for Pro; if yes, flip both gates in the same build that ships the products, or the subscription sells nothing.
+- **Decided 2026-11-13: the first store release ships without the coach.** See
+  `DECISION-coach-at-launch.md`. The store build must go out with the repo variable
+  `PHASETRAINING_BETA` unset or `1`, which blanks the gateway token and hides every
+  coach surface. The copy above is already cut to match.
+- **Decided 2026-11-13: the first store build charges for Pro.** Pro is the Support Sport editor and the two-sport reflow, the one thing `SupportEntitlement` gates. Create both products in App Store Connect, then flip `SupportEntitlement.proRequired` to true in the same build (its flip-day checklist is in the file, including the lapsed-subscriber rule). `CoachEntitlement.proRequired` stays false until the coach returns.
+- Season-phase programming is listed as a Pro feature on the paywall and in the description, and no gate covers it: every user gets season phases. Gate it or move the line out of the Pro copy before submitting.
+- Reshoot the paywall screenshot: the two coach rows no longer show on a build without a gateway token.
 - Reshoot `02-week.png` on a real plan (see docs/store/README.md).
 - Re-run the paywall UI test against the live products once they exist in App Store Connect.

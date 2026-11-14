@@ -87,8 +87,13 @@ struct PaywallView: View {
         VStack(alignment: .leading, spacing: 10) {
             featureRow("Two-sport planning: your lifts flex around your climb and ski days")
             featureRow("Season-phase programming, from off-season base to event taper")
-            featureRow("Chat coach that can shift your week or swap a lift")
-            featureRow("Weekly coaching insights and recovery feedback")
+            // The coach rows show only on a build that carries a gateway
+            // token. The first store release ships without one (decided
+            // 2026-11-13, DECISION-coach-at-launch.md).
+            if CoachEntitlement.coachAvailable {
+                featureRow("Chat coach that can shift your week or swap a lift")
+                featureRow("Weekly coaching insights and recovery feedback")
+            }
         }
     }
 
