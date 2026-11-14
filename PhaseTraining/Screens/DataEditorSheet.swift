@@ -81,7 +81,7 @@ struct DataEditorSheet: View {
     private func dataRow(icon: String, title: String, subtitle: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 16, weight: .medium))
+                .scaledSystemFont(16, weight: .medium, within: 24)
                 .foregroundStyle(Color.accent)
                 .frame(width: 24)
             VStack(alignment: .leading, spacing: 2) {
@@ -95,7 +95,7 @@ struct DataEditorSheet: View {
             }
             Spacer(minLength: 6)
             Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .semibold))
+                .scaledSystemFont(12, weight: .semibold)
                 .foregroundStyle(Color.ink3)
         }
         .padding(12)

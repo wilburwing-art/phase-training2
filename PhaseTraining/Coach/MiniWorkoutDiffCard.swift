@@ -88,7 +88,7 @@ struct MiniWorkoutDiffCard: View {
                     .strikethrough(true, color: Color.ink3)
                     .lineLimit(1)
                 Image(systemName: "arrow.right")
-                    .font(.system(size: 8, weight: .semibold))
+                    .scaledSystemFont(8, weight: .semibold)
                     .foregroundStyle(Color.ink3)
             }
             Text(short(after))

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# verify_font_tokens.sh — no raw Font.custom(_:size:) outside the token table.
+# verify_font_tokens.sh — no raw Font.custom(_:size:) outside the token table,
+# and no raw .system(size:) outside Theme/ScaledSystemFont.swift.
 #
 # Every font the app draws comes through PhaseTraining/Theme/Typography.swift:
 # the nine TypeStyle tokens, or Font.scaled(_:size:) for a one-off size. Both
@@ -9,8 +10,13 @@
 # were 123 of them across 50 files, a third of the app's type frozen while the
 # rest scaled. This makes the next one a CI failure instead of a slow drift.
 #
+# `.font(.system(size: N))` stays at N points at every text size, so SF Symbols
+# stopped growing beside the labels that do. `.scaledSystemFont(N, weight:)`
+# follows Dynamic Type; pass `within:` for a glyph in a fixed box.
+#
 # Fix when it fails: change `.custom(name, size: N)` to `.scaled(name, size: N)`,
-# or better, use a TypeStyle token via `.styled(...)`.
+# or better, use a TypeStyle token via `.styled(...)`. Change
+# `.font(.system(size: N, weight: W))` to `.scaledSystemFont(N, weight: W)`.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
@@ -20,4 +26,11 @@ if [ -n "$offenders" ]; then
   echo "$offenders" >&2
   exit 1
 fi
-echo "font tokens: ok (no raw .custom( outside Theme/Typography.swift)"
+
+system_offenders=$(grep -rn '\.system(size:' --include='*.swift' PhaseTraining | grep -v '^PhaseTraining/Theme/ScaledSystemFont.swift:' || true)
+if [ -n "$system_offenders" ]; then
+  echo "Raw .system(size:) outside Theme/ScaledSystemFont.swift (use .scaledSystemFont(N, weight:)):" >&2
+  echo "$system_offenders" >&2
+  exit 1
+fi
+echo "font tokens: ok (no raw .custom( outside Theme/Typography.swift, no raw .system(size: outside Theme/ScaledSystemFont.swift)"

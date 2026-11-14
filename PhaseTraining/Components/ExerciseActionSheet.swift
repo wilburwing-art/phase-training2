@@ -209,7 +209,7 @@ struct ExerciseActionSheet: View {
         Button(action: action) {
             HStack(spacing: 14) {
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .regular))
+                    .scaledSystemFont(16, weight: .regular, within: 24)
                     .foregroundStyle(tint == Color.ink ? Color.ink2 : tint)
                     .frame(width: 24, alignment: .center)
                 Text(label)

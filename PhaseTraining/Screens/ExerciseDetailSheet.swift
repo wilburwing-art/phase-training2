@@ -208,7 +208,7 @@ private struct ExerciseDetailContent: View {
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "sparkles")
-                    .font(.system(size: 12, weight: .medium))
+                    .scaledSystemFont(12, weight: .medium, within: 18)
                     .foregroundStyle(Color.ink3)
                     .frame(width: 18)
                 VStack(alignment: .leading, spacing: 2) {
@@ -222,7 +222,7 @@ private struct ExerciseDetailContent: View {
                 }
                 Spacer(minLength: 4)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .semibold))
+                    .scaledSystemFont(11, weight: .semibold)
                     .foregroundStyle(Color.ink3)
             }
             .padding(12)
@@ -336,12 +336,12 @@ private struct ExerciseDetailContent: View {
                 Link(destination: url) {
                     HStack(spacing: 8) {
                         Image(systemName: "play.rectangle.fill")
-                            .font(.system(size: 14, weight: .semibold))
+                            .scaledSystemFont(14, weight: .semibold)
                         Text("Watch demo")
                             .font(.scaled("SpaceGrotesk-SemiBold", size: 14))
                         Spacer()
                         Image(systemName: "arrow.up.right.square")
-                            .font(.system(size: 12, weight: .medium))
+                            .scaledSystemFont(12, weight: .medium)
                     }
                     .foregroundStyle(Color.accentInk)
                     .padding(.horizontal, 14)
@@ -409,7 +409,7 @@ private struct ExerciseDetailContent: View {
                             Color.elevated
                             VStack(spacing: 6) {
                                 Image(systemName: "photo")
-                                    .font(.system(size: 22))
+                                    .scaledSystemFont(22)
                                     .foregroundStyle(Color.ink3)
                                 Text("Image unavailable")
                                     .font(.monoXS)
@@ -494,7 +494,7 @@ private struct ExerciseDetailContent: View {
     private func freeTextRow(arrow: String, label: String, value: String) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Image(systemName: arrow)
-                .font(.system(size: 11, weight: .medium))
+                .scaledSystemFont(11, weight: .medium)
                 .foregroundStyle(Color.ink3)
             Text(label.uppercased())
                 .styled(.micro)
@@ -524,7 +524,7 @@ private struct ExerciseDetailContent: View {
         } label: {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: "arrow.triangle.swap")
-                    .font(.system(size: 12, weight: .medium))
+                    .scaledSystemFont(12, weight: .medium, within: 18)
                     .foregroundStyle(Color.ink3)
                     .frame(width: 18)
                 VStack(alignment: .leading, spacing: 4) {
@@ -564,7 +564,7 @@ private struct ExerciseDetailContent: View {
                     }
                 }
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
+                    .scaledSystemFont(12, weight: .medium)
                     .foregroundStyle(Color.ink3)
                     .padding(.top, 2)
             }
@@ -586,7 +586,7 @@ private struct ExerciseDetailContent: View {
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: direction.symbol)
-                    .font(.system(size: 12, weight: .medium))
+                    .scaledSystemFont(12, weight: .medium, within: 18)
                     .foregroundStyle(Color.ink3)
                     .frame(width: 18)
                 VStack(alignment: .leading, spacing: 2) {
@@ -603,7 +603,7 @@ private struct ExerciseDetailContent: View {
                 }
                 Spacer(minLength: 8)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
+                    .scaledSystemFont(12, weight: .medium)
                     .foregroundStyle(Color.ink3)
             }
             .padding(14)

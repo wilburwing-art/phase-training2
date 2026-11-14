@@ -20,6 +20,7 @@ struct PlateCalculatorSheet: View {
     /// Pre-fills the target when opened from a set in Log; empty from Profile.
     var initialTarget: String = ""
 
+    @ScaledMetric(relativeTo: .caption2) private var plateTile: CGFloat = 30
     @State private var targetText: String = ""
     @State private var barText: String = ""
     @State private var imperial: Bool = true
@@ -247,10 +248,10 @@ struct PlateCalculatorSheet: View {
             RoundedRectangle(cornerRadius: 6, style: .continuous)
                 .fill(plateColor(weight))
             Text(String(format: "%g", weight))
-                .font(.system(size: 9, weight: .bold))
+                .scaledSystemFont(9, weight: .bold)
                 .foregroundStyle(Color.accentInk)
         }
-        .frame(width: 30, height: 30)
+        .frame(width: plateTile, height: plateTile)
     }
 
     private func plateBar(weight: Double) -> some View {
@@ -264,7 +265,7 @@ struct PlateCalculatorSheet: View {
             .frame(width: 8, height: h)
             .overlay(
                 Text(String(format: "%g", weight))
-                    .font(.system(size: 7, weight: .bold))
+                    .scaledSystemFont(7, weight: .bold, within: 8)
                     .foregroundStyle(Color.accentInk)
                     .rotationEffect(.degrees(-90))
                     .frame(width: h)

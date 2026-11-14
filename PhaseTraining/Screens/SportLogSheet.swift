@@ -122,7 +122,7 @@ struct SportLogSheet: View {
                     if durationMinutes > 5 { durationMinutes -= 5 }
                 } label: {
                     Image(systemName: "minus.circle.fill")
-                        .font(.system(size: 28))
+                        .scaledSystemFont(28)
                         .foregroundStyle(durationMinutes > 5 ? Color.accent : Color.line)
                         .accessibilityLabel("Decrease duration")
                 }
@@ -146,7 +146,7 @@ struct SportLogSheet: View {
                     if durationMinutes < 600 { durationMinutes += 5 }
                 } label: {
                     Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 28))
+                        .scaledSystemFont(28)
                         .foregroundStyle(durationMinutes < 600 ? Color.accent : Color.line)
                         .accessibilityLabel("Increase duration")
                 }
@@ -208,7 +208,7 @@ struct SportLogSheet: View {
                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.line, lineWidth: 0.5))
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .foregroundStyle(Color.ink)
-                .font(.system(size: 15))
+                .scaledSystemFont(15)
         }
         .padding(16)
         .background(Color.surface)

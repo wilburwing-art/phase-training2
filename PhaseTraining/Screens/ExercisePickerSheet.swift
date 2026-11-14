@@ -71,7 +71,7 @@ struct ExercisePickerSheet: View {
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: "plus.circle")
-                    .font(.system(size: 14, weight: .medium))
+                    .scaledSystemFont(14, weight: .medium)
                 Text(label)
                     .styled(.body)
                     .multilineTextAlignment(.leading)
@@ -193,7 +193,7 @@ struct ExercisePickerSheet: View {
     private var broadenedBanner: some View {
         HStack(alignment: .top, spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 12, weight: .medium))
+                .scaledSystemFont(12, weight: .medium)
                 .foregroundStyle(Color.ink3)
             Text("No match under the current filters. Showing results from the whole library.")
                 .font(.monoXS)
@@ -212,7 +212,7 @@ struct ExercisePickerSheet: View {
     private var searchBar: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 14, weight: .medium))
+                .scaledSystemFont(14, weight: .medium)
                 .foregroundStyle(Color.ink3)
             TextField("", text: $query,
                       prompt: Text("Search exercises").foregroundColor(Color.ink3))
@@ -224,7 +224,7 @@ struct ExercisePickerSheet: View {
             if !query.isEmpty {
                 Button { query = "" } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 14))
+                        .scaledSystemFont(14)
                         .foregroundStyle(Color.ink3)
                         .accessibilityLabel("Clear search")
                 }
@@ -262,7 +262,7 @@ struct ExercisePickerSheet: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "line.3.horizontal.decrease")
-                        .font(.system(size: 12, weight: .medium))
+                        .scaledSystemFont(12, weight: .medium)
                     Text(filters.secondaryCount > 0 ? "All filters (\(filters.secondaryCount))" : "All filters")
                         .styled(.micro)
                 }
@@ -324,7 +324,7 @@ struct ExercisePickerSheet: View {
                 showDetail(ex)
             } label: {
                 Image(systemName: "info.circle")
-                    .font(.system(size: 16))
+                    .scaledSystemFont(16, within: 36)
                     .foregroundStyle(Color.ink3)
                     .frame(width: 36, height: 36)
                     .background(Color.surface)

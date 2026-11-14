@@ -71,7 +71,7 @@ struct CoachDrawer: View {
     private var header: some View {
         HStack(spacing: 10) {
             Image(systemName: "sparkles")
-                .font(.system(size: 13, weight: .semibold))
+                .scaledSystemFont(13, weight: .semibold)
                 .foregroundStyle(Color.accent)
             Text("COACH")
                 .styled(.micro)
@@ -101,7 +101,7 @@ struct CoachDrawer: View {
                 conv.presented = false
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 13, weight: .semibold))
+                    .scaledSystemFont(13, weight: .semibold, within: 28)
                     .foregroundStyle(Color.ink2)
                     .frame(width: 28, height: 28)
                     .background(Color.surface)
@@ -148,7 +148,7 @@ struct CoachDrawer: View {
                     .foregroundStyle(Color.ink2)
                 Spacer()
                 Image(systemName: "arrow.up.right")
-                    .font(.system(size: 10, weight: .semibold))
+                    .scaledSystemFont(10, weight: .semibold)
                     .foregroundStyle(Color.ink3)
             }
             .padding(.horizontal, 12)
@@ -246,7 +246,7 @@ struct CoachDrawer: View {
 
                 Button(action: send) {
                     Image(systemName: sending ? "stop.fill" : "arrow.up")
-                        .font(.system(size: 16, weight: .bold))
+                        .scaledSystemFont(16, weight: .bold, within: 38)
                         .foregroundStyle(canSend || sending ? Color.accentInk : Color.ink3)
                         .frame(width: 38, height: 38)
                         .background(canSend || sending ? Color.accent : Color.elevated)
@@ -270,7 +270,7 @@ struct CoachDrawer: View {
         let hard = conv.atHardCap
         return HStack(spacing: 8) {
             Image(systemName: hard ? "moon.zzz.fill" : "exclamationmark.triangle.fill")
-                .font(.system(size: 12, weight: .semibold))
+                .scaledSystemFont(12, weight: .semibold)
                 .foregroundStyle(hard ? Color.ink2 : Color.accent)
             Text(hard
                  ? "Daily coaching limit reached. Pick this up tomorrow. Your plan and history stay put."
@@ -616,7 +616,7 @@ struct CoachHistorySheet: View {
                                 .font(.monoXS)
                                 .foregroundStyle(Color.ink3)
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 11, weight: .semibold))
+                                .scaledSystemFont(11, weight: .semibold)
                                 .foregroundStyle(Color.ink3)
                         }
                         .padding(12)

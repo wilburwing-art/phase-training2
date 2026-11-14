@@ -174,7 +174,7 @@ struct SubstituteExerciseSheet: View {
                 detailExercise = sub.exercise
             } label: {
                 Image(systemName: "info.circle")
-                    .font(.system(size: 16, weight: .regular))
+                    .scaledSystemFont(16, weight: .regular, within: 36)
                     .foregroundStyle(Color.ink3)
                     .frame(width: 36, height: 36)
                     .background(Color.surface)
@@ -235,7 +235,7 @@ struct SubstituteExerciseSheet: View {
                 detailExercise = ex
             } label: {
                 Image(systemName: "info.circle")
-                    .font(.system(size: 16, weight: .regular))
+                    .scaledSystemFont(16, weight: .regular, within: 36)
                     .foregroundStyle(Color.ink3)
                     .frame(width: 36, height: 36)
                     .background(Color.surface)
@@ -277,7 +277,7 @@ struct SubstituteExerciseSheet: View {
     private var emptyState: some View {
         VStack(spacing: 12) {
             Image(systemName: "rectangle.on.rectangle.slash")
-                .font(.system(size: 28, weight: .regular))
+                .scaledSystemFont(28, weight: .regular)
                 .foregroundStyle(Color.ink3)
             Text("No similar exercises")
                 .styled(.body)

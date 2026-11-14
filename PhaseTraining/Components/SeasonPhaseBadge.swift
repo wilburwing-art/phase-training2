@@ -90,7 +90,7 @@ struct SeasonPhaseBadge: View {
             }
             Spacer(minLength: 4)
             Image(systemName: "chevron.right")
-                .font(.system(size: 11, weight: .semibold))
+                .scaledSystemFont(11, weight: .semibold)
                 .foregroundStyle(Color.ink3)
         }
         .padding(.horizontal, 12)
@@ -139,7 +139,7 @@ struct SeasonPhaseBadge: View {
     private var compactBody: some View {
         HStack(spacing: 4) {
             Image(systemName: phaseIcon)
-                .font(.system(size: 10, weight: .medium))
+                .scaledSystemFont(10, weight: .medium)
             Text(compactLabel)
                 .font(.monoXS)
         }
@@ -167,7 +167,7 @@ struct SeasonPhaseBadge: View {
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(Color.accentWash)
             Image(systemName: phaseIcon)
-                .font(.system(size: 15, weight: .semibold))
+                .scaledSystemFont(15, weight: .semibold, within: 32)
                 .foregroundStyle(Color.accent)
         }
     }

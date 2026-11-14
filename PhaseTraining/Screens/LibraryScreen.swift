@@ -197,7 +197,7 @@ struct LibraryScreen: View {
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 16, weight: .medium))
+                    .scaledSystemFont(16, weight: .medium, within: 24)
                     .foregroundStyle(Color.accentInk)
                     .frame(width: 24, alignment: .center)
                 VStack(alignment: .leading, spacing: 2) {
@@ -210,7 +210,7 @@ struct LibraryScreen: View {
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
+                    .scaledSystemFont(12, weight: .medium)
                     .foregroundStyle(Color.accentInk.opacity(0.7))
             }
             .padding(14)
@@ -253,7 +253,7 @@ struct LibraryScreen: View {
     private var searchBar: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 14, weight: .medium))
+                .scaledSystemFont(14, weight: .medium)
                 .foregroundStyle(Color.ink3)
             TextField("", text: $query,
                       prompt: Text("Search \(segment.label.lowercased())").foregroundColor(Color.ink3))
@@ -264,7 +264,7 @@ struct LibraryScreen: View {
             if !query.isEmpty {
                 Button { query = "" } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 14))
+                        .scaledSystemFont(14)
                         .foregroundStyle(Color.ink3)
                         .accessibilityLabel("Clear search")
                 }
@@ -356,7 +356,7 @@ struct LibraryScreen: View {
     private func tileFace(_ tile: LibraryTile) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Image(systemName: tile.symbol)
-                .font(.system(size: 22, weight: .regular))
+                .scaledSystemFont(22, weight: .regular)
                 .foregroundStyle(Color.accent)
             Text(tile.label)
                 .styled(.displayS)
@@ -366,7 +366,7 @@ struct LibraryScreen: View {
                     .styled(.micro)
                     .foregroundStyle(Color.ink3)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 10, weight: .medium))
+                    .scaledSystemFont(10, weight: .medium)
                     .foregroundStyle(Color.ink3)
             }
         }
@@ -534,7 +534,7 @@ struct LibraryScreen: View {
     private func workoutTileFace(_ label: String, symbol: String, count: Int?) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Image(systemName: symbol)
-                .font(.system(size: 22, weight: .regular))
+                .scaledSystemFont(22, weight: .regular)
                 .foregroundStyle(Color.accent)
             Text(label)
                 .styled(.displayS)
@@ -550,7 +550,7 @@ struct LibraryScreen: View {
                         .foregroundStyle(Color.ink3)
                 }
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 10, weight: .medium))
+                    .scaledSystemFont(10, weight: .medium)
                     .foregroundStyle(Color.ink3)
             }
         }
@@ -590,7 +590,7 @@ struct LibraryScreen: View {
     private var routinesEmptyState: some View {
         VStack(spacing: 8) {
             Image(systemName: "tray")
-                .font(.system(size: 22))
+                .scaledSystemFont(22)
                 .foregroundStyle(Color.ink3)
             Text("Saved workouts show up here.")
                 .styled(.body)
@@ -609,7 +609,7 @@ struct LibraryScreen: View {
     private var searchEmptyState: some View {
         VStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 22))
+                .scaledSystemFont(22)
                 .foregroundStyle(Color.ink3)
             Text("Nothing matches")
                 .styled(.body)

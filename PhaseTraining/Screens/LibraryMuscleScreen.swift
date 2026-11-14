@@ -65,7 +65,7 @@ struct LibraryMuscleScreen: View {
         HStack(alignment: .center, spacing: 12) {
             Button { dismiss() } label: {
                 Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .medium))
+                    .scaledSystemFont(16, weight: .medium, within: 32)
                     .foregroundStyle(Color.ink2)
                     .frame(width: 32, height: 32)
                     .background(Color.surface)
@@ -99,7 +99,7 @@ struct LibraryMuscleScreen: View {
     private var searchBar: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 14, weight: .medium))
+                .scaledSystemFont(14, weight: .medium)
                 .foregroundStyle(Color.ink3)
             TextField("", text: $query,
                       prompt: Text("Search \(tile.label.lowercased())").foregroundColor(Color.ink3))
@@ -110,7 +110,7 @@ struct LibraryMuscleScreen: View {
             if !query.isEmpty {
                 Button { query = "" } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 14))
+                        .scaledSystemFont(14)
                         .foregroundStyle(Color.ink3)
                         .accessibilityLabel("Clear search")
                 }
@@ -150,7 +150,7 @@ struct LibraryMuscleScreen: View {
             Button { showingFilterSheet = true } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "line.3.horizontal.decrease")
-                        .font(.system(size: 12, weight: .medium))
+                        .scaledSystemFont(12, weight: .medium)
                     Text(filters.secondaryCount > 0 ? "All filters (\(filters.secondaryCount))" : "All filters")
                         .styled(.micro)
                 }
@@ -190,7 +190,7 @@ struct LibraryMuscleScreen: View {
         if rows.isEmpty {
             VStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 22))
+                    .scaledSystemFont(22)
                     .foregroundStyle(Color.ink3)
                 Text("Nothing matches")
                     .styled(.body)

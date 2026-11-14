@@ -86,7 +86,7 @@ private struct IssueRow: View {
             Button(action: onTap) {
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: issue.severity.icon)
-                        .font(.system(size: 12, weight: .semibold))
+                        .scaledSystemFont(12, weight: .semibold, within: 14)
                         .foregroundStyle(severityColor)
                         .frame(width: 14, alignment: .center)
                         .padding(.top, 2)
@@ -96,7 +96,7 @@ private struct IssueRow: View {
                         .multilineTextAlignment(.leading)
                     Spacer(minLength: 4)
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 10, weight: .medium))
+                        .scaledSystemFont(10, weight: .medium)
                         .foregroundStyle(Color.ink3)
                 }
             }

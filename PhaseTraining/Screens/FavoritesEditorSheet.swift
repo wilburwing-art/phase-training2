@@ -87,7 +87,7 @@ struct FavoritesEditorSheet: View {
                 .foregroundStyle(Color.ink3)
             Button { remove(name) } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 9, weight: .bold))
+                    .scaledSystemFont(9, weight: .bold)
                     .foregroundStyle(Color.ink3)
             }
             .buttonStyle(.plain)

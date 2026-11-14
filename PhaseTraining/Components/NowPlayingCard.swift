@@ -80,7 +80,7 @@ struct NowPlayingCard: View {
                 ZStack {
                     Color.elevated
                     Image(systemName: "music.note")
-                        .font(.system(size: 16, weight: .medium))
+                        .scaledSystemFont(16, weight: .medium, within: 40)
                         .foregroundStyle(Color.ink3)
                 }
             }
@@ -93,7 +93,7 @@ struct NowPlayingCard: View {
     private func control(_ symbol: String, label: String, id: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 18, weight: .semibold))
+                .scaledSystemFont(18, weight: .semibold, within: 40)
                 .foregroundStyle(Color.accent)
                 .frame(width: 40, height: 40)
         }

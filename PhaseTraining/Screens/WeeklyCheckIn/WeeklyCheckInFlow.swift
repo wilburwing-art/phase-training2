@@ -414,7 +414,7 @@ struct CheckInScaffold<Content: View>: View {
                 if let onBack {
                     Button(action: onBack) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .semibold))
+                            .scaledSystemFont(16, weight: .semibold, within: 32)
                             .foregroundStyle(Color.ink2)
                             .frame(width: 32, height: 32)
                     }
@@ -434,7 +434,7 @@ struct CheckInScaffold<Content: View>: View {
                 if let onClose {
                     Button(action: onClose) {
                         Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
+                            .scaledSystemFont(14, weight: .semibold, within: 32)
                             .foregroundStyle(Color.ink2)
                             .frame(width: 32, height: 32)
                             // On the Image, not the Button: an SF Symbol

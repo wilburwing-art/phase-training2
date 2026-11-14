@@ -31,12 +31,12 @@ struct SorenessCheckInPill: View {
         Button { showSheet = true } label: {
             HStack(spacing: 8) {
                 Image(systemName: logged ? "checkmark.circle.fill" : "figure.cooldown")
-                    .font(.system(size: 13, weight: .semibold))
+                    .scaledSystemFont(13, weight: .semibold)
                 Text(logged ? "SORENESS · LOGGED" : "HOW SORE ARE YOU TODAY?")
                     .styled(.micro)
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .semibold))
+                    .scaledSystemFont(11, weight: .semibold)
             }
             .foregroundStyle(logged ? Color.accent : Color.ink2)
             .padding(.horizontal, 12)

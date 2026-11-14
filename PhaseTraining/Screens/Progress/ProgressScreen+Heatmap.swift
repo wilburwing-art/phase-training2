@@ -134,7 +134,7 @@ extension ProgressScreen {
                                    action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 13, weight: .semibold))
+                .scaledSystemFont(13, weight: .semibold, within: 32)
                 .foregroundStyle(Color.ink2)
                 .frame(width: 32, height: 32)
                 .contentShape(Rectangle())

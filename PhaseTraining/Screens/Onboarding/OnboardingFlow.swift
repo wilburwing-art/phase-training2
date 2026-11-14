@@ -310,7 +310,7 @@ struct OnboardingScaffold<Content: View>: View {
                 if let onBack {
                     Button(action: onBack) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .semibold))
+                            .scaledSystemFont(16, weight: .semibold, within: 32)
                             .foregroundStyle(Color.ink2)
                             .frame(width: 32, height: 32)
                             .accessibilityLabel("Back")
@@ -392,7 +392,7 @@ struct OnboardingPrimaryButton: View {
                 Text(label)
                     .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
+                    .scaledSystemFont(14, weight: .semibold)
             }
             .foregroundStyle(enabled ? Color.accentInk : Color.ink3)
             .frame(maxWidth: .infinity)
@@ -448,7 +448,7 @@ struct OnboardingPickRow: View {
             HStack(alignment: .top, spacing: 12) {
                 if let leading {
                     Image(systemName: leading)
-                        .font(.system(size: 16, weight: .medium))
+                        .scaledSystemFont(16, weight: .medium, within: 24)
                         .foregroundStyle(selected ? Color.accent : Color.ink2)
                         .frame(width: 24, alignment: .center)
                         .padding(.top, 2)
@@ -467,7 +467,7 @@ struct OnboardingPickRow: View {
                 }
                 Spacer(minLength: 0)
                 Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 20))
+                    .scaledSystemFont(20)
                     .foregroundStyle(selected ? Color.accent : Color.line)
             }
             .padding(.horizontal, 14)

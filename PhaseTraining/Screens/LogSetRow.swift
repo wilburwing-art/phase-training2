@@ -40,7 +40,7 @@ extension LogScreen {
                     // A letter pill replaces the set number for any non-normal
                     // set (W warmup, D drop, F failure).
                     Text(badge)
-                        .font(.system(size: setTypePillFont, weight: .bold))
+                        .scaledSystemFont(9, weight: .bold)
                         .foregroundStyle(Color.bg)
                         .frame(width: setTypePillWidth, height: setTypePillHeight)
                         .background(set.setType == .warmup ? Color.ink3 : Color.ink2)
@@ -306,7 +306,7 @@ extension LogScreen {
                 if done {
                     Circle().fill(Color.ok)
                     Image(systemName: "checkmark")
-                        .font(.system(size: 11, weight: .heavy))
+                        .scaledSystemFont(11, weight: .heavy, within: 22)
                         .foregroundStyle(Color.bg)
                 } else {
                     Circle().strokeBorder(Color.line, lineWidth: 1.5)

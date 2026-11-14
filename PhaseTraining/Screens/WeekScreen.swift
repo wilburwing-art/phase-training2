@@ -87,7 +87,7 @@ struct WeekScreen: View {
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "sparkles")
-                            .font(.system(size: ScreenScale.scaled(13), weight: .semibold))
+                            .scaledSystemFont(ScreenScale.scaled(13), weight: .semibold)
                         Text("Generate plan")
                             .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                     }
@@ -267,7 +267,7 @@ struct WeekScreen: View {
         Button(action: action) {
             HStack(spacing: 5) {
                 Image(systemName: icon)
-                    .font(.system(size: ScreenScale.scaled(10), weight: .semibold))
+                    .scaledSystemFont(ScreenScale.scaled(10), weight: .semibold)
                 Text(title)
                     .styled(.monoXS)
             }
@@ -567,7 +567,7 @@ private struct DayRow: View {
 
             if day.protected {
                 Image(systemName: "lock.fill")
-                    .font(.system(size: ScreenScale.scaled(10)))
+                    .scaledSystemFont(ScreenScale.scaled(10))
                     .foregroundStyle(Color.ink3)
             }
         }
@@ -643,7 +643,7 @@ private struct SupportBadge: View {
     var body: some View {
         HStack(spacing: 3) {
             Image(systemName: "figure.climbing")
-                .font(.system(size: ScreenScale.scaled(9), weight: .semibold))
+                .scaledSystemFont(ScreenScale.scaled(9), weight: .semibold)
             Text(shortLabel)
                 .styled(.micro)
         }
@@ -732,7 +732,7 @@ private struct WeekToneChip: View {
         Button(action: action) {
             HStack(spacing: 4) {
                 Image(systemName: tone == nil ? "slider.horizontal.3" : icon(for: tone!))
-                    .font(.system(size: 11, weight: .medium))
+                    .scaledSystemFont(11, weight: .medium)
                 Text(tone?.label ?? "Set tone")
                     .styled(.monoXS)
             }
@@ -826,7 +826,7 @@ private struct ToneCard: View {
                 Spacer(minLength: 4)
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 14, weight: .semibold))
+                        .scaledSystemFont(14, weight: .semibold)
                         .foregroundStyle(Color.accentInk)
                 }
             }

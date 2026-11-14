@@ -23,7 +23,7 @@ struct CoachPolishedExplanationSheet: View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
-                    .font(.system(size: 18, weight: .semibold))
+                    .scaledSystemFont(18, weight: .semibold)
                     .foregroundStyle(Color.accent)
                 Text("Personalized by your coach")
                     .font(.scaled("SpaceGrotesk-SemiBold", size: 18))

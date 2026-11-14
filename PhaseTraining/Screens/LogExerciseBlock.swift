@@ -38,7 +38,7 @@ extension LogScreen {
                             .fill(Color.ok.opacity(0.15))
                             .frame(width: 18, height: 18)
                         Image(systemName: "checkmark")
-                            .font(.system(size: 9, weight: .heavy))
+                            .scaledSystemFont(9, weight: .heavy, within: 18)
                             .foregroundStyle(Color.ok)
                     }
                 }
@@ -56,7 +56,7 @@ extension LogScreen {
                 Spacer()
                 Button { swappingExIdx = exIdx } label: {
                     Image(systemName: "arrow.left.arrow.right")
-                        .font(.system(size: 13, weight: .medium))
+                        .scaledSystemFont(13, weight: .medium)
                         .foregroundStyle(Color.ink3)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 6)
@@ -330,7 +330,7 @@ extension LogScreen {
         if let suggestion = computeProgressionSuggestion(for: ex) {
             HStack(spacing: 6) {
                 Image(systemName: "arrow.up.right.circle")
-                    .font(.system(size: 11, weight: .medium))
+                    .scaledSystemFont(11, weight: .medium)
                 Text(suggestion.text)
                     .font(.monoXS)
                 Spacer(minLength: 0)

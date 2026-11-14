@@ -141,7 +141,7 @@ struct CustomRoutineEditSheet: View {
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "plus.circle")
-                            .font(.system(size: 14, weight: .medium))
+                            .scaledSystemFont(14, weight: .medium)
                         Text("Add exercise")
                             .styled(.body)
                     }

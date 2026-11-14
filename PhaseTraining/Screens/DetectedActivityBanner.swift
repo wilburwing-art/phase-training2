@@ -24,7 +24,7 @@ struct DetectedActivityBanner: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: iconName)
-                    .font(.system(size: 14, weight: .semibold))
+                    .scaledSystemFont(14, weight: .semibold, within: 16)
                     .foregroundStyle(Color.accent)
                     .frame(width: 16, alignment: .center)
                     .padding(.top, 2)

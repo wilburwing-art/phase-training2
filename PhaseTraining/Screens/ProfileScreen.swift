@@ -558,7 +558,7 @@ struct ProfileScreen: View {
             }
             if matches {
                 Image(systemName: "checkmark")
-                    .font(.system(size: 11, weight: .semibold))
+                    .scaledSystemFont(11, weight: .semibold)
                     .foregroundStyle(Color.ok)
                     .accessibilityLabel("within the recommendation")
             }
@@ -634,7 +634,7 @@ struct ProfileScreen: View {
             } label: {
                 HStack(spacing: 12) {
                     Image(systemName: "trash")
-                        .font(.system(size: 16, weight: .medium))
+                        .scaledSystemFont(16, weight: .medium, within: 24)
                         .foregroundStyle(Color.red)
                         .frame(width: 24)
                     VStack(alignment: .leading, spacing: 2) {

@@ -67,7 +67,7 @@ extension ProgressScreen {
                             .styled(.micro)
                             .foregroundStyle(Color.accent)
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 10, weight: .semibold))
+                            .scaledSystemFont(10, weight: .semibold)
                             .foregroundStyle(Color.accent)
                     }
                 }
@@ -87,7 +87,7 @@ extension ProgressScreen {
                                 .foregroundStyle(Color.ink2)
                                 .lineLimit(1)
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 10, weight: .semibold))
+                                .scaledSystemFont(10, weight: .semibold)
                                 .foregroundStyle(Color.ink2)
                         }
                     }
@@ -301,7 +301,7 @@ extension ProgressScreen {
                             .styled(.micro)
                             .foregroundStyle(Color.accent)
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 10, weight: .semibold))
+                            .scaledSystemFont(10, weight: .semibold)
                             .foregroundStyle(Color.accent)
                     }
                 }

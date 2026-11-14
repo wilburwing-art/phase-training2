@@ -280,7 +280,7 @@ struct CompleteScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Image(systemName: "sparkle")
-                    .font(.system(size: 13))
+                    .scaledSystemFont(13)
                     .foregroundStyle(Color.accent)
                 Text(prs.count == 1 ? "1 PR THIS SESSION" : "\(prs.count) PRS THIS SESSION")
                     .styled(.micro)
@@ -523,7 +523,7 @@ struct CompleteScreen: View {
                     .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                     .foregroundStyle(Color.accentInk)
                 Image(systemName: "checkmark")
-                    .font(.system(size: 16, weight: .bold))
+                    .scaledSystemFont(16, weight: .bold)
                     .foregroundStyle(Color.accentInk)
             }
             .frame(maxWidth: .infinity)

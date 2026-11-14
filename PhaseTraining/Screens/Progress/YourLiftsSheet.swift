@@ -93,7 +93,7 @@ struct YourLiftsSheet: View {
                     .foregroundStyle(Color.ink2)
                 if exercise != nil {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 11, weight: .semibold))
+                        .scaledSystemFont(11, weight: .semibold)
                         .foregroundStyle(Color.ink3)
                 }
             }

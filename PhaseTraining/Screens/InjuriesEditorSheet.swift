@@ -106,12 +106,12 @@ struct InjuriesEditorSheet: View {
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "plus")
-                        .font(.system(size: 12, weight: .semibold))
+                        .scaledSystemFont(12, weight: .semibold)
                     Text(store.memory.userInjuries.isEmpty ? "Add injuries" : "Edit injuries")
                         .styled(.body)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 11, weight: .semibold))
+                        .scaledSystemFont(11, weight: .semibold)
                 }
                 .foregroundStyle(store.memory.userInjuries.isEmpty ? Color.accent : Color.ink)
                 .padding(.horizontal, 14)
@@ -144,7 +144,7 @@ struct InjuriesEditorSheet: View {
         let n = contraindicatedByInjury[slug]?.count ?? 0
         return HStack(spacing: 6) {
             Image(systemName: n > 0 ? "checkmark.shield" : "exclamationmark.shield")
-                .font(.system(size: 11, weight: .semibold))
+                .scaledSystemFont(11, weight: .semibold)
                 .foregroundStyle(n > 0 ? Color.ok : Color.ink3)
             Text(n > 0
                  ? (n == 1 ? "Filters 1 exercise from your workouts"
@@ -172,7 +172,7 @@ struct InjuriesEditorSheet: View {
                     removeInjury(slug: injury.slug)
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .bold))
+                        .scaledSystemFont(11, weight: .bold)
                         .foregroundStyle(Color.ink3)
                         .padding(6)
                 }
@@ -213,7 +213,7 @@ struct InjuriesEditorSheet: View {
                         setOnset(slug: injury.slug, date: nil)
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 14))
+                            .scaledSystemFont(14)
                             .foregroundStyle(Color.ink3)
                             .accessibilityLabel("Clear onset date")
                     }
@@ -285,7 +285,7 @@ struct InjuriesEditorSheet: View {
                 store.update { $0.constraints.removeAll { $0 == item } }
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 9, weight: .bold))
+                    .scaledSystemFont(9, weight: .bold)
                     .foregroundStyle(Color.ink3)
                     .accessibilityLabel("Remove \(item)")
             }

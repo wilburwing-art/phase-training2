@@ -94,7 +94,7 @@ struct InjuryPickerSheet: View {
     private var searchField: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 14))
+                .scaledSystemFont(14, within: 42)
                 .foregroundStyle(Color.ink3)
             TextField("", text: $searchText,
                       prompt: Text("Search injuries…").foregroundColor(Color.ink3))
@@ -132,7 +132,7 @@ struct InjuryPickerSheet: View {
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 18))
+                    .scaledSystemFont(18)
                     .foregroundStyle(isSelected ? Color.accent : Color.ink3)
                 Text(injury.name)
                     .styled(.body)

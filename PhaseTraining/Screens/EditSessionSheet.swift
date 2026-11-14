@@ -18,6 +18,8 @@ struct EditSessionSheet: View {
     /// session and mutated locally until the user taps Save.
     @State private var draft: SavedSession
     @State private var showDeleteConfirm = false
+    @ScaledMetric(relativeTo: .caption2) private var setTypePillWidth: CGFloat = 18
+    @ScaledMetric(relativeTo: .caption2) private var setTypePillHeight: CGFloat = 14
 
     private let originalId: TimeInterval
 
@@ -140,9 +142,9 @@ struct EditSessionSheet: View {
                 }
             } label: {
                 Text(setType.badge ?? "-")
-                    .font(.system(size: 9, weight: .bold))
+                    .scaledSystemFont(9, weight: .bold)
                     .foregroundStyle(setType == .normal ? Color.ink3 : Color.bg)
-                    .frame(width: 18, height: 14)
+                    .frame(width: setTypePillWidth, height: setTypePillHeight)
                     .background(setType == .normal ? Color.clear : (setType == .warmup ? Color.ink3 : Color.ink2))
                     .overlay(
                         Capsule().stroke(Color.line, lineWidth: 0.5)

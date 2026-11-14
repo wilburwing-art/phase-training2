@@ -96,7 +96,7 @@ struct ActionRow: View {
         Button(action: action) {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .medium))
+                    .scaledSystemFont(16, weight: .medium, within: 24)
                     .foregroundStyle(destructive ? Color.danger : Color.accent)
                     .frame(width: 24, alignment: .center)
                     .padding(.top, 2)
@@ -112,7 +112,7 @@ struct ActionRow: View {
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
+                    .scaledSystemFont(12, weight: .medium)
                     .foregroundStyle(Color.ink3)
             }
             .padding(14)

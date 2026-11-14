@@ -431,12 +431,12 @@ struct TodayScreen: View {
         Button { showCoachPolishedSheet = true } label: {
             HStack(spacing: 8) {
                 Image(systemName: "sparkles")
-                    .font(.system(size: 13, weight: .semibold))
+                    .scaledSystemFont(13, weight: .semibold)
                 Text("PERSONALIZED BY COACH")
                     .styled(.micro)
                 Spacer()
                 Image(systemName: "info.circle")
-                    .font(.system(size: 11, weight: .semibold))
+                    .scaledSystemFont(11, weight: .semibold)
                     .foregroundStyle(Color.ink3)
             }
             .foregroundStyle(Color.accent)
@@ -500,7 +500,7 @@ struct TodayScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Image(systemName: "list.bullet")
-                    .font(.system(size: 13, weight: .semibold))
+                    .scaledSystemFont(13, weight: .semibold)
                     .foregroundStyle(Color.accent)
                 Text((todayPlan?.sport?.name ?? "Sport").uppercased())
                     .styled(.micro)
@@ -529,7 +529,7 @@ struct TodayScreen: View {
         Button(action: { showingSportLog = true }) {
             HStack(spacing: 6) {
                 Image(systemName: todaySportLog == nil ? "checkmark.circle" : "pencil.circle")
-                    .font(.system(size: 14, weight: .semibold))
+                    .scaledSystemFont(14, weight: .semibold)
                 Text(todaySportLog == nil ? "Log session" : "Edit log")
                     .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
             }
@@ -568,7 +568,7 @@ struct TodayScreen: View {
                 Text(store.active == nil ? "Start workout" : "Resume workout")
                     .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
+                    .scaledSystemFont(14, weight: .semibold)
             }
             .foregroundStyle(Color.accentInk)
             .frame(maxWidth: .infinity)

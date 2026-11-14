@@ -99,7 +99,7 @@ struct ProgressRecoverySection: View {
                 side = (side == .front) ? .back : .front
             } label: {
                 Image(systemName: "arrow.triangle.2.circlepath")
-                    .font(.system(size: 14, weight: .semibold))
+                    .scaledSystemFont(14, weight: .semibold)
                     .foregroundStyle(Color.ink)
                     .padding(10)
                     .background(Color.elevated)

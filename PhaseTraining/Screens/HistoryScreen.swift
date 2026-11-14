@@ -190,7 +190,7 @@ struct HistoryScreen: View {
     private var searchBar: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 14, weight: .medium))
+                .scaledSystemFont(14, weight: .medium)
                 .foregroundStyle(Color.ink3)
             TextField("", text: $filter.query,
                       prompt: Text("Search name, exercise, note or month").foregroundColor(Color.ink3))
@@ -203,7 +203,7 @@ struct HistoryScreen: View {
             if !filter.query.isEmpty {
                 Button { filter.query = "" } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 14))
+                        .scaledSystemFont(14, within: 44)
                         .foregroundStyle(Color.ink3)
                         .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
@@ -368,7 +368,7 @@ struct HistoryScreen: View {
                     }
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 12, weight: .medium))
+                        .scaledSystemFont(12, weight: .medium)
                         .foregroundColor(.ink3)
                         .rotationEffect(.degrees(isExpanded ? 180 : 0))
                         .motion(.easeInOut(duration: 0.2), .movement, value: isExpanded)

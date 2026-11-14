@@ -37,7 +37,6 @@ struct LogScreen: View {
     @ScaledMetric(relativeTo: .footnote) var effortWidth: CGFloat = 52
     @ScaledMetric(relativeTo: .caption2) var setTypePillWidth: CGFloat = 18
     @ScaledMetric(relativeTo: .caption2) var setTypePillHeight: CGFloat = 14
-    @ScaledMetric(relativeTo: .caption2) var setTypePillFont: CGFloat = 9
 
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject private var memoryStore: MemoryStore
@@ -327,7 +326,7 @@ struct LogScreen: View {
                     Button { addingExercise = true } label: {
                         HStack(spacing: 6) {
                             Image(systemName: "plus")
-                                .font(.system(size: 13, weight: .semibold))
+                                .scaledSystemFont(13, weight: .semibold)
                             Text("Add exercise")
                                 .styled(.body)
                         }
@@ -381,7 +380,7 @@ struct LogScreen: View {
                         showCancelConfirm = true
                     } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .semibold))
+                            .scaledSystemFont(14, weight: .semibold, within: 28)
                             .foregroundStyle(Color.ink2)
                             .frame(width: 28, height: 28)
                             .background(Color.surface)
@@ -394,7 +393,7 @@ struct LogScreen: View {
                 }
 
                 Image(systemName: session.loggedFor == nil ? "timer" : "calendar")
-                    .font(.system(size: 14, weight: .regular))
+                    .scaledSystemFont(14, weight: .regular)
                     .foregroundStyle(Color.ink3)
 
                 // A workout logged for an earlier time has no live clock: the
@@ -500,7 +499,7 @@ struct LogScreen: View {
                         .styled(.body)
                         .foregroundStyle(session.loggedFor == nil ? Color.ink3 : Color.accent)
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 10, weight: .semibold))
+                        .scaledSystemFont(10, weight: .semibold)
                         .foregroundStyle(Color.ink3)
                 }
                 .padding(.vertical, 2)
@@ -751,7 +750,7 @@ struct LogScreen: View {
     private var noSessionState: some View {
         VStack(spacing: 14) {
             Image(systemName: "figure.strengthtraining.traditional")
-                .font(.system(size: 34))
+                .scaledSystemFont(34)
                 .foregroundStyle(Color.ink3)
             Text("No workout in progress")
                 .font(.scaled("Inter-Regular", size: 15).weight(.bold))

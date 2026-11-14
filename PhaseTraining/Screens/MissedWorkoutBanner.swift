@@ -33,7 +33,7 @@ struct MissedWorkoutBanner: View {
             // Header — always visible
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: "calendar.badge.exclamationmark")
-                    .font(.system(size: 14, weight: .semibold))
+                    .scaledSystemFont(14, weight: .semibold, within: 16)
                     .foregroundStyle(Color.accent)
                     .frame(width: 16, alignment: .center)
                     .padding(.top, 2)

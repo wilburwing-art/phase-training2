@@ -101,7 +101,7 @@ struct PaywallView: View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Image(systemName: "checkmark.circle.fill")
                 .foregroundStyle(Color.accent)
-                .font(.system(size: 14, weight: .semibold))
+                .scaledSystemFont(14, weight: .semibold)
             Text(text)
                 .font(.scaled("Inter-Regular", size: 14))
                 .foregroundStyle(Color.ink2)
@@ -206,7 +206,7 @@ struct PaywallView: View {
                 Button("Try again") {
                     Task { await subStore.refresh() }
                 }
-                .font(.system(size: 13, weight: .semibold))
+                .scaledSystemFont(13, weight: .semibold)
                 .foregroundStyle(Color.accent)
                 .accessibilityIdentifier("paywall-retry")
             }
@@ -224,7 +224,7 @@ struct PaywallView: View {
                 }
                 .accessibilityIdentifier("paywall-manage")
             }
-            .font(.system(size: 11, weight: .medium))
+            .scaledSystemFont(11, weight: .medium)
             .foregroundStyle(Color.ink2)
         }
     }

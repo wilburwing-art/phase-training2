@@ -62,7 +62,7 @@ struct SportPickerSheet: View {
                     .foregroundStyle(Color.ink)
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
+                    .scaledSystemFont(12, weight: .medium)
                     .foregroundStyle(Color.ink3)
             }
             .padding(14)
@@ -130,7 +130,7 @@ struct EventEditorSheet: View {
                                     .foregroundStyle(sport == nil ? Color.ink3 : Color.ink)
                                 Spacer()
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 12, weight: .medium))
+                                    .scaledSystemFont(12, weight: .medium)
                                     .foregroundStyle(Color.ink3)
                             }
                             .padding(14)
@@ -309,7 +309,7 @@ struct MoveDayPickerSheet: View {
                     .background(Color.elevated)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
+                    .scaledSystemFont(12, weight: .medium)
                     .foregroundStyle(Color.ink3)
             }
             .padding(14)

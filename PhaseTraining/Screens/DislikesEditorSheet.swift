@@ -100,7 +100,7 @@ struct DislikesEditorSheet: View {
                     commit(input: input, items: items, onAdd: onAdd)
                 } label: {
                     Image(systemName: "plus")
-                        .font(.system(size: 14, weight: .semibold))
+                        .scaledSystemFont(14, weight: .semibold, within: 44)
                         .foregroundStyle(canCommit(input.wrappedValue) ? Color.accentInk : Color.ink3)
                         .frame(width: 44, height: 44)
                         .background(canCommit(input.wrappedValue) ? Color.accent : Color.surface)
@@ -120,7 +120,7 @@ struct DislikesEditorSheet: View {
                                 .foregroundStyle(Color.ink)
                             Button { onRemove(item) } label: {
                                 Image(systemName: "xmark")
-                                    .font(.system(size: 9, weight: .bold))
+                                    .scaledSystemFont(9, weight: .bold)
                                     .foregroundStyle(Color.ink3)
                                     .accessibilityLabel("Remove \(item)")
                             }

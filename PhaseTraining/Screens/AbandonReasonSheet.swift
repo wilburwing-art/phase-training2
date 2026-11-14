@@ -43,7 +43,7 @@ struct AbandonReasonSheet: View {
                                 Spacer()
                                 if reason == r {
                                     Image(systemName: "checkmark")
-                                        .font(.system(size: 14, weight: .bold))
+                                        .scaledSystemFont(14, weight: .bold)
                                         .foregroundStyle(Color.accent)
                                 }
                             }

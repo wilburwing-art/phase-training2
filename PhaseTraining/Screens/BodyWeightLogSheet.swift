@@ -119,7 +119,7 @@ struct BodyWeightLogSheet: View {
             Button(action: logEntry) {
                 HStack(spacing: 6) {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 12, weight: .semibold))
+                        .scaledSystemFont(12, weight: .semibold)
                     Text("Log weight")
                         .font(.scaled("SpaceGrotesk-SemiBold", size: 14))
                 }
@@ -241,7 +241,7 @@ struct BodyWeightLogSheet: View {
             }
             Button(role: .destructive) { pendingDelete = entry } label: {
                 Image(systemName: "trash")
-                    .font(.system(size: 12))
+                    .scaledSystemFont(12, within: 44)
                     .foregroundStyle(Color.ink3)
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())

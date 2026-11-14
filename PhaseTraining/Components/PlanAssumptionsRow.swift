@@ -61,7 +61,7 @@ struct PlanAssumptionsRow: View {
         } label: {
             HStack(spacing: 6) {
                 Image(systemName: field.icon)
-                    .font(.system(size: 11, weight: .medium))
+                    .scaledSystemFont(11, weight: .medium)
                     .foregroundStyle(Color.ink3)
                 Text(store.memory.assumptionSummary(for: field))
                     .font(.monoXS)
@@ -207,7 +207,7 @@ struct AvailabilityEditorSheet: View {
     private func stepButton(_ symbol: String, action: @escaping () -> Void, a11y: String) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.system(size: 15, weight: .semibold))
+                .scaledSystemFont(15, weight: .semibold, within: 40)
                 .foregroundStyle(Color.accent)
                 .frame(width: 40, height: 40)
                 .background(Color.elevated)

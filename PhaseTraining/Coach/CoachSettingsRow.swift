@@ -128,7 +128,7 @@ struct CoachSettingsRow: View {
                         ProgressView().tint(Color.accentInk).scaleEffect(0.7)
                     } else {
                         Image(systemName: "bolt.circle")
-                            .font(.system(size: 12, weight: .semibold))
+                            .scaledSystemFont(12, weight: .semibold)
                     }
                     Text(pendingPing ? "Pinging…" : "Test ping")
                         .font(.scaled("SpaceGrotesk-SemiBold", size: 13))

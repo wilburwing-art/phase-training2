@@ -172,7 +172,7 @@ struct ExerciseTile: View {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.line, lineWidth: 0.5)
                 Image(systemName: systemName)
-                    .font(.system(size: 18, weight: .regular))
+                    .scaledSystemFont(18, weight: .regular, within: 48)
                     .foregroundStyle(Color.accent)
             }
             .frame(width: 48, height: 48)
@@ -182,7 +182,7 @@ struct ExerciseTile: View {
 
         case .handle:
             Image(systemName: "line.3.horizontal")
-                .font(.system(size: 12, weight: .medium))
+                .scaledSystemFont(12, weight: .medium, within: 14)
                 .foregroundStyle(Color.ink3)
                 .frame(width: 14, alignment: .center)
 
@@ -196,7 +196,7 @@ struct ExerciseTile: View {
         switch vm.trailing {
         case .chevron:
             Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .semibold))
+                .scaledSystemFont(12, weight: .semibold)
                 .foregroundStyle(Color.ink3)
                 .padding(.leading, 4)
 
@@ -224,7 +224,7 @@ struct ExerciseTile: View {
             HStack(spacing: 2) {
                 Button(action: onInfo) {
                     Image(systemName: "info.circle")
-                        .font(.system(size: 15))
+                        .scaledSystemFont(15, within: 28)
                         .foregroundStyle(Color.ink2)
                         .frame(width: 28, height: 32)
                 }
@@ -233,7 +233,7 @@ struct ExerciseTile: View {
 
                 Button(action: onSwap) {
                     Image(systemName: "arrow.left.arrow.right")
-                        .font(.system(size: 14, weight: .medium))
+                        .scaledSystemFont(14, weight: .medium, within: 28)
                         .foregroundStyle(Color.ink2)
                         .frame(width: 28, height: 32)
                 }
@@ -265,7 +265,7 @@ struct ExerciseTile: View {
         case .overflow(let onTap):
             Button(action: onTap) {
                 Image(systemName: "ellipsis")
-                    .font(.system(size: 16, weight: .medium))
+                    .scaledSystemFont(16, weight: .medium, within: 32)
                     .foregroundStyle(Color.ink3)
                     .frame(width: 32, height: 32)
             }
@@ -275,7 +275,7 @@ struct ExerciseTile: View {
         case .iconButton(let systemName, let label, let onTap):
             Button(action: onTap) {
                 Image(systemName: systemName)
-                    .font(.system(size: 16, weight: .semibold))
+                    .scaledSystemFont(16, weight: .semibold, within: 32)
                     .foregroundStyle(Color.accent)
                     .frame(width: 32, height: 32)
                     .background(Color.accentWash)

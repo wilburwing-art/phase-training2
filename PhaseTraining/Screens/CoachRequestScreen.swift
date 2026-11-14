@@ -197,7 +197,7 @@ struct CoachRequestScreen: View {
                     // the listing so the user understands the strategy.
                     HStack(alignment: .top, spacing: 8) {
                         Image(systemName: "sparkles")
-                            .font(.system(size: 12, weight: .medium))
+                            .scaledSystemFont(12, weight: .medium)
                             .foregroundStyle(Color.accent)
                             .padding(.top, 2)
                         Text(reasoning)
@@ -308,7 +308,7 @@ struct CoachRequestScreen: View {
                     Button(action: generate) {
                         HStack(spacing: 6) {
                             Image(systemName: "arrow.triangle.2.circlepath")
-                                .font(.system(size: 12, weight: .semibold))
+                                .scaledSystemFont(12, weight: .semibold)
                             Text("Regenerate")
                                 .styled(.micro)
                         }

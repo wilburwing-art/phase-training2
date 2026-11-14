@@ -197,7 +197,7 @@ struct CheckInEventsScreen: View {
                 draft.events.removeAll { $0.id == event.id }
             } label: {
                 Image(systemName: "trash")
-                    .font(.system(size: 14, weight: .medium))
+                    .scaledSystemFont(14, weight: .medium, within: 32)
                     .foregroundStyle(Color.ink3)
                     .frame(width: 32, height: 32)
                     .accessibilityLabel("Delete event")

@@ -85,7 +85,7 @@ struct SetupChecklistSheet: View {
         } label: {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: stated ? "checkmark.circle.fill" : field.icon)
-                    .font(.system(size: 16, weight: .medium))
+                    .scaledSystemFont(16, weight: .medium, within: 24)
                     .foregroundStyle(stated ? Color.ok : Color.ink3)
                     .frame(width: 24)
                     .padding(.top, 2)
@@ -114,7 +114,7 @@ struct SetupChecklistSheet: View {
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .scaledSystemFont(12, weight: .semibold)
                     .foregroundStyle(Color.ink3)
                     .padding(.top, 4)
             }
@@ -133,7 +133,7 @@ struct SetupChecklistSheet: View {
         } label: {
             HStack(alignment: .top, spacing: 12) {
                 Image(systemName: "bandage")
-                    .font(.system(size: 16, weight: .medium))
+                    .scaledSystemFont(16, weight: .medium, within: 24)
                     .foregroundStyle(Color.ink3)
                     .frame(width: 24)
                     .padding(.top, 2)
@@ -151,7 +151,7 @@ struct SetupChecklistSheet: View {
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .scaledSystemFont(12, weight: .semibold)
                     .foregroundStyle(Color.ink3)
                     .padding(.top, 4)
             }

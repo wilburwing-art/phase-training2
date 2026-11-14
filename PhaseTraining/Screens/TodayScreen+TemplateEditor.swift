@@ -180,7 +180,7 @@ extension TodayScreen {
         } label: {
             HStack(spacing: 10) {
                 Image(systemName: "plus.circle")
-                    .font(.system(size: 15, weight: .medium))
+                    .scaledSystemFont(15, weight: .medium, within: 14)
                     .foregroundStyle(Color.accent)
                     .frame(width: 14)
                 Text("Add exercise")
@@ -200,13 +200,13 @@ extension TodayScreen {
         Button(action: saveCurrentTemplateToLibrary) {
             HStack(spacing: 6) {
                 Image(systemName: didSaveToLibrary ? "checkmark" : "tray.and.arrow.down")
-                    .font(.system(size: 12, weight: .semibold))
+                    .scaledSystemFont(12, weight: .semibold)
                 Text(didSaveToLibrary ? "Saved for today" : "Save changes")
                     .styled(.micro)
                 Spacer(minLength: 0)
                 if !didSaveToLibrary {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 10, weight: .semibold))
+                        .scaledSystemFont(10, weight: .semibold)
                 }
             }
             .foregroundStyle(didSaveToLibrary ? Color.ok : Color.accent)

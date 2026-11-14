@@ -24,7 +24,7 @@ struct RemindersEditorSheet: View {
                         Button(action: toggleReminders) {
                             HStack(spacing: 12) {
                                 Image(systemName: remindersOn ? "bell.fill" : "bell.slash")
-                                    .font(.system(size: 16, weight: .medium))
+                                    .scaledSystemFont(16, weight: .medium, within: 24)
                                     .foregroundStyle(remindersOn ? Color.accent : Color.ink3)
                                     .frame(width: 24)
                                 VStack(alignment: .leading, spacing: 2) {
@@ -37,7 +37,7 @@ struct RemindersEditorSheet: View {
                                 }
                                 Spacer(minLength: 8)
                                 Image(systemName: remindersOn ? "checkmark.circle.fill" : "circle")
-                                    .font(.system(size: 20))
+                                    .scaledSystemFont(20)
                                     .foregroundStyle(remindersOn ? Color.accent : Color.ink3)
                             }
                             .padding(12)

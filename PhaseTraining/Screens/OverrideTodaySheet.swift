@@ -55,7 +55,7 @@ struct OverrideTodaySheet: View {
                         Button(action: { showingCoachRequest = true }) {
                             HStack(spacing: 12) {
                                 Image(systemName: "sparkles")
-                                    .font(.system(size: 16, weight: .medium))
+                                    .scaledSystemFont(16, weight: .medium, within: 24)
                                     .foregroundStyle(Color.accentInk)
                                     .frame(width: 24, alignment: .center)
                                 VStack(alignment: .leading, spacing: 2) {
@@ -68,7 +68,7 @@ struct OverrideTodaySheet: View {
                                 }
                                 Spacer(minLength: 0)
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 12, weight: .medium))
+                                    .scaledSystemFont(12, weight: .medium)
                                     .foregroundStyle(Color.accentInk.opacity(0.7))
                             }
                             .padding(14)
@@ -140,7 +140,7 @@ struct OverrideTodaySheet: View {
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "square.and.pencil")
-                    .font(.system(size: 16, weight: .medium))
+                    .scaledSystemFont(16, weight: .medium, within: 24)
                     .foregroundStyle(Color.accent)
                     .frame(width: 24, alignment: .center)
                 VStack(alignment: .leading, spacing: 2) {
@@ -153,7 +153,7 @@ struct OverrideTodaySheet: View {
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
+                    .scaledSystemFont(12, weight: .medium)
                     .foregroundStyle(Color.ink3)
             }
             .padding(14)
@@ -178,7 +178,7 @@ struct OverrideTodaySheet: View {
             } label: {
                 HStack(spacing: 12) {
                     Image(systemName: "figure.strengthtraining.traditional")
-                        .font(.system(size: 16, weight: .medium))
+                        .scaledSystemFont(16, weight: .medium, within: 24)
                         .foregroundStyle(Color.accent)
                         .frame(width: 24, alignment: .center)
                     VStack(alignment: .leading, spacing: 2) {
@@ -193,7 +193,7 @@ struct OverrideTodaySheet: View {
                     }
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .medium))
+                        .scaledSystemFont(12, weight: .medium)
                         .foregroundStyle(Color.ink3)
                 }
                 .padding(14)
@@ -220,7 +220,7 @@ struct OverrideTodaySheet: View {
                 editingRoutine = custom
             } label: {
                 Image(systemName: "pencil")
-                    .font(.system(size: 14, weight: .medium))
+                    .scaledSystemFont(14, weight: .medium, within: 36)
                     .foregroundStyle(Color.ink3)
                     .frame(width: 36, height: 36)
                     .background(Color.surface)

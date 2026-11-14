@@ -52,7 +52,7 @@ extension ProgressScreen {
                     .foregroundStyle(Color.ink2)
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .scaledSystemFont(12, weight: .semibold)
                     .foregroundStyle(Color.ink3)
             }
             .padding(.horizontal, 14)

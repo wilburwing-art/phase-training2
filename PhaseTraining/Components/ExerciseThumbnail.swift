@@ -80,7 +80,7 @@ struct ExerciseThumbnail: View {
                         ZStack {
                             Color.elevated
                             Image(systemName: "figure.strengthtraining.traditional")
-                                .font(.system(size: size * 0.4, weight: .regular))
+                                .scaledSystemFont(size * 0.4, weight: .regular, within: size)
                                 .foregroundStyle(Color.ink3)
                         }
                         .frame(width: size, height: size)
@@ -89,7 +89,7 @@ struct ExerciseThumbnail: View {
                         ZStack {
                             Color.elevated
                             Image(systemName: "photo")
-                                .font(.system(size: size * 0.4))
+                                .scaledSystemFont(size * 0.4, within: size)
                                 .foregroundStyle(Color.ink3)
                         }
                         .frame(width: size, height: size)

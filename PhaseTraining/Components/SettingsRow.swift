@@ -23,7 +23,7 @@ struct SettingsRow: View {
             HStack(spacing: 12) {
                 if let icon {
                     Image(systemName: icon)
-                        .font(.system(size: 16, weight: .medium))
+                        .scaledSystemFont(16, weight: .medium, within: 22)
                         .foregroundStyle(Color.accent)
                         .frame(width: 22, alignment: .center)
                 }
@@ -38,7 +38,7 @@ struct SettingsRow: View {
                     .lineLimit(1)
                     .truncationMode(.tail)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
+                    .scaledSystemFont(12, weight: .medium)
                     .foregroundStyle(Color.ink3)
             }
             .padding(.horizontal, 14)

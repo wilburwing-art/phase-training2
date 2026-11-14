@@ -351,7 +351,7 @@ struct DayWorkoutPreviewSheet: View {
         } label: {
             HStack(spacing: 12) {
                 Image(systemName: "plus.circle")
-                    .font(.system(size: 15, weight: .medium))
+                    .scaledSystemFont(15, weight: .medium, within: 18)
                     .foregroundStyle(Color.accent)
                     .frame(width: 18, alignment: .leading)
                 Text("Add exercise")
@@ -370,7 +370,7 @@ struct DayWorkoutPreviewSheet: View {
     private var emptyState: some View {
         VStack(spacing: 12) {
             Image(systemName: "calendar.badge.exclamationmark")
-                .font(.system(size: 26))
+                .scaledSystemFont(26)
                 .foregroundStyle(Color.ink3)
             Text("No workout planned")
                 .styled(.body)
@@ -391,7 +391,7 @@ struct DayWorkoutPreviewSheet: View {
             Button(action: saveToLibrary) {
                 HStack(spacing: 6) {
                     Image(systemName: didSave ? "checkmark" : "tray.and.arrow.down")
-                        .font(.system(size: 13, weight: .semibold))
+                        .scaledSystemFont(13, weight: .semibold)
                     Text(didSave ? "Saved" : "Save to library")
                         .font(.scaled("SpaceGrotesk-SemiBold", size: 14))
                 }

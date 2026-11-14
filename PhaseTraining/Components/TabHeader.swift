@@ -109,7 +109,7 @@ struct TabHeader: View {
                 Color.clear.frame(height: 10)
                 HStack(spacing: 6) {
                     Image(systemName: "sparkles")
-                        .font(.system(size: 10))
+                        .scaledSystemFont(10)
                         .foregroundStyle(Color.accent)
                     Text(caption)
                         .font(.monoXS)

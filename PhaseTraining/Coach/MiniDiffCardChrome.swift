@@ -85,7 +85,7 @@ struct MiniDiffCardChrome<Rows: View>: View {
     private var header: some View {
         HStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
+                .scaledSystemFont(12, weight: .semibold)
                 .foregroundStyle(Color.accent)
             Text(statusLabel)
                 .styled(.micro)

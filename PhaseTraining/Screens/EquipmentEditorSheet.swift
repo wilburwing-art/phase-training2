@@ -34,7 +34,7 @@ struct EquipmentEditorSheet: View {
                                 } label: {
                                     HStack(spacing: 8) {
                                         Image(systemName: tier.icon)
-                                            .font(.system(size: 14, weight: .medium))
+                                            .scaledSystemFont(14, weight: .medium)
                                             .foregroundStyle(currentTier == tier ? Color.accent : Color.ink2)
                                         Text(tier.label)
                                             .styled(.body)
