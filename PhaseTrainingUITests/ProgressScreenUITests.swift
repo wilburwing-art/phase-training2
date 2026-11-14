@@ -184,6 +184,38 @@ final class ProgressScreenUITests: XCTestCase {
                       "tapping the body weight card should present its log sheet" + elementDump(app))
     }
 
+    func test_chartsSpeakTheirData() throws {
+        let app = launch(seed: "--seed-progress-demo")
+        openProgress(in: app)
+
+        func element(labeled label: String) -> XCUIElement {
+            app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", label)).firstMatch
+        }
+
+        let sessions = element(labeled: "Sessions per week")
+        XCTAssertTrue(scrollTo(sessions, in: app), "sessions chart should be one element" + elementDump(app))
+        XCTAssertTrue((sessions.value as? String ?? "").hasPrefix("This week"),
+                      "sessions value: \(String(describing: sessions.value))")
+
+        let volumeLabel = element(labeled: "Volume per week").exists ? "Volume per week" : "Sets per week"
+        let volume = element(labeled: volumeLabel)
+        XCTAssertTrue(scrollTo(volume, in: app), "volume chart should be one element" + elementDump(app))
+        XCTAssertTrue((volume.value as? String ?? "").hasPrefix("This week"),
+                      "volume value: \(String(describing: volume.value))")
+
+        let card = app.buttons["progress-body-weight-card"]
+        XCTAssertTrue(scrollTo(card, in: app), "body weight card should be reachable")
+        XCTAssertTrue(card.label.contains("since the first entry"),
+                      "card label should speak the change, got: \(card.label)")
+        XCTAssertTrue(app.staticTexts["BODY WEIGHT"].exists, "card title keeps its own static text")
+
+        card.tap()
+        let chart = element(labeled: "Body weight over time")
+        XCTAssertTrue(chart.waitForExistence(timeout: 5), "log sheet chart should be one element" + elementDump(app))
+        let value = chart.value as? String ?? ""
+        XCTAssertTrue(value.contains(" to ") || value.contains("1 entry"), "chart value: \(value)")
+    }
+
     // MARK: - Body data, no sessions
 
     func test_bodyCardsRenderBeforeFirstSession() throws {

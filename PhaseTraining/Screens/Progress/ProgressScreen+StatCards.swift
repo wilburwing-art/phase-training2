@@ -73,26 +73,35 @@ extension ProgressScreen {
         let maxVal = max(buckets.max() ?? 0, target + 1)
         return card(title: "SESSIONS / WEEK") {
             VStack(alignment: .leading, spacing: 10) {
-                HStack(alignment: .bottom, spacing: 6) {
-                    ForEach(buckets.indices, id: \.self) { i in
-                        sessionBar(count: buckets[i], maxCount: maxVal, target: target)
-                            .frame(maxWidth: .infinity)
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(alignment: .bottom, spacing: 6) {
+                        ForEach(buckets.indices, id: \.self) { i in
+                            sessionBar(count: buckets[i], maxCount: maxVal, target: target)
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .frame(height: 88)
+                    HStack {
+                        Text("\(Self.weeks)w ago")
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
+                        Spacer()
+                        Text("target: \(target)/wk")
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
+                        Spacer()
+                        Text("this week")
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
                     }
                 }
-                .frame(height: 88)
-                HStack {
-                    Text("\(Self.weeks)w ago")
-                        .font(.monoXS)
-                        .foregroundStyle(Color.ink3)
-                    Spacer()
-                    Text("target: \(target)/wk")
-                        .font(.monoXS)
-                        .foregroundStyle(Color.ink3)
-                    Spacer()
-                    Text("this week")
-                        .font(.monoXS)
-                        .foregroundStyle(Color.ink3)
-                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Sessions per week")
+                .accessibilityValue(weeklySpoken(buckets.map(Double.init), target: target) { "\(Int($0))" })
+                .accessibilityChartDescriptor(
+                    weeklyDescriptor(buckets.map(Double.init), target: target, title: "Sessions per week",
+                                     yTitle: "Sessions", isBar: true) { "\(Int($0))" }
+                )
                 // The mood payoff, reflected back. Nil until three sessions
                 // carry a mood, so the card is unchanged for an older history.
                 if let mood = aggregates.moodAfter {
@@ -136,6 +145,7 @@ extension ProgressScreen {
         let series: [Double] = useSetCount ? agg.weeklySetCounts : volumes
         let maxVal = max(series.max() ?? 0, 1)
         return card(title: useSetCount ? "SETS / WEEK" : "VOLUME / WEEK") {
+            let spokenTitle = useSetCount ? "Sets per week" : "Volume per week"
             VStack(alignment: .leading, spacing: 10) {
                 LineSpark(points: series, maxValue: maxVal)
                     .frame(height: 70)
@@ -149,7 +159,33 @@ extension ProgressScreen {
                         .foregroundStyle(series.last ?? 0 > 0 ? Color.accent : Color.ink3)
                 }
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(spokenTitle)
+            .accessibilityValue(weeklySpoken(series, target: nil) { ChartSpeech.wholeNumber($0) })
+            .accessibilityChartDescriptor(
+                weeklyDescriptor(series, target: nil, title: spokenTitle, yTitle: spokenTitle,
+                                 isBar: false) { ChartSpeech.wholeNumber($0) }
+            )
         }
+    }
+
+    // MARK: - Weekly chart speech
+
+    private func weeklySpoken(_ values: [Double], target: Int?, format: (Double) -> String) -> String {
+        ChartSpeech.weeklyValue(values, target: target, format: format) ?? ""
+    }
+
+    private func weeklyDescriptor(_ values: [Double], target: Int?, title: String, yTitle: String,
+                                  isBar: Bool, format: (Double) -> String) -> SeriesChartDescriptor {
+        let labels = ChartSpeech.weekLabels(count: values.count)
+        return SeriesChartDescriptor(
+            title: title,
+            summary: ChartSpeech.weeklyValue(values, target: target, format: format),
+            xTitle: "Week",
+            yTitle: yTitle,
+            points: zip(labels, values).map { .init(x: .category($0), y: $1, spoken: format($1)) },
+            isBar: isBar
+        )
     }
 
     // MARK: - Stat helpers

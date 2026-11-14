@@ -15,16 +15,15 @@
 //                     days ago, ratio to bodyweight, tier label.
 //   6. Muscle balance, recovery section.
 //   7. Per-exercise — top ~6 lifts by frequency, each with a best-weight
-//                     sparkline (Swift Charts) + last-PR date.
+//                     sparkline (hand-drawn Canvas) + last-PR date.
 //   8. PR feed      — chronological PR events, newest first.
 //   9. Body weight and body composition trends.
 //  10. Feedback     — last 10 FeedbackEntry rows with difficulty/hurt chips.
 //  11. Recent sessions.
 //
 // Sessions / volume cards stay hand-drawn — bar/line geometry there is
-// simple. The per-exercise sparklines use Swift Charts because the
-// per-point math (irregular time axis, multiple series, animation) is
-// where Charts pays back its weight.
+// simple. The per-exercise sparklines are a hand-drawn Canvas too
+// (Components/ExerciseTile.swift).
 //
 // Card renderers live in Screens/Progress/ (architecture item 9):
 //   ProgressScreen+Heatmap.swift       — training-days month heatmap

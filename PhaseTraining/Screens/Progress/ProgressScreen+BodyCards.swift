@@ -34,6 +34,7 @@ extension ProgressScreen {
                     bodyWeightCardBody(log: log)
                 }
                 .buttonStyle(.plain)
+                .accessibilityHint("Opens the log")
                 .accessibilityIdentifier("progress-body-weight-card")
             }
         }
@@ -83,6 +84,14 @@ extension ProgressScreen {
         // (no dimMax-1 hack that pinned an all-equal line to the top edge).
         let dimMax = displaySeries.max() ?? 1
         let dimMin = displaySeries.min() ?? 0
+        let unit = imperial ? "lb" : "kg"
+        let spokenSummary: String
+        if let first = displaySeries.first, let last = displaySeries.last, displaySeries.count >= 2 {
+            let change = ChartSpeech.change(from: first, to: last, unit: unit, decimals: 1)
+            spokenSummary = "\(latestDisplay), \(change) since the first entry, \(log.count) entries"
+        } else {
+            spokenSummary = "\(latestDisplay), 1 entry"
+        }
         return card(title: "BODY WEIGHT") {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -99,11 +108,14 @@ extension ProgressScreen {
                         .font(.monoXS)
                         .foregroundStyle(Color.ink3)
                 }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(spokenSummary)
                 BodyWeightSpark(points: displaySeries, minValue: dimMin, maxValue: dimMax)
                     .frame(height: 50)
                 Text("Tap to add a new weight.")
                     .font(.monoXS)
                     .foregroundStyle(Color.ink3)
+                    .accessibilityHidden(true)
             }
         }
     }
@@ -133,6 +145,7 @@ extension ProgressScreen {
                     bodyCompositionCardBody(log: log)
                 }
                 .buttonStyle(.plain)
+                .accessibilityHint("Opens the log")
                 .accessibilityIdentifier("progress-body-composition-card")
             }
         }
@@ -160,8 +173,10 @@ extension ProgressScreen {
                     if let bf = latestBF {
                         statBlock(
                             label: "BF",
+                            spoken: "Body fat",
                             value: String(format: "%.1f%%", bf),
                             delta: bfDelta.map { String(format: "%@%.1f", $0 >= 0 ? "+" : "−", abs($0)) },
+                            spokenDelta: bfDelta.map { ChartSpeech.change(from: 0, to: $0, unit: "", decimals: 1) },
                             tint: bfDelta.map { $0 < 0 ? Color.ok : Color.accent } ?? .ink3
                         )
                     }
@@ -169,8 +184,10 @@ extension ProgressScreen {
                         let displayLean = imperial ? BodyMetrics.kgToLb(lean) : lean
                         statBlock(
                             label: "LEAN",
+                            spoken: "Lean mass",
                             value: String(format: "%.0f %@", displayLean, imperial ? "lb" : "kg"),
                             delta: leanDelta.map { String(format: "%@%.1f", $0 >= 0 ? "+" : "−", abs($0)) },
+                            spokenDelta: leanDelta.map { ChartSpeech.change(from: 0, to: $0, unit: imperial ? "lb" : "kg", decimals: 1) },
                             tint: leanDelta.map { $0 >= 0 ? Color.ok : Color.danger } ?? .ink3
                         )
                     }
@@ -188,11 +205,13 @@ extension ProgressScreen {
                 Text("Tap to log a new reading.")
                     .font(.monoXS)
                     .foregroundStyle(Color.ink3)
+                    .accessibilityHidden(true)
             }
         }
     }
 
-    private func statBlock(label: String, value: String, delta: String?, tint: Color) -> some View {
+    private func statBlock(label: String, spoken: String, value: String, delta: String?,
+                           spokenDelta: String?, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
                 .styled(.micro)
@@ -208,9 +227,9 @@ extension ProgressScreen {
                 }
             }
         }
-        // One element: label, value, then the delta with its sign spoken.
+        // One element: label, value, then the change as a direction word.
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(label.capitalized), \(value)\(delta.map { ", change \($0)" } ?? "")")
+        .accessibilityLabel("\(spoken), \(value)\(spokenDelta.map { ", \($0)" } ?? "")")
     }
 
     private func miniSeries(label: String, values: [Double]) -> some View {
@@ -224,6 +243,7 @@ extension ProgressScreen {
             BodyWeightSpark(points: values, minValue: minV, maxValue: maxV)
                 .frame(height: 24)
         }
+        .accessibilityHidden(true)
     }
 
     // MARK: - Strength ratios card
@@ -339,9 +359,10 @@ extension ProgressScreen {
             } else {
                 card(title: "MUSCLE BALANCE · 4w") {
                     let maxVol = rows.first?.volume ?? 1
+                    let total = rows.reduce(0) { $0 + $1.volume }
                     VStack(spacing: 8) {
                         ForEach(rows) { row in
-                            muscleBar(row: row, maxVol: maxVol)
+                            muscleBar(row: row, maxVol: maxVol, total: total)
                         }
                     }
                 }
@@ -349,7 +370,7 @@ extension ProgressScreen {
         }
     }
 
-    private func muscleBar(row: MuscleVolume.Row, maxVol: Double) -> some View {
+    private func muscleBar(row: MuscleVolume.Row, maxVol: Double, total: Double) -> some View {
         HStack(spacing: 10) {
             Text(row.label)
                 .font(.monoXS)
@@ -368,5 +389,8 @@ extension ProgressScreen {
             }
             .frame(height: 10)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(row.label)
+        .accessibilityValue(ChartSpeech.share(row.volume, of: total))
     }
 }

@@ -150,15 +150,15 @@ struct BodyWeightLogSheet: View {
             Chart {
                 ForEach(sortedEntries.reversed()) { entry in
                     LineMark(
-                        x: .value("date", entry.date),
-                        y: .value("weight", displayValue(kg: entry.weightKg))
+                        x: .value("Date", entry.date),
+                        y: .value("Weight", displayValue(kg: entry.weightKg))
                     )
                     .interpolationMethod(.monotone)
                     .foregroundStyle(Color.accent)
                     .lineStyle(StrokeStyle(lineWidth: 2, lineJoin: .round))
                     PointMark(
-                        x: .value("date", entry.date),
-                        y: .value("weight", displayValue(kg: entry.weightKg))
+                        x: .value("Date", entry.date),
+                        y: .value("Weight", displayValue(kg: entry.weightKg))
                     )
                     .foregroundStyle(Color.accent)
                     .symbolSize(20)
@@ -177,8 +177,39 @@ struct BodyWeightLogSheet: View {
                 }
             }
             .frame(height: 160)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Body weight over time")
+            .accessibilityValue(chartSpokenValue)
+            .accessibilityChartDescriptor(chartDescriptor)
         }
         .cardSurface()
+    }
+
+    /// Entries oldest first, in the display unit, for the spoken chart.
+    private var chartSeries: [(date: Date, value: Double)] {
+        sortedEntries.reversed().map { ($0.date, displayValue(kg: $0.weightKg)) }
+    }
+
+    private var chartSpokenValue: String {
+        let series = chartSeries
+        guard let first = series.first, let last = series.last,
+              let summary = ChartSpeech.seriesValue(series.map(\.value), unit: unitLabel, decimals: 1,
+                                                    noun: "entry", nounPlural: "entries") else { return "" }
+        return "\(summary), \(ChartSpeech.dateRange(from: first.date, to: last.date))"
+    }
+
+    private var chartDescriptor: SeriesChartDescriptor {
+        SeriesChartDescriptor(
+            title: "Body weight over time",
+            summary: chartSpokenValue,
+            xTitle: "Date",
+            yTitle: "Weight in \(unitLabel)",
+            points: chartSeries.map {
+                .init(x: .date($0.date), y: $0.value,
+                      spoken: ChartSpeech.amount($0.value, unit: unitLabel, decimals: 1))
+            },
+            isBar: false
+        )
     }
 
     private var historyCard: some View {

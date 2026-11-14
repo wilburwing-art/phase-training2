@@ -56,6 +56,7 @@ extension ProgressScreen {
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
+                        .accessibilityValue(exerciseTrendSpoken(s))
                         .accessibilityIdentifier("progress-top-exercise-\(s.name)")
                     }
                 }
@@ -107,6 +108,15 @@ extension ProgressScreen {
                                                     usesImperial: memoryStore.memory.usesImperial, now: Date())
         else { return "" }
         return " · est max \(summary.estimate)"
+    }
+
+    /// "up 10 lb over 6 sessions"; empty for fewer than two points.
+    private func exerciseTrendSpoken(_ s: ProgressAggregates.ExerciseSeries) -> String {
+        guard let first = s.points.first?.weight, let last = s.points.last?.weight,
+              s.points.count >= 2 else { return "" }
+        let whole = first.truncatingRemainder(dividingBy: 1) == 0 && last.truncatingRemainder(dividingBy: 1) == 0
+        let change = ChartSpeech.change(from: first, to: last, unit: s.unit, decimals: whole ? 0 : 1)
+        return "\(change) over \(s.points.count) sessions"
     }
 
     /// Convert per-session SparkPoints (date, weight) to a normalized 0..1

@@ -5,7 +5,6 @@
 // ProgressScreen card extensions in this folder can use them.
 
 import SwiftUI
-import Charts
 
 // MARK: - LineSpark (hand-drawn — used by Volume card)
 

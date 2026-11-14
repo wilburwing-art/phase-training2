@@ -28,6 +28,10 @@ extension ProgressScreen {
                                 let pts = tests.map { $0.ratio * 100 }
                                 BodyWeightSpark(points: pts, minValue: pts.min() ?? 0, maxValue: pts.max() ?? 1)
                                     .frame(height: 44)
+                                    .accessibilityElement()
+                                    .accessibilityLabel("Finger strength trend")
+                                    .accessibilityValue(ChartSpeech.seriesValue(
+                                        pts, unit: "%", decimals: 0, noun: "test", nounPlural: "tests") ?? "")
                             }
                             Text("Max hang, 20mm edge, 10 seconds.")
                                 .font(.monoXS)

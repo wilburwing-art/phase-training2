@@ -163,7 +163,8 @@ struct BodyCompositionLogSheet: View {
             if entriesWithBF.isEmpty {
                 EmptyView()
             } else {
-                trendCard(title: "BODY FAT %", points: entriesWithBF, suffix: "%")
+                trendCard(title: "BODY FAT %", spokenTitle: "Body fat percent", yTitle: "Body fat percent",
+                          points: entriesWithBF, suffix: "%")
             }
         }
     }
@@ -177,13 +178,16 @@ struct BodyCompositionLogSheet: View {
             if entriesWithLean.isEmpty {
                 EmptyView()
             } else {
-                trendCard(title: "LEAN MASS · \(massUnit.uppercased())", points: entriesWithLean, suffix: massUnit)
+                trendCard(title: "LEAN MASS · \(massUnit.uppercased())", spokenTitle: "Lean mass",
+                          yTitle: "Lean mass in \(massUnit)", points: entriesWithLean, suffix: massUnit)
             }
         }
     }
 
-    private func trendCard(title: String, points: [(Date, Double)], suffix: String) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+    private func trendCard(title: String, spokenTitle: String, yTitle: String,
+                           points: [(Date, Double)], suffix: String) -> some View {
+        let spokenValue = Self.spokenTrend(points: points, suffix: suffix)
+        return VStack(alignment: .leading, spacing: 10) {
             HStack {
                 sectionLabel(title)
                 Spacer()
@@ -196,15 +200,15 @@ struct BodyCompositionLogSheet: View {
             Chart {
                 ForEach(Array(points.enumerated()), id: \.offset) { _, point in
                     LineMark(
-                        x: .value("date", point.0),
-                        y: .value(title, point.1)
+                        x: .value("Date", point.0),
+                        y: .value(spokenTitle, point.1)
                     )
                     .interpolationMethod(.monotone)
                     .foregroundStyle(Color.accent)
                     .lineStyle(StrokeStyle(lineWidth: 2, lineJoin: .round))
                     PointMark(
-                        x: .value("date", point.0),
-                        y: .value(title, point.1)
+                        x: .value("Date", point.0),
+                        y: .value(spokenTitle, point.1)
                     )
                     .foregroundStyle(Color.accent)
                     .symbolSize(20)
@@ -223,8 +227,31 @@ struct BodyCompositionLogSheet: View {
                 }
             }
             .frame(height: 140)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("\(spokenTitle) over time")
+            .accessibilityValue(spokenValue)
+            .accessibilityChartDescriptor(
+                SeriesChartDescriptor(
+                    title: "\(spokenTitle) over time",
+                    summary: spokenValue,
+                    xTitle: "Date",
+                    yTitle: yTitle,
+                    points: points.map {
+                        .init(x: .date($0.0), y: $0.1,
+                              spoken: ChartSpeech.amount($0.1, unit: suffix, decimals: 1))
+                    },
+                    isBar: false
+                )
+            )
         }
         .cardSurface()
+    }
+
+    private static func spokenTrend(points: [(Date, Double)], suffix: String) -> String {
+        guard let first = points.first, let last = points.last,
+              let summary = ChartSpeech.seriesValue(points.map(\.1), unit: suffix, decimals: 1,
+                                                    noun: "reading", nounPlural: "readings") else { return "" }
+        return "\(summary), \(ChartSpeech.dateRange(from: first.0, to: last.0))"
     }
 
     // MARK: - History
