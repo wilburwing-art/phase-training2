@@ -355,9 +355,9 @@ struct LibraryScreen: View {
 
     private func tileFace(_ tile: LibraryTile) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Image(systemName: tile.symbol)
-                .scaledSystemFont(22, weight: .regular)
-                .foregroundStyle(Color.accent)
+            MuscleFigure(group: tile.figureBucket, side: tile.figureBucket.naturalSide)
+                .frame(width: 56, height: 56)
+                .accessibilityHidden(true)
             Text(tile.label)
                 .styled(.displayS)
                 .foregroundStyle(Color.ink)

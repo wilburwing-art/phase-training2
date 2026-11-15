@@ -16,6 +16,8 @@
 // If the bundled asset is missing for some reason, we fall back to the live
 // BodyAnatomyView (unreachable on a clean build, but keeps the chip
 // rendering correctly during asset-regeneration iterations).
+//
+// The Library muscle tiles draw the same artwork through MuscleFigure.
 
 import SwiftUI
 import UIKit
@@ -32,20 +34,30 @@ struct MuscleChipBadge: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Color.elevated)
-                    chipArtwork
+                    MuscleFigure(group: group, side: side)
                         .padding(2)
                 }
                 .padding(2)
             }
             .accessibilityHidden(true)
     }
+}
+
+/// The bundled body artwork for one muscle bucket, filling whatever frame it
+/// is given. Shared by the Today chip badge and the Library muscle tiles.
+struct MuscleFigure: View {
+    /// Opacity of the body around the highlighted muscle, both in the
+    /// generated PNGs and in the live fallback.
+    static let baseOpacity: Double = 0.3
+
+    let group: MuscleBucket
+    let side: BodyAnatomyView.AnatomySide
 
     private var assetName: String {
         "MuscleChips/\(group.rawValue)-\(side == .front ? "front" : "back")"
     }
 
-    @ViewBuilder
-    private var chipArtwork: some View {
+    var body: some View {
         if UIImage(named: assetName) != nil {
             Image(assetName)
                 .renderingMode(.template)
@@ -54,12 +66,13 @@ struct MuscleChipBadge: View {
                 .foregroundStyle(Color.accent)
         } else {
             // Fallback: live BodyAnatomyView. Unreachable when the bundled
-            // assets are present, but keeps the chip rendering correctly if
+            // assets are present, but keeps the figure rendering correctly if
             // an imageset is missing during regeneration iterations.
             BodyAnatomyView(
                 highlights: [group.primarySlug: .primary],
                 side: side,
-                tint: Color.accent
+                tint: Color.accent,
+                baseOpacity: Self.baseOpacity
             )
         }
     }

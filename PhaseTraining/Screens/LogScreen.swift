@@ -337,28 +337,39 @@ struct LogScreen: View {
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("log-add-exercise")
 
-                    // Bottom clearance for the system tab bar. Without this
-                    // the last few exercise rows render UNDER the tab bar
+                    // Bottom clearance. With no media card, 120pt clears the
+                    // system tab bar. Without it the last few exercise rows render UNDER the tab bar
                     // (snapshot_ui showed tab bar at y=791-874 occluding
                     // log-set-check-2-N for the 3rd-of-5 exercise in the
                     // supersets demo seed). Tab bar visible height is
                     // 49pt + home-indicator inset ~34pt = ~83pt. 120pt
                     // gives an extra safety margin so reorder-handles and
-                    // contextMenus don't get shadowed either.
-                    Color.clear.frame(height: 120)
+                    // contextMenus don't get shadowed either. While the media
+                    // card shows, the safe-area inset dock already ends the
+                    // content above the card and the tab bar, so 16pt is enough.
+                    Color.clear.frame(height: nowPlaying.state == .hidden ? 120 : 16)
                 }
             }
             .scrollDismissesKeyboard(.interactively)
             .safeAreaInset(edge: .bottom) {
                 // Media card, like Google Maps during navigation: change the
                 // track without leaving the workout. Comes and goes with
-                // playback; the ScrollView's own bottom clearance still
-                // covers the tab bar underneath.
+                // playback. The card and everything below it (the gap and the
+                // tab bar's safe area) sit on one opaque dock so set rows never
+                // show through; a short gradient softens the cut-off above it.
                 if nowPlaying.state != .hidden {
-                    NowPlayingCard(model: nowPlaying)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 8)
-                        .transition(Motion.transition(.move(edge: .bottom).combined(with: .opacity), reduced: Motion.isReduced(reduceMotion)))
+                    VStack(spacing: 0) {
+                        LinearGradient(colors: [Color.bg.opacity(0), Color.bg],
+                                       startPoint: .top, endPoint: .bottom)
+                            .frame(height: 12)
+                            .allowsHitTesting(false)
+                            .accessibilityHidden(true)
+                        NowPlayingCard(model: nowPlaying)
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 8)
+                            .background(Color.bg.ignoresSafeArea(edges: .bottom))
+                    }
+                    .transition(Motion.transition(.move(edge: .bottom).combined(with: .opacity), reduced: Motion.isReduced(reduceMotion)))
                 }
             }
             .motion(.easeInOut(duration: 0.25), .fade, value: nowPlaying.state)

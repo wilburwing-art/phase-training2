@@ -1,19 +1,16 @@
 // ProfileScreen.swift — Profile tab, Option-C settings-row pattern.
 //
-// Header + planTuningSection live at the top as before. Everything below
-// is a SettingsRow that opens a focused editor sheet, grouped by intent:
-//   · Training setup (sports, seasons, focuses, session length, lift days,
-//                     equipment, experience)
-//   · About you     (age + gender + height/weight)
-//   · Adjustments   (dislikes, injuries)
-//   · App           (reminders, coach, data)
-//
-// Session length + lift days keep the build-67 tap-to-edit alert pattern,
-// but render via SettingsRow with a value summary; tapping the row opens
-// the existing alert TextField. The .fileImporter / ShareSheet / backup
-// alerts stay on this screen — DataEditorSheet just toggles the parent
-// flags via closures. The backup/restore/erase state machine itself lives
-// in BackupCoordinator (Data/); row value summaries live in
+// Header + planTuningSection live at the top. Everything below is a
+// SettingsRow that opens a focused editor sheet, grouped by intent:
+//   · PLAN      (plan setup, sports, discipline, seasons, support, goals)
+//   · BODY      (about you, body weight, composition, injuries)
+//   · EXERCISES (favorites, avoid, plate calculator)
+//   · APP       (reminders, coach, health, subscription, data, privacy)
+// Session length, lift days, equipment, experience and training focus are
+// edited from the Plan setup checklist. The .fileImporter / ShareSheet /
+// backup alerts stay on this screen; DataEditorSheet just toggles the parent
+// flags via closures. The backup/restore/erase state machine lives in
+// BackupCoordinator (Data/); row value summaries live in
 // ProfileScreen+RowSummaries.swift.
 
 import SwiftUI
@@ -44,9 +41,6 @@ struct ProfileScreen: View {
     @State private var presentingSportsEditor = false
     @State private var presentingSeasonsEditor = false
     @State private var presentingSupportEditor = false
-    @State private var presentingEquipmentEditor = false
-    @State private var presentingExperienceEditor = false
-    @State private var presentingGoalEditor = false
     @State private var presentingDisciplineEditor = false
     @State private var presentingAboutEditor = false
     @State private var presentingFavoritesEditor = false
@@ -76,39 +70,8 @@ struct ProfileScreen: View {
     @State private var presentingTwinScorecard = false
     #endif
 
-    // Tap-to-edit alert for the two number fields (build 67). Still triggered
-    // by tapping the SettingsRow value cell.
-    @State private var editingField: EditingField? = nil
-    @State private var editingText: String = ""
-    // Transient notice shown under the edited rows when an out-of-range
-    // value gets clamped, so 999 → 120 isn't a silent rewrite.
-    @State private var clampNotice: String? = nil
-
     // Danger zone: confirm before the irreversible full data wipe.
     @State private var showEraseConfirm = false
-
-    enum EditingField: String, Identifiable {
-        case sessionMinutes, liftDays
-        var id: String { rawValue }
-        var title: String {
-            switch self {
-            case .sessionMinutes: return "Session length"
-            case .liftDays:       return "Lift days per week"
-            }
-        }
-        var unit: String {
-            switch self {
-            case .sessionMinutes: return "minutes"
-            case .liftDays:       return "days"
-            }
-        }
-        var clamp: ClosedRange<Int> {
-            switch self {
-            case .sessionMinutes: return TrainingConstraints.sessionMinutesUIRange
-            case .liftDays:       return TrainingConstraints.liftDaysRange
-            }
-        }
-    }
 
     var body: some View {
         ZStack {
@@ -118,10 +81,10 @@ struct ProfileScreen: View {
                     header
                     planTuningSection
 
-                    settingsGroup("TRAINING SETUP") {
+                    settingsGroup("PLAN") {
                         // Leads the group: it's the answer to "what is my plan
-                        // actually built on", and on a fresh install most of
-                        // these rows are still defaults the user never chose.
+                        // actually built on", and it edits schedule, equipment,
+                        // experience and goal in one place.
                         SettingsRow(label: "Plan setup",
                                     value: setupChecklistSummary,
                                     icon: "checklist",
@@ -130,18 +93,20 @@ struct ProfileScreen: View {
                                     value: sportsSummary,
                                     icon: "figure.run",
                                     action: { presentingSportsEditor = true })
+                        if store.memory.skisPrimary {
+                            SettingsRow(label: "Discipline",
+                                        value: store.memory.primaryVariant.disciplineLabel,
+                                        icon: "figure.skiing.downhill",
+                                        action: { presentingDisciplineEditor = true })
+                        }
                         SettingsRow(label: "Seasons",
                                     value: seasonsSummary,
                                     icon: "calendar",
                                     action: { presentingSeasonsEditor = true })
-                        SettingsRow(label: "Performance goals",
-                                    value: goalsSummary,
-                                    icon: "target",
-                                    action: { presentingGoalPicker = true })
                         // The primary/support wedge is ski/board-primary +
                         // climbing-support, so the row appears for a ski/snow
                         // primary sport (the interference table is authored for
-                        // exactly that pairing) — OR whenever a pattern already
+                        // exactly that pairing) or whenever a pattern already
                         // exists, so it stays reachable.
                         //
                         // Planner.applySupportPattern guards only on the
@@ -164,42 +129,13 @@ struct ProfileScreen: View {
                                             }
                                         })
                         }
-                        SettingsRow(label: "Session length",
-                                    value: "\(store.memory.sessionMinutes) min",
-                                    icon: "clock",
-                                    action: { beginEditing(.sessionMinutes) })
-                        SettingsRow(label: "Lift days",
-                                    value: liftDaysSummary,
-                                    icon: "dumbbell",
-                                    action: { beginEditing(.liftDays) })
-                        if let notice = clampNotice {
-                            Text(notice)
-                                .font(.monoXS)
-                                .foregroundStyle(Color.danger)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.horizontal, 4)
-                        }
-                        SettingsRow(label: "Equipment",
-                                    value: equipmentSummary,
-                                    icon: "wrench.and.screwdriver",
-                                    action: { presentingEquipmentEditor = true })
-                        SettingsRow(label: "Experience",
-                                    value: experienceSummary,
-                                    icon: "chart.line.uptrend.xyaxis",
-                                    action: { presentingExperienceEditor = true })
-                        SettingsRow(label: "Training focus",
-                                    value: store.memory.trainingGoal.label,
-                                    icon: "scope",
-                                    action: { presentingGoalEditor = true })
-                        if store.memory.skisPrimary {
-                            SettingsRow(label: "Discipline",
-                                        value: store.memory.primaryVariant.disciplineLabel,
-                                        icon: "figure.skiing.downhill",
-                                        action: { presentingDisciplineEditor = true })
-                        }
+                        SettingsRow(label: "Performance goals",
+                                    value: goalsSummary,
+                                    icon: "target",
+                                    action: { presentingGoalPicker = true })
                     }
 
-                    settingsGroup("ABOUT YOU") {
+                    settingsGroup("BODY") {
                         SettingsRow(label: "About you",
                                     value: aboutSummary,
                                     icon: "person",
@@ -212,16 +148,13 @@ struct ProfileScreen: View {
                                     value: bodyCompositionSummary,
                                     icon: "chart.bar.xaxis",
                                     action: { presentingBodyCompositionLog = true })
+                        SettingsRow(label: "Injuries",
+                                    value: injuriesSummary,
+                                    icon: "cross.case",
+                                    action: { presentingInjuriesEditor = true })
                     }
 
-                    settingsGroup("TOOLS") {
-                        SettingsRow(label: "Plate calculator",
-                                    value: "Barbell math",
-                                    icon: "circle.grid.cross",
-                                    action: { presentingPlateCalculator = true })
-                    }
-
-                    settingsGroup("ADJUSTMENTS") {
+                    settingsGroup("EXERCISES") {
                         SettingsRow(label: "Favorite exercises",
                                     value: favoritesSummary,
                                     icon: "hand.thumbsup",
@@ -230,10 +163,10 @@ struct ProfileScreen: View {
                                     value: dislikesSummary,
                                     icon: "hand.raised",
                                     action: { presentingDislikesEditor = true })
-                        SettingsRow(label: "Injuries",
-                                    value: injuriesSummary,
-                                    icon: "cross.case",
-                                    action: { presentingInjuriesEditor = true })
+                        SettingsRow(label: "Plate calculator",
+                                    value: "Barbell math",
+                                    icon: "circle.grid.cross",
+                                    action: { presentingPlateCalculator = true })
                     }
 
                     settingsGroup("APP") {
@@ -314,17 +247,8 @@ struct ProfileScreen: View {
         .sheet(isPresented: $presentingSupportEditor) {
             SupportSportEditorSheet().environmentObject(store)
         }
-        .sheet(isPresented: $presentingEquipmentEditor) {
-            EquipmentEditorSheet().environmentObject(store)
-        }
-        .sheet(isPresented: $presentingExperienceEditor) {
-            ExperienceEditorSheet().environmentObject(store)
-        }
         .sheet(isPresented: $presentingDisciplineEditor) {
             SkiDisciplineSheet().environmentObject(store)
-        }
-        .sheet(isPresented: $presentingGoalEditor) {
-            GoalEditorSheet().environmentObject(store)
         }
         .sheet(isPresented: $presentingAboutEditor) {
             AboutYouEditorSheet().environmentObject(store)
@@ -444,16 +368,6 @@ struct ProfileScreen: View {
             Button("Done") {}
         } message: {
             Text("Your data was restored.")
-        }
-        .alert(editingField?.title ?? "", isPresented: editingFieldBinding) {
-            TextField(editingField?.unit ?? "", text: $editingText)
-                .keyboardType(.numberPad)
-            Button("Cancel", role: .cancel) { editingField = nil }
-            Button("Save") { commitEditingValue() }
-        } message: {
-            if let field = editingField {
-                Text("Enter \(field.clamp.lowerBound) to \(field.clamp.upperBound) \(field.unit).")
-            }
         }
     }
 
@@ -586,42 +500,6 @@ struct ProfileScreen: View {
         Text(text)
             .styled(.micro)
             .foregroundStyle(Color.ink3)
-    }
-
-    // MARK: - Tap-to-edit alert plumbing
-
-    private var editingFieldBinding: Binding<Bool> {
-        Binding(
-            get: { editingField != nil },
-            set: { if !$0 { editingField = nil } }
-        )
-    }
-
-    private func beginEditing(_ field: EditingField) {
-        editingField = field
-        switch field {
-        case .sessionMinutes: editingText = String(store.memory.sessionMinutes)
-        case .liftDays:       editingText = String(store.memory.liftDaysPerWeek)
-        }
-    }
-
-    private func commitEditingValue() {
-        guard let field = editingField else { return }
-        defer { editingField = nil }
-        guard let raw = Int(editingText.trimmingCharacters(in: .whitespaces)) else { return }
-        let clamped = max(field.clamp.lowerBound, min(field.clamp.upperBound, raw))
-        clampNotice = clamped == raw
-            ? nil
-            : "\(field.title) adjusted to \(clamped). The valid range is \(field.clamp.lowerBound) to \(field.clamp.upperBound) \(field.unit)."
-        store.update { mem in
-            switch field {
-            case .sessionMinutes: mem.sessionMinutes = clamped
-            case .liftDays:       mem.liftDaysPerWeek = clamped
-            }
-            // Both halves of the availability assumption live behind one chip,
-            // so setting either retires it.
-            mem.markStated(.availability)
-        }
     }
 
     // MARK: - Danger zone

@@ -80,6 +80,11 @@ struct BodyAnatomyView: View {
     /// case wants accent-on-elevated, not the red/orange/yellow recovery
     /// palette. Unset = use each intensity's natural color.
     var tint: Color? = nil
+    /// When set together with `tint`, the unhighlighted body (limbs, torso,
+    /// head, hair) is drawn in `tint` at this opacity instead of MuscleMap's
+    /// opaque grey, so a snapshot of the view keeps the highlighted muscle
+    /// distinguishable by alpha. Unset leaves MuscleMap's default body style.
+    var baseOpacity: Double? = nil
 
     // MARK: - Body
 
@@ -103,6 +108,10 @@ struct BodyAnatomyView: View {
     private func buildBodyView() -> BodyView {
         var view = BodyView(gender: muscleMapGender, side: side.muscleMapSide)
             .showSubGroups()
+        if let tint, let baseOpacity {
+            let base = tint.opacity(baseOpacity)
+            view = view.bodyStyle(BodyViewStyle(defaultFillColor: base, headColor: base, hairColor: base))
+        }
         for (muscle, color) in mappedHighlights {
             view = view.highlight(muscle, color: color)
         }

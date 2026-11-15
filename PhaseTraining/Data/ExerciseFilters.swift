@@ -180,17 +180,16 @@ enum LibraryTile: String, CaseIterable, Identifiable, Hashable {
         members.flatMap { $0.memberSlugs }
     }
 
-    /// SF Symbol shown on the tile face. Same icon style across all 7 so the
-    /// grid reads as a family.
-    var symbol: String {
+    /// The bucket whose bundled body artwork is drawn on the tile face.
+    var figureBucket: MuscleBucket {
         switch self {
-        case .chest:      return "figure.cooldown"
-        case .back:       return "figure.strengthtraining.functional"
-        case .shoulders:  return "figure.boxing"
-        case .arms:       return "dumbbell.fill"
-        case .quads:      return "figure.run"
-        case .hamsGlutes: return "figure.walk"
-        case .core:       return "figure.core.training"
+        case .chest:      return .chest
+        case .back:       return .back
+        case .shoulders:  return .shoulders
+        case .arms:       return .biceps
+        case .quads:      return .quads
+        case .hamsGlutes: return .glutes
+        case .core:       return .core
         }
     }
 }

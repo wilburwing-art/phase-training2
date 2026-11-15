@@ -52,12 +52,18 @@ struct PlanValidationBanner: View {
                     Button(action: {
                         withMotion(.easeInOut(duration: 0.18), .movement) { showAll.toggle() }
                     }) {
-                        Text(showAll ? "Show fewer" : "+\(hiddenCount) more")
-                            .styled(.monoXS)
-                            .foregroundStyle(Color.ink2)
+                        HStack(spacing: 5) {
+                            Text(showAll ? "Show fewer" : "+\(hiddenCount) more")
+                                .styled(.monoXS)
+                            Image(systemName: showAll ? "chevron.up" : "chevron.down")
+                                .scaledSystemFont(10, weight: .medium)
+                        }
+                        .foregroundStyle(Color.ink2)
+                        .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .padding(.top, 2)
+                    .accessibilityLabel(showAll ? "Show fewer issues" : "Show \(hiddenCount) more issues")
                     .accessibilityIdentifier("plan-issues-show-more")
                 }
             }

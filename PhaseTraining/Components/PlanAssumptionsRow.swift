@@ -34,16 +34,24 @@ struct PlanAssumptionsRow: View {
         // zero-height, so nothing is spent on the settled case.
         VStack(alignment: .leading, spacing: 6) {
             if !assumed.isEmpty {
-                Text("ASSUMED · TAP TO CHANGE")
-                    .styled(.micro)
-                    .foregroundStyle(Color.ink3)
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
+                        Text("ASSUMED")
+                            .styled(.micro)
+                            .foregroundStyle(Color.ink3)
                         ForEach(assumed) { field in
                             chip(field)
                         }
                     }
-                    .padding(.horizontal, 1)   // keeps the stroke off the clip edge
+                    .padding(.leading, 1)   // keeps the stroke off the clip edge
+                    .padding(.trailing, 24) // lets the last chip scroll clear of the fade
+                }
+                .mask {
+                    HStack(spacing: 0) {
+                        Color.black
+                        LinearGradient(colors: [.black, .clear], startPoint: .leading, endPoint: .trailing)
+                            .frame(width: 24)
+                    }
                 }
                 Spacer().frame(height: 8)
             }

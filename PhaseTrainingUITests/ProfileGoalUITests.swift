@@ -1,7 +1,7 @@
 import XCTest
 
-/// Profile → Goal: the row starts on Sport performance, and picking Strength
-/// sticks and shows on the row.
+/// Profile → Plan setup → Goal: the row starts on Sport performance, and picking
+/// Strength sticks and shows on the checklist row.
 final class ProfileGoalUITests: XCTestCase {
 
     func test_pickStrengthGoal() {
@@ -13,12 +13,16 @@ final class ProfileGoalUITests: XCTestCase {
         XCTAssertTrue(profile.waitForExistence(timeout: 10))
         profile.tap()
 
-        let row = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Training focus")).firstMatch
+        let row = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Plan setup")).firstMatch
         var swipes = 0
         while !row.isHittable && swipes < 6 { app.swipeUp(); swipes += 1 }
-        XCTAssertTrue(row.waitForExistence(timeout: 5), "Training focus row should exist")
-        XCTAssertTrue(row.label.contains("Sport performance"), row.label)
+        XCTAssertTrue(row.waitForExistence(timeout: 5), "Plan setup row should exist")
         row.tap()
+
+        let goalRow = app.buttons["setup-checklist-row-goal"]
+        XCTAssertTrue(goalRow.waitForExistence(timeout: 5))
+        XCTAssertTrue(goalRow.label.contains("Sport performance"), goalRow.label)
+        goalRow.tap()
 
         let strength = app.buttons["goal-strength"]
         XCTAssertTrue(strength.waitForExistence(timeout: 5))
@@ -30,7 +34,7 @@ final class ProfileGoalUITests: XCTestCase {
         add(shot)
 
         app.buttons["Done"].tap()
-        XCTAssertTrue(row.waitForExistence(timeout: 5))
-        XCTAssertTrue(row.label.contains("Strength"), row.label)
+        XCTAssertTrue(goalRow.waitForExistence(timeout: 5))
+        XCTAssertTrue(goalRow.label.contains("Strength"), goalRow.label)
     }
 }

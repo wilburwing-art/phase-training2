@@ -217,52 +217,67 @@ struct WeekScreen: View {
                 Spacer(minLength: 4)
                 SeasonPhaseBadge(style: .compact, surface: "week")
             }
-            Text(plan.rangeLabel)
-                .font(.scaled("SpaceGrotesk-SemiBold", size: 26))
-                .tracking(-0.025 * 26)
-                .foregroundStyle(Color.ink)
-            HStack(spacing: 8) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(plan.rangeLabel)
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 26))
+                    .tracking(-0.025 * 26)
+                    .foregroundStyle(Color.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                Spacer(minLength: 4)
                 Text(planSummary(plan))
                     .font(.monoXS)
                     .foregroundStyle(Color.ink3)
-                Spacer(minLength: 4)
-                // PR 6 — WeekTone chip. Tap → picker. When unset, reads
-                // "Set tone"; when set, reads the chosen tone label.
-                WeekToneChip(
-                    tone: planStore.overrides.weekTone,
-                    action: { pickingWeekTone = true }
-                )
-                .accessibilityIdentifier("week-tone-chip")
+                    .lineLimit(1)
+                    .layoutPriority(1)
             }
-            // Week-level actions. Both are chips rather than full-width pills
-            // because the seven day rows below are sized by GeometryReader to
-            // fill the viewport, so anything taller here steals row height.
-            HStack(spacing: 6) {
-                // PR 6 — "typical week" fast path: copy last week's shape onto
-                // this week in one tap. Only when a prior week exists to copy.
-                if planStore.hasPriorWeekShape {
-                    chip(icon: "arrow.uturn.backward", title: "Same as last week",
-                         identifier: "week-same-as-last") {
-                        planStore.adoptLastWeekShape(memory: memory.memory)
-                    }
-                }
-                // Build 122 — moved off Today, where it was one of five tiles
-                // between the header and the workout. Week is the planning
-                // surface, and this is now the only in-app door to the check-in
-                // (the other setter is a `plan-week` notification deep link),
-                // so it is permanent here rather than gated on the week ending.
-                chip(icon: "calendar.badge.plus", title: "Plan next week",
-                     identifier: "week-plan-next") {
-                    tabSelection.showWeeklyCheckIn = true
-                }
-                Spacer(minLength: 0)
+            // Week-level actions. Chips rather than full-width pills because
+            // the seven day rows below are sized by GeometryReader to fill the
+            // viewport, so anything taller here steals row height. The second
+            // candidate shortens "Same as last week" when the row is too wide.
+            ViewThatFits(in: .horizontal) {
+                actionsRow(shortLastWeek: false)
+                actionsRow(shortLastWeek: true)
             }
             .padding(.top, 2)
         }
     }
 
+    private func actionsRow(shortLastWeek: Bool) -> some View {
+        HStack(spacing: 6) {
+            // Build 122: moved off Today, where it was one of five tiles
+            // between the header and the workout. Week is the planning
+            // surface, and this is the only in-app door to the check-in
+            // (the other setter is a `plan-week` notification deep link),
+            // so it is permanent here rather than gated on the week ending.
+            chip(icon: "calendar.badge.plus", title: "Plan next week",
+                 identifier: "week-plan-next") {
+                tabSelection.showWeeklyCheckIn = true
+            }
+            // "Typical week" fast path: copy last week's shape onto this
+            // week in one tap. Only when a prior week exists to copy.
+            if planStore.hasPriorWeekShape {
+                chip(icon: "arrow.uturn.backward",
+                     title: shortLastWeek ? "Last week" : "Same as last week",
+                     identifier: "week-same-as-last",
+                     accessibilityLabel: shortLastWeek ? "Same as last week" : nil) {
+                    planStore.adoptLastWeekShape(memory: memory.memory)
+                }
+            }
+            Spacer(minLength: 0)
+            // Tap opens the picker. When unset reads "Set tone"; when set,
+            // the chosen tone label.
+            WeekToneChip(
+                tone: planStore.overrides.weekTone,
+                action: { pickingWeekTone = true }
+            )
+            .accessibilityIdentifier("week-tone-chip")
+        }
+    }
+
     /// Shared chrome for the header's week-level actions.
     private func chip(icon: String, title: String, identifier: String,
+                      accessibilityLabel: String? = nil,
                       action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 5) {
@@ -283,6 +298,7 @@ struct WeekScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(identifier)
+        .accessibilityLabel(accessibilityLabel ?? title)
     }
 
     private func planSummary(_ plan: WeekPlan) -> String {

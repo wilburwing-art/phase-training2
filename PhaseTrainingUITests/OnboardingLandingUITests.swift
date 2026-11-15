@@ -54,12 +54,27 @@ final class OnboardingLandingUITests: XCTestCase {
         // resolve through app.otherElements (same query-mismatch class as
         // the body-weight sheet). The marker text is the visible thing the
         // assertion is really about.
-        let assumedMarker = app.staticTexts["ASSUMED · TAP TO CHANGE"]
+        let assumedMarker = app.staticTexts["ASSUMED"]
         XCTAssertTrue(assumedMarker.waitForExistence(timeout: 5)
                         || app.otherElements["plan-assumptions-row"].exists
                         || app.buttons["plan-assumptions-row"].exists,
                       "assumed defaults should be surfaced on the Week tab"
                         + " staticTexts: \(app.staticTexts.allElementsBoundByIndex.prefix(30).map { "\($0.identifier)|\($0.label)" }.joined(separator: ", "))")
+        // Header stack: title and summary share a row and the actions sit on
+        // one row, so the first day row starts in the upper half of the screen.
+        let firstRow = app.descendants(matching: .any)["week-day-row-0"]
+        let planNext = app.buttons["week-plan-next"]
+        let tone = app.buttons["week-tone-chip"]
+        XCTAssertTrue(planNext.isHittable && tone.isHittable, "header actions should be tappable")
+        XCTAssertEqual(planNext.frame.midY, tone.frame.midY, accuracy: 2,
+                       "Plan next week and the tone chip share one row")
+        let screenH = app.windows.firstMatch.frame.height
+        XCTAssertLessThan(firstRow.frame.minY, screenH * 0.42,
+                          "first day row y=\(firstRow.frame.minY) of \(screenH)")
+        let rowHeights = (0..<7).map { app.descendants(matching: .any)["week-day-row-\($0)"].frame.height }
+        add(XCTAttachment(string: "firstRowY=\(firstRow.frame.minY) screenH=\(screenH) rowHeights=\(rowHeights)"))
+        XCTAssertGreaterThanOrEqual(rowHeights.min() ?? 0, 48)
+
         let chip = app.buttons["assumption-chip-equipment"]
         XCTAssertTrue(chip.waitForExistence(timeout: 3), "equipment should read as assumed")
         chip.tap()

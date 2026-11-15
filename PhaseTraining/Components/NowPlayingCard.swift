@@ -70,6 +70,8 @@ struct NowPlayingCard: View {
             .background(Color.surface)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(Color.line, lineWidth: 0.5))
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("now-playing-card")
     }
 
     private func artworkSlot(_ image: UIImage?) -> some View {

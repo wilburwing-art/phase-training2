@@ -2,8 +2,7 @@
 // Profile tab's SettingsRows.
 //
 // Pure extraction from ProfileScreen.swift (architecture item 11): every
-// property here is a derived, side-effect-free string (plus the
-// `currentTier` helper the equipment summary reads). No presentation state.
+// property here is a derived, side-effect-free string. No presentation state.
 
 import SwiftUI
 
@@ -11,11 +10,11 @@ extension ProfileScreen {
 
     // MARK: - Row summaries
 
-    /// Row value for "Plan setup" — how many plan-shaping inputs are still
-    /// running on a default rather than something the user chose.
+    /// Row value for "Plan setup": how many plan-shaping inputs are still
+    /// running on a default, else the lift days and session length the lifter set.
     var setupChecklistSummary: String {
         let n = store.memory.assumedFields.count
-        return n == 0 ? "All set" : "\(n) assumed"
+        return n == 0 ? store.memory.assumptionSummary(for: .availability) : "\(n) assumed"
     }
 
     var goalsSummary: String {
@@ -49,11 +48,6 @@ extension ProfileScreen {
         return "Mixed"
     }
 
-    var liftDaysSummary: String {
-        let n = store.memory.liftDaysPerWeek
-        return "\(n) " + (n == 1 ? "day" : "days") + " / week"
-    }
-
     var supportSummary: String {
         // Gated + not subscribed → tease it as Pro (held open today, so this
         // is dormant until SupportEntitlement.proRequired flips true).
@@ -61,19 +55,6 @@ extension ProfileScreen {
         guard let p = store.memory.supportPattern, !p.isEmpty else { return "Off" }
         let n = p.days.count
         return "Climbing · \(n) " + (n == 1 ? "day" : "days")
-    }
-
-    var equipmentSummary: String {
-        let tier = currentTier
-        if tier == .custom {
-            let count = store.memory.equipment.count
-            return "Custom (\(count))"
-        }
-        return tier.label
-    }
-
-    var experienceSummary: String {
-        store.memory.experience.label
     }
 
     var aboutSummary: String {
@@ -180,12 +161,5 @@ extension ProfileScreen {
 
     var remindersSummary: String {
         WeeklyReminderScheduler.isEnabled ? "On" : "Off"
-    }
-
-    /// Delegates rather than keeping a second copy — this classifier existed
-    /// verbatim in both EquipmentEditorSheet and here, so a new tier had to be
-    /// added twice or the row summary silently drifted from the editor.
-    var currentTier: EquipmentTier {
-        EquipmentEditorSheet.inferredTier(from: store.memory.equipment)
     }
 }

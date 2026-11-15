@@ -6,7 +6,9 @@
 // produces an illegible blur and burns CPU per row. Pre-rendering each
 // (bucket, side) once at 1x/2x/3x lets MuscleChipBadge load a flat
 // .template image and tint with Color.accent — much cheaper and visually
-// distinguishable bucket-to-bucket.
+// distinguishable bucket-to-bucket. The primary muscle is rendered fully
+// opaque and the rest of the body at MuscleFigure.baseOpacity, because a
+// template image keeps only alpha.
 //
 // Flow:
 //   1. Open via Profile → "Regenerate muscle chips" (DEBUG only).
@@ -163,13 +165,15 @@ struct MuscleChipGeneratorView: View {
 
     /// The artwork that gets snapshotted. Wrapped in a ZStack so the
     /// ImageRenderer can capture a clear-background 252×252 canvas with
-    /// just the silhouette drawn in solid color.
+    /// the bucket's primary muscle at full alpha and the rest of the body at
+    /// `MuscleFigure.baseOpacity`.
     @ViewBuilder
     private func chipArtwork(bucket: MuscleBucket, side: BodyAnatomyView.AnatomySide, tint: Color) -> some View {
         BodyAnatomyView(
             highlights: [bucket.primarySlug: .primary],
             side: side,
-            tint: tint
+            tint: tint,
+            baseOpacity: MuscleFigure.baseOpacity
         )
     }
 
