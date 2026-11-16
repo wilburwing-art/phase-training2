@@ -50,6 +50,8 @@ Owner decisions, 2026-11-15:
 
 **Catalog exercises first.** Map each source movement to an existing exercise by name. When none fits, add it through the four-file path in `phase-training-coachdb-add-exercise-source-pipeline` (clone a row of the same kind so the CHECK enums stay valid; `tags` is a JSON string). Report every movement you added or approximated in the commit message and to the owner. If the source is unclear, stop and report; never invent a prescription the source does not contain.
 
+**No MTI signature movements (owner decision, 2026-11-15).** Never add MTI-named movements (Leg Blaster, Mini Leg Blaster, Kneeling Slasher, Scotty Bob, Standing Founder and the like) to the catalog. Write a compound as its parts in the catalog, or use the closest catalog movement, or drop it. Record each substitution or drop in the movement's or routine's notes.
+
 **Source JSON is the only edit point.** Never edit `db/coach.db` or `PhaseTraining/Resources/coach.db` directly. Query the built db to confirm counts before you report them; a commit message is not evidence.
 
 **One sport per tranche.** Land and verify one sport, then pick the next from the ranked list. Never batch sports into one commit.
