@@ -72,6 +72,12 @@ predicted adaptation before the next sport day.
   `PLAN-predictive-recommendations.md`). The owner decided the same day that
   readiness is visible to the user on its own page under Progress, so the "No
   UI" line below is retired for any readiness work that follows.
+- **Physiology capture turned on 2026-11-15** (owner tapped "Capture recovery
+  data" and granted the read). The first read backfills up to 30 nights, so
+  the 6-week gate (42 nights) for the 1c reader falls between 2026-11-27
+  (full backfill) and 2026-12-27 (no backfill), depending on how many nights
+  Health already holds. Check the
+  night count in the next backup.
 - **1b (shelved). Silent readiness from the twin.** About 1 week. Replace
   `ReadinessSignal`'s unweighted session count with per-pattern load, behind
   the existing silent path (`AthleteState.readinessScore`). No UI. Gate to
