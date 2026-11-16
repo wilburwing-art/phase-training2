@@ -1842,5 +1842,21 @@
   {
     "routine_id": 317,
     "sport_id": 57
+  },
+  {
+    "routine_id": 318,
+    "sport_id": 1
+  },
+  {
+    "routine_id": 319,
+    "sport_id": 1
+  },
+  {
+    "routine_id": 320,
+    "sport_id": 50
+  },
+  {
+    "routine_id": 321,
+    "sport_id": 50
   }
 ]

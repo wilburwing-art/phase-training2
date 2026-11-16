@@ -112,6 +112,10 @@ struct SportProfile: Equatable {
         // carry has no Demand case, so it takes legEndurance, as do the two
         // hiking sports. Trail running takes eccentricLeg: the descents.
         "mountain-biking": authoredOnly,
+        // Owner decision, 2026-11-15: cycling is picked as a primary sport and
+        // reads like mountain biking (no signature); running takes legEndurance.
+        "cycling": authoredOnly,
+        "running": authoredOnly.with(signature: .legEndurance),
         // Item 5: the pack loads the upper back and trunk the legs carry it
         // with, so complement days lead with them.
         "mountaineering": authoredOnly.with(signature: .legEndurance, family: .legsAndCarry),
