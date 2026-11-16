@@ -7,12 +7,15 @@ periodization generator, multi-sport conflict resolver, overload math,
 SQLite schema (user.db migrations), offline sync.
 
 SCOPE
-One backlog item per session. Pick the next open item in
-docs/PLAN-gap-backlog-2026-11b.md whose text names no owner decision,
-device action or entitlement still owed. Finish it, commit, then stop.
+One backlog item per session. Pick the next open item, oldest backlog
+doc first, across docs/PLAN-gap-backlog-*.md and docs/PLAN-backlog-*.md,
+whose text names no owner decision, device action or entitlement still
+owed. Within a doc, take phases in order. Finish it, commit, then stop.
 Do not start a second item.
 If every open item is blocked on me, do not start one. Post the blocked
-items with the single action each needs from me, then stop.
+items with the single action each needs from me, then stop. If no open
+items are left at all, say so and suggest /spec with the ROADMAP.md
+section that waits on nothing.
 
 DESIGN
 Before designing, read the item, the matching PLAN-*.md and the project
