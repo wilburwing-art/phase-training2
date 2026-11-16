@@ -67,7 +67,12 @@ predicted adaptation before the next sport day.
   signal on direction (58.1% over 752, about 4.4 standard errors). A direction
   criterion was registered for the review before any in-app data exists; see
   `PLAN-predictive-recommendations.md`.
-- **1b. Silent readiness from the twin.** About 1 week. Replace
+- **Review outcome 2026-11-15: 1b is shelved.** 6 scored in-app pairs, short
+  of both thresholds, and the twin lost to last value on them (detail in
+  `PLAN-predictive-recommendations.md`). The owner decided the same day that
+  readiness is visible to the user on its own page under Progress, so the "No
+  UI" line below is retired for any readiness work that follows.
+- **1b (shelved). Silent readiness from the twin.** About 1 week. Replace
   `ReadinessSignal`'s unweighted session count with per-pattern load, behind
   the existing silent path (`AthleteState.readinessScore`). No UI. Gate to
   1c: after four weeks live, the twin's error clusters on days a physiology

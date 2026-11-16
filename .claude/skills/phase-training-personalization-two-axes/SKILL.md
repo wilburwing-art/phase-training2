@@ -22,7 +22,8 @@ Both land at `GeneratorContext.from(...)` in `GeneratorContext.swift` (the singl
 
 ## Surface vs silent rules
 
-- **Readiness** — SILENT. Never display a "you might be detrained" prompt. Never auto-mutate `experience` or `startingState`. Scaling happens inside the generator only.
+- **Readiness** — SILENT in the current build. Never display a "you might be detrained" prompt. Never auto-mutate `experience` or `startingState`. Scaling happens inside the generator only.
+  - **Changed for the premium track (owner, 2026-11-15):** the readiness model becomes visible to the user on its own page under Progress. Today does not show it. Until that page is specced (`ROADMAP.md`, premium tier), keep the current build silent. Never auto-mutating `experience` or `startingState` still holds.
 - **Competency** — self-reported, never auto-overridden from data.
 
 ## Readiness is two numbers, and they must stay two (2026-09-26)

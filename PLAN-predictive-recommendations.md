@@ -227,6 +227,30 @@ Profile. Review four weeks after install, from a backup export:
 Build 143 (`v1.1.0-build143`, 2026-09-26) carries A1 to B1a and the Signals
 readout.
 
+### Review outcome (run 2026-11-15, three weeks late)
+
+Scored from the owner's phone backup exported 2026-11-15 (schema as written
+by the current build; dates are Unix seconds).
+
+- **Twin: shelved.** 7 `DayOutcome` records since install, 8 twin
+  predictions, 6 with a logged actual. Twin MAE 0.73 lb against last-value
+  0.44 lb on those 6. Of the 6, 1 moved from the last value, and the twin got
+  its direction right. Both registered criteria need more pairs than exist (30
+  for size, 100 moved for direction), and at about one twin pair a week the
+  direction threshold is roughly two years away. Per the rule above, B1 is
+  shelved here in writing. Direction as a check-in line ("expect squat to be
+  up") is shelved with it.
+- **Suggestions:** 2 cards fired in seven weeks, both `droppedExercise`
+  (Landmine Rotation, Side Plank), both applied. The thresholds fire for one
+  person's volume; two is too few to judge the share applied.
+- **Explore:** zero-result searches are not in the backup envelope, so the
+  catalog-gap list could not be read. The phone computes them
+  (`SignalsReadout.zeroResultQueries28d`) and shows them only on the DEBUG
+  Signals sheet. Adding the explore log to the backup is a small follow-up.
+- **Physiology:** 0 nights in the backup. Capture starts only after the
+  "Capture recovery data" tap in Health & Imports, so the 1c clock has not
+  started.
+
 **B3 calendar slice: built 2026-09-26, after build 143** (owner approved the
 calendar permission). The check-in's events step has "Find travel in my
 calendar": on tap only, it reads next week on device, and hotel or rental
