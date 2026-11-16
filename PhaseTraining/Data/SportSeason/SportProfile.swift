@@ -116,6 +116,10 @@ struct SportProfile: Equatable {
         // reads like mountain biking (no signature); running takes legEndurance.
         "cycling": authoredOnly,
         "running": authoredOnly.with(signature: .legEndurance),
+        // Owner decision, 2026-11-15: paddle sports and SUP complement days are
+        // upper-dominant with a pulling endurance signature.
+        "paddle-sports": authoredOnly.with(signature: .pullEndurance, family: .upperDominant),
+        "sup": authoredOnly.with(signature: .pullEndurance, family: .upperDominant),
         // Item 5: the pack loads the upper back and trunk the legs carry it
         // with, so complement days lead with them.
         "mountaineering": authoredOnly.with(signature: .legEndurance, family: .legsAndCarry),

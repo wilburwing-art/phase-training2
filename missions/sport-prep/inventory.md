@@ -24,13 +24,13 @@ Sports marked "db only" exist in `sport_categories.json` but are absent from the
 |---|---|---|---|---|
 | climbing | 4 | 4 | 2 | none needed |
 | trail-running | 2 | 2 | 1 | 50K Ultra Training Plan (second pre-season voice, barbell) |
-| running | 2 | 2 | 1 | pre-season done 2026-11-15 (ids 320-321, 25K Ultra weeks 3 and 6) |
-| cycling | 2 | 2 | 1 | pre-season done 2026-11-15 (ids 318-319, 30-Mile MTB weeks 1/5 and 4); in-season Off/In-Season Training for Endurance Athletes |
+| running | 2 | 2 | 4 | pre-season done 2026-11-15 (ids 320-321, 25K Ultra weeks 3 and 6); in-season done 2026-11-16 (ids 325-327, In-Season Strength for Endurance Athletes) |
+| cycling | 2 | 2 | 4 | pre-season done 2026-11-15 (ids 318-319, 30-Mile MTB weeks 1/5 and 4); in-season done 2026-11-16 (ids 325-327, In-Season Strength for Endurance Athletes) |
 | mountain-biking | 3 | 2 | 1 | Enduro MTB Training Plan (variety only) |
 | snowboarding | 3 | 2 | 1 | none needed |
-| kayaking | 1 | 3 | 0 | pre-season done 2026-11-15 (ids 322-324, Kayak/Paddling Pre-Season gym sessions); in-season has no MTI source (the plan is 6 pre-season weeks) |
-| paddle-sports | 1 | 4 | 0 | pre-season done 2026-11-15 (ids 322-324); in-season has no MTI source. No SportProfile row: the every-phase test needs a maintenance routine |
-| sup | 1 | 3 | 0 | pre-season done 2026-11-15 (ids 322-324); in-season has no MTI source. No SportProfile row: the every-phase test needs a maintenance routine |
+| kayaking | 1 | 3 | 3 | pre-season done 2026-11-15 (ids 322-324); in-season done 2026-11-16 (ids 325-327). Not in `Sport.catalog`, so no SportProfile row |
+| paddle-sports | 1 | 4 | 3 | pre-season done 2026-11-15 (ids 322-324); in-season done 2026-11-16 (ids 325-327). SportProfile row added 2026-11-16 |
+| sup | 1 | 3 | 3 | pre-season done 2026-11-15 (ids 322-324); in-season done 2026-11-16 (ids 325-327). SportProfile row added 2026-11-16 |
 | swimming | 1 | 0 | 0 | no MTI swim plan; In-Season and Off-Season Training for Endurance Athletes are the nearest generic |
 | mountaineering | 3 | 1 | 2 | Everest Training Plan, Build cycle (pre-season, barbell) |
 | hiking-trekking | 3 | 1 | 2 | Backpack Pre-Season V2 (pre-season) |
@@ -54,7 +54,7 @@ Ranking rules: engine-served sports are skipped; plans with gym strength session
 1. **cycling pre-season** (DONE 2026-11-15, ids 318-319; SportProfile row added). Source: 30-Mile Mountain Bike Race Training Plan (G, 7 weeks, barbell and kettlebell strength). Zero-work alternative: add the cycling tag to routines 299 and 300, which are tagged only to mountain-biking.
 2. **running pre-season** (DONE 2026-11-15, ids 320-321; SportProfile row added). Source: 25K Ultra Training Plan (L, 7 weeks, one dumbbell pair). Zero-work alternative: add the running tag to routines 316 and 317.
 3. **kayaking and sup pre-season and in-season** (servable routines only in off-season, 1 each; paddle-sports has 1 `build`). Source: Kayak/Paddling Pre-Season (G, 6 weeks, dumbbell press, pull and trunk work). It is the only MTI paddling plan and it is gym-heavy.
-4. **running and cycling in-season** (1 servable `maintenance` each). Source: In-Season Strength Training For Endurance Athletes (G, 24 sessions, serves both). Off-Season Training for Endurance Athletes (G) is the matching off-season voice for swimming, which has no `build` or `maintenance` routine and no MTI swim plan.
+4. **running and cycling in-season** (DONE 2026-11-16, ids 325-327, also tagged to paddle-sports, kayaking and sup; was 1 servable `maintenance` each). Source: In-Season Strength Training For Endurance Athletes (G, 24 sessions, serves both). Off-Season Training for Endurance Athletes (G) is the matching off-season voice for swimming, which has no `build` or `maintenance` routine and no MTI swim plan.
 5. **mountaineering pre-season** (1 `build` routine, a shared pack-prep one). Source: Everest Training Plan, Build cycle (G, 7 weeks, barbell). Denali and Rainier are E/L with pull-ups only.
 6. **backcountry-hunting in-season** (0) and a second pre-season voice (1). Source: Backcountry Big Game Hunting Preseason V5 (G, dumbbells and bench). Every hunting plan is written for the weeks before a trip, so none feeds `maintenance`. The slug is db only.
 7. **xc-skiing, ice-climbing, alpine-climbing** (db only, all 0). Sources: 20K Nordic Ski Race Training Plan (L; one distill covers the five Nordic plans), Ice/Mixed Climbing Pre-Season (L, grip endurance), Alpine Rock Climb (L, rock gym).
@@ -124,7 +124,7 @@ Length is plan weeks, then days per week from the overview ("not stated" where t
 | 50 | Alpine Running Training Plan | alpine-running-training-plan.md | Mountain Running/ultra plans | trail-running (mountain-running) | pre-season (event prep) | 8 wk, 6 d/wk | gym, steep hill or step, 9 water jugs as pack load | G | open |
 | 51 | Mountain Marathon Training Plan | mountain-marathon-training-plan.md | Mountain Running/ultra plans | trail-running (mountain-running) | pre-season (event prep) | 9 wk, 6 d/wk | box, foam roller | L | open |
 | 52 | Teton Crest Run Training Plan | teton-crest-run-training-plan.md | Mountain Running/ultra plans | trail-running (mountain-running) | pre-season (event prep) | 10 wk, 6 d/wk | box, GPS | L | open |
-| 53 | In-Season Strength Training For Endurance Athletes | in-season-strength-training-for-endurance-athletes.md | Mountain Running/ultra plans | running / cycling / trail-running / swimming (endurance generic) | in-season | 12 wk, 2 (24 sessions) d/wk | full gym, barbell, rack, DB/KB, sandbag | G | open (closest existing: ids 34, 24) |
+| 53 | In-Season Strength Training For Endurance Athletes | in-season-strength-training-for-endurance-athletes.md | Mountain Running/ultra plans | running / cycling / trail-running / swimming (endurance generic) | in-season | 12 wk, 2 (24 sessions) d/wk | full gym, barbell, rack, DB/KB, sandbag | G | distilled (ids 325-327) |
 | 54 | Off-Season Training for Endurance Athletes | off-season-training-for-endurance-athletes.md | Mountain Running/ultra plans | running / cycling / trail-running / swimming (endurance generic) | off-season | 6 wk, 6 d/wk | barbell, DB, KB, sandbag | G | open |
 | 55 | 100 Mile Ultra Training Plan | 100-mile-ultra-training-plan.md | Mountain Running/ultra plans | trail-running (trail-ultra-100mi) | pre-season (event prep) | 17 wk, 7 d/wk | weight room, barbell, DB, sandbag | G | open |
 | 56 | 100-Mile Ultra Stage Race Training Plan | 100-mile-ultra-stage-race-training-plan.md | Mountain Running/ultra plans | trail-running (trail-ultra-100mi) | pre-season (event prep) | 15 wk, 6 d/wk | weight room, barbell, DB, sandbag | G | open |
