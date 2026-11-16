@@ -28,9 +28,9 @@ Sports marked "db only" exist in `sport_categories.json` but are absent from the
 | cycling | 2 | 2 | 1 | pre-season done 2026-11-15 (ids 318-319, 30-Mile MTB weeks 1/5 and 4); in-season Off/In-Season Training for Endurance Athletes |
 | mountain-biking | 3 | 2 | 1 | Enduro MTB Training Plan (variety only) |
 | snowboarding | 3 | 2 | 1 | none needed |
-| kayaking | 1 | 0 | 0 | Kayak/Paddling Pre-Season (pre-season, in-season) |
-| paddle-sports | 1 | 1 | 0 | Kayak/Paddling Pre-Season |
-| sup | 1 | 0 | 0 | Kayak/Paddling Pre-Season (shoulder and trunk content transfers) |
+| kayaking | 1 | 3 | 0 | pre-season done 2026-11-15 (ids 322-324, Kayak/Paddling Pre-Season gym sessions); in-season has no MTI source (the plan is 6 pre-season weeks) |
+| paddle-sports | 1 | 4 | 0 | pre-season done 2026-11-15 (ids 322-324); in-season has no MTI source. No SportProfile row: the every-phase test needs a maintenance routine |
+| sup | 1 | 3 | 0 | pre-season done 2026-11-15 (ids 322-324); in-season has no MTI source. No SportProfile row: the every-phase test needs a maintenance routine |
 | swimming | 1 | 0 | 0 | no MTI swim plan; In-Season and Off-Season Training for Endurance Athletes are the nearest generic |
 | mountaineering | 3 | 1 | 2 | Everest Training Plan, Build cycle (pre-season, barbell) |
 | hiking-trekking | 3 | 1 | 2 | Backpack Pre-Season V2 (pre-season) |

@@ -1858,5 +1858,41 @@
   {
     "routine_id": 321,
     "sport_id": 50
+  },
+  {
+    "routine_id": 322,
+    "sport_id": 380
+  },
+  {
+    "routine_id": 322,
+    "sport_id": 381
+  },
+  {
+    "routine_id": 322,
+    "sport_id": 395
+  },
+  {
+    "routine_id": 323,
+    "sport_id": 380
+  },
+  {
+    "routine_id": 323,
+    "sport_id": 381
+  },
+  {
+    "routine_id": 323,
+    "sport_id": 395
+  },
+  {
+    "routine_id": 324,
+    "sport_id": 380
+  },
+  {
+    "routine_id": 324,
+    "sport_id": 381
+  },
+  {
+    "routine_id": 324,
+    "sport_id": 395
   }
 ]
