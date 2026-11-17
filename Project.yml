@@ -151,6 +151,13 @@ targets:
           - CFBundleURLName: com.phasetraining.app
             CFBundleURLSchemes:
               - phasetraining
+        # Weekly iCloud Drive backup (CloudBackup). Public scope shows the
+        # container in the Files app so the lifter can find the file.
+        NSUbiquitousContainers:
+          iCloud.com.phasetraining.app:
+            NSUbiquitousContainerIsDocumentScopePublic: true
+            NSUbiquitousContainerName: Phase Training
+            NSUbiquitousContainerSupportedFolderLevels: None
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.phasetraining.app

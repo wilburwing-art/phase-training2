@@ -845,6 +845,12 @@ struct PhaseTrainingApp: App {
                         if memory.isOnboarded {
                             Task { await PhysiologyCapture.refreshIfEnabled() }
                         }
+                        // Weekly full backup to the app's iCloud Drive
+                        // container. No-op unless a week has passed and the
+                        // lifter is signed in to iCloud Drive.
+                        if memory.isOnboarded {
+                            Task { await CloudBackup.runIfDue() }
+                        }
                     }
                 }
                 .onOpenURL { url in
