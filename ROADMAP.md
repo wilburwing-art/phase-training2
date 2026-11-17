@@ -176,3 +176,23 @@ and how often it updates, in the same handoff format as the other specs.
 - Does the lock-screen Now Playing surface make sense as the "I'm in a coach call" affordance, or is that abuse of the API?
 
 **Dependency on Phase 13.** Don't start before PLAN-coach 13a–13c land. The tool-call schema and `CoachContext` serialization need to be stable.
+
+---
+
+## Showcase routines (swipeable, not specced)
+
+Added 2026-11-17. Nothing here is specced or scheduled.
+
+**Goal.** A set of swipeable routines whose quality shows what the programs can do. Each one is an authored, finished routine a new user can swipe through and start.
+
+**Starting set.**
+- Abs
+- Hang training (hangboard / dead-hang work)
+- Upper body
+- Legs
+- More to be chosen, same bar: each routine is one a coach would sign off on.
+
+**Open questions before a spec.**
+- Where the swipe surface lives (Today, Routines tab, or onboarding) and how it relates to the existing routine catalog (`PLAN-routines.md`).
+- Whether these are new authored routines in `db/source/*.json` or curated picks from the existing catalog.
+- Which routines count as "showing off" the programs: single sessions, or a short progression across weeks.
