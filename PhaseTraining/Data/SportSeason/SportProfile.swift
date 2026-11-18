@@ -65,14 +65,59 @@ struct SportProfile: Equatable {
                      family: family ?? self.family, supportFeature: supportFeature)
     }
 
+    /// The sport's own row, else one inherited from its family (`familySlug`),
+    /// else `unlisted`.
     static func of(_ slug: String?) -> SportProfile {
-        slug.flatMap { table[$0] } ?? unlisted
+        guard let slug else { return unlisted }
+        if let row = table[slug] { return row }
+        guard let family = familySlug(of: slug), let row = table[family] else { return unlisted }
+        // An inherited row keeps the family's signature and complement family
+        // and nothing else. Freestyle skiing would otherwise land on the ski
+        // engine and bouldering-indoor on the climbing engine, neither of
+        // which knows them; their sport days are the written routines.
+        return SportProfile(rules: .general, signature: row.signature,
+                            family: row.family, supportFeature: false)
     }
 
     /// Slugs in the table under `rules`.
     static func slugs(_ rules: Rules) -> Set<String> {
         Set(table.filter { $0.value.rules == rules }.keys)
     }
+
+    /// Every slug whose profile is `.general` and comes from a row: the
+    /// table's own general rows plus every catalog sport that inherits one.
+    /// `general-fitness` and `misc-outdoor` reach no row and stay out.
+    static let generalSlugs: Set<String> = {
+        let inheriting = Set(parents.keys).union(familyOverride.keys)
+            .filter { table[$0] == nil && familySlug(of: $0) != nil }
+        return slugs(.general).union(inheriting)
+    }()
+
+    /// The nearest ancestor (through `familyOverride`, then
+    /// `sport_categories.parent_id`) that has a row in `table`. Nil for a slug
+    /// with its own row and for one no row covers.
+    static func familySlug(of slug: String) -> String? {
+        guard table[slug] == nil else { return nil }
+        var seen: Set<String> = [slug]
+        var next = familyOverride[slug] ?? parents[slug]
+        while let current = next, seen.insert(current).inserted {
+            if table[current] != nil { return current }
+            next = familyOverride[current] ?? parents[current]
+        }
+        return nil
+    }
+
+    /// Owner decision, 2026-11-18 (backlog 11e #2): these follow a sport other
+    /// than their catalog parent. Via ferrata trains like scrambling, and
+    /// misc-outdoor, the parent of geocaching and bikejoring, has no program.
+    static let familyOverride: [String: String] = [
+        "via-ferrata": "scrambling",
+        "geocaching": "day-hiking",
+        "bikejoring": "mountain-biking",
+    ]
+
+    /// child slug -> parent slug, read once from coach.db.
+    private static let parents: [String: String] = CoachDatabase.shared.sportParentSlugs()
 
     /// A sport with no row: the general rule, legs-dominant complements.
     static let unlisted = SportProfile(rules: .general, signature: nil,
@@ -126,5 +171,24 @@ struct SportProfile: Equatable {
         "trail-running": authoredOnly.with(signature: .eccentricLeg),
         "hiking-trekking": authoredOnly.with(signature: .legEndurance),
         "thru-hiking": authoredOnly.with(signature: .legEndurance),
+
+        // Owner decision, 2026-11-18 (backlog 11e #1): one row per family
+        // root. Every catalog sport under a root inherits its row through
+        // `of(_:)` unless it has one of its own.
+        "martial-arts": authoredOnly.with(signature: .contactStrength, family: .upperDominant),
+        "golf": authoredOnly.with(signature: .core),
+        "racquet-sports": authoredOnly.with(signature: .power),
+        "surf-wave-sports": authoredOnly.with(signature: .pullEndurance, family: .upperDominant),
+        "swimming": authoredOnly.with(signature: .pullEndurance, family: .upperDominant),
+        "multi-sport-endurance": authoredOnly.with(signature: .legEndurance),
+        "team-rec-sports": authoredOnly.with(signature: .power),
+        "skating-wheeled": authoredOnly.with(signature: .legEndurance),
+        "yoga-movement": authoredOnly.with(signature: .bodyTension, family: .upperDominant),
+        "strength-fitness-sports": authoredOnly.with(signature: .maxStrength),
+        "sailing-air-sports": authoredOnly.with(signature: .core),
+        "equestrian": authoredOnly.with(signature: .core),
+        "archery-shooting": authoredOnly.with(signature: .pullEndurance, family: .upperDominant),
+        "fishing-hunting": authoredOnly.with(signature: .legEndurance, family: .legsAndCarry),
+        "dance-fitness": authoredOnly.with(signature: .legEndurance),
     ]
 }

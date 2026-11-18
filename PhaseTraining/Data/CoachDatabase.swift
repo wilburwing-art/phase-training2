@@ -477,6 +477,26 @@ final class CoachDatabase {
         return out
     } }
 
+    /// child slug -> parent slug for every sport with a parent. SportProfile
+    /// walks it to find a sport's family row.
+    func sportParentSlugs() -> [String: String] { withLock {
+        guard let db else { return [:] }
+        let sql = """
+        SELECT c.slug, p.slug
+        FROM sport_categories c
+        JOIN sport_categories p ON p.id = c.parent_id
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [:] }
+        defer { sqlite3_finalize(stmt) }
+        var out: [String: String] = [:]
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            guard let child = text(stmt, 0), let parent = text(stmt, 1) else { continue }
+            out[child] = parent
+        }
+        return out
+    } }
+
     /// Total catalog size. The Library eyebrow only needs the number, and was
     /// materializing all 582 rows (21 columns each, fully decoded) to call
     /// `.count` on the array.

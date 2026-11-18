@@ -104,10 +104,50 @@ final class AuthoredRoutineTests: XCTestCase {
         XCTAssertTrue(SportCatalog.isPlannable("mountain-biking"), "outdoor authored w/ coverage")
     }
 
-    func testPlannableExcludesNonOutdoorAndUnknownSports() {
-        XCTAssertFalse(SportCatalog.isPlannable("golf"), "has routines but not an outdoor sport")
-        XCTAssertFalse(SportCatalog.isPlannable("pickleball"))
+    func testPlannableExcludesUnknownAndUncoveredSports() {
         XCTAssertFalse(SportCatalog.isPlannable("nonexistent-sport-xyz"))
+        XCTAssertFalse(SportCatalog.isPlannable("misc-outdoor"), "no family row reaches it")
+        // Has a family row (racquet) but no routines of its own until 11e 5.1.
+        XCTAssertFalse(SportCatalog.isPlannable("tennis-clay"))
+    }
+
+    /// Backlog 11e 1.1: a sport with routines and a family row is plannable.
+    /// Golf was held out as "not an outdoor sport" until the 2026-11-18 owner
+    /// decision gave every catalog family a row.
+    func testFamilySportsWithRoutinesArePlannable() {
+        XCTAssertTrue(SportCatalog.isPlannable("golf"), "own family row, 4 routines")
+        XCTAssertTrue(SportCatalog.isPlannable("tennis"), "inherits racquet-sports, 5 routines")
+    }
+
+    // MARK: - Family profile inheritance (11e 1.1)
+
+    func testChildOfAnEngineSportInheritsAsGeneral() {
+        let p = SportProfile.of("freestyle-skiing")
+        XCTAssertEqual(p.rules, .general, "the ski engine does not know freestyle")
+        XCTAssertEqual(p.signature, .eccentricLeg, "keeps the snow-sports signature")
+        XCTAssertFalse(p.supportFeature)
+        XCTAssertFalse(SportSeasonGenerator.supports("bouldering-indoor"))
+        XCTAssertEqual(SportProfile.of("bouldering-indoor").family, .upperDominant)
+    }
+
+    func testVariantInheritsTheFamilyRoot() {
+        XCTAssertEqual(SportProfile.familySlug(of: "tennis-clay"), "racquet-sports")
+        XCTAssertEqual(SportProfile.of("tennis-clay"), SportProfile.of("racquet-sports"))
+        XCTAssertNil(SportProfile.familySlug(of: "golf"), "has its own row")
+    }
+
+    func testOwnerOverridesBeatTheCatalogParent() {
+        XCTAssertEqual(SportProfile.familySlug(of: "via-ferrata"), "mountaineering",
+                       "via scrambling, not the climbing engine")
+        XCTAssertEqual(SportProfile.familySlug(of: "geocaching"), "hiking-trekking")
+        XCTAssertEqual(SportProfile.familySlug(of: "bikejoring"), "mountain-biking")
+    }
+
+    func testRootsWithNoRowStayOut() {
+        XCTAssertNil(SportProfile.familySlug(of: "misc-outdoor"))
+        XCTAssertNil(SportProfile.familySlug(of: "general-fitness"))
+        XCTAssertFalse(SportCatalog.outdoorAuthoredSlugs.contains("misc-outdoor"))
+        XCTAssertTrue(SportCatalog.outdoorAuthoredSlugs.contains("fencing"))
     }
 
     func testMountainBikingPreSeasonServesDistilledRoutines() {
@@ -255,17 +295,32 @@ final class AuthoredRoutineTests: XCTestCase {
         XCTAssertTrue(sports.contains("mountaineering"))
         XCTAssertTrue(phases.contains(.inSeason))
 
+        var gapped: Set<String> = []
         for sport in sports {
             for phase in phases {
                 let cell = "\(sport)/\(phase.rawValue)"
                 let ownPool = CoachDatabase.shared.authoredRoutineIds(
                     sportSlug: sport, phaseLabels: AuthoredRoutineSelector.phaseLabels(for: phase))
                 let picked = AuthoredRoutineSelector.select(sportSlug: sport, phase: phase, sessionIndex: 0)
-                XCTAssertTrue(picked.map(ownPool.contains) ?? false,
+                let served = picked.map(ownPool.contains) ?? false
+                if !served { gapped.insert(sport) }
+                if Self.knownPhaseGapSports.contains(sport) { continue }
+                XCTAssertTrue(served,
                               "\(cell): selector returned \(String(describing: picked)), own pool \(ownPool)")
             }
         }
+        XCTAssertEqual(gapped.intersection(Self.knownPhaseGapSports), Self.knownPhaseGapSports,
+                       "a known phase-gap sport now covers every phase; remove it from knownPhaseGapSports")
     }
+
+    /// Family roots that got a profile row on 2026-11-18 (backlog 11e #1) with
+    /// routines in some phases only. They serve another phase's routine in the
+    /// gap. 11e Phases 3 and 4 distill the missing phases; each sport leaves
+    /// this set when it covers all of them.
+    static let knownPhaseGapSports: Set<String> = [
+        "equestrian", "golf", "martial-arts", "racquet-sports", "skating-wheeled",
+        "strength-fitness-sports", "surf-wave-sports", "swimming", "yoga-movement",
+    ]
 
     func testInSeasonMountaineeringWeekServesThe3bRoutines() {
         XCTAssertEqual(

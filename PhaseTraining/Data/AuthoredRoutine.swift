@@ -174,11 +174,11 @@ enum AuthoredRoutineSelector {
 /// for. Kept here next to the authored-serving layer that makes the outdoor
 /// sports plannable in the first place.
 enum SportCatalog {
-    /// Outdoor / mountain-athlete sports exposed as primary once they carry
-    /// authored coverage. Ski + climbing come via the season engine; these come
-    /// via authored coach.db routines (Phase 3 distillation). Grow this as more
-    /// outdoor content is distilled.
-    static let outdoorAuthoredSlugs: Set<String> = SportProfile.slugs(.general)
+    /// Sports exposed as primary once they carry authored coverage: every
+    /// `.general` profile, own row or inherited from a family root (backlog
+    /// 11e). Ski + climbing come via the season engine; these come via
+    /// distilled coach.db routines.
+    static let outdoorAuthoredSlugs: Set<String> = SportProfile.generalSlugs
 
     /// True when the app can plan for `slug` as primary: season-engine supported
     /// OR an outdoor authored sport that actually has curated routines. The

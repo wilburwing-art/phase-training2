@@ -40,7 +40,9 @@ final class FilterCompositionTests: XCTestCase {
     func test_everyPlannableSportSurvivesInjuryAndEquipmentTogether() {
         // Snowboarding plans on the ski engine since Phase 3b and left the
         // authored-only list; it stays in the grid as the second engine ski.
-        let plannable = SportCatalog.outdoorAuthoredSlugs.sorted()
+        // Since 11e 1.1 the authored list holds every family sport, most with
+        // no routines yet, so the grid takes the ones the picker offers.
+        let plannable = SportCatalog.outdoorAuthoredSlugs.sorted().filter(SportCatalog.isPlannable)
             + ["alpine-skiing", "snowboarding", "climbing"]
         var checked = 0, declaredEmpty = 0
 

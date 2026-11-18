@@ -21,8 +21,9 @@ final class SportProfileTests: XCTestCase {
             XCTAssertEqual(SessionMix.family(forSport: slug), p.family, slug)
             XCTAssertEqual(SkiSeason.isSkiSport(slug), p.isSki, slug)
             XCTAssertEqual(AuthoredRoutineSelector.pilotSports.contains(slug), p.authoredOverEngine, slug)
-            XCTAssertEqual(SportCatalog.outdoorAuthoredSlugs.contains(slug),
-                           SportProfile.table[slug]?.rules == .general, slug)
+            let ownGeneral = SportProfile.table[slug]?.rules == .general
+            let inherits = SportProfile.familySlug(of: slug) != nil
+            XCTAssertEqual(SportCatalog.outdoorAuthoredSlugs.contains(slug), ownGeneral || inherits, slug)
             var m = TrainingMemory()
             m.primarySport = Sport.catalog.first { $0.slug == slug } ?? Sport(slug: slug, name: slug)
             m.sports = [m.primarySport!]
