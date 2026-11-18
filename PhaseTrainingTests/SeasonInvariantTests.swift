@@ -259,4 +259,162 @@ final class SeasonInvariantTests: XCTestCase {
         XCTAssertTrue(needs[533]?.contains("sled") == true && needs[682]?.contains("sled") == true)
         XCTAssertFalse(needs[7]?.contains("bodyweight") == true)
     }
+
+    // MARK: - Part C: cross-week variety (11c 2.3)
+
+    /// One week N to N+1 pair. Week N runs with no recent picks, week N+1
+    /// with week N's picks as `recentlyPicked` (the app passes the last 28
+    /// days from `RecentPicksStore`). Season-engine sessions only.
+    private struct WeekPair {
+        let cell: String, sport: String, tier: String, phase: SeasonPhase
+        /// Week N+1 accessory picks (slot demand outside `anchorDemands`).
+        let accessories: [(id: Int, demand: Demand, session: Set<Int>, pool: [SportMovement])]
+        let weekN: Set<Int>
+        var repeated: Int { Set(accessories.map(\.id)).intersection(weekN).count }
+        var share: Double { Double(repeated) / Double(Set(accessories.map(\.id)).count) }
+    }
+
+    private static var pairCache: [WeekPair]?
+
+    /// Engine sports only: pilot sports serve authored routines, which repeat
+    /// as written. 3 sports x 5 phases x 3 experience x 3 equipment tiers x
+    /// 3 lift counts x 4 week pairs.
+    private func weekPairs() -> [WeekPair] {
+        if let c = Self.pairCache { return c }
+        let sports = Sport.catalog.map(\.slug).filter {
+            SportSeasonGenerator.supports($0) && !AuthoredRoutineSelector.pilotSports.contains($0)
+        }
+        let equipment: [(String, [Equipment])] = [
+            ("gym", [.fullGym]), ("homebar", [.dumbbells, .pullUpBar, .bands]), ("bw", [.bodyweight])]
+        typealias Week = (ids: Set<Int>, accessories: [(id: Int, demand: Demand, session: Set<Int>, pool: [SportMovement])])
+        var out: [WeekPair] = []
+        for s in sports { for p in SeasonPhase.allCases { for e in ExperienceLevel.allCases {
+            for eq in equipment { for days in [2, 3, 4] { for week in 1...4 {
+                func run(week w: Int, recent: Set<Int>) -> Week? {
+                    var m = TrainingMemory()
+                    let sport = Sport.catalog.first { $0.slug == s }!
+                    m.primarySport = sport
+                    m.sports = [sport]
+                    m.seasonsBySport = [sport: p]
+                    m.defaultSeason = p
+                    m.experience = e
+                    m.equipment = eq.1
+                    m.liftDaysPerWeek = days
+                    m.sessionMinutes = 45
+                    m.phaseStartedAt = Calendar.current.date(byAdding: .day, value: -7 * (w - 1), to: Date())
+                    if p == .eventPrep { m.peakDate = Calendar.current.date(byAdding: .day, value: 40, to: Date()) }
+                    let profile = DemographicProfile.from(m)
+                    let athlete = AthleteState.from(m, variant: m.primaryVariant, weekNumber: m.weeksInCurrentPhase ?? 1,
+                                                    recentMovementIDs: recent)
+                    var ids: Set<Int> = []
+                    var acc: [(id: Int, demand: Demand, session: Set<Int>, pool: [SportMovement])] = []
+                    for i in 0..<days {
+                        let g = WorkoutGenerator.generateLift(
+                            liftIndex: i, totalLifts: days, memory: m, profile: profile,
+                            hashSeed: "var-\(s)-\(p.rawValue)-wk\(w)", recentlyPicked: recent)
+                        guard !g.provenance.hasPrefix("Authored"), !g.exercises.isEmpty,
+                              g.exercises.allSatisfy({ $0.id.hasPrefix("ss-") }) else { continue }
+                        let session = Set(g.exercises.map(\.exerciseId))
+                        ids.formUnion(session)
+                        let demands = g.provenance.components(separatedBy: "demands: ").last?
+                            .split(separator: "/").compactMap { Demand(rawValue: String($0)) } ?? []
+                        XCTAssertEqual(demands.count, g.exercises.count, "[\(s)] provenance demands misaligned: \(g.provenance)")
+                        // Complement days filter the general-fitness pool by
+                        // focus as well, so only sport sessions get the
+                        // accessory check, against the exact engine pool.
+                        guard !g.provenance.hasPrefix("complement") else { continue }
+                        let pool = SportSeasonGenerator.filteredPool(athlete, phase: p)
+                        for (x, d) in zip(g.exercises, demands) where !SportSeasonGenerator.anchorDemands.contains(d) {
+                            acc.append((x.exerciseId, d, session, pool))
+                        }
+                    }
+                    return ids.isEmpty ? nil : (ids, acc)
+                }
+                guard let a = run(week: week, recent: []), let b = run(week: week + 1, recent: a.ids),
+                      !b.accessories.isEmpty else { continue }
+                out.append(WeekPair(
+                    cell: "\(s)/\(p.rawValue)/\(e.rawValue)/\(eq.0)/\(days)lift/wk\(week)->\(week + 1)",
+                    sport: s, tier: eq.0, phase: p, accessories: b.accessories, weekN: a.ids))
+            } } }
+        } } }
+        Self.pairCache = out
+        return out
+    }
+
+    /// Sport, phase and equipment cells where the shortfall backfill
+    /// (`SportSeasonGenerator.swift:296-313`) fills a slot with last week's
+    /// movement while a fresh one with the slot's primary demand is in the
+    /// pool: backfill sorts on rejection, soreness and seed and has no
+    /// recency tier. 403 of 3,294 repeats on 2026-11-18; adding
+    /// `rotationTier` to that sort cleared all of them. Filed as 11c 3.8.
+    /// A cell outside this list that breaks the contract fails, and a listed
+    /// cell that holds fails so the list shrinks with the fix.
+    static let knownBackfillRepeatCells: Set<String> = [
+        "alpine-skiing/event_prep/homebar", "alpine-skiing/in_season/bw", "alpine-skiing/in_season/homebar",
+        "alpine-skiing/maintenance/gym", "alpine-skiing/pre_season/bw",
+        "ski-mountaineering/event_prep/bw", "ski-mountaineering/event_prep/homebar",
+        "ski-mountaineering/maintenance/gym", "ski-mountaineering/maintenance/homebar",
+        "ski-mountaineering/pre_season/homebar",
+        "snow-sports/event_prep/bw", "snow-sports/event_prep/homebar", "snow-sports/in_season/bw",
+        "snow-sports/in_season/homebar", "snow-sports/maintenance/gym", "snow-sports/maintenance/homebar",
+        "snow-sports/pre_season/bw",
+    ]
+
+    /// The rotation contract (`SportSeasonGenerator` candidate sort): recency
+    /// ranks below the primary-demand match, so a sport-session accessory may
+    /// repeat from last week only when no movement whose primary demand is
+    /// that slot's demand is fresh, unused in the session, no costlier than
+    /// the repeat, and not cut by the in-season cost-5 cap. Holds on every
+    /// tier, including bodyweight, where the pool is thin and repeats are
+    /// common.
+    func test_accessoryRepeatsOnlyWhenNoFreshPrimaryMovementExists() {
+        let pairs = weekPairs()
+        XCTAssertGreaterThan(pairs.count, 1000, "grid collapsed to \(pairs.count) week pairs")
+        var checked = 0
+        var badByCell: [String: [String]] = [:]
+        for w in pairs {
+            for a in w.accessories where w.weekN.contains(a.id) {
+                checked += 1
+                let cost = a.pool.first { $0.exerciseId == a.id }?.fatigueCost ?? 0
+                let capsCostFive = w.phase == .inSeason || w.phase == .maintenance
+                let fresh = a.pool.filter {
+                    $0.primaryDemand == a.demand && !w.weekN.contains($0.exerciseId) && !a.session.contains($0.exerciseId)
+                        && $0.fatigueCost <= cost && !(capsCostFive && $0.fatigueCost >= 5)
+                }
+                if !fresh.isEmpty {
+                    badByCell["\(w.sport)/\(w.phase.rawValue)/\(w.tier)", default: []].append(
+                        "\(w.cell) repeated \(a.id) for \(a.demand.rawValue) over fresh \(fresh.prefix(3).map(\.name))")
+                }
+            }
+        }
+        XCTAssertGreaterThan(checked, 0, "no repeated accessory anywhere: the check is vacuous")
+        let unexpected = badByCell.filter { !Self.knownBackfillRepeatCells.contains($0.key) }.values.flatMap { $0 }
+        XCTAssertTrue(unexpected.isEmpty, "\(unexpected.count) of \(checked) repeats had a fresh option:\n"
+                      + unexpected.prefix(20).joined(separator: "\n"))
+        for cell in Self.knownBackfillRepeatCells.sorted() where badByCell[cell] == nil {
+            XCTFail("[\(cell)] no longer repeats over a fresh option: remove it from knownBackfillRepeatCells")
+        }
+    }
+
+    /// With a gym or a home bar, the pool is deep enough that most accessories
+    /// change week to week. Measured 2026-11-18 over 540 pairs per sport:
+    /// gym max 0.44, home bar max 0.82, median 0.17 and 0.25 to 0.33.
+    /// Bodyweight is out of scope for the share (median 0.60, max 1.0 on
+    /// two-lift beginner weeks) and is held by the contract test above.
+    func test_accessoryRepeatShareStaysUnderBound() {
+        let bounds: [String: (median: Double, max: Double)] = ["gym": (0.25, 0.5), "homebar": (0.4, 0.85)]
+        let pairs = weekPairs()
+        for sport in Set(pairs.map(\.sport)).sorted() {
+            for (tier, bound) in bounds {
+                let cells = pairs.filter { $0.sport == sport && $0.tier == tier }
+                XCTAssertFalse(cells.isEmpty, "[\(sport)/\(tier)] no week pairs")
+                let shares = cells.map(\.share).sorted()
+                let median = shares[shares.count / 2]
+                XCTAssertLessThanOrEqual(median, bound.median, "[\(sport)/\(tier)] median repeat share \(median)")
+                for c in cells where c.share > bound.max {
+                    XCTFail("[\(c.cell)] repeated \(c.repeated) of \(Set(c.accessories.map(\.id)).count) accessories")
+                }
+            }
+        }
+    }
 }

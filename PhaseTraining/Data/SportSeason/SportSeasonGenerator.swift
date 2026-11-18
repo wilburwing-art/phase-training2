@@ -510,7 +510,7 @@ enum SportSeasonGenerator {
         SportProfile.of(sportSlug).poolSlug(for: sportSlug)
     }
 
-    private static func filteredPool(_ athlete: AthleteState, phase: SeasonPhase,
+    static func filteredPool(_ athlete: AthleteState, phase: SeasonPhase,
                                      poolSport: String? = nil) -> [SportMovement] {
         // eventPrep draws from BOTH its own pool and the pre-season pool: for
         // skiing it's literally "pre-season tapered" (same movements); for
