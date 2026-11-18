@@ -122,6 +122,7 @@ struct HoldTimerSheet: View {
                         .font(.scaled("SpaceGrotesk-SemiBold", size: 96))
                         .foregroundStyle(Color.ink)
                         .monospacedDigit()
+                        .accessibilityAddTraits(.updatesFrequently)
                         .accessibilityIdentifier("hold-timer-count")
                     Text(progressLine)
                         .font(.monoXS)
@@ -252,6 +253,18 @@ struct HoldTimerSheet: View {
         if next != .ready {
             AudioServicesPlaySystemSound(next == .hang ? 1057 : 1322)
             UINotificationFeedbackGenerator().notificationOccurred(next == .hang ? .warning : .success)
+            AccessibilityNotification.Announcement(Self.announcement(for: next, seconds: seconds(next))).post()
+        }
+    }
+
+    /// Spoken on each phase change so a VoiceOver user knows when to hang and
+    /// when to let go without watching the count.
+    static func announcement(for phase: Phase, seconds: Int) -> String {
+        switch phase {
+        case .ready: return "Get ready"
+        case .hang: return "Hold, \(seconds) seconds"
+        case .rest: return "Rest, \(seconds) seconds"
+        case .finished: return "Set complete"
         }
     }
 

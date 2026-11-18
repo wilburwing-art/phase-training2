@@ -80,6 +80,9 @@ extension LogScreen {
             .onTapGesture {
                 detailExercise = ExerciseLookupCache.shared.exercise(forName: ex.name)
             }
+            .accessibilityAction(named: "Show details") {
+                detailExercise = ExerciseLookupCache.shared.exercise(forName: ex.name)
+            }
             .contextMenu {
                 Button {
                     swappingExIdx = exIdx

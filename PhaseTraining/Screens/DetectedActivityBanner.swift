@@ -28,6 +28,7 @@ struct DetectedActivityBanner: View {
                     .foregroundStyle(Color.accent)
                     .frame(width: 16, alignment: .center)
                     .padding(.top, 2)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Looks like you went \(activity.activityLabel.lowercased()) \(dayLabel)")
                         .styled(.body)

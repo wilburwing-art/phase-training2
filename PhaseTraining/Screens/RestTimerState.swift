@@ -246,6 +246,8 @@ extension LogScreen {
         haptic.notificationOccurred(.success)
         // Lock Screen countdown flips to "Rest done" (no-op without a Live Activity).
         RestActivityCenter.shared.restExpired()
+        // VoiceOver users hear the expiry; the flash and haptic are not spoken.
+        AccessibilityNotification.Announcement("Rest done").post()
     }
 
     /// The rest on screen, for the Live Activity coordinator. nil when no rest

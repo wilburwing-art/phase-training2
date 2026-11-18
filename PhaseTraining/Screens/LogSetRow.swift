@@ -121,6 +121,12 @@ extension LogScreen {
         .onTapGesture {
             if set.done { reopenSet(exIdx: exIdx, setIdx: setIdx) }
         }
+        // The tap above is invisible to VoiceOver; expose it as a named action.
+        .accessibilityActions {
+            if set.done {
+                Button("Edit set") { reopenSet(exIdx: exIdx, setIdx: setIdx) }
+            }
+        }
         .contextMenu {
             if set.done {
                 Button {

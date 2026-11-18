@@ -192,6 +192,7 @@ struct HistoryScreen: View {
             Image(systemName: "magnifyingglass")
                 .scaledSystemFont(14, weight: .medium)
                 .foregroundStyle(Color.ink3)
+                .accessibilityHidden(true)
             TextField("", text: $filter.query,
                       prompt: Text("Search name, exercise, note or month").foregroundColor(Color.ink3))
                 .styled(.body)

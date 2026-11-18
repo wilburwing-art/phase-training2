@@ -89,6 +89,7 @@ struct SetupChecklistSheet: View {
                     .foregroundStyle(stated ? Color.ok : Color.ink3)
                     .frame(width: 24)
                     .padding(.top, 2)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(field.label)
@@ -102,6 +103,7 @@ struct SetupChecklistSheet: View {
                                 .padding(.vertical, 2)
                                 .background(Color.elevated)
                                 .clipShape(RoundedRectangle(cornerRadius: 4))
+                                .accessibilityHidden(true)
                         }
                     }
                     Text(store.memory.assumptionSummary(for: field))
@@ -117,6 +119,7 @@ struct SetupChecklistSheet: View {
                     .scaledSystemFont(12, weight: .semibold)
                     .foregroundStyle(Color.ink3)
                     .padding(.top, 4)
+                    .accessibilityHidden(true)
             }
             .padding(14)
             .background(Color.surface)
@@ -124,6 +127,7 @@ struct SetupChecklistSheet: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
+        .accessibilityValue(stated ? "Set by you" : "Assumed")
         .accessibilityIdentifier("setup-checklist-row-\(field.rawValue)")
     }
 
@@ -137,6 +141,7 @@ struct SetupChecklistSheet: View {
                     .foregroundStyle(Color.ink3)
                     .frame(width: 24)
                     .padding(.top, 2)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Injuries")
                         .styled(.displayS)
@@ -154,6 +159,7 @@ struct SetupChecklistSheet: View {
                     .scaledSystemFont(12, weight: .semibold)
                     .foregroundStyle(Color.ink3)
                     .padding(.top, 4)
+                    .accessibilityHidden(true)
             }
             .padding(14)
             .frame(minHeight: 44)
@@ -162,7 +168,8 @@ struct SetupChecklistSheet: View {
             .clipShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Injuries, not asked yet")
+        .accessibilityLabel("Injuries")
+        .accessibilityValue("Not asked yet")
         .accessibilityIdentifier("setup-checklist-row-injuries")
     }
 }
