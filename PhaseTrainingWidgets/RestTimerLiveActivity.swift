@@ -20,18 +20,27 @@ private struct RestCountdown: View {
     let state: RestActivityState
     let isStale: Bool
     var size: CGFloat = 34
+    /// Follows the reader's text size; the fixed `size` is the base at the
+    /// default setting.
+    @ScaledMetric(relativeTo: .title) private var scale: CGFloat = 1
 
     var body: some View {
         if state.finished || isStale {
             Text("Rest done")
-                .font(.system(size: size * 0.6, weight: .semibold))
+                .font(.system(size: size * 0.6 * scale, weight: .semibold))
+                .minimumScaleFactor(0.5)
+                .lineLimit(1)
                 .foregroundStyle(Palette.accent)
         } else {
             Text(timerInterval: Date.now...max(Date.now, state.restEndDate), countsDown: true)
-                .font(.system(size: size, weight: .semibold, design: .monospaced))
+                .font(.system(size: size * scale, weight: .semibold, design: .monospaced))
                 .monospacedDigit()
+                .minimumScaleFactor(0.5)
+                .lineLimit(1)
                 .foregroundStyle(Palette.accent)
                 .multilineTextAlignment(.trailing)
+                .accessibilityLabel("Rest remaining")
+                .accessibilityValue(Text(timerInterval: Date.now...max(Date.now, state.restEndDate), countsDown: true))
         }
     }
 }
@@ -75,11 +84,13 @@ struct RestTimerLiveActivity: Widget {
                 }
             } compactLeading: {
                 Image(systemName: "timer").foregroundStyle(Palette.accent)
+                    .accessibilityLabel("Rest timer")
             } compactTrailing: {
                 RestCountdown(state: context.state, isStale: context.isStale, size: 13)
                     .frame(maxWidth: 48)
             } minimal: {
                 Image(systemName: "timer").foregroundStyle(Palette.accent)
+                    .accessibilityLabel("Rest timer")
             }
             .keylineTint(Palette.accent)
         }

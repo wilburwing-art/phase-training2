@@ -22,6 +22,7 @@ struct PhaseTrainingWatchApp: App {
 
 struct SessionView: View {
     @EnvironmentObject private var model: WatchSessionModel
+    @State private var confirmingEnd = false
 
     var body: some View {
         if let session = model.active {
@@ -57,11 +58,17 @@ struct SessionView: View {
                 }
                 Section {
                     Button("End session", role: .destructive) {
-                        Task { await model.endSession() }
+                        confirmingEnd = true
                     }
                 }
             }
             .navigationTitle(session.name)
+            .confirmationDialog("End this session?", isPresented: $confirmingEnd, titleVisibility: .visible) {
+                Button("End session", role: .destructive) {
+                    Task { await model.endSession() }
+                }
+                Button("Keep going", role: .cancel) {}
+            }
         } else if let planned = model.planned {
             VStack(spacing: 10) {
                 Text("Today").font(.caption).foregroundStyle(.secondary)
@@ -102,7 +109,8 @@ struct RestRow: View {
                 Spacer()
                 Button("-15") { model.rest.shorten() }
                     .buttonStyle(.bordered)
-                    .accessibilityLabel("Shorten rest 15 seconds")
+                    .accessibilityLabel("-15 seconds")
+                    .accessibilityInputLabels(["Minus 15", "Shorten rest 15 seconds"])
                 Button("+15") { model.rest.extend() }
                     .buttonStyle(.bordered)
                     .accessibilityLabel("Extend rest 15 seconds")

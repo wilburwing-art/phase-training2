@@ -2,11 +2,12 @@
 //
 // The same shape as the phone's RestTimerState: anchored to one set, a
 // duration that "+15" extends in place, skip clears it. The expiry is a
-// haptic, played once per rest from the countdown view's tick, which is
+// haptic plus a VoiceOver announcement, played once per rest from the countdown view's tick, which is
 // enough here because the workout session keeps the app running through
 // the rest.
 
 import Foundation
+import SwiftUI
 import WatchKit
 
 struct WatchRestTimer: Equatable {
@@ -55,13 +56,14 @@ struct WatchRestTimer: Equatable {
         return r > 0 ? r : nil
     }
 
-    /// Called from the countdown's tick. Plays the haptic once when the rest
-    /// runs out, then clears the rest.
+    /// Called from the countdown's tick. Plays the haptic and posts the
+    /// "Rest done" announcement once when the rest runs out, then clears it.
     mutating func tick(at date: Date) {
         guard let startedAt, remaining(at: date) == nil else { return }
         if hapticPlayedFor != startedAt {
             hapticPlayedFor = startedAt
             WKInterfaceDevice.current().play(.notification)
+            AccessibilityNotification.Announcement("Rest done").post()
         }
         clear()
     }
