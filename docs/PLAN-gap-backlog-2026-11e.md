@@ -41,13 +41,13 @@ described in the 11d header, with no lines from the grep.
 
 ## Phase 0: owner decisions (no code until settled)
 
-- [ ] **#1 Family profile rows (owner decision).** Do you approve these defaults for the 15 family roots with no `SportProfile` row (rules `.general`, signature, family)? Martial arts: contactStrength, upperDominant. Golf: core, legsDominant. Racquet: power, legsDominant. Surf and wave: pullEndurance, upperDominant. Swimming: pullEndurance, upperDominant. Multi-sport endurance: legEndurance, legsDominant. Team and rec: power, legsDominant. Skating and wheeled: legEndurance, legsDominant. Yoga and movement: bodyTension, upperDominant. Strength sports: maxStrength, legsDominant. Sailing and air: core, legsDominant. Equestrian: core, legsDominant. Archery and shooting: pullEndurance, upperDominant. Fishing and hunting: legEndurance, legsAndCarry. Dance: legEndurance, legsDominant. Yes unblocks 1.1 as written. Changes get edited into 1.1 first.
-- [ ] **#2 Parent overrides (owner decision).** Map via ferrata to scrambling, geocaching to day hiking, and bikejoring to mountain biking? Or keep the strict parent rule, which leaves geocaching and bikejoring with no program, because `misc-outdoor` has none? Yes edits item 5.1. No marks those three as unsupported in 5.1.
-- [ ] **#3 Pilot set (owner decision).** Run the external pilot on boxing, fencing, dressage, dinghy sailing and table tennis? Or keep tennis in it? Tennis was in the plan, but it already has 5 routines (bucket A). Yes runs 4.1 as listed. Tennis swaps it in for table tennis.
+- [x] **#1 Family profile rows (owner decision).** Yes, 2026-11-18. Do you approve these defaults for the 15 family roots with no `SportProfile` row (rules `.general`, signature, family)? Martial arts: contactStrength, upperDominant. Golf: core, legsDominant. Racquet: power, legsDominant. Surf and wave: pullEndurance, upperDominant. Swimming: pullEndurance, upperDominant. Multi-sport endurance: legEndurance, legsDominant. Team and rec: power, legsDominant. Skating and wheeled: legEndurance, legsDominant. Yoga and movement: bodyTension, upperDominant. Strength sports: maxStrength, legsDominant. Sailing and air: core, legsDominant. Equestrian: core, legsDominant. Archery and shooting: pullEndurance, upperDominant. Fishing and hunting: legEndurance, legsAndCarry. Dance: legEndurance, legsDominant. Yes unblocks 1.1 as written. Changes get edited into 1.1 first.
+- [x] **#2 Parent overrides (owner decision).** Yes, 2026-11-18: the three overrides apply. Map via ferrata to scrambling, geocaching to day hiking, and bikejoring to mountain biking? Or keep the strict parent rule, which leaves geocaching and bikejoring with no program, because `misc-outdoor` has none? Yes edits item 5.1. No marks those three as unsupported in 5.1.
+- [x] **#3 Pilot set (owner decision).** Yes, 2026-11-18: table tennis stays, tennis stays in A. Run the external pilot on boxing, fencing, dressage, dinghy sailing and table tennis? Or keep tennis in it? Tennis was in the plan, but it already has 5 routines (bucket A). Yes runs 4.1 as listed. Tennis swaps it in for table tennis.
 
 ## Phase 1: wiring (Logic, UI)
 
-- [ ] **1.1 Profile parent fallback (Logic, 3 h, waits on #1).** `SportProfile.of(slug)` currently returns `unlisted` for any slug not in `table`. Change it to fall back to the nearest ancestor's row through `sport_categories.parent_id`, using a new lookup in `CoachDatabase`. The inherited row keeps the ancestor's signature and family. It always gets rules `.general`, `supportFeature: false` and `writtenFirst: false`. Without that, freestyle skiing would inherit `.ski` and land on the season engine, and every bouldering child would land on the climbing engine. Add the #1 rows to `table`, and change `SportCatalog.outdoorAuthoredSlugs` to "any slug whose resolved profile is `.general`". Done: `T(AuthoredRoutineTests)` with new cases. `freestyle-skiing` resolves to `.general` with eccentricLeg. `tennis-clay` resolves to the racquet row. `isPlannable("golf")` flips to true, and the assertion at `AuthoredRoutineTests.swift:108` gets updated with the reason. `T(SportCatalogSlugTests)`.
+- [ ] **1.1 Profile parent fallback (Logic, 3 h).** `SportProfile.of(slug)` currently returns `unlisted` for any slug not in `table`. Change it to fall back to the nearest ancestor's row through `sport_categories.parent_id`, using a new lookup in `CoachDatabase`. The inherited row keeps the ancestor's signature and family. It always gets rules `.general`, `supportFeature: false` and `writtenFirst: false`. Without that, freestyle skiing would inherit `.ski` and land on the season engine, and every bouldering child would land on the climbing engine. Add the #1 rows to `table`, and change `SportCatalog.outdoorAuthoredSlugs` to "any slug whose resolved profile is `.general`". Done: `T(AuthoredRoutineTests)` with new cases. `freestyle-skiing` resolves to `.general` with eccentricLeg. `tennis-clay` resolves to the racquet row. `isPlannable("golf")` flips to true, and the assertion at `AuthoredRoutineTests.swift:108` gets updated with the reason. `T(SportCatalogSlugTests)`.
 - [ ] **1.2 Picker from the catalog (UI, 4 h).** `Sport.catalog` (`TrainingMemory.swift:514`) is a hardcoded list of 35, shown flat in `OnboardingSportsScreen.swift:31` and `SportsEditorSheet.swift:24`. Read the plannable sports from coach.db instead. Group them under their family root, add a search field, and keep the curated names as display overrides. Done: in the simulator, onboarding shows family sections, and a search for "fencing" returns nothing until fencing has routines. Screenshot attached to the commit message.
 - [ ] **1.3 Coverage check (Content, 1 h).** Add a check to `scripts/db/validate_coverage.py`: every sport whose program resolves to itself or its parent has 2+ qualifying routines, and every routine added after b128f61 has a `source_name`. Report sports that aren't covered yet as a count. They're expected until Phase 5 closes, so don't fail on them. Done: `DB`. At b128f61 the check prints 160 uncovered sports: the 116 with no routines and the 44 with one.
 - [ ] **1.4 Week invariant runtime (Tests, 1 h).** `GeneratorWeekInvariantTests` iterates every plannable sport (see b128f61), and 1.1 grows that set from 20 to about 56, with the rest to come. Measure `T(GeneratorWeekInvariantTests)` before and after. If it more than doubles, iterate one sport per family root plus the ones in `knownRegressionSports`. Done: the runtime is recorded in the commit message.
@@ -84,7 +84,7 @@ Read sessions with `sqlite3 ~/repos/training-kb/data/training.db "SELECT raw_tex
 
 Source standard: the author is named with credentials, and the venue is named (a journal, a book, a coach's own site, or a community page with its review count). Record the citation in `source_name` and the URL in `source_url`. Distill movements and doses only. Copy no prose. A sport with no source that meets the standard after one search pass moves to D, and the move is noted on its tracker line.
 
-- [ ] **4.1 Pilot (6 h, waits on #3).** boxing, fencing, dressage, dinghy-sailing, table-tennis. Owner reviews the 5 sports' routines before 4.2 starts. Done: `DB`, plus a review note in this doc under 4.1.
+- [ ] **4.1 Pilot (6 h).** boxing, fencing, dressage, dinghy-sailing, table-tennis. Owner reviews the 5 sports' routines before 4.2 starts. Done: `DB`, plus a review note in this doc under 4.1.
 - [ ] **4.2 Combat sports (6 h, after the 4.1 review).** muay-thai, kickboxing, karate, taekwondo, krav-maga, aikido, kung-fu, capoeira, hema, kendo, iaido.
 - [ ] **4.3 Racquet and team sports (6 h).** padel, badminton, racquetball, disc-golf, softball, ultimate-frisbee, hockey, lacrosse, cricket, team-handball.
 - [ ] **4.4 Water and wind (6 h).** windsurfing, kitesurfing, wing-foiling, wakeboarding, wakesurfing, hydrofoiling, freediving, spearfishing, water-polo, artistic-swimming, swimrun.
@@ -94,7 +94,7 @@ Source standard: the author is named with credentials, and the venue is named (a
 
 ## Phase 5: parent mapping, bucket D (Content)
 
-- [ ] **5.1 Tag children to their parent's routines (2 h, after Phase 4 and #2).** One script, `scripts/db/tag_family_children.py`, with the mapping table taken from the D lines below. It adds `routine_sports` rows only. Done: `DB`, and the 1.3 count reads 0.
+- [ ] **5.1 Tag children to their parent's routines (2 h, after Phase 4).** One script, `scripts/db/tag_family_children.py`, with the mapping table taken from the D lines below. It adds `routine_sports` rows only. Done: `DB`, and the 1.3 count reads 0.
 
 ## Not scheduled
 
@@ -289,11 +289,11 @@ Plain bullets, no boxes. /next works the phase items above. Update a line's buck
 
 ### Miscellaneous Outdoor
 
-- **Miscellaneous Outdoor** (`misc-outdoor`, id 750) D. Family root with no program of its own. Children map elsewhere (owner check).
+- **Miscellaneous Outdoor** (`misc-outdoor`, id 750) D. Family root with no program of its own; its children map elsewhere (#2). Stays unplannable.
 - **Slacklining / Highlining** (`slacklining`, id 751) C. External source needed.
-- **Geocaching** (`geocaching`, id 752) D. Parent misc-outdoor has no program: map to day-hiking instead (owner check).
+- **Geocaching** (`geocaching`, id 752) D. Maps to day-hiking (#2).
 - **Dog Sports (Agility)** (`dog-agility`, id 753) C. External source needed.
-- **Bikejoring** (`bikejoring`, id 754) D. Parent misc-outdoor has no program: map to mountain-biking instead (owner check).
+- **Bikejoring** (`bikejoring`, id 754) D. Maps to mountain-biking (#2).
 
 ### Cycling
 
@@ -322,7 +322,7 @@ Plain bullets, no boxes. /next works the phase items above. Update a line's buck
 - **Multi-Pitch** (`multi-pitch`, id 108) B. MTI: Alpine Rock Climb (219), AMGA Rock Guide Course (229).
 - **Deep Water Soloing** (`deep-water-soloing`, id 112) D. Maps to parent climbing.
 - **Competition Climbing** (`comp-climbing`, id 113) A. 2 routines. Profile row through the family, then spot-check.
-- **Via Ferrata** (`via-ferrata`, id 117) D. Parent is climbing, but via ferrata is closer to scrambling: tag the scrambling routines instead (owner check).
+- **Via Ferrata** (`via-ferrata`, id 117) D. Tag the scrambling routines (#2).
 - **Aid Climbing** (`aid-climbing`, id 118) B. MTI: Big Wall Climbing (230).
 - **Bouldering Indoor** (`bouldering-indoor`, id 102) D. Maps to parent bouldering.
 - **Bouldering Outdoor** (`bouldering-outdoor`, id 103) D. Maps to parent bouldering.
