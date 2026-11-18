@@ -174,6 +174,45 @@ final class GeneratorCompositionTests: XCTestCase {
         XCTAssertGreaterThan(moved, 10, "readiness moved almost nothing; the gate is not exercising anything")
     }
 
+    /// Readiness and the mesocycle deload each cut sets; stacked, they never
+    /// give a row more than either alone, and never zero it
+    /// (`SportSeasonGenerator` deload then readiness scaling, 11c 2.1).
+    func test_readinessTimesDeload_setsAtMostEitherAlone() {
+        var compared = 0, stackedBelow = 0
+        for slug in Self.sports {
+            for (phase, cycle) in [(SeasonPhase.offSeason, 4), (.preSeason, 4), (.inSeason, 6)] {
+                for slot in 0..<3 {
+                    let seed = "rxd-\(slug)-\(phase.rawValue)-\(slot)"
+                    func week(_ n: Int) -> TrainingMemory {
+                        var m = memory(slug, phase: phase, goal: .sportPerformance)
+                        m.phaseStartedAt = Calendar.current.date(byAdding: .day, value: -7 * (n - 1) - 1, to: Date())
+                        return m
+                    }
+                    let build = week(cycle - 1), deload = week(cycle)
+                    let readinessOnly = generate(build, slot: slot, readiness: 0.0, seed: seed)
+                    let deloadOnly = generate(deload, slot: slot, readiness: nil, seed: seed)
+                    let stacked = generate(deload, slot: slot, readiness: 0.0, seed: seed)
+                    XCTAssertEqual(stacked.exercises.map(\.exerciseId), deloadOnly.exercises.map(\.exerciseId),
+                                   "[\(seed)] readiness changed the deload week's picks")
+                    for row in stacked.exercises {
+                        let tag = "[\(seed)] \(row.name)"
+                        XCTAssertGreaterThanOrEqual(row.sets, 1, "\(tag) zeroed")
+                        guard let d = deloadOnly.exercises.first(where: { $0.exerciseId == row.exerciseId }),
+                              let r = readinessOnly.exercises.first(where: { $0.exerciseId == row.exerciseId })
+                        else { continue }
+                        compared += 1
+                        if row.sets < min(d.sets, r.sets) { stackedBelow += 1 }
+                        XCTAssertLessThanOrEqual(row.sets, d.sets, "\(tag): stacked \(row.sets) > deload alone \(d.sets)")
+                        XCTAssertLessThanOrEqual(row.sets, r.sets, "\(tag): stacked \(row.sets) > readiness alone \(r.sets)")
+                    }
+                }
+            }
+        }
+        print("READINESS-X-DELOAD compared \(compared) rows, \(stackedBelow) below both factors alone")
+        XCTAssertGreaterThan(compared, 30, "too few shared rows; the gate is not exercising anything")
+        XCTAssertGreaterThan(stackedBelow, 5, "stacking moved almost nothing")
+    }
+
     private static func leadingNumber(_ s: String) -> Int? {
         let digits = s.drop { !$0.isNumber }.prefix { $0.isNumber }
         return Int(digits)
