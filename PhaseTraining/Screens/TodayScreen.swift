@@ -451,7 +451,6 @@ struct TodayScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("today-coach-polished-badge")
-        .accessibilityLabel("Coach adjusted today's workout, tap for why")
         .accessibilityLabel("Personalized by coach. Tap for details.")
     }
 

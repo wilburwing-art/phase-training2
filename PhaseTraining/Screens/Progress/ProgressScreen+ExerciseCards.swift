@@ -213,7 +213,7 @@ extension ProgressScreen {
         let recent = Array(memoryStore.memory.feedback.suffix(10).reversed())
         return card(title: "RECENT FEEDBACK") {
             if recent.isEmpty {
-                Text("None yet. Add notes from the Complete screen.")
+                Text("None yet. After a workout, tap Log how this felt (Add details for your coach when the coach is on).")
                     .font(.monoXS)
                     .foregroundStyle(Color.ink3)
             } else {

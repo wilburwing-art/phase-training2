@@ -178,7 +178,6 @@ struct ProgressScreen: View {
             VStack(alignment: .leading, spacing: 24) {
                 TabHeader(
                     eyebrow: "PROGRESS",
-                    eyebrowTrailing: "LAST \(Self.weeks) WK",
                     title: "Last \(Self.weeks) weeks",
                     subtitle: nil
                 )

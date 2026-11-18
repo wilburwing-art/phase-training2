@@ -26,7 +26,7 @@ struct OnboardingHealthScreen: View {
         OnboardingScaffold(
             step: .health,
             title: "Read your workouts from Health?",
-            subtitle: "Recent workouts tell the plan how active you've been, and skis, climbs and hikes it finds can be logged in a tap. Read-only: nothing is written to Health.",
+            subtitle: "Recent workouts tell the plan how active you've been, and skis, climbs and hikes it finds can be logged in a tap. Sessions you finish are saved to Health as workouts. Workouts run on Apple Watch also record wrist motion, kept on this phone.",
             nextLabel: connecting ? "Connecting" : "Continue",
             nextEnabled: connect != nil && !connecting,
             onNext: continueTapped,
