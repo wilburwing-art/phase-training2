@@ -95,6 +95,7 @@ struct CustomExerciseCreateSheet: View {
                 .focused($nameFocused)
                 .submitLabel(.done)
                 .onChange(of: name) { _, _ in error = nil }
+                .accessibilityLabel("Exercise name")
                 .accessibilityIdentifier("custom-exercise-name")
             if let error {
                 Text(Self.message(for: error))
@@ -132,6 +133,7 @@ struct CustomExerciseCreateSheet: View {
                 .background(Color.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.lineStrong, lineWidth: 0.5))
+                .accessibilityLabel("Notes")
                 .accessibilityIdentifier("custom-exercise-notes")
         }
     }
@@ -146,7 +148,7 @@ struct CustomExerciseCreateSheet: View {
 
     private func create() {
         guard let store = ExerciseLookupCache.shared.userDB else {
-            error = .storeUnavailable
+            show(.storeUnavailable)
             return
         }
         switch store.createUserExercise(name: name, muscleBucket: bucket, notes: notes) {
@@ -154,7 +156,14 @@ struct CustomExerciseCreateSheet: View {
             onCreate(ue.exercise)
             dismiss()
         case .failure(let e):
-            error = e
+            show(e)
         }
+    }
+
+    /// Sets the inline error and speaks it, since VoiceOver focus stays on the
+    /// Create button and would not reach the red text below the field.
+    private func show(_ e: UserExerciseError) {
+        error = e
+        AccessibilityNotification.Announcement(Self.message(for: e)).post()
     }
 }

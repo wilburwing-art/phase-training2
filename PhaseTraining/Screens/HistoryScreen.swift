@@ -199,6 +199,7 @@ struct HistoryScreen: View {
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .submitLabel(.search)
+                .accessibilityLabel("Search history")
                 .accessibilityIdentifier("history-search")
             if !filter.query.isEmpty {
                 Button { filter.query = "" } label: {

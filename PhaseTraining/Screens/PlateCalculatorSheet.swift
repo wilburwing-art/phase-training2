@@ -111,6 +111,7 @@ struct PlateCalculatorSheet: View {
                 .background(selected ? Color.accent : Color.clear)
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
     private var inputCard: some View {
@@ -149,6 +150,7 @@ struct PlateCalculatorSheet: View {
                     .keyboardType(.decimalPad)
                     .font(.scaled("JetBrainsMono-SemiBold", size: 22))
                     .foregroundStyle(Color.ink)
+                    .accessibilityLabel("\(label), \(unitLabel)")
                 if let focused {
                     field.focused(focused)
                 } else {

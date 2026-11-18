@@ -73,7 +73,8 @@ struct RestTimer: View {
             if let onSubtract15 {
                 chip("−15", action: onSubtract15)
                     .accessibilityIdentifier("log-rest-sub15")
-                    .accessibilityLabel("Subtract 15 seconds")
+                    .accessibilityLabel("−15 seconds")
+                    .accessibilityInputLabels(["Minus 15", "Subtract 15 seconds"])
             }
             chip("+15", action: onAdd15)
                 .accessibilityIdentifier("log-rest-add15")

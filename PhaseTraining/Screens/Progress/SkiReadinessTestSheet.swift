@@ -148,7 +148,9 @@ struct SkiReadinessTestSheet: View {
                     .padding(12)
                     .background(Color.surface)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.lineStrong, lineWidth: 0.5))
                     .focused($focused)
+                    .accessibilityLabel(label)
                     .accessibilityIdentifier(id)
                 if let timed {
                     Button {

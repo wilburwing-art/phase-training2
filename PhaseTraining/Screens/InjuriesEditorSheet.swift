@@ -272,6 +272,7 @@ struct InjuriesEditorSheet: View {
                 .overlay(Capsule().stroke(isSelected ? Color.accent : Color.lineStrong, lineWidth: 0.5))
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     // MARK: - Legacy chips (free-text constraints)

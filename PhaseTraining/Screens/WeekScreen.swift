@@ -856,6 +856,7 @@ private struct ToneCard: View {
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     /// Subtitle text — explains what each tone actually does. Keeps the
