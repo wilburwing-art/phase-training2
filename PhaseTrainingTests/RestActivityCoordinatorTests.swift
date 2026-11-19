@@ -203,4 +203,64 @@ final class RestActivityCoordinatorTests: XCTestCase {
         let back = try JSONDecoder().decode(RestActivityState.self, from: JSONEncoder().encode(s))
         XCTAssertEqual(back, s)
     }
+
+    // MARK: - Live Activity buttons (voice 2.6)
+
+    @MainActor
+    private func controllerResting() -> ActiveWorkoutController {
+        let suite = "RestActivityCoordinatorTests.\(UUID().uuidString)"
+        let store = SessionStore(defaults: UserDefaults(suiteName: suite)!)
+        let ex = LoggedExercise(id: "ex-bench", name: "Bench press", type: nil, unit: "lbs",
+                                targetSets: 4, targetReps: 8, rest: 90,
+                                sets: (0..<4).map {
+                                    LoggedSet(num: $0 + 1, weight: "", reps: "", rpe: "", done: false)
+                                },
+                                prevSets: [], supersetGroup: nil)
+        let session = ActiveSession(templateId: "t", name: "Upper A", category: "Custom",
+                                    startTime: t0, exercises: [ex], feel: nil, note: nil)
+        store.saveActive(session)
+        let t0 = self.t0
+        let c = ActiveWorkoutController(store: store, session: session,
+                                        haptic: { _ in }, now: { t0 })
+        c.logSet(exIdx: 0, setIdx: 0, weight: "135", reps: "8", rpe: nil)
+        return c
+    }
+
+    @MainActor
+    func test_skipButton_clearsRestAndEndsActivity() {
+        let (coord, host) = make()
+        let c = controllerResting()
+        coord.sync(c.liveActivitySnapshot(), now: t0)
+        RestActivityButtonActions.handle(.skip, controller: c, coordinator: coord, now: t0)
+        XCTAssertNil(c.rest.remaining(at: t0))
+        XCTAssertEqual(host.calls.map(\.kind), ["start", "end"])
+        XCTAssertNil(coord.current)
+    }
+
+    @MainActor
+    func test_plus15Button_extendsRestAndActivity() {
+        let (coord, host) = make()
+        let c = controllerResting()
+        coord.sync(c.liveActivitySnapshot(), now: t0)
+        RestActivityButtonActions.handle(.add(seconds: 15), controller: c, coordinator: coord, now: t0)
+        XCTAssertEqual(c.rest.duration, 105)
+        XCTAssertEqual(host.calls.map(\.kind), ["start", "update"])
+        guard case .update(let s, let stale) = host.calls[1] else { return XCTFail("expected update") }
+        XCTAssertEqual(s.restEndDate, t0.addingTimeInterval(105))
+        XCTAssertEqual(stale, t0.addingTimeInterval(105))
+    }
+
+    @MainActor
+    func test_skipButton_withNoWorkout_endsLeftoverActivity() {
+        let (coord, host) = make()
+        RestActivityButtonActions.handle(.skip, controller: nil, coordinator: coord, now: t0)
+        XCTAssertEqual(host.calls, [.endAll])
+    }
+
+    @MainActor
+    func test_plus15Button_withNoWorkout_issuesNothing() {
+        let (coord, host) = make()
+        RestActivityButtonActions.handle(.add(seconds: 15), controller: nil, coordinator: coord, now: t0)
+        XCTAssertTrue(host.calls.isEmpty)
+    }
 }

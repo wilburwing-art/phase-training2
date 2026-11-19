@@ -34,6 +34,8 @@ struct PhaseTrainingApp: App {
     /// through `MemoryStore.wipeAllUserData()` (UserDefaults + SQLite) on launch
     /// so it matches the production "Erase all my data" path exactly.
     init() {
+        // Before any view: a Live Activity button can launch the app in the background.
+        RestActivityButtonActions.install()
         if ProcessInfo.processInfo.arguments.contains("--ui-test-reset") {
             // Same canonical wipe the production "Erase all my data" action
             // uses, so the two can't drift. Unlike the old inline key list,

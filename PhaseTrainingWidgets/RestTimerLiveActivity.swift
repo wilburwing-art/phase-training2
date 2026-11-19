@@ -8,6 +8,7 @@
 // stops at 0:00.
 
 import ActivityKit
+import AppIntents
 import SwiftUI
 import WidgetKit
 
@@ -45,24 +46,54 @@ private struct RestCountdown: View {
     }
 }
 
+/// Skip and +15, run in the app through `RestActivityIntents`. Hidden once the
+/// rest is done: there is nothing left to skip or extend.
+private struct RestButtons: View {
+    let state: RestActivityState
+    let isStale: Bool
+
+    var body: some View {
+        if !(state.finished || isStale) {
+            HStack(spacing: 8) {
+                Button(intent: SkipRestActivityIntent()) {
+                    Label("Skip", systemImage: "forward.end.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .accessibilityLabel("Skip rest")
+                Button(intent: AddRestActivityIntent(seconds: 15)) {
+                    Label("+15s", systemImage: "plus")
+                        .frame(maxWidth: .infinity)
+                }
+                .accessibilityLabel("Add 15 seconds")
+            }
+            .font(.subheadline.weight(.semibold))
+            .buttonStyle(.bordered)
+            .tint(Palette.accent)
+        }
+    }
+}
+
 struct RestTimerLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: RestActivityAttributes.self) { context in
-            HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(context.attributes.workoutName)
-                        .font(.caption)
-                        .foregroundStyle(Palette.ink2)
-                    Text(context.state.exerciseName)
-                        .font(.headline)
-                        .foregroundStyle(Palette.ink)
-                        .lineLimit(1)
-                    Text(setLine(context.state))
-                        .font(.subheadline)
-                        .foregroundStyle(Palette.ink2)
+            VStack(spacing: 12) {
+                HStack(alignment: .center) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(context.attributes.workoutName)
+                            .font(.caption)
+                            .foregroundStyle(Palette.ink2)
+                        Text(context.state.exerciseName)
+                            .font(.headline)
+                            .foregroundStyle(Palette.ink)
+                            .lineLimit(1)
+                        Text(setLine(context.state))
+                            .font(.subheadline)
+                            .foregroundStyle(Palette.ink2)
+                    }
+                    Spacer(minLength: 12)
+                    RestCountdown(state: context.state, isStale: context.isStale)
                 }
-                Spacer(minLength: 12)
-                RestCountdown(state: context.state, isStale: context.isStale)
+                RestButtons(state: context.state, isStale: context.isStale)
             }
             .padding(16)
             .activityBackgroundTint(Palette.bg)
@@ -81,6 +112,9 @@ struct RestTimerLiveActivity: Widget {
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     RestCountdown(state: context.state, isStale: context.isStale, size: 28)
+                }
+                DynamicIslandExpandedRegion(.bottom) {
+                    RestButtons(state: context.state, isStale: context.isStale)
                 }
             } compactLeading: {
                 Image(systemName: "timer").foregroundStyle(Palette.accent)

@@ -44,9 +44,13 @@ To recreate the profile (new distribution certificate, expiry):
 - Starting an activity needs the app in the foreground. A watch-driven rest that
   arrives while the phone app is backgrounded updates an existing activity but
   cannot start a new one.
-- Lock Screen "Skip rest" and "+15" buttons are not included. Rest state lives
-  in LogScreen `@State`, so an App Intent would need a new shared store or a
-  bridge into the screen, which is more than the optional budget.
+- Lock Screen and Dynamic Island "Skip" and "+15s" buttons (voice 2.6) are
+  `LiveActivityIntent`s in `Shared/LiveActivity/RestActivityIntents.swift`,
+  compiled into the app and the widget. The system runs them in the app, where
+  `RestActivityButtonActions` acts on `ActiveWorkoutRegistry.shared.current`
+  and syncs the coordinator directly. With no registered controller, Skip ends
+  the activity and +15 does nothing (voice 2.10 covers the empty registry).
+  The buttons hide once the rest is done. Not yet pressed on a device.
 - `scripts/quality/verify_font_tokens.sh` scans only `PhaseTraining/`. The widget
   folder uses system fonts and no `.custom(`, so it complies; extend the script
   if custom fonts are ever added there.

@@ -143,7 +143,7 @@ struct LogScreen: View {
         .onChange(of: workout.rest) { _, _ in
             // Lock Screen / Dynamic Island rest timer. One report covers start,
             // +15, -15, a new rest and skip; the expiry notification is untouched.
-            RestActivityCenter.shared.sync(liveActivitySnapshot())
+            RestActivityCenter.shared.sync(workout.liveActivitySnapshot())
         }
         .onReceive(store.$active) { external in
             // A change that did not come from this screen: the watch marked a
