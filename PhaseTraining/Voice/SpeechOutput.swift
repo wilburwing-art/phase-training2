@@ -106,6 +106,7 @@ final class SpeechOutput: NSObject, SpeechOutputting {
 
     func speak(_ text: String) {
         guard !text.isEmpty, let utterance = makeUtterance(text) else { return }
+        owner.speaking = true
         activateUnlessMicLive()
         synthesizer.speak(utterance)
     }
@@ -159,9 +160,10 @@ final class SpeechOutput: NSObject, SpeechOutputting {
         }
     }
 
-    /// The mic's transcriber deactivates the session when its utterance ends.
+    /// While the mic is live its transcriber deactivates the session when the
+    /// utterance ends, unless it closed during this cue and handed that over.
     func deactivateIfIdle() {
-        guard !synthesizer.isSpeaking, !owner.micLive else { return }
+        guard !synthesizer.isSpeaking, owner.speechEnded() else { return }
         do {
             try audioSession.deactivate()
         } catch {

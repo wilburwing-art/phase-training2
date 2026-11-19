@@ -340,17 +340,22 @@ final class SpeechPermissions: SpeechPermissionProviding {
 
 // MARK: - Audio session
 
+@MainActor
 private enum SpeechAudioSession {
-    static func activate(_ session: AVAudioSession) throws {
+    static func activate(_ session: AVAudioSession, owner: VoiceAudioSessionOwner) throws {
         try session.setCategory(.playAndRecord, mode: .default, options: [.allowBluetoothHFP, .duckOthers, .defaultToSpeaker])
         try session.setActive(true)
+        owner.micAudioStarted()
     }
 
-    static func deactivate(_ session: AVAudioSession) {
-        do {
-            try session.setActive(false, options: .notifyOthersOnDeactivation)
-        } catch {
-            print("[SpeechInput] audio session deactivate failed: \(error)")
+    /// Leaves the session active while a cue is speaking; the cue's end deactivates it.
+    static func deactivate(_ session: AVAudioSession, owner: VoiceAudioSessionOwner) {
+        owner.micAudioStopped {
+            do {
+                try session.setActive(false, options: .notifyOthersOnDeactivation)
+            } catch {
+                print("[SpeechInput] audio session deactivate failed: \(error)")
+            }
         }
     }
 }
@@ -364,6 +369,7 @@ final class LegacyTranscriber: SpeechTranscribing {
 
     private let recognizer: SFSpeechRecognizer?
     private let session: AVAudioSession
+    private let owner: VoiceAudioSessionOwner
     private let engine = AVAudioEngine()
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var task: SFSpeechRecognitionTask?
@@ -374,9 +380,10 @@ final class LegacyTranscriber: SpeechTranscribing {
     /// Bumped per utterance so a late callback or timeout from the last one is dropped.
     private var generation = 0
 
-    init(locale: Locale = .current, session: AVAudioSession = .sharedInstance()) {
+    init(locale: Locale = .current, session: AVAudioSession = .sharedInstance(), owner: VoiceAudioSessionOwner = .shared) {
         self.recognizer = SFSpeechRecognizer(locale: locale)
         self.session = session
+        self.owner = owner
     }
 
     var supportsOnDevice: Bool { recognizer?.supportsOnDeviceRecognition == true }
@@ -386,7 +393,7 @@ final class LegacyTranscriber: SpeechTranscribing {
             throw SpeechInputError.onDeviceUnavailable
         }
         reset()
-        try SpeechAudioSession.activate(session)
+        try SpeechAudioSession.activate(session, owner: owner)
 
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.requiresOnDeviceRecognition = true
@@ -401,7 +408,7 @@ final class LegacyTranscriber: SpeechTranscribing {
             try engine.start()
         } catch {
             input.removeTap(onBus: 0)
-            SpeechAudioSession.deactivate(session)
+            SpeechAudioSession.deactivate(session, owner: owner)
             throw error
         }
 
@@ -465,7 +472,7 @@ final class LegacyTranscriber: SpeechTranscribing {
         if engine.isRunning { engine.stop() }
         engine.inputNode.removeTap(onBus: 0)
         request?.endAudio()
-        SpeechAudioSession.deactivate(session)
+        SpeechAudioSession.deactivate(session, owner: owner)
     }
 
     private func reset() {
@@ -501,6 +508,7 @@ final class LegacyTranscriber: SpeechTranscribing {
 final class AnalyzerTranscriber: SpeechTranscribing {
     private let locale: Locale?
     private let session: AVAudioSession
+    private let owner: VoiceAudioSessionOwner
     private let engine = AVAudioEngine()
     private var analyzer: SpeechAnalyzer?
     private var rawInput: AsyncStream<AnalyzerInput>.Continuation?
@@ -513,9 +521,10 @@ final class AnalyzerTranscriber: SpeechTranscribing {
 
     /// `locale` is a `SpeechTranscriber` supported locale; nil means none, so
     /// `supportsOnDevice` is false.
-    init(locale: Locale?, session: AVAudioSession = .sharedInstance()) {
+    init(locale: Locale?, session: AVAudioSession = .sharedInstance(), owner: VoiceAudioSessionOwner = .shared) {
         self.locale = locale
         self.session = session
+        self.owner = owner
     }
 
     var supportsOnDevice: Bool { locale != nil }
@@ -531,7 +540,7 @@ final class AnalyzerTranscriber: SpeechTranscribing {
     func start(contextualStrings: [String], onPartial: @escaping (String) -> Void) throws {
         guard let locale else { throw SpeechInputError.onDeviceUnavailable }
         teardown()
-        try SpeechAudioSession.activate(session)
+        try SpeechAudioSession.activate(session, owner: owner)
 
         let transcriber = SpeechTranscriber(locale: locale, transcriptionOptions: [], reportingOptions: [.volatileResults], attributeOptions: [])
         let analyzer = SpeechAnalyzer(modules: [transcriber])
@@ -546,7 +555,7 @@ final class AnalyzerTranscriber: SpeechTranscribing {
         } catch {
             input.removeTap(onBus: 0)
             rawInput.finish()
-            SpeechAudioSession.deactivate(session)
+            SpeechAudioSession.deactivate(session, owner: owner)
             throw error
         }
         tapRunning = true
@@ -601,7 +610,7 @@ final class AnalyzerTranscriber: SpeechTranscribing {
         if engine.isRunning { engine.stop() }
         engine.inputNode.removeTap(onBus: 0)
         rawInput?.finish()
-        SpeechAudioSession.deactivate(session)
+        SpeechAudioSession.deactivate(session, owner: owner)
     }
 
     private func teardown() {

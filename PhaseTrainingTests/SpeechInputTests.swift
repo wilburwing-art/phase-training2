@@ -510,6 +510,42 @@ final class SpeechInputTests: XCTestCase {
 
         XCTAssertFalse(owner.micLive)
     }
+
+    // MARK: - Mic release while a cue speaks
+
+    func testMicReleaseWhileSpeakingLeavesSessionActive() {
+        let owner = VoiceAudioSessionOwner()
+        owner.micAudioStarted()
+        owner.speaking = true
+        var deactivations = 0
+
+        owner.micAudioStopped { deactivations += 1 }
+
+        XCTAssertEqual(deactivations, 0)
+        XCTAssertTrue(owner.deactivateHandedToSpeech)
+    }
+
+    func testMicReleaseWithNoCueDeactivates() {
+        let owner = VoiceAudioSessionOwner()
+        owner.micAudioStarted()
+        var deactivations = 0
+
+        owner.micAudioStopped { deactivations += 1 }
+
+        XCTAssertEqual(deactivations, 1)
+        XCTAssertFalse(owner.deactivateHandedToSpeech)
+    }
+
+    func testMicReopenTakesTheSessionBack() {
+        let owner = VoiceAudioSessionOwner()
+        owner.speaking = true
+        owner.micAudioStopped {}
+        XCTAssertTrue(owner.deactivateHandedToSpeech)
+
+        owner.micAudioStarted()
+
+        XCTAssertFalse(owner.deactivateHandedToSpeech)
+    }
 }
 
 /// Holds `finish` open until the test releases it, to observe `.finishing`.

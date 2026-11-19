@@ -137,6 +137,64 @@ final class SpeechOutputTests: XCTestCase {
         _ = await input.release()
         XCTAssertFalse(owner.micLive)
     }
+
+    // MARK: - Mic released during a cue
+
+    func testCueEndDeactivatesAfterMicReleasedMidCue() {
+        let session = CountingAudioSession()
+        let owner = VoiceAudioSessionOwner()
+        let output = SpeechOutput(language: "en-US", audioSession: session, owner: owner)
+        owner.micAudioStarted()
+        owner.micLive = true
+        owner.speaking = true
+
+        // The mic closes while the cue is still speaking; SpeechInput is still finishing.
+        owner.micAudioStopped { XCTFail("mic release must not deactivate under a cue") }
+        output.deactivateIfIdle()
+
+        XCTAssertEqual(session.deactivateCount, 1)
+        XCTAssertFalse(owner.speaking)
+        XCTAssertFalse(owner.deactivateHandedToSpeech)
+    }
+
+    func testCueEndAfterMicReleasedAndIdleDeactivates() {
+        let session = CountingAudioSession()
+        let owner = VoiceAudioSessionOwner()
+        let output = SpeechOutput(language: "en-US", audioSession: session, owner: owner)
+        owner.speaking = true
+        owner.micAudioStopped { XCTFail("mic release must not deactivate under a cue") }
+        owner.micLive = false
+
+        output.deactivateIfIdle()
+
+        XCTAssertEqual(session.deactivateCount, 1)
+    }
+
+    func testLateCueEndLeavesAReopenedMicAlone() {
+        let session = CountingAudioSession()
+        let owner = VoiceAudioSessionOwner()
+        let output = SpeechOutput(language: "en-US", audioSession: session, owner: owner)
+        owner.speaking = true
+        owner.micAudioStopped {}
+        // pressDown stops the cue and reopens the mic before didCancel lands.
+        owner.micAudioStarted()
+        owner.micLive = true
+
+        output.deactivateIfIdle()
+
+        XCTAssertEqual(session.deactivateCount, 0)
+        XCTAssertFalse(owner.speaking)
+    }
+
+    func testSpeakMarksSpeaking() {
+        let owner = VoiceAudioSessionOwner()
+        let output = SpeechOutput(language: "en-US", audioSession: CountingAudioSession(), owner: owner)
+
+        output.speak("Rest's up")
+        defer { output.stop() }
+
+        XCTAssertTrue(owner.speaking)
+    }
 }
 
 @MainActor
