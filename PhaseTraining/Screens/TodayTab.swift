@@ -86,13 +86,20 @@ struct TodayTab: View {
 
     private func ensureWorkout() {
         guard workout == nil, let active = store.active else { return }
-        workout = ActiveWorkoutController(store: store,
-                                          session: active,
-                                          suppressAutoRest: LogScreen.uiTestSuppressAutoRest)
+        let controller = ActiveWorkoutController(store: store,
+                                                 session: active,
+                                                 suppressAutoRest: LogScreen.uiTestSuppressAutoRest)
+        workout = controller
+        ActiveWorkoutRegistry.shared.current = controller
     }
 
     private func transition(_ next: TodayRoute) {
-        if next == .log { ensureWorkout() } else { workout = nil }
+        if next == .log {
+            ensureWorkout()
+        } else {
+            workout = nil
+            ActiveWorkoutRegistry.shared.current = nil
+        }
         withMotion(.easeInOut(duration: 0.18), .fade) { route = next }
     }
 }
