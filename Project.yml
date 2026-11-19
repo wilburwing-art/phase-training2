@@ -142,6 +142,10 @@ targets:
         # Same reviewer-facing voice as the Health strings: name the
         # behaviour, and say what is NOT done.
         NSAppleMusicUsageDescription: "PhaseTraining shows the track Apple Music is playing while you log a workout, with pause and skip, so you can change songs without leaving the app. It never reads or changes your library and never starts music on its own."
+        # Push-to-talk voice logging (PLAN-voice.md part 3). Same reviewer-facing
+        # voice: name when it listens and that audio stays on the device.
+        NSMicrophoneUsageDescription: "Only while you hold the mic button during a workout, PhaseTraining listens so you can log a set or control the rest timer by voice, like \"185 for 5\" or \"skip rest\". It never listens in the background."
+        NSSpeechRecognitionUsageDescription: "PhaseTraining turns what you say while holding the mic button into a logged set or a timer command. Recognition runs on your device and the audio is never uploaded or stored."
         # NSPrivacyCollectedDataTypes used to live here. Apple reads the
         # privacy manifest from PhaseTraining/PrivacyInfo.xcprivacy, not from
         # Info.plist, so declaring it here meant the app shipped without one.
