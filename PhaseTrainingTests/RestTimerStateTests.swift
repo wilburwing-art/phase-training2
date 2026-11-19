@@ -58,4 +58,28 @@ final class RestTimerStateTests: XCTestCase {
         XCTAssertNil(r.alertFiredFor, "a new rest must re-arm the once-per-rest alert")
         XCTAssertEqual(r.remaining(at: t0.addingTimeInterval(10)), 30)
     }
+
+    // MARK: - notification fire date follows the injected clock (voice 1.6)
+
+    func test_startSchedulesFireAtInjectedNowPlusDuration() {
+        var r = RestTimerState()
+        r.start(exIdx: 0, setIdx: 0, duration: 90, now: t0)
+        XCTAssertEqual(RestTimerState.lastRequestedFireAt, t0.addingTimeInterval(90))
+    }
+
+    func test_rescheduleFiresAtInjectedNowPlusRemaining() {
+        var r = RestTimerState()
+        r.start(exIdx: 0, setIdx: 0, duration: 60, now: t0)
+        r.duration = 75
+        r.rescheduleExpiryNotification(now: t0.addingTimeInterval(20))
+        XCTAssertEqual(RestTimerState.lastRequestedFireAt, t0.addingTimeInterval(75),
+                       "20 s in with 55 s left fires at start plus the new duration")
+    }
+
+    func test_clearDropsTheRequestedFireDate() {
+        var r = RestTimerState()
+        r.start(exIdx: 0, setIdx: 0, duration: 60, now: t0)
+        r.clear()
+        XCTAssertNil(RestTimerState.lastRequestedFireAt)
+    }
 }

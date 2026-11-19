@@ -54,7 +54,7 @@ struct RestTimerState: Equatable {
         self.duration = duration
         self.alertFiredFor = nil
         self.expiredFlashUntil = nil
-        Self.scheduleExpiryNotification(after: duration)
+        Self.scheduleExpiryNotification(after: duration, now: now)
     }
 
     mutating func clear() {
@@ -72,14 +72,20 @@ struct RestTimerState: Equatable {
     /// to play one itself.
     static var notificationsAuthorized = false
 
+    /// Fire date of the last expiry request, `now + seconds` from the
+    /// caller's clock. nil after a cancel. Lets tests check that an injected
+    /// clock reaches the notification.
+    private(set) static var lastRequestedFireAt: Date?
+
     /// Fire-and-forget. Asks for notification permission the first time a
     /// rest starts (status .notDetermined) so the "Rest's up" banner works
     /// without the user first having to turn on weekly reminders.
-    static func scheduleExpiryNotification(after seconds: Int) {
+    static func scheduleExpiryNotification(after seconds: Int, now: Date) {
         guard seconds > 0 else { return }
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [expiryNotificationId])
-        let fireAt = Date().addingTimeInterval(TimeInterval(seconds))
+        let fireAt = now.addingTimeInterval(TimeInterval(seconds))
+        lastRequestedFireAt = fireAt
         center.getNotificationSettings { settings in
             switch settings.authorizationStatus {
             case .authorized, .provisional, .ephemeral:
@@ -120,10 +126,11 @@ struct RestTimerState: Equatable {
             Self.cancelExpiryNotification()
             return
         }
-        Self.scheduleExpiryNotification(after: remaining)
+        Self.scheduleExpiryNotification(after: remaining, now: now)
     }
 
     static func cancelExpiryNotification() {
+        lastRequestedFireAt = nil
         UNUserNotificationCenter.current()
             .removePendingNotificationRequests(withIdentifiers: [expiryNotificationId])
     }
@@ -163,14 +170,7 @@ extension LogScreen {
                     // Shortening to nothing ends the rest rather than flashing DONE.
                     onSubtract15: { workout.addRest(seconds: -15) },
                     onSkip: { workout.skipRest() },
-                    onSetDuration: { newDuration in
-                        // Reset start time so the new duration runs from now.
-                        // Otherwise a shorter pick would have us already expired.
-                        rest.duration = newDuration
-                        rest.startedAt = Date()
-                        rest.alertFiredFor = rest.startedAt
-                        rest.rescheduleExpiryNotification()
-                    }
+                    onSetDuration: { workout.setRestDuration($0) }
                 )
                 .padding(.vertical, 6)
                 .transition(.opacity)

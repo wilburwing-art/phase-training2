@@ -185,6 +185,17 @@ final class ActiveWorkoutController: ObservableObject {
         }
     }
 
+    /// Preset pick on the running rest: the new duration runs from now, so a
+    /// shorter pick does not land already expired. No-op with no rest.
+    func setRestDuration(_ seconds: Int) {
+        guard rest.startedAt != nil else { return }
+        let at = now()
+        rest.duration = seconds
+        rest.startedAt = at
+        rest.alertFiredFor = at
+        rest.rescheduleExpiryNotification(now: at)
+    }
+
     // MARK: - Next up
 
     /// The first exercise (session order) with an undone set. Plain exercise:

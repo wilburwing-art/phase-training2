@@ -225,6 +225,33 @@ final class ActiveWorkoutControllerTests: XCTestCase {
         XCTAssertEqual(c.rest, RestTimerState())
     }
 
+    func test_restNotificationFiresAtInjectedClock() {
+        let (c, _) = make([exercise("Row", sets: 3, rest: 60)])
+        let t0 = clock
+        c.toggleSet(exIdx: 0, setIdx: 0)
+        XCTAssertEqual(RestTimerState.lastRequestedFireAt, t0.addingTimeInterval(60))
+        clock.addTimeInterval(20)
+        c.addRest(seconds: 15)
+        XCTAssertEqual(RestTimerState.lastRequestedFireAt, t0.addingTimeInterval(75))
+    }
+
+    func test_setRestDurationRunsFromInjectedNow() {
+        let (c, _) = make([exercise("Row", sets: 3, rest: 120)])
+        c.toggleSet(exIdx: 0, setIdx: 0)
+        clock.addTimeInterval(30)
+        c.setRestDuration(45)
+        XCTAssertEqual(c.rest.startedAt, clock)
+        XCTAssertEqual(c.rest.alertFiredFor, clock)
+        XCTAssertEqual(c.rest.remaining(at: clock), 45)
+        XCTAssertEqual(RestTimerState.lastRequestedFireAt, clock.addingTimeInterval(45))
+    }
+
+    func test_setRestDurationWithNoRestIsNoOp() {
+        let (c, _) = make([exercise("Row", sets: 3)])
+        c.setRestDuration(45)
+        XCTAssertEqual(c.rest, RestTimerState())
+    }
+
     // MARK: - nextUp
 
     func test_nextUpPlainSession() {
