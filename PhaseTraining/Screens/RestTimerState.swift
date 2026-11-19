@@ -31,6 +31,9 @@ struct RestTimerState: Equatable {
     /// Date a rest timer was anchored at. Reset whenever a new rest starts so
     /// the expiry-alert fires once per rest instance. nil = no alert pending.
     var alertFiredFor: Date? = nil
+    /// Rest start the 10 s spoken warning was handled for. Set whether or not
+    /// it spoke, so the warning never fires late.
+    var warningFiredFor: Date? = nil
     /// When set, the rest card renders in "expired" flash state. Cleared
     /// ~1.2s after expiry so the card transitions back to a normal hidden state.
     var expiredFlashUntil: Date? = nil
@@ -53,6 +56,7 @@ struct RestTimerState: Equatable {
         self.startedAt = now
         self.duration = duration
         self.alertFiredFor = nil
+        self.warningFiredFor = nil
         self.expiredFlashUntil = nil
         Self.scheduleExpiryNotification(after: duration, now: now)
     }
@@ -63,6 +67,7 @@ struct RestTimerState: Equatable {
         startedAt = nil
         duration = nil
         alertFiredFor = nil
+        warningFiredFor = nil
         expiredFlashUntil = nil
         Self.cancelExpiryNotification()
     }
@@ -71,6 +76,11 @@ struct RestTimerState: Equatable {
     /// path decide whether the banner will carry the sound or whether it has
     /// to play one itself.
     static var notificationsAuthorized = false
+
+    /// True while the log screen's rest tick is on screen, the only place the
+    /// spoken rest-end cue fires. The foreground banner drops its chime only
+    /// then; on any other screen the chime is the alert.
+    static var restTickOnScreen = false
 
     /// Fire date of the last expiry request, `now + seconds` from the
     /// caller's clock. nil after a cancel. Lets tests check that an injected
@@ -201,10 +211,28 @@ extension LogScreen {
             Color.clear
                 .frame(width: 0, height: 0)
                 .onChange(of: ctx.date) { _, now in
+                    maybeFireRestWarning(at: now)
                     maybeFireRestExpiry(at: now)
                 }
-                .onAppear { maybeFireRestExpiry(at: ctx.date) }
+                .onAppear {
+                    RestTimerState.restTickOnScreen = true
+                    maybeFireRestWarning(at: ctx.date)
+                    maybeFireRestExpiry(at: ctx.date)
+                }
+                .onDisappear { RestTimerState.restTickOnScreen = false }
         }
+    }
+
+    /// Speak the 10 s warning once per rest when the rest is at least 20 s long.
+    private func maybeFireRestWarning(at date: Date) {
+        guard let started = rest.startedAt,
+              let duration = rest.duration,
+              duration >= 20,
+              rest.warningFiredFor != started else { return }
+        let remaining = Double(duration) - date.timeIntervalSince(started)
+        guard remaining > 0, remaining <= 10 else { return }
+        rest.warningFiredFor = started
+        VoiceCuePlayer.shared.restWarning(session: session, next: workout.nextUp())
     }
 
     /// Trigger sound + haptic + visual flash once when the active rest
@@ -220,10 +248,11 @@ extension LogScreen {
         rest.alertFiredFor = started
         rest.expiredFlashUntil = date.addingTimeInterval(1.2)
         // Leave the pending "Rest's up" notification alone: NotificationDelegate
-        // presents it as a banner + sound even while the app is open. Only
-        // play our own sound when notifications are off, so it doesn't
-        // double up with the banner's.
-        if !RestTimerState.notificationsAuthorized {
+        // presents it as a banner (with sound unless the cue speaks) even while
+        // the app is open. Play our own sound only when neither the cue nor the
+        // banner will make one.
+        let spoke = VoiceCuePlayer.shared.restEnded(session: session, next: workout.nextUp())
+        if !spoke && !RestTimerState.notificationsAuthorized {
             // System sound 1322 = "Begin recording" (short, attention-grabbing).
             AudioServicesPlaySystemSound(1322)
         }

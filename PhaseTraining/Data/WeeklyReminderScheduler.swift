@@ -144,7 +144,16 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         willPresent notification: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
-        completionHandler([.banner, .sound])
+        let speaks = RestTimerState.restTickOnScreen && VoiceCuePlayer.speaksRestEnd(
+            settings: VoiceSettings.load(),
+            voiceOverRunning: UIAccessibility.isVoiceOverRunning)
+        completionHandler(Self.presentationOptions(
+            identifier: notification.request.identifier, speaksRestEnd: speaks))
+    }
+
+    /// The rest-expiry banner drops its chime when the cue speaks the line.
+    static func presentationOptions(identifier: String, speaksRestEnd: Bool) -> UNNotificationPresentationOptions {
+        identifier == RestTimerState.expiryNotificationId && speaksRestEnd ? [.banner] : [.banner, .sound]
     }
 
     /// Route the tap through UIApplication.open so the deep link lands on the
