@@ -6,6 +6,9 @@ import SwiftUI
 struct TodayTab: View {
     @EnvironmentObject private var store: SessionStore
     @State private var route: TodayRoute = .start
+    /// One controller per active workout: built when the route becomes `.log`,
+    /// dropped when it leaves.
+    @State private var workout: ActiveWorkoutController?
 
     enum TodayRoute: Equatable {
         case start
@@ -30,7 +33,10 @@ struct TodayTab: View {
     }
 
     private func enterLiveSessionIfNeeded() {
-        if store.active != nil, route == .start { route = .log }
+        if store.active != nil, route == .start {
+            ensureWorkout()
+            route = .log
+        }
     }
 
     @ViewBuilder
@@ -44,19 +50,27 @@ struct TodayTab: View {
             )
 
         case .log:
-            LogScreen(
-                onFinish: {
-                    if let active = store.active {
-                        transition(.complete(active))
-                    } else {
+            if let workout {
+                LogScreen(
+                    workout: workout,
+                    onFinish: {
+                        if let active = store.active {
+                            transition(.complete(active))
+                        } else {
+                            transition(.start)
+                        }
+                    },
+                    onCancel: {
+                        store.clearActive()
                         transition(.start)
                     }
-                },
-                onCancel: {
+                )
+            } else {
+                LogNoSessionView(onCancel: {
                     store.clearActive()
                     transition(.start)
-                }
-            )
+                })
+            }
 
         case .complete(let session):
             CompleteScreen(
@@ -70,7 +84,15 @@ struct TodayTab: View {
         }
     }
 
+    private func ensureWorkout() {
+        guard workout == nil, let active = store.active else { return }
+        workout = ActiveWorkoutController(store: store,
+                                          session: active,
+                                          suppressAutoRest: LogScreen.uiTestSuppressAutoRest)
+    }
+
     private func transition(_ next: TodayRoute) {
+        if next == .log { ensureWorkout() } else { workout = nil }
         withMotion(.easeInOut(duration: 0.18), .fade) { route = next }
     }
 }

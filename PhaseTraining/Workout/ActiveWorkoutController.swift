@@ -24,12 +24,13 @@ struct NextUp: Equatable {
 
 @MainActor
 final class ActiveWorkoutController: ObservableObject {
-    @Published private(set) var session: ActiveSession {
+    // The log screen binds text fields through `session` and the rest card writes `rest`.
+    @Published var session: ActiveSession {
         didSet {
             if session != oldValue { store.saveActive(session) }
         }
     }
-    @Published private(set) var rest = RestTimerState()
+    @Published var rest = RestTimerState()
 
     private let store: SessionStore
     private let suppressAutoRest: Bool

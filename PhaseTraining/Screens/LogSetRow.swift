@@ -72,7 +72,7 @@ extension LogScreen {
                     .frame(maxWidth: .infinity)
 
                 numCell(
-                    text: $session.exercises[exIdx].sets[setIdx].reps,
+                    text: $workout.session.exercises[exIdx].sets[setIdx].reps,
                     placeholder: "-",
                     done: set.done,
                     active: isActive
@@ -88,14 +88,14 @@ extension LogScreen {
                 }
 
                 effortCell(
-                    text: $session.exercises[exIdx].sets[setIdx].rpe,
+                    text: $workout.session.exercises[exIdx].sets[setIdx].rpe,
                     done: set.done,
                     active: isActive
                 )
                 .frame(width: effortWidth)
 
                 checkDot(done: set.done) {
-                    toggleSet(exIdx: exIdx, setIdx: setIdx)
+                    workout.toggleSet(exIdx: exIdx, setIdx: setIdx)
                 }
                 // 44 to match the button's own hit area (see checkDot). The
                 // dot still DRAWS at 22.
@@ -119,27 +119,27 @@ extension LogScreen {
         // user forgot). Only fires when set.done — un-done rows already
         // expose TextFields directly.
         .onTapGesture {
-            if set.done { reopenSet(exIdx: exIdx, setIdx: setIdx) }
+            if set.done { workout.reopenSet(exIdx: exIdx, setIdx: setIdx) }
         }
         // The tap above is invisible to VoiceOver; expose it as a named action.
         .accessibilityActions {
             if set.done {
-                Button("Edit set") { reopenSet(exIdx: exIdx, setIdx: setIdx) }
+                Button("Edit set") { workout.reopenSet(exIdx: exIdx, setIdx: setIdx) }
             }
         }
         .contextMenu {
             if set.done {
                 Button {
-                    reopenSet(exIdx: exIdx, setIdx: setIdx)
+                    workout.reopenSet(exIdx: exIdx, setIdx: setIdx)
                 } label: {
                     Label("Edit set", systemImage: "pencil")
                 }
             }
             Menu {
                 ForEach(Self.rirOptions, id: \.self) { v in
-                    Button(v) { setRIR(exIdx: exIdx, setIdx: setIdx, value: v) }
+                    Button(v) { workout.setRIR(exIdx: exIdx, setIdx: setIdx, value: v) }
                 }
-                Button("Clear") { setRIR(exIdx: exIdx, setIdx: setIdx, value: "") }
+                Button("Clear") { workout.setRIR(exIdx: exIdx, setIdx: setIdx, value: "") }
             } label: {
                 Label(set.rir.isEmpty ? "Set RIR…" : "RIR · \(set.rir)",
                       systemImage: "gauge.with.dots.needle.bottom.50percent")
@@ -175,7 +175,7 @@ extension LogScreen {
     private func weightCell(exIdx: Int, setIdx: Int, done: Bool, isActive: Bool) -> some View {
         if showsWeightInput(exIdx: exIdx) {
             numCell(
-                text: $session.exercises[exIdx].sets[setIdx].weight,
+                text: $workout.session.exercises[exIdx].sets[setIdx].weight,
                 placeholder: "-",
                 done: done,
                 active: isActive

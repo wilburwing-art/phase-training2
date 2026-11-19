@@ -238,7 +238,7 @@ extension LogScreen {
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("log-remove-set-\(exIdx)")
                 }
-                Button(action: { addSet(exIdx: exIdx) }) {
+                Button(action: { workout.addSet(exIdx: exIdx) }) {
                     Text("+ Add Set (\(Self.fmtTime(ex.rest)))")
                         .styled(.body)
                         .foregroundStyle(Color.ink3)

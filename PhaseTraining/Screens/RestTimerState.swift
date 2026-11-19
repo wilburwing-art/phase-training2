@@ -2,8 +2,8 @@
 //
 // Extracted from LogScreen.swift (Tier 3 split). The six formerly separate
 // rest-timer `@State` fields collapse into one value type so starting and
-// clearing a rest is a single coherent mutation. Lives as `@State var rest`
-// on LogScreen — view-local, intentionally non-persistent per spec.
+// clearing a rest is a single coherent mutation. Lives as `rest`
+// on ActiveWorkoutController (LogScreen forwards `rest` to it), intentionally non-persistent per spec.
 //
 // The rest countdown ticks via `TimelineView(.periodic(...))` inside
 // `activeRestCard()`; the TimelineView stays in the same struct as the state
@@ -159,23 +159,10 @@ extension LogScreen {
                 RestTimer(
                     remaining: r,
                     expired: false,
-                    onAdd15: {
-                        rest.duration = (rest.duration ?? 0) + 15
-                        rest.rescheduleExpiryNotification()
-                    },
-                    onSubtract15: {
-                        // Shorten in place. If that leaves nothing on the
-                        // clock, just end the rest rather than flashing DONE.
-                        let newDuration = (rest.duration ?? 0) - 15
-                        if let started = rest.startedAt,
-                           newDuration <= Int(Date().timeIntervalSince(started)) {
-                            rest.clear()
-                        } else {
-                            rest.duration = newDuration
-                            rest.rescheduleExpiryNotification()
-                        }
-                    },
-                    onSkip: { rest.clear() },
+                    onAdd15: { workout.addRest(seconds: 15) },
+                    // Shortening to nothing ends the rest rather than flashing DONE.
+                    onSubtract15: { workout.addRest(seconds: -15) },
+                    onSkip: { workout.skipRest() },
                     onSetDuration: { newDuration in
                         // Reset start time so the new duration runs from now.
                         // Otherwise a shorter pick would have us already expired.

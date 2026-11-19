@@ -2,7 +2,7 @@
 //
 // Extracted from LogScreen.swift (Tier 3 split). Weight-column
 // display rules, progression-suggestion mapping, weight + reps propagation,
-// bulk-mark-done, superset round / following-work predicates, and the static
+// bulk-mark-done, and the static
 // time formatters. No view code.
 
 import SwiftUI
@@ -147,6 +147,14 @@ extension LogScreen {
     /// callers own those. Set 1 is usually pre-filled, so sets 2-N inherit even
     /// when the user only edited set 1.
     func markAllSetsDone(exIdx: Int) {
+        var updated = session
+        Self.markAllSetsDone(in: &updated, exIdx: exIdx)
+        session = updated
+    }
+
+    /// The per-exercise rule, applied to a local copy so a whole-workout log
+    /// assigns `session` (and saves) once.
+    static func markAllSetsDone(in session: inout ActiveSession, exIdx: Int) {
         var sourceWeight: String? = nil
         var sourceReps: String? = nil
         for set in session.exercises[exIdx].sets {
@@ -162,28 +170,6 @@ extension LogScreen {
             }
             session.exercises[exIdx].sets[setIdx].done = true
         }
-    }
-
-    /// True when this exercise belongs to a superset AND at least one
-    /// sibling in the same group still has `set[setIdx]` un-done. Used to
-    /// suppress the rest timer mid-round so it only fires after the last
-    /// group member completes the round.
-    func isMidSupersetRound(exIdx: Int, setIdx: Int) -> Bool {
-        guard session.exercises.indices.contains(exIdx) else { return false }
-        guard let group = session.exercises[exIdx].supersetGroup else { return false }
-        let siblings = session.exercises.enumerated().filter {
-            $0.offset != exIdx && $0.element.supersetGroup == group
-        }
-        guard !siblings.isEmpty else { return false }
-        for (_, sibling) in siblings {
-            // A sibling is "still owed this round" when it has a set at
-            // this index that's not yet done. Siblings with fewer sets
-            // don't gate the rest timer (their round ended earlier).
-            if sibling.sets.indices.contains(setIdx), !sibling.sets[setIdx].done {
-                return true
-            }
-        }
-        return false
     }
 
     // MARK: - Formatters

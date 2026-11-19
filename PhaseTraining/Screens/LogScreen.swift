@@ -5,12 +5,13 @@
 // list with inline number inputs, set checkboxes, inline rest-timer card with
 // pulse animation, "+ Add Set", active-row indicator, auto-save on every change.
 //
-// State model (mirrors prototype):
-//   - `session: ActiveSession` — full session, mutated in place, persisted via store.saveActive
-//     on every change.
-//   - `rest: RestTimerState` — rest timer (view-local, not persisted). Initial
-//     duration is `ex.rest`; +15 extends the countdown; Skip clears. See
-//     RestTimerState.swift.
+// State model:
+//   - `workout: ActiveWorkoutController` owns the live `ActiveSession` and the
+//     `RestTimerState`. Its `session` didSet persists through store.saveActive
+//     on every change; set, rest and superset rules live on the controller.
+//     `session` and `rest` below forward to it so the extension files read them
+//     unchanged. Rest is not persisted. Initial duration is `ex.rest`; +15
+//     extends the countdown; Skip clears. See RestTimerState.swift.
 //
 // Timers:
 //   - Elapsed time and rest countdown both tick via `TimelineView(.periodic(...))`.
@@ -41,10 +42,18 @@ struct LogScreen: View {
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject private var memoryStore: MemoryStore
     @EnvironmentObject private var conv: CoachConversationStore
+    @ObservedObject var workout: ActiveWorkoutController
     let onFinish: () -> Void
     var onCancel: (() -> Void)? = nil
 
-    @State var session: ActiveSession = Self.placeholder
+    var session: ActiveSession {
+        get { workout.session }
+        nonmutating set { workout.session = newValue }
+    }
+    var rest: RestTimerState {
+        get { workout.rest }
+        nonmutating set { workout.rest = newValue }
+    }
     @State private var didLoad = false
     @State private var showCancelConfirm = false
     /// Finish commits irreversibly — CompleteScreen saves on .onAppear
@@ -61,23 +70,11 @@ struct LogScreen: View {
     @State private var showAbandonSheet = false
     /// "Logged for" sheet: a workout done earlier, without the phone.
     @State private var showLoggedForSheet = false
-    /// Reached with no active session — an anomalous state, not a normal entry.
-    /// LogScreen used to paper over it by creating a hardcoded "upper-1"
-    /// session, silently ignoring today's plan, generated workout and any day
-    /// override. TodayTab only routes here when `store.active != nil`, and
-    /// TodayScreen owns session creation precisely so it can build from today's
-    /// routine instead of upper-1 (TodayTab.swift:40) — so the fallback was
-    /// vestigial and could only ever fabricate the wrong workout.
-    @State private var noSession = false
-
     /// Sets the user marked done. Finishing with some still open is normal
     /// (dropped a set, ran out of time) — only confirm when it looks accidental.
     private var incompleteSetCount: Int {
         session.exercises.reduce(0) { $0 + $1.sets.filter { !$0.done }.count }
     }
-
-    /// Rest timer state (view-local, intentionally non-persistent per spec).
-    @State var rest = RestTimerState()
 
     /// What Apple Music is playing, for the card above the tab bar. The
     /// simulator has no Music app, so `--ui-test-fake-now-playing` swaps in
@@ -122,9 +119,7 @@ struct LogScreen: View {
         ZStack {
             Color.bg.ignoresSafeArea()
 
-            if noSession {
-                noSessionState
-            } else if didLoad {
+            if didLoad {
                 content
             }
         }
@@ -133,11 +128,7 @@ struct LogScreen: View {
         // go heavier should not start with a row of backspaces.
         .selectsAllOnFocusInNumberFields()
         .onAppear(perform: loadIfNeeded)
-        .onChange(of: session) { _, newValue in
-            // Auto-save on every mutation (per README.md:286).
-            store.saveActive(newValue)
-        }
-        .onChange(of: rest) { _, _ in
+        .onChange(of: workout.rest) { _, _ in
             // Lock Screen / Dynamic Island rest timer. One report covers start,
             // +15, -15, a new rest and skip; the expiry notification is untouched.
             RestActivityCenter.shared.sync(liveActivitySnapshot())
@@ -146,14 +137,14 @@ struct LogScreen: View {
             // A change that did not come from this screen: the watch marked a
             // set (WatchSyncCoordinator). Our own edits round-trip as the same
             // value and fall through the guard.
-            guard didLoad, let external, external != session else { return }
-            let before = session
-            session = external
+            guard didLoad, let external, external != workout.session else { return }
+            let before = workout.session
+            workout.session = external
             for (exIdx, ex) in external.exercises.enumerated() {
                 let previous = before.exercises.first { $0.id == ex.id }?.sets ?? []
                 for (setIdx, set) in ex.sets.enumerated()
                 where set.done && !(previous.first { $0.num == set.num }?.done ?? false) {
-                    startRestAfterCompleting(exIdx: exIdx, setIdx: setIdx)
+                    workout.startRestAfterCompleting(exIdx: exIdx, setIdx: setIdx)
                 }
             }
         }
@@ -180,7 +171,7 @@ struct LogScreen: View {
                  : "\(incompleteSetCount) sets aren't logged yet. Finishing saves the workout as it stands.")
         }
         .sheet(isPresented: $showLoggedForSheet) {
-            LoggedForSheet(loggedFor: $session.loggedFor)
+            LoggedForSheet(loggedFor: $workout.session.loggedFor)
         }
         .sheet(isPresented: $showAbandonSheet) {
             // PR 9 — typed abandon-reason capture. Confirm saves the
@@ -228,7 +219,7 @@ struct LogScreen: View {
                     exerciseName: ex.name,
                     hold: hold,
                     onMarkSetDone: ex.sets.firstIndex(where: { !$0.done }).map { setIdx in
-                        { toggleSet(exIdx: target.index, setIdx: setIdx) }
+                        { workout.toggleSet(exIdx: target.index, setIdx: setIdx) }
                     })
             }
         }
@@ -271,13 +262,15 @@ struct LogScreen: View {
     private func swapExercise(at idx: Int, with picked: Exercise) {
         guard session.exercises.indices.contains(idx) else { return }
         let originalName = session.exercises[idx].name
-        session.exercises[idx].name = picked.name
+        var updated = session
+        updated.exercises[idx].name = picked.name
         if let modality = picked.modality, !modality.isEmpty {
-            session.exercises[idx].type = picked.modalityLabel
+            updated.exercises[idx].type = picked.modalityLabel
         }
         let category = LoggedExercise.equipmentCategory(forPicked: picked)
-        session.exercises[idx].unit = LoggedExercise.unit(for: category)
-        session.exercises[idx].prevSets = store.previousSets(forExerciseNamed: picked.name)
+        updated.exercises[idx].unit = LoggedExercise.unit(for: category)
+        updated.exercises[idx].prevSets = store.previousSets(forExerciseNamed: picked.name)
+        session = updated
         // Remember the swap so the generator favors the chosen exercise (and,
         // after repeated swaps-away, demotes the original) in future plans.
         memoryStore.recordSwap(out: originalName, in: picked.name)
@@ -585,58 +578,6 @@ struct LogScreen: View {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 
-    func setRIR(exIdx: Int, setIdx: Int, value: String) {
-        guard session.exercises.indices.contains(exIdx),
-              session.exercises[exIdx].sets.indices.contains(setIdx) else { return }
-        session.exercises[exIdx].sets[setIdx].rir = value
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-    }
-
-    func toggleSet(exIdx: Int, setIdx: Int) {
-        let wasDone = session.exercises[exIdx].sets[setIdx].done
-        session.exercises[exIdx].sets[setIdx].done = !wasDone
-
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-
-        if !wasDone {
-            startRestAfterCompleting(exIdx: exIdx, setIdx: setIdx)
-        } else {
-            // Untoggled — clear rest if it was anchored to this set.
-            if rest.exIdx == exIdx, rest.setIdx == setIdx {
-                rest.clear()
-            }
-        }
-    }
-
-    /// The rest that follows a set being marked done, from a tap here or from
-    /// the watch. Start it only when this exercise has more sets to come; the
-    /// final set of an exercise gets no rest, since moving to the next
-    /// exercise (setup, walking to the station) is the rest.
-    ///
-    /// Superset-aware: when this exercise belongs to a superset and there are
-    /// still un-completed siblings at THIS set index in the group, skip the
-    /// rest timer — the user is mid-round-robin and should move to the next
-    /// member's matching set. The rest only fires after the LAST member of
-    /// the group completes set `setIdx`.
-    func startRestAfterCompleting(exIdx: Int, setIdx: Int) {
-        let ex = session.exercises[exIdx]
-        // Any other set still undone, so ticking sets out of order matches
-        // the watch's rule rather than keying on the set's position.
-        let hasMoreSets = ex.sets.indices.contains { $0 != setIdx && !ex.sets[$0].done }
-
-        if isMidSupersetRound(exIdx: exIdx, setIdx: setIdx) {
-            // Clear any pending rest from a prior round so the active band
-            // moves cleanly to the next group member.
-            rest.clear()
-        } else if !Self.uiTestSuppressAutoRest, hasMoreSets {
-            rest.start(exIdx: exIdx, setIdx: setIdx, duration: ex.rest)
-        } else {
-            // Final set of the exercise: drop any rest still counting down
-            // from an earlier set so it doesn't carry into the next exercise.
-            rest.clear()
-        }
-    }
-
     /// Mark every set in this exercise done in one tap. Doesn't start a rest
     /// timer — the bulk-log path means the user already rested at the rack.
     func logAllSets(exIdx: Int) {
@@ -650,22 +591,13 @@ struct LogScreen: View {
     /// just want to record it. Same per-exercise weight/reps propagation; one
     /// haptic; clears any pending rest.
     private func logAllSetsAllExercises() {
-        for exIdx in session.exercises.indices { markAllSetsDone(exIdx: exIdx) }
+        var updated = session
+        for exIdx in updated.exercises.indices {
+            Self.markAllSetsDone(in: &updated, exIdx: exIdx)
+        }
+        session = updated
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         rest.clear()
-    }
-
-    func addSet(exIdx: Int) {
-        let ex = session.exercises[exIdx]
-        let lastSet = ex.sets.last
-        let newSet = LoggedSet(
-            num: ex.sets.count + 1,
-            weight: lastSet?.weight ?? "",
-            reps: lastSet?.reps ?? String(ex.targetReps),
-            rpe: "",
-            done: false
-        )
-        session.exercises[exIdx].sets.append(newSet)
     }
 
     /// Remove a logged set and renumber the remaining rows. If this set
@@ -681,27 +613,15 @@ struct LogScreen: View {
             // stays attached to the same logical set.
             rest.setIdx = r - 1
         }
-        session.exercises[exIdx].sets.remove(at: setIdx)
+        var updated = session
+        updated.exercises[exIdx].sets.remove(at: setIdx)
         // Renumber. LoggedSet.num is 1-indexed and otherwise diverges from
         // its row position after deletes.
-        for i in session.exercises[exIdx].sets.indices {
-            session.exercises[exIdx].sets[i].num = i + 1
+        for i in updated.exercises[exIdx].sets.indices {
+            updated.exercises[exIdx].sets[i].num = i + 1
         }
+        session = updated
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-    }
-
-    /// "Re-open" a set the user marked done so they can edit weight / reps /
-    /// effort. We don't expose this as a hard-delete button on the row
-    /// because un-toggling preserves the previously-entered values, which is
-    /// what the user usually wants (e.g. they hit Done before adding RPE).
-    func reopenSet(exIdx: Int, setIdx: Int) {
-        guard session.exercises.indices.contains(exIdx),
-              session.exercises[exIdx].sets.indices.contains(setIdx) else { return }
-        session.exercises[exIdx].sets[setIdx].done = false
-        // Clear the rest if it was anchored to this row, otherwise we end up
-        // with an active rest pointing at an un-done set.
-        if rest.exIdx == exIdx, rest.setIdx == setIdx { rest.clear() }
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 
     /// Append a freshly picked exercise to the active session. Mirrors the
@@ -737,47 +657,20 @@ struct LogScreen: View {
 
     private func loadIfNeeded() {
         guard !didLoad else { return }
-        guard let existing = store.active else {
-            // Render an empty state rather than inventing a workout that isn't
-            // today's. See `noSession`.
-            noSession = true
-            return
-        }
-        session = existing
         // A freestyle session starts empty: open the picker so the first
         // exercise is one tap away.
-        if existing.exercises.isEmpty { addingExercise = true }
+        if workout.session.exercises.isEmpty { addingExercise = true }
         // UI-test hook: --ui-test-rest-seconds=N clamps every exercise's rest
         // so timer-expiry tests can fire in ~2s instead of 60-90s. Has no
         // effect outside test runs.
         if let s = Self.uiTestRestOverride {
-            for i in session.exercises.indices {
-                session.exercises[i].rest = s
+            var updated = workout.session
+            for i in updated.exercises.indices {
+                updated.exercises[i].rest = s
             }
+            workout.session = updated
         }
         didLoad = true
-    }
-
-    private var noSessionState: some View {
-        VStack(spacing: 14) {
-            Image(systemName: "figure.strengthtraining.traditional")
-                .scaledSystemFont(34)
-                .foregroundStyle(Color.ink3)
-            Text("No workout in progress")
-                .font(.scaled("Inter-Regular", size: 15).weight(.bold))
-                .foregroundStyle(Color.ink)
-            Text("Start today's session from the Today tab.")
-                .font(.scaled("Inter-Regular", size: 13))
-                .foregroundStyle(Color.ink2)
-                .multilineTextAlignment(.center)
-            if onCancel != nil {
-                Button("Back to Today") { onCancel?() }
-                    .font(.scaled("Inter-Regular", size: 13).weight(.bold))
-                    .foregroundStyle(Color.accent)
-                    .padding(.top, 4)
-            }
-        }
-        .padding(32)
     }
 
     private static let uiTestRestOverride: Int? = {
@@ -795,20 +688,42 @@ struct LogScreen: View {
     // clears them, undercounting taps. Suppressing auto-rest makes that flow
     // deterministic. No effect outside test runs; rest-behavior tests don't
     // pass this flag.
-    private static let uiTestSuppressAutoRest =
+    static let uiTestSuppressAutoRest =
         ProcessInfo.processInfo.arguments.contains("--ui-test-suppress-auto-rest")
+}
 
-    // MARK: - Placeholder
+/// Shown when the log route is reached with no active session. An anomalous
+/// state, not a normal entry: TodayTab only routes here when `store.active`
+/// is set, and TodayScreen owns session creation so the workout is built from
+/// today's plan, never a fabricated fallback.
+struct LogNoSessionView: View {
+    var onCancel: (() -> Void)? = nil
 
-    private static let placeholder = ActiveSession(
-        templateId: "",
-        name: "",
-        category: "",
-        startTime: Date(),
-        exercises: [],
-        feel: nil,
-        note: nil
-    )
+    var body: some View {
+        ZStack {
+            Color.bg.ignoresSafeArea()
+            VStack(spacing: 14) {
+                Image(systemName: "figure.strengthtraining.traditional")
+                    .scaledSystemFont(34)
+                    .foregroundStyle(Color.ink3)
+                Text("No workout in progress")
+                    .font(.scaled("Inter-Regular", size: 15).weight(.bold))
+                    .foregroundStyle(Color.ink)
+                Text("Start today's session from the Today tab.")
+                    .font(.scaled("Inter-Regular", size: 13))
+                    .foregroundStyle(Color.ink2)
+                    .multilineTextAlignment(.center)
+                if onCancel != nil {
+                    Button("Back to Today") { onCancel?() }
+                        .font(.scaled("Inter-Regular", size: 13).weight(.bold))
+                        .foregroundStyle(Color.accent)
+                        .padding(.top, 4)
+                }
+            }
+            .padding(32)
+        }
+        .preferredColorScheme(.dark)
+    }
 }
 
 #Preview {
@@ -816,9 +731,15 @@ struct LogScreen: View {
     _ = {
         UserDefaults(suiteName: "preview.log")!.removePersistentDomain(forName: "preview.log")
     }()
-    return LogScreen(onFinish: {})
-        .environmentObject(store)
-        .environmentObject(MemoryStore(defaults: UserDefaults(suiteName: "preview.log")!))
+    return Group {
+        if let active = store.active {
+            LogScreen(workout: ActiveWorkoutController(store: store, session: active), onFinish: {})
+        } else {
+            LogNoSessionView()
+        }
+    }
+    .environmentObject(store)
+    .environmentObject(MemoryStore(defaults: UserDefaults(suiteName: "preview.log")!))
 }
 
 #Preview("Supersets") {
@@ -896,7 +817,7 @@ struct LogScreen: View {
         note: nil
     )
     store.saveActive(mock)
-    return LogScreen(onFinish: {})
+    return LogScreen(workout: ActiveWorkoutController(store: store, session: mock), onFinish: {})
         .environmentObject(store)
         .environmentObject(MemoryStore(defaults: UserDefaults(suiteName: "preview.log")!))
 }
