@@ -48,6 +48,7 @@ struct ProfileScreen: View {
     @State private var presentingInjuriesEditor = false
     @State private var presentingGoalPicker = false
     @State private var presentingRemindersEditor = false
+    @State private var presentingVoiceSettings = false
     @State private var presentingDataEditor = false
     /// Action to run once DataEditorSheet has finished dismissing — see the
     /// `.sheet(onDismiss:)` below.
@@ -174,6 +175,10 @@ struct ProfileScreen: View {
                                     value: remindersSummary,
                                     icon: "bell",
                                     action: { presentingRemindersEditor = true })
+                        SettingsRow(label: "Voice",
+                                    value: voiceSummary,
+                                    icon: "waveform",
+                                    action: { presentingVoiceSettings = true })
                         // No row in a build without a gateway token (every
                         // beta build): the toggle would read "On" for a coach
                         // that cannot send.
@@ -261,6 +266,9 @@ struct ProfileScreen: View {
         }
         .sheet(isPresented: $presentingInjuriesEditor) {
             InjuriesEditorSheet().environmentObject(store)
+        }
+        .sheet(isPresented: $presentingVoiceSettings) {
+            VoiceSettingsSheet()
         }
         .sheet(isPresented: $presentingRemindersEditor) {
             RemindersEditorSheet().environmentObject(store)

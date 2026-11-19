@@ -87,6 +87,9 @@ final class SpeechOutput: NSObject, SpeechOutputting {
     private let language: String
     private let soundsDirectory: URL
     private var renders: [UUID: SpeechFileRender] = [:]
+    /// The voice chosen in Profile > Voice. Nil, or an identifier no longer
+    /// installed, falls back to the best voice for `language`.
+    var voiceIdentifier: String?
 
     init(
         language: String = AVSpeechSynthesisVoice.currentLanguageCode(),
@@ -141,6 +144,11 @@ final class SpeechOutput: NSObject, SpeechOutputting {
     }
 
     private func makeUtterance(_ text: String) -> AVSpeechUtterance? {
+        if let id = voiceIdentifier, let chosen = AVSpeechSynthesisVoice(identifier: id) {
+            let utterance = AVSpeechUtterance(string: text)
+            utterance.voice = chosen
+            return utterance
+        }
         let installed = AVSpeechSynthesisVoice.speechVoices()
         guard let choice = SpeechVoicePicker.best(from: installed.map(SpeechVoiceCandidate.init), language: language),
               let voice = AVSpeechSynthesisVoice(identifier: choice.identifier) else { return nil }

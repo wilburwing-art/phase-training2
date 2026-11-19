@@ -399,6 +399,32 @@ final class BackupManagerTests: XCTestCase {
         XCTAssertTrue(decoded.reminderEnabled)
     }
 
+    // MARK: - Voice settings (voice 2.1)
+
+    func test_voiceSettings_roundTripIntoAnotherPhone() throws {
+        let src = freshDefaults("voice-src")
+        VoiceSettings(cuesOn: true, level: .full, voiceId: "com.apple.voice.premium.en-US.Zoe").save(to: src)
+        let envelope = BackupManager.snapshot(defaults: src, userDB: UserDatabase(path: ":memory:"))
+        let decoded = try BackupManager.decode(try BackupManager.encode(envelope))
+        let dst = freshDefaults("voice-dst")
+        try BackupManager.restore(decoded, into: dst, userDB: UserDatabase(path: ":memory:"))
+        XCTAssertEqual(VoiceSettings.load(from: dst),
+                       VoiceSettings(cuesOn: true, level: .full, voiceId: "com.apple.voice.premium.en-US.Zoe"))
+    }
+
+    /// A backup from before voice settings, or from a phone that never set
+    /// them, restores the target to the defaults: no key survives.
+    func test_voiceSettings_absentInBackup_clearsTheTargetKeys() throws {
+        let src = freshDefaults("voice-unset-src")
+        let envelope = BackupManager.snapshot(defaults: src, userDB: UserDatabase(path: ":memory:"))
+        XCTAssertNil(envelope.voiceSettings)
+        let dst = freshDefaults("voice-unset-dst")
+        VoiceSettings(cuesOn: true, level: .full, voiceId: "x").save(to: dst)
+        try BackupManager.restore(envelope, into: dst, userDB: UserDatabase(path: ":memory:"))
+        XCTAssertTrue(VoiceSettings.isUnset(in: dst))
+        XCTAssertEqual(VoiceSettings.load(from: dst), VoiceSettings())
+    }
+
     // MARK: - v3 envelope (custom exercises)
 
     func test_v3RoundTrip_keepsCustomExercisesWithTheirIds() throws {

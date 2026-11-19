@@ -87,6 +87,10 @@ struct BackupEnvelope: Codable {
     /// summaries from Apple Health. The capture switch itself is not carried:
     /// the Health grant is per device, so a new phone asks again on tap.
     var physiologyNights: [PhysiologyNight] = []
+    /// Voice 2.1 — the Profile > Voice preferences. Nil when the user never
+    /// set them and in every backup written before them; a nil restore clears
+    /// the keys so the restored phone starts at the defaults.
+    var voiceSettings: VoiceSettings? = nil
 
     // MARK: - v3 additions
 
@@ -137,6 +141,7 @@ struct BackupEnvelope: Codable {
         importedWorkouts = try c.decodeIfPresent([ImportedWorkout].self, forKey: .importedWorkouts) ?? []
         importedSets = try c.decodeIfPresent([ImportedSet].self, forKey: .importedSets) ?? []
         physiologyNights = try c.decodeIfPresent([PhysiologyNight].self, forKey: .physiologyNights) ?? []
+        voiceSettings = try c.decodeIfPresent(VoiceSettings.self, forKey: .voiceSettings)
         // v3 — absent in every v1 and v2 backup.
         userExercises = try c.decodeIfPresent([UserExercise].self, forKey: .userExercises)
     }
@@ -166,6 +171,7 @@ struct BackupEnvelope: Codable {
          importedWorkouts: [ImportedWorkout] = [],
          importedSets: [ImportedSet] = [],
          physiologyNights: [PhysiologyNight] = [],
+         voiceSettings: VoiceSettings? = nil,
          userExercises: [UserExercise]? = nil) {
         self.schemaVersion = schemaVersion
         self.memorySchemaVersion = memorySchemaVersion
@@ -191,6 +197,7 @@ struct BackupEnvelope: Codable {
         self.importedWorkouts = importedWorkouts
         self.importedSets = importedSets
         self.physiologyNights = physiologyNights
+        self.voiceSettings = voiceSettings
         self.userExercises = userExercises
     }
 }
@@ -265,6 +272,7 @@ enum BackupManager {
         let lastDeload = defaults.object(forKey: PlanStore.lastDeloadWeekKey) as? Double
         let recentPicks: [String: Date] = decodeIfPresent(defaults: defaults, key: "pt_recent_exercise_picks") ?? [:]
         let physiologyNights: [PhysiologyNight] = decodeIfPresent(defaults: defaults, key: PhysiologyStore.nightsKey) ?? []
+        let voiceSettings = VoiceSettings.isUnset(in: defaults) ? nil : VoiceSettings.load(from: defaults)
         return BackupEnvelope(
             memorySchemaVersion: memory?.schemaVersion,
             exportedAt: exportedAt,
@@ -289,6 +297,7 @@ enum BackupManager {
             importedWorkouts: userDB.allImportedWorkouts(),
             importedSets: userDB.allImportedSets(),
             physiologyNights: physiologyNights,
+            voiceSettings: voiceSettings,
             userExercises: userExercises
         )
     }
@@ -404,6 +413,7 @@ enum BackupManager {
                            PlanStore.pendingPlanKey, PlanStore.pendingOverridesKey,
                            PlanStore.lastDeloadWeekKey,
                            "pt_recent_exercise_picks", PhysiologyStore.nightsKey]
+            + VoiceSettings.keys
         var priorValues: [String: Any] = [:]
         for key in touchedKeys { priorValues[key] = defaults.object(forKey: key) }
         do {
@@ -428,6 +438,11 @@ enum BackupManager {
             }
             try encodeAndWrite(envelope.recentPicks, defaults: defaults, key: "pt_recent_exercise_picks")
             try encodeAndWrite(envelope.physiologyNights, defaults: defaults, key: PhysiologyStore.nightsKey)
+            if let voice = envelope.voiceSettings {
+                voice.save(to: defaults)
+            } else {
+                for key in VoiceSettings.keys { defaults.removeObject(forKey: key) }
+            }
             // Wipe legacy UserDefaults keys so a stale post-migration import
             // path can never resurrect them. Idempotent.
             defaults.removeObject(forKey: "pt_sessions")

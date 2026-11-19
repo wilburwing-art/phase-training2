@@ -60,6 +60,16 @@ final class StoreResetTests: XCTestCase {
         XCTAssertEqual(d.string(forKey: "com.apple.not-ours"), "keep", "keys the app does not own stay")
     }
 
+    /// Voice 2.1: the three voice keys ride the `pt_` sweep.
+    func test_wipeAllUserData_clearsVoiceSettings() {
+        let d = fresh()
+        VoiceSettings(cuesOn: true, level: .full, voiceId: "com.apple.voice.compact.en-US.Samantha").save(to: d)
+        XCTAssertFalse(VoiceSettings.isUnset(in: d))
+        MemoryStore.wipeAllUserData(defaults: d, userDB: UserDatabase(path: ":memory:"))
+        for key in VoiceSettings.keys { XCTAssertNil(d.object(forKey: key), key) }
+        XCTAssertEqual(VoiceSettings.load(from: d), VoiceSettings())
+    }
+
     func test_activityDetection_resetClearsStateAndRestoresTheDefaultToggle() {
         let d = fresh()
         d.set(["u1": 1.0], forKey: "pt_detected_activity_seen")

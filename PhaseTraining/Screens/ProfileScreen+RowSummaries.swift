@@ -162,4 +162,9 @@ extension ProfileScreen {
     var remindersSummary: String {
         WeeklyReminderScheduler.isEnabled ? "On" : "Off"
     }
+
+    /// Read when the row renders; the sheet writes the keys as they change.
+    var voiceSummary: String {
+        VoiceSettings.load().cuesOn ? "Cues on" : "Cues off"
+    }
 }
