@@ -1,0 +1,106 @@
+# Voice accuracy gate script (voice backlog 1.7, read by item 2.7).
+# One utterance per line: transcript<TAB>intended command. Lines starting
+# with # are comments. Every line parses in a lift context (not bodyweight).
+# Commands: logSet <weight|-> <reps> [rpe=<n>] [lb|kg], addRest <seconds>,
+# sameAgain, completeSet, skipRest, whatsNext, setsLeft, undo.
+# VoiceGateScriptTests asserts 100 lines and that each parses as written.
+one eighty five for five	logSet 185 5
+two twenty-five for five	logSet 225 5
+a hundred and five for eight	logSet 105 8
+one thirty five for ten	logSet 135 10
+ninety five for twelve	logSet 95 12
+two oh five for six	logSet 205 6
+three fifteen for three	logSet 315 3
+forty five pounds for ten	logSet 45 10 lb
+sixty kilos for eight	logSet 60 8 kg
+one hundred for ten	logSet 100 10
+two hundred and twenty five for three	logSet 225 3
+one eighty five for five at rpe eight	logSet 185 5 rpe=8
+two twenty five for five r p e eight and a half	logSet 225 5 rpe=8.5
+one fifty by eight	logSet 150 8
+sixty two and a half kilos for five	logSet 62.5 5 kg
+one thirty five times twelve	logSet 135 12
+two forty five for two	logSet 245 2
+eighty for fifteen	logSet 80 15
+one fifteen for ten	logSet 115 10
+three hundred for one	logSet 300 1
+four oh five for one	logSet 405 1
+one seventy for six reps	logSet 170 6
+fifty five pounds for twelve reps	logSet 55 12 lb
+one twenty x ten	logSet 120 10
+two ten for eight at rpe nine	logSet 210 8 rpe=9
+one hundred kilos for five	logSet 100 5 kg
+seventy point five kilos for six	logSet 70.5 6 kg
+one oh five for ten	logSet 105 10
+two seventy five for three	logSet 275 3
+one sixty five for eight rpe seven	logSet 165 8 rpe=7
+thirty five for fifteen	logSet 35 15
+twenty two and a half kilos for ten	logSet 22.5 10 kg
+one ninety for four	logSet 190 4
+two twenty for five at rpe eight and a half	logSet 220 5 rpe=8.5
+um one forty five for eight	logSet 145 8
+same weight for eight	logSet - 8
+weight for six	logSet - 6
+ten reps	logSet - 10
+twelve reps	logSet - 12
+eight reps at rpe eight	logSet - 8 rpe=8
+185 for 5	logSet 185 5
+225 x 3	logSet 225 3
+60 kg for 8	logSet 60 8 kg
+135 for 10 reps	logSet 135 10
+315 for 2 at RPE 9	logSet 315 2 rpe=9
+same again	sameAgain
+same as last time	sameAgain
+one more	sameAgain
+repeat that	sameAgain
+same	sameAgain
+again	sameAgain
+same as before	sameAgain
+uh same again	sameAgain
+done	completeSet
+set done	completeSet
+got it	completeSet
+complete	completeSet
+set complete	completeSet
+check	completeSet
+okay done	completeSet
+Done.	completeSet
+skip rest	skipRest
+skip	skipRest
+skip the rest	skipRest
+skip the timer	skipRest
+I'm ready	skipRest
+ready	skipRest
+okay skip rest please	skipRest
+skip timer	skipRest
+add thirty seconds	addRest 30
+add a minute	addRest 60
+add half a minute	addRest 30
+give me thirty more	addRest 30
+give me fifteen more seconds	addRest 15
+thirty more seconds	addRest 30
+add 15 seconds	addRest 15
+add two minutes	addRest 120
+plus forty five seconds	addRest 45
+what's next	whatsNext
+whats next	whatsNext
+what is next	whatsNext
+next	whatsNext
+what's up next	whatsNext
+what now	whatsNext
+next set	whatsNext
+next exercise	whatsNext
+how many left	setsLeft
+how many sets left	setsLeft
+sets left	setsLeft
+how many more	setsLeft
+how many to go	setsLeft
+how many sets to go	setsLeft
+how many remaining	setsLeft
+undo	undo
+undo that	undo
+scratch that	undo
+take that back	undo
+go back	undo
+oops	undo
+uh undo that	undo
