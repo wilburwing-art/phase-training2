@@ -1523,6 +1523,24 @@ final class CoachDatabase {
         return ids
     } }
 
+    /// `exercises.difficulty` for each id ("beginner" | "intermediate" |
+    /// "advanced" | "elite"). Ids with no row are absent.
+    func exerciseDifficulty(forIds ids: Set<Int>) -> [Int: String] { withLock {
+        guard let db, !ids.isEmpty else { return [:] }
+        let ordered = Array(ids)
+        let placeholders = ordered.map { _ in "?" }.joined(separator: ",")
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, "SELECT id, difficulty FROM exercises WHERE id IN (\(placeholders))",
+                                 -1, &stmt, nil) == SQLITE_OK else { return [:] }
+        defer { sqlite3_finalize(stmt) }
+        for (i, id) in ordered.enumerated() { sqlite3_bind_int64(stmt, Int32(1 + i), Int64(id)) }
+        var out: [Int: String] = [:]
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            if let d = text(stmt, 1) { out[Int(sqlite3_column_int64(stmt, 0))] = d }
+        }
+        return out
+    } }
+
     /// `routines.difficulty` for each id ("beginner" | "intermediate" |
     /// "advanced" | "elite"), so the selector can keep an advanced block away
     /// from a beginner. Ids with no row are absent.

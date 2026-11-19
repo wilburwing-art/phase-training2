@@ -284,17 +284,18 @@ final class GeneratorWeekInvariantTests: XCTestCase {
     /// plannable sport (11c 2.1, 22 slots on 58dcb08, Glute Bridge and
     /// Lunge (Bodyweight)); it is asserted exactly, so fixing one sport
     /// without removing it fails, and so does a new sport.
-    static let knownRegressionSports: Set<String> = [
-        "paddle-sports", "sup",
-        // 11e 1.1 widening, filed as 11e 1.5.
-        "bjj", "martial-arts", "muay-thai", "pilates", "rowing", "surfing", "swimming", "yoga",
-    ]
+    /// Empty since 11e 1.5: ten sports (86 of 16,723 slots) served Glute
+    /// Bridge or Lunge (Bodyweight) on complement legs days until beginner
+    /// bodyweight movements ranked as regressions in strength slots.
+    static let knownRegressionSports: Set<String> = []
 
     /// Backlog 11e 1.1 widened the grid to the family sports with routines.
-    /// These two sets pin what that widening found, exactly, the same way
-    /// `knownRegressionSports` does; each is filed in the 11e backlog.
-    static let knownDeloadBandSports: Set<String> = ["basketball", "martial-arts", "rowing", "surfing"]
-    static let knownAnchorDriftSports: Set<String> = ["boxing", "muay-thai", "pilates"]
+    /// These two sets pinned what that widening found, exactly, the same way
+    /// `knownRegressionSports` does. Both emptied by 11e 1.5: the deload week
+    /// reuses the week before's accessory seed, and backfilled anchor rows
+    /// tie-break on the block seed.
+    static let knownDeloadBandSports: Set<String> = []
+    static let knownAnchorDriftSports: Set<String> = []
 
     func test_gymStrengthSlotsAreLoadable() {
         let regressions: Set<String> = ["Push-Up", "Push Up (Knees)", "Chest Press (Band)",

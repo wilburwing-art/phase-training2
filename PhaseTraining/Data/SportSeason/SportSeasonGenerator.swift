@@ -100,7 +100,12 @@ enum SportSeasonGenerator {
                                                 flagged: athlete.flaggedDemands,
                                                 available: Set(pool.flatMap(\.demands)))
         let slotTag = "-s\(sessionIndex)" + (complement.map { "-\($0.focus.rawValue)\($0.repeatNumber)" } ?? "")
-        let seed = "\(athlete.sportSlug)-\(athlete.season.rawValue)-w\(athlete.weekNumber)" + slotTag
+        // A deload week is the week before's session at 70% of its sets
+        // (`deloadSetsFactor`), so its accessories keep that week's seed. On
+        // its own seed the deload week picked other accessories, the fit
+        // sized them differently, and the cut read 0.58 to 0.89 (11e 1.5).
+        let seedWeek = cycle.state == .deload ? max(1, athlete.weekNumber - 1) : athlete.weekNumber
+        let seed = "\(athlete.sportSlug)-\(athlete.season.rawValue)-w\(seedWeek)" + slotTag
         // Anchor lifts are seeded by the mesocycle block, not the week, so the
         // same squat or press comes back in weeks 1 to 3 and the athlete can
         // add load to it (finding 9). Accessories keep the weekly seed.
@@ -158,9 +163,12 @@ enum SportSeasonGenerator {
             && (athlete.availableEquipmentSlugs.isEmpty
                 || !athlete.availableEquipmentSlugs.isDisjoint(with: Self.loadingEquipment))
         let loadRank: [Int: Int] = loadAware ? {
-            let reqs = CoachDatabase.shared.requiredEquipmentSlugs(forExerciseIds: Set(pool.map(\.exerciseId)))
+            let ids = Set(pool.map(\.exerciseId))
+            let reqs = CoachDatabase.shared.requiredEquipmentSlugs(forExerciseIds: ids)
+            let level = CoachDatabase.shared.exerciseDifficulty(forIds: ids)
             return Dictionary(uniqueKeysWithValues: pool.map { m in
-                (m.exerciseId, Self.loadRank(m, required: reqs[m.exerciseId] ?? []))
+                (m.exerciseId, Self.loadRank(m, required: reqs[m.exerciseId] ?? [],
+                                             beginner: level[m.exerciseId] == "beginner"))
             })
         }() : [:]
         func squatCapped(_ m: SportMovement, _ demand: Demand, _ chosen: [Pick]) -> Bool {
@@ -296,8 +304,19 @@ enum SportSeasonGenerator {
             var out: [Pick] = []
             var seen = Set(chosen.map(\.movement.exerciseId))
             for demand in byWeight {
+                // A strength demand backfills loadable work first and never
+                // with a regression: the fit's extra row is the cheapest one
+                // that fits the fatigue cap, which made it a Glute Bridge
+                // whenever a regression was in reach (11e 1.5). Other demands
+                // in `byWeight` fill the slot instead.
+                let strength = loadAware && Self.strengthDemands.contains(demand)
+                // Anchor demands tie-break on the block seed, the same as the
+                // slot fill: on the weekly seed a backfilled leg row changed
+                // between weeks 1 and 3 of a block (11e 1.5).
+                let tie = anchorDemands.contains(demand) ? anchorSeed : seed
                 for m in pool.filter({ $0.serves(demand) && !seen.contains($0.exerciseId)
-                                        && !squatCapped($0, demand, chosen + out) })
+                                        && !squatCapped($0, demand, chosen + out)
+                                        && !(strength && (loadRank[$0.exerciseId] ?? 1) >= 2) })
                     .sorted(by: {
                         // Backfill only sinks rejected movements; it does not
                         // chase favorites, which would bypass rotation.
@@ -305,7 +324,11 @@ enum SportSeasonGenerator {
                         if l != r { return !l }
                         let ls = soreIds.contains($0.exerciseId), rs = soreIds.contains($1.exerciseId)
                         if ls != rs { return !ls }
-                        return djb2("\(seed)-backfill-\($0.exerciseId)") < djb2("\(seed)-backfill-\($1.exerciseId)")
+                        if strength {
+                            let ll = loadRank[$0.exerciseId] ?? 1, rl = loadRank[$1.exerciseId] ?? 1
+                            if ll != rl { return ll < rl }
+                        }
+                        return djb2("\(tie)-backfill-\($0.exerciseId)") < djb2("\(tie)-backfill-\($1.exerciseId)")
                     }) {
                     out.append(Pick(movement: m, demand: demand))
                     seen.insert(m.exerciseId)
@@ -796,12 +819,18 @@ enum SportSeasonGenerator {
         "gymnastic-rings", "weight-vest",
     ]
 
-    /// 0 loadable, 1 bodyweight, 2 a regression: a "(Knees)" variant or any
-    /// movement that needs a band.
-    static func loadRank(_ m: SportMovement, required: Set<String>) -> Int {
+    /// 0 loadable, 1 bodyweight, 2 a regression: a "(Knees)" variant, any
+    /// movement that needs a band, or a beginner-level bodyweight movement
+    /// (Push-Up, Glute Bridge, Lunge and Squat (Bodyweight)). The last group
+    /// ranked level with Bulgarian split squats and single-leg RDLs, so a
+    /// complement legs day with five or six legStrength slots handed one to
+    /// a Glute Bridge at RPE 7-8 (11e 1.5).
+    static func loadRank(_ m: SportMovement, required: Set<String>, beginner: Bool = false) -> Int {
         if m.name.localizedCaseInsensitiveContains("(knees)")
             || required.contains(where: { $0.hasPrefix("band-") || $0 == "mini-band" }) { return 2 }
-        return required.isDisjoint(with: loadingEquipment) ? 1 : 0
+        let unloaded = required.isDisjoint(with: loadingEquipment)
+        if unloaded && beginner { return 2 }
+        return unloaded ? 1 : 0
     }
 
     /// Demands whose heavy picks may hold at most one bilateral squat.
