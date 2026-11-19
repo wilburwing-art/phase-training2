@@ -103,6 +103,12 @@ Post only when state changes: a brief handed out, a report received, a
 decision needed from me, the commit. Three lines maximum. Never post
 "still running" or "no change." Never reply to a report just to
 acknowledge it.
+The very last line of the session is `NEXT_STATUS: <status>`, one of:
+done (an item committed and pushed), waiting_ci (picked nothing because
+main CI is still running), uncommitted (built but held back for a CI
+verdict), red (main CI is red and this session did not get it green),
+blocked (every open item needs me), empty (nothing open).
+`~/.claude/scripts/next-loop.py` reads it to decide whether to run again.
 
 QUESTIONS FOR ME
 Phrase each as one line with two named choices, your recommendation
