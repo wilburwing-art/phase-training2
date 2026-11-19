@@ -24,6 +24,7 @@ iOS training app (SwiftUI) with a watchOS companion. Targets: `PhaseTraining`, `
 ## Workflow
 
 - Solo repo. Commit and push straight to `main`.
+- How `/roadmap`, `/spec`, `/gaps`, `/next` and `/retro` hand work to each other: `docs/WORKFLOW.md`.
 - Project skills under `.claude/skills/` hold the detail for the generator, planner, season engine, coach and watch. Load the matching one before changing those areas.
 
 ### Gap lenses
