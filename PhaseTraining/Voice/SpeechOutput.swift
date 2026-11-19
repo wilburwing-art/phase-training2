@@ -82,20 +82,23 @@ enum SpeechVoicePicker {
 @MainActor
 final class SpeechOutput: NSObject, SpeechOutputting {
     private let synthesizer = AVSpeechSynthesizer()
-    private let session: AVAudioSession
+    private let audioSession: SpeechOutputAudioSession
+    private let owner: VoiceAudioSessionOwner
     private let language: String
     private let soundsDirectory: URL
     private var renders: [UUID: SpeechFileRender] = [:]
 
     init(
         language: String = AVSpeechSynthesisVoice.currentLanguageCode(),
-        session: AVAudioSession = .sharedInstance(),
+        audioSession: SpeechOutputAudioSession? = nil,
+        owner: VoiceAudioSessionOwner = .shared,
         soundsDirectory: URL = FileManager.default
             .urls(for: .libraryDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Sounds", isDirectory: true)
     ) {
         self.language = language
-        self.session = session
+        self.audioSession = audioSession ?? SystemSpeechOutputAudioSession()
+        self.owner = owner
         self.soundsDirectory = soundsDirectory
         super.init()
         synthesizer.delegate = self
@@ -103,12 +106,7 @@ final class SpeechOutput: NSObject, SpeechOutputting {
 
     func speak(_ text: String) {
         guard !text.isEmpty, let utterance = makeUtterance(text) else { return }
-        do {
-            try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers, .mixWithOthers])
-            try session.setActive(true)
-        } catch {
-            print("[SpeechOutput] audio session activate failed: \(error)")
-        }
+        activateUnlessMicLive()
         synthesizer.speak(utterance)
     }
 
@@ -150,10 +148,22 @@ final class SpeechOutput: NSObject, SpeechOutputting {
         return utterance
     }
 
-    private func deactivateIfIdle() {
-        guard !synthesizer.isSpeaking else { return }
+    /// While the mic is live the session is already active as `.playAndRecord`;
+    /// switching it to `.playback` would stop the recording.
+    func activateUnlessMicLive() {
+        guard !owner.micLive else { return }
         do {
-            try session.setActive(false, options: .notifyOthersOnDeactivation)
+            try audioSession.activateForPlayback()
+        } catch {
+            print("[SpeechOutput] audio session activate failed: \(error)")
+        }
+    }
+
+    /// The mic's transcriber deactivates the session when its utterance ends.
+    func deactivateIfIdle() {
+        guard !synthesizer.isSpeaking, !owner.micLive else { return }
+        do {
+            try audioSession.deactivate()
         } catch {
             print("[SpeechOutput] audio session deactivate failed: \(error)")
         }

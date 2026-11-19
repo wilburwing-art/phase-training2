@@ -59,7 +59,14 @@ final class SpeechInput: ObservableObject {
         case unavailable(SpeechInputUnavailable)
     }
 
-    @Published private(set) var state: State = .idle
+    @Published private(set) var state: State = .idle {
+        didSet {
+            switch state {
+            case .listening, .finishing: audioOwner.micLive = true
+            case .idle, .unavailable: audioOwner.micLive = false
+            }
+        }
+    }
 
     var micEnabled: Bool {
         if case .unavailable = state { return false }
@@ -68,15 +75,25 @@ final class SpeechInput: ObservableObject {
 
     private let transcriber: SpeechTranscribing
     private let permissions: SpeechPermissionProviding
+    private let output: SpeechOutputting?
+    private let audioOwner: VoiceAudioSessionOwner
     private var lastPartial: String?
     /// True from `pressDown` until `release` or `cancel`. A release that lands
     /// while a permission prompt is up clears it, so the mic does not open
     /// after the prompt closes.
     private var pressHeld = false
 
-    init(transcriber: SpeechTranscribing, permissions: SpeechPermissionProviding) {
+    /// `output` is stopped before the mic opens, so a cue never plays into the recording.
+    init(
+        transcriber: SpeechTranscribing,
+        permissions: SpeechPermissionProviding,
+        output: SpeechOutputting? = nil,
+        audioOwner: VoiceAudioSessionOwner = .shared
+    ) {
         self.transcriber = transcriber
         self.permissions = permissions
+        self.output = output
+        self.audioOwner = audioOwner
         refreshAvailability()
     }
 
@@ -130,6 +147,7 @@ final class SpeechInput: ObservableObject {
         }
 
         lastPartial = nil
+        output?.stop()
         do {
             try transcriber.start(contextualStrings: Self.contextualStrings(exerciseNames: exerciseNames)) { [weak self] text in
                 guard let self, case .listening = self.state else { return }
@@ -224,14 +242,14 @@ final class SpeechInput: ObservableObject {
     /// iOS 26 with the current locale's assets installed uses `SpeechAnalyzer`;
     /// anything else uses `SFSpeechRecognizer`. Never downloads assets here, so
     /// a set is not held up by a model download.
-    static func makeDefault() async -> SpeechInput {
+    static func makeDefault(output: SpeechOutputting? = nil) async -> SpeechInput {
         let transcriber: SpeechTranscribing
         if #available(iOS 26, *), let locale = await AnalyzerTranscriber.installedLocale() {
             transcriber = AnalyzerTranscriber(locale: locale)
         } else {
             transcriber = LegacyTranscriber()
         }
-        return SpeechInput(transcriber: transcriber, permissions: SpeechPermissions())
+        return SpeechInput(transcriber: transcriber, permissions: SpeechPermissions(), output: output)
     }
 }
 

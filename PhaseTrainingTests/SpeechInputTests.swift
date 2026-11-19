@@ -417,6 +417,45 @@ final class SpeechInputTests: XCTestCase {
     func testContextualStringsNoNamesIsCommandsOnly() {
         XCTAssertEqual(SpeechInput.contextualStrings(exerciseNames: []), SpeechInput.commandWords)
     }
+
+    // MARK: - Shared audio session with speech output
+
+    func testPressDownStopsSpeechBeforeListening() async {
+        let output = FakeSpeechOutput()
+        let owner = VoiceAudioSessionOwner()
+        let input = SpeechInput(transcriber: transcriber, permissions: permissions, output: output, audioOwner: owner)
+
+        await input.pressDown(exerciseNames: [])
+
+        XCTAssertEqual(output.stopCount, 1)
+        XCTAssertEqual(input.state, .listening(partial: ""))
+        XCTAssertTrue(owner.micLive)
+    }
+
+    func testMicLiveClearsOnReleaseAndCancel() async {
+        let owner = VoiceAudioSessionOwner()
+        let input = SpeechInput(transcriber: transcriber, permissions: permissions, audioOwner: owner)
+
+        await input.pressDown(exerciseNames: [])
+        XCTAssertTrue(owner.micLive)
+        _ = await input.release()
+        XCTAssertFalse(owner.micLive)
+
+        await input.pressDown(exerciseNames: [])
+        XCTAssertTrue(owner.micLive)
+        input.cancel()
+        XCTAssertFalse(owner.micLive)
+    }
+
+    func testStartErrorLeavesMicNotLive() async {
+        let owner = VoiceAudioSessionOwner()
+        transcriber.startError = ScriptedError()
+        let input = SpeechInput(transcriber: transcriber, permissions: permissions, audioOwner: owner)
+
+        await input.pressDown(exerciseNames: [])
+
+        XCTAssertFalse(owner.micLive)
+    }
 }
 
 /// Holds `finish` open until the test releases it, to observe `.finishing`.

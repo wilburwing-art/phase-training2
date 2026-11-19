@@ -92,4 +92,73 @@ final class SpeechOutputTests: XCTestCase {
         XCTAssertEqual(fake.rendered, ["Rest over"])
         XCTAssertEqual(rendered, url)
     }
+    // MARK: - Shared audio session with the mic
+
+    func testSpeakWhileMicLiveLeavesSessionAlone() {
+        let session = CountingAudioSession()
+        let owner = VoiceAudioSessionOwner()
+        let output = SpeechOutput(language: "en-US", audioSession: session, owner: owner)
+        owner.micLive = true
+
+        output.activateUnlessMicLive()
+        output.deactivateIfIdle()
+
+        XCTAssertEqual(session.activateCount, 0)
+        XCTAssertEqual(session.deactivateCount, 0)
+    }
+
+    func testSpeakWithMicIdleActivatesAndDeactivates() {
+        let session = CountingAudioSession()
+        let owner = VoiceAudioSessionOwner()
+        let output = SpeechOutput(language: "en-US", audioSession: session, owner: owner)
+
+        output.activateUnlessMicLive()
+        output.deactivateIfIdle()
+
+        XCTAssertEqual(session.activateCount, 1)
+        XCTAssertEqual(session.deactivateCount, 1)
+    }
+
+    func testSpeakDuringListeningKeepsMicSession() async {
+        let session = CountingAudioSession()
+        let owner = VoiceAudioSessionOwner()
+        let output = SpeechOutput(language: "en-US", audioSession: session, owner: owner)
+        let input = SpeechInput(transcriber: SilentTranscriber(), permissions: GrantedPermissions(), audioOwner: owner)
+
+        await input.pressDown(exerciseNames: [])
+        XCTAssertTrue(owner.micLive)
+        output.speak("Rest's up")
+        output.stop()
+        output.deactivateIfIdle()
+
+        XCTAssertEqual(session.activateCount, 0)
+        XCTAssertEqual(session.deactivateCount, 0)
+
+        _ = await input.release()
+        XCTAssertFalse(owner.micLive)
+    }
+}
+
+@MainActor
+private final class CountingAudioSession: SpeechOutputAudioSession {
+    private(set) var activateCount = 0
+    private(set) var deactivateCount = 0
+    func activateForPlayback() throws { activateCount += 1 }
+    func deactivate() throws { deactivateCount += 1 }
+}
+
+@MainActor
+private final class SilentTranscriber: SpeechTranscribing {
+    var supportsOnDevice = true
+    func start(contextualStrings: [String], onPartial: @escaping (String) -> Void) throws {}
+    func finish() async throws -> String? { nil }
+    func cancel() {}
+}
+
+@MainActor
+private final class GrantedPermissions: SpeechPermissionProviding {
+    var microphone: SpeechAuthorization = .granted
+    var speech: SpeechAuthorization = .granted
+    func requestMicrophone() async -> SpeechAuthorization { .granted }
+    func requestSpeech() async -> SpeechAuthorization { .granted }
 }
