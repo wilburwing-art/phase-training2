@@ -89,6 +89,23 @@ final class VoiceCuePlayer {
         return speak(fullOnly: false) { SpokenCue.restEnd(next: next, in: session) }
     }
 
+    /// The rest-end line for the lock-screen notification, behind the same
+    /// gate as the spoken cue. nil when cues are off or VoiceOver is running.
+    func lockedRestEndLine(session: ActiveSession, next: NextUp?) -> String? {
+        guard let next,
+              Self.speaksRestEnd(settings: VoiceSettings.load(from: defaults),
+                                 voiceOverRunning: voiceOverRunning()) else { return nil }
+        return SpokenCue.restEnd(next: next, in: session)
+    }
+
+    /// Render `line` to a notification sound file in the chosen voice.
+    func render(_ line: String) async throws -> URL {
+        let out = output ?? makeOutput()
+        output = out
+        (out as? SpeechOutput)?.voiceIdentifier = VoiceSettings.load(from: defaults).voiceId
+        return try await out.renderToFile(line)
+    }
+
     @discardableResult
     func restWarning(session: ActiveSession, next: NextUp?) -> Bool {
         guard let next else { return false }

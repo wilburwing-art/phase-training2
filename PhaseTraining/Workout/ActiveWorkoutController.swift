@@ -116,7 +116,8 @@ final class ActiveWorkoutController: ObservableObject {
             // moves cleanly to the next group member.
             rest.clear()
         } else if !suppressAutoRest, hasMoreSets {
-            rest.start(exIdx: exIdx, setIdx: setIdx, duration: ex.rest, now: now())
+            rest.start(exIdx: exIdx, setIdx: setIdx, duration: ex.rest, now: now(),
+                       cue: lockedRestEndLine())
         } else {
             // Final set of the exercise: drop any rest still counting down
             // from an earlier set so it doesn't carry into the next exercise.
@@ -181,7 +182,7 @@ final class ActiveWorkoutController: ObservableObject {
             rest.clear()
         } else {
             rest.duration = newDuration
-            rest.rescheduleExpiryNotification(now: at)
+            rest.rescheduleExpiryNotification(now: at, cue: lockedRestEndLine())
         }
     }
 
@@ -193,7 +194,13 @@ final class ActiveWorkoutController: ObservableObject {
         rest.duration = seconds
         rest.startedAt = at
         rest.alertFiredFor = at
-        rest.rescheduleExpiryNotification(now: at)
+        rest.rescheduleExpiryNotification(now: at, cue: lockedRestEndLine())
+    }
+
+    /// Spoken rest-end line for the lock-screen notification, nil when cues
+    /// are off.
+    private func lockedRestEndLine() -> String? {
+        VoiceCuePlayer.shared.lockedRestEndLine(session: session, next: nextUp())
     }
 
     // MARK: - Next up

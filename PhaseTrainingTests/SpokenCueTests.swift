@@ -133,6 +133,23 @@ final class SpokenCueTests: XCTestCase {
         XCTAssertEqual(fake.spoken.count, 3)
     }
 
+    func testLockedRestEndLineFollowsTheCueGate() {
+        XCTAssertNil(player(cues: false).0.lockedRestEndLine(session: sess, next: next()))
+        XCTAssertNil(player(cues: true, voiceOver: true).0.lockedRestEndLine(session: sess, next: next()))
+        XCTAssertNil(player(cues: true).0.lockedRestEndLine(session: sess, next: nil))
+        XCTAssertEqual(player(cues: true).0.lockedRestEndLine(session: sess, next: next()),
+                       "Rest's up. Bench Press, set 3 of 4, 185 for 5.")
+    }
+
+    func testRenderUsesTheOutputsFileRender() async throws {
+        let (p, fake) = player(cues: true)
+        let url = URL(fileURLWithPath: "/tmp/pt_speech_1.caf")
+        fake.renderResult = .success(url)
+        let got = try await p.render("Rest's up.")
+        XCTAssertEqual(got, url)
+        XCTAssertEqual(fake.rendered, ["Rest's up."])
+    }
+
     func testNilNextSpeaksNothing() {
         let (p, fake) = player(cues: true, level: .full)
         XCTAssertFalse(p.restEnded(session: sess, next: nil))

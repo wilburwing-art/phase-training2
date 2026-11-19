@@ -50,7 +50,10 @@ struct RestTimerState: Equatable {
     /// during a 3-minute rest got NOTHING, and on return the sound fired late
     /// against a stale tick date. A local notification covers the backgrounded
     /// case; `maybeFireRestExpiry` still owns the foreground one.
-    mutating func start(exIdx: Int, setIdx: Int, duration: Int, now: Date = Date()) {
+    ///
+    /// `cue` is the spoken rest-end line for a locked phone (nil when cues are
+    /// off); see `scheduleExpiryNotification`.
+    mutating func start(exIdx: Int, setIdx: Int, duration: Int, now: Date = Date(), cue: String? = nil) {
         self.exIdx = exIdx
         self.setIdx = setIdx
         self.startedAt = now
@@ -58,7 +61,7 @@ struct RestTimerState: Equatable {
         self.alertFiredFor = nil
         self.warningFiredFor = nil
         self.expiredFlashUntil = nil
-        Self.scheduleExpiryNotification(after: duration, now: now)
+        Self.scheduleExpiryNotification(after: duration, now: now, cue: cue)
     }
 
     mutating func clear() {
@@ -87,32 +90,91 @@ struct RestTimerState: Equatable {
     /// clock reaches the notification.
     private(set) static var lastRequestedFireAt: Date?
 
+    /// Sound file name of the last expiry request. nil = `.default`, which
+    /// every schedule starts with until a spoken cue render lands in time.
+    private(set) static var lastRequestedSoundName: String?
+
+    /// The spoken cue render in flight, if any. Tests await it.
+    private(set) static var pendingRender: Task<Void, Never>?
+
+    /// Bumped by every schedule and cancel, so a slow render for an older
+    /// rest never replaces a newer request.
+    private static var renderGeneration = 0
+
+    /// A render that returns with less than this many seconds left keeps the
+    /// `.default` sound rather than racing the trigger.
+    static let cueLeadSeconds: Double = 2
+
+    /// Renders a cue line to a `.caf` under `Library/Sounds`.
+    static var renderCue: @MainActor (String) async throws -> URL = { line in
+        try await VoiceCuePlayer.shared.render(line)
+    }
+
+    /// Where rendered cue files live. Notification sounds must sit in
+    /// `Library/Sounds` of the app container.
+    static var soundsDirectory: URL = FileManager.default
+        .urls(for: .libraryDirectory, in: .userDomainMask)[0]
+        .appendingPathComponent("Sounds", isDirectory: true)
+
     /// Fire-and-forget. Asks for notification permission the first time a
     /// rest starts (status .notDetermined) so the "Rest's up" banner works
     /// without the user first having to turn on weekly reminders.
-    static func scheduleExpiryNotification(after seconds: Int, now: Date) {
+    ///
+    /// The request is armed with `.default` first. With a `cue` line, the
+    /// line is rendered to a file and the request is replaced with that sound
+    /// if the render returns at least `cueLeadSeconds` before the fire date;
+    /// a late or failed render leaves the `.default` request standing. The
+    /// lock-screen voice needs no `UIBackgroundModes`: the system plays the
+    /// notification's own sound.
+    static func scheduleExpiryNotification(after seconds: Int, now: Date, cue: String? = nil) {
         guard seconds > 0 else { return }
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [expiryNotificationId])
         let fireAt = now.addingTimeInterval(TimeInterval(seconds))
         lastRequestedFireAt = fireAt
+        lastRequestedSoundName = nil
+        renderGeneration += 1
+        pendingRender?.cancel()
+        pendingRender = nil
         center.getNotificationSettings { settings in
             switch settings.authorizationStatus {
             case .authorized, .provisional, .ephemeral:
                 notificationsAuthorized = true
-                add(fireAt: fireAt, center: center)
+                add(fireAt: fireAt, center: center, sound: nil)
             case .notDetermined:
                 center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
                     notificationsAuthorized = granted
-                    if granted { add(fireAt: fireAt, center: center) }
+                    if granted { add(fireAt: fireAt, center: center, sound: nil) }
                 }
             default:
                 notificationsAuthorized = false
             }
         }
+        guard let cue, !cue.isEmpty else {
+            deleteCueFiles(keeping: nil)
+            return
+        }
+        let generation = renderGeneration
+        let renderStarted = Date()
+        pendingRender = Task { @MainActor in
+            let url = try? await renderCue(cue)
+            guard generation == renderGeneration else { return }
+            let left = Double(seconds) - Date().timeIntervalSince(renderStarted)
+            guard let url, left >= cueLeadSeconds else {
+                deleteCueFiles(keeping: nil)
+                return
+            }
+            let name = url.lastPathComponent
+            lastRequestedSoundName = name
+            deleteCueFiles(keeping: name)
+            if notificationsAuthorized {
+                add(fireAt: fireAt, center: center,
+                    sound: UNNotificationSound(named: UNNotificationSoundName(name)))
+            }
+        }
     }
 
-    private static func add(fireAt: Date, center: UNUserNotificationCenter) {
+    private static func add(fireAt: Date, center: UNUserNotificationCenter, sound: UNNotificationSound?) {
         // Measure from the original request time so a slow permission prompt
         // doesn't push the alert late.
         let seconds = fireAt.timeIntervalSinceNow
@@ -120,27 +182,43 @@ struct RestTimerState: Equatable {
         let content = UNMutableNotificationContent()
         content.title = "Rest's up"
         content.body = "Time for your next set."
-        content.sound = .default
+        content.sound = sound ?? .default
         content.interruptionLevel = .timeSensitive
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: seconds, repeats: false)
+        // Same identifier, so this replaces the `.default` request.
         center.add(UNNotificationRequest(identifier: expiryNotificationId,
                                          content: content,
                                          trigger: trigger))
     }
 
+    /// Remove rendered cue files other than `keeping` (a file name).
+    static func deleteCueFiles(keeping: String?) {
+        let fm = FileManager.default
+        guard let names = try? fm.contentsOfDirectory(atPath: soundsDirectory.path) else { return }
+        for name in names where name.hasPrefix("pt_speech_") && name.hasSuffix(".caf") && name != keeping {
+            try? fm.removeItem(at: soundsDirectory.appendingPathComponent(name))
+        }
+    }
+
     /// Re-arm the pending notification after the countdown length changes
     /// in place (+15, or a preset pick). Without this the banner would still
-    /// fire at the original expiry time.
-    func rescheduleExpiryNotification(now: Date = Date()) {
+    /// fire at the original expiry time. Re-renders `cue` against the new
+    /// remaining time.
+    func rescheduleExpiryNotification(now: Date = Date(), cue: String? = nil) {
         guard let remaining = remaining(at: now) else {
             Self.cancelExpiryNotification()
             return
         }
-        Self.scheduleExpiryNotification(after: remaining, now: now)
+        Self.scheduleExpiryNotification(after: remaining, now: now, cue: cue)
     }
 
     static func cancelExpiryNotification() {
         lastRequestedFireAt = nil
+        lastRequestedSoundName = nil
+        renderGeneration += 1
+        pendingRender?.cancel()
+        pendingRender = nil
+        deleteCueFiles(keeping: nil)
         UNUserNotificationCenter.current()
             .removePendingNotificationRequests(withIdentifiers: [expiryNotificationId])
     }
