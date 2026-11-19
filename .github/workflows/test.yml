@@ -1,9 +1,10 @@
 name: test
 
 # Two jobs (split 2026-09-26):
-#   test     build + unit tests (PhaseTrainingTests). Every push to main or an
-#            agent branch, every PR, manual runs. About 10 minutes. This is the
-#            only compiler agent sessions have, so it runs on every code push.
+#   test     build + unit tests (PhaseTrainingTests), three shards in
+#            parallel (split 2026-11-19). Every push to main or an agent
+#            branch, every PR, manual runs. This is the only compiler agent
+#            sessions have, so it runs on every code push.
 #   ui-tests the XCUITest suite plus the tap-budget report. PRs, pushes to
 #            main, nightly, and manual runs with ui=true. About 30+ minutes,
 #            which is why it no longer gates every push.
@@ -42,6 +43,34 @@ jobs:
     runs-on: macos-26
     # The nightly schedule is for the UI suite only.
     if: github.event_name != 'schedule'
+    # Three shards, each with its own build (about 6.5 minutes on CI). The
+    # generator grid suites outgrew one 25-minute job: in run 44563801469
+    # (4a67c73) FilterCompositionTests took 497 s, GeneratorWeekInvariantTests
+    # 190 s and SeasonInvariantTests 109 s, and the job was cancelled at
+    # 25 minutes with SportProfileTests and the suites after it unrun.
+    # A grid suite added later goes in a grid shard and in core's skip list.
+    name: test (${{ matrix.shard }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: core
+            tests: >-
+              -only-testing:PhaseTrainingTests
+              -skip-testing:PhaseTrainingTests/FilterCompositionTests
+              -skip-testing:PhaseTrainingTests/GeneratorWeekInvariantTests
+              -skip-testing:PhaseTrainingTests/SeasonInvariantTests
+              -skip-testing:PhaseTrainingTests/SportProfileTests
+              -skip-testing:PhaseTrainingTests/GeneratorCompositionTests
+          - shard: filter-grid
+            tests: >-
+              -only-testing:PhaseTrainingTests/FilterCompositionTests
+          - shard: season-grids
+            tests: >-
+              -only-testing:PhaseTrainingTests/GeneratorWeekInvariantTests
+              -only-testing:PhaseTrainingTests/SeasonInvariantTests
+              -only-testing:PhaseTrainingTests/SportProfileTests
+              -only-testing:PhaseTrainingTests/GeneratorCompositionTests
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
@@ -60,7 +89,7 @@ jobs:
             -project PhaseTraining.xcodeproj \
             -scheme PhaseTraining \
             -destination "platform=iOS Simulator,id=${{ steps.setup.outputs.udid }}" \
-            -only-testing:PhaseTrainingTests \
+            ${{ matrix.tests }} \
             -resultBundlePath build/UnitTestResults.xcresult \
             CODE_SIGNING_ALLOWED=NO \
             | tee build/raw-unit-test.log \
@@ -70,7 +99,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: UnitTestResults.xcresult
+          name: UnitTestResults-${{ matrix.shard }}.xcresult
           path: build/UnitTestResults.xcresult
 
   ui-tests:
