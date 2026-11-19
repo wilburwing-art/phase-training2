@@ -7,15 +7,27 @@ periodization generator, multi-sport conflict resolver, overload math,
 SQLite schema (user.db migrations), offline sync.
 
 SCOPE
-One backlog item per session. Pick the next open item, oldest backlog
-doc first, across docs/PLAN-gap-backlog-*.md and docs/PLAN-backlog-*.md,
-whose text names no owner decision, device action or entitlement still
-owed. Within a doc, take phases in order. Finish it, commit, then stop.
-Do not start a second item.
-If every open item is blocked on me, do not start one. Post the blocked
-items with the single action each needs from me, then stop. If no open
-items are left at all, say so and suggest /spec with the ROADMAP.md
+One backlog item per session. Pick the item from docs/QUEUE.md:
+1. The first item under Pinned that names no owner decision, device
+   action or entitlement still owed.
+2. Otherwise, the first such item in the first backlog under Backlogs.
+   Within a doc, take phases in order.
+3. A backlog doc (docs/PLAN-gap-backlog-*.md or docs/PLAN-backlog-*.md)
+   that exists but is not in the queue is ignored. Post its path once,
+   as "not queued: <path>", so I can place it.
+Finish it, commit, then stop. Do not start a second item.
+If every queued item is blocked on me, do not start one. Post the
+blocked items with the single action each needs from me, then stop.
+If the queue is empty, say so and suggest /spec with the ROADMAP.md
 section that waits on nothing.
+
+QUEUE UPKEEP, in the same commit as the item
+- Ticked a pinned item: remove the pin.
+- Ticked the last open item in a backlog: move it from Backlogs to Done
+  with the date. If that backlog came from /spec, change its ROADMAP.md
+  section heading from (specced) to (shipped <YYYY-MM-DD>), then run
+  the retro skill on the track.
+- End every post with one line: "<n> queued items blocked on you".
 
 DESIGN
 Before designing, read the item, the matching PLAN-*.md and the project

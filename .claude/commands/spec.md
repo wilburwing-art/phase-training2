@@ -45,8 +45,9 @@ OUTPUT, after the answers
      Split anything larger.
    - Mark items that are logic (builder-heavy) or UI and wiring (builder).
 3. In ROADMAP.md, replace the section's body with one line pointing to
-   the spec and the backlog doc.
+   the spec and the backlog doc. Add the backlog doc to the bottom of
+   Backlogs in docs/QUEUE.md.
 
-Commit the three files together and push to main. Then post the item
+Commit the four files together and push to main. Then post the item
 count, the total hours, and the first item /next will pick, in three
 lines at most.
