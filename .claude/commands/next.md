@@ -23,9 +23,17 @@ code commit. Every earlier session's push cancels the run before it
 (`cancel-in-progress` in test.yml), which is why only the newest run counts.
 One backlog item per session. Pick the item from docs/QUEUE.md:
 1. The first item under Pinned that names no owner decision, device
-   action or entitlement still owed.
+   action or entitlement still owed, and no open prerequisite.
 2. Otherwise, the first such item in the first backlog under Backlogs.
    Within a doc, take phases in order.
+   A prerequisite is an `after` clause in the item's bold heading:
+   `after 4.1` (same doc), `after 2026-11c 1.2` (the item in
+   docs/PLAN-*backlog-2026-11c.md), or `after Phase 4` (every item in
+   that phase of the same doc). Several join with "and". Resolve each
+   by reading the named item's checkbox. An unticked one, or one you
+   cannot find, makes the item blocked on work: skip it and post
+   "skipped <doc> <item>: waits on <ref>". A ref you cannot find is a
+   typo for me to fix, so name it as "unresolved".
 3. A backlog doc (docs/PLAN-gap-backlog-*.md or docs/PLAN-backlog-*.md)
    that exists but is not in the queue is ignored. Post its path once,
    as "not queued: <path>", so I can place it.
@@ -41,7 +49,8 @@ QUEUE UPKEEP, in the same commit as the item
   with the date. If that backlog came from /spec, change its ROADMAP.md
   section heading from (specced) to (shipped <YYYY-MM-DD>), then run
   the retro skill on the track.
-- End every post with one line: "<n> queued items blocked on you".
+- End every post with one line: "<n> queued items blocked on you,
+  <m> skipped on prerequisites".
 
 DESIGN
 Before designing, read the item, the matching PLAN-*.md and the project

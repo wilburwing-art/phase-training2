@@ -65,6 +65,10 @@ OUTPUT
 2. An item that needs an owner decision, a device action or an entitlement
    says so in its own text, so /next skips it. List those decisions in a
    Phase 0 as one-line choices with two named options, recommendation first.
+   An item that needs another item done first puts an `after` clause in
+   its bold heading (`after 4.1`, `after 2026-11c 1.2`, `after Phase 4`),
+   the form /next resolves. A dependency written only in the item's prose
+   is invisible to the pick.
 3. Add the doc to the bottom of Backlogs in docs/QUEUE.md. Commit both
    and push to main. Then post the finding counts, the item
    count, the total hours and the first item /next will pick, in three

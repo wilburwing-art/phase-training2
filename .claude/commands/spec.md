@@ -44,6 +44,10 @@ OUTPUT, after the answers
    - Size items so one /next session finishes one item (about 2 to 10 h).
      Split anything larger.
    - Mark items that are logic (builder-heavy) or UI and wiring (builder).
+   - An item that needs another item done first puts an `after` clause
+     in its bold heading (`after 4.1`, `after 2026-11c 1.2`, `after
+     Phase 4`), the form /next resolves. A dependency written only in the
+     item's prose is invisible to the pick.
 3. In ROADMAP.md, replace the section's body with one line pointing to
    the spec and the backlog doc. Add the backlog doc to the bottom of
    Backlogs in docs/QUEUE.md.

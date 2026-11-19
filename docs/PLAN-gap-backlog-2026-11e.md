@@ -89,7 +89,7 @@ Read sessions with `sqlite3 ~/repos/training-kb/data/training.db "SELECT raw_tex
 Source standard: the author is named with credentials, and the venue is named (a journal, a book, a coach's own site, or a community page with its review count). Record the citation in `source_name` and the URL in `source_url`. Distill movements and doses only. Copy no prose. A sport with no source that meets the standard after one search pass moves to D, and the move is noted on its tracker line.
 
 - [ ] **4.1 Pilot (6 h).** boxing, fencing, dressage, dinghy-sailing, table-tennis. Owner reviews the 5 sports' routines before 4.2 starts. Done: `DB`, plus a review note in this doc under 4.1.
-- [ ] **4.2 Combat sports (6 h, after the 4.1 review).** muay-thai, kickboxing, karate, taekwondo, krav-maga, aikido, kung-fu, capoeira, hema, kendo, iaido.
+- [ ] **4.2 Combat sports (6 h, after 4.1).** muay-thai, kickboxing, karate, taekwondo, krav-maga, aikido, kung-fu, capoeira, hema, kendo, iaido.
 - [ ] **4.3 Racquet and team sports (6 h).** padel, badminton, racquetball, disc-golf, softball, ultimate-frisbee, hockey, lacrosse, cricket, team-handball.
 - [ ] **4.4 Water and wind (6 h).** windsurfing, kitesurfing, wing-foiling, wakeboarding, wakesurfing, hydrofoiling, freediving, spearfishing, water-polo, artistic-swimming, swimrun.
 - [ ] **4.5 Snow, wheels, air (6 h).** freestyle-skiing, ski-jumping, nordic-combined, roller-skiing, skateboarding, inline-skating, bmx, paragliding, hang-gliding, keelboat-racing, catamaran-sailing.
