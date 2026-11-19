@@ -23,17 +23,47 @@ final class GeneratorWeekInvariantTests: XCTestCase {
     /// these checks through their complement days, which run on
     /// `PhaseRule.general` (Phase 3b); `engineSessions` drops their
     /// authored sport days.
-    static let sports = Sport.catalog.map(\.slug).filter(SportCatalog.isPlannable)
+    static let plannableSports = Sport.catalog.map(\.slug).filter(SportCatalog.isPlannable)
+
+    /// The grid's sports: one per `SportProfile` (11e 1.4). A sport with its
+    /// own profile row is its own entry. Sports that inherit a family row get
+    /// the same `.general` profile, so their engine sessions match and the
+    /// first one by slug stands for the family. The known-failure sets ride
+    /// along so their exact assertions still see every sport they name.
+    /// Every plannable sport took 175 s of grid build on the dev Mac and
+    /// 472 s on CI, past the unit job's 25-minute timeout (run 44544230552).
+    static let sports: [String] = {
+        var seen: Set<String> = []
+        let sampled = plannableSports.sorted().filter { slug in
+            let key = SportProfile.familySlug(of: slug).map { "family:\($0)" } ?? slug
+            return seen.insert(key).inserted
+        }
+        let known = knownRegressionSports.union(knownDeloadBandSports).union(knownAnchorDriftSports)
+        return sampled + known.subtracting(sampled).sorted()
+    }()
     static let equipTiers: [(String, [Equipment])] = [
         ("bw", [.bodyweight]), ("homebar", [.dumbbells, .pullUpBar, .bands]), ("gym", [.fullGym])]
 
+    /// Sports whose own tests filter the grid to them (ski push floor,
+    /// climbing push:pull) keep every session length.
+    static let fullMinutesSports: Set<String> = ["alpine-skiing", "climbing"]
+    static let minuteTiers = [30, 45, 75]
+
+    /// Other sports take one session length per cell, rotated over
+    /// experience, equipment and days, so every (sport, phase, days) and every
+    /// (sport, experience, equipment) still sees all three lengths (11e 1.4).
     static var weekGrid: [Cell] {
         var out: [Cell] = []
-        for s in sports { for p in SeasonPhase.allCases { for e in ExperienceLevel.allCases {
-            for eq in equipTiers { for d in 2...6 { for m in [30, 45, 75] {
-                out.append(Cell(sport: s, season: p, exp: e, equipName: eq.0, equip: eq.1,
-                                days: d, minutes: m, week: 1))
-            } } }
+        for s in sports { for p in SeasonPhase.allCases {
+            for (ei, e) in ExperienceLevel.allCases.enumerated() {
+            for (qi, eq) in equipTiers.enumerated() { for d in 2...6 {
+                let minutes = fullMinutesSports.contains(s)
+                    ? minuteTiers : [minuteTiers[(ei + qi + d) % minuteTiers.count]]
+                for m in minutes {
+                    out.append(Cell(sport: s, season: p, exp: e, equipName: eq.0, equip: eq.1,
+                                    days: d, minutes: m, week: 1))
+                }
+            } }
         } } }
         return out
     }
@@ -81,6 +111,7 @@ final class GeneratorWeekInvariantTests: XCTestCase {
     private func weeks() -> [Week] {
         if let c = Self.cache { return c }
         let routines = CoachDatabase.shared.listRoutines()
+        print("[GWI] grid sports: \(Self.sports.count) of \(Self.plannableSports.count) plannable: \(Self.sports)")
         let w = Self.weekGrid.map { plan($0, routines: routines) }
         Self.cache = w
         return w
