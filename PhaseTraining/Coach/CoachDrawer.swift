@@ -16,17 +16,14 @@ struct CoachDrawer: View {
     @EnvironmentObject private var sportLogStore: SportLogStore
 
     @State private var input: String = ""
-    @State private var sending: Bool = false
-    @State private var streamingId: UUID? = nil
-    @State private var inflightTask: Task<Void, Never>? = nil
+    @StateObject private var runner: CoachTurnRunner
     @FocusState private var inputFocused: Bool
     @State private var confirmingClear = false
     @State private var showingHistory = false
 
-    private let client = CoachClient()
-
-    /// Cached — allocating a DateFormatter per tool call is needless churn.
-    private static let isoDayFormatter: DateFormatter = DayKeyFormatter.iso
+    init(conv: CoachConversationStore) {
+        _runner = StateObject(wrappedValue: CoachTurnRunner(conv: conv))
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -44,7 +41,7 @@ struct CoachDrawer: View {
         .background(Color.bg.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .onAppear(perform: handleAppear)
-        .onDisappear { inflightTask?.cancel() }
+        .onDisappear { runner.cancel() }
         .alert("Clear today's chat?", isPresented: $confirmingClear) {
             Button("Clear", role: .destructive) { conv.clearToday() }
             Button("Keep", role: .cancel) {}
@@ -245,16 +242,16 @@ struct CoachDrawer: View {
                     .onSubmit(send)
 
                 Button(action: send) {
-                    Image(systemName: sending ? "stop.fill" : "arrow.up")
+                    Image(systemName: runner.sending ? "stop.fill" : "arrow.up")
                         .scaledSystemFont(16, weight: .bold, within: 38)
-                        .foregroundStyle(canSend || sending ? Color.accentInk : Color.ink3)
+                        .foregroundStyle(canSend || runner.sending ? Color.accentInk : Color.ink3)
                         .frame(width: 38, height: 38)
-                        .background(canSend || sending ? Color.accent : Color.elevated)
+                        .background(canSend || runner.sending ? Color.accent : Color.elevated)
                         .clipShape(Circle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(sending ? "Stop" : "Send")
-                .disabled(!canSend && !sending)
+                .accessibilityLabel(runner.sending ? "Stop" : "Send")
+                .disabled(!canSend && !runner.sending)
             }
             .padding(.horizontal, 16)
             .padding(.top, 10)
@@ -290,26 +287,6 @@ struct CoachDrawer: View {
         !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !conv.atHardCap
     }
 
-    /// Build a "[STATUS NOTE: ...]" prefix when the previous assistant turn
-    /// had a proposal the user has resolved. Returns "" otherwise. The model
-    /// is told (in v4 system prompt) that these prefixes are system metadata,
-    /// not the user's words.
-    private func statusPrefix(for prior: CoachMessage?) -> String {
-        guard let prior, !prior.isUser else { return "" }
-        var notes: [String] = []
-        if let p = prior.proposal, p.status != .pending {
-            notes.append("plan-edit proposal was \(p.status.rawValue.uppercased())")
-        }
-        if let p = prior.workoutProposal, p.status != .pending {
-            notes.append("workout-change proposal was \(p.status.rawValue.uppercased())")
-        }
-        if let p = prior.memoryProposal, p.status != .pending {
-            notes.append("memory-update proposal was \(p.status.rawValue.uppercased())")
-        }
-        guard !notes.isEmpty else { return "" }
-        return "[STATUS NOTE — system metadata, not user speech: your last \(notes.joined(separator: "; "))]\n\n"
-    }
-
     // MARK: - Logic
 
     private func handleAppear() {
@@ -322,214 +299,20 @@ struct CoachDrawer: View {
     }
 
     private func send() {
-        if sending {
-            // Cancel an in-flight turn.
-            inflightTask?.cancel()
+        if runner.sending {
+            runner.cancel()
             return
         }
-        let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { return }
-        // Hard daily cap: refuse to send. The input is already disabled via
-        // canSend, but guard here too in case .onSubmit fires.
-        guard !conv.atHardCap else { return }
-
-        // Phase 13f: if the most recent assistant turn carried a proposal the
-        // user has resolved, prepend a synthetic status note so the model
-        // knows what happened to its tool call. v4 system prompt advertises
-        // this convention so the prefix isn't treated as user voice. The
-        // prefix goes ONLY to the wire — the displayed bubble shows what
-        // the user actually typed.
-        let wireText = statusPrefix(for: conv.messages.last) + text
-
-        let userMsg = CoachMessage(role: "user", text: text)
-        let assistantMsg = CoachMessage(role: "assistant", text: "")
-        conv.append(userMsg)
-        conv.append(assistantMsg)
-        conv.recordTurn()
-        streamingId = assistantMsg.id
-        input = ""
-        sending = true
-
-        let history = conv.wireHistory().dropLast()  // exclude the new user msg itself
-        // Sport logs window: last 21 days, capped to the most recent 30 to
-        // keep the prompt bounded if the user is a high-frequency logger.
-        // CoachContext re-trims to 5 for display; we just want the relevant
-        // tail here rather than the full history.
-        let cutoff = Calendar.current.date(byAdding: .day, value: -21, to: Date()) ?? Date.distantPast
-        let recentSportLogs = sportLogStore.entries
-            .filter { $0.date >= cutoff }
-            .suffix(30)
-
-        let snapshot = CoachContext.snapshot(
+        let context = CoachTurnRunner.chatContext(
             activeTab: tabSelection.selected,
-            memory: memoryStore.memory,
-            plan: planStore.plan,
-            recentSessions: sessionStore.savedSessions,
-            recentFeedback: memoryStore.memory.feedback,
-            recentSoreness: memoryStore.memory.soreness,
-            recentSportLogs: Array(recentSportLogs),
-            // T2-3: these three blocks are fully implemented and unit-tested in
-            // CoachContext, but NO production call site passed them — verified
-            // by grep across the app. So the PAST WEEKS / PLAN ISSUES / MISSED
-            // WORKOUTS sections the comments promise the coach can discuss never
-            // reached the model, even though PlanStore publishes all three.
-            //
-            // Wired here (the chat surface) only. The insight and refinement
-            // passes are one-shot and cost-sensitive; the drawer is where a user
-            // actually asks "why did I miss Tuesday?".
-            pastPlans: planStore.pastPlans,
-            planIssues: planStore.currentValidationIssues(memory: memoryStore.memory),
-            missedWorkouts: planStore.missedWorkouts,
-            // PR 9: the chat surface is where a user asks "why did my
-            // knee force me to stop Tuesday?" — same rationale as the
-            // T2-3 wiring above.
-            abandonedWorkouts: planStore.abandonedWorkouts,
-            // A4: same chat-only rationale. The insight pass stays lean.
-            dayOutcomes: planStore.dayOutcomes,
-            openSuggestions: planStore.currentSuggestions(),
-            // 3b: same chat-only rationale as A4.
-            sessionLikelihood: planStore.todaySessionLikelihood()
+            memoryStore: memoryStore,
+            planStore: planStore,
+            sessionStore: sessionStore,
+            sportLogStore: sportLogStore
         )
-
-        inflightTask = Task {
-            do {
-                let stream = client.stream(
-                    cachedSystem: CoachSystemPrompt.cachedHeader,
-                    perTurnContext: CoachSystemPrompt.contextBlock(snapshot: snapshot),
-                    history: Array(history),
-                    userMessage: wireText,
-                    tools: CoachTools.chat
-                )
-                for try await part in stream {
-                    switch part {
-                    case .textDelta(let chunk):
-                        await MainActor.run {
-                            conv.appendDelta(to: assistantMsg.id, chunk)
-                        }
-                    case .toolCall(_, let name, let inputData):
-                        // A failed decode used to fall through silently: the
-                        // assistant said "I've proposed moving Thursday to
-                        // Friday", no diff card rendered, and the user had no
-                        // error and no way to retry. Truncation at max_tokens
-                        // and malformed input_json_delta both land here.
-                        var decoded = true
-                        switch name {
-                        case "propose_plan_edits":
-                            if let proposal = CoachToolDecoder.decodeProposal(from: inputData) {
-                                await MainActor.run { conv.setProposal(on: assistantMsg.id, proposal) }
-                            } else {
-                                decoded = false
-                            }
-                        case "propose_workout_changes":
-                            // Build 99: pass today as the FALLBACK, not as
-                            // an override. If the model supplied a `date`
-                            // in the tool input it wins — chat can now
-                            // edit any day in the current plan, not just
-                            // today.
-                            let today = Self.isoDayFormatter.string(from: Date())
-                            if let proposal = CoachToolDecoder.decodeWorkoutProposal(from: inputData, fallbackDate: today) {
-                                await MainActor.run { conv.setWorkoutProposal(on: assistantMsg.id, proposal) }
-                            } else {
-                                decoded = false
-                            }
-                        case "propose_memory_update":
-                            if let proposal = CoachToolDecoder.decodeMemoryProposal(from: inputData) {
-                                await MainActor.run { conv.setMemoryProposal(on: assistantMsg.id, proposal) }
-                            } else {
-                                decoded = false
-                            }
-                        default:
-                            continue
-                        }
-                        if !decoded {
-                            await MainActor.run { noteUndeliveredProposal() }
-                        }
-
-                    case .stopped(let reason):
-                        // "max_tokens" means the model was cut off mid-thought.
-                        if reason == "max_tokens" {
-                            await MainActor.run { noteTruncatedReply() }
-                        }
-                    }
-                }
-                await MainActor.run { finishSuccess() }
-            } catch {
-                await MainActor.run { finishError(error) }
-            }
+        if runner.send(input, context: context) {
+            input = ""
         }
-    }
-
-    private func finishSuccess() {
-        conv.flush()
-        sending = false
-        streamingId = nil
-        inflightTask = nil
-    }
-
-    /// User-facing error taxonomy. `error.localizedDescription` was written
-    /// straight into the assistant bubble, so the coach appeared to say things
-    /// like "No Cloudflare AI Gateway token configured. Set
-    /// PHASETRAINING_CF_AIG_DEV_TOKEN in ~/.config/phase-training/…" or up to
-    /// 512 characters of raw gateway JSON. Three cases the user can act on;
-    /// anything else is "try again".
-    private static func userFacingMessage(for error: Error) -> String {
-        if let coachError = error as? CoachClient.CoachError {
-            switch coachError {
-            case .dailyCeilingReached:
-                return "That's the coach's limit for today. It'll pick back up tomorrow."
-            case .missingGatewayToken:
-                return "The coach isn't available in this build."
-            case .http(let status, _):
-                if status == 429 { return "The coach is rate-limited right now. Try again in a minute." }
-                if (500...599).contains(status) { return "The coach is having trouble on its end. Try again shortly." }
-                return "The coach couldn't complete that. Try again."
-            case .transport:
-                return "Couldn't reach the coach. Check your connection and try again."
-            case .decode:
-                return "The coach's reply came back garbled. Try again."
-            }
-        }
-        let ns = error as NSError
-        if ns.domain == NSURLErrorDomain {
-            return "Couldn't reach the coach. Check your connection and try again."
-        }
-        return "Something went wrong reaching the coach. Try again."
-    }
-
-    /// The model announced a change but its tool payload didn't decode, so no
-    /// diff card can render. Say so inline instead of leaving the user staring
-    /// at a claim with no card and no way to retry.
-    private func noteUndeliveredProposal() {
-        guard let id = streamingId,
-              let idx = conv.messages.firstIndex(where: { $0.id == id }) else { return }
-        let note = "\n\n⚠️ That change didn't come through in a usable form. Ask again and I'll re-propose it."
-        if !conv.messages[idx].text.hasSuffix(note) {
-            conv.messages[idx].text += note
-        }
-    }
-
-    /// The reply hit maxOutputTokens. Without this the user just got a
-    /// sentence that stopped mid-word, with nothing to distinguish it from a
-    /// complete answer and no way to ask for the rest.
-    private func noteTruncatedReply() {
-        guard let id = streamingId,
-              let idx = conv.messages.firstIndex(where: { $0.id == id }) else { return }
-        let note = "\n\n… (cut off. Ask me to continue)"
-        if !conv.messages[idx].text.hasSuffix(note) {
-            conv.messages[idx].text += note
-        }
-    }
-
-    private func finishError(_ error: Error) {
-        if let id = streamingId,
-           let idx = conv.messages.firstIndex(where: { $0.id == id }) {
-            let prefix = conv.messages[idx].text.isEmpty ? "" : conv.messages[idx].text + "\n\n"
-            conv.messages[idx].text = prefix + "⚠️ " + Self.userFacingMessage(for: error)
-        }
-        conv.flush()
-        sending = false
-        streamingId = nil
-        inflightTask = nil
     }
 
     private func scrollToBottom(_ proxy: ScrollViewProxy) {
@@ -545,7 +328,7 @@ struct CoachDrawer: View {
     let conv = CoachConversationStore(defaults: defaults)
     conv.append(CoachMessage(role: "user", text: "Why is Thursday a lift day?"))
     conv.append(CoachMessage(role: "assistant", text: "You picked Tue/Thu/Sat as lift days during onboarding. Thursday is day 2 of the strength pattern — heavier focus before the weekend rest."))
-    return CoachDrawer()
+    return CoachDrawer(conv: conv)
         .environmentObject(conv)
         .environmentObject(MemoryStore(defaults: defaults))
         .environmentObject(PlanStore(defaults: defaults))

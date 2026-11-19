@@ -97,7 +97,7 @@ struct RootTabView: View {
                 .motion(.easeInOut(duration: 0.2), .fade, value: tabSelection.selected)
         }
         .sheet(isPresented: $conv.presented) {
-            CoachDrawer()
+            CoachDrawer(conv: conv)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.hidden)
                 .presentationBackground(Color.bg)
