@@ -8,6 +8,7 @@ Edit the order by hand. Commands add new docs at the bottom.
 Single items that jump the queue. At most three. /next removes a pin
 when it ticks the item.
 
+- docs/PLAN-gap-backlog-2026-11e.md 1.4 Week invariant runtime: main CI unit job times out at 25 min (pinned 2026-11-19)
 
 ## Backlogs
 

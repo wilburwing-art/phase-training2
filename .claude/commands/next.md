@@ -7,8 +7,20 @@ periodization generator, multi-sport conflict resolver, overload math,
 SQLite schema (user.db migrations), offline sync.
 
 SCOPE
-Before picking, run `gh run list -b main -L 1`. If the latest main run
-failed, that failure is this session's item.
+Before picking, get a verdict on main from the `test` workflow:
+`gh run list -b main -w test -L 1 --json databaseId,headSha,status,conclusion`.
+- queued or in_progress: wait for it to finish. Use Bash with
+  run_in_background and an until-loop on `gh run view <id> --json status`,
+  then re-read the conclusion. Pick nothing while it runs.
+- failure: that failure is this session's item.
+- cancelled: treat it as red. The newest run has no newer push to
+  supersede it, so it hit a job timeout (25 min unit, 60 min UI). Read
+  `gh run view <id> --json jobs` for the job that ran to its limit; that
+  timeout is this session's item.
+- success: pick from the queue.
+A docs-only push starts no run, so the newest run belongs to the newest
+code commit. Every earlier session's push cancels the run before it
+(`cancel-in-progress` in test.yml), which is why only the newest run counts.
 One backlog item per session. Pick the item from docs/QUEUE.md:
 1. The first item under Pinned that names no owner decision, device
    action or entitlement still owed.
@@ -126,8 +138,8 @@ belongs to this item. The message is subject and body only: drop any
 `Claude-Session:` or `Co-Authored-By:` trailer the harness suggests,
 then check `git log -1 --format=%B` before pushing. Push straight to main.
 CI (.github/workflows/test.yml) reruns the unit suite on the push; the
-next /next session checks `gh run list -b main -L 1` before picking and
-fixes a red main first.
+next /next session waits for that run's verdict before picking and fixes
+a red or cancelled main first.
 
 If the item needs something from me (a build bump, a tag, a design
 choice), ask once, clearly, at the point it blocks the commit, and keep
