@@ -271,6 +271,10 @@ targets:
     deploymentTarget: "17.0"
     sources:
       - path: PhaseTrainingTests
+      # SubscriptionStoreFlowTests opens an SKTestSession on this file, which
+      # has to sit in the test bundle.
+      - path: PhaseTraining.storekit
+        buildPhase: resources
     dependencies:
       - target: PhaseTraining
     settings:
