@@ -581,9 +581,13 @@ final class SeasonFidelityTest: XCTestCase {
         let store = MemoryStore(defaults: defaults)
 
         // Onboarded user on an unsupported sport → re-onboard, strip the sport.
+        // A slug outside the catalog: catalog sports keep gaining programs
+        // (running became plannable in 11e), so any catalog pick goes stale.
+        let retired = Sport(slug: "retired-sport-fixture", name: "Retired Sport")
+        XCTAssertFalse(SportCatalog.isPlannable(retired.slug))
         store.update {
-            $0.sports = [Sport(slug: "running", name: "Running")]
-            $0.primarySport = Sport(slug: "running", name: "Running")
+            $0.sports = [retired]
+            $0.primarySport = retired
             $0.onboardedAt = Date()
         }
         store.migrateToSupportedSportGate()

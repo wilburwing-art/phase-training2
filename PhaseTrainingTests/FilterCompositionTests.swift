@@ -104,12 +104,17 @@ final class FilterCompositionTests: XCTestCase {
                     let allowed = profile.allowedEquipmentSlugs
                     let excluded = profile.excludedExerciseIds
 
-                    for phase in SeasonPhase.allCases {
+                    // Soreness rotates with slot and phase instead of
+                    // multiplying the grid: every (sport, injury, gear, phase)
+                    // cell still sees all three levels, and blocked lands on
+                    // every slot across phases. The full product took 467 s
+                    // and pushed CI past its 25-minute budget (2026-11-19).
+                    for (phaseIndex, phase) in SeasonPhase.allCases.enumerated() {
                         memory.defaultSeason = phase
                         if let s = memory.primarySport { memory.seasonsBySport = [s: phase] }
-                        for soreness in Soreness.allCases {
-                        memory.soreness = Self.checkIns(soreness, on: date)
                         for slot in 0..<3 {
+                            let soreness = Soreness.allCases[(slot + phaseIndex) % Soreness.allCases.count]
+                            memory.soreness = Self.checkIns(soreness, on: date)
                             let w = WorkoutGenerator.generateLift(
                                 liftIndex: slot, totalLifts: 3, memory: memory, profile: profile,
                                 hashSeed: "compose-\(slug)-\(injury)-\(phase.rawValue)-\(slot)",
@@ -161,7 +166,6 @@ final class FilterCompositionTests: XCTestCase {
                                 XCTAssertTrue(hit.isEmpty,
                                               "\(ctx) served blocked prime movers \(hit.map(\.name))")
                             }
-                        }
                         }
                     }
                 }
