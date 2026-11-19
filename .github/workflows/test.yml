@@ -5,9 +5,10 @@ name: test
 #            parallel (split 2026-11-19). Every push to main or an agent
 #            branch, every PR, manual runs. This is the only compiler agent
 #            sessions have, so it runs on every code push.
-#   ui-tests the XCUITest suite plus the tap-budget report. PRs, pushes to
-#            main, nightly, and manual runs with ui=true. About 30+ minutes,
-#            which is why it no longer gates every push.
+#   ui-tests the XCUITest suite plus the tap-budget report, three shards
+#            in parallel (split 2026-11-19). PRs, pushes to main, nightly,
+#            and manual runs with ui=true. About 30 minutes per shard, which
+#            is why it does not gate every push.
 # Docs-only pushes skip both (paths-ignore). A newer push to the same ref
 # cancels the older run.
 
@@ -109,12 +110,48 @@ jobs:
       github.event_name == 'schedule' ||
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_dispatch' && inputs.ui)
-    # 45, not 20: every run since #307 (2026-08-27) was killed at exactly
-    # the 20-minute mark mid-UI-suite — the suite has outgrown the old
-    # budget on these runners, so CI could never reach a verdict.
-    # 60, not 45: build 166 took 42 minutes, and build 167's seven new UI
-    # test files pushed it to the 45-minute cutoff with tests still running.
-    timeout-minutes: 60
+    # Three shards (split 2026-11-19), each with its own build (about 10
+    # minutes of setup on CI). One job outgrew 60 minutes: run 44586959390
+    # spent 51 minutes in tests, started 41 of 47 suites and was cancelled
+    # inside TapBudgetTests. Per-suite seconds from runs 44544230552 and
+    # 44586959390 (larger of the two): TapBudgetTests 616+, LogFlowTests 340,
+    # ProgressScreenUITests 264, CustomExerciseUITests 259, PaywallHeroUITests
+    # 192, Phase2ReachUITests 186, ArcDeloadNoticeUITests 141,
+    # MotivationBatchUITests 120, every other suite under 80. That gives about
+    # 18 minutes of tests per shard. `flows` runs every suite not named in
+    # the other two, so a new UI suite lands there; a slow one moves to a
+    # named shard and into flows' skip list.
+    name: ui-tests (${{ matrix.shard }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: taps
+            tests: >-
+              -only-testing:PhaseTrainingUITests/TapBudgetTests
+              -only-testing:PhaseTrainingUITests/LogFlowTests
+              -only-testing:PhaseTrainingUITests/MotivationBatchUITests
+          - shard: screens
+            tests: >-
+              -only-testing:PhaseTrainingUITests/ProgressScreenUITests
+              -only-testing:PhaseTrainingUITests/CustomExerciseUITests
+              -only-testing:PhaseTrainingUITests/PaywallHeroUITests
+              -only-testing:PhaseTrainingUITests/Phase2ReachUITests
+              -only-testing:PhaseTrainingUITests/ArcDeloadNoticeUITests
+          - shard: flows
+            tests: >-
+              -only-testing:PhaseTrainingUITests
+              -skip-testing:PhaseTrainingUITests/TapBudgetTests
+              -skip-testing:PhaseTrainingUITests/LogFlowTests
+              -skip-testing:PhaseTrainingUITests/MotivationBatchUITests
+              -skip-testing:PhaseTrainingUITests/ProgressScreenUITests
+              -skip-testing:PhaseTrainingUITests/CustomExerciseUITests
+              -skip-testing:PhaseTrainingUITests/PaywallHeroUITests
+              -skip-testing:PhaseTrainingUITests/Phase2ReachUITests
+              -skip-testing:PhaseTrainingUITests/ArcDeloadNoticeUITests
+    # 45: each shard should finish in about 28 minutes (10 setup, 18 tests),
+    # with room for the per-case retries below.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
 
@@ -138,7 +175,7 @@ jobs:
             -project PhaseTraining.xcodeproj \
             -scheme PhaseTraining \
             -destination "platform=iOS Simulator,id=${{ steps.setup.outputs.udid }}" \
-            -only-testing:PhaseTrainingUITests \
+            ${{ matrix.tests }} \
             -resultBundlePath build/TestResults.xcresult \
             -retry-tests-on-failure \
             -test-iterations 3 \
@@ -146,7 +183,10 @@ jobs:
             | tee build/raw-test.log \
             | xcbeautify --renderer github-actions
 
+      # The three tap-budget steps read TapBudgetTests' markers, so they
+      # run only on the shard that runs that suite.
       - name: Tap budget diff tests
+        if: matrix.shard == 'taps'
         # The diff script's own unit tests (gating contract, retry semantics,
         # baseline parsing). Cheap; run before the drift step so a broken
         # script can't mislead the report.
@@ -159,7 +199,7 @@ jobs:
         # harness-broken signals (a tracked flow that stopped emitting, or a
         # corrupt baseline); actual-vs-baseline drift stays visibility-only,
         # honoring the track-don't-gate decision.
-        if: always()
+        if: always() && matrix.shard == 'taps'
         run: python3 scripts/quality/tap_budget_diff.py build/raw-test.log
 
       - name: Upload tap-budget history
@@ -167,7 +207,7 @@ jobs:
         # (date, sha, flow, actual, seconds). Uploading it as an artifact keeps
         # the trend line alive across runners — download and re-append locally,
         # or chain via a persist-to-branch action, to build a long-run view.
-        if: always()
+        if: always() && matrix.shard == 'taps'
         uses: actions/upload-artifact@v4
         with:
           name: tap-budget-history
@@ -178,5 +218,5 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: TestResults.xcresult
+          name: TestResults-${{ matrix.shard }}.xcresult
           path: build/TestResults.xcresult
