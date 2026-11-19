@@ -1,9 +1,10 @@
 // OnboardingSportGateUITests.swift — the outdoor sport gate opened.
 //
 // After opening onboarding to authored-served outdoor sports, the Sports step
-// must offer snowboarding + mountain biking (distilled authored coverage) while
-// still hiding non-outdoor authored sports like golf. Launches into a fresh
-// onboarding (reset, no --ui-test-onboarded) and inspects the Sports screen.
+// must offer snowboarding + mountain biking (distilled authored coverage).
+// Since the profile parent fallback (backlog 11e 1.1) golf is plannable through
+// its family row, so it is offered too. Launches into a fresh onboarding
+// (reset, no --ui-test-onboarded) and inspects the Sports screen.
 
 import XCTest
 
@@ -26,7 +27,7 @@ final class OnboardingSportGateUITests: XCTestCase {
                       "mountain biking should be selectable")
         // Engine-supported sports are still there.
         XCTAssertTrue(app.buttons["onboarding-sport-climbing"].exists, "climbing should still be selectable")
-        // A non-outdoor authored sport must NOT leak in.
-        XCTAssertFalse(app.buttons["onboarding-sport-golf"].exists, "golf must not be offered")
+        // A family-row sport with routines is offered (11e 1.1).
+        XCTAssertTrue(app.buttons["onboarding-sport-golf"].exists, "golf is plannable through its family row")
     }
 }

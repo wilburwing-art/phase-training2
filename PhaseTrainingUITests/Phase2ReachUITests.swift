@@ -23,7 +23,7 @@ final class Phase2ReachUITests: XCTestCase {
         XCTAssertTrue(link.exists, "a native-only history with a break shows the check")
         XCTAssertTrue(link.label.contains("break"), link.label)
         link.tap()
-        XCTAssertTrue(app.staticTexts["BREAKS OVER 8 WEEKS"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["BREAKS LONGER THAN 8 WEEKS"].waitForExistence(timeout: 5))
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = "history-check-from-progress"
         shot.lifetime = .keepAlways
