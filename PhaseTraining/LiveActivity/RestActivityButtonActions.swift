@@ -12,7 +12,7 @@ enum RestActivityButtonActions {
     /// Wire the buttons to the live workout and the app-wide coordinator.
     static func install() {
         RestActivityButtonHandler.handle = { button in
-            handle(button, controller: ActiveWorkoutRegistry.shared.current,
+            handle(button, controller: ActiveWorkoutRegistry.shared.resolve(),
                    coordinator: RestActivityCenter.shared)
         }
     }

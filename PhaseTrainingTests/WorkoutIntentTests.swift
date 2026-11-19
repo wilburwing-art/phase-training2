@@ -7,7 +7,8 @@ final class WorkoutIntentTests: XCTestCase {
     private var clock = Date(timeIntervalSince1970: 1_000_000)
 
     override func tearDown() {
-        ActiveWorkoutRegistry.shared.current = nil
+        ActiveWorkoutRegistry.shared.drop()
+        ActiveWorkoutRegistry.shared.store = nil
         super.tearDown()
     }
 
@@ -227,5 +228,72 @@ final class WorkoutIntentTests: XCTestCase {
         XCTAssertNotNil(ActiveWorkoutRegistry.shared.current)
         c = nil
         XCTAssertNil(ActiveWorkoutRegistry.shared.current)
+    }
+
+    // MARK: - Registry builds from the store (log screen not open)
+
+    private func storeWithActive(_ exercises: [LoggedExercise],
+                                 start: Date = Date(timeIntervalSince1970: 500)) -> SessionStore {
+        let store = SessionStore(defaults: defaults())
+        store.saveActive(ActiveSession(templateId: "t", name: "Test", category: "Custom",
+                                       startTime: start, exercises: exercises,
+                                       feel: nil, note: nil))
+        return store
+    }
+
+    func test_logSetIntentWithEmptyRegistryLogsIntoStoreActive() async throws {
+        let store = storeWithActive([exercise("Bench", sets: 3)])
+        ActiveWorkoutRegistry.shared.store = store
+        XCTAssertNil(ActiveWorkoutRegistry.shared.current)
+        _ = try await LogSetIntent(reps: 5, weight: 135).perform()
+        let set = try XCTUnwrap(store.active?.exercises[0].sets[0])
+        XCTAssertTrue(set.done)
+        XCTAssertEqual(set.weight, "135")
+        XCTAssertEqual(set.reps, "5")
+    }
+
+    func test_intentWithNoActiveWorkoutStillSaysNoWorkout() {
+        ActiveWorkoutRegistry.shared.store = SessionStore(defaults: defaults())
+        XCTAssertNil(ActiveWorkoutRegistry.shared.resolve())
+        XCTAssertEqual(WorkoutIntentActions.whatsNext(in: ActiveWorkoutRegistry.shared.resolve()),
+                       WorkoutIntentActions.noWorkout)
+    }
+
+    func test_resolveReusesTheBuiltControllerAcrossIntents() async throws {
+        let store = storeWithActive([exercise("Bench", sets: 3)])
+        ActiveWorkoutRegistry.shared.store = store
+        _ = try await LogSetIntent(reps: 5, weight: 135).perform()
+        let first = ActiveWorkoutRegistry.shared.resolve()
+        _ = try await LogSetIntent(reps: 6, weight: 135).perform()
+        XCTAssertTrue(first === ActiveWorkoutRegistry.shared.resolve())
+        XCTAssertEqual(store.active?.exercises[0].sets[1].reps, "6")
+    }
+
+    func test_resolveRebuildsWhenAnotherWorkoutStarts() {
+        let store = storeWithActive([exercise("Bench", sets: 3)])
+        ActiveWorkoutRegistry.shared.store = store
+        let first = ActiveWorkoutRegistry.shared.resolve()
+        store.saveActive(ActiveSession(templateId: "t2", name: "Next", category: "Custom",
+                                       startTime: Date(timeIntervalSince1970: 900),
+                                       exercises: [exercise("Squat", sets: 2)],
+                                       feel: nil, note: nil))
+        let second = ActiveWorkoutRegistry.shared.resolve()
+        XCTAssertFalse(first === second)
+        XCTAssertEqual(second?.session.name, "Next")
+    }
+
+    func test_resolveDropsTheBuiltControllerWhenTheWorkoutEnds() {
+        let store = storeWithActive([exercise("Bench", sets: 3)])
+        ActiveWorkoutRegistry.shared.store = store
+        XCTAssertNotNil(ActiveWorkoutRegistry.shared.resolve())
+        store.clearActive()
+        XCTAssertNil(ActiveWorkoutRegistry.shared.resolve())
+    }
+
+    func test_registeredControllerWinsOverTheStore() {
+        let (c, store) = make([exercise("Bench", sets: 3)])
+        ActiveWorkoutRegistry.shared.store = store
+        ActiveWorkoutRegistry.shared.current = c
+        XCTAssertTrue(ActiveWorkoutRegistry.shared.resolve() === c)
     }
 }

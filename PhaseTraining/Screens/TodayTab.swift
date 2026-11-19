@@ -85,12 +85,12 @@ struct TodayTab: View {
     }
 
     private func ensureWorkout() {
-        guard workout == nil, let active = store.active else { return }
-        let controller = ActiveWorkoutController(store: store,
-                                                 session: active,
-                                                 suppressAutoRest: LogScreen.uiTestSuppressAutoRest)
-        workout = controller
-        ActiveWorkoutRegistry.shared.current = controller
+        guard workout == nil, store.active != nil else { return }
+        // Adopt the controller an intent may already have built from the store.
+        let registry = ActiveWorkoutRegistry.shared
+        registry.store = store
+        registry.suppressAutoRest = LogScreen.uiTestSuppressAutoRest
+        workout = registry.resolve()
     }
 
     private func transition(_ next: TodayRoute) {
@@ -98,7 +98,7 @@ struct TodayTab: View {
             ensureWorkout()
         } else {
             workout = nil
-            ActiveWorkoutRegistry.shared.current = nil
+            ActiveWorkoutRegistry.shared.drop()
         }
         withMotion(.easeInOut(duration: 0.18), .fade) { route = next }
     }

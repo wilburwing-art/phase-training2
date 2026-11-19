@@ -1,7 +1,7 @@
 import AppIntents
 
 /// Siri and Shortcuts commands on the running workout. Each acts on
-/// `ActiveWorkoutRegistry.shared.current` without opening the app.
+/// `ActiveWorkoutRegistry.shared.resolve()` without opening the app.
 
 struct LogSetIntent: AppIntent {
     static var title: LocalizedStringResource = "Log a set"
@@ -24,7 +24,7 @@ struct LogSetIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let line = WorkoutIntentActions.logSet(weight: weight, reps: reps,
-                                               in: ActiveWorkoutRegistry.shared.current)
+                                               in: ActiveWorkoutRegistry.shared.resolve())
         return .result(dialog: IntentDialog(stringLiteral: line))
     }
 }
@@ -38,7 +38,7 @@ struct SkipRestIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let line = WorkoutIntentActions.skipRest(in: ActiveWorkoutRegistry.shared.current)
+        let line = WorkoutIntentActions.skipRest(in: ActiveWorkoutRegistry.shared.resolve())
         return .result(dialog: IntentDialog(stringLiteral: line))
     }
 }
@@ -60,7 +60,7 @@ struct AddRestIntent: AppIntent {
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
         let line = WorkoutIntentActions.addRest(seconds: seconds,
-                                                in: ActiveWorkoutRegistry.shared.current)
+                                                in: ActiveWorkoutRegistry.shared.resolve())
         return .result(dialog: IntentDialog(stringLiteral: line))
     }
 }
@@ -74,7 +74,7 @@ struct WhatsNextIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let line = WorkoutIntentActions.whatsNext(in: ActiveWorkoutRegistry.shared.current)
+        let line = WorkoutIntentActions.whatsNext(in: ActiveWorkoutRegistry.shared.resolve())
         return .result(dialog: IntentDialog(stringLiteral: line))
     }
 }

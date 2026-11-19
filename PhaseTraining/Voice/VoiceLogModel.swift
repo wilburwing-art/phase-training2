@@ -181,7 +181,7 @@ final class VoiceLogModel: ObservableObject {
         performUndo(heard: "")
     }
 
-    private static let allLogged = "All sets are logged"
+    private static let allLogged = WorkoutIntentActions.allLogged
 
     private var restRunning: Bool {
         workout.rest.remaining(at: now()) != nil

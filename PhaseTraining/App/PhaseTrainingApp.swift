@@ -5,7 +5,7 @@ struct PhaseTrainingApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage(CoachConsent.storageKey) private var coachConsentGranted: Bool = false
 
-    @StateObject private var session = SessionStore()
+    @StateObject private var session: SessionStore
     @StateObject private var memory  = MemoryStore()
     @StateObject private var plan    = PlanStore()
     @StateObject private var custom  = CustomRoutineStore()
@@ -180,6 +180,12 @@ struct PhaseTrainingApp: App {
             diskCapacity: 256 * 1024 * 1024
         )
         WeeklyReminderScheduler.registerDelegate()
+        // After the wipe and seeds, so the store reads what they wrote. A Siri
+        // intent or Live Activity button can launch the app in the background,
+        // and the registry needs the store to rebuild the running workout.
+        let sessionStore = SessionStore()
+        _session = StateObject(wrappedValue: sessionStore)
+        ActiveWorkoutRegistry.shared.store = sessionStore
     }
 
     #if DEBUG
