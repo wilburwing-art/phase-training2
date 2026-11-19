@@ -6,10 +6,11 @@
 // pass) can read it without an environment object; views observe the same
 // key via @AppStorage for reactivity.
 //
-// PRODUCT DECISION (2026-06-05): coach ships FREE. The Pro gate is wired at
-// every coach surface but held open by `proRequired = false`. To start
-// charging: flip it to true and create the products in App Store Connect
-// (see SubscriptionStore.swift) — no other code changes needed.
+// PRODUCT DECISION (2026-11-18): the coach ships in the first store build
+// inside Pro. The Pro gate is wired at every coach surface and held open by
+// `proRequired = false` until the App Store Connect products exist; flip it
+// to true in the same build that flips `SupportEntitlement.proRequired`
+// (see SubscriptionStore.swift). No other code changes are needed.
 
 import Foundation
 
