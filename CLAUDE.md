@@ -44,4 +44,8 @@ iOS training app (SwiftUI) with a watchOS companion. Targets: `PhaseTraining`, `
 - Backlog location: `docs/PLAN-gap-backlog-<YYYY-MM>.md`, suffix `b`, `c`, `d` for later runs in the month. `/next` picks work from `docs/QUEUE.md` (pins first, then backlogs top to bottom). `/gaps` and `/spec` add new backlogs to its bottom; reorder by hand.
 - Blocked markers: an item that needs an owner decision, device action, account, key or entitlement says so in its own text, with "(owner decision)" in the bold title for Phase 0 lines. Work parked for lack of a plan goes under `## Not scheduled`.
 - Drop a finding already in any earlier backlog file, ticked or open.
+- Open gap items cap at 30 across queued gap backlogs. `/gaps` queues its top-ranked survivors up to the cap; the rest go under `## Not scheduled`.
+- `/next` ticks an item only after it runs the item's named test classes itself and they pass. A red main CI run is the next item.
+- `/retro` runs weekly (Monday 08:00, launchd `com.wilburwing.phase-training-retro`) and writes `docs/retro/<date>.md`. It edits nothing else.
+- Repo commands in `.claude/commands/` win over `~/.claude/commands/`; the home copies defer to them.
 - Push straight to `main`, commit the backlog doc by named path.

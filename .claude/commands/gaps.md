@@ -39,6 +39,22 @@ sessions and never writes a workout. Readiness lives under Progress, not
 on Today. The one-screen Today rule is dropped. Decisions recorded in
 ROADMAP.md, PLAN-next-gen.md and the backlog docs stay settled.
 
+OPEN-ITEM CAP: 30
+Count open gap items first, one call:
+  grep -cE '^\s*- \[ \]' docs/PLAN-gap-backlog-*.md
+summing only the files listed under Backlogs in docs/QUEUE.md. Room =
+30 minus that sum. Rank the surviving findings by cost to the user and
+queue only the top <room> as build items. Every other survivor goes under
+`## Not scheduled` in the same doc, one line each with its evidence, so a
+later run can promote it without re-auditing. If room is 0, write no new
+doc: post the open count and the top three findings you would have
+queued, then stop.
+
+STABILITY
+If a finding matches an earlier backlog item or Not scheduled line
+(ticked or open), drop it; do not reword it into a new item. If no
+finding survives, write no doc and post "no new gaps" with the counts.
+
 OUTPUT
 1. docs/PLAN-gap-backlog-<YYYY-MM>[b,c...].md in the format of the existing
    gap backlogs: a short header naming the lenses and the date, then phases

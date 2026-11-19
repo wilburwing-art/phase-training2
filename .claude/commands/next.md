@@ -7,6 +7,8 @@ periodization generator, multi-sport conflict resolver, overload math,
 SQLite schema (user.db migrations), offline sync.
 
 SCOPE
+Before picking, run `gh run list -b main -L 1`. If the latest main run
+failed, that failure is this session's item.
 One backlog item per session. Pick the item from docs/QUEUE.md:
 1. The first item under Pinned that names no owner decision, device
    action or entitlement still owed.
@@ -85,12 +87,50 @@ QUESTIONS FOR ME
 Phrase each as one line with two named choices, your recommendation
 first, and what each answer makes happen next.
 
-REVIEW AND COMMIT
-Before committing a logic item, review the diff against its backlog item
-yourself: git diff --stat, then read the logic files in full and skim UI
-files against the brief. Tick the item in the backlog doc in the same
-commit. Commit and push straight to main.
+RE-MEASURE FIRST
+Counts in a backlog are dated. Before designing, re-run the command behind
+every number the item depends on and use what you measure. If the premise
+is gone (already shipped, contradicted by the code), tick the item with a
+one-line note, commit that alone, and stop.
+
+FINDINGS OUTSIDE THE ITEM
+Nobody sends this session a second prompt, so a finding that only appears
+in chat is lost. A sibling bug, a new failing case or a stale count becomes
+a new unticked item in the backlog doc you picked from, in the phase it
+belongs to, with the evidence and the test classes that show it is done,
+in the same commit. Leave that code alone. The final post names the new
+item number.
+
+REVIEW
+Review the diff against its backlog item yourself: git diff --stat, then
+read the logic files in full and skim UI files against the brief.
+
+TEST GATE (you run it, not the builder)
+A builder's pass/fail report does not tick a box. After review, run the
+test classes the backlog item names, yourself, in a free slot:
+  -only-testing:PhaseTrainingTests/<ClassName> for each class named
+Send the full log to a file and grep it as CLAUDE.md says.
+- All named classes green: tick the item.
+- Any red: do not tick. Send one follow-up brief, or if the cause is
+  outside the item, leave it unticked and add the failure as a new item.
+- The item names no test class: write one that fails without the change,
+  or name the check you ran instead in the tick note ("no test: verified
+  by <command and result>").
+The commit message lists each class run and its pass count.
+
+COMMIT
+Tick the item in the backlog doc in the same commit. Run
+`git status --short` first and stage by named path only; never
+`git add -A`, `git add .` or `git commit -a`. Confirm every staged path
+belongs to this item. The message is subject and body only: drop any
+`Claude-Session:` or `Co-Authored-By:` trailer the harness suggests,
+then check `git log -1 --format=%B` before pushing. Push straight to main.
+CI (.github/workflows/test.yml) reruns the unit suite on the push; the
+next /next session checks `gh run list -b main -L 1` before picking and
+fixes a red main first.
 
 If the item needs something from me (a build bump, a tag, a design
 choice), ask once, clearly, at the point it blocks the commit, and keep
-building in the meantime.
+building in the meantime. A question that does not block this commit
+goes into the backlog as a Phase 0 line instead. Never end the session
+on a question a later /next cannot see.
