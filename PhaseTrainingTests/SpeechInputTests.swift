@@ -378,6 +378,60 @@ final class SpeechInputTests: XCTestCase {
         XCTAssertEqual(input.state, .idle)
     }
 
+    func testStalledFinishReturnsLastPartialWithinCap() async {
+        let gate = GatedTranscriber()
+        let owner = VoiceAudioSessionOwner()
+        let input = SpeechInput(transcriber: gate, permissions: permissions, audioOwner: owner,
+                                finishTimeout: .milliseconds(200))
+        await input.pressDown(exerciseNames: [])
+        gate.emit(" 185 for 5 ")
+
+        let started = ContinuousClock.now
+        let text = await input.release()
+        let elapsed = ContinuousClock.now - started
+
+        XCTAssertEqual(text, "185 for 5")
+        XCTAssertEqual(input.state, .idle)
+        XCTAssertFalse(owner.micLive)
+        XCTAssertEqual(gate.cancelCount, 1, "a stalled transcriber is cancelled")
+        XCTAssertLessThan(elapsed, .seconds(2))
+    }
+
+    func testStalledFinishWithNoPartialIsNil() async {
+        let gate = GatedTranscriber()
+        let input = SpeechInput(transcriber: gate, permissions: permissions, finishTimeout: .milliseconds(100))
+        await input.pressDown(exerciseNames: [])
+        let text = await input.release()
+        XCTAssertNil(text)
+        XCTAssertEqual(input.state, .idle)
+    }
+
+    func testLateFinalAfterTimeoutIsDropped() async {
+        let gate = GatedTranscriber()
+        gate.ignoresCancel = true
+        let input = SpeechInput(transcriber: gate, permissions: permissions, finishTimeout: .milliseconds(100))
+        await input.pressDown(exerciseNames: [])
+        gate.emit("skip rest")
+        let text = await input.release()
+        XCTAssertEqual(text, "skip rest")
+
+        gate.open("undo")
+        await Task.yield()
+        XCTAssertEqual(input.state, .idle)
+    }
+
+    func testFinishBeforeCapIsNotCancelled() async {
+        let gate = GatedTranscriber()
+        let input = SpeechInput(transcriber: gate, permissions: permissions, finishTimeout: .seconds(5))
+        await input.pressDown(exerciseNames: [])
+        let release = Task { await input.release() }
+        while input.state != .finishing { await Task.yield() }
+        gate.open("done")
+        let text = await release.value
+        XCTAssertEqual(text, "done")
+        XCTAssertEqual(gate.cancelCount, 0)
+    }
+
     // MARK: - Contextual strings
 
     func testContextualStringsOrderNamesThenCommands() {
@@ -462,10 +516,18 @@ final class SpeechInputTests: XCTestCase {
 @MainActor
 private final class GatedTranscriber: SpeechTranscribing {
     var supportsOnDevice = true
+    /// When false, `cancel` ends a pending `finish` with nil, as the live transcribers do.
+    var ignoresCancel = false
+    private(set) var cancelCount = 0
     private var waiter: CheckedContinuation<String?, Never>?
     private var pending: String??
+    private var onPartial: ((String) -> Void)?
 
-    func start(contextualStrings: [String], onPartial: @escaping (String) -> Void) throws {}
+    func start(contextualStrings: [String], onPartial: @escaping (String) -> Void) throws {
+        self.onPartial = onPartial
+    }
+
+    func emit(_ partial: String) { onPartial?(partial) }
 
     func finish() async -> String? {
         if let pending { return pending }
@@ -481,5 +543,10 @@ private final class GatedTranscriber: SpeechTranscribing {
         }
     }
 
-    func cancel() {}
+    func cancel() {
+        cancelCount += 1
+        guard !ignoresCancel, let waiter else { return }
+        self.waiter = nil
+        waiter.resume(returning: nil)
+    }
 }

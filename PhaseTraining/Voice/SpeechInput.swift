@@ -77,6 +77,9 @@ final class SpeechInput: ObservableObject {
     private let permissions: SpeechPermissionProviding
     private let output: SpeechOutputting?
     private let audioOwner: VoiceAudioSessionOwner
+    /// How long `release` waits for the transcriber's final. `LegacyTranscriber`
+    /// caps its own wait at the same 3 s; `AnalyzerTranscriber` has no cap of its own.
+    private let finishTimeout: Duration
     private var lastPartial: String?
     /// True from `pressDown` until `release` or `cancel`. A release that lands
     /// while a permission prompt is up clears it, so the mic does not open
@@ -88,12 +91,14 @@ final class SpeechInput: ObservableObject {
         transcriber: SpeechTranscribing,
         permissions: SpeechPermissionProviding,
         output: SpeechOutputting? = nil,
-        audioOwner: VoiceAudioSessionOwner = .shared
+        audioOwner: VoiceAudioSessionOwner = .shared,
+        finishTimeout: Duration = .seconds(3)
     ) {
         self.transcriber = transcriber
         self.permissions = permissions
         self.output = output
         self.audioOwner = audioOwner
+        self.finishTimeout = finishTimeout
         refreshAvailability()
     }
 
@@ -170,14 +175,41 @@ final class SpeechInput: ObservableObject {
         state = .finishing
         let partial = lastPartial
         lastPartial = nil
-        do {
-            let final = try await transcriber.finish()
+        switch await finishWithinCap() {
+        case .success(let final)?:
             state = .idle
             return Self.resolveTranscript(final: final, lastPartial: partial)
-        } catch {
+        case .failure(let error)?:
             print("[SpeechInput] finish failed: \(error)")
             state = .idle
             return nil
+        case nil:
+            // The transcriber stalled: drop it and keep what was heard so far.
+            print("[SpeechInput] finish timed out after \(finishTimeout)")
+            transcriber.cancel()
+            state = .idle
+            return Self.resolveTranscript(final: nil, lastPartial: partial)
+        }
+    }
+
+    /// The transcriber's final, or nil when `finishTimeout` passes first. A late
+    /// final after the timeout is dropped.
+    private func finishWithinCap() async -> Result<String?, Error>? {
+        let transcriber = transcriber
+        let timeout = finishTimeout
+        return await withCheckedContinuation { (cont: CheckedContinuation<Result<String?, Error>?, Never>) in
+            let race = FinishRace(cont)
+            let timer = Task { @MainActor in
+                try? await Task.sleep(for: timeout)
+                guard !Task.isCancelled else { return }
+                race.resolve(nil)
+            }
+            Task { @MainActor in
+                let result: Result<String?, Error>
+                do { result = .success(try await transcriber.finish()) } catch { result = .failure(error) }
+                timer.cancel()
+                race.resolve(result)
+            }
         }
     }
 
@@ -250,6 +282,20 @@ final class SpeechInput: ObservableObject {
             transcriber = LegacyTranscriber()
         }
         return SpeechInput(transcriber: transcriber, permissions: SpeechPermissions(), output: output)
+    }
+}
+
+/// Resumes its continuation once, for whichever of finish or timeout lands first.
+@MainActor
+private final class FinishRace {
+    private var cont: CheckedContinuation<Result<String?, Error>?, Never>?
+
+    init(_ cont: CheckedContinuation<Result<String?, Error>?, Never>) { self.cont = cont }
+
+    func resolve(_ result: Result<String?, Error>?) {
+        guard let cont else { return }
+        self.cont = nil
+        cont.resume(returning: result)
     }
 }
 
