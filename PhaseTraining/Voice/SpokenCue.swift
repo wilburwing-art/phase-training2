@@ -3,17 +3,23 @@ import UIKit
 /// The lines spoken during a workout. Pure text, no state.
 enum SpokenCue {
     static func restEnd(next: NextUp, in session: ActiveSession) -> String {
+        "Rest's up. \(upNext(next: next, in: session))."
+    }
+
+    /// The set to do next, as the rest-end line says it without the lead-in
+    /// or the closing period.
+    static func upNext(next: NextUp, in session: ActiveSession) -> String {
         let load = loadPhrase(weight: next.lastWeight, reps: next.targetReps)
         let tail = load.map { ", \($0)" } ?? ""
         if let rounds = supersetRounds(of: next, in: session) {
             let last = next.setNumber >= rounds
             let round = last ? "last round" : "round \(next.setNumber) of \(rounds)"
-            return "Rest's up. Superset, \(round). \(next.exerciseName)\(tail)."
+            return "Superset, \(round). \(next.exerciseName)\(tail)"
         }
         let position = next.setNumber == next.totalSets
             ? "last set"
             : "set \(next.setNumber) of \(next.totalSets)"
-        return "Rest's up. \(next.exerciseName), \(position)\(tail)."
+        return "\(next.exerciseName), \(position)\(tail)"
     }
 
     static func warning(next: NextUp, in session: ActiveSession) -> String {
@@ -52,7 +58,7 @@ enum SpokenCue {
         }
     }
 
-    private static func format(_ w: Double) -> String {
+    static func format(_ w: Double) -> String {
         if w == w.rounded() { return String(Int(w)) }
         var s = String(format: "%.1f", w)
         while s.hasSuffix("0") { s.removeLast() }

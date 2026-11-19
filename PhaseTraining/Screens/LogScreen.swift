@@ -43,8 +43,18 @@ struct LogScreen: View {
     @EnvironmentObject private var memoryStore: MemoryStore
     @EnvironmentObject private var conv: CoachConversationStore
     @ObservedObject var workout: ActiveWorkoutController
+    @StateObject private var voice: VoiceLogModel
     let onFinish: () -> Void
     var onCancel: (() -> Void)? = nil
+
+    init(workout: ActiveWorkoutController,
+         onFinish: @escaping () -> Void,
+         onCancel: (() -> Void)? = nil) {
+        self.workout = workout
+        self.onFinish = onFinish
+        self.onCancel = onCancel
+        _voice = StateObject(wrappedValue: VoiceLogModel(workout: workout, input: nil))
+    }
 
     var session: ActiveSession {
         get { workout.session }
@@ -128,6 +138,8 @@ struct LogScreen: View {
         // go heavier should not start with a row of backspaces.
         .selectsAllOnFocusInNumberFields()
         .onAppear(perform: loadIfNeeded)
+        .task { await voice.prepare() }
+        .onDisappear { voice.cancel() }
         .onChange(of: workout.rest) { _, _ in
             // Lock Screen / Dynamic Island rest timer. One report covers start,
             // +15, -15, a new rest and skip; the expiry notification is untouched.
@@ -344,6 +356,7 @@ struct LogScreen: View {
                 }
             }
             .scrollDismissesKeyboard(.interactively)
+            .overlay(alignment: .top) { VoiceHeardOverlay(model: voice) }
             .safeAreaInset(edge: .bottom) {
                 // Media card, like Google Maps during navigation: change the
                 // track without leaving the workout. Comes and goes with
@@ -414,10 +427,14 @@ struct LogScreen: View {
                             .styled(.monoM)
                             .foregroundStyle(Color.ink)
                             .monospacedDigit()
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
                     }
                 }
 
                 Spacer()
+
+                VoiceMicButton(model: voice)
 
                 // Whole-workout shortcut: log every remaining set in one tap
                 // (rack-first users). Secondary styling keeps Finish the
@@ -425,6 +442,8 @@ struct LogScreen: View {
                 if anyUndone {
                     Button { showLogAllConfirm = true } label: {
                         Text("Log all")
+                            .lineLimit(1)
+                            .fixedSize()
                             .font(.scaled("Inter-Regular", size: 13).weight(.bold))
                             .tracking(-0.01 * 13)
                             .foregroundStyle(Color.accent)
@@ -445,6 +464,8 @@ struct LogScreen: View {
                     if incompleteSetCount > 0 { showFinishConfirm = true } else { onFinish() }
                 }) {
                     Text("Finish")
+                        .lineLimit(1)
+                        .fixedSize()
                         .font(.scaled("Inter-Regular", size: 13).weight(.bold))
                         .tracking(-0.01 * 13)
                         .foregroundStyle(Color.accentInk)
