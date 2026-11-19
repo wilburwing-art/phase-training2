@@ -43,6 +43,9 @@ final class VoiceLogModel: ObservableObject {
     private let workout: ActiveWorkoutController
     private var input: SpeechInput?
     private let readback: @MainActor (LoggedExercise, Int) -> Void
+    /// The cue speaker; `SpeechInput` stops it before the mic opens.
+    private let cueOutput: @MainActor () -> SpeechOutputting
+    private let makeInput: @MainActor (SpeechOutputting) async -> SpeechInput
     private let now: () -> Date
     private var undoEntry: UndoEntry?
     private var stateSink: AnyCancellable?
@@ -50,9 +53,13 @@ final class VoiceLogModel: ObservableObject {
     init(workout: ActiveWorkoutController,
          input: SpeechInput?,
          readback: @escaping @MainActor (LoggedExercise, Int) -> Void = { VoiceCuePlayer.shared.readback(exercise: $0, setIdx: $1) },
+         cueOutput: @escaping @MainActor () -> SpeechOutputting = { VoiceCuePlayer.shared.speechOutput },
+         makeInput: @escaping @MainActor (SpeechOutputting) async -> SpeechInput = { await SpeechInput.makeDefault(output: $0) },
          now: @escaping () -> Date = Date.init) {
         self.workout = workout
         self.readback = readback
+        self.cueOutput = cueOutput
+        self.makeInput = makeInput
         self.now = now
         if let input { attach(input) }
     }
@@ -70,7 +77,7 @@ final class VoiceLogModel: ObservableObject {
         if let text = Self.cannedTranscript() {
             attach(SpeechInput(transcriber: CannedTranscriber(transcript: text), permissions: GrantedPermissions()))
         } else {
-            attach(await SpeechInput.makeDefault(output: nil))
+            attach(await makeInput(cueOutput()))
         }
     }
 

@@ -104,10 +104,17 @@ final class VoiceCuePlayer {
         return SpokenCue.restEnd(next: next, in: session)
     }
 
-    /// Render `line` to a notification sound file in the chosen voice.
-    func render(_ line: String) async throws -> URL {
+    /// The speaker every cue goes through, made on first use. The log screen's
+    /// mic gets this one, so opening the mic stops a cue still speaking.
+    var speechOutput: SpeechOutputting {
         let out = output ?? makeOutput()
         output = out
+        return out
+    }
+
+    /// Render `line` to a notification sound file in the chosen voice.
+    func render(_ line: String) async throws -> URL {
+        let out = speechOutput
         (out as? SpeechOutput)?.voiceIdentifier = VoiceSettings.load(from: defaults).voiceId
         return try await out.renderToFile(line)
     }
@@ -127,8 +134,7 @@ final class VoiceCuePlayer {
         let settings = VoiceSettings.load(from: defaults)
         guard Self.speaksRestEnd(settings: settings, voiceOverRunning: voiceOverRunning()) else { return false }
         if fullOnly && settings.level != .full { return false }
-        let out = output ?? makeOutput()
-        output = out
+        let out = speechOutput
         (out as? SpeechOutput)?.voiceIdentifier = settings.voiceId
         out.speak(line())
         return true

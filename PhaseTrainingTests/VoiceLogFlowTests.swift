@@ -70,6 +70,41 @@ final class VoiceLogFlowTests: XCTestCase {
         return (model, workout)
     }
 
+    // MARK: - Mic and cues
+
+    func test_pressDownStopsACueStillSpeaking() async {
+        let d = defaults()
+        VoiceSettings(cuesOn: true, level: .full).save(to: d)
+        let fakeOutput = FakeSpeechOutput()
+        let player = VoiceCuePlayer(output: { fakeOutput }, defaults: d, voiceOverRunning: { false })
+        let logged = exercise("Bench", sets: 3, weight: "185")
+        let store = SessionStore(defaults: defaults())
+        let session = ActiveSession(templateId: "t", name: "Test", category: "Custom",
+                                    startTime: Date(), exercises: [logged],
+                                    feel: nil, note: nil)
+        store.saveActive(session)
+        let workout = ActiveWorkoutController(store: store, session: session,
+                                              haptic: { _ in },
+                                              now: { [unowned self] in clock })
+        let model = VoiceLogModel(
+            workout: workout, input: nil,
+            readback: { player.readback(exercise: $0, setIdx: $1) },
+            cueOutput: { player.speechOutput },
+            makeInput: { [unowned self] out in
+                SpeechInput(transcriber: transcriber, permissions: permissions, output: out)
+            },
+            now: { [unowned self] in clock })
+
+        XCTAssertTrue(player.readback(exercise: logged, setIdx: 0))
+        XCTAssertEqual(fakeOutput.spoken.count, 1)
+        XCTAssertEqual(fakeOutput.stopCount, 0)
+
+        await model.pressDown()
+
+        XCTAssertEqual(model.inputState, .listening(partial: ""))
+        XCTAssertEqual(fakeOutput.stopCount, 1)
+    }
+
     // MARK: - Logging
 
     func test_185For5LogsNextUpSetAndReadsBackOnce() {
