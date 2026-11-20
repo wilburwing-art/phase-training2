@@ -296,4 +296,33 @@ final class WorkoutIntentTests: XCTestCase {
         ActiveWorkoutRegistry.shared.current = c
         XCTAssertTrue(ActiveWorkoutRegistry.shared.resolve() === c)
     }
+
+    // MARK: - Talk to coach (voice 3.4)
+
+    func test_talkToCoachWithoutTokenSaysOffAndOpensNothing() {
+        let d = defaults()
+        d.set(true, forKey: CoachConsent.storageKey)
+        d.set(true, forKey: CoachEntitlement.proKey)
+        let launch = VoiceCheckInLaunch()
+        XCTAssertEqual(launch.request(defaults: d, available: false), VoiceCheckInLaunch.offLine)
+        XCTAssertFalse(launch.consume())
+    }
+
+    func test_talkToCoachWithoutConsentSaysOff() {
+        let d = defaults()
+        d.set(true, forKey: CoachEntitlement.proKey)
+        let launch = VoiceCheckInLaunch()
+        XCTAssertEqual(launch.request(defaults: d, available: true), VoiceCheckInLaunch.offLine)
+        XCTAssertFalse(launch.consume())
+    }
+
+    func test_talkToCoachRaisesTheFlagOnceWhenOffered() {
+        let d = defaults()
+        d.set(true, forKey: CoachConsent.storageKey)
+        d.set(true, forKey: CoachEntitlement.proKey)
+        let launch = VoiceCheckInLaunch()
+        XCTAssertEqual(launch.request(defaults: d, available: true), VoiceCheckInLaunch.openingLine)
+        XCTAssertTrue(launch.consume())
+        XCTAssertFalse(launch.consume())
+    }
 }

@@ -105,6 +105,16 @@ struct RootTabView: View {
         .fullScreenCover(isPresented: $conv.voicePresented) {
             VoiceCheckInScreen()
         }
+        .onReceive(VoiceCheckInLaunch.shared.$pending) { pending in
+            // TalkToCoachIntent (voice 3.4) raised the flag; the intent already checked the gate.
+            // @Published emits before the value lands, so take it on the next turn.
+            guard pending else { return }
+            Task { @MainActor in
+                guard VoiceCheckInLaunch.shared.consume() else { return }
+                conv.presented = false
+                conv.voicePresented = true
+            }
+        }
         #if DEBUG
         .task {
             // UITest hook (DEBUG-only): open the voice check-in on launch.
