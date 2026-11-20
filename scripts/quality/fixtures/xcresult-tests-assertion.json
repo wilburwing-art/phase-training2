@@ -1,0 +1,186 @@
+{
+  "testNodes": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "name": "Test skipped - Disabled until iOS 26 fresh-boot Menu accessibility is resolved",
+                      "nodeType": "Failure Message"
+                    }
+                  ],
+                  "duration": "13s",
+                  "durationInSeconds": 13.170488953590393,
+                  "name": "testAdd15WorksAfterPresetOverride()",
+                  "nodeIdentifier": "LogFlowTests/testAdd15WorksAfterPresetOverride()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/LogFlowTests/testAdd15WorksAfterPresetOverride",
+                  "nodeType": "Test Case",
+                  "result": "Skipped"
+                },
+                {
+                  "children": [
+                    {
+                      "name": "Test skipped - Disabled until iOS 26 fresh-boot XCUITest flake is resolved",
+                      "nodeType": "Failure Message"
+                    }
+                  ],
+                  "duration": "11s",
+                  "durationInSeconds": 11.568421959877014,
+                  "name": "testAddExerciseAppendsAtEnd()",
+                  "nodeIdentifier": "LogFlowTests/testAddExerciseAppendsAtEnd()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/LogFlowTests/testAddExerciseAppendsAtEnd",
+                  "nodeType": "Test Case",
+                  "result": "Skipped"
+                },
+                {
+                  "duration": "1m 11s",
+                  "durationInSeconds": 71.39872097969055,
+                  "name": "testAddExercisePickerDismissesCleanly()",
+                  "nodeIdentifier": "LogFlowTests/testAddExercisePickerDismissesCleanly()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/LogFlowTests/testAddExercisePickerDismissesCleanly",
+                  "nodeType": "Test Case",
+                  "result": "Passed"
+                },
+                {
+                  "children": [
+                    {
+                      "name": "Test skipped - Disabled until iOS 26 fresh-boot XCUITest flake is resolved",
+                      "nodeType": "Failure Message"
+                    }
+                  ],
+                  "duration": "2s",
+                  "durationInSeconds": 2.2336390018463135,
+                  "name": "testBackgroundingDoesNotDoubleFireAlert()",
+                  "nodeIdentifier": "LogFlowTests/testBackgroundingDoesNotDoubleFireAlert()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/LogFlowTests/testBackgroundingDoesNotDoubleFireAlert",
+                  "nodeType": "Test Case",
+                  "result": "Skipped"
+                },
+                {
+                  "children": [
+                    {
+                      "name": "Test skipped - Disabled until iOS 26 fresh-boot XCUITest flake is resolved",
+                      "nodeType": "Failure Message"
+                    }
+                  ],
+                  "duration": "0.14s",
+                  "durationInSeconds": 0.1433330774307251,
+                  "name": "testDeleteRestingSetClearsRest()",
+                  "nodeIdentifier": "LogFlowTests/testDeleteRestingSetClearsRest()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/LogFlowTests/testDeleteRestingSetClearsRest",
+                  "nodeType": "Test Case",
+                  "result": "Skipped"
+                },
+                {
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "name": "LogFlowTests.swift:209: XCTAssertTrue failed - rest card should appear after first set done",
+                          "nodeType": "Failure Message"
+                        }
+                      ],
+                      "duration": "1m 28s",
+                      "durationInSeconds": 88.18193507194519,
+                      "name": "First Run",
+                      "nodeIdentifier": "1",
+                      "nodeType": "Repetition",
+                      "result": "Failed"
+                    },
+                    {
+                      "children": [
+                        {
+                          "name": "LogFlowTests.swift:209: XCTAssertTrue failed - rest card should appear after first set done",
+                          "nodeType": "Failure Message"
+                        }
+                      ],
+                      "duration": "1m 8s",
+                      "durationInSeconds": 68.15523898601532,
+                      "name": "Retry 1",
+                      "nodeIdentifier": "2",
+                      "nodeType": "Repetition",
+                      "result": "Failed"
+                    },
+                    {
+                      "children": [
+                        {
+                          "name": "LogFlowTests.swift:213: XCTAssertTrue failed - DONE flash card should appear within ~3s",
+                          "nodeType": "Failure Message"
+                        }
+                      ],
+                      "duration": "31s",
+                      "durationInSeconds": 31.841815948486328,
+                      "name": "Retry 2",
+                      "nodeIdentifier": "3",
+                      "nodeType": "Repetition",
+                      "result": "Failed"
+                    }
+                  ],
+                  "details": "Failed after 3 retries",
+                  "duration": "1m 2s",
+                  "durationInSeconds": 62.72633000214895,
+                  "name": "testRestExpiryShowsDoneFlash()",
+                  "nodeIdentifier": "LogFlowTests/testRestExpiryShowsDoneFlash()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/LogFlowTests/testRestExpiryShowsDoneFlash",
+                  "nodeType": "Test Case",
+                  "result": "Failed"
+                },
+                {
+                  "children": [
+                    {
+                      "name": "Test skipped - Disabled until iOS 26 fresh-boot Menu accessibility is resolved",
+                      "nodeType": "Failure Message"
+                    }
+                  ],
+                  "duration": "11s",
+                  "durationInSeconds": 11.733708024024963,
+                  "name": "testRestPresetRestartsCountdown()",
+                  "nodeIdentifier": "LogFlowTests/testRestPresetRestartsCountdown()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/LogFlowTests/testRestPresetRestartsCountdown",
+                  "nodeType": "Test Case",
+                  "result": "Skipped"
+                },
+                {
+                  "children": [
+                    {
+                      "name": "Test skipped - Disabled until iOS 26 fresh-boot XCUITest flake is resolved",
+                      "nodeType": "Failure Message"
+                    }
+                  ],
+                  "duration": "0.14s",
+                  "durationInSeconds": 0.14194798469543457,
+                  "name": "testSkipBeforeExpirySuppressesAlert()",
+                  "nodeIdentifier": "LogFlowTests/testSkipBeforeExpirySuppressesAlert()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/LogFlowTests/testSkipBeforeExpirySuppressesAlert",
+                  "nodeType": "Test Case",
+                  "result": "Skipped"
+                }
+              ],
+              "name": "LogFlowTests",
+              "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/LogFlowTests",
+              "nodeType": "Test Suite",
+              "result": "Failed"
+            }
+          ],
+          "name": "PhaseTrainingUITests",
+          "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests",
+          "nodeType": "UI test bundle",
+          "result": "Failed"
+        }
+      ],
+      "name": "PhaseTraining",
+      "nodeType": "Test Plan",
+      "result": "Failed"
+    }
+  ],
+  "testPlanConfigurations": [
+    {
+      "configurationId": "1",
+      "configurationName": "Test Scheme Action"
+    }
+  ]
+}

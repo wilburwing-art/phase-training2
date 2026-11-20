@@ -159,6 +159,10 @@ jobs:
         id: setup
         uses: ./.github/actions/ios-setup
 
+      - name: Crash-retry script tests
+        # Unit tests for the runner-crash parser the next step calls.
+        run: python3 scripts/quality/test_ui_crash_retry.py
+
       - name: Run UI tests
         # -retry-tests-on-failure + -test-iterations 3: retry only the
         # individual failing test cases (not the whole suite), up to 2
@@ -168,9 +172,17 @@ jobs:
         # each run. A real regression still fails (it'd fail all 3 tries);
         # a single-shot rig flake gets absorbed transparently. Apple-
         # supported since Xcode 13.
+        #
+        # Those retries need a live runner. When the runner itself dies
+        # ("Test crashed with signal term."), the relaunched runner logs
+        # "Executed 0 tests" and the case is never retried (run 44805314849).
+        # If every failed case is such a crash, ui_crash_retry.py prints
+        # their -only-testing args and they re-run once; the shard takes
+        # the re-run's result. Any other failure keeps the first result.
         run: |
           set -o pipefail
           mkdir -p build
+          status=0
           xcodebuild test \
             -project PhaseTraining.xcodeproj \
             -scheme PhaseTraining \
@@ -181,6 +193,23 @@ jobs:
             -test-iterations 3 \
             CODE_SIGNING_ALLOWED=NO \
             | tee build/raw-test.log \
+            | xcbeautify --renderer github-actions \
+            || status=$?
+          [ "$status" -eq 0 ] && exit 0
+          if ! retry=$(python3 scripts/quality/ui_crash_retry.py build/TestResults.xcresult); then
+            exit "$status"
+          fi
+          echo "::warning::Test runner crashed; re-running once: ${retry//$'\n'/ }"
+          # One arg per line, no spaces or globs, so word splitting is wanted.
+          # shellcheck disable=SC2086
+          xcodebuild test \
+            -project PhaseTraining.xcodeproj \
+            -scheme PhaseTraining \
+            -destination "platform=iOS Simulator,id=${{ steps.setup.outputs.udid }}" \
+            $retry \
+            -resultBundlePath build/RetryResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee -a build/raw-test.log \
             | xcbeautify --renderer github-actions
 
       # The three tap-budget steps read TapBudgetTests' markers, so they
@@ -220,3 +249,11 @@ jobs:
         with:
           name: TestResults-${{ matrix.shard }}.xcresult
           path: build/TestResults.xcresult
+
+      - name: Upload crash re-run xcresult
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: RetryResults-${{ matrix.shard }}.xcresult
+          path: build/RetryResults.xcresult
+          if-no-files-found: ignore

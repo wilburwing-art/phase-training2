@@ -1,0 +1,63 @@
+{
+  "testNodes": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "duration": "22s",
+                  "durationInSeconds": 22.896989941596985,
+                  "name": "testAppLaunchesWithoutCrash()",
+                  "nodeIdentifier": "AppLaunchSmokeTests/testAppLaunchesWithoutCrash()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/AppLaunchSmokeTests/testAppLaunchesWithoutCrash",
+                  "nodeType": "Test Case",
+                  "result": "Passed"
+                }
+              ],
+              "name": "AppLaunchSmokeTests",
+              "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/AppLaunchSmokeTests",
+              "nodeType": "Test Suite",
+              "result": "Passed"
+            },
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "name": "Test crashed with signal term.",
+                      "nodeType": "Failure Message"
+                    }
+                  ],
+                  "name": "test_snowSportDay_presentsWithCarvingKettle()",
+                  "nodeIdentifier": "KettleSportUITests/test_snowSportDay_presentsWithCarvingKettle()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/KettleSportUITests/test_snowSportDay_presentsWithCarvingKettle",
+                  "nodeType": "Test Case",
+                  "result": "Failed"
+                }
+              ],
+              "name": "KettleSportUITests",
+              "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/KettleSportUITests",
+              "nodeType": "Test Suite",
+              "result": "Failed"
+            }
+          ],
+          "name": "PhaseTrainingUITests",
+          "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests",
+          "nodeType": "UI test bundle",
+          "result": "Failed"
+        }
+      ],
+      "name": "PhaseTraining",
+      "nodeType": "Test Plan",
+      "result": "Failed"
+    }
+  ],
+  "testPlanConfigurations": [
+    {
+      "configurationId": "1",
+      "configurationName": "Test Scheme Action"
+    }
+  ]
+}
