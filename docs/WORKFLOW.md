@@ -76,7 +76,7 @@ The current order lives in `docs/QUEUE.md`. Reorder it by hand.
    - removes the pin
    - moves a fully ticked backlog to Done
    - for a backlog from `/spec`, changes the ROADMAP heading to `(shipped <date>)` and runs `/retro`
-8. Every post ends with `<n> queued items blocked on you`.
+8. The session's last line is `NEXT_STATUS: done | waiting_ci | uncommitted | red | blocked | empty`, which `~/.claude/scripts/next-loop.py` reads to decide whether to run again.
 
 **`/retro`** looks for:
 - lost findings

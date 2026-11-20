@@ -49,8 +49,8 @@ QUEUE UPKEEP, in the same commit as the item
   with the date. If that backlog came from /spec, change its ROADMAP.md
   section heading from (specced) to (shipped <YYYY-MM-DD>), then run
   the retro skill on the track.
-- End every post with one line: "<n> queued items blocked on you,
-  <m> skipped on prerequisites".
+- Do not end posts with a prose count of blocked items. The session's
+  machine-readable end is the `NEXT_STATUS:` line under STATUS.
 
 DESIGN
 Before designing, read the item, the matching PLAN-*.md and the project
