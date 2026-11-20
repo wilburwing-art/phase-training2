@@ -325,4 +325,14 @@ final class WorkoutIntentTests: XCTestCase {
         XCTAssertTrue(launch.consume())
         XCTAssertFalse(launch.consume())
     }
+
+    // The phrase gate is compile time: the shortcut list and discoverability
+    // follow `COACH_PHRASE`. Debug (this test build) sets it; a release
+    // archive without it lists four shortcuts and hides the intent.
+    func test_talkToCoachPhraseFollowsTheBuildGate() {
+        XCTAssertTrue(PhaseShortcuts.listsTalkToCoach, "Debug builds set COACH_PHRASE")
+        XCTAssertEqual(PhaseShortcuts.appShortcuts.count,
+                       PhaseShortcuts.listsTalkToCoach ? 5 : 4)
+        XCTAssertEqual(TalkToCoachIntent.isDiscoverable, PhaseShortcuts.listsTalkToCoach)
+    }
 }

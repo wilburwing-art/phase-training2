@@ -181,7 +181,14 @@ targets:
         # through the catalog instead of legacy .strings. App target only.
         SWIFT_EMIT_LOC_STRINGS: YES
         LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+        # "Talk to coach" Siri phrase gate (voice 3.4). PT_COACH_PHRASE is
+        # empty unless set, so a Release archive lists no coach phrase.
+        # release.yml passes PT_COACH_PHRASE=COACH_PHRASE when
+        # PHASETRAINING_BETA is not 1 (the same input that blanks the token).
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) $(PT_COACH_PHRASE)"
       configs:
+        Debug:
+          PT_COACH_PHRASE: COACH_PHRASE
         Release:
           CODE_SIGN_STYLE: Manual
           CODE_SIGN_IDENTITY: "Apple Distribution"

@@ -3,14 +3,17 @@ import Combine
 import Foundation
 
 /// "Talk to coach" from Siri or Shortcuts (voice 3.4). Opens the app and the
-/// voice check-in screen. Not in `PhaseShortcuts` and not discoverable yet:
-/// `AppShortcutsBuilder` accepts only `if #available`, so a runtime token check
-/// cannot gate the phrase. The voice backlog's Phase 0 line picks the gate.
+/// voice check-in screen. Listed and discoverable only in `COACH_PHRASE`
+/// builds (see `PhaseShortcuts.listsTalkToCoach`).
 struct TalkToCoachIntent: AppIntent {
     static var title: LocalizedStringResource = "Talk to coach"
     static var description = IntentDescription("Opens a spoken check-in with the coach.")
     static var openAppWhenRun = true
+    #if COACH_PHRASE
+    static var isDiscoverable = true
+    #else
     static var isDiscoverable = false
+    #endif
 
     init() {}
 

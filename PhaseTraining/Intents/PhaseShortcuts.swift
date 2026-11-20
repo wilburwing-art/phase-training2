@@ -2,6 +2,17 @@ import AppIntents
 
 // 11c 7.1 adds its shortcuts here; an app may have only one AppShortcutsProvider.
 struct PhaseShortcuts: AppShortcutsProvider {
+    /// "Talk to coach" is listed only in builds compiled with `COACH_PHRASE`.
+    /// Project.yml sets it for Debug; release.yml sets it on the archive only
+    /// when `PHASETRAINING_BETA` is not 1, the same input that blanks the
+    /// gateway token. `AppShortcutsBuilder` rejects a runtime `if`, so the
+    /// gate is compile time (voice backlog Phase 0, decision A).
+    #if COACH_PHRASE
+    static let listsTalkToCoach = true
+    #else
+    static let listsTalkToCoach = false
+    #endif
+
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
             intent: LogSetIntent(),
@@ -39,5 +50,16 @@ struct PhaseShortcuts: AppShortcutsProvider {
             shortTitle: "What's next",
             systemImageName: "list.bullet"
         )
+        #if COACH_PHRASE
+        AppShortcut(
+            intent: TalkToCoachIntent(),
+            phrases: [
+                "Talk to coach in \(.applicationName)",
+                "Talk to my coach in \(.applicationName)",
+            ],
+            shortTitle: "Talk to coach",
+            systemImageName: "waveform"
+        )
+        #endif
     }
 }

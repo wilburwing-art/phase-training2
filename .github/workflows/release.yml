@@ -231,12 +231,18 @@ jobs:
           if [ "$PROFILE_NAME" != "PhaseTraining App Store" ]; then
             echo "::warning::Profile name '$PROFILE_NAME' differs from Project.yml's pinned 'PhaseTraining App Store'. Update Project.yml or the .mobileprovision secret."
           fi
+          # Siri "Talk to coach" phrase ships only when the token does.
+          COACH_PHRASE_FLAG=""
+          if [ "${{ vars.PHASETRAINING_BETA || '1' }}" != "1" ]; then
+            COACH_PHRASE_FLAG="PT_COACH_PHRASE=COACH_PHRASE"
+          fi
           xcodebuild \
             -project PhaseTraining.xcodeproj \
             -scheme PhaseTraining \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -archivePath build/PhaseTraining.xcarchive \
+            $COACH_PHRASE_FLAG \
             archive | xcbeautify --renderer github-actions
 
       - name: Export IPA
