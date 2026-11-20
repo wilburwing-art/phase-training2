@@ -103,9 +103,7 @@ final class WatchSyncCoordinator: NSObject, ObservableObject {
             Self.log.notice("context not pushed: state \(wc.activationState.rawValue) paired \(wc.isPaired) installed \(wc.isWatchAppInstalled)")
             return
         }
-        let context = WatchSyncContext(activeSession: session,
-                                       plannedSession: session == nil ? plannedSessionForToday() : nil,
-                                       sentAt: Date())
+        let context = context(for: session)
         guard let data = try? Self.encoder.encode(context) else { return }
         do {
             try wc.updateApplicationContext(["context": data])
@@ -113,6 +111,12 @@ final class WatchSyncCoordinator: NSObject, ObservableObject {
         } catch {
             Self.log.error("updateApplicationContext failed: \(error.localizedDescription, privacy: .public)")
         }
+    }
+
+    func context(for session: ActiveSession?, sentAt: Date = Date()) -> WatchSyncContext {
+        WatchSyncContext(activeSession: session,
+                         plannedSession: session == nil ? plannedSessionForToday() : nil,
+                         sentAt: sentAt)
     }
 
     private static let log = Logger(subsystem: "com.phasetraining.app", category: "watch-sync")
