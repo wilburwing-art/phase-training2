@@ -110,14 +110,17 @@ enum MuscleVolume {
         for m in muscles {
             byRole[m.role, default: []].append(m.slug)
         }
-        // Raw share per muscle.
+        // Raw share per muscle. Roles and slugs are summed in sorted order:
+        // dictionary iteration order differs between instances, and float
+        // addition is not associative, so two identical calls could return
+        // volumes one ulp apart (CI run 44685580351, 1845.0 vs 1845.0000000000002).
         var raw: [String: Double] = [:]
-        for (role, slugs) in byRole {
-            guard let weight = roleWeight[role], !slugs.isEmpty else { continue }
+        for role in byRole.keys.sorted() {
+            guard let slugs = byRole[role], let weight = roleWeight[role], !slugs.isEmpty else { continue }
             let per = weight / Double(slugs.count)
             for slug in slugs { raw[slug, default: 0] += per }
         }
-        let total = raw.values.reduce(0, +)
+        let total = raw.keys.sorted().reduce(0) { $0 + raw[$1]! }
         guard total > 0 else { return [] }
         return raw.map { ($0.key, $0.value / total) }
     }

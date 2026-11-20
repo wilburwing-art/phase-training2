@@ -39,6 +39,27 @@ final class MuscleVolumeTests: XCTestCase {
         XCTAssertEqual(rows[2].volume, 1125 * 0.15, accuracy: 0.5)
     }
 
+    // CI run 44685580351: two identical calls returned 1845.0 and
+    // 1845.0000000000002 because the share total was summed in dictionary
+    // order. Repeated calls must agree bit for bit.
+    func test_repeatedCalls_returnBitIdenticalVolumes() {
+        let session = savedSession(name: "Squat", sets: [("225", "5"), ("235", "3")])
+        let muscles: [(slug: String, role: String, label: String)] = [
+            (slug: "quadriceps", role: "primary", label: "Quadriceps"),
+            (slug: "glutes", role: "primary", label: "Glutes"),
+            (slug: "adductors", role: "secondary", label: "Adductors"),
+            (slug: "erector-lumbar", role: "secondary", label: "Erectors"),
+            (slug: "hamstrings", role: "secondary", label: "Hamstrings"),
+            (slug: "core", role: "stabilizer", label: "Core"),
+            (slug: "glutes", role: "stabilizer", label: "Glutes"),
+        ]
+        let first = MuscleVolume.rows(from: [session], resolve: resolver(["Squat": muscles]))
+        XCTAssertFalse(first.isEmpty)
+        for _ in 0..<50 {
+            XCTAssertEqual(MuscleVolume.rows(from: [session], resolve: resolver(["Squat": muscles])), first)
+        }
+    }
+
     func test_oldSessionsBeyondWindow_areIgnored() {
         let now = Date()
         // 6 weeks ago, with the default 4-week window.
