@@ -34,13 +34,13 @@ enum InsightGenerator {
         consentGranted: Bool,
         now: Date = Date()
     ) {
-        // coachAvailable first: a token-less build would otherwise build a full
-        // context snapshot and then fail at send.
-        guard CoachEntitlement.coachAvailable else { return }
-        guard consentGranted, CoachEntitlement.proSatisfied() else { return }
-        guard !inFlight else { return }
-        guard !hasInsightForToday(memory: memoryStore.memory, now: now) else { return }
-        guard hasSignal(memory: memoryStore.memory, sessions: sessionStore.savedSessions, now: now) else { return }
+        guard gate(
+            memory: memoryStore.memory,
+            sessions: sessionStore.savedSessions,
+            consentGranted: consentGranted,
+            now: now,
+            inFlight: inFlight
+        ) == .due else { return }
 
         let snapshot = CoachContext.snapshot(
             now: now,
@@ -81,6 +81,28 @@ enum InsightGenerator {
     }
 
     // MARK: - Guards
+
+    enum Gate: Equatable { case coachUnavailable, noConsent, notPro, inFlight, alreadyToday, noSignal, due }
+
+    static func gate(
+        memory: TrainingMemory,
+        sessions: [SavedSession],
+        consentGranted: Bool,
+        now: Date,
+        available: Bool = CoachEntitlement.coachAvailable,
+        pro: Bool = CoachEntitlement.proSatisfied(),
+        inFlight: Bool
+    ) -> Gate {
+        // coachAvailable first: a token-less build would otherwise build a full
+        // context snapshot and then fail at send.
+        guard available else { return .coachUnavailable }
+        guard consentGranted else { return .noConsent }
+        guard pro else { return .notPro }
+        guard !inFlight else { return .inFlight }
+        guard !hasInsightForToday(memory: memory, now: now) else { return .alreadyToday }
+        guard hasSignal(memory: memory, sessions: sessions, now: now) else { return .noSignal }
+        return .due
+    }
 
     private static func hasInsightForToday(memory: TrainingMemory, now: Date) -> Bool {
         memory.coachInsights.contains {

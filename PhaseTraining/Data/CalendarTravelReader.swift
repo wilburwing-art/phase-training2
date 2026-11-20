@@ -17,8 +17,9 @@ enum CalendarTravelResult: Equatable {
 enum CalendarTravelReader {
 
     static func findTravel(weekStart: Date, calendar: Calendar = .current,
-                           store: EKEventStore = EKEventStore()) async -> CalendarTravelResult {
-        switch EKEventStore.authorizationStatus(for: .event) {
+                           store: EKEventStore = EKEventStore(),
+                           status: EKAuthorizationStatus = EKEventStore.authorizationStatus(for: .event)) async -> CalendarTravelResult {
+        switch status {
         case .fullAccess:
             break
         case .notDetermined:
@@ -31,17 +32,23 @@ enum CalendarTravelReader {
             // Denied, restricted, or write-only: none of them can read.
             return .denied
         }
-        let start = calendar.startOfDay(for: weekStart)
-        guard let end = calendar.date(byAdding: .day, value: 7, to: start) else { return .found([]) }
-        // Widen the window by two days each side so a stay that began before
-        // the week, or a flight home that ends after it, is still seen.
-        let from = calendar.date(byAdding: .day, value: -2, to: start) ?? start
-        let to = calendar.date(byAdding: .day, value: 2, to: end) ?? end
-        let predicate = store.predicateForEvents(withStart: from, end: to, calendars: nil)
+        guard let window = readWindow(weekStart: weekStart, calendar: calendar) else { return .found([]) }
+        let start = window.start
+        let predicate = store.predicateForEvents(withStart: window.from, end: window.to, calendars: nil)
         let snapshots = store.events(matching: predicate).map {
             CalendarEventSnapshot(title: $0.title ?? "", location: $0.location,
                                   start: $0.startDate, end: $0.endDate, isAllDay: $0.isAllDay)
         }
         return .found(CalendarTravelDetector.travelDays(in: snapshots, weekStart: start, calendar: calendar))
+    }
+
+    /// Widen the window by two days each side so a stay that began before
+    /// the week, or a flight home that ends after it, is still seen.
+    static func readWindow(weekStart: Date, calendar: Calendar) -> (start: Date, from: Date, to: Date)? {
+        let start = calendar.startOfDay(for: weekStart)
+        guard let end = calendar.date(byAdding: .day, value: 7, to: start) else { return nil }
+        let from = calendar.date(byAdding: .day, value: -2, to: start) ?? start
+        let to = calendar.date(byAdding: .day, value: 2, to: end) ?? end
+        return (start, from, to)
     }
 }
