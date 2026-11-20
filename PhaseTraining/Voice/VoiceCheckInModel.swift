@@ -176,10 +176,20 @@ final class VoiceCheckInModel: ObservableObject {
         for sentence in chunker.feed(reply.text) { output.speak(sentence) }
     }
 
+    /// Said after a reply that carried a proposal. Voice has no Apply button:
+    /// the change stays pending until the user reviews it on the Complete
+    /// screen or in the drawer.
+    static let stagedLine = "I've staged a change, look at it after your session."
+
     private func turnEnded() {
         guard let id = replyId, !runner.sending else { return }
-        if !muted, let reply = conv.messages.first(where: { $0.id == id }) {
+        let reply = conv.messages.first(where: { $0.id == id })
+        if !muted, let reply {
             for sentence in chunker.flush(reply.text) { output.speak(sentence) }
+        }
+        if reply?.hasPendingProposal == true {
+            notice = Self.stagedLine
+            if !muted { output.speak(Self.stagedLine) }
         }
         replyId = nil
         // The stop control stays up until the queued sentences finish playing.

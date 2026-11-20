@@ -53,6 +53,13 @@ final class CoachConversationStore: ObservableObject {
     /// button's unread dot; the drawer is where they act on it.
     var hasPendingProposal: Bool { messages.contains(where: \.hasPendingProposal) }
 
+    /// Assistant turns still waiting on Apply or Reject, oldest first. The
+    /// Complete screen lists these so a change staged by voice mid-workout
+    /// (voice 3.3) is in front of the user once the session ends.
+    var pendingProposalMessages: [CoachMessage] {
+        messages.filter { !$0.isUser && $0.hasPendingProposal }
+    }
+
     private let defaults: UserDefaults
 
     init(defaults: UserDefaults = .standard, now: Date = Date()) {

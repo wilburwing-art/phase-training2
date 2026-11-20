@@ -153,6 +153,9 @@ struct CompleteScreen: View {
                             .padding(.horizontal, 20)
                             .padding(.top, 20)
 
+                        // Changes the coach staged by voice mid-workout (voice 3.3).
+                        PendingCoachProposalsSection()
+
                         feelSection
                             .padding(.horizontal, 20)
                             .padding(.top, 20)
