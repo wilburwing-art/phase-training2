@@ -102,6 +102,17 @@ struct RootTabView: View {
                 .presentationDragIndicator(.hidden)
                 .presentationBackground(Color.bg)
         }
+        .fullScreenCover(isPresented: $conv.voicePresented) {
+            VoiceCheckInScreen()
+        }
+        #if DEBUG
+        .task {
+            // UITest hook (DEBUG-only): open the voice check-in on launch.
+            if ProcessInfo.processInfo.arguments.contains("--ui-test-open-voice-checkin") {
+                conv.voicePresented = true
+            }
+        }
+        #endif
         .task {
             // Wire variety memory + session history + memory feed into
             // PlanStore (kept off the init so the store stays one-arg

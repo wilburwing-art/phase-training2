@@ -7,6 +7,8 @@ import AVFoundation
 protocol SpeechOutputting: AnyObject {
     func speak(_ text: String)
     func stop()
+    /// True while an utterance is playing or queued.
+    var isSpeaking: Bool { get }
     func renderToFile(_ text: String) async throws -> URL
 }
 
@@ -117,6 +119,8 @@ final class SpeechOutput: NSObject, SpeechOutputting {
     func stop() {
         synthesizer.stopSpeaking(at: .immediate)
     }
+
+    var isSpeaking: Bool { synthesizer.isSpeaking }
 
     func renderToFile(_ text: String) async throws -> URL {
         guard let utterance = makeUtterance(text) else { throw SpeechOutputError.noVoice }
@@ -279,6 +283,7 @@ final class FakeSpeechOutput: SpeechOutputting {
     private(set) var stopCount = 0
     private(set) var rendered: [String] = []
     var renderResult: Result<URL, Error> = .failure(SpeechOutputError.noVoice)
+    var isSpeaking = false
 
     func speak(_ text: String) { spoken.append(text) }
     func stop() { stopCount += 1 }

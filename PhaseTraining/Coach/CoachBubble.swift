@@ -7,6 +7,8 @@
 // the old 52pt disc did not. The frame is the tap target. It runs the user's
 // sport loop live (KettlePose.forSport), so a snowboarder sees Kettle carve.
 //
+// A mic beside the mascot opens the voice check-in screen (voice 3.2).
+//
 // Hidden conditions (any one short-circuits):
 //   - user hasn't granted AI Coach consent
 //   - current tab is .profile (it's the off-switch; the button there is weird)
@@ -36,8 +38,11 @@ struct CoachBubble: View {
 
     var body: some View {
         if shouldShow {
-            HStack {
+            HStack(alignment: .center, spacing: 10) {
                 Spacer()
+                if VoiceCheckInModel.isOffered(consent: consentGranted, pro: proEntitled) {
+                    voiceButton
+                }
                 button
             }
             .padding(.trailing, 16)
@@ -74,6 +79,25 @@ struct CoachBubble: View {
                                   available: available)
             && !onProfileTab
             && !sessionActive
+    }
+
+    /// Voice check-in (voice 3.2). Same gate as the bubble, so it is gone
+    /// wherever the coach cannot answer.
+    private var voiceButton: some View {
+        Button {
+            conv.voicePresented = true
+        } label: {
+            Image(systemName: "mic.fill")
+                .scaledSystemFont(16, weight: .semibold, within: 44)
+                .foregroundStyle(Color.ink)
+                .frame(width: 44, height: 44)
+                .background(Circle().fill(Color.surface))
+                .overlay(Circle().strokeBorder(Color.line, lineWidth: 0.5))
+                .shadow(color: Color.black.opacity(0.55), radius: 2, x: 0, y: 2)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Talk to the coach")
+        .accessibilityIdentifier("coach-voice-checkin")
     }
 
     private var button: some View {

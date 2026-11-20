@@ -41,6 +41,8 @@ final class CoachConversationStore: ObservableObject {
 
     @Published var messages: [CoachMessage] = []
     @Published var presented: Bool = false
+    /// Voice check-in screen (voice 3.2), presented over the tab shell.
+    @Published var voicePresented: Bool = false
     @Published var prefill: String = ""
     /// User-initiated sends so far today. Persisted separately from the
     /// transcript so clearing the chat doesn't reset the daily cost guard;
@@ -194,6 +196,7 @@ final class CoachConversationStore: ObservableObject {
     func resetAll() {
         messages = []
         presented = false
+        voicePresented = false
         prefill = ""
         turnsToday = 0
         for key in defaults.dictionaryRepresentation().keys
