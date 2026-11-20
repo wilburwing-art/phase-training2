@@ -22,7 +22,7 @@ grep -nE "failed \(|with [1-9][0-9]* (test )?failure|error:" /tmp/voice.log   # 
 - [x] **Speech output (owner decision).** On-device system voices through `AVSpeechSynthesizer`. Answered 2026-11-18.
 - [x] **Activation (owner decision).** Push-to-talk plus Siri App Intents. No always-on microphone. Answered 2026-11-18.
 
-- [ ] **Voice check-in entry on Today (owner decision).** The Today coach row 3.2 named does not exist (removed in build 122), so the coach bubble's mic is the only entry. A: bubble mic only, no Today change (recommended, keeps Today to one decision) → nothing to build. B: add a coach row to Today with a mic → a new Phase 3 UI item.
+- [x] **Voice check-in entry on Today (owner decision).** The Today coach row 3.2 named does not exist (removed in build 122), so the coach bubble's mic is the only entry. A: bubble mic only, no Today change (recommended, keeps Today to one decision) → nothing to build. B: add a coach row to Today with a mic → a new Phase 3 UI item. Decided 2026-11-19: A. Bubble mic stays the only entry; nothing to build.
 
 ## Phase 1: foundations (logic)
 
