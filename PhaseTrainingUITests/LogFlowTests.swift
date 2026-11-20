@@ -204,15 +204,21 @@ final class LogFlowTests: XCTestCase {
     }
 
     func testRestExpiryShowsDoneFlash() throws {
-        let app = launchInLog(fastRest: 2)
+        // The rest card lives for the rest length plus the 1.2 s DONE flash
+        // (RestTimerState.maybeFireRestExpiry), counted from the tap. With a
+        // 2 s rest that was 3.2 s, and on a cold CI runner the tap's idle wait
+        // could use it up, so the card was gone before the first query ran
+        // (main run 44793901523). A 6 s rest keeps the card up for 7.2 s.
+        let restSeconds = 6
+        let app = launchInLog(fastRest: restSeconds)
         tapSetCheck(app, ex: 2, set: 0)
         XCTAssertTrue(
-            app.buttons["log-rest-add15"].waitForExistence(timeout: 3),
+            app.buttons["log-rest-add15"].waitForExistence(timeout: 5),
             "rest card should appear after first set done"
         )
         XCTAssertTrue(
-            app.staticTexts["DONE"].waitForExistence(timeout: 4),
-            "DONE flash card should appear within ~3s"
+            app.staticTexts["DONE"].waitForExistence(timeout: TimeInterval(restSeconds + 4)),
+            "DONE flash card should appear once the \(restSeconds) s rest expires"
         )
     }
 
