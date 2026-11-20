@@ -84,7 +84,7 @@ final class LogFlowTests: XCTestCase {
 
         // 6. Add a fresh exercise via "+ Add exercise"
         let addBtn = app.buttons["log-add-exercise"]
-        while !addBtn.isHittable { app.swipeUp() }
+        swipeUntilHittable(app, addBtn)
         addBtn.tap()
         // Pick the first picker row by predicate (any "picker-row-name-*" id).
         let pickerRow = app.staticTexts.matching(
@@ -190,6 +190,32 @@ final class LogFlowTests: XCTestCase {
     // MARK: - 3. Rest-timer expiry alert
 
     /// Scroll a checkDot into view, then tap it.
+    /// Swipe up until `element` is hittable, at most `maxSwipes` times, then
+    /// fail with its frame and the window frame. An uncapped loop here once
+    /// swiped for 20 min on a local iPhone 17 Pro (iOS 26.4) when
+    /// `log-add-exercise` never became hittable. On failure the element tree
+    /// is attached so the run shows what sat over the element.
+    private func swipeUntilHittable(_ app: XCUIApplication, _ element: XCUIElement,
+                                    maxSwipes: Int = 4,
+                                    file: StaticString = #filePath, line: UInt = #line) {
+        // One isHittable query per swipe: a query on a missing element
+        // retries for about 2.3 s, so a spare query costs real time.
+        for swipe in 0...maxSwipes {
+            if element.isHittable { return }
+            if swipe < maxSwipes { app.swipeUp() }
+        }
+        let exists = element.exists
+        let name = exists ? element.identifier : element.description
+        let tree = XCTAttachment(string: app.debugDescription)
+        tree.name = "element tree when \(name) stayed unhittable"
+        tree.lifetime = .keepAlways
+        add(tree)
+        XCTFail("\(name) not hittable after \(maxSwipes) swipes: "
+                + "exists=\(exists) frame=\(exists ? element.frame : .zero) "
+                + "window=\(app.windows.firstMatch.frame)",
+                file: file, line: line)
+    }
+
     private func tapSetCheck(_ app: XCUIApplication, ex: Int, set: Int) {
         let btn = app.buttons["log-set-check-\(ex)-\(set)"]
         XCTAssertTrue(btn.waitForExistence(timeout: 2),
@@ -302,7 +328,7 @@ final class LogFlowTests: XCTestCase {
         XCTAssertFalse(app.staticTexts["log-exercise-name-5"].exists)
 
         let addBtn = app.buttons["log-add-exercise"]
-        while !addBtn.isHittable { app.swipeUp() }
+        swipeUntilHittable(app, addBtn)
         addBtn.tap()
         let firstPick = app.staticTexts.matching(
             NSPredicate(format: "identifier BEGINSWITH 'picker-row-name-'")
@@ -320,7 +346,7 @@ final class LogFlowTests: XCTestCase {
     func testAddExercisePickerDismissesCleanly() throws {
         let app = launchInLog()
         let addBtn = app.buttons["log-add-exercise"]
-        while !addBtn.isHittable { app.swipeUp() }
+        swipeUntilHittable(app, addBtn)
         addBtn.tap()
         // Dismiss with a swipe-down on the sheet.
         let sheet = app.otherElements.containing(.button, identifier: nil).firstMatch
