@@ -80,8 +80,14 @@ final class SeasonInvariantTests: XCTestCase {
 
     func test_everyRowHasRepsAndRest() {
         for c in grid {
-            for ex in generate(c).exercises {
+            let w = generate(c)
+            for ex in w.exercises {
                 XCTAssertFalse(ex.reps.trimmingCharacters(in: .whitespaces).isEmpty, "[\(c)] '\(ex.name)' empty reps")
+                // 0 is a real prescription when the authored row's own rest
+                // text says no timed rest ("none", "built-in", "full
+                // recovery"; 11d 2.1). Log starts no timer at 0. Any other
+                // zero is still a parse fall-through.
+                if ex.restSeconds == 0, authoredRestIsNone(ex, in: w) { continue }
                 // 5, not 15: the MTI-distilled "Leg Blaster" circuit rows are
                 // real prescriptions at 20 sec work / 10 sec rest, and the
                 // first run of this harness failed on exactly that. The bound
@@ -90,6 +96,18 @@ final class SeasonInvariantTests: XCTestCase {
                 XCTAssertGreaterThanOrEqual(ex.restSeconds, 5, "[\(c)] '\(ex.name)' rest \(ex.restSeconds)s")
             }
         }
+    }
+
+    /// True when `ex` is served from an authored routine row (id
+    /// "authored-<routine>-<position>") whose rest text parses to 0.
+    private func authoredRestIsNone(_ ex: GeneratedExercise, in w: GeneratedWorkout) -> Bool {
+        guard let routineId = w.authoredRoutineId,
+              ex.id.hasPrefix("authored-\(routineId)-"),
+              let position = Int(ex.id.dropFirst("authored-\(routineId)-".count)),
+              let row = CoachDatabase.shared.exercises(forRoutineId: routineId)
+                .first(where: { $0.position == position })
+        else { return false }
+        return AuthoredRoutine.parseRest(row.rest) == 0
     }
 
     func test_generationIsDeterministic() {
