@@ -110,4 +110,267 @@ final class WorkoutGeneratorRepresribeTests: XCTestCase {
         XCTAssertEqual(out.exercises[0].reps, "8-12")
         XCTAssertEqual(out.exercises[0].restSeconds, 75)
     }
+
+    // MARK: - Season-engine prescription
+
+    private let mainLifts: Set<Demand> = [.maxStrength, .upperStrength, .pullStrength, .legStrength]
+
+    /// A skier in off-season, a progressive-overload phase, so the advanced
+    /// main-lift set is in play.
+    private func skier(experience: ExperienceLevel = .intermediate, age: Int? = nil) -> TrainingMemory {
+        var m = memory()
+        m.primarySport = Sport.resolve(slug: "alpine-skiing")
+        m.defaultSeason = .offSeason
+        m.experience = experience
+        m.age = age
+        return m
+    }
+
+    private func refresh(_ exercises: [Exercise], focus: WorkoutFocus = .push,
+                         memory m: TrainingMemory,
+                         context: GeneratorContext = .empty) -> GeneratedWorkout {
+        let rows = exercises.enumerated().map { i, ex in
+            row(id: "cex-\(i)", exerciseId: ex.id, name: ex.name, sets: 9, reps: "1", rest: 1)
+        }
+        return WorkoutGenerator.represcribe(
+            workout: workout(rows), mode: .fullRefresh, focus: focus, memory: m,
+            profile: DemographicProfile.from(m), context: context)
+    }
+
+    private struct Rx: Equatable {
+        let sets: Int, reps: String, rest: Int, rpe: String?
+    }
+
+    private func rx(_ e: GeneratedExercise) -> Rx {
+        Rx(sets: e.sets, reps: e.reps, rest: e.restSeconds, rpe: e.rpe)
+    }
+
+    /// What `SportSeasonGenerator.prescribe` emits for `m` under `demand` and
+    /// the athlete's rule, read from the same scheme table it reads.
+    private func seasonRx(_ m: SportMovement, demand: Demand, memory mem: TrainingMemory) -> Rx {
+        let athlete = AthleteState.from(mem, variant: mem.primaryVariant)
+        let rule = PhaseRule.resolve(sportSlug: athlete.sportSlug, variant: athlete.variant,
+                                     season: athlete.season)
+        let scheme = DemandScheme.scheme(for: demand, progression: rule.progression, goal: athlete.goal)
+            .adjusted(experience: athlete.experience, age: athlete.age,
+                      mainLift: mainLifts.contains(demand) && rule.progression == .progressiveOverload)
+        return Rx(sets: m.protocolSets ?? scheme.setsMid,
+                  reps: m.protocolReps ?? scheme.reps(forCatalog: m.catalogReps),
+                  rest: m.protocolRestSeconds ?? scheme.restSeconds,
+                  rpe: scheme.rpeString)
+    }
+
+    private func pool(_ m: TrainingMemory) -> [SportMovement] {
+        CoachDatabase.shared.sportMovements(
+            sport: SportSeasonGenerator.poolSlug(for: AthleteState.from(m).sportSlug))
+    }
+
+    /// A movement with a `sport_movements` row in the skier's pool, a demand
+    /// and no cited protocol.
+    private func seededMovement() throws -> (SportMovement, Exercise) {
+        for m in pool(skier()) where m.protocolSets == nil && m.primaryDemand != nil {
+            if let ex = CoachDatabase.shared.exercise(id: m.exerciseId) { return (m, ex) }
+        }
+        throw XCTSkip("no seeded skier movement without a protocol")
+    }
+
+    /// Compound pressing exercises with no `sport_movements` row in either
+    /// pool the refresh reads, and no leg pattern (so they read as Push).
+    private func unseededPushCompounds() -> [Exercise] {
+        let seeded = Set((pool(skier()) + CoachDatabase.shared.sportMovements(sport: "general-fitness"))
+            .map(\.exerciseId))
+        let legs = Set(MovementCategory.legs.memberPatternSlugs)
+        return CoachDatabase.shared.exercises(matchingPattern: "horizontal-push").filter {
+            $0.isCompound && !seeded.contains($0.id)
+                && Set(CoachDatabase.shared.patternsForExercise($0.id)).isDisjoint(with: legs)
+        }
+    }
+
+    private func buildMovement(_ ex: Exercise, demand: Demand) -> SportMovement {
+        SportMovement(exerciseId: ex.id, name: ex.name, catalogSlug: ex.slug, demands: [demand],
+                      allowedPhases: [], allowedVariants: nil, fatigueCost: 0,
+                      minExperienceRank: 0, injuryCaution: nil,
+                      isCompound: ex.isCompound, isUnilateral: ex.isUnilateral,
+                      catalogReps: ex.defaultReps)
+    }
+
+    /// The age cases the backlog item names: 55 is below the master age and
+    /// prescribes the no-age dose; 60 and 70 carry the master-age 30 s of
+    /// extra rest. Every case equals the season engine's prescription.
+    private func assertAgeCases(_ ex: Exercise, movement: SportMovement, demand: Demand,
+                                file: StaticString = #filePath, line: UInt = #line) {
+        func refreshed(_ age: Int?) -> Rx { rx(refresh([ex], memory: skier(age: age)).exercises[0]) }
+        let noAge = refreshed(nil)
+        XCTAssertEqual(noAge, seasonRx(movement, demand: demand, memory: skier()), file: file, line: line)
+        for age in [55, 60, 70] {
+            XCTAssertEqual(refreshed(age), seasonRx(movement, demand: demand, memory: skier(age: age)),
+                           "age \(age)", file: file, line: line)
+        }
+        XCTAssertEqual(refreshed(55), noAge, "55 is below the master age", file: file, line: line)
+        for age in [60, 70] {
+            XCTAssertEqual(refreshed(age).rest, noAge.rest + 30, "age \(age) rest", file: file, line: line)
+        }
+    }
+
+    func testSeededMovementRefreshEqualsSeasonPrescriptionAcrossAges() throws {
+        let (movement, ex) = try seededMovement()
+        assertAgeCases(ex, movement: movement, demand: try XCTUnwrap(movement.primaryDemand))
+    }
+
+    func testUnseededSlotZeroCompoundRefreshEqualsSeasonPrescriptionAcrossAges() throws {
+        let ex = try XCTUnwrap(unseededPushCompounds().first, "need an unseeded pressing compound")
+        XCTAssertEqual(SportSeasonGenerator.refreshDemand(ex, slotIdx: 0, focus: .push), .upperStrength)
+        assertAgeCases(ex, movement: buildMovement(ex, demand: .upperStrength), demand: .upperStrength)
+    }
+
+    /// Advanced earns its extra set on a main-lift demand only: the slot-0
+    /// compound (upperStrength) gains one, a pressing accessory (upperPush)
+    /// does not.
+    func testAdvancedAddsASetToTheLeadCompoundOnly() throws {
+        let pushes = unseededPushCompounds()
+        guard pushes.count >= 2 else { throw XCTSkip("need two unseeded pressing compounds") }
+        let pair = Array(pushes.prefix(2))
+        let inter = refresh(pair, memory: skier(experience: .intermediate)).exercises
+        let adv = refresh(pair, memory: skier(experience: .advanced)).exercises
+        XCTAssertEqual(adv[0].sets, inter[0].sets + 1, "lead compound")
+        XCTAssertEqual(adv[1].sets, inter[1].sets, "accessory")
+        XCTAssertEqual(SportSeasonGenerator.refreshDemand(pair[1], slotIdx: 1, focus: .push), .upperPush)
+    }
+
+    /// A movement seeded only in the general-fitness pool keeps that row's
+    /// demand for a skier, even where the category table would pick another.
+    func testGeneralFitnessSeedSuppliesTheDemandWhenTheSportHasNone() throws {
+        let m = skier()
+        let sportIds = Set(pool(m).map(\.exerciseId))
+        let gf = CoachDatabase.shared.sportMovements(sport: "general-fitness")
+            .filter { !sportIds.contains($0.exerciseId) && $0.protocolSets == nil && $0.primaryDemand != nil }
+        guard let (movement, ex) = gf.lazy.compactMap({ g in
+            CoachDatabase.shared.exercise(id: g.exerciseId).map { (g, $0) }
+        }).first else { throw XCTSkip("no general-fitness-only movement") }
+        let out = SportSeasonGenerator.prescribeRefresh(
+            ex, slotIdx: 0, focus: .legs, athlete: .from(m, variant: m.primaryVariant), strategy: .auto)
+        XCTAssertEqual(rx(out), seasonRx(movement, demand: movement.primaryDemand!, memory: m))
+    }
+
+    // MARK: - Demand table
+
+    /// An exercise carrying a pattern from `need` and no pattern outside
+    /// `need` and `also`.
+    private func exercise(patterns need: Set<String>, also: Set<String> = [],
+                          compound: Bool? = nil) -> Exercise? {
+        let allowed = need.union(also)
+        for slug in need.sorted() {
+            for ex in CoachDatabase.shared.exercises(matchingPattern: slug) {
+                let have = Set(CoachDatabase.shared.patternsForExercise(ex.id))
+                guard have.isSubset(of: allowed) else { continue }
+                if let compound, ex.isCompound != compound { continue }
+                return ex
+            }
+        }
+        return nil
+    }
+
+    func testDemandTableByCategory() throws {
+        let push = Set(MovementCategory.push.memberPatternSlugs)
+        let pull = Set(MovementCategory.pull.memberPatternSlugs).subtracting(["elbow-flexion"])
+        let legs = Set(MovementCategory.legs.memberPatternSlugs)
+        let core = Set(MovementCategory.core.memberPatternSlugs)
+        let arms: Set<String> = ["elbow-flexion", "elbow-extension"]
+        func demand(_ ex: Exercise?, slot: Int, focus: WorkoutFocus = .fullBodyA) throws -> Demand {
+            SportSeasonGenerator.refreshDemand(try XCTUnwrap(ex), slotIdx: slot, focus: focus)
+        }
+        let pushC = exercise(patterns: push, compound: true)
+        XCTAssertEqual(try demand(pushC, slot: 0), .upperStrength)
+        XCTAssertEqual(try demand(pushC, slot: 1), .upperPush)
+        let pullC = exercise(patterns: pull, also: arms, compound: true)
+        XCTAssertEqual(try demand(pullC, slot: 0), .pullStrength)
+        XCTAssertEqual(try demand(pullC, slot: 2), .upperPull)
+        let legC = exercise(patterns: legs, compound: true)
+        XCTAssertEqual(try demand(legC, slot: 0), .legStrength)
+        XCTAssertEqual(try demand(legC, slot: 3), .legStrength)
+        XCTAssertEqual(try demand(exercise(patterns: core), slot: 0), .core)
+        XCTAssertEqual(try demand(exercise(patterns: arms), slot: 1), .arms)
+        // A slot-0 isolation keeps the accessory demand.
+        if let pushIso = exercise(patterns: push, compound: false) {
+            XCTAssertEqual(try demand(pushIso, slot: 0), .upperPush)
+        }
+    }
+
+    /// No pattern maps to a category: the day's focus decides, slot-0
+    /// compounds get the main-lift demand, and any other focus means core.
+    func testDemandFallsBackToFocusThenCore() throws {
+        let conditioning = Set(MovementCategory.conditioning.memberPatternSlugs)
+        guard let ex = exercise(patterns: conditioning) else {
+            throw XCTSkip("no conditioning-only exercise")
+        }
+        let lead = ex.isCompound
+        XCTAssertEqual(SportSeasonGenerator.refreshDemand(ex, slotIdx: 1, focus: .push), .upperPush)
+        XCTAssertEqual(SportSeasonGenerator.refreshDemand(ex, slotIdx: 1, focus: .pull), .upperPull)
+        XCTAssertEqual(SportSeasonGenerator.refreshDemand(ex, slotIdx: 0, focus: .legs), .legStrength)
+        XCTAssertEqual(SportSeasonGenerator.refreshDemand(ex, slotIdx: 0, focus: .push),
+                       lead ? .upperStrength : .upperPush)
+        for focus in [WorkoutFocus.fullBodyA, .fullBodyB, .upper, .lower] {
+            XCTAssertEqual(SportSeasonGenerator.refreshDemand(ex, slotIdx: 0, focus: focus), .core, "\(focus)")
+        }
+    }
+
+    // MARK: - After prescribe
+
+    /// Readiness scales sets the way a planned session does (60% at 0, the
+    /// full dose at 1, untouched without data), and the coach's intensity
+    /// bias rounds away from one.
+    func testReadinessAndStrategyScaleSets() throws {
+        let ex = try XCTUnwrap(unseededPushCompounds().first)
+        let m = skier()
+        func sets(readiness: Double?, bias: GeneratorStrategy.IntensityBias = .normal) -> Int {
+            var athlete = AthleteState.from(m, variant: m.primaryVariant)
+            athlete.readinessScore = readiness
+            var strategy = GeneratorStrategy.auto
+            strategy.intensityBias = bias
+            return SportSeasonGenerator.prescribeRefresh(
+                ex, slotIdx: 0, focus: .push, athlete: athlete, strategy: strategy).sets
+        }
+        let base = sets(readiness: nil)
+        XCTAssertEqual(base, seasonRx(buildMovement(ex, demand: .upperStrength),
+                                      demand: .upperStrength, memory: m).sets)
+        XCTAssertEqual(sets(readiness: 1.0), base)
+        XCTAssertEqual(sets(readiness: 0.0), max(1, Int((Double(base) * 0.6).rounded())))
+        XCTAssertLessThan(sets(readiness: 0.0), base)
+        XCTAssertEqual(sets(readiness: nil, bias: .push), Int((Double(base) * 1.15).rounded(.up)))
+        XCTAssertEqual(sets(readiness: nil, bias: .deload), max(1, Int((Double(base) * 0.7).rounded(.down))))
+    }
+
+    /// The refreshed custom day reads readiness from the context only when it
+    /// holds real data.
+    func testRefreshReadsReadinessFromContext() throws {
+        let ex = try XCTUnwrap(unseededPushCompounds().first)
+        let m = skier()
+        var low = GeneratorContext.empty
+        low.readinessScore = 0.0
+        low.hasReadinessData = true
+        var noData = GeneratorContext.empty
+        noData.readinessScore = 0.0
+        noData.hasReadinessData = false
+        let base = refresh([ex], memory: m).exercises[0].sets
+        XCTAssertLessThan(refresh([ex], memory: m, context: low).exercises[0].sets, base)
+        XCTAssertEqual(refresh([ex], memory: m, context: noData).exercises[0].sets, base)
+    }
+
+    /// Slot-0 compound gets the warm-up ramp; a later row does not.
+    func testWarmUpRampOnLeadCompoundOnly() throws {
+        let pushes = unseededPushCompounds()
+        guard pushes.count >= 2 else { throw XCTSkip("need two unseeded pressing compounds") }
+        let out = refresh(Array(pushes.prefix(2)), memory: skier()).exercises
+        XCTAssertEqual(out[0].warmUpSets, WarmUpSet.standardRamp)
+        XCTAssertNil(out[1].warmUpSets)
+    }
+
+    /// Time estimate is sets x (45 s + rest) + 30 s per refreshed row.
+    func testEstimateUsesRefreshedSetsAndRest() throws {
+        let pushes = unseededPushCompounds()
+        guard pushes.count >= 2 else { throw XCTSkip("need two unseeded pressing compounds") }
+        let out = refresh(Array(pushes.prefix(2)), memory: skier())
+        let sec = out.exercises.reduce(0) { $0 + $1.sets * (45 + $1.restSeconds) + 30 }
+        XCTAssertEqual(out.estimatedMinutes, max(15, sec / 60))
+    }
 }

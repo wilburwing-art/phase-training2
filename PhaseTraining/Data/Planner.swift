@@ -262,7 +262,7 @@ enum Planner {
     }
 
     /// PR 10A, the arc deload's volume: every lift day's sets at x0.7
-    /// (clamped 1-8, identical to IntensityBias.deload in makePickedRow).
+    /// (clamped 1-8, the IntensityBias.deload factor).
     /// Scales the generated workouts in place: same exercises, same order,
     /// only the set counts shrink.
     static func scaleForDeload(plan: WeekPlan) -> WeekPlan {

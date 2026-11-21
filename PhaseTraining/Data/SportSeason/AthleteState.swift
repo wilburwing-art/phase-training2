@@ -60,8 +60,8 @@ struct AthleteState: Equatable {
     /// sentinel must never arrive here as a number; nil is the only "no data"
     /// value, so the engine cannot mistake it for low readiness.
     ///
-    /// T2-10: this scaling existed in `makePickedRow` (custom-routine
-    /// re-prescription) and neither live generator read it, so the soreness
+    /// T2-10: this scaling existed only in the custom-routine
+    /// re-prescription and neither live generator read it, so the soreness
     /// check-in and the readiness signal changed nothing a user was served.
     var readinessScore: Double? = nil
 

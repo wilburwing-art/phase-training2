@@ -53,8 +53,8 @@ final class SeasonFidelityTest: XCTestCase {
     // MARK: - T2-10: readiness must reach the season engine
 
     /// The app asked for a soreness check-in and a readiness signal and served
-    /// the identical session either way. Same lerp(0.6, 1.0) curve
-    /// makePickedRow has used since Phase 2.
+    /// the identical session either way. Scaled on the lerp(0.6, 1.0)
+    /// curve.
     func test_readiness_scalesSetsInTheSeasonEngine() {
         for f in sports {
             var low = athlete(f, season: .offSeason);  low.readinessScore = 0.0

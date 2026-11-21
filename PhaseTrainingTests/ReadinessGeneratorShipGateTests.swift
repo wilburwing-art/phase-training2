@@ -104,21 +104,4 @@ final class ReadinessGeneratorShipGateTests: XCTestCase {
         XCTAssertEqual(untouched.liftDaysPerWeek, 5,
             "No-data user (HK skipped) must not be clamped — silent rule requires real data.")
     }
-
-    // MARK: - RPE cap on compound top set
-
-    func testRPECapAppliedOnDetrainedCompound() {
-        // Direct unit on the helper — already covered by the integration
-        // test above via the full generator path, but a focused check
-        // keeps the regression surface tight.
-        XCTAssertEqual(capCompoundRPE("8", readinessScore: 0.0), "7")
-        XCTAssertEqual(capCompoundRPE("8", readinessScore: 1.0), "8")
-        XCTAssertEqual(capCompoundRPE("9", readinessScore: 0.0), "7")
-        // Range form must keep the lower bound and cap the upper.
-        XCTAssertEqual(capCompoundRPE("7-9", readinessScore: 0.0), "7")
-        XCTAssertEqual(capCompoundRPE("8-9", readinessScore: 0.5), "8")
-        // Unparseable inputs pass through.
-        XCTAssertEqual(capCompoundRPE("hard", readinessScore: 0.0), "hard")
-        XCTAssertEqual(capCompoundRPE("", readinessScore: 0.0), "")
-    }
 }

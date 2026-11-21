@@ -74,96 +74,49 @@ final class WorkoutGeneratorTests: XCTestCase {
             "70+ recovery days (\(p70.minRecoveryDaysBetweenLifts)) should exceed 55+ (\(p55.minRecoveryDaysBetweenLifts))")
     }
 
-    /// T1.6 — advanced earns +1 work set on a COMPOUND over intermediate.
-    /// Before, both clamped to the same focus-bias cap, so "advanced" produced
-    /// a prescription identical to "intermediate". The bump is built on the
-    /// intermediate clamp, so it tops out at 5 (preserving the canonical 5×5).
-    func test_prescription_advancedAddsCompoundSetOverIntermediate() throws {
-        let compound = try XCTUnwrap(
-            CoachDatabase.shared.exercises(matchingPattern: "squat").first { $0.isCompound },
-            "need a compound for the prescription comparison")
-        func sets(_ configure: (inout TrainingMemory) -> Void) -> Int {
-            var m = TrainingMemory()
-            m.equipment = [.fullGym]
-            configure(&m)
-            return WorkoutGenerator.prescription(
-                for: compound, slotIdx: 0, focus: .legs,
-                memory: m, profile: .from(m)).sets
-        }
-        let inter = sets { $0.experience = .intermediate }
-        let adv = sets { $0.experience = .advanced }
-        XCTAssertEqual(adv, inter + 1,
-            "advanced should program exactly one more set than intermediate on a compound (T1.6)")
-        XCTAssertLessThanOrEqual(adv, 5, "advanced compound sets top out at 5 (5×5 preserved)")
-    }
-
     // MARK: - Equipment + constraint filters
 
     // MARK: - Determinism
 
-    // MARK: - T1.2 time/distance prescriptions survive the focus-bias band
+    // MARK: - T1.2 time/distance prescriptions survive a refresh
 
-    /// Wall Sit is stored as "30-60 sec" in coach.db. A hypertrophy user's
-    /// 8-15 accessory band (and the era nudge) must NOT overwrite it — an
-    /// isometric prescribed in reps is the global "isometrics in reps" smell.
-    func test_prescription_preservesTimeBasedRepsOverFocusBias() throws {
+    /// Wall Sit is stored as "30-60 sec" in coach.db. A refreshed custom day
+    /// must keep the duration: an isometric prescribed in reps is the global
+    /// "isometrics in reps" smell.
+    func test_prescribeRefresh_preservesTimeBasedReps() throws {
         let wallSit = CoachDatabase.shared.listExercises(search: "Wall Sit").first { $0.name == "Wall Sit" }
         try XCTSkipIf(wallSit == nil, "Wall Sit not in coach.db")
         var m = TrainingMemory()
         m.experience = .intermediate
-        let p = DemographicProfile.from(m)
-        let rx = WorkoutGenerator.prescription(for: wallSit!, slotIdx: 2, focus: .legs, memory: m, profile: p)
+        let rx = SportSeasonGenerator.prescribeRefresh(
+            wallSit!, slotIdx: 2, focus: .legs, athlete: .from(m), strategy: .auto)
         XCTAssertTrue(rx.reps.lowercased().contains("sec"),
             "Time-based Wall Sit should keep its duration prescription; got reps='\(rx.reps)'")
     }
 
-    /// The classifier separating numeric rep bands (overwritable by focus bias)
-    /// from time/distance/hold prescriptions (preserved).
-    func test_isNumericRepBand_classification() {
-        for numeric in ["5", "12", "6-12", "8-15", "3 - 5"] {
-            XCTAssertTrue(WorkoutGenerator.isNumericRepBand(numeric), "'\(numeric)' is a numeric band")
-        }
-        for nonNumeric in ["30-60 sec", "30s", "20-45 sec", "5-10 sec hold", "40-60 ft", "40 m", "AMRAP"] {
-            XCTAssertFalse(WorkoutGenerator.isNumericRepBand(nonNumeric), "'\(nonNumeric)' is NOT a numeric band")
-        }
-    }
-
     // MARK: - T1.5 beginner intensity guardrail
 
-    /// Sub-6 numeric bands floor to 6-8; bands already ≥6 and non-numeric
-    /// prescriptions pass through.
-    func test_beginnerRepFloor_raisesSubSixBandsOnly() {
-        XCTAssertEqual(WorkoutGenerator.beginnerRepFloor("5"), "6-8")
-        XCTAssertEqual(WorkoutGenerator.beginnerRepFloor("3-5"), "6-8")
-        XCTAssertEqual(WorkoutGenerator.beginnerRepFloor("6-12"), "6-12")
-        XCTAssertEqual(WorkoutGenerator.beginnerRepFloor("8-15"), "8-15")
-        XCTAssertEqual(WorkoutGenerator.beginnerRepFloor("30-60 sec"), "30-60 sec")
-        XCTAssertEqual(WorkoutGenerator.beginnerRepFloor("40-60 ft"), "40-60 ft")
-    }
-
-    /// A beginner's primary prescription must be RPE-capped (≤7) and rep-
-    /// floored (≥6); an intermediate keeps the heavier scheme.
-    func test_prescription_beginnerCapsRpeAndFloorsReps() throws {
+    /// A beginner's refreshed lead compound is RPE-capped (<= 7) and rep-
+    /// floored (>= 6); an intermediate keeps RPE 8 work.
+    func test_prescribeRefresh_beginnerCapsRpeAndFloorsReps() throws {
         let bench = CoachDatabase.shared.listExercises(search: "Bench Press").first { $0.isCompound }
         try XCTSkipIf(bench == nil, "No compound Bench Press in coach.db")
-
-        var beginner = TrainingMemory()
-        beginner.experience = .beginner
-        let rx = WorkoutGenerator.prescription(
-            for: bench!, slotIdx: 0, focus: .push, memory: beginner, profile: .from(beginner))
-        XCTAssertEqual(rx.reps, "6-8", "beginner primary reps should floor to 6-8; got '\(rx.reps)'")
-
-        let rpeBeg = WorkoutGenerator.rpeTempoHints(
-            for: bench!, slotIdx: 0, focus: .push, memory: beginner).rpe ?? ""
+        func rx(_ level: ExperienceLevel) -> GeneratedExercise {
+            var m = TrainingMemory()
+            m.experience = level
+            m.defaultSeason = .offSeason
+            return SportSeasonGenerator.prescribeRefresh(
+                bench!, slotIdx: 0, focus: .push, athlete: .from(m), strategy: .auto)
+        }
+        let beginner = rx(.beginner)
+        let lowReps = beginner.reps.split(whereSeparator: { !$0.isNumber }).compactMap { Int($0) }.first
+        XCTAssertGreaterThanOrEqual(try XCTUnwrap(lowReps, "numeric reps expected"), 6,
+            "beginner lead reps should floor at 6; got '\(beginner.reps)'")
+        let rpeBeg = beginner.rpe ?? ""
         XCTAssertFalse(rpeBeg.contains("8") || rpeBeg.contains("9"),
-            "beginner RPE should cap ≤7; got '\(rpeBeg)'")
-
-        var inter = beginner
-        inter.experience = .intermediate
-        let rpeInt = WorkoutGenerator.rpeTempoHints(
-            for: bench!, slotIdx: 0, focus: .push, memory: inter).rpe ?? ""
-        XCTAssertTrue(rpeInt.contains("8"),
-            "intermediate RPE should retain 8+ work; got '\(rpeInt)'")
+            "beginner RPE should cap <= 7; got '\(rpeBeg)'")
+        XCTAssertTrue((rx(.intermediate).rpe ?? "").contains("8"),
+            "intermediate RPE should retain 8 work; got '\(rx(.intermediate).rpe ?? "nil")'")
     }
 
     // MARK: - T1.7 dislike by equipment tag, not just name

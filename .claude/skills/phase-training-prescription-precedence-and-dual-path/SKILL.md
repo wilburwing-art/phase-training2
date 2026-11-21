@@ -58,7 +58,15 @@ done, grep for a second prescribe/filter path and apply it there.
 
 ## Status 2026-11-10: the legacy fixes are gone, and both traps are back in the season engine
 
-Commit 449bd8d deleted the legacy `WorkoutGenerator.prescription()` path along with the
+Correction 2026-11-21 (11d 2.2): 449bd8d deleted the legacy selection loop and kept
+`prescription()`. The custom-day "Refresh prescriptions" path
+(`WorkoutGenerator.represcribe`) reached it through `makePickedRow` until 11d 2.2. That
+path now goes through `SportSeasonGenerator.prescribeRefresh`, which calls the season
+engine's own `prescribe`, and the legacy `prescription(for:)`, `makePickedRow`,
+`rpeTempoHints`, `capCompoundRPE`, `isNumericRepBand` and `beginnerRepFloor` are deleted.
+Every lift prescription, planned or refreshed, is the season engine's now.
+
+Commit 449bd8d took planned days off the legacy path, so they lost the
 `isNumericRepBand` unit fix (b9c4527) and the beginner set/RPE clamp. The live path is
 `SportSeasonGenerator.prescribe`, which sets `reps: m.protocolReps ?? scheme.repsString`
 and never reads the catalog's `default_reps`. A 4,958-week sweep measured the result:

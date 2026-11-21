@@ -837,9 +837,10 @@ final class PlanStoreSeamsTests: XCTestCase {
         let day = try XCTUnwrap(regen.days.first { cal.isDate($0.date, inSameDayAs: date) })
         let row0 = try XCTUnwrap(day.generatedWorkout?.exercises.first)
 
-        // Generator-grade markers compose never produces: RPE + tempo cues.
+        // A generator-grade marker compose never produces: the RPE cue. Tempo
+        // follows the season demand scheme, which sets one only for explosive
+        // and eccentric work, so a pressing row has none.
         XCTAssertNotNil(row0.rpe, "fullRefresh rows carry the generator's RPE cue")
-        XCTAssertNotNil(row0.tempo, "fullRefresh rows carry the generator's tempo cue")
         // The user's own note is merged, not clobbered.
         XCTAssertTrue(row0.notes?.contains("keep elbows in") == true,
                       "user note must survive the refresh; got \(row0.notes ?? "nil")")

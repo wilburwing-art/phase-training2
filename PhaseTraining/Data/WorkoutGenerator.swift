@@ -286,74 +286,6 @@ enum WorkoutGenerator {
             context: context, strategy: strategy, date: date)
     }
 
-    /// Build a `GeneratedExercise` row for a picked exercise, applying the
-    /// same prescription, readiness/deload set-scaling, progressive-overload
-    /// note, compound RPE cap, and warm-up rules the main slot loop uses.
-    /// Returns the row plus its PRE-multiplier duration (the budget-accounting
-    /// cost). Shared by the main loop, the degradation floor, AND the
-    /// represcribe path (WorkoutGenerator+Represcribe) so they never drift
-    /// apart (the dual-path trap — see the prescription skill). `pattern` is
-    /// the slot's satisfiedBy at the loop call sites; nil for represcribe.
-    static func makePickedRow(
-        picked: Exercise,
-        pattern: String?,
-        slotIdx: Int,
-        focus: WorkoutFocus,
-        memory: TrainingMemory,
-        profile: DemographicProfile,
-        context: GeneratorContext,
-        strategy: GeneratorStrategy,
-        hashSeed: String,
-        budgetRemainingSec: Int? = nil
-    ) -> (row: GeneratedExercise, baseDurSec: Int) {
-        let (rawBaseSets, reps, restSec) = prescription(
-            for: picked, slotIdx: slotIdx, focus: focus, memory: memory, profile: profile)
-        // Tight-budget set trim (T2.4): a required slot on a very short session
-        // shrinks its set count to fit the remaining budget rather than overrun
-        // (e.g. a 20-min day used to ship a 33-min leg day). Floor at 1 set;
-        // optional slots pass nil and are dropped by the caller instead.
-        let baseSets: Int = {
-            guard let rem = budgetRemainingSec else { return rawBaseSets }
-            let maxFit = max(1, (rem - 30) / (45 + restSec))
-            return min(rawBaseSets, maxFit)
-        }()
-        // Readiness × deload set multiplier (no effect when no readiness data).
-        let readinessSetsMultiplier: Double = context.hasReadinessData
-            ? lerp(0.6, 1.0, context.readinessScore) : 1.0
-        let combinedSetsMul = readinessSetsMultiplier * strategy.intensityBias.setsMultiplier
-        let sets = max(1, min(8, Int((Double(baseSets) * combinedSetsMul).rounded())))
-        // Budget accounting uses pre-multiplier duration (build 97).
-        let baseDurSec = baseSets * (45 + restSec) + 30
-        let notes = progressiveOverloadHint(
-            for: picked, context: context, memory: memory, prescribedReps: reps, strategy: strategy)
-        let (rpeRaw, tempo) = rpeTempoHints(
-            for: picked, slotIdx: slotIdx, focus: focus, memory: memory, strategy: strategy)
-        // Phase 2 readiness RPE cap — compound lifts only, when readiness data exists.
-        let rpe: String? = {
-            guard let raw = rpeRaw, picked.isCompound, context.hasReadinessData else { return rpeRaw }
-            return capCompoundRPE(raw, readinessScore: context.readinessScore)
-        }()
-        // Warm-up ramp only for the first compound primary, and not when sore.
-        let warmUps: [WarmUpSet]? = (slotIdx == 0 && picked.isCompound && !isMuscleSoreForExercise(picked, memory: memory))
-            ? WarmUpSet.standardRamp
-            : nil
-        let row = GeneratedExercise(
-            id: "\(hashSeed)-\(slotIdx)-\(picked.id)",
-            exerciseId: picked.id,
-            name: picked.name,
-            pattern: pattern,
-            isCompound: picked.isCompound,
-            sets: sets,
-            reps: reps,
-            restSeconds: restSec,
-            notes: notes,
-            rpe: rpe,
-            tempo: tempo,
-            warmUpSets: warmUps
-        )
-        return (row, baseDurSec)
-    }
-
     /// Focus-appropriate patterns the degradation floor backfills from when the
     /// recipe's own slots can't fill (equipment-starved). Curated so the
     /// fallback stays on-theme — a pull day degrades to scapular/back-isometric
@@ -445,15 +377,6 @@ enum WorkoutFocus: String, Hashable, Codable {
     }
 }
 
-// MARK: - Small string helper
-
-// Internal (not fileprivate): `prescription` moved to WorkoutGenerator+Prescription.swift
-// during the Tier-3 split still calls `.nilIfEmpty`, so it must be reachable across
-// the file boundary. Sole definition repo-wide, so widening can't collide.
-extension String {
-    var nilIfEmpty: String? { isEmpty ? nil : self }
-}
-
 // MARK: - Phase 2 readiness helpers
 
 /// Linear interpolation between `lo` and `hi` at `t` in [0, 1]. Clamps t.
@@ -462,20 +385,10 @@ func lerp(_ lo: Double, _ hi: Double, _ t: Double) -> Double {
     return lo + (hi - lo) * clamped
 }
 
-/// Apply the Phase 2 compound-RPE cap given a readiness score in [0, 1].
-/// The cap floor is RPE 7 at score 0 → RPE 9 at score 1. We parse the
-/// existing RPE string ("7", "8", "RPE 8", "RPE 7-8" etc.), extract the
-/// highest number, and replace it with `min(originalMax, cap)`. Inputs
-/// the parser doesn't understand pass through unchanged — the cap is a
-/// safety floor, not a coercion.
-func capCompoundRPE(_ rpeRaw: String, readinessScore: Double) -> String {
-    return capRPE(rpeRaw, to: lerp(7.0, 9.0, readinessScore))
-}
-
 /// Cap an RPE string ("7", "8-9", "RPE 7-8") so its max value ≤ `capValue`.
 /// Parser failures pass through unchanged — the cap is a safety floor, not a
-/// coercion. Shared by the readiness compound cap, the beginner cap (T1.5),
-/// and the build_workout decoder's RPE plausibility clamp.
+/// coercion. Shared by the sore and low-energy caps and the build_workout
+/// decoder's RPE plausibility clamp.
 func capRPE(_ rpeRaw: String, to capValue: Double) -> String {
     let trimmed = rpeRaw.trimmingCharacters(in: .whitespaces)
     guard !trimmed.isEmpty else { return rpeRaw }

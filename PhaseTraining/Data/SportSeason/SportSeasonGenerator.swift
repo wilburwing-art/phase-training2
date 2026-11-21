@@ -456,27 +456,15 @@ enum SportSeasonGenerator {
         // The coach's intensity bias, clamped so a `push` can't run away and a
         // `deload` can't zero the movement out. Rounded away from 1 so the
         // bias always moves a two- or three-set row.
-        let setsMul = strategy.intensityBias.setsMultiplier
-        if setsMul != 1 {
-            for i in rows.indices where !rows[i].fixedSets {
-                let scaled = (Double(rows[i].exercise.sets) * setsMul).rounded(setsMul > 1 ? .up : .down)
-                rows[i].exercise.sets = max(1, Int(scaled))
-            }
+        for i in rows.indices where !rows[i].fixedSets {
+            rows[i].exercise.sets = strategyScaledSets(rows[i].exercise.sets, strategy)
         }
         picks = rows.map(\.pick)
         let orderKeys = rows.map(\.order)
         var exercises = rows.map(\.exercise)
-        // Readiness x sets (T2-10). Same lerp(0.6, 1.0) curve makePickedRow
-        // has used since Phase 2: a detrained user gets 60% of the sets, a
-        // fully-ready one the full dose. nil means no data and no scaling;
-        // the neutral 0.5 sentinel never reaches here.
-        if let r = athlete.readinessScore {
-            let mul = lerp(0.6, 1.0, r)
-            exercises = exercises.map { ex in
-                var e = ex
-                e.sets = max(1, Int((Double(ex.sets) * mul).rounded()))
-                return e
-            }
+        // Readiness x sets (T2-10).
+        for i in exercises.indices {
+            exercises[i].sets = readinessScaledSets(exercises[i].sets, readiness: athlete.readinessScore)
         }
         // A part-recovered prime mover that stayed in the session (its
         // demand had no other movement) caps at RPE 7.
@@ -1080,6 +1068,103 @@ enum SportSeasonGenerator {
             rpe: strategy.rpeOverrides[key] ?? scheme.rpeString,
             tempo: strategy.tempoOverrides[key] ?? scheme.tempoString,
             source: .recipe)
+    }
+
+    /// The coach's intensity bias on one row's sets, rounded away from 1 and
+    /// floored at one set. A cited protocol's sets are the caller's to skip.
+    private static func strategyScaledSets(_ sets: Int, _ strategy: GeneratorStrategy) -> Int {
+        let mul = strategy.intensityBias.setsMultiplier
+        guard mul != 1 else { return sets }
+        return max(1, Int((Double(sets) * mul).rounded(mul > 1 ? .up : .down)))
+    }
+
+    /// Readiness on one row's sets: lerp(0.6, 1.0), so a detrained athlete
+    /// gets 60% of the sets and a fully ready one the full dose. nil means no
+    /// data and no scaling; the neutral 0.5 sentinel never reaches here.
+    private static func readinessScaledSets(_ sets: Int, readiness: Double?) -> Int {
+        guard let readiness else { return sets }
+        return max(1, Int((Double(sets) * lerp(0.6, 1.0, readiness)).rounded()))
+    }
+
+    // MARK: - Custom-day refresh
+
+    /// One row of a custom-routine day, prescribed the way a planned session
+    /// prescribes it: `prescribe` under the athlete's sport and season rule,
+    /// then the strategy and readiness set scaling the session applies after
+    /// fitting. No ramp week (a refresh has no block position), no budget fit
+    /// and no deload cut.
+    ///
+    /// The movement is the exercise's `sport_movements` row in the athlete's
+    /// pool, else in the general-fitness pool, else one built from the
+    /// catalog exercise (no protocol, no caution). The demand is the seed
+    /// row's primary demand; without one it comes from `refreshDemand`.
+    static func prescribeRefresh(_ exercise: Exercise, slotIdx: Int, focus: WorkoutFocus,
+                                 athlete: AthleteState,
+                                 strategy: GeneratorStrategy) -> GeneratedExercise {
+        let seeded = [poolSlug(for: athlete.sportSlug), complementPoolSlug].lazy
+            .compactMap { sport in
+                CoachDatabase.shared.sportMovements(sport: sport).first { $0.exerciseId == exercise.id }
+            }
+            .first
+        let demand = seeded?.primaryDemand ?? refreshDemand(exercise, slotIdx: slotIdx, focus: focus)
+        let movement = seeded ?? SportMovement(
+            exerciseId: exercise.id, name: exercise.name, catalogSlug: exercise.slug,
+            demands: [demand], allowedPhases: [], allowedVariants: nil,
+            fatigueCost: 0, minExperienceRank: 0, injuryCaution: nil,
+            isCompound: exercise.isCompound, isUnilateral: exercise.isUnilateral,
+            catalogReps: exercise.defaultReps)
+        let rule = PhaseRule.resolve(sportSlug: athlete.sportSlug,
+                                     variant: athlete.variant, season: athlete.season)
+        var e = prescribe(movement, demand: demand, rule: rule, strategy: strategy, goal: athlete.goal,
+                          experience: athlete.experience, age: athlete.age)
+        if movement.protocolSets == nil { e.sets = strategyScaledSets(e.sets, strategy) }
+        e.sets = readinessScaledSets(e.sets, readiness: athlete.readinessScore)
+        return e
+    }
+
+    /// Demand for a refreshed exercise with no seed demand, from its
+    /// movement-pattern category (`MovementCategory`), then the day's focus:
+    ///
+    /// | Category or focus | Slot 0 compound | Any other row |
+    /// |---|---|---|
+    /// | Legs              | legStrength     | legStrength   |
+    /// | Push              | upperStrength   | upperPush     |
+    /// | Pull              | pullStrength    | upperPull     |
+    /// | Core              | core            | core          |
+    /// | Arms only (elbow-flexion, elbow-extension) | arms | arms |
+    /// | None: focus legs / push / pull | as the row above | as the row above |
+    /// | None: any other focus | core      | core          |
+    ///
+    /// Categories are read in that order, so a thruster (squat, vertical
+    /// press) is legs and a chin-up (vertical-pull, elbow-flexion) is pull.
+    /// The slot-0 demands are the main-lift ones, so an advanced athlete's
+    /// lead compound gets its extra set the way a planned day's does.
+    static func refreshDemand(_ exercise: Exercise, slotIdx: Int, focus: WorkoutFocus) -> Demand {
+        let armsPatterns: Set<String> = ["elbow-flexion", "elbow-extension"]
+        let patterns = CoachDatabase.shared.patternsForExercise(exercise.id)
+        let categories = Set(patterns.filter { !armsPatterns.contains($0) }
+            .compactMap(MovementCategory.category(forSlug:)))
+        let lead = slotIdx == 0 && exercise.isCompound
+        func demand(_ category: MovementCategory) -> Demand? {
+            switch category {
+            case .legs:         return .legStrength
+            case .push:         return lead ? .upperStrength : .upperPush
+            case .pull:         return lead ? .pullStrength : .upperPull
+            case .core:         return .core
+            case .conditioning: return nil
+            }
+        }
+        for category in [MovementCategory.legs, .push, .pull, .core] where categories.contains(category) {
+            if let d = demand(category) { return d }
+        }
+        if patterns.contains(where: armsPatterns.contains) { return .arms }
+        let focusCategory: MovementCategory? = switch focus {
+        case .legs: .legs
+        case .push: .push
+        case .pull: .pull
+        default:    nil
+        }
+        return focusCategory.flatMap(demand) ?? .core
     }
 
     /// Short, human label for a session title. Prefers the catalog's own name
