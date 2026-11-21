@@ -144,7 +144,6 @@ extension PlanStore {
         // the customRoutineId exclusion in refinementCandidates is keyed on
         // the override dict, so LLM-refinement protection is untouched.
         if overrides.prescriptionRefreshByDate?.isEmpty == false {
-            let profile = DemographicProfile.from(memory)
             let cal = Calendar.current
             let liftDays = updated.days.filter { $0.kind == .lift }
             for idx in updated.days.indices {
@@ -165,7 +164,7 @@ extension PlanStore {
                 }
                 updated.days[idx].generatedWorkout = WorkoutGenerator.represcribe(
                     workout: workout, mode: mode, focus: focus,
-                    memory: memory, profile: profile, context: context)
+                    memory: memory, context: context)
             }
         }
         return updated

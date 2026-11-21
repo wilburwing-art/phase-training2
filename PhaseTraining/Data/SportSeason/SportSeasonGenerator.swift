@@ -1036,11 +1036,13 @@ enum SportSeasonGenerator {
                                   goal: TrainingGoal = .sportPerformance,
                                   experience: ExperienceLevel = .intermediate,
                                   age: Int? = nil,
-                                  rampWeek: Int? = nil) -> GeneratedExercise {
+                                  rampWeek: Int? = nil,
+                                  accessory: Bool = false) -> GeneratedExercise {
         let mainLifts: Set<Demand> = [.maxStrength, .upperStrength, .pullStrength, .legStrength]
         var scheme = DemandScheme.scheme(for: demand, progression: rule.progression, goal: goal)
             .adjusted(experience: experience, age: age,
-                      mainLift: mainLifts.contains(demand) && rule.progression == .progressiveOverload)
+                      mainLift: !accessory && mainLifts.contains(demand)
+                          && rule.progression == .progressiveOverload)
         if let w = rampWeek, anchorDemands.contains(demand) { scheme = scheme.ramped(weekOfCycle: w) }
         let key = m.name.lowercased()
         // A movement carrying a cited protocol (R3-9) keeps its own sets, reps
@@ -1115,8 +1117,14 @@ enum SportSeasonGenerator {
             catalogReps: exercise.defaultReps)
         let rule = PhaseRule.resolve(sportSlug: athlete.sportSlug,
                                      variant: athlete.variant, season: athlete.season)
+        // An unseeded leg row past the lead compound keeps the legStrength
+        // band but not the advanced main-lift set, the way a pressing or
+        // pulling accessory (upperPush, upperPull) gets none. Leg categories
+        // have no accessory demand of their own: legEndurance would serve
+        // 12 to 20 reps, a different character from the 6 to 10 band.
+        let accessory = seeded == nil && !(slotIdx == 0 && exercise.isCompound)
         var e = prescribe(movement, demand: demand, rule: rule, strategy: strategy, goal: athlete.goal,
-                          experience: athlete.experience, age: athlete.age)
+                          experience: athlete.experience, age: athlete.age, accessory: accessory)
         if movement.protocolSets == nil { e.sets = strategyScaledSets(e.sets, strategy) }
         e.sets = readinessScaledSets(e.sets, readiness: athlete.readinessScore)
         return e
@@ -1138,7 +1146,9 @@ enum SportSeasonGenerator {
     /// Categories are read in that order, so a thruster (squat, vertical
     /// press) is legs and a chin-up (vertical-pull, elbow-flexion) is pull.
     /// The slot-0 demands are the main-lift ones, so an advanced athlete's
-    /// lead compound gets its extra set the way a planned day's does.
+    /// lead compound gets its extra set the way a planned day's does. Legs
+    /// stay legStrength on every row; `prescribeRefresh` withholds the
+    /// main-lift set from the non-lead ones.
     static func refreshDemand(_ exercise: Exercise, slotIdx: Int, focus: WorkoutFocus) -> Demand {
         let armsPatterns: Set<String> = ["elbow-flexion", "elbow-extension"]
         let patterns = CoachDatabase.shared.patternsForExercise(exercise.id)

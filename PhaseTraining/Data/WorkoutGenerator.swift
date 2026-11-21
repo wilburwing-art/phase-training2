@@ -287,11 +287,6 @@ enum WorkoutGenerator {
             context: context, strategy: strategy, date: date)
     }
 
-    /// Focus-appropriate patterns the degradation floor backfills from when the
-    /// recipe's own slots can't fill (equipment-starved). Curated so the
-    /// fallback stays on-theme — a pull day degrades to scapular/back-isometric
-    /// work (which has bodyweight options post-resync), a push day to core /
-    /// extension, a leg day to core / hinge. Ordered by preference. (T1.1b/T1.3)
     /// True when the exercise's primary muscle group (resolved via
     /// CoachDatabase.musclesForExercise + MuscleBucket.bucket(forSlug:))
     /// matches any area on the user's most recent (≤36h) SorenessEntry at

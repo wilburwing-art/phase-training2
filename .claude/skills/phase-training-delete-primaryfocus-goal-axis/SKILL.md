@@ -22,7 +22,7 @@ contain those keys load cleanly with no migration. (This is unknown *keys* — d
 Generation path (commit as M2c-2):
 - `WeeklyShape.swift` — `resolve(focus:)` param + `focusShapes` table + the focus fallthrough. Drop all; resolution becomes (sport,season)→(sport,.maintenance)→defaultShape.
 - `Planner.swift` (~203) — the `focus: memory.primaryFocus` arg into `WeeklyShape.resolve`.
-- `WorkoutGenerator+Prescription.swift` — `switch memory.primaryFocus` in `rpeTempoHints`; `focusBias(memory.primaryFocus,...)` in `prescription`; the `focusBias(_:isPrimary:)` func. Collapse to one neutral scheme; sets/reps/rest fall to `exercise.defaultSets`/`defaultSetsFromFormula`/coach.db.
+- `WorkoutGenerator+Prescription.swift`: the focus switch and the focus bias lived here. Both are gone (11d 2.2 deleted the legacy prescribe path); the file now holds only the progressive-overload target hint.
 - `WorkoutGenerator.swift` (~293,307) — the two `== .hypertrophy` accessory gates →
   `WorkoutGenerator+Accessories.swift` `appendHypertrophy{UpperPush,LowerBody}Accessories` become dead → delete.
 

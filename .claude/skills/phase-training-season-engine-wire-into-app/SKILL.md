@@ -44,7 +44,7 @@ merged path calls the private `generate()` directly, bypassing generateLift.
 
 ## M2c/M2d deletion coupling (the goal-axis rip-out)
 Removing the `focuses` CodingKey = old saves ignore that JSON key (no shim needed).
-BUT the legacy generator (`focusBias`, `rpeTempoHints` switch, hypertrophy gate) depends
+BUT the legacy generator (focus bias, RPE/tempo focus switch, hypertrophy gate; all deleted by 11d 2.2) depended
 on `PrimaryFocus`, so deleting the enum is COUPLED with deleting the legacy
 `WorkoutGenerator.generate` core + the old eval harnesses (GeneratorSweepReportTest /
 GeneratorInvariantTest test the focus generator) + a ~13-file test sweep. After M2c1 the

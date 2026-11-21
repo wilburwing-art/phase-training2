@@ -36,7 +36,6 @@ extension WorkoutGenerator {
         mode: PrescriptionRefreshMode,
         focus: WorkoutFocus,
         memory: TrainingMemory,
-        profile: DemographicProfile,
         context: GeneratorContext
     ) -> GeneratedWorkout {
         var out = workout

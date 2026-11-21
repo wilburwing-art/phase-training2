@@ -37,10 +37,10 @@ re-derives each override day from stored data. Anything written only to
   JSONSerialization, decoding.
 - **Extend `clearDate(_:)`** with the new field's same-day purge — and use
   same-day-normalized get/set helpers (keys may carry time-of-day).
-- **Reuse `makePickedRow`, don't recreate it.** It was private + took a
-  PatternSlot; the refactor (private → internal, slot → `pattern: String?`)
-  let represcribe share the exact row composer with the main loop and
-  degradation floor. A parallel composer = the dual-path drift trap.
+- **Reuse the planned day's prescriber.** `represcribe` prescribes each row
+  through `SportSeasonGenerator.prescribeRefresh`, which calls the season
+  engine's own `prescribe`. A parallel composer is the dual-path drift trap
+  (11d 2.2 removed the last one).
 
 LLM-refinement protection needs nothing extra: `refinementCandidates`
 excludes on `customRoutineId(for:)` and the composed `refinedByLLMAt: nil`.

@@ -35,7 +35,7 @@ final class WorkoutGeneratorRepresribeTests: XCTestCase {
         let m = memory()
         return WorkoutGenerator.represcribe(
             workout: w, mode: mode, focus: .push, memory: m,
-            profile: DemographicProfile.from(m), context: .empty)
+            context: .empty)
     }
 
     private func realExercise() throws -> Exercise {
@@ -134,7 +134,7 @@ final class WorkoutGeneratorRepresribeTests: XCTestCase {
         }
         return WorkoutGenerator.represcribe(
             workout: workout(rows), mode: .fullRefresh, focus: focus, memory: m,
-            profile: DemographicProfile.from(m), context: context)
+            context: context)
     }
 
     private struct Rx: Equatable {
@@ -235,6 +235,27 @@ final class WorkoutGeneratorRepresribeTests: XCTestCase {
         XCTAssertEqual(adv[0].sets, inter[0].sets + 1, "lead compound")
         XCTAssertEqual(adv[1].sets, inter[1].sets, "accessory")
         XCTAssertEqual(SportSeasonGenerator.refreshDemand(pair[1], slotIdx: 1, focus: .push), .upperPush)
+    }
+
+    /// Legs read as legStrength on every row, a main-lift demand, so the
+    /// refresh withholds the advanced set from a leg row past the lead
+    /// compound itself (11d 2.8).
+    func testAdvancedNonLeadLegAccessoryGetsTheIntermediateSets() throws {
+        let seeded = Set((pool(skier()) + CoachDatabase.shared.sportMovements(sport: "general-fitness"))
+            .map(\.exerciseId))
+        let legs = Set(MovementCategory.legs.memberPatternSlugs)
+        let unseededLegs = legs.sorted()
+            .flatMap { CoachDatabase.shared.exercises(matchingPattern: $0) }
+            .filter { $0.isCompound && !seeded.contains($0.id) }
+        var seen = Set<Int>()
+        let pair = Array(unseededLegs.filter { seen.insert($0.id).inserted }.prefix(2))
+        guard pair.count == 2 else { throw XCTSkip("need two unseeded leg compounds") }
+        XCTAssertEqual(SportSeasonGenerator.refreshDemand(pair[1], slotIdx: 1, focus: .legs), .legStrength)
+        let inter = refresh(pair, focus: .legs, memory: skier(experience: .intermediate)).exercises
+        let adv = refresh(pair, focus: .legs, memory: skier(experience: .advanced)).exercises
+        XCTAssertEqual(adv[0].sets, inter[0].sets + 1, "lead compound")
+        XCTAssertEqual(adv[1].sets, inter[1].sets, "leg accessory")
+        XCTAssertEqual(adv[1].reps, inter[1].reps, "keeps the legStrength band")
     }
 
     /// A movement seeded only in the general-fitness pool keeps that row's

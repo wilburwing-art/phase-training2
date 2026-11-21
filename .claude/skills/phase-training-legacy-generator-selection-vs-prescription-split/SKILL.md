@@ -1,39 +1,32 @@
 ---
 name: phase-training-legacy-generator-selection-vs-prescription-split
-description: When removing phase-training2's "legacy demographic WorkoutGenerator" after the ski/climb season-engine pivot, only the SELECTION engine is dead — the PRESCRIPTION machinery is still LIVE and must stay. generate()/pickForSlot/ExerciseQueryCache/WorkoutFocus.slots/recipes/stagnation-swap/antagonist-supersets are unreachable and deletable; but makePickedRow + prescription/rpeTempoHints/progressiveOverloadHint (+Prescription.swift) + represcribe (+Represcribe.swift) are consumed by the LIVE custom-routine override path (PlanStore+Generation applyCustomRoutineOverrides, reachable for ski/climb), and represcribe consumes GeneratorContext.priorBest. WorkoutFocus enum + .lift() also stay. Verified 2026-06-27. Trigger when planning/executing removal of the legacy WorkoutGenerator, or when an audit/explore agent says "delete WorkoutGenerator+Prescription / +Represcribe" (it's wrong). Skip for the season prescription (DemandScheme) or the goal-axis deletion.
-when-to-use: Scoping or executing the deletion of the legacy demographic generator in phase-training2 — deciding what's dead (selection) vs live (prescription/represcribe).
+description: What survived the deletion of phase-training2's legacy demographic WorkoutGenerator and why. The selection engine (generate core loop, pickForSlot, ExerciseQueryCache, WorkoutFocus.slots, stagnation swap, antagonist supersets) went in 449bd8d; the legacy row prescriber went in 11d 2.2. What stays in WorkoutGenerator files is the custom-routine refresh (represcribe in +Represcribe.swift, reachable from PlanStore+Generation applyCustomRoutineOverrides), the progressive-overload target hint (+Prescription.swift), isMuscleSoreForExercise and capRPE, and the WorkoutFocus enum with .lift(). Trigger when an audit or explore agent says "delete WorkoutGenerator+Represcribe / +Prescription" or "the legacy generator is dead", or before deleting any helper in WorkoutGenerator*.swift. Skip for the season prescription itself (DemandScheme, SportSeasonGenerator.prescribe) or the goal-axis deletion.
+when-to-use: Deciding whether a WorkoutGenerator helper in phase-training2 is dead or still serves the custom-routine refresh path.
 ---
 
-# The legacy generator splits: SELECTION (dead) vs PRESCRIPTION (live)
+# The legacy generator after deletion
 
-`WorkoutGenerator` is two subsystems fused in one file. After the ski/climb gate only the SELECTION half
-is unreachable.
+**Deleted:** the demographic selection loop (449bd8d: `generate(...)` core, `pickForSlot`,
+`ExerciseQueryCache`, degradation fallback, stagnation swap, antagonist supersets,
+`WorkoutFocus.slots` + `PatternSlot`, `WorkoutGenerator+Accessories.swift`, the eval-rig exporter)
+and the legacy row prescriber with its focus bias, RPE/tempo hints and beginner clamps (11d 2.2).
 
-**DEAD — delete (demographic selection):** `generate(...)` core loop; `pickForSlot`;
-`ExerciseQueryCache`; `degradationFallbackPatterns`; `applyStagnationSwap`; `assignAntagonistSupersets`;
-the WorkoutGenerator `deterministicPick<T>(from:slotIdx:hashSeed:)` (NOT Planner's same-named func);
-`provenanceLine`; `WorkoutFocus.slots` + `PatternSlot`; `WorkoutGenerator+Accessories.swift`
-(`highMinuteAccessoryPatterns`, used only by `generate()`'s degradation). Plus the eval-rig:
-`EvalRigExporter.swift`, `scripts/generator-sweep.sh`, the ProfileScreen "Export eval-rig JSON" button.
+**Live, keep:**
+- `WorkoutGenerator+Represcribe.swift`: `represcribe` refreshes a custom-routine override day.
+  Caller: `PlanStore+Generation.swift` `applyCustomRoutineOverrides`. Each row goes through
+  `SportSeasonGenerator.prescribeRefresh`, the season engine's own `prescribe`, so a refreshed
+  custom day and a planned day agree for the same athlete.
+- `WorkoutGenerator+Prescription.swift`: `progressiveOverloadHint` and the target-weight math
+  (`targetLb`, `repBandMidpoint`, `steppedTargetLb`). Reads `GeneratorContext.priorBest`.
+- `WorkoutGenerator.swift`: `isMuscleSoreForExercise`, `capRPE`, the `WorkoutFocus` enum and
+  `.lift()` (used by the season engine, Planner, PlanStore and the LLM path), and the thin
+  `generateLift` / `generateConsolidated` season dispatchers.
 
-**LIVE — keep:** `makePickedRow`; `WorkoutGenerator+Prescription.swift` (prescription / rpeTempoHints /
-progressiveOverloadHint / isMuscleSoreForExercise / capRPE / lerp / nilIfEmpty); **`+Represcribe.swift`**.
-Reason: `WorkoutGenerator.represcribe` re-prescribes **custom-routine day overrides** and is reachable
-for ski/climb via `PlanStore+Generation.swift` `applyCustomRoutineOverrides` → it calls `makePickedRow`
-and consumes `context.priorBest`. `WorkoutFocus` enum + `.lift()` (defined in WorkoutGenerator.swift)
-are used by the season engine / Planner / PlanStore / LLM — keep.
-
-After deletion, `generateLift`/`generateConsolidated` collapse to thin season dispatchers; keep their
-full signatures (params parked) and return a safe empty `GeneratedWorkout` for the can't-happen
-no-supported-sport branch instead of crashing.
-
-## The trap (why this needs a skill)
-Multi-agent explore/audit sweeps (even opus) classified `+Prescription.swift` and `+Represcribe.swift`
-as "LEGACY-ONLY, delete" — they traced consumers from `generate()` down but missed the UPWARD live
-caller (`PlanStore` custom-routine path). **Before deleting any helper of an audit-flagged "legacy"
-subsystem, grep its callers in BOTH directions** and confirm no live feature (custom routines here)
-consumes it. Tests mirror the split: delete selection tests, KEEP prescription/makePickedRow/represcribe
-tests — so most legacy test files get TRIMMED, not whole-deleted.
+## The trap
+Explore and audit sweeps classified `+Represcribe.swift` and `+Prescription.swift` as legacy-only.
+They traced consumers down from the deleted `generate()` and missed the upward live caller in
+`PlanStore`. Before deleting any helper of a subsystem an audit calls legacy, grep its callers in
+both directions and confirm no live feature (custom routines here) consumes it.
 
 Pairs with [[phase-training-season-engine-sidelines-adaptive-layer]],
 [[phase-training-prescription-precedence-and-dual-path]], [[verify-audit-claim-before-implementing]].
