@@ -10,7 +10,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 superset"
+    "notes": "A1 superset",
+    "reps_by_week": null
   },
   {
     "id": 4,
@@ -23,7 +24,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 superset, balance the push"
+    "notes": "A2 superset, balance the push",
+    "reps_by_week": null
   },
   {
     "id": 5,
@@ -36,7 +38,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B1 face pull"
+    "notes": "B1 face pull",
+    "reps_by_week": null
   },
   {
     "id": 6,
@@ -49,7 +52,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B2 reverse wrist curl, superset"
+    "notes": "B2 reverse wrist curl, superset",
+    "reps_by_week": null
   },
   {
     "id": 8,
@@ -62,7 +66,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "C2 overhead triceps extension"
+    "notes": "C2 overhead triceps extension",
+    "reps_by_week": null
   },
   {
     "id": 13,
@@ -75,7 +80,8 @@
     "rest": "3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Main work: repeaters"
+    "notes": "Main work: repeaters",
+    "reps_by_week": null
   },
   {
     "id": 19,
@@ -88,7 +94,8 @@
     "rest": "2-3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Main lift: back squat"
+    "notes": "Main lift: back squat",
+    "reps_by_week": null
   },
   {
     "id": 20,
@@ -101,7 +108,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Main lift: RDL"
+    "notes": "Main lift: RDL",
+    "reps_by_week": null
   },
   {
     "id": 21,
@@ -114,7 +122,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "B1: weighted pull-up"
+    "notes": "B1: weighted pull-up",
+    "reps_by_week": null
   },
   {
     "id": 22,
@@ -127,7 +136,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "B2: dumbbell bench"
+    "notes": "B2: dumbbell bench",
+    "reps_by_week": null
   },
   {
     "id": 23,
@@ -140,7 +150,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "C1: pallof press"
+    "notes": "C1: pallof press",
+    "reps_by_week": null
   },
   {
     "id": 24,
@@ -153,7 +164,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "C2: farmer carry"
+    "notes": "C2: farmer carry",
+    "reps_by_week": null
   },
   {
     "id": 31,
@@ -166,7 +178,8 @@
     "rest": "20 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Band pull-apart"
+    "notes": "Band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 42,
@@ -179,7 +192,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 band pull-apart"
+    "notes": "A2 band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 44,
@@ -192,7 +206,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Face pull"
+    "notes": "Face pull",
+    "reps_by_week": null
   },
   {
     "id": 47,
@@ -205,7 +220,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 push-up"
+    "notes": "A1 push-up",
+    "reps_by_week": null
   },
   {
     "id": 48,
@@ -218,7 +234,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 pike push-up"
+    "notes": "A2 pike push-up",
+    "reps_by_week": null
   },
   {
     "id": 51,
@@ -231,7 +248,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Ab wheel (or plank if no wheel)"
+    "notes": "Ab wheel (or plank if no wheel)",
+    "reps_by_week": null
   },
   {
     "id": 52,
@@ -244,7 +262,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Band pull-apart"
+    "notes": "Band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 66,
@@ -257,7 +276,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Hangboard repeaters to prime grip"
+    "notes": "Hangboard repeaters to prime grip",
+    "reps_by_week": null
   },
   {
     "id": 67,
@@ -270,7 +290,8 @@
     "rest": "3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Campus ladder 1-3-5 (advanced only)"
+    "notes": "Campus ladder 1-3-5 (advanced only)",
+    "reps_by_week": null
   },
   {
     "id": 68,
@@ -283,7 +304,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Explosive pull-ups"
+    "notes": "Explosive pull-ups",
+    "reps_by_week": null
   },
   {
     "id": 69,
@@ -296,7 +318,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Dynamic lock-offs"
+    "notes": "Dynamic lock-offs",
+    "reps_by_week": null
   },
   {
     "id": 70,
@@ -309,7 +332,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Ab wheel rollout"
+    "notes": "Ab wheel rollout",
+    "reps_by_week": null
   },
   {
     "id": 81,
@@ -322,7 +346,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 reverse wrist curl"
+    "notes": "A1 reverse wrist curl",
+    "reps_by_week": null
   },
   {
     "id": 89,
@@ -335,7 +360,8 @@
     "rest": "2-3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Back squat main"
+    "notes": "Back squat main",
+    "reps_by_week": null
   },
   {
     "id": 90,
@@ -348,7 +374,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "RDL"
+    "notes": "RDL",
+    "reps_by_week": null
   },
   {
     "id": 91,
@@ -361,7 +388,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 Bulgarian split"
+    "notes": "A1 Bulgarian split",
+    "reps_by_week": null
   },
   {
     "id": 93,
@@ -374,7 +402,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Hip thrust"
+    "notes": "Hip thrust",
+    "reps_by_week": null
   },
   {
     "id": 94,
@@ -387,7 +416,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B1 Pallof press"
+    "notes": "B1 Pallof press",
+    "reps_by_week": null
   },
   {
     "id": 99,
@@ -400,7 +430,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg glute bridge"
+    "notes": "Single-leg glute bridge",
+    "reps_by_week": null
   },
   {
     "id": 100,
@@ -413,7 +444,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Nordic hamstring curl"
+    "notes": "Nordic hamstring curl",
+    "reps_by_week": null
   },
   {
     "id": 117,
@@ -426,7 +458,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Goblet squat (moderate)"
+    "notes": "Goblet squat (moderate)",
+    "reps_by_week": null
   },
   {
     "id": 118,
@@ -439,7 +472,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "RDL (moderate)"
+    "notes": "RDL (moderate)",
+    "reps_by_week": null
   },
   {
     "id": 119,
@@ -452,7 +486,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Pallof press"
+    "notes": "Pallof press",
+    "reps_by_week": null
   },
   {
     "id": 122,
@@ -465,7 +500,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Barbell row"
+    "notes": "Barbell row",
+    "reps_by_week": null
   },
   {
     "id": 123,
@@ -478,7 +514,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Weighted pull-up"
+    "notes": "Weighted pull-up",
+    "reps_by_week": null
   },
   {
     "id": 124,
@@ -491,7 +528,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "DB bench press"
+    "notes": "DB bench press",
+    "reps_by_week": null
   },
   {
     "id": 125,
@@ -504,7 +542,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 ab wheel"
+    "notes": "A1 ab wheel",
+    "reps_by_week": null
   },
   {
     "id": 126,
@@ -517,7 +556,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 farmer carry"
+    "notes": "A2 farmer carry",
+    "reps_by_week": null
   },
   {
     "id": 127,
@@ -530,7 +570,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B1 reverse wrist curl"
+    "notes": "B1 reverse wrist curl",
+    "reps_by_week": null
   },
   {
     "id": 130,
@@ -543,7 +584,8 @@
     "rest": "2-3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Back squat"
+    "notes": "Back squat",
+    "reps_by_week": null
   },
   {
     "id": 131,
@@ -556,7 +598,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Nordic hamstring"
+    "notes": "Nordic hamstring",
+    "reps_by_week": null
   },
   {
     "id": 132,
@@ -569,7 +612,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Bulgarian split"
+    "notes": "Bulgarian split",
+    "reps_by_week": null
   },
   {
     "id": 133,
@@ -582,7 +626,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 SL heel drop"
+    "notes": "A1 SL heel drop",
+    "reps_by_week": null
   },
   {
     "id": 135,
@@ -595,7 +640,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Hip thrust"
+    "notes": "Hip thrust",
+    "reps_by_week": null
   },
   {
     "id": 136,
@@ -608,7 +654,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B1 Pallof"
+    "notes": "B1 Pallof",
+    "reps_by_week": null
   },
   {
     "id": 137,
@@ -621,7 +668,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B2 side plank"
+    "notes": "B2 side plank",
+    "reps_by_week": null
   },
   {
     "id": 141,
@@ -634,7 +682,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "SL glute bridge"
+    "notes": "SL glute bridge",
+    "reps_by_week": null
   },
   {
     "id": 143,
@@ -647,7 +696,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "SL heel drop"
+    "notes": "SL heel drop",
+    "reps_by_week": null
   },
   {
     "id": 150,
@@ -660,7 +710,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A-skip"
+    "notes": "A-skip",
+    "reps_by_week": null
   },
   {
     "id": 160,
@@ -673,7 +724,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Goblet squat (moderate)"
+    "notes": "Goblet squat (moderate)",
+    "reps_by_week": null
   },
   {
     "id": 161,
@@ -686,7 +738,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "SL glute bridge"
+    "notes": "SL glute bridge",
+    "reps_by_week": null
   },
   {
     "id": 162,
@@ -699,7 +752,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "SL heel drop"
+    "notes": "SL heel drop",
+    "reps_by_week": null
   },
   {
     "id": 164,
@@ -712,7 +766,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Alfredson protocol, straight knee"
+    "notes": "Alfredson protocol, straight knee",
+    "reps_by_week": null
   },
   {
     "id": 165,
@@ -725,7 +780,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Soleus emphasis"
+    "notes": "Soleus emphasis",
+    "reps_by_week": null
   },
   {
     "id": 177,
@@ -738,7 +794,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 band pull-apart"
+    "notes": "A2 band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 179,
@@ -751,7 +808,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Face pull"
+    "notes": "Face pull",
+    "reps_by_week": null
   },
   {
     "id": 181,
@@ -764,7 +822,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Neck bridge (only if cleared)"
+    "notes": "Neck bridge (only if cleared)",
+    "reps_by_week": null
   },
   {
     "id": 182,
@@ -777,7 +836,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Shrimping"
+    "notes": "Shrimping",
+    "reps_by_week": null
   },
   {
     "id": 183,
@@ -790,7 +850,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Bear crawl"
+    "notes": "Bear crawl",
+    "reps_by_week": null
   },
   {
     "id": 192,
@@ -803,7 +864,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Hangboard repeaters"
+    "notes": "Hangboard repeaters",
+    "reps_by_week": null
   },
   {
     "id": 194,
@@ -816,7 +878,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Ab wheel"
+    "notes": "Ab wheel",
+    "reps_by_week": null
   },
   {
     "id": 195,
@@ -829,7 +892,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Hollow hold"
+    "notes": "Hollow hold",
+    "reps_by_week": null
   },
   {
     "id": 196,
@@ -842,7 +906,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Pallof press"
+    "notes": "Pallof press",
+    "reps_by_week": null
   },
   {
     "id": 198,
@@ -855,7 +920,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Barbell row (moderate)"
+    "notes": "Barbell row (moderate)",
+    "reps_by_week": null
   },
   {
     "id": 199,
@@ -868,7 +934,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Goblet squat (moderate)"
+    "notes": "Goblet squat (moderate)",
+    "reps_by_week": null
   },
   {
     "id": 200,
@@ -881,7 +948,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "DB bench (moderate)"
+    "notes": "DB bench (moderate)",
+    "reps_by_week": null
   },
   {
     "id": 204,
@@ -894,7 +962,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Medball rotational throw"
+    "notes": "Medball rotational throw",
+    "reps_by_week": null
   },
   {
     "id": 205,
@@ -907,7 +976,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Cable wood chop"
+    "notes": "Cable wood chop",
+    "reps_by_week": null
   },
   {
     "id": 206,
@@ -920,7 +990,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Half-kneeling cable rotation"
+    "notes": "Half-kneeling cable rotation",
+    "reps_by_week": null
   },
   {
     "id": 207,
@@ -933,7 +1004,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Pallof press"
+    "notes": "Pallof press",
+    "reps_by_week": null
   },
   {
     "id": 208,
@@ -946,7 +1018,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg RDL"
+    "notes": "Single-leg RDL",
+    "reps_by_week": null
   },
   {
     "id": 213,
@@ -959,7 +1032,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Band pull-apart"
+    "notes": "Band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 220,
@@ -972,7 +1046,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 reverse wrist curl"
+    "notes": "A1 reverse wrist curl",
+    "reps_by_week": null
   },
   {
     "id": 223,
@@ -985,7 +1060,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Band pull-apart"
+    "notes": "Band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 227,
@@ -998,7 +1074,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Goblet squat"
+    "notes": "Goblet squat",
+    "reps_by_week": null
   },
   {
     "id": 228,
@@ -1011,7 +1088,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg RDL"
+    "notes": "Single-leg RDL",
+    "reps_by_week": null
   },
   {
     "id": 229,
@@ -1024,7 +1102,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Cable wood chop"
+    "notes": "Cable wood chop",
+    "reps_by_week": null
   },
   {
     "id": 230,
@@ -1037,7 +1116,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 Pallof press"
+    "notes": "A1 Pallof press",
+    "reps_by_week": null
   },
   {
     "id": 237,
@@ -1050,7 +1130,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Band pull-apart"
+    "notes": "Band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 241,
@@ -1063,7 +1144,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Back squat"
+    "notes": "Back squat",
+    "reps_by_week": null
   },
   {
     "id": 242,
@@ -1076,7 +1158,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Bulgarian split"
+    "notes": "Bulgarian split",
+    "reps_by_week": null
   },
   {
     "id": 243,
@@ -1089,7 +1172,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "DB overhead press"
+    "notes": "DB overhead press",
+    "reps_by_week": null
   },
   {
     "id": 244,
@@ -1102,7 +1186,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Barbell row"
+    "notes": "Barbell row",
+    "reps_by_week": null
   },
   {
     "id": 245,
@@ -1115,7 +1200,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Cable wood chop"
+    "notes": "Cable wood chop",
+    "reps_by_week": null
   },
   {
     "id": 246,
@@ -1128,7 +1214,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Pallof press"
+    "notes": "Pallof press",
+    "reps_by_week": null
   },
   {
     "id": 250,
@@ -1141,7 +1228,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Face pull"
+    "notes": "Face pull",
+    "reps_by_week": null
   },
   {
     "id": 251,
@@ -1154,7 +1242,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Band pull-apart"
+    "notes": "Band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 252,
@@ -1167,7 +1256,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Reverse wrist curl"
+    "notes": "Reverse wrist curl",
+    "reps_by_week": null
   },
   {
     "id": 265,
@@ -1180,7 +1270,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Goblet squat (moderate)"
+    "notes": "Goblet squat (moderate)",
+    "reps_by_week": null
   },
   {
     "id": 266,
@@ -1193,7 +1284,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Bulgarian split"
+    "notes": "Bulgarian split",
+    "reps_by_week": null
   },
   {
     "id": 269,
@@ -1206,7 +1298,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Pallof press"
+    "notes": "Pallof press",
+    "reps_by_week": null
   },
   {
     "id": 271,
@@ -1219,7 +1312,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Medball rotational throw"
+    "notes": "Medball rotational throw",
+    "reps_by_week": null
   },
   {
     "id": 273,
@@ -1232,7 +1326,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Cable wood chop"
+    "notes": "Cable wood chop",
+    "reps_by_week": null
   },
   {
     "id": 274,
@@ -1245,7 +1340,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg RDL"
+    "notes": "Single-leg RDL",
+    "reps_by_week": null
   },
   {
     "id": 275,
@@ -1258,7 +1354,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Bulgarian split squat"
+    "notes": "Bulgarian split squat",
+    "reps_by_week": null
   },
   {
     "id": 277,
@@ -1271,7 +1368,8 @@
     "rest": "2-3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Back squat"
+    "notes": "Back squat",
+    "reps_by_week": null
   },
   {
     "id": 278,
@@ -1284,7 +1382,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Eccentric back squat (5s down)"
+    "notes": "Eccentric back squat (5s down)",
+    "reps_by_week": null
   },
   {
     "id": 279,
@@ -1297,7 +1396,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg squat to box"
+    "notes": "Single-leg squat to box",
+    "reps_by_week": null
   },
   {
     "id": 280,
@@ -1310,7 +1410,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Nordic hamstring"
+    "notes": "Nordic hamstring",
+    "reps_by_week": null
   },
   {
     "id": 282,
@@ -1323,7 +1424,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Wall sit"
+    "notes": "Wall sit",
+    "reps_by_week": null
   },
   {
     "id": 286,
@@ -1336,7 +1438,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "SL glute bridge"
+    "notes": "SL glute bridge",
+    "reps_by_week": null
   },
   {
     "id": 287,
@@ -1349,7 +1452,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "SL heel drop"
+    "notes": "SL heel drop",
+    "reps_by_week": null
   },
   {
     "id": 294,
@@ -1362,7 +1466,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Wall sit to prime quads"
+    "notes": "Wall sit to prime quads",
+    "reps_by_week": null
   },
   {
     "id": 302,
@@ -1375,7 +1480,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Eccentric back squat (5s down)"
+    "notes": "Eccentric back squat (5s down)",
+    "reps_by_week": null
   },
   {
     "id": 303,
@@ -1388,7 +1494,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg squat to box"
+    "notes": "Single-leg squat to box",
+    "reps_by_week": null
   },
   {
     "id": 304,
@@ -1401,7 +1508,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Split squat jump"
+    "notes": "Split squat jump",
+    "reps_by_week": null
   },
   {
     "id": 306,
@@ -1414,7 +1522,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Wall sit finisher"
+    "notes": "Wall sit finisher",
+    "reps_by_week": null
   },
   {
     "id": 308,
@@ -1427,7 +1536,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 band pull-apart"
+    "notes": "A2 band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 314,
@@ -1440,7 +1550,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Back squat"
+    "notes": "Back squat",
+    "reps_by_week": null
   },
   {
     "id": 315,
@@ -1453,7 +1564,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "RDL"
+    "notes": "RDL",
+    "reps_by_week": null
   },
   {
     "id": 316,
@@ -1466,7 +1578,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 weighted pull-up"
+    "notes": "A1 weighted pull-up",
+    "reps_by_week": null
   },
   {
     "id": 317,
@@ -1479,7 +1592,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 DB bench"
+    "notes": "A2 DB bench",
+    "reps_by_week": null
   },
   {
     "id": 318,
@@ -1492,7 +1606,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Farmer carry"
+    "notes": "Farmer carry",
+    "reps_by_week": null
   },
   {
     "id": 319,
@@ -1505,7 +1620,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Pallof press"
+    "notes": "Pallof press",
+    "reps_by_week": null
   },
   {
     "id": 326,
@@ -1518,7 +1634,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Band pull-apart"
+    "notes": "Band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 328,
@@ -1531,7 +1648,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Goblet squat (light)"
+    "notes": "Goblet squat (light)",
+    "reps_by_week": null
   },
   {
     "id": 330,
@@ -1544,7 +1662,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 push-up"
+    "notes": "A1 push-up",
+    "reps_by_week": null
   },
   {
     "id": 331,
@@ -1557,7 +1676,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 inverted row (table edge)"
+    "notes": "A2 inverted row (table edge)",
+    "reps_by_week": null
   },
   {
     "id": 332,
@@ -1570,7 +1690,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B1 Bulgarian split squat"
+    "notes": "B1 Bulgarian split squat",
+    "reps_by_week": null
   },
   {
     "id": 333,
@@ -1583,7 +1704,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B2 SL glute bridge"
+    "notes": "B2 SL glute bridge",
+    "reps_by_week": null
   },
   {
     "id": 335,
@@ -1596,7 +1718,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Side plank"
+    "notes": "Side plank",
+    "reps_by_week": null
   },
   {
     "id": 350,
@@ -1609,7 +1732,8 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Band pull-apart"
+    "notes": "Band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 353,
@@ -1622,7 +1746,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Weighted pull-up"
+    "notes": "Weighted pull-up",
+    "reps_by_week": null
   },
   {
     "id": 354,
@@ -1635,7 +1760,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Straight-arm pulldown"
+    "notes": "Straight-arm pulldown",
+    "reps_by_week": null
   },
   {
     "id": 355,
@@ -1648,7 +1774,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "DB bench (antagonist)"
+    "notes": "DB bench (antagonist)",
+    "reps_by_week": null
   },
   {
     "id": 359,
@@ -1661,7 +1788,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Superman hold"
+    "notes": "Superman hold",
+    "reps_by_week": null
   },
   {
     "id": 360,
@@ -1674,7 +1802,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Farmer carry"
+    "notes": "Farmer carry",
+    "reps_by_week": null
   },
   {
     "id": 364,
@@ -1687,7 +1816,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Band pull-apart"
+    "notes": "Band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 376,
@@ -1700,7 +1830,8 @@
     "rest": "15 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Band pull-apart"
+    "notes": "Band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 387,
@@ -1713,7 +1844,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Power clean (technique-focused)"
+    "notes": "Power clean (technique-focused)",
+    "reps_by_week": null
   },
   {
     "id": 390,
@@ -1726,7 +1858,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Farmer carry"
+    "notes": "Farmer carry",
+    "reps_by_week": null
   },
   {
     "id": 405,
@@ -1739,7 +1872,8 @@
     "rest": "3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Conventional deadlift"
+    "notes": "Conventional deadlift",
+    "reps_by_week": null
   },
   {
     "id": 406,
@@ -1752,7 +1886,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "RDL"
+    "notes": "RDL",
+    "reps_by_week": null
   },
   {
     "id": 407,
@@ -1765,7 +1900,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Nordic hamstring curl"
+    "notes": "Nordic hamstring curl",
+    "reps_by_week": null
   },
   {
     "id": 408,
@@ -1778,7 +1914,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Hip thrust"
+    "notes": "Hip thrust",
+    "reps_by_week": null
   },
   {
     "id": 409,
@@ -1791,7 +1928,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Farmer carry"
+    "notes": "Farmer carry",
+    "reps_by_week": null
   },
   {
     "id": 411,
@@ -1804,7 +1942,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Back squat"
+    "notes": "Back squat",
+    "reps_by_week": null
   },
   {
     "id": 412,
@@ -1817,7 +1956,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Bulgarian split squat"
+    "notes": "Bulgarian split squat",
+    "reps_by_week": null
   },
   {
     "id": 413,
@@ -1830,7 +1970,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Hip thrust"
+    "notes": "Hip thrust",
+    "reps_by_week": null
   },
   {
     "id": 414,
@@ -1843,7 +1984,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Nordic hamstring"
+    "notes": "Nordic hamstring",
+    "reps_by_week": null
   },
   {
     "id": 417,
@@ -1856,7 +1998,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Pallof press"
+    "notes": "Pallof press",
+    "reps_by_week": null
   },
   {
     "id": 420,
@@ -1869,7 +2012,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "SL glute bridge"
+    "notes": "SL glute bridge",
+    "reps_by_week": null
   },
   {
     "id": 421,
@@ -1882,7 +2026,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Nordic hamstring"
+    "notes": "Nordic hamstring",
+    "reps_by_week": null
   },
   {
     "id": 422,
@@ -1895,7 +2040,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "SL squat to box"
+    "notes": "SL squat to box",
+    "reps_by_week": null
   },
   {
     "id": 427,
@@ -1908,7 +2054,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A-skip"
+    "notes": "A-skip",
+    "reps_by_week": null
   },
   {
     "id": 428,
@@ -1921,7 +2068,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Lateral shuffle"
+    "notes": "Lateral shuffle",
+    "reps_by_week": null
   },
   {
     "id": 429,
@@ -1934,7 +2082,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Cross-over step"
+    "notes": "Cross-over step",
+    "reps_by_week": null
   },
   {
     "id": 439,
@@ -1947,7 +2096,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "SL heel drop"
+    "notes": "SL heel drop",
+    "reps_by_week": null
   },
   {
     "id": 440,
@@ -1960,7 +2110,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "SL glute bridge"
+    "notes": "SL glute bridge",
+    "reps_by_week": null
   },
   {
     "id": 441,
@@ -1973,7 +2124,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "SL squat to box"
+    "notes": "SL squat to box",
+    "reps_by_week": null
   },
   {
     "id": 442,
@@ -1986,7 +2138,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Side plank"
+    "notes": "Side plank",
+    "reps_by_week": null
   },
   {
     "id": 444,
@@ -1999,7 +2152,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Goblet squat (moderate)"
+    "notes": "Goblet squat (moderate)",
+    "reps_by_week": null
   },
   {
     "id": 445,
@@ -2012,7 +2166,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Bulgarian split squat"
+    "notes": "Bulgarian split squat",
+    "reps_by_week": null
   },
   {
     "id": 446,
@@ -2025,7 +2180,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Nordic hamstring"
+    "notes": "Nordic hamstring",
+    "reps_by_week": null
   },
   {
     "id": 448,
@@ -2038,7 +2194,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Face pull"
+    "notes": "Face pull",
+    "reps_by_week": null
   },
   {
     "id": 450,
@@ -2051,7 +2208,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Back squat"
+    "notes": "Back squat",
+    "reps_by_week": null
   },
   {
     "id": 451,
@@ -2064,7 +2222,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Loaded step-up"
+    "notes": "Loaded step-up",
+    "reps_by_week": null
   },
   {
     "id": 452,
@@ -2077,7 +2236,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Eccentric step-down"
+    "notes": "Eccentric step-down",
+    "reps_by_week": null
   },
   {
     "id": 454,
@@ -2090,7 +2250,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Farmer carry"
+    "notes": "Farmer carry",
+    "reps_by_week": null
   },
   {
     "id": 455,
@@ -2103,7 +2264,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Standing calf raise"
+    "notes": "Standing calf raise",
+    "reps_by_week": null
   },
   {
     "id": 458,
@@ -2116,7 +2278,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Eccentric step-down"
+    "notes": "Eccentric step-down",
+    "reps_by_week": null
   },
   {
     "id": 459,
@@ -2129,7 +2292,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Eccentric calf raise (loaded)"
+    "notes": "Eccentric calf raise (loaded)",
+    "reps_by_week": null
   },
   {
     "id": 460,
@@ -2142,7 +2306,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "SL glute bridge"
+    "notes": "SL glute bridge",
+    "reps_by_week": null
   },
   {
     "id": 461,
@@ -2155,7 +2320,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Bulgarian split squat"
+    "notes": "Bulgarian split squat",
+    "reps_by_week": null
   },
   {
     "id": 464,
@@ -2168,7 +2334,8 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Rucking"
+    "notes": "Rucking",
+    "reps_by_week": null
   },
   {
     "id": 469,
@@ -2181,7 +2348,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Eccentric calf raise (recovery, light)"
+    "notes": "Eccentric calf raise (recovery, light)",
+    "reps_by_week": null
   },
   {
     "id": 474,
@@ -2194,7 +2362,8 @@
     "rest": "75 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Main: single-leg hip thrust"
+    "notes": "Main: single-leg hip thrust",
+    "reps_by_week": null
   },
   {
     "id": 475,
@@ -2207,7 +2376,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1: bent-over row (grappling pull)"
+    "notes": "A1: bent-over row (grappling pull)",
+    "reps_by_week": null
   },
   {
     "id": 476,
@@ -2220,7 +2390,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2: dumbbell floor press"
+    "notes": "A2: dumbbell floor press",
+    "reps_by_week": null
   },
   {
     "id": 477,
@@ -2233,7 +2404,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B1: plate pinch hold (gi grip)"
+    "notes": "B1: plate pinch hold (gi grip)",
+    "reps_by_week": null
   },
   {
     "id": 479,
@@ -2246,7 +2418,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Hollow hold finisher"
+    "notes": "Hollow hold finisher",
+    "reps_by_week": null
   },
   {
     "id": 483,
@@ -2259,7 +2432,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 band pull-apart"
+    "notes": "A2 band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 484,
@@ -2272,7 +2446,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Face pull"
+    "notes": "Face pull",
+    "reps_by_week": null
   },
   {
     "id": 491,
@@ -2285,7 +2460,8 @@
     "rest": "2-3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Main: conventional deadlift"
+    "notes": "Main: conventional deadlift",
+    "reps_by_week": null
   },
   {
     "id": 492,
@@ -2298,7 +2474,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Main: KB clean"
+    "notes": "Main: KB clean",
+    "reps_by_week": null
   },
   {
     "id": 493,
@@ -2311,7 +2488,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "A1: back squat"
+    "notes": "A1: back squat",
+    "reps_by_week": null
   },
   {
     "id": 495,
@@ -2324,7 +2502,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B1: plate pinch hold"
+    "notes": "B1: plate pinch hold",
+    "reps_by_week": null
   },
   {
     "id": 496,
@@ -2337,7 +2516,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B2: fat-grip dead hang"
+    "notes": "B2: fat-grip dead hang",
+    "reps_by_week": null
   },
   {
     "id": 497,
@@ -2350,7 +2530,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Sandbag bear hug carry"
+    "notes": "Sandbag bear hug carry",
+    "reps_by_week": null
   },
   {
     "id": 498,
@@ -2363,7 +2544,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Neck harness four-way"
+    "notes": "Neck harness four-way",
+    "reps_by_week": null
   },
   {
     "id": 517,
@@ -2376,7 +2558,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Bent-over row"
+    "notes": "Bent-over row",
+    "reps_by_week": null
   },
   {
     "id": 518,
@@ -2389,7 +2572,8 @@
     "rest": "75 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 dumbbell pullover"
+    "notes": "A1 dumbbell pullover",
+    "reps_by_week": null
   },
   {
     "id": 520,
@@ -2402,7 +2586,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B1 face pull"
+    "notes": "B1 face pull",
+    "reps_by_week": null
   },
   {
     "id": 522,
@@ -2415,7 +2600,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Nordic hamstring curl (posterior chain)"
+    "notes": "Nordic hamstring curl (posterior chain)",
+    "reps_by_week": null
   },
   {
     "id": 525,
@@ -2428,7 +2614,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 push-up"
+    "notes": "A1 push-up",
+    "reps_by_week": null
   },
   {
     "id": 528,
@@ -2441,7 +2628,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Banded hip thrust (home band)"
+    "notes": "Banded hip thrust (home band)",
+    "reps_by_week": null
   },
   {
     "id": 585,
@@ -2454,7 +2642,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "5-10-5 pro agility shuttles"
+    "notes": "5-10-5 pro agility shuttles",
+    "reps_by_week": null
   },
   {
     "id": 586,
@@ -2467,7 +2656,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 lateral shuffle"
+    "notes": "A1 lateral shuffle",
+    "reps_by_week": null
   },
   {
     "id": 587,
@@ -2480,7 +2670,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 cross-over step"
+    "notes": "A2 cross-over step",
+    "reps_by_week": null
   },
   {
     "id": 596,
@@ -2493,7 +2684,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Lateral shuffle to prime footwork"
+    "notes": "Lateral shuffle to prime footwork",
+    "reps_by_week": null
   },
   {
     "id": 606,
@@ -2506,7 +2698,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Cossack squats"
+    "notes": "Cossack squats",
+    "reps_by_week": null
   },
   {
     "id": 607,
@@ -2519,7 +2712,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Medball shot put"
+    "notes": "Medball shot put",
+    "reps_by_week": null
   },
   {
     "id": 609,
@@ -2532,7 +2726,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Landmine rotational press"
+    "notes": "Landmine rotational press",
+    "reps_by_week": null
   },
   {
     "id": 611,
@@ -2545,7 +2740,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 single-leg RDL"
+    "notes": "A1 single-leg RDL",
+    "reps_by_week": null
   },
   {
     "id": 612,
@@ -2558,7 +2754,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 Bulgarian split squat"
+    "notes": "A2 Bulgarian split squat",
+    "reps_by_week": null
   },
   {
     "id": 618,
@@ -2571,7 +2768,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 goblet squat"
+    "notes": "A1 goblet squat",
+    "reps_by_week": null
   },
   {
     "id": 619,
@@ -2584,7 +2782,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 split-stance iso hold"
+    "notes": "A2 split-stance iso hold",
+    "reps_by_week": null
   },
   {
     "id": 620,
@@ -2597,7 +2796,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B1 single-leg RDL"
+    "notes": "B1 single-leg RDL",
+    "reps_by_week": null
   },
   {
     "id": 628,
@@ -2610,7 +2810,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 push-up"
+    "notes": "A1 push-up",
+    "reps_by_week": null
   },
   {
     "id": 629,
@@ -2623,7 +2824,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 inverted row (table edge OK)"
+    "notes": "A2 inverted row (table edge OK)",
+    "reps_by_week": null
   },
   {
     "id": 630,
@@ -2636,7 +2838,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B1 lateral lunge"
+    "notes": "B1 lateral lunge",
+    "reps_by_week": null
   },
   {
     "id": 644,
@@ -2649,7 +2852,8 @@
     "rest": "75 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1: single-arm cable paddle pull"
+    "notes": "A1: single-arm cable paddle pull",
+    "reps_by_week": null
   },
   {
     "id": 645,
@@ -2662,7 +2866,8 @@
     "rest": "75 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2: dumbbell bench press (antagonist)"
+    "notes": "A2: dumbbell bench press (antagonist)",
+    "reps_by_week": null
   },
   {
     "id": 646,
@@ -2675,7 +2880,8 @@
     "rest": "75 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B1: landmine rotational row"
+    "notes": "B1: landmine rotational row",
+    "reps_by_week": null
   },
   {
     "id": 648,
@@ -2688,7 +2894,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Hanging leg raise"
+    "notes": "Hanging leg raise",
+    "reps_by_week": null
   },
   {
     "id": 675,
@@ -2701,7 +2908,8 @@
     "rest": "75 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1: RFESS surf stance"
+    "notes": "A1: RFESS surf stance",
+    "reps_by_week": null
   },
   {
     "id": 676,
@@ -2714,7 +2922,8 @@
     "rest": "75 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2: chest-supported DB row"
+    "notes": "A2: chest-supported DB row",
+    "reps_by_week": null
   },
   {
     "id": 678,
@@ -2727,7 +2936,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg hip thrust"
+    "notes": "Single-leg hip thrust",
+    "reps_by_week": null
   },
   {
     "id": 694,
@@ -2740,7 +2950,8 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Band pull-apart"
+    "notes": "Band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 712,
@@ -2753,7 +2964,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Main: barbell back squat"
+    "notes": "Main: barbell back squat",
+    "reps_by_week": null
   },
   {
     "id": 713,
@@ -2766,7 +2978,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Main: RDL"
+    "notes": "Main: RDL",
+    "reps_by_week": null
   },
   {
     "id": 714,
@@ -2779,7 +2992,8 @@
     "rest": "75 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1: RFESS surf stance"
+    "notes": "A1: RFESS surf stance",
+    "reps_by_week": null
   },
   {
     "id": 715,
@@ -2792,7 +3006,8 @@
     "rest": "75 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2: renegade row"
+    "notes": "A2: renegade row",
+    "reps_by_week": null
   },
   {
     "id": 716,
@@ -2805,7 +3020,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B1: single-leg hip thrust"
+    "notes": "B1: single-leg hip thrust",
+    "reps_by_week": null
   },
   {
     "id": 721,
@@ -2818,7 +3034,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1: push-up"
+    "notes": "A1: push-up",
+    "reps_by_week": null
   },
   {
     "id": 728,
@@ -2831,7 +3048,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1: chest-supported DB row (low-back safe)"
+    "notes": "A1: chest-supported DB row (low-back safe)",
+    "reps_by_week": null
   },
   {
     "id": 730,
@@ -2844,7 +3062,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Goblet squat (moderate load)"
+    "notes": "Goblet squat (moderate load)",
+    "reps_by_week": null
   },
   {
     "id": 737,
@@ -2857,7 +3076,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Half-kneeling landmine rotation"
+    "notes": "Half-kneeling landmine rotation",
+    "reps_by_week": null
   },
   {
     "id": 739,
@@ -2870,7 +3090,8 @@
     "rest": "75 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1: landmine rotational row"
+    "notes": "A1: landmine rotational row",
+    "reps_by_week": null
   },
   {
     "id": 740,
@@ -2883,7 +3104,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2: kneeling Pallof rotation"
+    "notes": "A2: kneeling Pallof rotation",
+    "reps_by_week": null
   },
   {
     "id": 746,
@@ -2896,7 +3118,8 @@
     "rest": "3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Deadlift (heavy)"
+    "notes": "Deadlift (heavy)",
+    "reps_by_week": null
   },
   {
     "id": 747,
@@ -2909,7 +3132,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "A1: barbell bent-over row"
+    "notes": "A1: barbell bent-over row",
+    "reps_by_week": null
   },
   {
     "id": 748,
@@ -2922,7 +3146,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "A2: dumbbell bench press"
+    "notes": "A2: dumbbell bench press",
+    "reps_by_week": null
   },
   {
     "id": 749,
@@ -2935,7 +3160,8 @@
     "rest": "built-in",
     "tempo": null,
     "duration": null,
-    "notes": "Ski-erg intervals"
+    "notes": "Ski-erg intervals",
+    "reps_by_week": null
   },
   {
     "id": 765,
@@ -2948,7 +3174,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Lateral deceleration drill"
+    "notes": "Lateral deceleration drill",
+    "reps_by_week": null
   },
   {
     "id": 769,
@@ -2961,7 +3188,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Barbell hip thrust, posterior chain activation"
+    "notes": "Barbell hip thrust, posterior chain activation",
+    "reps_by_week": null
   },
   {
     "id": 771,
@@ -2974,7 +3202,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg RDL"
+    "notes": "Single-leg RDL",
+    "reps_by_week": null
   },
   {
     "id": 772,
@@ -2987,7 +3216,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg glute bridge"
+    "notes": "Single-leg glute bridge",
+    "reps_by_week": null
   },
   {
     "id": 776,
@@ -3000,7 +3230,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Depth drop to stick, reactive prep"
+    "notes": "Depth drop to stick, reactive prep",
+    "reps_by_week": null
   },
   {
     "id": 777,
@@ -3013,7 +3244,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Back squat, heavy lower body"
+    "notes": "Back squat, heavy lower body",
+    "reps_by_week": null
   },
   {
     "id": 778,
@@ -3026,7 +3258,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Squat jump CMJ"
+    "notes": "Squat jump CMJ",
+    "reps_by_week": null
   },
   {
     "id": 779,
@@ -3039,7 +3272,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Drop to vertical"
+    "notes": "Drop to vertical",
+    "reps_by_week": null
   },
   {
     "id": 781,
@@ -3052,7 +3286,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Half-kneeling cable lift"
+    "notes": "Half-kneeling cable lift",
+    "reps_by_week": null
   },
   {
     "id": 786,
@@ -3065,7 +3300,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2: single-leg heel drop"
+    "notes": "A2: single-leg heel drop",
+    "reps_by_week": null
   },
   {
     "id": 794,
@@ -3078,7 +3314,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2: band pull-apart"
+    "notes": "A2: band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 814,
@@ -3091,7 +3328,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Front squat, base lower power"
+    "notes": "Front squat, base lower power",
+    "reps_by_week": null
   },
   {
     "id": 816,
@@ -3104,7 +3342,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Half-kneeling cable lift"
+    "notes": "Half-kneeling cable lift",
+    "reps_by_week": null
   },
   {
     "id": 817,
@@ -3117,7 +3356,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-arm landmine row"
+    "notes": "Single-arm landmine row",
+    "reps_by_week": null
   },
   {
     "id": 818,
@@ -3130,7 +3370,8 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Cool-down: pallof press"
+    "notes": "Cool-down: pallof press",
+    "reps_by_week": null
   },
   {
     "id": 831,
@@ -3143,7 +3384,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Trap bar deadlift, base posterior chain"
+    "notes": "Trap bar deadlift, base posterior chain",
+    "reps_by_week": null
   },
   {
     "id": 832,
@@ -3156,7 +3398,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Barbell hip thrust"
+    "notes": "Barbell hip thrust",
+    "reps_by_week": null
   },
   {
     "id": 842,
@@ -3169,7 +3412,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg RDL, controlled"
+    "notes": "Single-leg RDL, controlled",
+    "reps_by_week": null
   },
   {
     "id": 848,
@@ -3182,7 +3426,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A-skip"
+    "notes": "A-skip",
+    "reps_by_week": null
   },
   {
     "id": 849,
@@ -3195,7 +3440,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Lateral shuffle"
+    "notes": "Lateral shuffle",
+    "reps_by_week": null
   },
   {
     "id": 851,
@@ -3208,7 +3454,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A-skip to sprint"
+    "notes": "A-skip to sprint",
+    "reps_by_week": null
   },
   {
     "id": 858,
@@ -3221,7 +3468,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Cross-over step"
+    "notes": "Cross-over step",
+    "reps_by_week": null
   },
   {
     "id": 859,
@@ -3234,7 +3482,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Dot drill"
+    "notes": "Dot drill",
+    "reps_by_week": null
   },
   {
     "id": 860,
@@ -3247,7 +3496,8 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Squat jump CMJ, prep vertical"
+    "notes": "Squat jump CMJ, prep vertical",
+    "reps_by_week": null
   },
   {
     "id": 878,
@@ -3260,7 +3510,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Front squat"
+    "notes": "Front squat",
+    "reps_by_week": null
   },
   {
     "id": 879,
@@ -3273,7 +3524,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Trap bar deadlift"
+    "notes": "Trap bar deadlift",
+    "reps_by_week": null
   },
   {
     "id": 880,
@@ -3286,7 +3538,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B1: DB bench press"
+    "notes": "B1: DB bench press",
+    "reps_by_week": null
   },
   {
     "id": 881,
@@ -3299,7 +3552,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B2: dumbbell row"
+    "notes": "B2: dumbbell row",
+    "reps_by_week": null
   },
   {
     "id": 882,
@@ -3312,7 +3566,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-arm landmine row"
+    "notes": "Single-arm landmine row",
+    "reps_by_week": null
   },
   {
     "id": 883,
@@ -3325,7 +3580,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "C1: pallof press"
+    "notes": "C1: pallof press",
+    "reps_by_week": null
   },
   {
     "id": 884,
@@ -3338,7 +3594,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "C2: farmer carry"
+    "notes": "C2: farmer carry",
+    "reps_by_week": null
   },
   {
     "id": 886,
@@ -3351,7 +3608,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1: Bulgarian split squat"
+    "notes": "A1: Bulgarian split squat",
+    "reps_by_week": null
   },
   {
     "id": 887,
@@ -3364,7 +3622,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2: push-up"
+    "notes": "A2: push-up",
+    "reps_by_week": null
   },
   {
     "id": 888,
@@ -3377,7 +3636,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg glute bridge"
+    "notes": "Single-leg glute bridge",
+    "reps_by_week": null
   },
   {
     "id": 889,
@@ -3390,7 +3650,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Side plank"
+    "notes": "Side plank",
+    "reps_by_week": null
   },
   {
     "id": 912,
@@ -3403,7 +3664,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Half-kneeling cable lift"
+    "notes": "Half-kneeling cable lift",
+    "reps_by_week": null
   },
   {
     "id": 913,
@@ -3416,7 +3678,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-arm landmine row"
+    "notes": "Single-arm landmine row",
+    "reps_by_week": null
   },
   {
     "id": 914,
@@ -3429,7 +3692,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Ab wheel rollout"
+    "notes": "Ab wheel rollout",
+    "reps_by_week": null
   },
   {
     "id": 915,
@@ -3442,7 +3706,8 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Cool-down: pallof press"
+    "notes": "Cool-down: pallof press",
+    "reps_by_week": null
   },
   {
     "id": 923,
@@ -3455,7 +3720,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg RDL"
+    "notes": "Single-leg RDL",
+    "reps_by_week": null
   },
   {
     "id": 924,
@@ -3468,7 +3734,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Nordic curl"
+    "notes": "Nordic curl",
+    "reps_by_week": null
   },
   {
     "id": 925,
@@ -3481,7 +3748,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 single-leg bridge"
+    "notes": "A1 single-leg bridge",
+    "reps_by_week": null
   },
   {
     "id": 929,
@@ -3494,7 +3762,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Romanian deadlift"
+    "notes": "Romanian deadlift",
+    "reps_by_week": null
   },
   {
     "id": 930,
@@ -3507,7 +3776,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 DB bench"
+    "notes": "A1 DB bench",
+    "reps_by_week": null
   },
   {
     "id": 931,
@@ -3520,7 +3790,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 body row"
+    "notes": "A2 body row",
+    "reps_by_week": null
   },
   {
     "id": 932,
@@ -3533,7 +3804,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Bulgarian split squat"
+    "notes": "Bulgarian split squat",
+    "reps_by_week": null
   },
   {
     "id": 933,
@@ -3546,7 +3818,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Side plank"
+    "notes": "Side plank",
+    "reps_by_week": null
   },
   {
     "id": 937,
@@ -3559,7 +3832,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Body row (rings)"
+    "notes": "Body row (rings)",
+    "reps_by_week": null
   },
   {
     "id": 938,
@@ -3572,7 +3846,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Weighted pull-up"
+    "notes": "Weighted pull-up",
+    "reps_by_week": null
   },
   {
     "id": 939,
@@ -3585,7 +3860,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Explosive pull-up"
+    "notes": "Explosive pull-up",
+    "reps_by_week": null
   },
   {
     "id": 940,
@@ -3598,7 +3874,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Muscle-up transitions"
+    "notes": "Muscle-up transitions",
+    "reps_by_week": null
   },
   {
     "id": 946,
@@ -3611,7 +3888,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Wall walk"
+    "notes": "Wall walk",
+    "reps_by_week": null
   },
   {
     "id": 947,
@@ -3624,7 +3902,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Handstand wall hold"
+    "notes": "Handstand wall hold",
+    "reps_by_week": null
   },
   {
     "id": 949,
@@ -3637,7 +3916,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Ring dip"
+    "notes": "Ring dip",
+    "reps_by_week": null
   },
   {
     "id": 950,
@@ -3650,7 +3930,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Tuck L-sit"
+    "notes": "Tuck L-sit",
+    "reps_by_week": null
   },
   {
     "id": 951,
@@ -3663,7 +3944,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Hollow body hold"
+    "notes": "Hollow body hold",
+    "reps_by_week": null
   },
   {
     "id": 957,
@@ -3676,7 +3958,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Depth landing no rebound"
+    "notes": "Depth landing no rebound",
+    "reps_by_week": null
   },
   {
     "id": 959,
@@ -3689,7 +3972,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg heel drop"
+    "notes": "Single-leg heel drop",
+    "reps_by_week": null
   },
   {
     "id": 968,
@@ -3702,7 +3986,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Cossack squat"
+    "notes": "Cossack squat",
+    "reps_by_week": null
   },
   {
     "id": 970,
@@ -3715,7 +4000,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Lateral bound to stick"
+    "notes": "Lateral bound to stick",
+    "reps_by_week": null
   },
   {
     "id": 975,
@@ -3728,7 +4014,8 @@
     "rest": "2-3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Back squat"
+    "notes": "Back squat",
+    "reps_by_week": null
   },
   {
     "id": 976,
@@ -3741,7 +4028,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Romanian deadlift"
+    "notes": "Romanian deadlift",
+    "reps_by_week": null
   },
   {
     "id": 977,
@@ -3754,7 +4042,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Cossack squat"
+    "notes": "Cossack squat",
+    "reps_by_week": null
   },
   {
     "id": 978,
@@ -3767,7 +4056,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Lateral bound to stick"
+    "notes": "Lateral bound to stick",
+    "reps_by_week": null
   },
   {
     "id": 980,
@@ -3780,7 +4070,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 Copenhagen dynamic"
+    "notes": "A2 Copenhagen dynamic",
+    "reps_by_week": null
   },
   {
     "id": 981,
@@ -3793,7 +4084,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Farmer carry"
+    "notes": "Farmer carry",
+    "reps_by_week": null
   },
   {
     "id": 1019,
@@ -3806,7 +4098,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "CMJ squat jump"
+    "notes": "CMJ squat jump",
+    "reps_by_week": null
   },
   {
     "id": 1020,
@@ -3819,7 +4112,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg hop"
+    "notes": "Single-leg hop",
+    "reps_by_week": null
   },
   {
     "id": 1021,
@@ -3832,7 +4126,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Tuck jump"
+    "notes": "Tuck jump",
+    "reps_by_week": null
   },
   {
     "id": 1029,
@@ -3845,7 +4140,8 @@
     "rest": "15 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Relevé calf raise"
+    "notes": "Relevé calf raise",
+    "reps_by_week": null
   },
   {
     "id": 1030,
@@ -3858,7 +4154,8 @@
     "rest": "15 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Grand battement"
+    "notes": "Grand battement",
+    "reps_by_week": null
   },
   {
     "id": 1039,
@@ -3871,7 +4168,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Goblet squat"
+    "notes": "Goblet squat",
+    "reps_by_week": null
   },
   {
     "id": 1040,
@@ -3884,7 +4182,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg RDL"
+    "notes": "Single-leg RDL",
+    "reps_by_week": null
   },
   {
     "id": 1041,
@@ -3897,7 +4196,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 DB bench"
+    "notes": "A1 DB bench",
+    "reps_by_week": null
   },
   {
     "id": 1042,
@@ -3910,7 +4210,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 DB row"
+    "notes": "A2 DB row",
+    "reps_by_week": null
   },
   {
     "id": 1046,
@@ -3923,7 +4224,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 push-up"
+    "notes": "A1 push-up",
+    "reps_by_week": null
   },
   {
     "id": 1047,
@@ -3936,7 +4238,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 body row (if rings/bar)"
+    "notes": "A2 body row (if rings/bar)",
+    "reps_by_week": null
   },
   {
     "id": 1048,
@@ -3949,7 +4252,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Bulgarian split squat"
+    "notes": "Bulgarian split squat",
+    "reps_by_week": null
   },
   {
     "id": 1049,
@@ -3962,7 +4266,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Pike push-up"
+    "notes": "Pike push-up",
+    "reps_by_week": null
   },
   {
     "id": 1050,
@@ -3975,7 +4280,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Hollow body hold"
+    "notes": "Hollow body hold",
+    "reps_by_week": null
   },
   {
     "id": 1063,
@@ -3988,7 +4294,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Belt squat, main accessory"
+    "notes": "Belt squat, main accessory",
+    "reps_by_week": null
   },
   {
     "id": 1064,
@@ -4001,7 +4308,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A1 lateral raise (shoulder health)"
+    "notes": "A1 lateral raise (shoulder health)",
+    "reps_by_week": null
   },
   {
     "id": 1065,
@@ -4014,7 +4322,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 reverse wrist curl"
+    "notes": "A2 reverse wrist curl",
+    "reps_by_week": null
   },
   {
     "id": 1066,
@@ -4027,7 +4336,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B1 skull crusher"
+    "notes": "B1 skull crusher",
+    "reps_by_week": null
   },
   {
     "id": 1067,
@@ -4040,7 +4350,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "B2 DB row"
+    "notes": "B2 DB row",
+    "reps_by_week": null
   },
   {
     "id": 1068,
@@ -4053,7 +4364,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Pallof press, anti-rotation"
+    "notes": "Pallof press, anti-rotation",
+    "reps_by_week": null
   },
   {
     "id": 1076,
@@ -4066,7 +4378,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 band pull-apart"
+    "notes": "A2 band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 1078,
@@ -4079,7 +4392,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Face pull"
+    "notes": "Face pull",
+    "reps_by_week": null
   },
   {
     "id": 1079,
@@ -4092,7 +4406,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Reverse wrist curl"
+    "notes": "Reverse wrist curl",
+    "reps_by_week": null
   },
   {
     "id": 1083,
@@ -4105,7 +4420,8 @@
     "rest": "3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Yoke walk, heavy"
+    "notes": "Yoke walk, heavy",
+    "reps_by_week": null
   },
   {
     "id": 1084,
@@ -4118,7 +4434,8 @@
     "rest": "2-3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Tire flip"
+    "notes": "Tire flip",
+    "reps_by_week": null
   },
   {
     "id": 1085,
@@ -4131,7 +4448,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Sandbag bear-hug carry"
+    "notes": "Sandbag bear-hug carry",
+    "reps_by_week": null
   },
   {
     "id": 1086,
@@ -4144,7 +4462,8 @@
     "rest": "2-3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Stone-to-shoulder"
+    "notes": "Stone-to-shoulder",
+    "reps_by_week": null
   },
   {
     "id": 1090,
@@ -4157,7 +4476,8 @@
     "rest": "3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Main: KB clean-and-jerk EMOM"
+    "notes": "Main: KB clean-and-jerk EMOM",
+    "reps_by_week": null
   },
   {
     "id": 1097,
@@ -4170,7 +4490,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 band pull-apart"
+    "notes": "A2 band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 1100,
@@ -4183,7 +4504,8 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Reverse wrist curl"
+    "notes": "Reverse wrist curl",
+    "reps_by_week": null
   },
   {
     "id": 1107,
@@ -4196,7 +4518,8 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Adductor squeeze"
+    "notes": "Adductor squeeze",
+    "reps_by_week": null
   },
   {
     "id": 1110,
@@ -4209,7 +4532,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Rider wall sit with squeeze"
+    "notes": "Rider wall sit with squeeze",
+    "reps_by_week": null
   },
   {
     "id": 1113,
@@ -4222,7 +4546,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Adductor squeeze"
+    "notes": "Adductor squeeze",
+    "reps_by_week": null
   },
   {
     "id": 1114,
@@ -4235,7 +4560,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg RDL"
+    "notes": "Single-leg RDL",
+    "reps_by_week": null
   },
   {
     "id": 1118,
@@ -4248,7 +4574,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Medball shot put"
+    "notes": "Medball shot put",
+    "reps_by_week": null
   },
   {
     "id": 1119,
@@ -4261,7 +4588,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Medball rotational throw"
+    "notes": "Medball rotational throw",
+    "reps_by_week": null
   },
   {
     "id": 1121,
@@ -4274,7 +4602,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Cable wood chop"
+    "notes": "Cable wood chop",
+    "reps_by_week": null
   },
   {
     "id": 1133,
@@ -4287,7 +4616,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Neck bridge"
+    "notes": "Neck bridge",
+    "reps_by_week": null
   },
   {
     "id": 1134,
@@ -4300,7 +4630,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Landing absorption drill"
+    "notes": "Landing absorption drill",
+    "reps_by_week": null
   },
   {
     "id": 1135,
@@ -4313,7 +4644,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Goblet squat"
+    "notes": "Goblet squat",
+    "reps_by_week": null
   },
   {
     "id": 1136,
@@ -4326,7 +4658,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Hollow hold"
+    "notes": "Hollow hold",
+    "reps_by_week": null
   },
   {
     "id": 1183,
@@ -4339,7 +4672,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A2 band pull-apart"
+    "notes": "A2 band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 1184,
@@ -4352,7 +4686,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg glute bridge"
+    "notes": "Single-leg glute bridge",
+    "reps_by_week": null
   },
   {
     "id": 1192,
@@ -4365,7 +4700,8 @@
     "rest": "20 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Band pull-apart"
+    "notes": "Band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 1199,
@@ -4378,7 +4714,8 @@
     "rest": "15 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Adductor squeeze"
+    "notes": "Adductor squeeze",
+    "reps_by_week": null
   },
   {
     "id": 1216,
@@ -4391,7 +4728,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Press, 60-80%, never miss"
+    "notes": "Press, 60-80%, never miss",
+    "reps_by_week": null
   },
   {
     "id": 1217,
@@ -4404,7 +4742,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Pull"
+    "notes": "Pull",
+    "reps_by_week": null
   },
   {
     "id": 1218,
@@ -4417,7 +4756,8 @@
     "rest": "2-3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Hinge, heavy but easy"
+    "notes": "Hinge, heavy but easy",
+    "reps_by_week": null
   },
   {
     "id": 1219,
@@ -4430,7 +4770,8 @@
     "rest": "2-3 min",
     "tempo": null,
     "duration": null,
-    "notes": "Squat"
+    "notes": "Squat",
+    "reps_by_week": null
   },
   {
     "id": 1220,
@@ -4443,7 +4784,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Loaded carry, vary distance/load"
+    "notes": "Loaded carry, vary distance/load",
+    "reps_by_week": null
   },
   {
     "id": 1221,
@@ -4456,7 +4798,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "One solid set"
+    "notes": "One solid set",
+    "reps_by_week": null
   },
   {
     "id": 1222,
@@ -4469,7 +4812,8 @@
     "rest": "2-3 min",
     "tempo": null,
     "duration": null,
-    "notes": "~72.5% of training max, 3 s lowering"
+    "notes": "~72.5% of training max, 3 s lowering",
+    "reps_by_week": null
   },
   {
     "id": 1223,
@@ -4482,7 +4826,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Slow 4 s descent, land soft"
+    "notes": "Slow 4 s descent, land soft",
+    "reps_by_week": null
   },
   {
     "id": 1224,
@@ -4495,7 +4840,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Eccentric emphasis"
+    "notes": "Eccentric emphasis",
+    "reps_by_week": null
   },
   {
     "id": 1225,
@@ -4508,7 +4854,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": null
+    "notes": null,
+    "reps_by_week": null
   },
   {
     "id": 1226,
@@ -4521,7 +4868,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": null
+    "notes": null,
+    "reps_by_week": null
   },
   {
     "id": 1227,
@@ -4534,7 +4882,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Control the drop; hands ready"
+    "notes": "Control the drop; hands ready",
+    "reps_by_week": null
   },
   {
     "id": 1228,
@@ -4547,7 +4896,8 @@
     "rest": "2-3 min",
     "tempo": null,
     "duration": null,
-    "notes": "~72.5% of training max"
+    "notes": "~72.5% of training max",
+    "reps_by_week": null
   },
   {
     "id": 1229,
@@ -4560,7 +4910,8 @@
     "rest": "full recovery",
     "tempo": null,
     "duration": null,
-    "notes": "Maximal pop, step down"
+    "notes": "Maximal pop, step down",
+    "reps_by_week": null
   },
   {
     "id": 1230,
@@ -4573,7 +4924,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "~70% of training max"
+    "notes": "~70% of training max",
+    "reps_by_week": null
   },
   {
     "id": 1231,
@@ -4586,7 +4938,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": null
+    "notes": null,
+    "reps_by_week": null
   },
   {
     "id": 1232,
@@ -4599,7 +4952,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": null
+    "notes": null,
+    "reps_by_week": null
   },
   {
     "id": 1233,
@@ -4612,7 +4966,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "RPE 6-7"
+    "notes": "RPE 6-7",
+    "reps_by_week": null
   },
   {
     "id": 1234,
@@ -4625,7 +4980,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Pack on, high box"
+    "notes": "Pack on, high box",
+    "reps_by_week": null
   },
   {
     "id": 1235,
@@ -4638,7 +4994,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": null
+    "notes": null,
+    "reps_by_week": null
   },
   {
     "id": 1236,
@@ -4651,7 +5008,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": null
+    "notes": null,
+    "reps_by_week": null
   },
   {
     "id": 1237,
@@ -4664,7 +5022,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": null
+    "notes": null,
+    "reps_by_week": null
   },
   {
     "id": 1238,
@@ -4677,7 +5036,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Walking lunge, bodyweight or light dumbbells"
+    "notes": "Walking lunge, bodyweight or light dumbbells",
+    "reps_by_week": null
   },
   {
     "id": 1239,
@@ -4690,7 +5050,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Land quiet"
+    "notes": "Land quiet",
+    "reps_by_week": null
   },
   {
     "id": 1240,
@@ -4703,7 +5064,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": null
+    "notes": null,
+    "reps_by_week": null
   },
   {
     "id": 1241,
@@ -4716,7 +5078,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": null
+    "notes": null,
+    "reps_by_week": null
   },
   {
     "id": 1242,
@@ -4729,7 +5092,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Slow, no momentum"
+    "notes": "Slow, no momentum",
+    "reps_by_week": null
   },
   {
     "id": 1243,
@@ -4742,7 +5106,8 @@
     "rest": "10 sec",
     "tempo": null,
     "duration": null,
-    "notes": "4 rounds"
+    "notes": "4 rounds",
+    "reps_by_week": null
   },
   {
     "id": 1244,
@@ -4755,7 +5120,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Stick the landing"
+    "notes": "Stick the landing",
+    "reps_by_week": null
   },
   {
     "id": 1245,
@@ -4768,7 +5134,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Light, fast hinge"
+    "notes": "Light, fast hinge",
+    "reps_by_week": null
   },
   {
     "id": 1246,
@@ -4781,7 +5148,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": null
+    "notes": null,
+    "reps_by_week": null
   },
   {
     "id": 1247,
@@ -4794,7 +5162,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": null
+    "notes": null,
+    "reps_by_week": null
   },
   {
     "id": 1248,
@@ -4807,7 +5176,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": null
+    "notes": null,
+    "reps_by_week": null
   },
   {
     "id": 1249,
@@ -4820,7 +5190,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": null
+    "notes": null,
+    "reps_by_week": null
   },
   {
     "id": 1250,
@@ -4833,7 +5204,8 @@
     "rest": "10 sec",
     "tempo": null,
     "duration": null,
-    "notes": "6 rounds"
+    "notes": "6 rounds",
+    "reps_by_week": null
   },
   {
     "id": 1251,
@@ -4846,7 +5218,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Reactive ankle and calf stiffness for absorbing board chatter and quick edge changes."
+    "notes": "Reactive ankle and calf stiffness for absorbing board chatter and quick edge changes.",
+    "reps_by_week": null
   },
   {
     "id": 1252,
@@ -4859,7 +5232,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Lateral, single leg loaded squat that trains edge to edge weight transfer between heel side and toe side."
+    "notes": "Lateral, single leg loaded squat that trains edge to edge weight transfer between heel side and toe side.",
+    "reps_by_week": null
   },
   {
     "id": 1253,
@@ -4872,7 +5246,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Hold a low, staggered stance. Legs burning by the end of the hold is the point."
+    "notes": "Hold a low, staggered stance. Legs burning by the end of the hold is the point.",
+    "reps_by_week": null
   },
   {
     "id": 1254,
@@ -4885,7 +5260,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single leg hip hinge for balance and posterior chain control while one leg carries more edge pressure than the other."
+    "notes": "Single leg hip hinge for balance and posterior chain control while one leg carries more edge pressure than the other.",
+    "reps_by_week": null
   },
   {
     "id": 1255,
@@ -4898,7 +5274,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Eccentric hamstring strength linked to a lower knee injury rate in the research cited below."
+    "notes": "Eccentric hamstring strength linked to a lower knee injury rate in the research cited below.",
+    "reps_by_week": null
   },
   {
     "id": 1256,
@@ -4911,7 +5288,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Upper body and trunk strength for bracing on falls and pushing back up out of the snow."
+    "notes": "Upper body and trunk strength for bracing on falls and pushing back up out of the snow.",
+    "reps_by_week": null
   },
   {
     "id": 1257,
@@ -4924,7 +5302,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Anti lateral flexion core control for staying stacked over the board during spins and switch riding."
+    "notes": "Anti lateral flexion core control for staying stacked over the board during spins and switch riding.",
+    "reps_by_week": null
   },
   {
     "id": 1271,
@@ -4937,7 +5316,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Slow and controlled. Step long, keep the torso tall as under a pack."
+    "notes": "Slow and controlled. Step long, keep the torso tall as under a pack.",
+    "reps_by_week": null
   },
   {
     "id": 1272,
@@ -4950,7 +5330,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Lower slowly on every rep. Trains the braking strength needed on long descents in boots or crampons."
+    "notes": "Lower slowly on every rep. Trains the braking strength needed on long descents in boots or crampons.",
+    "reps_by_week": null
   },
   {
     "id": 1273,
@@ -4963,7 +5344,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Use two poles (broom handles or hiking poles work) on the way down to rehearse pole assisted descent technique while loading the quads eccentrically."
+    "notes": "Use two poles (broom handles or hiking poles work) on the way down to rehearse pole assisted descent technique while loading the quads eccentrically.",
+    "reps_by_week": null
   },
   {
     "id": 1274,
@@ -4976,7 +5358,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single leg hip and hamstring control for loose, uneven or snow covered ground."
+    "notes": "Single leg hip and hamstring control for loose, uneven or snow covered ground.",
+    "reps_by_week": null
   },
   {
     "id": 1275,
@@ -4989,7 +5372,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Upper body and trunk integration for scrambling, self belay and catching a fall on steep ground."
+    "notes": "Upper body and trunk integration for scrambling, self belay and catching a fall on steep ground.",
+    "reps_by_week": null
   },
   {
     "id": 1276,
@@ -5002,7 +5386,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Keep the torso stacked over the hips, the same position a loaded pack demands for hours on approach."
+    "notes": "Keep the torso stacked over the hips, the same position a loaded pack demands for hours on approach.",
+    "reps_by_week": null
   },
   {
     "id": 1277,
@@ -5015,7 +5400,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "High rep calf work for the muscle group that fatigues first on sustained steep climbing in stiff boots."
+    "notes": "High rep calf work for the muscle group that fatigues first on sustained steep climbing in stiff boots.",
+    "reps_by_week": null
   },
   {
     "id": 1291,
@@ -5028,7 +5414,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "General leg strength base for repeated uphill steps."
+    "notes": "General leg strength base for repeated uphill steps.",
+    "reps_by_week": null
   },
   {
     "id": 1292,
@@ -5041,7 +5428,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Trains the eccentric quad loading of downhill trail; lower slowly, step back up with the trailing leg."
+    "notes": "Trains the eccentric quad loading of downhill trail; lower slowly, step back up with the trailing leg.",
+    "reps_by_week": null
   },
   {
     "id": 1293,
@@ -5054,7 +5442,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Builds single-leg hip and glute strength for stance stability on uneven trail."
+    "notes": "Builds single-leg hip and glute strength for stance stability on uneven trail.",
+    "reps_by_week": null
   },
   {
     "id": 1294,
@@ -5067,7 +5456,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Sit into one hip, other leg straight. Trains the lateral hip strength uneven trail asks for."
+    "notes": "Sit into one hip, other leg straight. Trains the lateral hip strength uneven trail asks for.",
+    "reps_by_week": null
   },
   {
     "id": 1295,
@@ -5080,7 +5470,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Upper body and trunk strength for pack straps and trekking pole push-off."
+    "notes": "Upper body and trunk strength for pack straps and trekking pole push-off.",
+    "reps_by_week": null
   },
   {
     "id": 1296,
@@ -5093,7 +5484,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Trunk stability so a loaded daypack does not pull the torso forward over miles."
+    "notes": "Trunk stability so a loaded daypack does not pull the torso forward over miles.",
+    "reps_by_week": null
   },
   {
     "id": 1297,
@@ -5106,7 +5498,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Calf and ankle endurance for the repeated push-off of a full day of steps."
+    "notes": "Calf and ankle endurance for the repeated push-off of a full day of steps.",
+    "reps_by_week": null
   },
   {
     "id": 1311,
@@ -5119,7 +5512,8 @@
     "rest": "60 sec",
     "tempo": "3 sec down, 1 sec up",
     "duration": null,
-    "notes": "Step down slowly off a low step or stair and control the lowering phase for three seconds per rep. Trains the eccentric quad and knee control that sustained descents demand."
+    "notes": "Step down slowly off a low step or stair and control the lowering phase for three seconds per rep. Trains the eccentric quad and knee control that sustained descents demand.",
+    "reps_by_week": null
   },
   {
     "id": 1312,
@@ -5132,7 +5526,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "A lateral squat that trains hip and knee stability in the frontal plane, for the side sloped, cambered tread that stresses the IT band and outer knee on long days."
+    "notes": "A lateral squat that trains hip and knee stability in the frontal plane, for the side sloped, cambered tread that stresses the IT band and outer knee on long days.",
+    "reps_by_week": null
   },
   {
     "id": 1313,
@@ -5145,7 +5540,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single leg hip hinge with a balance demand, mirroring the constant weight shifts of walking a loaded pack over uneven ground."
+    "notes": "Single leg hip hinge with a balance demand, mirroring the constant weight shifts of walking a loaded pack over uneven ground.",
+    "reps_by_week": null
   },
   {
     "id": 1314,
@@ -5158,7 +5554,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Builds the shoulder girdle and upper body durability needed to manage pack straps and trekking poles across a long trip."
+    "notes": "Builds the shoulder girdle and upper body durability needed to manage pack straps and trekking poles across a long trip.",
+    "reps_by_week": null
   },
   {
     "id": 1315,
@@ -5171,7 +5568,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "High rep calf work builds the local muscular endurance of the calf and Achilles complex, which absorb a large repetitive load across back to back big mile days."
+    "notes": "High rep calf work builds the local muscular endurance of the calf and Achilles complex, which absorb a large repetitive load across back to back big mile days.",
+    "reps_by_week": null
   },
   {
     "id": 1316,
@@ -5184,7 +5582,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Trains the trunk to resist sagging under sustained load, the core endurance needed to hold posture for hours with a loaded pack."
+    "notes": "Trains the trunk to resist sagging under sustained load, the core endurance needed to hold posture for hours with a loaded pack.",
+    "reps_by_week": null
   },
   {
     "id": 1317,
@@ -5197,7 +5596,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Trains lateral trunk control to resist the side to side sway of a loaded pack and to stabilize the hip on cambered, uneven tread."
+    "notes": "Trains lateral trunk control to resist the side to side sway of a loaded pack and to stabilize the hip on cambered, uneven tread.",
+    "reps_by_week": null
   },
   {
     "id": 1331,
@@ -5210,7 +5610,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Squat"
+    "notes": "Squat",
+    "reps_by_week": null
   },
   {
     "id": 1332,
@@ -5223,7 +5624,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Hinge: single-leg glute bridge, drive through the heel"
+    "notes": "Hinge: single-leg glute bridge, drive through the heel",
+    "reps_by_week": null
   },
   {
     "id": 1333,
@@ -5236,7 +5638,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Push"
+    "notes": "Push",
+    "reps_by_week": null
   },
   {
     "id": 1334,
@@ -5249,7 +5652,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Split squat pattern, step long"
+    "notes": "Split squat pattern, step long",
+    "reps_by_week": null
   },
   {
     "id": 1335,
@@ -5262,7 +5666,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Anti-extension"
+    "notes": "Anti-extension",
+    "reps_by_week": null
   },
   {
     "id": 1336,
@@ -5275,7 +5680,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Anti-lateral flexion"
+    "notes": "Anti-lateral flexion",
+    "reps_by_week": null
   },
   {
     "id": 1337,
@@ -5288,7 +5694,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Calf, slow lowering"
+    "notes": "Calf, slow lowering",
+    "reps_by_week": null
   },
   {
     "id": 1338,
@@ -5301,7 +5708,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Goblet squat"
+    "notes": "Goblet squat",
+    "reps_by_week": null
   },
   {
     "id": 1339,
@@ -5314,7 +5722,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Wide-grip lat pulldown"
+    "notes": "Wide-grip lat pulldown",
+    "reps_by_week": null
   },
   {
     "id": 1340,
@@ -5327,7 +5736,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Push-up"
+    "notes": "Push-up",
+    "reps_by_week": null
   },
   {
     "id": 1341,
@@ -5340,7 +5750,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Inverted row"
+    "notes": "Inverted row",
+    "reps_by_week": null
   },
   {
     "id": 1342,
@@ -5353,7 +5764,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Single-leg glute bridge"
+    "notes": "Single-leg glute bridge",
+    "reps_by_week": null
   },
   {
     "id": 1343,
@@ -5366,7 +5778,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Face pull for shoulder health"
+    "notes": "Face pull for shoulder health",
+    "reps_by_week": null
   },
   {
     "id": 1344,
@@ -5379,7 +5792,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Front plank"
+    "notes": "Front plank",
+    "reps_by_week": null
   },
   {
     "id": 1345,
@@ -5392,7 +5806,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Inverted row, feet lower to make it easier"
+    "notes": "Inverted row, feet lower to make it easier",
+    "reps_by_week": null
   },
   {
     "id": 1346,
@@ -5405,7 +5820,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Wide-grip lat pulldown"
+    "notes": "Wide-grip lat pulldown",
+    "reps_by_week": null
   },
   {
     "id": 1347,
@@ -5418,7 +5834,8 @@
     "rest": "75 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Bar hang, stop before the grip fails"
+    "notes": "Bar hang, stop before the grip fails",
+    "reps_by_week": null
   },
   {
     "id": 1348,
@@ -5431,7 +5848,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Scapular retraction hold"
+    "notes": "Scapular retraction hold",
+    "reps_by_week": null
   },
   {
     "id": 1349,
@@ -5444,7 +5862,8 @@
     "rest": "30 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Band pull-apart"
+    "notes": "Band pull-apart",
+    "reps_by_week": null
   },
   {
     "id": 1350,
@@ -5457,7 +5876,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Push-up"
+    "notes": "Push-up",
+    "reps_by_week": null
   },
   {
     "id": 1351,
@@ -5470,7 +5890,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Side plank"
+    "notes": "Side plank",
+    "reps_by_week": null
   },
   {
     "id": 1352,
@@ -5483,7 +5904,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Push-up"
+    "notes": "Push-up",
+    "reps_by_week": null
   },
   {
     "id": 1353,
@@ -5496,7 +5918,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Inverted row"
+    "notes": "Inverted row",
+    "reps_by_week": null
   },
   {
     "id": 1354,
@@ -5509,7 +5932,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Face pull"
+    "notes": "Face pull",
+    "reps_by_week": null
   },
   {
     "id": 1355,
@@ -5522,7 +5946,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Reverse wrist curl"
+    "notes": "Reverse wrist curl",
+    "reps_by_week": null
   },
   {
     "id": 1356,
@@ -5535,7 +5960,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Side plank"
+    "notes": "Side plank",
+    "reps_by_week": null
   },
   {
     "id": 1357,
@@ -5548,7 +5974,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Dead bug"
+    "notes": "Dead bug",
+    "reps_by_week": null
   },
   {
     "id": 1358,
@@ -5561,7 +5988,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Hangboard repeaters on a comfortable edge"
+    "notes": "Hangboard repeaters on a comfortable edge",
+    "reps_by_week": null
   },
   {
     "id": 1359,
@@ -5574,7 +6002,8 @@
     "rest": "2 min",
     "tempo": null,
     "duration": null,
-    "notes": "Pull-up"
+    "notes": "Pull-up",
+    "reps_by_week": null
   },
   {
     "id": 1360,
@@ -5587,7 +6016,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Goblet squat"
+    "notes": "Goblet squat",
+    "reps_by_week": null
   },
   {
     "id": 1361,
@@ -5600,7 +6030,8 @@
     "rest": "60 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Decline push-up"
+    "notes": "Decline push-up",
+    "reps_by_week": null
   },
   {
     "id": 1362,
@@ -5613,7 +6044,8 @@
     "rest": "90 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Ab wheel rollout"
+    "notes": "Ab wheel rollout",
+    "reps_by_week": null
   },
   {
     "id": 1363,
@@ -5626,7 +6058,8 @@
     "rest": "45 sec",
     "tempo": null,
     "duration": null,
-    "notes": "Face pull"
+    "notes": "Face pull",
+    "reps_by_week": null
   },
   {
     "id": 1364,
@@ -5639,7 +6072,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Raise the load quickly each round until 3 reps is hard but doable"
+    "notes": "Effort: hard but doable on the last round. Note: Raise the load quickly each round until 3 reps is hard but doable",
+    "reps_by_week": null
   },
   {
     "id": 1365,
@@ -5652,7 +6086,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Raise the load each round until 5 reps is hard but doable"
+    "notes": "Effort: hard but doable on the last round. Note: Raise the load each round until 5 reps is hard but doable",
+    "reps_by_week": null
   },
   {
     "id": 1366,
@@ -5665,7 +6100,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Same load progression as the bench press"
+    "notes": "Effort: hard but doable on the last round. Note: Same load progression as the bench press",
+    "reps_by_week": null
   },
   {
     "id": 1367,
@@ -5678,7 +6114,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: easy. Note: Substitute for \"30-Count Dead Hang\". The source uses it as a shoulder and back stretch, not grip work"
+    "notes": "Effort: easy. Note: Substitute for \"30-Count Dead Hang\". The source uses it as a shoulder and back stretch, not grip work",
+    "reps_by_week": null
   },
   {
     "id": 1368,
@@ -5691,7 +6128,12 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady, not frantic (\"grind\"). Note: Source movement is Hand Release Push-Up. Prep Week 1 sets 30%, Week 3 sets 40%"
+    "notes": "Effort: steady, not frantic (\"grind\"). Note: Source movement is Hand Release Push-Up. Prep Week 1 sets 30%, Week 3 sets 40%",
+    "reps_by_week": [
+      "30% of your 2-minute max",
+      "35% of your 2-minute max",
+      "40% of your 2-minute max"
+    ]
   },
   {
     "id": 1369,
@@ -5704,7 +6146,12 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Source movement is In-Place Lunge"
+    "notes": "Effort: steady. Note: Source movement is In-Place Lunge",
+    "reps_by_week": [
+      "30% of your 2-minute max",
+      "35% of your 2-minute max",
+      "40% of your 2-minute max"
+    ]
   },
   {
     "id": 1370,
@@ -5717,7 +6164,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Source offers Negative Pull-Ups when you cannot do one; no catalog match (see list)"
+    "notes": "Effort: steady. Note: Source offers Negative Pull-Ups when you cannot do one; no catalog match (see list)",
+    "reps_by_week": null
   },
   {
     "id": 1371,
@@ -5730,7 +6178,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Substitute for Side Plank Raises, from the plan's chassis grind"
+    "notes": "Effort: steady. Note: Substitute for Side Plank Raises, from the plan's chassis grind",
+    "reps_by_week": null
   },
   {
     "id": 1372,
@@ -5743,7 +6192,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Raise the load quickly each round"
+    "notes": "Effort: hard but doable on the last round. Note: Raise the load quickly each round",
+    "reps_by_week": null
   },
   {
     "id": 1373,
@@ -5756,7 +6206,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Raise the load each round"
+    "notes": "Effort: hard but doable on the last round. Note: Raise the load each round",
+    "reps_by_week": null
   },
   {
     "id": 1374,
@@ -5769,7 +6220,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Source says \"5x Renegade Rows\", raise the load each round"
+    "notes": "Effort: hard but doable on the last round. Note: Source says \"5x Renegade Rows\", raise the load each round",
+    "reps_by_week": null
   },
   {
     "id": 1375,
@@ -5782,7 +6234,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: easy. Note: Substitute for \"45-Count Dead Hang\""
+    "notes": "Effort: easy. Note: Substitute for \"45-Count Dead Hang\"",
+    "reps_by_week": null
   },
   {
     "id": 1376,
@@ -5795,7 +6248,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Substitute for \"Hinge Lift\" (see list). Raise the load quickly each round"
+    "notes": "Effort: hard but doable on the last round. Note: Substitute for \"Hinge Lift\" (see list). Raise the load quickly each round",
+    "reps_by_week": null
   },
   {
     "id": 1377,
@@ -5808,7 +6262,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Raise the load each round"
+    "notes": "Effort: hard but doable on the last round. Note: Raise the load each round",
+    "reps_by_week": null
   },
   {
     "id": 1378,
@@ -5821,7 +6276,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Source scales 3 (women) / 6 (men)"
+    "notes": "Effort: steady. Note: Source scales 3 (women) / 6 (men)",
+    "reps_by_week": null
   },
   {
     "id": 1379,
@@ -5834,7 +6290,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: easy. Note: Substitute for \"30-Count Dead Hang\""
+    "notes": "Effort: easy. Note: Substitute for \"30-Count Dead Hang\"",
+    "reps_by_week": null
   },
   {
     "id": 1380,
@@ -5847,7 +6304,12 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady (\"grind\"). Note: Source movement is Hand Release Push-Up"
+    "notes": "Effort: steady (\"grind\"). Note: Source movement is Hand Release Push-Up",
+    "reps_by_week": [
+      "30% of your 2-minute max",
+      "35% of your 2-minute max",
+      "40% of your 2-minute max"
+    ]
   },
   {
     "id": 1381,
@@ -5860,7 +6322,12 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Source movement is In-Place Lunge"
+    "notes": "Effort: steady. Note: Source movement is In-Place Lunge",
+    "reps_by_week": [
+      "30% of your 2-minute max",
+      "35% of your 2-minute max",
+      "40% of your 2-minute max"
+    ]
   },
   {
     "id": 1382,
@@ -5873,7 +6340,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Source offers Negative Pull-Ups when you cannot do one"
+    "notes": "Effort: steady. Note: Source offers Negative Pull-Ups when you cannot do one",
+    "reps_by_week": null
   },
   {
     "id": 1383,
@@ -5886,7 +6354,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: light, steady. Note: Substitute for Sandbag Good Morning (6 reps in the plan's 15 minute chassis grind). Use a pack or a light bar"
+    "notes": "Effort: light, steady. Note: Substitute for Sandbag Good Morning (6 reps in the plan's 15 minute chassis grind). Use a pack or a light bar",
+    "reps_by_week": null
   },
   {
     "id": 1384,
@@ -5899,7 +6368,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Substitute for \"Hinge Lift\". Raise the load quickly each round"
+    "notes": "Effort: hard but doable on the last round. Note: Substitute for \"Hinge Lift\". Raise the load quickly each round",
+    "reps_by_week": null
   },
   {
     "id": 1385,
@@ -5912,7 +6382,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Raise the load each round"
+    "notes": "Effort: hard but doable on the last round. Note: Raise the load each round",
+    "reps_by_week": null
   },
   {
     "id": 1386,
@@ -5925,7 +6396,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Source scales 2 (women) / 5 (men)"
+    "notes": "Effort: steady. Note: Source scales 2 (women) / 5 (men)",
+    "reps_by_week": null
   },
   {
     "id": 1387,
@@ -5938,7 +6410,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: easy. Note: Substitute for \"30-Count Dead Hang\""
+    "notes": "Effort: easy. Note: Substitute for \"30-Count Dead Hang\"",
+    "reps_by_week": null
   },
   {
     "id": 1388,
@@ -5951,7 +6424,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Raise the load quickly each round until 6 reps is hard but doable"
+    "notes": "Effort: hard but doable on the last round. Note: Raise the load quickly each round until 6 reps is hard but doable",
+    "reps_by_week": null
   },
   {
     "id": 1389,
@@ -5964,7 +6438,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Substitute for Kettlebell Floor Press. Raise the load each round"
+    "notes": "Effort: hard but doable on the last round. Note: Substitute for Kettlebell Floor Press. Raise the load each round",
+    "reps_by_week": null
   },
   {
     "id": 1390,
@@ -5977,7 +6452,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Source scales 3 (women) / 6 (men)"
+    "notes": "Effort: steady. Note: Source scales 3 (women) / 6 (men)",
+    "reps_by_week": null
   },
   {
     "id": 1391,
@@ -5990,7 +6466,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Raise the load quickly each round"
+    "notes": "Effort: hard but doable on the last round. Note: Raise the load quickly each round",
+    "reps_by_week": null
   },
   {
     "id": 1392,
@@ -6003,7 +6480,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Raise the load each round"
+    "notes": "Effort: hard but doable on the last round. Note: Raise the load each round",
+    "reps_by_week": null
   },
   {
     "id": 1393,
@@ -6016,7 +6494,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Source scales 3 (women) / 5 (men)"
+    "notes": "Effort: steady. Note: Source scales 3 (women) / 5 (men)",
+    "reps_by_week": null
   },
   {
     "id": 1394,
@@ -6029,7 +6508,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: light, steady. Note: Substitute for Dumbbell-Kettlebell Hinge Lift in the plan's 15 minute grind. Catalog difficulty is advanced and default reps 3-5; use light load"
+    "notes": "Effort: light, steady. Note: Substitute for Dumbbell-Kettlebell Hinge Lift in the plan's 15 minute grind. Catalog difficulty is advanced and default reps 3-5; use light load",
+    "reps_by_week": null
   },
   {
     "id": 1395,
@@ -6042,7 +6522,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Raise the load rapidly each round until 5 reps is hard but doable"
+    "notes": "Effort: hard but doable on the last round. Note: Raise the load rapidly each round until 5 reps is hard but doable",
+    "reps_by_week": null
   },
   {
     "id": 1396,
@@ -6055,7 +6536,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Source scales 2 (women) / 5 (men)"
+    "notes": "Effort: steady. Note: Source scales 2 (women) / 5 (men)",
+    "reps_by_week": null
   },
   {
     "id": 1397,
@@ -6068,7 +6550,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Substitute for Hand Release Push-Up, which the source uses in the warm-up rounds"
+    "notes": "Effort: steady. Note: Substitute for Hand Release Push-Up, which the source uses in the warm-up rounds",
+    "reps_by_week": null
   },
   {
     "id": 1398,
@@ -6081,7 +6564,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady grind, no rest between movements. Note: Substitute for Sandbag Getup and Sandbag Keg Lift, 40/60 lb in the source. The source is a 4 round grind"
+    "notes": "Effort: steady grind, no rest between movements. Note: Substitute for Sandbag Getup and Sandbag Keg Lift, 40/60 lb in the source. The source is a 4 round grind",
+    "reps_by_week": null
   },
   {
     "id": 1399,
@@ -6094,7 +6578,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Raise the load rapidly each round until 6 reps is hard but doable"
+    "notes": "Effort: hard but doable on the last round. Note: Raise the load rapidly each round until 6 reps is hard but doable",
+    "reps_by_week": null
   },
   {
     "id": 1400,
@@ -6107,7 +6592,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: hard but doable on the last round. Note: Substitute for Kettlebell Floor Press, each arm. Raise the load each round"
+    "notes": "Effort: hard but doable on the last round. Note: Substitute for Kettlebell Floor Press, each arm. Raise the load each round",
+    "reps_by_week": null
   },
   {
     "id": 1401,
@@ -6120,7 +6606,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Source scales 3 (women) / 6 (men)"
+    "notes": "Effort: steady. Note: Source scales 3 (women) / 6 (men)",
+    "reps_by_week": null
   },
   {
     "id": 1402,
@@ -6133,7 +6620,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Substitute for Hand Release Push-Up, which the source uses in the warm-up rounds"
+    "notes": "Effort: steady. Note: Substitute for Hand Release Push-Up, which the source uses in the warm-up rounds",
+    "reps_by_week": null
   },
   {
     "id": 1403,
@@ -6146,7 +6634,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady grind, no rest between movements. Note: Substitute for Sandbag Clean + Press, 40/60 lb in the source. The source is a 4 round grind"
+    "notes": "Effort: steady grind, no rest between movements. Note: Substitute for Sandbag Clean + Press, 40/60 lb in the source. The source is a 4 round grind",
+    "reps_by_week": null
   },
   {
     "id": 1404,
@@ -6159,7 +6648,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Substitute for Sandbag Good Mornings, 40/60 lb in the source. Use a light load"
+    "notes": "Effort: steady. Note: Substitute for Sandbag Good Mornings, 40/60 lb in the source. Use a light load",
+    "reps_by_week": null
   },
   {
     "id": 1405,
@@ -6172,7 +6662,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady, 30 seconds rest after each round. Note: Leg Blaster round, performed as its parts: 20 air squats, 20 in-place lunges, 20 jumping lunges, 10 squat jumps"
+    "notes": "Effort: steady, 30 seconds rest after each round. Note: Leg Blaster round, performed as its parts: 20 air squats, 20 in-place lunges, 20 jumping lunges, 10 squat jumps",
+    "reps_by_week": null
   },
   {
     "id": 1406,
@@ -6185,7 +6676,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Leg Blaster round, performed as its parts: 20 air squats, 20 in-place lunges, 20 jumping lunges, 10 squat jumps"
+    "notes": "Effort: steady. Note: Leg Blaster round, performed as its parts: 20 air squats, 20 in-place lunges, 20 jumping lunges, 10 squat jumps",
+    "reps_by_week": null
   },
   {
     "id": 1407,
@@ -6198,7 +6690,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Substitute for the jumping lunges in the Leg Blaster round"
+    "notes": "Effort: steady. Note: Substitute for the jumping lunges in the Leg Blaster round",
+    "reps_by_week": null
   },
   {
     "id": 1408,
@@ -6211,7 +6704,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Leg Blaster round, performed as its parts: 20 air squats, 20 in-place lunges, 20 jumping lunges, 10 squat jumps"
+    "notes": "Effort: steady. Note: Leg Blaster round, performed as its parts: 20 air squats, 20 in-place lunges, 20 jumping lunges, 10 squat jumps",
+    "reps_by_week": null
   },
   {
     "id": 1409,
@@ -6224,7 +6718,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady grind, 18 minutes in the source. Note: Substitute for Dumbbell Thruster, 15/25 lb. Use dumbbells"
+    "notes": "Effort: steady grind, 18 minutes in the source. Note: Substitute for Dumbbell Thruster, 15/25 lb. Use dumbbells",
+    "reps_by_week": null
   },
   {
     "id": 1410,
@@ -6237,7 +6732,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady grind. Note: Substitute for Dumbbell Crawl, 15/25 lb. Hold the dumbbells if you can keep the hips level"
+    "notes": "Effort: steady grind. Note: Substitute for Dumbbell Crawl, 15/25 lb. Hold the dumbbells if you can keep the hips level",
+    "reps_by_week": null
   },
   {
     "id": 1411,
@@ -6250,7 +6746,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady, 30 seconds rest after each round. Note: Leg Blaster round, performed as its parts: 20 air squats, 20 in-place lunges, 20 jumping lunges, 10 squat jumps"
+    "notes": "Effort: steady, 30 seconds rest after each round. Note: Leg Blaster round, performed as its parts: 20 air squats, 20 in-place lunges, 20 jumping lunges, 10 squat jumps",
+    "reps_by_week": null
   },
   {
     "id": 1412,
@@ -6263,7 +6760,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Leg Blaster round, performed as its parts: 20 air squats, 20 in-place lunges, 20 jumping lunges, 10 squat jumps"
+    "notes": "Effort: steady. Note: Leg Blaster round, performed as its parts: 20 air squats, 20 in-place lunges, 20 jumping lunges, 10 squat jumps",
+    "reps_by_week": null
   },
   {
     "id": 1413,
@@ -6276,7 +6774,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Substitute for the jumping lunges in the Leg Blaster round"
+    "notes": "Effort: steady. Note: Substitute for the jumping lunges in the Leg Blaster round",
+    "reps_by_week": null
   },
   {
     "id": 1414,
@@ -6289,7 +6788,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Leg Blaster round, performed as its parts: 20 air squats, 20 in-place lunges, 20 jumping lunges, 10 squat jumps"
+    "notes": "Effort: steady. Note: Leg Blaster round, performed as its parts: 20 air squats, 20 in-place lunges, 20 jumping lunges, 10 squat jumps",
+    "reps_by_week": null
   },
   {
     "id": 1415,
@@ -6302,7 +6802,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady grind, 20 minutes in the source. Note: Alternate hands each round, 15/25 lb"
+    "notes": "Effort: steady grind, 20 minutes in the source. Note: Alternate hands each round, 15/25 lb",
+    "reps_by_week": null
   },
   {
     "id": 1416,
@@ -6315,7 +6816,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: light, steady grind. Note: Substitute for Dumbbell Hinge Lift, mid-shin to full hip extension, 15/25 lb. Catalog difficulty is advanced and default reps 3-5; use light load"
+    "notes": "Effort: light, steady grind. Note: Substitute for Dumbbell Hinge Lift, mid-shin to full hip extension, 15/25 lb. Catalog difficulty is advanced and default reps 3-5; use light load",
+    "reps_by_week": null
   },
   {
     "id": 1417,
@@ -6328,7 +6830,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: sprint for the full 90 seconds, rest by putting the weight down and keep working. Note: Alternating press, 20/35 lb"
+    "notes": "Effort: sprint for the full 90 seconds, rest by putting the weight down and keep working. Note: Alternating press, 20/35 lb",
+    "reps_by_week": null
   },
   {
     "id": 1418,
@@ -6341,7 +6844,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: sprint for the full 90 seconds, rest by putting the weight down and keep working. Note: 20/35 lb"
+    "notes": "Effort: sprint for the full 90 seconds, rest by putting the weight down and keep working. Note: 20/35 lb",
+    "reps_by_week": null
   },
   {
     "id": 1419,
@@ -6354,7 +6858,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: sprint for the full 90 seconds, rest by putting the weight down and keep working. Note: Dumbbell held by the handle, feet off the floor, 20/35 lb"
+    "notes": "Effort: sprint for the full 90 seconds, rest by putting the weight down and keep working. Note: Dumbbell held by the handle, feet off the floor, 20/35 lb",
+    "reps_by_week": null
   },
   {
     "id": 1420,
@@ -6367,7 +6872,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: for time, 5 rounds. Note: 45/75 lb. The source follows each round with a 400 m run, which is not in the catalog"
+    "notes": "Effort: for time, 5 rounds. Note: 45/75 lb. The source follows each round with a 400 m run, which is not in the catalog",
+    "reps_by_week": null
   },
   {
     "id": 1421,
@@ -6380,7 +6886,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady warm-up ladder. Note: Warm-up, alternates with sit-up and squat each rung"
+    "notes": "Effort: steady warm-up ladder. Note: Warm-up, alternates with sit-up and squat each rung",
+    "reps_by_week": null
   },
   {
     "id": 1422,
@@ -6393,7 +6900,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady warm-up ladder. Note: Warm-up"
+    "notes": "Effort: steady warm-up ladder. Note: Warm-up",
+    "reps_by_week": null
   },
   {
     "id": 1423,
@@ -6406,7 +6914,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady warm-up ladder. Note: Warm-up"
+    "notes": "Effort: steady warm-up ladder. Note: Warm-up",
+    "reps_by_week": null
   },
   {
     "id": 1424,
@@ -6419,7 +6928,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: 5 rounds, one every 60 seconds, at 35% of the assessment max reps (rounded up), then 1 round of max reps in 60 seconds. Note: Alternating press, 20/35 lb. 3-5 min rest after the max round"
+    "notes": "Effort: 5 rounds, one every 60 seconds, at 35% of the assessment max reps (rounded up), then 1 round of max reps in 60 seconds. Note: Alternating press, 20/35 lb. 3-5 min rest after the max round",
+    "reps_by_week": null
   },
   {
     "id": 1425,
@@ -6432,7 +6942,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: 5 rounds, one every 60 seconds, at 35% of the assessment max reps (rounded up), then 1 round of max reps in 60 seconds. Note: 20/35 lb. 3-5 min rest after the max round"
+    "notes": "Effort: 5 rounds, one every 60 seconds, at 35% of the assessment max reps (rounded up), then 1 round of max reps in 60 seconds. Note: 20/35 lb. 3-5 min rest after the max round",
+    "reps_by_week": null
   },
   {
     "id": 1426,
@@ -6445,7 +6956,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: 6 rounds, one every 60 seconds, at 35% of the assessment max reps (rounded up), then 1 round of max reps in 60 seconds. Note: Dumbbell held by the handle, 20/35 lb"
+    "notes": "Effort: 6 rounds, one every 60 seconds, at 35% of the assessment max reps (rounded up), then 1 round of max reps in 60 seconds. Note: Dumbbell held by the handle, 20/35 lb",
+    "reps_by_week": null
   },
   {
     "id": 1427,
@@ -6458,7 +6970,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady warm-up. Note: Warm-up, 15/25 lb"
+    "notes": "Effort: steady warm-up. Note: Warm-up, 15/25 lb",
+    "reps_by_week": null
   },
   {
     "id": 1428,
@@ -6471,7 +6984,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: 5 rounds, one every 60 seconds, at 35% of the assessment max reps (rounded up), then 1 round of max reps in 60 seconds. Note: Alternating press, 20/35 lb. 3-5 min rest after the max round"
+    "notes": "Effort: 5 rounds, one every 60 seconds, at 35% of the assessment max reps (rounded up), then 1 round of max reps in 60 seconds. Note: Alternating press, 20/35 lb. 3-5 min rest after the max round",
+    "reps_by_week": null
   },
   {
     "id": 1429,
@@ -6484,7 +6998,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: 5 rounds, one every 60 seconds, at 35% of the assessment max reps (rounded up), then 1 round of max reps in 60 seconds. Note: 20/35 lb. 3-5 min rest after the max round"
+    "notes": "Effort: 5 rounds, one every 60 seconds, at 35% of the assessment max reps (rounded up), then 1 round of max reps in 60 seconds. Note: 20/35 lb. 3-5 min rest after the max round",
+    "reps_by_week": null
   },
   {
     "id": 1430,
@@ -6497,7 +7012,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: 6 rounds, one every 60 seconds, at 35% of the assessment max reps (rounded up), then 1 round of max reps in 60 seconds. Note: Dumbbell held by the handle, 20/35 lb"
+    "notes": "Effort: 6 rounds, one every 60 seconds, at 35% of the assessment max reps (rounded up), then 1 round of max reps in 60 seconds. Note: Dumbbell held by the handle, 20/35 lb",
+    "reps_by_week": null
   },
   {
     "id": 1431,
@@ -6510,7 +7026,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: warm-up. Note: Hand release push-ups, alternating with the warm-up box squats"
+    "notes": "Effort: warm-up. Note: Hand release push-ups, alternating with the warm-up box squats",
+    "reps_by_week": null
   },
   {
     "id": 1432,
@@ -6523,7 +7040,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: increase load rapidly each round until the reps are hard but doable. Note: Heavy, low volume lower lift. Warm-up first: 3 rounds of 6 box squats at 65/75 lb, alternating with the push-ups"
+    "notes": "Effort: increase load rapidly each round until the reps are hard but doable. Note: Heavy, low volume lower lift. Warm-up first: 3 rounds of 6 box squats at 65/75 lb, alternating with the push-ups",
+    "reps_by_week": null
   },
   {
     "id": 1433,
@@ -6536,7 +7054,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: increase load rapidly each round until the reps are hard but doable. Note: Superset with the pull-up"
+    "notes": "Effort: increase load rapidly each round until the reps are hard but doable. Note: Superset with the pull-up",
+    "reps_by_week": null
   },
   {
     "id": 1434,
@@ -6549,7 +7068,13 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Superset with the bench press. 2 reps in week 1, 5 reps by week 4"
+    "notes": "Effort: steady. Note: Superset with the bench press. 2 reps in week 1, 5 reps by week 4",
+    "reps_by_week": [
+      "2",
+      "3",
+      "4",
+      "5"
+    ]
   },
   {
     "id": 1435,
@@ -6562,7 +7087,8 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Kneeling Plate Halfmoon, 25 lb"
+    "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Kneeling Plate Halfmoon, 25 lb",
+    "reps_by_week": null
   },
   {
     "id": 1436,
@@ -6575,7 +7101,8 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Keg Lift, 40/60 lb sandbag"
+    "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Keg Lift, 40/60 lb sandbag",
+    "reps_by_week": null
   },
   {
     "id": 1437,
@@ -6588,7 +7115,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Durability finisher. Source: Hamstring Hell"
+    "notes": "Effort: steady. Note: Durability finisher. Source: Hamstring Hell",
+    "reps_by_week": null
   },
   {
     "id": 1438,
@@ -6601,7 +7129,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: increase load rapidly each round until the reps are hard but doable. Note: Heavy, low volume lower lift. Warm-up first: 3 rounds of 8 front squats at 45/65 lb (the source pairs them with 4 Scotty Bobs, dropped)"
+    "notes": "Effort: increase load rapidly each round until the reps are hard but doable. Note: Heavy, low volume lower lift. Warm-up first: 3 rounds of 8 front squats at 45/65 lb (the source pairs them with 4 Scotty Bobs, dropped)",
+    "reps_by_week": null
   },
   {
     "id": 1439,
@@ -6614,7 +7143,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Superset with the row. Hand release push-ups"
+    "notes": "Effort: steady. Note: Superset with the row. Hand release push-ups",
+    "reps_by_week": null
   },
   {
     "id": 1440,
@@ -6627,7 +7157,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Superset with the push-up. Source: Horizontal Pull Up"
+    "notes": "Effort: steady. Note: Superset with the push-up. Source: Horizontal Pull Up",
+    "reps_by_week": null
   },
   {
     "id": 1441,
@@ -6640,7 +7171,8 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Dumbbell Crawl, 25 lb"
+    "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Dumbbell Crawl, 25 lb",
+    "reps_by_week": null
   },
   {
     "id": 1442,
@@ -6653,7 +7185,8 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Low Back Lunge, 15/15"
+    "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Low Back Lunge, 15/15",
+    "reps_by_week": null
   },
   {
     "id": 1443,
@@ -6666,7 +7199,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Durability finisher. Source: Poor Man's Leg Curl"
+    "notes": "Effort: steady. Note: Durability finisher. Source: Poor Man's Leg Curl",
+    "reps_by_week": null
   },
   {
     "id": 1444,
@@ -6679,7 +7213,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: warm-up. Note: Hand release push-ups, alternating with the warm-up walking lunges"
+    "notes": "Effort: warm-up. Note: Hand release push-ups, alternating with the warm-up walking lunges",
+    "reps_by_week": null
   },
   {
     "id": 1445,
@@ -6692,7 +7227,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: increase load rapidly each round until the reps are hard but doable. Note: Heavy, low volume lower lift. Warm-up first: 3 rounds of 8 walking lunges"
+    "notes": "Effort: increase load rapidly each round until the reps are hard but doable. Note: Heavy, low volume lower lift. Warm-up first: 3 rounds of 8 walking lunges",
+    "reps_by_week": null
   },
   {
     "id": 1446,
@@ -6705,7 +7241,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: increase load each round until 5 reps would be hard but doable. Note: Superset with the row"
+    "notes": "Effort: increase load each round until 5 reps would be hard but doable. Note: Superset with the row",
+    "reps_by_week": null
   },
   {
     "id": 1447,
@@ -6718,7 +7255,8 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: increase load each round until 5 reps would be hard but doable. Note: Superset with the push press"
+    "notes": "Effort: increase load each round until 5 reps would be hard but doable. Note: Superset with the push press",
+    "reps_by_week": null
   },
   {
     "id": 1448,
@@ -6731,7 +7269,8 @@
     "rest": "none",
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Sandbag Get Up, 40/60 lb, alternate shoulders each round"
+    "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Sandbag Get Up, 40/60 lb, alternate shoulders each round",
+    "reps_by_week": null
   },
   {
     "id": 1449,
@@ -6744,6 +7283,7 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Durability finisher, glute medius. Source: Jane Fonda"
+    "notes": "Effort: steady. Note: Durability finisher, glute medius. Source: Jane Fonda",
+    "reps_by_week": null
   }
 ]

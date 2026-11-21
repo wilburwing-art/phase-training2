@@ -349,7 +349,8 @@ enum AuthoredRoutine {
         focus: WorkoutFocus,
         profile: DemographicProfile,
         blockedBuckets: Set<String> = [],
-        timeBudget: Int? = nil
+        timeBudget: Int? = nil,
+        planWeek: Int? = nil
     ) -> GeneratedWorkout? {
         let db = CoachDatabase.shared
         let all = resolvedRows(forRoutineId: routineId, profile: profile,
@@ -369,7 +370,8 @@ enum AuthoredRoutine {
 
         var exercises: [GeneratedExercise] = rows.map { rr in
             let re = rr.row
-            let reps = re.reps ?? "8-12"
+            // A row that writes its progression by week serves that week's reps.
+            let reps = re.reps(forWeek: planWeek) ?? "8-12"
             // A swapped row says so, and what the original needed, so the user
             // can see why the session differs from the authored program.
             let swap = rr.swappedFrom.map { from -> String in

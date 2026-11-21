@@ -203,6 +203,9 @@ CREATE TABLE routine_exercises (
   tempo                    TEXT,
   duration                 TEXT,
   notes                    TEXT,
+  -- JSON array of the reps text per plan week, week 1 first. NULL means the
+  -- row serves `reps` every week. Weeks past the end hold the last entry.
+  reps_by_week             TEXT,
   UNIQUE (routine_id, position)
 );
 

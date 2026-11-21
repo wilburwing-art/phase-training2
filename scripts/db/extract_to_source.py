@@ -57,6 +57,7 @@ JSON_ARRAY_COLUMNS = {
     ("sport_recovery_profiles", "muscles_loaded"),
     ("sport_recovery_profiles", "avoid_before_session"),
     ("exercise_sport_relevance", "season_emphasis"),
+    ("routine_exercises", "reps_by_week"),
 }
 
 # Sort key per table for deterministic output. For record tables: by id. For

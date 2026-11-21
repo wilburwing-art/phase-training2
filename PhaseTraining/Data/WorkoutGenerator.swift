@@ -196,7 +196,8 @@ enum WorkoutGenerator {
                     focus: WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts),
                     profile: profile,
                     blockedBuckets: recovery.blocked,
-                    timeBudget: recovery.timeBudget) {
+                    timeBudget: recovery.timeBudget,
+                    planWeek: memory.weeksInCurrentPhase ?? 1) {
                 return authored
             }
             // The authored session trains muscles that are still recovering

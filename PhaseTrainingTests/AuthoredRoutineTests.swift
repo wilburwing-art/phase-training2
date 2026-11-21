@@ -689,6 +689,26 @@ final class AuthoredRoutineTests: XCTestCase {
         XCTAssertEqual(grind.map(\.restSeconds), [0, 0])
     }
 
+    /// Routine 325's pull-up is written "2 reps in week 1, 5 reps by week 4"
+    /// and routine 311's grind "Week 1 sets 30%, Week 3 sets 40%" (11d 2.5).
+    /// The plan week picks the reps; weeks past the written ones hold the last.
+    func testRepsByWeekFollowThePlanWeek() throws {
+        let memory = TrainingMemory()
+        func reps(_ routine: Int, _ position: Int, week: Int?) throws -> String {
+            let w = try XCTUnwrap(AuthoredRoutine.workout(
+                forRoutineId: routine, memory: memory, context: .empty, focus: .fullBodyA,
+                profile: DemographicProfile.from(memory), planWeek: week))
+            return try XCTUnwrap(w.exercises.first { $0.id == "authored-\(routine)-\(position)" }).reps
+        }
+        XCTAssertEqual(try reps(325, 4, week: 1), "2")
+        XCTAssertEqual(try reps(325, 4, week: 4), "5")
+        XCTAssertEqual(try reps(325, 4, week: 9), "5")
+        XCTAssertEqual(try reps(325, 4, week: nil), "2-5")
+        XCTAssertEqual(try reps(325, 2, week: 4), "4", "a row without weeks serves its reps every week")
+        XCTAssertEqual(try reps(311, 1, week: 1), "30% of your 2-minute max")
+        XCTAssertEqual(try reps(311, 1, week: 3), "40% of your 2-minute max")
+    }
+
     func testTimeTrimNeverLeavesHalfASuperset() throws {
         let memory = TrainingMemory()
         for id in 325...327 {

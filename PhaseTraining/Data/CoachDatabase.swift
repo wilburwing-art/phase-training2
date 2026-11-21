@@ -1453,7 +1453,8 @@ final class CoachDatabase {
     func exercises(forRoutineId routineId: Int) -> [RoutineExercise] { withLock {
         guard let db else { return [] }
         let sql = """
-        SELECT re.id, re.exercise_id, e.name, re.position, re.sets, re.reps, re.rest, re.notes, re.superset_group
+        SELECT re.id, re.exercise_id, e.name, re.position, re.sets, re.reps, re.rest, re.notes, re.superset_group,
+               re.reps_by_week
         FROM routine_exercises re
         JOIN exercises e ON e.id = re.exercise_id
         WHERE re.routine_id = ?
@@ -1475,7 +1476,10 @@ final class CoachDatabase {
                 reps: text(stmt, 5),
                 rest: text(stmt, 6),
                 notes: text(stmt, 7),
-                supersetGroup: intOrNil(stmt, 8)
+                supersetGroup: intOrNil(stmt, 8),
+                repsByWeek: text(stmt, 9).flatMap {
+                    try? JSONDecoder().decode([String].self, from: Data($0.utf8))
+                }
             ))
         }
         return rows

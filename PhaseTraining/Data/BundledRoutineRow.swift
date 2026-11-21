@@ -28,10 +28,14 @@ struct RoutineExercise: Identifiable, Hashable {
     /// exercises = "do these in a round-robin." Propagated all the way down
     /// to LoggedExercise so LogScreen can render the band + reorder rest nav.
     let supersetGroup: Int?
+    /// routine_exercises.reps_by_week: the program's own reps per plan week,
+    /// week 1 first. Nil serves `reps` every week.
+    let repsByWeek: [String]?
 
     init(id: Int, exerciseId: Int, name: String, position: Int,
          sets: Int? = nil, reps: String? = nil, rest: String? = nil,
-         notes: String? = nil, supersetGroup: Int? = nil) {
+         notes: String? = nil, supersetGroup: Int? = nil,
+         repsByWeek: [String]? = nil) {
         self.id = id
         self.exerciseId = exerciseId
         self.name = name
@@ -41,6 +45,14 @@ struct RoutineExercise: Identifiable, Hashable {
         self.rest = rest
         self.notes = notes
         self.supersetGroup = supersetGroup
+        self.repsByWeek = repsByWeek
+    }
+
+    /// The reps text for a 1-indexed plan week. Weeks past the written ones
+    /// hold the last entry; no week (or no per-week list) gives `reps`.
+    func reps(forWeek week: Int?) -> String? {
+        guard let week, let list = repsByWeek, !list.isEmpty else { return reps }
+        return list[min(max(week, 1), list.count) - 1]
     }
 }
 
