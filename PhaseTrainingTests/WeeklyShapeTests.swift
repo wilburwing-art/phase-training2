@@ -63,6 +63,30 @@ final class WeeklyShapeTests: XCTestCase {
         XCTAssertEqual(kinds("bjj", .inSeason), kinds("bjj", .maintenance))
     }
 
+    // MARK: - Partial-season sports and catalog children
+
+    /// tennis had only an in-season row, so every other season fell to the
+    /// default shape with zero court days (11d 2.6).
+    func testTennisOutsideInSeasonKeepsCourtDays() {
+        XCTAssertTrue(kinds("tennis", .maintenance).contains(.sport))
+        for season in SeasonPhase.allCases {
+            XCTAssertTrue(kinds("tennis", season).contains(.sport), "tennis \(season)")
+        }
+    }
+
+    /// tennis-singles has no row; it resolves through its catalog parent.
+    func testTennisChildResolvesThroughParent() {
+        XCTAssertTrue(kinds("tennis-singles", .inSeason).contains(.sport))
+        XCTAssertEqual(kinds("tennis-singles", .inSeason), kinds("tennis", .inSeason))
+        XCTAssertEqual(kinds("tennis-clay", .offSeason), kinds("tennis", .maintenance))
+    }
+
+    func testAncestorsWalkNearestFirst() {
+        XCTAssertEqual(SportProfile.ancestors(of: "tennis-singles").prefix(2),
+                       ["tennis", "racquet-sports"])
+        XCTAssertEqual(SportProfile.ancestors(of: "underwater-basket-weaving"), [])
+    }
+
     // MARK: - Default
 
     func testNoSportGivesDefaultShapeInEverySeason() {

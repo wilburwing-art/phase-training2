@@ -107,6 +107,20 @@ struct SportProfile: Equatable {
         return nil
     }
 
+    /// Every ancestor of `slug`, nearest first, through `familyOverride` then
+    /// `sport_categories.parent_id`. `tennis-singles` gives `tennis`,
+    /// `racquet-sports`. Empty for a root or an unknown slug.
+    static func ancestors(of slug: String) -> [String] {
+        var seen: Set<String> = [slug]
+        var chain: [String] = []
+        var next = familyOverride[slug] ?? parents[slug]
+        while let current = next, seen.insert(current).inserted {
+            chain.append(current)
+            next = familyOverride[current] ?? parents[current]
+        }
+        return chain
+    }
+
     /// Owner decision, 2026-11-18 (backlog 11e #2): these follow a sport other
     /// than their catalog parent. Via ferrata trains like scrambling, and
     /// misc-outdoor, the parent of geocaching and bikejoring, has no program.

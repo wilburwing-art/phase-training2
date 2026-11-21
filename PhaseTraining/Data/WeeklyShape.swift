@@ -9,7 +9,8 @@
 // Resolution falls through in this order:
 //   1. (sport, season)        — specific + seasonal
 //   2. (sport, .maintenance)  — sport-only fallback
-//   3. defaultShape           — 3-day full body if nothing else hits
+//   3. nearest catalog ancestor, (season) then (.maintenance)
+//   4. defaultShape           — 3-day full body if nothing else hits
 
 import Foundation
 
@@ -41,6 +42,15 @@ struct WeeklyShape: Hashable {
             if alias != s.slug,
                let shape = sportSeasonShapes[ShapeKey(sport: alias, season: .maintenance)] {
                 return shape
+            }
+            // A catalog child (tennis-singles, marathon) with no row of its
+            // own takes its nearest ancestor's row, season first, before the
+            // default shape drops every sport day.
+            for ancestor in SportProfile.ancestors(of: s.slug) {
+                if let shape = sportSeasonShapes[ShapeKey(sport: ancestor, season: season)]
+                    ?? sportSeasonShapes[ShapeKey(sport: ancestor, season: .maintenance)] {
+                    return shape
+                }
             }
         }
         return defaultShape
@@ -154,6 +164,9 @@ private let sportSeasonShapes: [ShapeKey: WeeklyShape] = [
     ShapeKey(sport: "tennis", season: .inSeason): WeeklyShape(
         kinds:       [.sport, .lift, .rest, .sport, .rest, .sport, .rest],
         description: "Tennis in-season: 3 courts, 1 lift, 3 rest"),
+    ShapeKey(sport: "tennis", season: .maintenance): WeeklyShape(
+        kinds:       [.sport, .rest, .lift, .rest, .sport, .lift, .rest],
+        description: "Tennis maintenance: 2 courts, 2 lifts, 3 rest"),
     ShapeKey(sport: "pickleball", season: .maintenance): WeeklyShape(
         kinds:       [.sport, .rest, .lift, .sport, .rest, .sport, .rest],
         description: "Pickleball maintenance: 3 courts, 1 lift, 3 rest"),
