@@ -40,6 +40,20 @@ emit GeneratedExercise(sets: scheme.setsMid, reps: scheme.repsString,
 3. **Adding a `Demand`?** add a `DemandScheme.base` row or it falls to `DemandScheme.fallback`
    (3×8-12). `SeasonFidelityTest.test_check8_prescription_tracks_demand` asserts the character
    (power/contact explosive + low reps, legEndurance/pullEndurance high reps, fingerStrength a hold).
+4. **Cited protocols are exempt from the experience and age ceilings (owner decision 2026-11-18,
+   Phase 0 #9 of `docs/PLAN-gap-backlog-2026-11d.md`).** A `sport_movements` row with
+   `protocol_sets`, `protocol_reps` or `protocol_rest_seconds` serves those values as cited, at
+   every experience level and age. `prescribe` takes `m.protocolSets ?? scheme.setsMid` and
+   `m.protocolRestSeconds ?? scheme.restSeconds` after `SetScheme.adjusted`, so the beginner cap of
+   3 sets and the 60+ rule of 30 s more rest never reach them. The row is built with
+   `fixedSets: true`, which also skips the budget fit, the mesocycle deload and the coach's strategy
+   multiplier (`prescribeRefresh` skips the strategy multiplier the same way). Readiness set scaling
+   still applies, and RPE and tempo still come from the adjusted scheme, so a beginner's protocol row
+   is capped at RPE 7. Rows today: 74 no-hang finger pull (5 sets, 180 s), 75 density hang
+   (3 sets, 240 s), 77 Spanish squat hold (5 sets, 120 s). Measure with
+   `sqlite3 db/coach.db "select id, protocol_sets, protocol_rest_seconds from sport_movements where protocol_sets is not null"`.
+   Do not "fix" a beginner seeing 5 sets on 74 or 77 by capping it; reopen the owner decision
+   instead.
 
 Pairs with [[phase-training-season-engine-add-a-sport]] (the movement pool side) and
 [[phase-training-delete-primaryfocus-goal-axis]] (the goal axis this replaced).
