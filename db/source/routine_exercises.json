@@ -6559,7 +6559,7 @@
     "superset_group": null,
     "sets": 8,
     "reps": "5",
-    "rest": null,
+    "rest": "none",
     "tempo": null,
     "duration": null,
     "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Kneeling Plate Halfmoon, 25 lb"
@@ -6572,7 +6572,7 @@
     "superset_group": null,
     "sets": 8,
     "reps": "5",
-    "rest": null,
+    "rest": "none",
     "tempo": null,
     "duration": null,
     "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Keg Lift, 40/60 lb sandbag"
@@ -6637,7 +6637,7 @@
     "superset_group": null,
     "sets": 8,
     "reps": "10",
-    "rest": null,
+    "rest": "none",
     "tempo": null,
     "duration": null,
     "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Dumbbell Crawl, 25 lb"
@@ -6650,7 +6650,7 @@
     "superset_group": null,
     "sets": 8,
     "reps": "15 per side",
-    "rest": null,
+    "rest": "none",
     "tempo": null,
     "duration": null,
     "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Low Back Lunge, 15/15"
@@ -6728,7 +6728,7 @@
     "superset_group": null,
     "sets": 8,
     "reps": "5",
-    "rest": null,
+    "rest": "none",
     "tempo": null,
     "duration": null,
     "notes": "Effort: steady, not frantic; keep moving for the full 20 minutes, no rest. Note: Grind. Source: Sandbag Get Up, 40/60 lb, alternate shoulders each round"

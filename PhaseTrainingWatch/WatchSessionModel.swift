@@ -127,7 +127,7 @@ final class WatchSessionModel: NSObject, ObservableObject {
         guard let exIdx = session.exercises.firstIndex(where: { $0.id == exerciseId }) else { return }
         let ex = session.exercises[exIdx]
         let moreSetsHere = ex.sets.contains { $0.num != setNum && !$0.done }
-        guard moreSetsHere else { rest.clear(); return }
+        guard moreSetsHere, ex.rest > 0 else { rest.clear(); return }
         rest.start(exerciseId: exerciseId, setNum: setNum, duration: ex.rest)
     }
 

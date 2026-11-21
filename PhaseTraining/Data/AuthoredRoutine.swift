@@ -379,25 +379,15 @@ enum AuthoredRoutine {
             )
         }
 
-        // R3-12: a duration-based row ("1x20 min", "2x3 flights" is not one) is
-        // its own minutes, not sets x 90 s; the rest estimate at 90 s per set.
-        func seconds(_ ex: GeneratedExercise) -> Int {
-            if let m = ex.reps.range(of: #"(\d+)\s*-?\s*(\d+)?\s*min"#, options: .regularExpression) {
-                let nums = ex.reps[m].split(whereSeparator: { !$0.isNumber }).compactMap { Int($0) }
-                if let top = nums.last { return ex.sets * top * 60 }
-            }
-            return ex.sets * 90
-        }
+        let estimate = { (list: [GeneratedExercise]) in list.reduce(0) { $0 + estimatedSeconds($1) } / 60 }
         // A same-day time chip: the authored order puts the main work first,
         // so trailing rows give way until the session fits, never below the
-        // movement floor.
+        // movement floor. A superset leaves as a whole group, so trimming never
+        // serves half of one.
         if let budget = timeBudget {
-            while exercises.count > AuthoredRoutineSelector.minimumMovements,
-                  exercises.reduce(0, { $0 + seconds($1) }) / 60 > budget {
-                exercises.removeLast()
-            }
+            exercises = trimmed(exercises, toMinutes: budget, estimate: estimate)
         }
-        let estMin = max(15, exercises.reduce(0) { $0 + seconds($1) } / 60)
+        let estMin = max(15, estimate(exercises))
         let meta = db.authoredRoutineMeta(id: routineId)
         let provenance = meta?.source.map { "Authored · \($0)" } ?? "Authored program"
         var summary = "\(exercises.count) movements · ~\(estMin) min"
@@ -423,19 +413,55 @@ enum AuthoredRoutine {
         return workout
     }
 
-    /// Parse a free-form rest string ("90s", "1 min", "2:00") to seconds.
-    /// Mirrors PlanStore.parseRest so authored + custom routines resolve rest
-    /// identically.
+    /// Seconds a row takes for the time estimate. R3-12: a row whose reps lead
+    /// with minutes ("20 min", "10 min EMOM") is its own minutes; anything else
+    /// counts 90 s per set. Anchored at the start so "30-40% of your 2-minute
+    /// max" counts as sets x 90 s.
+    static func estimatedSeconds(_ ex: GeneratedExercise) -> Int {
+        let pattern = #"^\s*(\d+)(?:\s*-\s*(\d+))?\s*min"#
+        if let m = ex.reps.range(of: pattern, options: [.regularExpression, .caseInsensitive]) {
+            let nums = ex.reps[m].split(whereSeparator: { !$0.isNumber }).compactMap { Int($0) }
+            if let top = nums.last { return ex.sets * top * 60 }
+        }
+        return ex.sets * 90
+    }
+
+    /// Drop trailing units until `estimate` fits `budget` minutes. A unit is a
+    /// run of rows sharing a superset group, or one ungrouped row. A unit that
+    /// would take the session under the movement floor stays, so the result can
+    /// run over the budget.
+    static func trimmed(_ exercises: [GeneratedExercise], toMinutes budget: Int,
+                        estimate: ([GeneratedExercise]) -> Int) -> [GeneratedExercise] {
+        var out = exercises
+        while estimate(out) > budget, let last = out.last {
+            var cut = out.count - 1
+            if let group = last.supersetGroup {
+                while cut > 0, out[cut - 1].supersetGroup == group { cut -= 1 }
+            }
+            guard cut >= AuthoredRoutineSelector.minimumMovements else { break }
+            out.removeSubrange(cut...)
+        }
+        return out
+    }
+
+    /// Parse an authored rest string to seconds: "90 sec", "2 min", "2:00",
+    /// a range at its top ("2-3 min" is 180), and 0 for rows the program says
+    /// carry no timed rest ("none", "built-in", "full recovery"). Log starts
+    /// no rest timer at 0. Nil when the row has no rest or none can be read.
     static func parseRest(_ s: String?) -> Int? {
         guard let s else { return nil }
         let lower = s.lowercased().trimmingCharacters(in: .whitespaces)
+        if ["none", "built-in", "full recovery"].contains(lower) { return 0 }
         if lower.contains(":") {
             let parts = lower.split(separator: ":").compactMap { Int($0) }
             if parts.count == 2 { return parts[0] * 60 + parts[1] }
         }
-        let digits = lower.prefix(while: { $0.isNumber || $0 == "." })
-        guard let n = Double(digits) else { return nil }
-        if lower.contains("min") { return Int(n * 60) }
-        return Int(n)
+        let number = #"\d+(?:\.\d+)?"#
+        guard let m = lower.range(of: "^\(number)(?:\\s*[-\u{2013}]\\s*\(number))?",
+                                  options: .regularExpression) else { return nil }
+        guard let top = lower[m].split(whereSeparator: { $0 == "-" || $0 == "\u{2013}" || $0 == " " })
+            .last.flatMap({ Double($0) }) else { return nil }
+        if lower.contains("min") { return Int(top * 60) }
+        return Int(top)
     }
 }

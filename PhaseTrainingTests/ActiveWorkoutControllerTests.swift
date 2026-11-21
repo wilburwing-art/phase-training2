@@ -102,6 +102,14 @@ final class ActiveWorkoutControllerTests: XCTestCase {
         XCTAssertEqual(store.active, c.session)
     }
 
+    func test_zeroRestRowStartsNoRest() {
+        let (c, _) = make([exercise("Crawl", sets: 3, rest: 0)])
+        c.toggleSet(exIdx: 0, setIdx: 0)
+        XCTAssertTrue(c.session.exercises[0].sets[0].done)
+        XCTAssertNil(c.rest.startedAt, "a row written with no rest starts no timer")
+        XCTAssertNil(c.rest.duration)
+    }
+
     func test_finalSetOfExerciseGetsNoRest() {
         let (c, _) = make([exercise("Row", sets: 2), exercise("Curl", sets: 2)])
         c.toggleSet(exIdx: 0, setIdx: 0)

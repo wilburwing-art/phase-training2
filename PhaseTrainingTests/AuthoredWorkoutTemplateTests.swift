@@ -72,6 +72,8 @@ final class AuthoredWorkoutTemplateTests: XCTestCase {
         XCTAssertEqual(first(rex(rest: "2 min")).rest, 120)
         XCTAssertEqual(first(rex(rest: "45s")).rest, 45)
         XCTAssertEqual(first(rex(rest: "1.5 min")).rest, 90)
+        XCTAssertEqual(first(rex(rest: "2-3 min")).rest, 180)
+        XCTAssertEqual(first(rex(rest: "none")).rest, 0)
     }
 
     func test_supersetGroupCarriedPerExercise() {

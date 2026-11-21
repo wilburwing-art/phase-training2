@@ -78,7 +78,7 @@ extension BundledRoutineRow {
                     unit: LoggedExercise.unit(for: categories[rex.exerciseId]),
                     targetSets: rex.sets ?? 3,
                     targetReps: parseRepsLeading(rex.reps) ?? 8,
-                    rest: parseRestSeconds(rex.rest) ?? 90,
+                    rest: AuthoredRoutine.parseRest(rex.rest) ?? 90,
                     supersetGroup: rex.supersetGroup,
                     repsLabel: rex.reps
                 )
@@ -89,13 +89,5 @@ extension BundledRoutineRow {
     private func parseRepsLeading(_ s: String?) -> Int? {
         guard let s, let digits = s.prefix(while: { $0.isNumber }).description as String?, let n = Int(digits) else { return nil }
         return n
-    }
-
-    private func parseRestSeconds(_ s: String?) -> Int? {
-        guard let s = s?.lowercased() else { return nil }
-        let digits = s.prefix(while: { $0.isNumber || $0 == "." })
-        guard let n = Double(digits) else { return nil }
-        if s.contains("min") { return Int(n * 60) }
-        return Int(n)
     }
 }

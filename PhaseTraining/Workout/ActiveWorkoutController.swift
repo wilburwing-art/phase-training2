@@ -99,7 +99,8 @@ final class ActiveWorkoutController: ObservableObject {
 
     /// The rest that follows a set being marked done. Start it only when this
     /// exercise has more sets to come; the final set of an exercise gets no
-    /// rest, since moving to the next exercise is the rest.
+    /// rest, since moving to the next exercise is the rest. A row written
+    /// with no rest (0 s, "none" in the program) starts no timer either.
     ///
     /// Superset-aware: while a sibling in the group still owes this set index,
     /// skip the rest so the lifter moves to the next member. The rest fires
@@ -115,7 +116,7 @@ final class ActiveWorkoutController: ObservableObject {
             // Clear any pending rest from a prior round so the active band
             // moves cleanly to the next group member.
             rest.clear()
-        } else if !suppressAutoRest, hasMoreSets {
+        } else if !suppressAutoRest, hasMoreSets, ex.rest > 0 {
             rest.start(exIdx: exIdx, setIdx: setIdx, duration: ex.rest, now: now(),
                        cue: lockedRestEndLine())
         } else {

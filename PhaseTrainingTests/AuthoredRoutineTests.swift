@@ -660,4 +660,54 @@ final class AuthoredRoutineTests: XCTestCase {
                                                preferences: prefs), 299)
         }
     }
+
+    // MARK: - Rest values and time trimming (11d 2.1)
+
+    func testParseRestReadsNoRestWordsAsZero() {
+        XCTAssertEqual(AuthoredRoutine.parseRest("none"), 0)
+        XCTAssertEqual(AuthoredRoutine.parseRest("built-in"), 0)
+        XCTAssertEqual(AuthoredRoutine.parseRest("full recovery"), 0)
+    }
+
+    func testParseRestReadsTheTopOfARange() {
+        XCTAssertEqual(AuthoredRoutine.parseRest("2-3 min"), 180)
+        XCTAssertEqual(AuthoredRoutine.parseRest("2 min"), 120)
+        XCTAssertEqual(AuthoredRoutine.parseRest("90 sec"), 90)
+        XCTAssertEqual(AuthoredRoutine.parseRest("2:00"), 120)
+        XCTAssertNil(AuthoredRoutine.parseRest(nil))
+    }
+
+    func testNoRestRowsServeZeroRest() throws {
+        let memory = TrainingMemory()
+        let w = try XCTUnwrap(AuthoredRoutine.workout(
+            forRoutineId: 325, memory: memory, context: .empty, focus: .fullBodyA,
+            profile: DemographicProfile.from(memory)))
+        let grind = w.exercises.filter { $0.id == "authored-325-5" || $0.id == "authored-325-6" }
+        XCTAssertEqual(grind.count, 2)
+        XCTAssertEqual(grind.map(\.restSeconds), [0, 0])
+    }
+
+    func testTimeTrimNeverLeavesHalfASuperset() throws {
+        let memory = TrainingMemory()
+        for id in 325...327 {
+            let w = try XCTUnwrap(AuthoredRoutine.workout(
+                forRoutineId: id, memory: memory, context: .empty, focus: .fullBodyA,
+                profile: DemographicProfile.from(memory), timeBudget: 30), "routine \(id)")
+            let groups = Dictionary(grouping: w.exercises.compactMap(\.supersetGroup), by: { $0 })
+            for (g, members) in groups {
+                XCTAssertGreaterThan(members.count, 1, "routine \(id) serves group \(g) with one member")
+            }
+            XCTAssertGreaterThanOrEqual(w.exercises.count, AuthoredRoutineSelector.minimumMovements)
+        }
+    }
+
+    func testPercentOfAMinuteMaxCountsAsSetsTimesNinety() throws {
+        let memory = TrainingMemory()
+        let w = try XCTUnwrap(AuthoredRoutine.workout(
+            forRoutineId: 311, memory: memory, context: .empty, focus: .fullBodyA,
+            profile: DemographicProfile.from(memory)))
+        XCTAssertTrue(w.exercises.contains { $0.reps.contains("2-minute max") })
+        let expected = max(15, w.exercises.reduce(0) { $0 + $1.sets * 90 } / 60)
+        XCTAssertEqual(w.estimatedMinutes, expected)
+    }
 }
