@@ -84,11 +84,12 @@ enum AuthoredRoutineSelector {
     /// and a routine that thins below the floor is skipped for the next one.
     private static func viable(_ ids: [Int], excluding excluded: Set<Int>,
                                allowed: Set<String>,
-                               preferences: RoutinePreferences) -> [Int] {
+                               preferences: RoutinePreferences,
+                               experience: ExperienceLevel?) -> [Int] {
         guard !excluded.isEmpty || !allowed.isEmpty || !preferences.isEmpty else { return ids }
         return ids.filter { id in
             AuthoredRoutine.resolvedRows(forRoutineId: id, excluded: excluded, allowed: allowed,
-                                         preferences: preferences)
+                                         preferences: preferences, experience: experience)
                 .count >= minimumMovements
         }
     }
@@ -105,18 +106,29 @@ enum AuthoredRoutineSelector {
     /// worse than a hard one there.
     private static func routines(_ ids: [Int], for experience: ExperienceLevel?,
                                  sportSlug: String) -> [Int] {
-        guard let experience, !ids.isEmpty else { return ids }
-        let rank: [String: Int] = ["beginner": 0, "intermediate": 1, "advanced": 2, "elite": 3]
-        let ceiling: Int
-        switch experience {
-        case .beginner: ceiling = 0
-        case .intermediate: ceiling = 1
-        case .advanced: return ids
-        }
+        guard !ids.isEmpty, let ceiling = difficultyCeiling(experience) else { return ids }
         let difficulty = CoachDatabase.shared.routineDifficulty(forIds: ids)
-        let fit = ids.filter { (rank[difficulty[$0] ?? "intermediate"] ?? 1) <= ceiling }
+        let fit = ids.filter { fits(difficulty[$0], under: ceiling) }
         if !fit.isEmpty { return fit }
         return SportSeasonGenerator.supports(sportSlug) ? [] : ids
+    }
+
+    private static let difficultyRank: [String: Int] =
+        ["beginner": 0, "intermediate": 1, "advanced": 2, "elite": 3]
+
+    /// Highest coach.db difficulty rank this athlete is served, or nil for no
+    /// ceiling (advanced, or experience unknown).
+    static func difficultyCeiling(_ experience: ExperienceLevel?) -> Int? {
+        switch experience {
+        case .beginner: return 0
+        case .intermediate: return 1
+        case .advanced, nil: return nil
+        }
+    }
+
+    /// A missing difficulty ranks as intermediate.
+    static func fits(_ difficulty: String?, under ceiling: Int) -> Bool {
+        (difficultyRank[difficulty ?? "intermediate"] ?? 1) <= ceiling
     }
 
     static func select(sportSlug: String, phase: SeasonPhase, sessionIndex: Int,
@@ -130,7 +142,7 @@ enum AuthoredRoutineSelector {
                                                         phaseLabels: phaseLabels(for: phase)),
                                   for: experience, sportSlug: sportSlug),
                          excluding: excludedExerciseIds, allowed: allowedEquipmentSlugs,
-                         preferences: preferences)
+                         preferences: preferences, experience: experience)
         if ids.isEmpty {
             // Phase gap. A season-engine-supported sport (climbing pilot) falls
             // THROUGH to the engine. An unsupported authored sport has no engine
@@ -140,7 +152,7 @@ enum AuthoredRoutineSelector {
             ids = viable(routines(db.authoredRoutineIds(sportSlug: sportSlug, phaseLabels: allPhaseLabels),
                                   for: experience, sportSlug: sportSlug),
                          excluding: excludedExerciseIds, allowed: allowedEquipmentSlugs,
-                         preferences: preferences)
+                         preferences: preferences, experience: experience)
             if ids.isEmpty, SportCatalog.outdoorAuthoredSlugs.contains(sportSlug) {
                 // Last resort for a real outdoor sport with no content of its
                 // own: the universal cross-sport base (Easy Strength). Gated on
@@ -159,7 +171,7 @@ enum AuthoredRoutineSelector {
                 // and falling through is the better answer.
                 ids = viable(db.authoredRoutineIds(sportSlug: genericBaseSlug, phaseLabels: allPhaseLabels),
                              excluding: excludedExerciseIds, allowed: allowedEquipmentSlugs,
-                         preferences: preferences)
+                         preferences: preferences, experience: experience)
             }
         }
         guard !ids.isEmpty else { return nil }
@@ -263,11 +275,15 @@ enum AuthoredRoutine {
     /// or one their injuries exclude; with no substitute the row is dropped.
     /// 103 of the 113 authored routines carry at least one barbell or dumbbell
     /// movement, so dropping alone would gut the library for a bodyweight
-    /// user (R2-05). The selector's floor and `workout` both read this so the
+    /// user (R2-05). A substitute also stays at or below the athlete's
+    /// difficulty ceiling, the same one the selector applies to whole
+    /// routines, so a beginner's bodyweight swap is never a pistol squat.
+    /// The selector's floor and `workout` both read this so the
     /// two never disagree about what a routine holds for this user.
     static func resolvedRows(forRoutineId routineId: Int,
                              excluded: Set<Int>, allowed: Set<String>,
-                             preferences: RoutinePreferences = .none) -> [ResolvedRow] {
+                             preferences: RoutinePreferences = .none,
+                             experience: ExperienceLevel? = nil) -> [ResolvedRow] {
         let db = CoachDatabase.shared
         let rows = db.exercises(forRoutineId: routineId)
             .filter { !excluded.contains($0.exerciseId) }
@@ -281,6 +297,10 @@ enum AuthoredRoutine {
             : db.requiredEquipmentSlugs(forExerciseIds: Set(rows.map(\.exerciseId)))
         func usable(_ need: Set<String>) -> Bool {
             allowed.isEmpty || need.isEmpty || need.isSubset(of: allowed)
+        }
+        let ceiling = AuthoredRoutineSelector.difficultyCeiling(experience)
+        func withinCeiling(_ difficulty: String?) -> Bool {
+            ceiling.map { AuthoredRoutineSelector.fits(difficulty, under: $0) } ?? true
         }
         var taken = Set(rows.map(\.exerciseId))
         var names: [String: String] = [:]
@@ -296,7 +316,8 @@ enum AuthoredRoutine {
             let pick = subs
                 .filter { !excluded.contains($0.id) && !taken.contains($0.id)
                           && usable(subReqs[$0.id] ?? [])
-                          && !preferences.rejects($0.exercise.name) }
+                          && !preferences.rejects($0.exercise.name)
+                          && withinCeiling($0.exercise.difficulty) }
                 .min { a, b in
                     let ra = a.contexts.contains(where: equipmentContexts.contains) ? 0 : 1
                     let rb = b.contexts.contains(where: equipmentContexts.contains) ? 0 : 1
@@ -314,9 +335,11 @@ enum AuthoredRoutine {
     }
 
     static func resolvedRows(forRoutineId routineId: Int, profile: DemographicProfile,
-                             preferences: RoutinePreferences = .none) -> [ResolvedRow] {
+                             preferences: RoutinePreferences = .none,
+                             experience: ExperienceLevel? = nil) -> [ResolvedRow] {
         resolvedRows(forRoutineId: routineId, excluded: profile.excludedExerciseIds,
-                     allowed: profile.allowedEquipmentSlugs, preferences: preferences)
+                     allowed: profile.allowedEquipmentSlugs, preferences: preferences,
+                     experience: experience)
     }
 
     static func workout(
@@ -330,7 +353,8 @@ enum AuthoredRoutine {
     ) -> GeneratedWorkout? {
         let db = CoachDatabase.shared
         let all = resolvedRows(forRoutineId: routineId, profile: profile,
-                               preferences: RoutinePreferences.from(memory))
+                               preferences: RoutinePreferences.from(memory),
+                               experience: memory.experience)
         guard !all.isEmpty else { return nil }
         // Rule one: drop rows whose prime mover is still recovering. Under
         // three rows left is not the authored session any more, so the caller

@@ -572,9 +572,11 @@ final class AuthoredRoutineTests: XCTestCase {
         for phase in SeasonPhase.allCases {
             guard let id = AuthoredRoutineSelector.select(
                 sportSlug: "mountain-biking", phase: phase, sessionIndex: 0,
+                experience: memory.experience,
                 excludedExerciseIds: profile.excludedExerciseIds,
                 allowedEquipmentSlugs: profile.allowedEquipmentSlugs) else { continue }
-            let resolved = AuthoredRoutine.resolvedRows(forRoutineId: id, profile: profile)
+            let resolved = AuthoredRoutine.resolvedRows(forRoutineId: id, profile: profile,
+                                                        experience: memory.experience)
             XCTAssertGreaterThanOrEqual(resolved.count, AuthoredRoutineSelector.minimumMovements)
             let built = AuthoredRoutine.workout(
                 forRoutineId: id, memory: memory, context: .empty,
@@ -709,5 +711,66 @@ final class AuthoredRoutineTests: XCTestCase {
         XCTAssertTrue(w.exercises.contains { $0.reps.contains("2-minute max") })
         let expected = max(15, w.exercises.reduce(0) { $0 + $1.sets * 90 } / 60)
         XCTAssertEqual(w.estimatedMinutes, expected)
+    }
+
+    /// Every routine served to a beginner, resolved on restricted equipment
+    /// with and without an injury, swaps only to substitutes at or below
+    /// beginner (11d 2.3). The unceiled pass is the measurement: it must find
+    /// above-beginner swaps, or the assertion below could never fail.
+    func testBeginnerSubstitutesStayAtOrBelowBeginner() {
+        let db = CoachDatabase.shared
+        let slugs = Set(Sport.catalog.map(\.slug)).sorted()
+        var unceiledAbove = 0
+        var swaps = 0
+        var served = Set<Int>()
+        for equipment in [[Equipment.bodyweight], [.dumbbells], [.bands], [.kettlebell],
+                          [.pullUpBar, .bench]] {
+            for injuries in [[], [UserInjury(slug: "lumbar-disc-herniation")]] {
+                var memory = TrainingMemory()
+                memory.experience = .beginner
+                memory.equipment = equipment
+                memory.userInjuries = injuries
+                let profile = DemographicProfile.from(memory)
+                // What the selector serves a beginner, before equipment: the
+                // routine-level ceiling, which an authored-only sport with no
+                // beginner routine skips.
+                var beginnerIds = Set<Int>()
+                for slug in slugs {
+                    for phase in SeasonPhase.allCases {
+                        for slot in 0..<4 {
+                            if let id = AuthoredRoutineSelector.select(
+                                sportSlug: slug, phase: phase, sessionIndex: slot,
+                                experience: .beginner) { beginnerIds.insert(id) }
+                        }
+                    }
+                }
+                served.formUnion(beginnerIds)
+                for id in beginnerIds.sorted() {
+                    let unceiled = AuthoredRoutine.resolvedRows(forRoutineId: id, profile: profile)
+                    let unceiledDiff = db.exerciseDifficulty(
+                        forIds: Set(unceiled.filter { $0.swappedFrom != nil }.map(\.exerciseId)))
+                    unceiledAbove += unceiled.filter {
+                        $0.swappedFrom != nil && unceiledDiff[$0.exerciseId] != "beginner"
+                    }.count
+
+                    let rows = AuthoredRoutine.resolvedRows(forRoutineId: id, profile: profile,
+                                                            experience: .beginner)
+                    let swapped = rows.filter { $0.swappedFrom != nil }
+                    swaps += swapped.count
+                    let diff = db.exerciseDifficulty(forIds: Set(swapped.map(\.exerciseId)))
+                    for row in swapped {
+                        XCTAssertEqual(diff[row.exerciseId], "beginner",
+                                       "routine \(id) \(equipment.map(\.rawValue)) injuries=\(injuries.count): "
+                                       + "\(row.swappedFrom ?? "") swapped to \(row.name) (\(diff[row.exerciseId] ?? "nil"))")
+                    }
+                    // Nothing outside the swap changes: unswapped rows match the unceiled pass.
+                    XCTAssertEqual(rows.filter { $0.swappedFrom == nil }.map(\.exerciseId),
+                                   unceiled.filter { $0.swappedFrom == nil }.map(\.exerciseId))
+                }
+            }
+        }
+        print("11d-2.3 measure: beginner-served routines \(served.count), above-beginner swaps without ceiling \(unceiledAbove), beginner swaps with ceiling \(swaps)")
+        XCTAssertGreaterThan(unceiledAbove, 0, "fixture is inert: no above-beginner substitute without the ceiling")
+        XCTAssertGreaterThan(swaps, 0, "fixture is inert: no substitution fired under the ceiling")
     }
 }
