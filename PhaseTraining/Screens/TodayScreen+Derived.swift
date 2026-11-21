@@ -245,15 +245,6 @@ extension TodayScreen {
         return Int(digits)
     }
 
-    func parseRestSeconds(_ s: String?) -> Int? {
-        guard let s else { return nil }
-        let lower = s.lowercased()
-        let digits = lower.prefix(while: { $0.isNumber })
-        guard let n = Int(digits) else { return nil }
-        if lower.contains("min") { return n * 60 }
-        return n
-    }
-
     // MARK: - Helpers
 
     private func computeStats(_ session: SavedSession) -> (doneSets: Int, avgRpe: String) {

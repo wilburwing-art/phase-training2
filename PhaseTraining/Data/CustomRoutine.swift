@@ -92,7 +92,7 @@ extension CustomRoutine {
                     unit: LoggedExercise.unit(for: categories[cex.exerciseId]),
                     targetSets: cex.sets ?? 3,
                     targetReps: Self.parseRepsLeading(cex.reps) ?? 8,
-                    rest: Self.parseRestSeconds(cex.rest) ?? 90,
+                    rest: AuthoredRoutine.parseRest(cex.rest) ?? 90,
                     supersetGroup: cex.supersetGroup
                 )
             }
@@ -102,13 +102,5 @@ extension CustomRoutine {
     private static func parseRepsLeading(_ s: String?) -> Int? {
         guard let s, let digits = s.prefix(while: { $0.isNumber }).description as String?, let n = Int(digits) else { return nil }
         return n
-    }
-
-    private static func parseRestSeconds(_ s: String?) -> Int? {
-        guard let s = s?.lowercased() else { return nil }
-        let digits = s.prefix(while: { $0.isNumber || $0 == "." })
-        guard let n = Double(digits) else { return nil }
-        if s.contains("min") { return Int(n * 60) }
-        return Int(n)
     }
 }

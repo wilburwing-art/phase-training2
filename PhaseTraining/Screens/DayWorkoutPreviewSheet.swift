@@ -448,7 +448,7 @@ struct DayWorkoutPreviewSheet: View {
             unit: "lbs",
             targetSets: picked.defaultSets ?? 3,
             targetReps: Self.parseRepsLeading(picked.defaultReps) ?? 8,
-            rest: Self.parseRestSeconds(picked.defaultRest) ?? 90
+            rest: AuthoredRoutine.parseRest(picked.defaultRest) ?? 90
         )
         template = WorkoutTemplate(
             id: tmpl.id,
@@ -496,7 +496,7 @@ struct DayWorkoutPreviewSheet: View {
             unit: old.unit,
             targetSets: picked.defaultSets ?? old.targetSets,
             targetReps: Self.parseRepsLeading(picked.defaultReps) ?? old.targetReps,
-            rest: Self.parseRestSeconds(picked.defaultRest) ?? old.rest,
+            rest: AuthoredRoutine.parseRest(picked.defaultRest) ?? old.rest,
             supersetGroup: old.supersetGroup
         )
         template = WorkoutTemplate(
@@ -548,13 +548,5 @@ struct DayWorkoutPreviewSheet: View {
         guard let s else { return nil }
         let digits = s.prefix(while: { $0.isNumber })
         return Int(digits)
-    }
-
-    private static func parseRestSeconds(_ s: String?) -> Int? {
-        guard let s = s?.lowercased() else { return nil }
-        let digits = s.prefix(while: { $0.isNumber || $0 == "." })
-        guard let n = Double(digits) else { return nil }
-        if s.contains("min") { return Int(n * 60) }
-        return Int(n)
     }
 }

@@ -679,6 +679,20 @@ final class AuthoredRoutineTests: XCTestCase {
         XCTAssertNil(AuthoredRoutine.parseRest(nil))
     }
 
+    /// Catalog `exercises.default_rest` forms that the swap-in and custom
+    /// workout paths read through the same parser (11d 2.7).
+    func testParseRestReadsCatalogDefaultRestForms() {
+        XCTAssertEqual(AuthoredRoutine.parseRest("60-90s"), 90)
+        XCTAssertEqual(AuthoredRoutine.parseRest("45-60s"), 60)
+        XCTAssertEqual(AuthoredRoutine.parseRest("90-180s"), 180)
+        XCTAssertEqual(AuthoredRoutine.parseRest("3-5 min"), 300)
+        XCTAssertEqual(AuthoredRoutine.parseRest("60 sec"), 60)
+        XCTAssertEqual(AuthoredRoutine.parseRest("45s"), 45)
+        XCTAssertEqual(AuthoredRoutine.parseRest("2 min between rounds"), 120)
+        XCTAssertEqual(AuthoredRoutine.parseRest("90 sec seated"), 90)
+        XCTAssertNil(AuthoredRoutine.parseRest("equal rest"))
+    }
+
     func testNoRestRowsServeZeroRest() throws {
         let memory = TrainingMemory()
         let w = try XCTUnwrap(AuthoredRoutine.workout(

@@ -253,7 +253,7 @@ extension TodayScreen {
             unit: LoggedExercise.unit(for: category),
             targetSets: picked.defaultSets ?? old.targetSets,
             targetReps: parseRepsLeading(picked.defaultReps) ?? old.targetReps,
-            rest: parseRestSeconds(picked.defaultRest) ?? old.rest
+            rest: AuthoredRoutine.parseRest(picked.defaultRest) ?? old.rest
         )
         editableTemplate = WorkoutTemplate(id: tmpl.id, name: tmpl.name, category: tmpl.category, exercises: newExercises)
         didModify = true
@@ -272,7 +272,7 @@ extension TodayScreen {
             unit: "lbs",
             targetSets: picked.defaultSets ?? 3,
             targetReps: parseRepsLeading(picked.defaultReps) ?? 8,
-            rest: parseRestSeconds(picked.defaultRest) ?? 90
+            rest: AuthoredRoutine.parseRest(picked.defaultRest) ?? 90
         )
         editableTemplate = WorkoutTemplate(id: tmpl.id, name: tmpl.name, category: tmpl.category, exercises: tmpl.exercises + [newEx])
         didModify = true

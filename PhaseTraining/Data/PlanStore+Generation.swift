@@ -188,7 +188,7 @@ extension PlanStore {
                 isCompound: false,
                 sets: ex.sets ?? 3,
                 reps: ex.reps ?? "8-12",
-                restSeconds: parseRest(ex.rest) ?? 90,
+                restSeconds: AuthoredRoutine.parseRest(ex.rest) ?? 90,
                 notes: ex.notes,
                 rpe: nil,
                 tempo: nil,
@@ -205,20 +205,6 @@ extension PlanStore {
             provenance: "From your saved workouts",
             refinedByLLMAt: nil
         )
-    }
-
-    /// Parse a free-form rest string ("90s", "1 min", "2:00") to seconds.
-    private func parseRest(_ s: String?) -> Int? {
-        guard let s else { return nil }
-        let lower = s.lowercased().trimmingCharacters(in: .whitespaces)
-        if lower.contains(":") {
-            let parts = lower.split(separator: ":").compactMap { Int($0) }
-            if parts.count == 2 { return parts[0] * 60 + parts[1] }
-        }
-        let digits = lower.prefix(while: { $0.isNumber || $0 == "." })
-        guard let n = Double(digits) else { return nil }
-        if lower.contains("min") { return Int(n * 60) }
-        return Int(n)
     }
 
     /// Derive the runtime-history context for the planner. Returns `.empty`
