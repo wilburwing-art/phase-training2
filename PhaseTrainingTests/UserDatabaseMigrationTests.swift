@@ -3,7 +3,8 @@
 //
 // Two paths matter:
 //  1. Fresh install: every migration runs; v10 replaces is_warmup with
-//     set_type; v11 adds user_exercises.
+//     set_type; v11 adds user_exercises; v12 adds
+//     user_routine_exercises.superset_group.
 //  2. Pre-versioning upgrade: a legacy user.db (user_version = 0, session_sets
 //     WITHOUT is_warmup) gets the column via the explicit existence check,
 //     then v1 no-ops over the live schema and v10 backfills set_type.
@@ -143,6 +144,7 @@ final class UserDatabaseMigrationTests: XCTestCase {
             let db = try XCTUnwrap(v.db)
             XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE session_sets DROP COLUMN set_type", nil, nil, nil), SQLITE_OK)
             XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE session_sets ADD COLUMN is_warmup INTEGER NOT NULL DEFAULT 0", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE user_routine_exercises DROP COLUMN superset_group", nil, nil, nil), SQLITE_OK)
             XCTAssertEqual(sqlite3_exec(db, "PRAGMA user_version = 9", nil, nil, nil), SQLITE_OK)
             XCTAssertEqual(sqlite3_exec(db, """
                 INSERT INTO sessions(start_time, template_id, name, category, end_time, duration)
@@ -181,6 +183,7 @@ final class UserDatabaseMigrationTests: XCTestCase {
             let v = UserDatabase(path: path)
             let db = try XCTUnwrap(v.db)
             XCTAssertEqual(sqlite3_exec(db, "DROP TABLE user_exercises", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE user_routine_exercises DROP COLUMN superset_group", nil, nil, nil), SQLITE_OK)
             XCTAssertEqual(sqlite3_exec(db, "PRAGMA user_version = 10", nil, nil, nil), SQLITE_OK)
             XCTAssertEqual(sqlite3_exec(db, """
                 INSERT INTO sessions(start_time, template_id, name, category, end_time, duration)
@@ -263,5 +266,38 @@ final class UserDatabaseMigrationTests: XCTestCase {
         db.saveSession(session([exercise("Squat", sets: [set])]))
         XCTAssertEqual(rawSetCount(), 1,
                        "re-saving smaller must cascade away the old sets, not orphan them")
+    }
+
+    // MARK: - v12 saved-workout superset groups
+
+    /// 11c 3.9: a v11 file gains user_routine_exercises.superset_group, keeps
+    /// its saved-workout rows (group nil) and stores a group on the next save.
+    func test_v11File_upgradesToV12_andKeepsRoutineRows() throws {
+        do {
+            let v = UserDatabase(path: path)
+            let db = try XCTUnwrap(v.db)
+            XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE user_routine_exercises DROP COLUMN superset_group", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(sqlite3_exec(db, "PRAGMA user_version = 11", nil, nil, nil), SQLITE_OK)
+            XCTAssertEqual(sqlite3_exec(db, """
+                INSERT INTO user_routines(id, name, focus, created_at, updated_at)
+                VALUES ('r-old', 'Old Pair', NULL, 1780000000, 1780000000);
+                INSERT INTO user_routine_exercises(id, routine_id, exercise_id, position, sets, reps, rest, notes, name)
+                VALUES ('e0', 'r-old', 101, 0, 3, '8', NULL, NULL, 'Row');
+                """, nil, nil, nil), SQLITE_OK, "v11 fixture insert failed; check the column lists")
+        }
+        XCTAssertFalse(columns(of: "user_routine_exercises").contains("superset_group"),
+                       "fixture: v11 has no superset_group")
+
+        let reopened = UserDatabase(path: path)
+        XCTAssertNil(reopened.unavailableReason)
+        XCTAssertEqual(userVersion(), UserDatabase.latestSchemaVersion)
+        XCTAssertTrue(columns(of: "user_routine_exercises").contains("superset_group"))
+        var routine = try XCTUnwrap(reopened.routine(id: "r-old"))
+        XCTAssertEqual(routine.exercises.map(\.name), ["Row"])
+        XCTAssertNil(routine.exercises[0].supersetGroup)
+
+        routine.exercises[0].supersetGroup = 1
+        reopened.save(routine)
+        XCTAssertEqual(reopened.routine(id: "r-old")?.exercises.first?.supersetGroup, 1)
     }
 }

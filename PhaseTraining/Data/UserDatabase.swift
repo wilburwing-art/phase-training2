@@ -295,6 +295,13 @@ final class UserDatabase {
               created_at     REAL NOT NULL
             )
             """
+        ]),
+        // v12 — superset grouping on saved-workout rows. The editor and the
+        // bundled-routine copy set `CustomRoutineExercise.supersetGroup`, but
+        // the table had no column, so every save turned groups into straight
+        // sets. Nullable: every earlier row reads nil.
+        (12, [
+            "ALTER TABLE user_routine_exercises ADD COLUMN superset_group INTEGER"
         ])
     ]
 

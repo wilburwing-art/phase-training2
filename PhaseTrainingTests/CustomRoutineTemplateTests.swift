@@ -455,4 +455,24 @@ extension CustomRoutineTemplateTests {
         XCTAssertEqual(reloaded.getPreviousSession(templateId: templateId)?.exercises.first?.name,
                        "Test Move")
     }
+
+    // MARK: - Persistence
+
+    /// 11c 3.9: a saved workout with two grouped rows reloads from user.db
+    /// with both groups intact, and an ungrouped row stays nil.
+    func test_savedRoutine_supersetGroupsSurviveReload() throws {
+        let db = UserDatabase(path: ":memory:")
+        db.save(makeRoutine(id: "r-ss", exercises: [
+            makeExercise(id: "a", position: 0, supersetGroup: 1),
+            makeExercise(id: "b", position: 1, supersetGroup: 1),
+            makeExercise(id: "c", position: 2, supersetGroup: nil),
+            makeExercise(id: "d", position: 3, supersetGroup: 2),
+            makeExercise(id: "e", position: 4, supersetGroup: 2),
+        ]))
+        let got = try XCTUnwrap(db.routine(id: "r-ss"))
+        XCTAssertEqual(got.exercises.map(\.supersetGroup), [1, 1, nil, 2, 2])
+        XCTAssertEqual(db.listRoutines().first?.exercises.map(\.supersetGroup), [1, 1, nil, 2, 2])
+        let template = got.toWorkoutTemplate()
+        XCTAssertEqual(template.exercises.map(\.supersetGroup), [1, 1, nil, 2, 2])
+    }
 }

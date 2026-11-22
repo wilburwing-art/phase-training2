@@ -67,7 +67,7 @@ extension UserDatabase {
     private func loadExercisesLocked(routineId: String) -> [CustomRoutineExercise] {
         guard let db else { return [] }
         let sql = """
-        SELECT id, exercise_id, name, position, sets, reps, rest, notes
+        SELECT id, exercise_id, name, position, sets, reps, rest, notes, superset_group
         FROM user_routine_exercises
         WHERE routine_id = ?
         ORDER BY position ASC
@@ -87,7 +87,8 @@ extension UserDatabase {
                 sets: intOrNil(stmt, 4),
                 reps: text(stmt, 5),
                 rest: text(stmt, 6),
-                notes: text(stmt, 7)
+                notes: text(stmt, 7),
+                supersetGroup: intOrNil(stmt, 8)
             ))
         }
         return out
@@ -129,8 +130,8 @@ extension UserDatabase {
         sqlite3_finalize(delStmt)
 
         let insertSQL = """
-        INSERT INTO user_routine_exercises(id, routine_id, exercise_id, position, sets, reps, rest, notes, name)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO user_routine_exercises(id, routine_id, exercise_id, position, sets, reps, rest, notes, name, superset_group)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         for ex in routine.exercises {
             var iStmt: OpaquePointer?
@@ -144,6 +145,7 @@ extension UserDatabase {
             if let rest = ex.rest { sqlite3_bind_text(iStmt, 7, rest, -1, SQLITE_TRANSIENT_USER) } else { sqlite3_bind_null(iStmt, 7) }
             if let n = ex.notes { sqlite3_bind_text(iStmt, 8, n, -1, SQLITE_TRANSIENT_USER) } else { sqlite3_bind_null(iStmt, 8) }
             sqlite3_bind_text(iStmt, 9, ex.name, -1, SQLITE_TRANSIENT_USER)
+            if let g = ex.supersetGroup { sqlite3_bind_int64(iStmt, 10, Int64(g)) } else { sqlite3_bind_null(iStmt, 10) }
             sqlite3_step(iStmt)
             sqlite3_finalize(iStmt)
         }

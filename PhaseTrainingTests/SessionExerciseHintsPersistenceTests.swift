@@ -66,6 +66,8 @@ final class SessionExerciseHintsPersistenceTests: XCTestCase {
             // And v10's set_type, which replaced is_warmup.
             XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE session_sets DROP COLUMN set_type", nil, nil, nil), SQLITE_OK)
             XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE session_sets ADD COLUMN is_warmup INTEGER NOT NULL DEFAULT 0", nil, nil, nil), SQLITE_OK)
+            // And v12's saved-workout superset groups.
+            XCTAssertEqual(sqlite3_exec(db, "ALTER TABLE user_routine_exercises DROP COLUMN superset_group", nil, nil, nil), SQLITE_OK)
             XCTAssertEqual(sqlite3_exec(db, "PRAGMA user_version = 6", nil, nil, nil), SQLITE_OK)
             // A row written by a v6 build: no hint columns exist yet.
             XCTAssertEqual(sqlite3_exec(db, """

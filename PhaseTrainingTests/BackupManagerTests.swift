@@ -58,6 +58,28 @@ final class BackupManagerTests: XCTestCase {
         XCTAssertEqual(got.exercises[1].notes, "slow eccentric")
     }
 
+    /// 11c 3.9: superset groups on saved-workout rows survive snapshot,
+    /// encode, decode and restore.
+    func test_customRoutineSupersetGroups_roundTripThroughBackup() throws {
+        let originalDB = UserDatabase(path: ":memory:")
+        let restoredDB = UserDatabase(path: ":memory:")
+        originalDB.save(CustomRoutine(id: "r-ss", name: "Pair Day", exercises: [
+            CustomRoutineExercise(id: "e0", exerciseId: 101, name: "Row", position: 0,
+                                  sets: 3, reps: "8", rest: nil, notes: nil, supersetGroup: 1),
+            CustomRoutineExercise(id: "e1", exerciseId: 202, name: "Press", position: 1,
+                                  sets: 3, reps: "8", rest: "90", notes: nil, supersetGroup: 1),
+            CustomRoutineExercise(id: "e2", exerciseId: 303, name: "Plank", position: 2,
+                                  sets: 2, reps: "30s", rest: nil, notes: nil, supersetGroup: nil),
+        ], createdAt: Date(timeIntervalSince1970: 1_780_000_000)))
+
+        let envelope = BackupManager.snapshot(defaults: freshDefaults("original"), userDB: originalDB)
+        let decoded = try BackupManager.decode(try BackupManager.encode(envelope))
+        try BackupManager.restore(decoded, into: freshDefaults("restored"), userDB: restoredDB)
+
+        let got = try XCTUnwrap(restoredDB.routine(id: "r-ss"))
+        XCTAssertEqual(got.exercises.map(\.supersetGroup), [1, 1, nil])
+    }
+
     func test_fullDataRoundTrip_preservesEverything() throws {
         let original = freshDefaults("original")
         // Customs + saved sessions live in user.db. Each world (original vs.
