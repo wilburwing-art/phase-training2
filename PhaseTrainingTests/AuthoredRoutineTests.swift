@@ -920,6 +920,42 @@ final class AuthoredRoutineTests: XCTestCase {
         }
     }
 
+    /// 11c 3.10. A coach-set length (`GeneratorStrategy.durationMinutes`)
+    /// steers the authored pick the way the declared length does: a 60-minute
+    /// user asking the coach for 15 minutes gets the session a 15-minute user
+    /// gets, and at least one slot changes from the 60-minute pick.
+    func testCoachDurationSteersTheAuthoredPick() throws {
+        let (ids, _) = cyclingMaintenancePool()
+        try XCTSkipIf(ids.count < 2, "fixture: cycling in-season pool has \(ids.count) routine")
+        func cyclist(minutes: Int) -> TrainingMemory {
+            var m = TrainingMemory()
+            m.primarySport = Sport.resolve(slug: "cycling")
+            m.defaultSeason = .inSeason
+            if let s = m.primarySport { m.seasonsBySport = [s: .inSeason] }
+            m.equipment = [.fullGym]
+            m.sessionMinutes = minutes
+            m.liftDaysPerWeek = 3
+            return m
+        }
+        let long = cyclist(minutes: 60), short = cyclist(minutes: 15)
+        var asked = GeneratorStrategy.auto
+        asked.durationMinutes = 15
+        var changed = 0
+        for slot in 0..<3 {
+            func build(_ m: TrainingMemory, _ s: GeneratorStrategy) -> GeneratedWorkout {
+                WorkoutGenerator.generateLift(liftIndex: slot, totalLifts: 3, memory: m,
+                                              profile: DemographicProfile.from(m),
+                                              hashSeed: "11c-3.10-\(slot)", strategy: s)
+            }
+            let viaCoach = build(long, asked)
+            let declared = build(short, .auto)
+            XCTAssertEqual(viaCoach.title, declared.title, "slot \(slot)")
+            XCTAssertEqual(viaCoach.exercises.map(\.exerciseId), declared.exercises.map(\.exerciseId), "slot \(slot)")
+            if viaCoach.title != build(long, .auto).title { changed += 1 }
+        }
+        XCTAssertGreaterThan(changed, 0, "a 15-minute coach request changed no slot from the 60-minute pick")
+    }
+
     func testSelectWithoutBudgetRotatesOverEveryCandidate() throws {
         let (ids, _) = cyclingMaintenancePool()
         try XCTSkipIf(ids.isEmpty, "fixture: no cycling in-season routines")

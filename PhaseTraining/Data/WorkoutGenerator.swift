@@ -58,6 +58,15 @@ enum WorkoutGenerator {
         date: Date? = nil,
         balancePressing: Bool = true
     ) -> GeneratedWorkout {
+        // A coach-set length (build_workout, a coach refinement, a busy week
+        // tone) stands in for the declared one for this session, so the
+        // authored ranking and the season engine both fit to it. A same-day
+        // check-in time chip still wins (`recovery.timeBudget` in buildLift).
+        var memory = memory
+        if let minutes = strategy.durationMinutes {
+            let hard = TrainingConstraints.sessionMinutesHardRange
+            memory.sessionMinutes = min(hard.upperBound, max(hard.lowerBound, minutes))
+        }
         var workout = buildLift(
             liftIndex: liftIndex, totalLifts: totalLifts, memory: memory, profile: profile,
             hashSeed: hashSeed, recentlyPicked: recentlyPicked, context: context,
