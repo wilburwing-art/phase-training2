@@ -100,33 +100,33 @@ final class AuthoredWorkoutTemplateTests: XCTestCase {
         XCTAssertEqual(t.exercises.map(\.id), ["rex-7", "rex-3", "rex-9"])
     }
 
-    // MARK: - DayPlan.workoutTemplate
+    // MARK: - DayPlan.workoutTemplate(planWeek:)
 
     func test_generatedWorkoutProducesStableTemplateId() {
         let g = generated()
-        let t = day(routineId: nil, generated: g).workoutTemplate
+        let t = day(routineId: nil, generated: g).workoutTemplate(planWeek: nil)
         XCTAssertEqual(t?.id, g.stableTemplateId)
     }
 
     func test_routineIdFallbackUsesBundledRoutine() throws {
         let slug = try XCTUnwrap(CoachDatabase.shared.listRoutines().first(where: { $0.id == 1 })?.slug)
-        let t = try XCTUnwrap(day(routineId: 1, generated: nil).workoutTemplate)
+        let t = try XCTUnwrap(day(routineId: 1, generated: nil).workoutTemplate(planWeek: nil))
         XCTAssertEqual(t.id, slug)
         XCTAssertFalse(t.exercises.isEmpty)
         XCTAssertEqual(t.exercises.count, CoachDatabase.shared.exercises(forRoutineId: 1).count)
     }
 
     func test_noSourcesReturnsNil() {
-        XCTAssertNil(day(routineId: nil, generated: nil).workoutTemplate)
+        XCTAssertNil(day(routineId: nil, generated: nil).workoutTemplate(planWeek: nil))
     }
 
     func test_unknownRoutineIdReturnsNil() {
-        XCTAssertNil(day(routineId: 999_999, generated: nil).workoutTemplate)
+        XCTAssertNil(day(routineId: 999_999, generated: nil).workoutTemplate(planWeek: nil))
     }
 
     func test_generatedWorkoutWinsOverRoutineId() {
         let g = generated()
-        let t = day(routineId: 1, generated: g).workoutTemplate
+        let t = day(routineId: 1, generated: g).workoutTemplate(planWeek: nil)
         XCTAssertEqual(t?.id, g.stableTemplateId)
     }
 }

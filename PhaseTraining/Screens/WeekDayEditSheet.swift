@@ -112,7 +112,8 @@ struct WeekDayEditSheet: View {
             }
         }
         .sheet(item: $previewingWorkout) { day in
-            DayWorkoutPreviewSheet(day: day, onStartSession: {
+            DayWorkoutPreviewSheet(day: day, planWeek: memory.memory.weeksInCurrentPhase,
+                                   onStartSession: {
                 previewingWorkout = nil
                 dismiss()
             })

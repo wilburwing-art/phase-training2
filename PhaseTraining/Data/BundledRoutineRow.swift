@@ -74,7 +74,8 @@ extension BundledRoutineRow {
 }
 
 extension BundledRoutineRow {
-    func toWorkoutTemplate(with exercises: [RoutineExercise]) -> WorkoutTemplate {
+    /// `planWeek` picks each row's `reps(forWeek:)`; nil serves `reps`.
+    func toWorkoutTemplate(with exercises: [RoutineExercise], planWeek: Int? = nil) -> WorkoutTemplate {
         // Reps-only movements log as bodyweight (no weight input on the log row).
         let categories = CoachDatabase.shared.equipmentCategory(
             forExerciseIds: Set(exercises.map(\.exerciseId)))
@@ -83,16 +84,17 @@ extension BundledRoutineRow {
             name: name,
             category: [goal, phase].compactMap { $0 }.joined(separator: " · "),
             exercises: exercises.map { rex in
-                ExerciseTemplate(
+                let reps = rex.reps(forWeek: planWeek)
+                return ExerciseTemplate(
                     id: "rex-\(rex.id)",
                     name: rex.name,
                     type: nil,
                     unit: LoggedExercise.unit(for: categories[rex.exerciseId]),
                     targetSets: rex.sets ?? 3,
-                    targetReps: parseRepsLeading(rex.reps) ?? 8,
+                    targetReps: parseRepsLeading(reps) ?? 8,
                     rest: AuthoredRoutine.parseRest(rex.rest) ?? 90,
                     supersetGroup: rex.supersetGroup,
-                    repsLabel: rex.reps
+                    repsLabel: reps
                 )
             }
         )

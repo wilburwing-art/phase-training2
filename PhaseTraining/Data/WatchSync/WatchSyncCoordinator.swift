@@ -123,7 +123,8 @@ final class WatchSyncCoordinator: NSObject, ObservableObject {
 
     /// Today's lift or mobility session as the plan shows it, unstarted.
     private func plannedSessionForToday() -> ActiveSession? {
-        guard let template = planStore.plan?.today()?.workoutTemplate else { return nil }
+        guard let template = planStore.plan?.today()?.workoutTemplate(
+            planWeek: planStore.memoryStore?.memory.weeksInCurrentPhase) else { return nil }
         return store.createSession(from: template)
     }
 

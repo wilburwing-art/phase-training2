@@ -723,6 +723,19 @@ final class AuthoredRoutineTests: XCTestCase {
         XCTAssertEqual(try reps(311, 1, week: 3), "40% of your 2-minute max")
     }
 
+    /// A day that holds routine 325 by routineId (no generatedWorkout) serves
+    /// the same per-week reps as the generator path (11d 2.9).
+    func testRoutineIdDayServesRepsByPlanWeek() throws {
+        let day = DayPlan(date: Date(), kind: .lift, title: "Day", routineId: 325)
+        func pullUp(week: Int?) throws -> ExerciseTemplate {
+            let t = try XCTUnwrap(day.workoutTemplate(planWeek: week))
+            return try XCTUnwrap(t.exercises.first { $0.id == "rex-1434" })
+        }
+        XCTAssertEqual(try pullUp(week: 4).targetReps, 5)
+        XCTAssertEqual(try pullUp(week: 1).targetReps, 2)
+        XCTAssertEqual(try pullUp(week: nil).targetReps, 2, "no week serves the written \"2-5\"")
+    }
+
     func testTimeTrimNeverLeavesHalfASuperset() throws {
         let memory = TrainingMemory()
         for id in 325...327 {

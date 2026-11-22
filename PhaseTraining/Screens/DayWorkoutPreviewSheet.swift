@@ -18,6 +18,8 @@ import SwiftUI
 
 struct DayWorkoutPreviewSheet: View {
     let day: DayPlan
+    /// `TrainingMemory.weeksInCurrentPhase`, for a routine day's reps by week.
+    let planWeek: Int?
     /// Fires after Start to dismiss the host surface (WeekDayEditSheet, etc.)
     /// so the user lands directly in the active LogScreen.
     var onStartSession: (() -> Void)? = nil
@@ -144,7 +146,7 @@ struct DayWorkoutPreviewSheet: View {
         .presentationBackground(Color.bg)
         .preferredColorScheme(.dark)
         .onAppear {
-            if template == nil { template = day.workoutTemplate }
+            if template == nil { template = day.workoutTemplate(planWeek: planWeek) }
         }
     }
 

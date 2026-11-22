@@ -41,7 +41,7 @@ extension TodayScreen {
         // routine a day-override picked. GeneratedWorkout.stableTemplateId
         // means same exercises, same id, so SessionStore.getPreviousSession
         // finds last week's same-shape workout for the autofill column.
-        if let planned = todayPlan?.workoutTemplate {
+        if let planned = todayPlan?.workoutTemplate(planWeek: memoryStore.memory.weeksInCurrentPhase) {
             return planned
         }
         // No plan yet → upper-1 fallback. Guarantees TodayScreen always has

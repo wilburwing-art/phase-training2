@@ -457,15 +457,18 @@ extension WeekPlan {
 extension DayPlan {
     /// This day's lift/mobility template: generatedWorkout first, routineId
     /// fallback. Nil for sport / rest / event days and when neither source
-    /// is populated. Today's screen, the day preview and the watch's start
-    /// button all read this one, so they start the session the plan shows.
-    var workoutTemplate: WorkoutTemplate? {
+    /// is populated. Today's screen, the day preview, the widget and the
+    /// watch's start button all read this one, so they start the session the
+    /// plan shows. `planWeek` is `TrainingMemory.weeksInCurrentPhase`, the
+    /// week the generator serves an authored routine's reps by.
+    func workoutTemplate(planWeek: Int?) -> WorkoutTemplate? {
         if let g = generatedWorkout {
             return g.toWorkoutTemplate(id: g.stableTemplateId)
         }
         if let rid = routineId,
            let r = CoachDatabase.shared.listRoutines().first(where: { $0.id == rid }) {
-            return r.toWorkoutTemplate(with: CoachDatabase.shared.exercises(forRoutineId: rid))
+            return r.toWorkoutTemplate(with: CoachDatabase.shared.exercises(forRoutineId: rid),
+                                       planWeek: planWeek)
         }
         return nil
     }

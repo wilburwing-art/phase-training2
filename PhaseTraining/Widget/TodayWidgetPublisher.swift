@@ -19,6 +19,8 @@ final class TodayWidgetPublisher {
     /// and clears a snapshot left by an earlier process.
     private var published = false
     private var lastWritten: TodayWidgetSnapshot?
+    /// The plan week a routine day's reps are served by, read at publish time.
+    private let planWeek: () -> Int?
 
     init(planStore: PlanStore,
          store: SessionStore,
@@ -30,6 +32,7 @@ final class TodayWidgetPublisher {
         self.defaults = defaults
         self.calendar = calendar
         self.reload = reload
+        self.planWeek = { [weak planStore] in planStore?.memoryStore?.memory.weeksInCurrentPhase }
 
         publish(plan: planStore.plan,
                 sessions: store.savedSessions,
@@ -67,7 +70,8 @@ final class TodayWidgetPublisher {
         let next = Self.snapshot(plan: plan,
                                  completedDays: Self.completedDays(plan: plan, sessions: sessions,
                                                                    abandoned: abandoned, calendar: calendar),
-                                 calendar: calendar)
+                                 calendar: calendar,
+                                 planWeek: planWeek())
         if published && next == lastWritten { return }
         published = true
         lastWritten = next
@@ -104,7 +108,8 @@ final class TodayWidgetPublisher {
 
     static func snapshot(plan: WeekPlan?,
                          completedDays: Set<Date>,
-                         calendar: Calendar) -> TodayWidgetSnapshot? {
+                         calendar: Calendar,
+                         planWeek: Int? = nil) -> TodayWidgetSnapshot? {
         guard let plan else { return nil }
         let days = plan.days.map { day -> TodayWidgetDay in
             let start = calendar.startOfDay(for: day.date)
@@ -114,7 +119,7 @@ final class TodayWidgetPublisher {
             switch day.kind {
             case .lift:
                 kind = .lift
-                let template = day.workoutTemplate
+                let template = day.workoutTemplate(planWeek: planWeek)
                 title = template?.name ?? day.title
                 detail = template.map { t in
                     let sets = t.exercises.reduce(0) { $0 + $1.targetSets }

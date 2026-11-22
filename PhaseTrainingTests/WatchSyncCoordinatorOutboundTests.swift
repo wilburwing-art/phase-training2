@@ -122,7 +122,7 @@ final class WatchSyncCoordinatorOutboundTests: XCTestCase {
         let g = generated()
         let day = weekPlan(todayKind: .lift, generated: g).days[0]
         r.plan.plan = weekPlan(todayKind: .lift, generated: g)
-        let template = day.workoutTemplate!
+        let template = day.workoutTemplate(planWeek: nil)!
         let planned = r.coordinator.context(for: nil).plannedSession
         XCTAssertNotNil(planned)
         XCTAssertEqual(planned?.name, template.name)
