@@ -276,8 +276,10 @@ enum CoachContext {
                 let feel = s.feel.map { " · felt: \($0.lowercased())" } ?? ""
                 // Fixed vocabulary (worse | same | better), so no sanitising.
                 let mood = s.mood.map { " · mood after: \($0)" } ?? ""
+                // The Complete screen's free-text note, typed by the user.
+                let note = s.note.flatMap { $0.isEmpty ? nil : " · note: \(sanitizeFreeText($0))" } ?? ""
                 // T2-9: session name comes from a custom routine title.
-                lines.append("- \(short(s.startTime)) · \(sanitizeFreeText(s.name, max: 80)) · \(done) sets · \(s.duration / 60) min\(feel)\(mood)")
+                lines.append("- \(short(s.startTime)) · \(sanitizeFreeText(s.name, max: 80)) · \(done) sets · \(s.duration / 60) min\(feel)\(mood)\(note)")
             }
             blocks.append("\(header)\n" + lines.joined(separator: "\n"))
         }
@@ -419,6 +421,10 @@ enum CoachContext {
             blocks.append("RECENT POST-WORKOUT FEEDBACK\n" + lines.joined(separator: "\n"))
         }
 
+        if let checkIn = weeklyCheckInSection(memory.weeklyCheckIns, now: now) {
+            blocks.append(checkIn)
+        }
+
         // Today's pre-workout check-in (if any)
         if let today = recentSoreness.last,
            Calendar.current.isDate(today.date, inSameDayAs: now) {
@@ -501,6 +507,29 @@ enum CoachContext {
     /// prior like readiness: the coach may use it to offer a shorter or moved
     /// session when the user raises time or energy, never to tell them the app
     /// expects a skip. Nothing moves on its own.
+    /// The latest weekly check-in inside the 26 week retention window:
+    /// intent (chips plus free text), last week's rating and the
+    /// worked / didn't notes. Intent and notes are user-typed, so both are
+    /// sanitized. Nil when there is no check-in in the window or the latest
+    /// one carries nothing.
+    static func weeklyCheckInSection(_ checkIns: [WeeklyCheckIn], now: Date) -> String? {
+        guard let latest = WeeklyCheckIn.prune(checkIns, now: now)
+            .max(by: { $0.weekStart < $1.weekStart }) else { return nil }
+        var lines: [String] = []
+        if let intent = latest.intent, !intent.isEmpty {
+            lines.append("- intent: \(sanitizeFreeText(intent))")
+        }
+        // Fixed vocabulary (too_easy | right | too_hard).
+        if let rating = latest.lastWeekRating, !rating.isEmpty {
+            lines.append("- last week felt: \(rating.replacingOccurrences(of: "_", with: " "))")
+        }
+        if let notes = latest.notes, !notes.isEmpty {
+            lines.append("- notes: \(sanitizeFreeText(notes))")
+        }
+        guard !lines.isEmpty else { return nil }
+        return "LATEST WEEKLY CHECK-IN (for week of \(short(latest.weekStart)))\n" + lines.joined(separator: "\n")
+    }
+
     static func sessionLikelihoodSection(_ l: SessionLikelihood?) -> String? {
         guard let l else { return nil }
         var lines: [String] = []

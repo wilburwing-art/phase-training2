@@ -54,10 +54,11 @@ If you enable the AI Coach in Profile → AI Coach, the app sends a snapshot of 
 
 - the text of your messages to the coach;
 - your current week's plan, past weeks, and any plan issues or missed workouts;
-- your completed sessions and logged sets, including sport sessions you confirmed from Apple Health;
+- your completed sessions and logged sets, including your notes on them and sport sessions you confirmed from Apple Health;
 - body metrics you have entered: height, weight, age, gender;
 - injuries you have declared, their severity, side and onset, your own notes on them, and which exercises they filtered out;
 - soreness and post-workout feedback, including free-text notes;
+- your latest weekly check-in: the week's intent, how last week felt, and what worked and what didn't;
 - dislikes and constraints you have written;
 - derived figures the app computes from the above: estimated strength numbers, muscle balance, movement-pattern frequency, exercise familiarity, recovery trend, and week adherence.
 
