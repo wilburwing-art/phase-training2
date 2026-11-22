@@ -17,7 +17,7 @@ final class ThinSportWeekShapeTests: XCTestCase {
 
     private static let sports = ["thru-hiking", "mountaineering", "trail-running"]
 
-    private func plan(_ slug: String, _ phase: SeasonPhase) -> WeekPlan {
+    private func memory(_ slug: String, _ phase: SeasonPhase) -> TrainingMemory {
         var m = TrainingMemory()
         let sport = Sport.resolve(slug: slug)
         m.primarySport = sport
@@ -27,7 +27,11 @@ final class ThinSportWeekShapeTests: XCTestCase {
         m.experience = .intermediate
         m.equipment = [.fullGym]
         m.liftDaysPerWeek = 3
-        return Planner.generate(memory: m, routines: [])
+        return m
+    }
+
+    private func plan(_ slug: String, _ phase: SeasonPhase) -> WeekPlan {
+        Planner.generate(memory: memory(slug, phase), routines: [])
     }
 
     /// Every lift day, every phase: authored, non-empty, at or above the floor,
@@ -55,16 +59,31 @@ final class ThinSportWeekShapeTests: XCTestCase {
 
     /// The rotation is real: across a phase's lift days the sport does not
     /// serve the same routine every day when it has more than one to offer.
-    /// Measured against the selector's own candidate list so the assertion
-    /// cannot demand variety the content does not have.
+    /// Measured against the selector's own pool so the assertion cannot
+    /// demand variety the content does not have: `candidates`, then the
+    /// session-length narrowing `select` applies (`fitting`, 11c 3.5) at the
+    /// same budget and plan week `WorkoutGenerator` passes.
+    private func rotationPool(_ slug: String, _ phase: SeasonPhase) -> [Int] {
+        let m = memory(slug, phase)
+        let profile = DemographicProfile.from(m)
+        let prefs = RoutinePreferences.from(m)
+        let ids = AuthoredRoutineSelector.candidates(
+            sportSlug: slug, phase: phase, experience: m.experience,
+            excludedExerciseIds: profile.excludedExerciseIds,
+            allowedEquipmentSlugs: profile.allowedEquipmentSlugs, preferences: prefs)
+        guard ids.count > 1 else { return ids }
+        return AuthoredRoutineSelector.fitting(ids, budget: m.sessionMinutes) {
+            AuthoredRoutineSelector.estimatedMinutes(
+                forRoutineId: $0, excluded: profile.excludedExerciseIds,
+                allowed: profile.allowedEquipmentSlugs, preferences: prefs,
+                experience: m.experience, planWeek: m.weeksInCurrentPhase ?? 1)
+        }
+    }
+
     func test_rotationVariesWhenTheSportHasMoreThanOneRoutine() {
         for slug in Self.sports {
             for phase in SeasonPhase.allCases {
-                let candidates = CoachDatabase.shared.authoredRoutineIds(
-                    sportSlug: slug, phaseLabels: AuthoredRoutineSelector.phaseLabels(for: phase))
-                let pool = candidates.isEmpty
-                    ? CoachDatabase.shared.authoredRoutineIds(sportSlug: slug, phaseLabels: AuthoredRoutineSelector.allPhaseLabels)
-                    : candidates
+                let pool = rotationPool(slug, phase)
                 let sportDays = plan(slug, phase).days.filter { $0.kind == .lift && !$0.isComplementSession }
                 let titles = Set(sportDays.compactMap { $0.generatedWorkout?.title })
                 // In-season and maintenance hold one sport session at 3 lift
