@@ -80,10 +80,7 @@ enum PhysiologyReader {
                     cont.resume(throwing: error)
                     return
                 }
-                let out = (samples as? [HKQuantitySample] ?? []).map {
-                    PhysiologyReading(date: $0.startDate, value: $0.quantity.doubleValue(for: unit))
-                }
-                cont.resume(returning: out)
+                cont.resume(returning: readings(samples as? [HKQuantitySample] ?? [], unit: unit))
             }
             store.execute(q)
         }
@@ -98,14 +95,42 @@ enum PhysiologyReader {
                     cont.resume(throwing: error)
                     return
                 }
-                let out: [PhysiologySleepSample] = (samples as? [HKCategorySample] ?? []).compactMap { s in
-                    guard let stage = PhysiologySleepStage(healthKitValue: s.value) else { return nil }
-                    return PhysiologySleepSample(start: s.startDate, end: s.endDate, stage: stage)
-                }
-                cont.resume(returning: out)
+                cont.resume(returning: sleepSamples(samples as? [HKCategorySample] ?? []))
             }
             store.execute(q)
         }
+    }
+
+    /// Quantity samples to readings in `unit`, dated by sample start.
+    static func readings(_ samples: [HKQuantitySample], unit: HKUnit) -> [PhysiologyReading] {
+        samples.map { PhysiologyReading(date: $0.startDate, value: $0.quantity.doubleValue(for: unit)) }
+    }
+
+    /// Sleep-analysis samples to stages. A raw value with no known stage is dropped.
+    static func sleepSamples(_ samples: [HKCategorySample]) -> [PhysiologySleepSample] {
+        samples.compactMap { s in
+            guard let stage = PhysiologySleepStage(healthKitValue: s.value) else { return nil }
+            return PhysiologySleepSample(start: s.startDate, end: s.endDate, stage: stage)
+        }
+    }
+}
+
+// MARK: - Source
+
+/// Where capture gets its grant and samples. Production reads HealthKit;
+/// tests pass a fake.
+protocol PhysiologySource {
+    func requestAuthorization() async throws -> Bool
+    func samples(from start: Date, to end: Date) async throws -> PhysiologyRawSamples
+}
+
+struct HealthKitPhysiologySource: PhysiologySource {
+    func requestAuthorization() async throws -> Bool {
+        try await PhysiologyReader.requestAuthorization()
+    }
+
+    func samples(from start: Date, to end: Date) async throws -> PhysiologyRawSamples {
+        try await PhysiologyReader.samples(from: start, to: end)
     }
 }
 
@@ -179,20 +204,22 @@ enum PhysiologyCapture {
 
     /// The user's tap: show the permission sheet, mark capture on, and read
     /// the first 30 nights.
-    static func connect(store: PhysiologyStore = PhysiologyStore()) async -> PhysiologyConnectResult {
+    static func connect(store: PhysiologyStore = PhysiologyStore(),
+                        source: PhysiologySource = HealthKitPhysiologySource()) async -> PhysiologyConnectResult {
         do {
-            guard try await PhysiologyReader.requestAuthorization() else { return .unavailable }
+            guard try await source.requestAuthorization() else { return .unavailable }
         } catch {
             return .failed((error as? LocalizedError)?.errorDescription ?? error.localizedDescription)
         }
         store.isEnabled = true
-        await refreshIfEnabled(store: store, force: true)
+        await refreshIfEnabled(store: store, source: source, force: true)
         return .connected(nights: store.loadNights().count)
     }
 
     /// Silent refresh. No-op unless the user turned capture on; never
     /// prompts; errors leave the stored nights as they were.
     static func refreshIfEnabled(store: PhysiologyStore = PhysiologyStore(),
+                                 source: PhysiologySource = HealthKitPhysiologySource(),
                                  now: Date = Date(), force: Bool = false) async {
         guard store.isEnabled, !inFlight else { return }
         if !force, let last = store.lastRefresh, now.timeIntervalSince(last) < minRefreshInterval { return }
@@ -202,7 +229,7 @@ enum PhysiologyCapture {
         let window = PhysiologySummariser.fetchWindow(lastStoredNight: store.loadNights().last?.date, now: now)
         let raw: PhysiologyRawSamples
         do {
-            raw = try await PhysiologyReader.samples(from: window.queryStart, to: now)
+            raw = try await source.samples(from: window.queryStart, to: now)
         } catch {
             return
         }

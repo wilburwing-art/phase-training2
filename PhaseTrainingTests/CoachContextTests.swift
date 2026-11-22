@@ -547,6 +547,71 @@ final class CoachContextTests: XCTestCase {
                       "Sets × reps must be rendered for non-today days. Got:\n\(snap)")
     }
 
+    // MARK: - muscleBalanceSection
+
+    /// Catalog exercises that resolve to exactly one muscle group, one per
+    /// group, so each one's volume lands whole on its own row.
+    private func singleMuscleExercises(_ count: Int) throws -> [(name: String, label: String)] {
+        var out: [(name: String, label: String)] = []
+        var slugs: Set<String> = []
+        for ex in CoachDatabase.shared.listExercises(search: nil, muscleSlugs: []) {
+            guard let r = MuscleVolume.defaultResolve(ex.name), r.muscles.count == 1,
+                  slugs.insert(r.muscles[0].slug).inserted else { continue }
+            out.append((ex.name, r.muscles[0].label))
+            if out.count == count { return out }
+        }
+        struct CatalogTooSmall: Error {}
+        XCTFail("coach.db has fewer than \(count) single-muscle exercises (found \(out.count))")
+        throw CatalogTooSmall()
+    }
+
+    private func balanceLines(_ sessions: [SavedSession]) -> [String] {
+        (CoachContext.muscleBalanceSection(sessions: sessions, now: Date()) ?? "")
+            .components(separatedBy: "\n")
+    }
+
+    func test_muscleBalanceSection_nilWithNoSessions() {
+        XCTAssertNil(CoachContext.muscleBalanceSection(sessions: [], now: Date()))
+    }
+
+    func test_muscleBalanceSection_nilWhenSessionsOlderThanFourWeeks() throws {
+        let ex = try singleMuscleExercises(1)[0]
+        let old = savedSession(name: ex.name, sets: [("200", "10")],
+                               startTime: Date().addingTimeInterval(-35 * 86_400))
+        XCTAssertNil(CoachContext.muscleBalanceSection(sessions: [old], now: Date()))
+    }
+
+    func test_muscleBalanceSection_headerAtMostFiveRows_topIsHundredPercent() throws {
+        let exercises = try singleMuscleExercises(6)
+        let sessions = exercises.enumerated().map { i, ex in
+            savedSession(name: ex.name, sets: [("\(100 * (6 - i))", "10")])
+        }
+        let lines = balanceLines(sessions)
+        XCTAssertTrue(lines[0].hasPrefix("MUSCLE BALANCE — last 4w"), "header first, got: \(lines)")
+        XCTAssertEqual(lines.count, 1 + 5, "six groups trained, five rows shown: \(lines)")
+        XCTAssertTrue(lines[1].hasPrefix("- \(exercises[0].label): "), "heaviest group on top: \(lines)")
+        XCTAssertTrue(lines[1].contains("(100% of top)"), lines[1])
+        XCTAssertFalse(lines.contains { $0.hasPrefix("- \(exercises[5].label): ") },
+                       "the lightest of six groups is cut: \(lines)")
+    }
+
+    func test_muscleBalanceSection_flagsUnderOneThirdOfTop_notAtOneThird() throws {
+        let ex = try singleMuscleExercises(3)
+        let sessions = [
+            savedSession(name: ex[0].name, sets: [("300", "10")]),   // 3000, top
+            savedSession(name: ex[1].name, sets: [("100", "10")]),   // 1000, exactly one third
+            savedSession(name: ex[2].name, sets: [("99", "10")]),    // 990, under one third
+        ]
+        let lines = balanceLines(sessions)
+        func row(_ label: String) -> String? { lines.first { $0.hasPrefix("- \(label): ") } }
+        let top = try XCTUnwrap(row(ex[0].label), "\(lines)")
+        let third = try XCTUnwrap(row(ex[1].label), "\(lines)")
+        let under = try XCTUnwrap(row(ex[2].label), "\(lines)")
+        XCTAssertFalse(top.contains("underdone"), top)
+        XCTAssertFalse(third.contains("underdone"), "one third of top is not underdone: \(third)")
+        XCTAssertTrue(under.hasSuffix(" · underdone"), under)
+    }
+
     // MARK: - Helpers
 
     private func savedSession(

@@ -3,9 +3,11 @@
 // Night attribution at the 18:00 boundary, the HRV overnight window, the
 // sleep-stage filter and interval union, resting HR per day, the fetch
 // window, the merge that never erases on an empty read, and the store's
-// backup round trip.
+// backup round trip. Then the HealthKit sample conversion and the capture
+// flow (connect, refresh gating, write-back) against a fake source.
 
 import XCTest
+import HealthKit
 @testable import PhaseTraining
 
 final class PhysiologyNightTests: XCTestCase {
@@ -223,5 +225,215 @@ final class PhysiologyNightTests: XCTestCase {
         XCTAssertFalse(store.isEnabled)
         XCTAssertEqual(store.loadNights(), [])
         XCTAssertNil(store.lastRefresh)
+    }
+
+    // MARK: - HealthKit conversion
+
+    func test_readings_hrvSecondsReadBackAsMilliseconds() throws {
+        let type = try XCTUnwrap(HKQuantityType.quantityType(forIdentifier: .heartRateVariabilitySDNN))
+        let start = at(0, 3)
+        let sample = HKQuantitySample(type: type, quantity: HKQuantity(unit: .second(), doubleValue: 0.045),
+                                      start: start, end: start)
+        let out = PhysiologyReader.readings([sample], unit: HKUnit.secondUnit(with: .milli))
+        XCTAssertEqual(out.count, 1)
+        XCTAssertEqual(out[0].value, 45, accuracy: 1e-9)
+        XCTAssertEqual(out[0].date, start)
+    }
+
+    func test_readings_restingHRPerSecondReadsBackPerMinute() throws {
+        let type = try XCTUnwrap(HKQuantityType.quantityType(forIdentifier: .restingHeartRate))
+        let perSecond = HKUnit.count().unitDivided(by: .second())
+        let sample = HKQuantitySample(type: type, quantity: HKQuantity(unit: perSecond, doubleValue: 1),
+                                      start: at(0, 7), end: at(0, 7))
+        let out = PhysiologyReader.readings([sample], unit: HKUnit.count().unitDivided(by: HKUnit.minute()))
+        XCTAssertEqual(out.map(\.value), [60])
+    }
+
+    /// HealthKit refuses to build a sleepAnalysis sample with a raw value it
+    /// does not define (_HKObjectValidationFailureException for 99), so the
+    /// drop of an unknown value is checked at the stage mapping the
+    /// conversion's compactMap guards on.
+    func test_sleepSamples_mapsEachStage_dropsUnknownRawValue() throws {
+        XCTAssertNil(PhysiologySleepStage(healthKitValue: 99), "an unknown raw value has no stage")
+        let type = try XCTUnwrap(HKCategoryType.categoryType(forIdentifier: .sleepAnalysis))
+        let raws = [0, 1, 2, 3, 4, 5]
+        let samples = raws.enumerated().map { i, raw in
+            HKCategorySample(type: type, value: raw, start: at(0, i), end: at(0, i, 30))
+        }
+        let out = PhysiologyReader.sleepSamples(samples)
+        XCTAssertEqual(out, [
+            sleep(at(0, 0), at(0, 0, 30), .inBed),
+            sleep(at(0, 1), at(0, 1, 30), .asleepUnspecified),
+            sleep(at(0, 2), at(0, 2, 30), .awake),
+            sleep(at(0, 3), at(0, 3, 30), .asleepCore),
+            sleep(at(0, 4), at(0, 4, 30), .asleepDeep),
+            sleep(at(0, 5), at(0, 5, 30), .asleepREM),
+        ], "inBed and awake keep their stage; start and end carry through")
+    }
+
+    // MARK: - Capture
+
+    private final class FakeSource: PhysiologySource {
+        var auth: Result<Bool, Error> = .success(true)
+        var read: Result<PhysiologyRawSamples, Error> = .success(PhysiologyRawSamples(sleep: [], hrv: [], restingHR: []))
+        var duringRead: (() -> Void)?
+        private(set) var authCalls = 0
+        private(set) var reads: [(start: Date, end: Date)] = []
+
+        func requestAuthorization() async throws -> Bool {
+            authCalls += 1
+            return try auth.get()
+        }
+
+        func samples(from start: Date, to end: Date) async throws -> PhysiologyRawSamples {
+            reads.append((start, end))
+            duringRead?()
+            return try read.get()
+        }
+    }
+
+    private struct AuthError: LocalizedError {
+        var errorDescription: String? { "Health access was refused." }
+    }
+
+    private struct ReadError: Error {}
+
+    private var suites: [String] = []
+
+    override func tearDown() {
+        for s in suites { UserDefaults().removePersistentDomain(forName: s) }
+        suites = []
+        super.tearDown()
+    }
+
+    private func freshStore() -> PhysiologyStore {
+        let suite = "PhysiologyNightTests.capture.\(UUID().uuidString)"
+        suites.append(suite)
+        let defaults = UserDefaults(suiteName: suite)!
+        defaults.removePersistentDomain(forName: suite)
+        return PhysiologyStore(defaults: defaults)
+    }
+
+    /// One overnight HRV reading (02:00) on each of the `nights` days before
+    /// `now`, on the calendar the summariser defaults to.
+    private func hrvSamples(nights: Int, before now: Date) -> PhysiologyRawSamples {
+        let c = Calendar.current
+        let today = c.startOfDay(for: now)
+        let hrv = (1...nights).map { k -> PhysiologyReading in
+            let d = c.date(byAdding: .day, value: -k, to: today)!
+            return PhysiologyReading(date: c.date(byAdding: .hour, value: 2, to: d)!, value: 40 + Double(k))
+        }
+        return PhysiologyRawSamples(sleep: [], hrv: hrv, restingHR: [])
+    }
+
+    @MainActor
+    func test_connect_unavailable_staysOff_andNeverReads() async {
+        let store = freshStore()
+        let source = FakeSource()
+        source.auth = .success(false)
+        let result = await PhysiologyCapture.connect(store: store, source: source)
+        XCTAssertEqual(result, .unavailable)
+        XCTAssertFalse(store.isEnabled)
+        XCTAssertTrue(source.reads.isEmpty)
+        XCTAssertNil(store.lastRefresh)
+    }
+
+    @MainActor
+    func test_connect_authThrows_failsWithItsDescription_andStaysOff() async {
+        let store = freshStore()
+        let source = FakeSource()
+        source.auth = .failure(AuthError())
+        let result = await PhysiologyCapture.connect(store: store, source: source)
+        XCTAssertEqual(result, .failed("Health access was refused."))
+        XCTAssertFalse(store.isEnabled)
+        XCTAssertTrue(source.reads.isEmpty)
+    }
+
+    @MainActor
+    func test_connect_success_turnsOn_readsOnce_andSavesNights() async throws {
+        let store = freshStore()
+        let source = FakeSource()
+        let before = Date()
+        source.read = .success(hrvSamples(nights: 3, before: before))
+        let result = await PhysiologyCapture.connect(store: store, source: source)
+        let after = Date()
+        XCTAssertEqual(result, .connected(nights: 3))
+        XCTAssertTrue(store.isEnabled)
+        XCTAssertEqual(source.authCalls, 1)
+        XCTAssertEqual(source.reads.count, 1)
+        XCTAssertEqual(store.loadNights().count, 3)
+        let last = try XCTUnwrap(store.lastRefresh)
+        XCTAssertGreaterThanOrEqual(last.timeIntervalSince1970, before.timeIntervalSince1970.rounded(.down))
+        XCTAssertLessThanOrEqual(last.timeIntervalSince1970, after.timeIntervalSince1970.rounded(.up))
+    }
+
+    @MainActor
+    func test_refresh_whileDisabled_neverCallsSource() async {
+        let store = freshStore()
+        let source = FakeSource()
+        await PhysiologyCapture.refreshIfEnabled(store: store, source: source, now: Date(), force: true)
+        XCTAssertTrue(source.reads.isEmpty)
+        XCTAssertEqual(source.authCalls, 0)
+        XCTAssertNil(store.lastRefresh)
+    }
+
+    @MainActor
+    func test_refresh_withinInterval_skips_forceReads_afterIntervalReads() async {
+        let store = freshStore()
+        let source = FakeSource()
+        store.isEnabled = true
+        let last = Date(timeIntervalSince1970: 1_790_000_000)
+        store.lastRefresh = last
+
+        let soon = last.addingTimeInterval(PhysiologyCapture.minRefreshInterval - 1)
+        await PhysiologyCapture.refreshIfEnabled(store: store, source: source, now: soon)
+        XCTAssertTrue(source.reads.isEmpty, "inside the interval a refresh is skipped")
+        XCTAssertEqual(store.lastRefresh, last)
+
+        await PhysiologyCapture.refreshIfEnabled(store: store, source: source, now: soon, force: true)
+        XCTAssertEqual(source.reads.count, 1, "force reads inside the interval")
+        XCTAssertEqual(source.reads.last?.end, soon)
+        XCTAssertEqual(store.lastRefresh, soon)
+
+        let later = soon.addingTimeInterval(PhysiologyCapture.minRefreshInterval)
+        await PhysiologyCapture.refreshIfEnabled(store: store, source: source, now: later)
+        XCTAssertEqual(source.reads.count, 2, "a full interval after the last refresh reads")
+        XCTAssertEqual(store.lastRefresh, later)
+    }
+
+    @MainActor
+    func test_refresh_readThrows_leavesNightsAndLastRefresh() async {
+        let store = freshStore()
+        let source = FakeSource()
+        store.isEnabled = true
+        let now = Date(timeIntervalSince1970: Date().timeIntervalSince1970.rounded())
+        let stored = hrvSamples(nights: 2, before: now)
+        let nights = PhysiologySummariser.summarise(sleep: [], hrv: stored.hrv, restingHR: [])
+        store.saveNights(nights)
+        let last = now.addingTimeInterval(-2 * PhysiologyCapture.minRefreshInterval)
+        store.lastRefresh = last
+        source.read = .failure(ReadError())
+
+        await PhysiologyCapture.refreshIfEnabled(store: store, source: source, now: now)
+        XCTAssertEqual(source.reads.count, 1)
+        XCTAssertEqual(store.loadNights(), nights)
+        XCTAssertEqual(store.lastRefresh, last)
+        XCTAssertTrue(store.isEnabled)
+    }
+
+    @MainActor
+    func test_refresh_stopAndDeleteDuringRead_writesNothingBack() async {
+        let store = freshStore()
+        let source = FakeSource()
+        store.isEnabled = true
+        let now = Date()
+        source.read = .success(hrvSamples(nights: 3, before: now))
+        source.duringRead = { store.stopAndDelete() }
+
+        await PhysiologyCapture.refreshIfEnabled(store: store, source: source, now: now, force: true)
+        XCTAssertEqual(source.reads.count, 1)
+        XCTAssertEqual(store.loadNights(), [])
+        XCTAssertNil(store.lastRefresh)
+        XCTAssertFalse(store.isEnabled)
     }
 }
