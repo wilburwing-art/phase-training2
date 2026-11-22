@@ -22,7 +22,7 @@ struct TodayProvider: TimelineProvider {
     }
 
     private func entry(at date: Date, in snapshot: TodayWidgetSnapshot?) -> TodayEntry {
-        TodayEntry(date: date, day: snapshot?.day(on: date, calendar: calendar))
+        TodayEntry(date: date, day: TodayWidgetTimeline.day(at: date, in: snapshot, calendar: calendar))
     }
 
     func placeholder(in context: Context) -> TodayEntry {
@@ -34,26 +34,11 @@ struct TodayProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry>) -> Void) {
-        let now = Date()
         let snapshot = snapshot()
-        var dates = [now]
-        if let snapshot {
-            let starts = snapshot.days.map { calendar.startOfDay(for: $0.date) }
-            let upcoming = starts.filter { $0 > now }
-            dates += upcoming
-            // Midnight after the last day: the empty state.
-            if let last = starts.max(), let after = calendar.date(byAdding: .day, value: 1, to: last), after > now {
-                dates.append(after)
-            }
-        }
-        let entries = Set(dates).sorted().map { entry(at: $0, in: snapshot) }
+        let entries = TodayWidgetTimeline.entryDates(now: Date(), snapshot: snapshot, calendar: calendar)
+            .map { entry(at: $0, in: snapshot) }
         completion(Timeline(entries: entries, policy: .never))
     }
-}
-
-private enum TodayCopy {
-    static let emptyTitle = "No plan yet"
-    static let emptyDetail = "Open Phase Training"
 }
 
 private struct TodayEyebrow: View {
@@ -69,21 +54,22 @@ private struct TodayEyebrow: View {
 
 private struct TodaySmallView: View {
     let entry: TodayEntry
+    private var text: TodayWidgetText { TodayWidgetText(day: entry.day) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             TodayEyebrow(date: entry.date)
-            Text(entry.day?.title ?? TodayCopy.emptyTitle)
+            Text(text.title)
                 .font(.system(.headline, weight: .semibold))
                 .foregroundStyle(Palette.ink)
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)
-            if let day = entry.day, day.done {
-                Label("Done", systemImage: "checkmark.circle.fill")
+            if text.done, let detail = text.detail {
+                Label(detail, systemImage: "checkmark.circle.fill")
                     .font(.system(.footnote, weight: .medium))
                     .foregroundStyle(Palette.accent)
                     .lineLimit(1)
-            } else if let detail = entry.day == nil ? TodayCopy.emptyDetail : entry.day?.detail {
+            } else if let detail = text.detail {
                 Text(detail)
                     .font(.system(.footnote))
                     .foregroundStyle(Palette.ink2)
@@ -97,17 +83,14 @@ private struct TodaySmallView: View {
 
 private struct TodayAccessoryView: View {
     let entry: TodayEntry
+    private var text: TodayWidgetText { TodayWidgetText(day: entry.day) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(entry.day?.title ?? TodayCopy.emptyTitle)
+            Text(text.title)
                 .font(.system(.headline))
                 .lineLimit(1)
-            if let day = entry.day, day.done {
-                Text("Done")
-                    .font(.system(.caption))
-                    .lineLimit(1)
-            } else if let detail = entry.day == nil ? TodayCopy.emptyDetail : entry.day?.detail {
+            if let detail = text.detail {
                 Text(detail)
                     .font(.system(.caption))
                     .lineLimit(1)

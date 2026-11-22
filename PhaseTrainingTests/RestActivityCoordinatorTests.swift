@@ -1,4 +1,5 @@
 import XCTest
+import ActivityKit
 @testable import PhaseTraining
 
 final class RestActivityCoordinatorTests: XCTestCase {
@@ -262,5 +263,67 @@ final class RestActivityCoordinatorTests: XCTestCase {
         let (coord, host) = make()
         RestActivityButtonActions.handle(.add(seconds: 15), controller: nil, coordinator: coord, now: t0)
         XCTAssertTrue(host.calls.isEmpty)
+    }
+
+    // MARK: Real ActivityKit host (simulator)
+
+    private func waitForActivities(count: Int, timeout: TimeInterval = 5) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if Activity<RestActivityAttributes>.activities.count == count { return true }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        }
+        return Activity<RestActivityAttributes>.activities.count == count
+    }
+
+    // An activity whose rest ran out stays in `activities`: the system does not
+    // end it at the stale date. Expected: still 1 after the stale date, then 0
+    // once a relaunched coordinator calls `appLaunched`.
+    func test_activityKitHost_activityLeftRunningAfterRestEnds_endsOnRelaunch() throws {
+        let host = ActivityKitRestHost()
+        try XCTSkipUnless(host.isAvailable, "Live Activities are off on this simulator")
+        host.endAll()
+        XCTAssertTrue(waitForActivities(count: 0), "leftover activity from an earlier run")
+
+        let state = RestActivityState(exerciseName: "Bench press", setNumber: 1, totalSets: 4,
+                                      restEndDate: Date().addingTimeInterval(1))
+        XCTAssertTrue(host.start(workoutName: "Upper A", state: state, staleDate: state.restEndDate))
+        XCTAssertTrue(waitForActivities(count: 1))
+
+        RunLoop.current.run(until: state.restEndDate.addingTimeInterval(0.5))
+        XCTAssertEqual(Activity<RestActivityAttributes>.activities.count, 1)
+
+        RestActivityCoordinator(host: host).appLaunched()
+        XCTAssertTrue(waitForActivities(count: 0), "activity survived appLaunched")
+    }
+
+    // Expected: restExpired after the rest end updates the live activity to
+    // finished in place (one activity, finished true).
+    func test_activityKitHost_restExpired_marksActivityFinished() throws {
+        let host = ActivityKitRestHost()
+        try XCTSkipUnless(host.isAvailable, "Live Activities are off on this simulator")
+        host.endAll()
+        XCTAssertTrue(waitForActivities(count: 0))
+        defer { host.endAll(); _ = waitForActivities(count: 0) }
+
+        let c = RestActivityCoordinator(host: host)
+        let end = Date().addingTimeInterval(1)
+        c.sync(RestSnapshot(workoutName: "Upper A", exerciseName: "Bench press", setNumber: 1,
+                            totalSets: 4, endDate: end))
+        XCTAssertTrue(waitForActivities(count: 1))
+        RunLoop.current.run(until: end.addingTimeInterval(0.2))
+        c.restExpired()
+
+        let deadline = Date().addingTimeInterval(5)
+        var finished = false
+        while Date() < deadline {
+            if Activity<RestActivityAttributes>.activities.first?.content.state.finished == true {
+                finished = true
+                break
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        }
+        XCTAssertTrue(finished)
+        XCTAssertEqual(Activity<RestActivityAttributes>.activities.count, 1)
     }
 }

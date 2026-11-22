@@ -129,4 +129,74 @@ final class TodayWidgetSnapshotTests: XCTestCase {
             XCTAssertEqual(reloads, 2)
         }
     }
+
+    // MARK: Widget day pick and timeline (Shared/Widget/TodayWidgetTimeline.swift)
+
+    private func widgetDay(_ offset: Int, done: Bool = false, detail: String? = "6 exercises · 18 sets") -> TodayWidgetDay {
+        TodayWidgetDay(date: date(offset), kind: .lift, title: "Upper Day \(offset)", detail: detail, done: done)
+    }
+
+    func test_text_noSnapshot_readsNoPlanYet() {
+        let day = TodayWidgetTimeline.day(at: date(0), in: nil, calendar: cal)
+        XCTAssertNil(day)
+        XCTAssertEqual(TodayWidgetText(day: day),
+                       TodayWidgetText(title: "No plan yet", detail: "Open Phase Training", done: false))
+    }
+
+    func test_text_dateOutsideSnapshot_readsNoPlanYet() {
+        let snap = TodayWidgetSnapshot(days: [widgetDay(0)])
+        let day = TodayWidgetTimeline.day(at: date(3), in: snap, calendar: cal)
+        XCTAssertEqual(TodayWidgetText(day: day).title, "No plan yet")
+    }
+
+    func test_text_doneDay_replacesDetailWithDone() {
+        let snap = TodayWidgetSnapshot(days: [widgetDay(0, done: true), widgetDay(1)])
+        let noon = cal.date(bySettingHour: 12, minute: 0, second: 0, of: date(0))!
+        XCTAssertEqual(TodayWidgetText(day: TodayWidgetTimeline.day(at: noon, in: snap, calendar: cal)),
+                       TodayWidgetText(title: "Upper Day 0", detail: "Done", done: true))
+        XCTAssertEqual(TodayWidgetText(day: TodayWidgetTimeline.day(at: date(1), in: snap, calendar: cal)),
+                       TodayWidgetText(title: "Upper Day 1", detail: "6 exercises · 18 sets", done: false))
+    }
+
+    func test_text_openDayWithoutDetail_hasNoSecondLine() {
+        let text = TodayWidgetText(day: widgetDay(0, detail: nil))
+        XCTAssertNil(text.detail)
+        XCTAssertFalse(text.done)
+    }
+
+    func test_timeline_noSnapshot_isNowOnly() {
+        let now = cal.date(bySettingHour: 9, minute: 0, second: 0, of: date(0))!
+        XCTAssertEqual(TodayWidgetTimeline.entryDates(now: now, snapshot: nil, calendar: cal), [now])
+    }
+
+    // Expected at Monday 09:00 with Mon to Wed: now, Tue 00:00, Wed 00:00, and
+    // Thu 00:00 (the empty state after the last day). Monday's own midnight is past.
+    func test_timeline_turnsOverAtEachMidnightThenEmpty() {
+        let snap = TodayWidgetSnapshot(days: [widgetDay(0), widgetDay(1), widgetDay(2)])
+        let now = cal.date(bySettingHour: 9, minute: 0, second: 0, of: date(0))!
+        let dates = TodayWidgetTimeline.entryDates(now: now, snapshot: snap, calendar: cal)
+        XCTAssertEqual(dates, [now, date(1), date(2), date(3)])
+        let titles = dates.map { TodayWidgetText(day: TodayWidgetTimeline.day(at: $0, in: snap, calendar: cal)).title }
+        XCTAssertEqual(titles, ["Upper Day 0", "Upper Day 1", "Upper Day 2", "No plan yet"])
+    }
+
+    func test_timeline_nowAtMidnight_isNotDuplicated() {
+        let snap = TodayWidgetSnapshot(days: [widgetDay(0), widgetDay(1)])
+        let dates = TodayWidgetTimeline.entryDates(now: date(1), snapshot: snap, calendar: cal)
+        XCTAssertEqual(dates, [date(1), date(2)])
+    }
+
+    func test_timeline_snapshotAllInPast_isNowOnly() {
+        let snap = TodayWidgetSnapshot(days: [widgetDay(0), widgetDay(1)])
+        let now = cal.date(bySettingHour: 8, minute: 0, second: 0, of: date(4))!
+        XCTAssertEqual(TodayWidgetTimeline.entryDates(now: now, snapshot: snap, calendar: cal), [now])
+        XCTAssertNil(TodayWidgetTimeline.day(at: now, in: snap, calendar: cal))
+    }
+
+    func test_timeline_unsortedDays_comeOutAscending() {
+        let snap = TodayWidgetSnapshot(days: [widgetDay(2), widgetDay(0), widgetDay(1)])
+        let now = cal.date(bySettingHour: 9, minute: 0, second: 0, of: date(0))!
+        XCTAssertEqual(TodayWidgetTimeline.entryDates(now: now, snapshot: snap, calendar: cal),
+                       [now, date(1), date(2), date(3)])
+    }
 }
