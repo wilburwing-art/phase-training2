@@ -736,6 +736,21 @@ final class AuthoredRoutineTests: XCTestCase {
         XCTAssertEqual(try pullUp(week: nil).targetReps, 2, "no week serves the written \"2-5\"")
     }
 
+    /// Routine 325's finisher (row 1437) rises 10, 15, 20 at sessions 7 and 13,
+    /// weeks 4 and 7 at two sessions a week (11d 2.10).
+    func testRoutine325FinisherRepsRiseByWeek() throws {
+        let day = DayPlan(date: Date(), kind: .lift, title: "Day", routineId: 325)
+        func finisher(week: Int?) throws -> ExerciseTemplate {
+            let t = try XCTUnwrap(day.workoutTemplate(planWeek: week))
+            return try XCTUnwrap(t.exercises.first { $0.id == "rex-1437" })
+        }
+        XCTAssertEqual(try finisher(week: 1).targetReps, 10)
+        XCTAssertEqual(try finisher(week: 4).targetReps, 15)
+        XCTAssertEqual(try finisher(week: 7).targetReps, 20)
+        XCTAssertEqual(try finisher(week: 10).targetReps, 20)
+        XCTAssertEqual(try finisher(week: nil).targetReps, 10)
+    }
+
     func testTimeTrimNeverLeavesHalfASuperset() throws {
         let memory = TrainingMemory()
         for id in 325...327 {

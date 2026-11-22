@@ -7115,8 +7115,19 @@
     "rest": null,
     "tempo": null,
     "duration": null,
-    "notes": "Effort: steady. Note: Durability finisher. Source: Hamstring Hell",
-    "reps_by_week": null
+    "notes": "Effort: steady. Note: Durability finisher. Source: Hamstring Hell. Reps: 10 through week 3, 15 from session 7 (week 4), 20 from session 13 (week 7). The source's 3 rounds from session 7 are not served; sets stay 2",
+    "reps_by_week": [
+      "10",
+      "10",
+      "10",
+      "15",
+      "15",
+      "15",
+      "20",
+      "20",
+      "20",
+      "20"
+    ]
   },
   {
     "id": 1438,
