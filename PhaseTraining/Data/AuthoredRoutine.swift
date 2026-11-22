@@ -370,7 +370,8 @@ enum AuthoredRoutine {
 
         var exercises: [GeneratedExercise] = rows.map { rr in
             let re = rr.row
-            // A row that writes its progression by week serves that week's reps.
+            // A row that writes its progression by week serves that week's
+            // reps and sets.
             let reps = re.reps(forWeek: planWeek) ?? "8-12"
             // A swapped row says so, and what the original needed, so the user
             // can see why the session differs from the authored program.
@@ -394,7 +395,7 @@ enum AuthoredRoutine {
                 name: rr.name,
                 pattern: nil,
                 isCompound: false,
-                sets: re.sets ?? 3,
+                sets: re.sets(forWeek: planWeek) ?? 3,
                 reps: reps,
                 restSeconds: parseRest(re.rest) ?? 90,
                 notes: note.isEmpty ? nil : note,

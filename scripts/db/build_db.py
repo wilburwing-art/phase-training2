@@ -71,6 +71,7 @@ JSON_ARRAY_COLUMNS = {
     ("sport_movements", "allowed_phases"),
     ("sport_movements", "allowed_variants"),
     ("routine_exercises", "reps_by_week"),
+    ("routine_exercises", "sets_by_week"),
 }
 
 

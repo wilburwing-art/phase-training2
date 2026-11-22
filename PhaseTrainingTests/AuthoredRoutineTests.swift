@@ -751,6 +751,52 @@ final class AuthoredRoutineTests: XCTestCase {
         XCTAssertEqual(try finisher(week: nil).targetReps, 10)
     }
 
+    func testRoutine325FinisherSetsRiseAtWeekFour() throws {
+        let day = DayPlan(date: Date(), kind: .lift, title: "Day", routineId: 325)
+        func finisher(week: Int?) throws -> ExerciseTemplate {
+            let t = try XCTUnwrap(day.workoutTemplate(planWeek: week))
+            return try XCTUnwrap(t.exercises.first { $0.id == "rex-1437" })
+        }
+        XCTAssertEqual(try finisher(week: 1).targetSets, 2)
+        XCTAssertEqual(try finisher(week: 3).targetSets, 2)
+        XCTAssertEqual(try finisher(week: 4).targetSets, 3)
+        XCTAssertEqual(try finisher(week: 12).targetSets, 3)
+        XCTAssertEqual(try finisher(week: nil).targetSets, 2)
+
+        let memory = TrainingMemory()
+        func served(week: Int) throws -> GeneratedExercise {
+            let w = try XCTUnwrap(AuthoredRoutine.workout(
+                forRoutineId: 325, memory: memory, context: .empty, focus: .fullBodyA,
+                profile: DemographicProfile.from(memory), planWeek: week))
+            return try XCTUnwrap(w.exercises.first { $0.id == "authored-325-7" })
+        }
+        XCTAssertEqual(try served(week: 1).sets, 2)
+        XCTAssertEqual(try served(week: 4).sets, 3)
+    }
+
+    func testRoutine326FinisherRepsRiseByWeek() throws {
+        let day = DayPlan(date: Date(), kind: .lift, title: "Day", routineId: 326)
+        func finisher(week: Int?) throws -> ExerciseTemplate {
+            let t = try XCTUnwrap(day.workoutTemplate(planWeek: week))
+            return try XCTUnwrap(t.exercises.first { $0.id == "rex-1443" })
+        }
+        XCTAssertEqual(try finisher(week: 1).targetReps, 10)
+        XCTAssertEqual(try finisher(week: 5).targetReps, 15)
+        XCTAssertEqual(try finisher(week: 11).targetReps, 20)
+        XCTAssertEqual(try finisher(week: 1).targetSets, 3)
+    }
+
+    func testSetsForWeekHoldsTheLastEntry() {
+        let row = RoutineExercise(id: 1, exerciseId: 1, name: "X", position: 1,
+                                  sets: 2, setsByWeek: [2, 3])
+        XCTAssertEqual(row.sets(forWeek: nil), 2)
+        XCTAssertEqual(row.sets(forWeek: 0), 2)
+        XCTAssertEqual(row.sets(forWeek: 2), 3)
+        XCTAssertEqual(row.sets(forWeek: 9), 3)
+        XCTAssertNil(RoutineExercise(id: 1, exerciseId: 1, name: "X", position: 1)
+            .sets(forWeek: 3))
+    }
+
     func testTimeTrimNeverLeavesHalfASuperset() throws {
         let memory = TrainingMemory()
         for id in 325...327 {

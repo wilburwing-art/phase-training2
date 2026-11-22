@@ -31,11 +31,14 @@ struct RoutineExercise: Identifiable, Hashable {
     /// routine_exercises.reps_by_week: the program's own reps per plan week,
     /// week 1 first. Nil serves `reps` every week.
     let repsByWeek: [String]?
+    /// routine_exercises.sets_by_week: the program's own set count per plan
+    /// week, week 1 first. Nil serves `sets` every week.
+    let setsByWeek: [Int]?
 
     init(id: Int, exerciseId: Int, name: String, position: Int,
          sets: Int? = nil, reps: String? = nil, rest: String? = nil,
          notes: String? = nil, supersetGroup: Int? = nil,
-         repsByWeek: [String]? = nil) {
+         repsByWeek: [String]? = nil, setsByWeek: [Int]? = nil) {
         self.id = id
         self.exerciseId = exerciseId
         self.name = name
@@ -46,12 +49,20 @@ struct RoutineExercise: Identifiable, Hashable {
         self.notes = notes
         self.supersetGroup = supersetGroup
         self.repsByWeek = repsByWeek
+        self.setsByWeek = setsByWeek
     }
 
     /// The reps text for a 1-indexed plan week. Weeks past the written ones
     /// hold the last entry; no week (or no per-week list) gives `reps`.
     func reps(forWeek week: Int?) -> String? {
         guard let week, let list = repsByWeek, !list.isEmpty else { return reps }
+        return list[min(max(week, 1), list.count) - 1]
+    }
+
+    /// The set count for a 1-indexed plan week, read the way `reps(forWeek:)`
+    /// reads reps.
+    func sets(forWeek week: Int?) -> Int? {
+        guard let week, let list = setsByWeek, !list.isEmpty else { return sets }
         return list[min(max(week, 1), list.count) - 1]
     }
 }
@@ -74,7 +85,8 @@ extension BundledRoutineRow {
 }
 
 extension BundledRoutineRow {
-    /// `planWeek` picks each row's `reps(forWeek:)`; nil serves `reps`.
+    /// `planWeek` picks each row's `reps(forWeek:)` and `sets(forWeek:)`;
+    /// nil serves `reps` and `sets`.
     func toWorkoutTemplate(with exercises: [RoutineExercise], planWeek: Int? = nil) -> WorkoutTemplate {
         // Reps-only movements log as bodyweight (no weight input on the log row).
         let categories = CoachDatabase.shared.equipmentCategory(
@@ -90,7 +102,7 @@ extension BundledRoutineRow {
                     name: rex.name,
                     type: nil,
                     unit: LoggedExercise.unit(for: categories[rex.exerciseId]),
-                    targetSets: rex.sets ?? 3,
+                    targetSets: rex.sets(forWeek: planWeek) ?? 3,
                     targetReps: parseRepsLeading(reps) ?? 8,
                     rest: AuthoredRoutine.parseRest(rex.rest) ?? 90,
                     supersetGroup: rex.supersetGroup,

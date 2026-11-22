@@ -1454,7 +1454,7 @@ final class CoachDatabase {
         guard let db else { return [] }
         let sql = """
         SELECT re.id, re.exercise_id, e.name, re.position, re.sets, re.reps, re.rest, re.notes, re.superset_group,
-               re.reps_by_week
+               re.reps_by_week, re.sets_by_week
         FROM routine_exercises re
         JOIN exercises e ON e.id = re.exercise_id
         WHERE re.routine_id = ?
@@ -1479,6 +1479,9 @@ final class CoachDatabase {
                 supersetGroup: intOrNil(stmt, 8),
                 repsByWeek: text(stmt, 9).flatMap {
                     try? JSONDecoder().decode([String].self, from: Data($0.utf8))
+                },
+                setsByWeek: text(stmt, 10).flatMap {
+                    try? JSONDecoder().decode([Int].self, from: Data($0.utf8))
                 }
             ))
         }
