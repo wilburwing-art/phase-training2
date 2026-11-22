@@ -881,4 +881,83 @@ final class AuthoredRoutineTests: XCTestCase {
         XCTAssertGreaterThan(unceiledAbove, 0, "fixture is inert: no above-beginner substitute without the ceiling")
         XCTAssertGreaterThan(swaps, 0, "fixture is inert: no substitution fired under the ceiling")
     }
+
+    // MARK: - Rank by duration (11c 3.5)
+
+    func testFittingKeepsRoutinesWithinToleranceOfTheClosest() {
+        let minutes = [1: 12, 2: 58, 3: 55, 4: 46]
+        // Gaps 33, 13, 10, 1 at 45: the closest is 1, so 10 stays and 13 goes.
+        XCTAssertEqual(AuthoredRoutineSelector.fitting([1, 2, 3, 4], budget: 45) { minutes[$0]! }, [3, 4])
+        XCTAssertEqual(AuthoredRoutineSelector.fitting([7], budget: 45) { _ in 200 }, [7])
+        XCTAssertEqual(AuthoredRoutineSelector.fitting([], budget: 45) { _ in 0 }, [])
+    }
+
+    private func cyclingMaintenancePool() -> (ids: [Int], minutes: [Int: Int]) {
+        let ids = AuthoredRoutineSelector.candidates(sportSlug: "cycling", phase: .inSeason)
+        let minutes = Dictionary(uniqueKeysWithValues: ids.map {
+            ($0, AuthoredRoutineSelector.estimatedMinutes(forRoutineId: $0, excluded: [], allowed: []))
+        })
+        return (ids, minutes)
+    }
+
+    func testSelectWithBudgetPicksTheRoutineClosestInLength() throws {
+        XCTAssertTrue(AuthoredRoutineSelector.shouldServeAuthored(sportSlug: "cycling"))
+        let (ids, minutes) = cyclingMaintenancePool()
+        print("11c-3.5 cycling in-season pool minutes: \(ids.map { "\($0):\(minutes[$0]!)" })")
+        try XCTSkipIf(ids.count < 2, "fixture: cycling in-season pool has \(ids.count) routine")
+        let short = try XCTUnwrap(ids.min { minutes[$0]! < minutes[$1]! })
+        // Fixture: one short routine and at least one well past it.
+        XCTAssertLessThanOrEqual(minutes[short]!, 20)
+        XCTAssertTrue(ids.contains { minutes[$0]! >= 40 }, "\(minutes)")
+        for i in 0...3 {
+            XCTAssertEqual(AuthoredRoutineSelector.select(sportSlug: "cycling", phase: .inSeason,
+                                                          sessionIndex: i, sessionMinutes: 15),
+                           short, "slot \(i) at 15 min")
+            let long = AuthoredRoutineSelector.select(sportSlug: "cycling", phase: .inSeason,
+                                                      sessionIndex: i, sessionMinutes: 60)
+            XCTAssertNotNil(long)
+            XCTAssertNotEqual(long, short, "slot \(i) at 60 min served the \(minutes[short]!)-minute routine")
+        }
+    }
+
+    func testSelectWithoutBudgetRotatesOverEveryCandidate() throws {
+        let (ids, _) = cyclingMaintenancePool()
+        try XCTSkipIf(ids.isEmpty, "fixture: no cycling in-season routines")
+        for i in 0..<(ids.count * 2) {
+            XCTAssertEqual(AuthoredRoutineSelector.select(sportSlug: "cycling", phase: .inSeason, sessionIndex: i),
+                           ids[i % ids.count], "slot \(i)")
+        }
+        // A one-routine pool is served whatever the budget.
+        var singles = 0
+        for sport in Sport.catalog { for phase in SeasonPhase.allCases {
+            let pool = AuthoredRoutineSelector.candidates(sportSlug: sport.slug, phase: phase)
+            guard pool.count == 1 else { continue }
+            singles += 1
+            for budget in [15, 45, 120] {
+                XCTAssertEqual(AuthoredRoutineSelector.select(sportSlug: sport.slug, phase: phase,
+                                                              sessionIndex: 1, sessionMinutes: budget),
+                               pool[0], "\(sport.slug)/\(phase.rawValue) at \(budget) min")
+            }
+        } }
+        XCTAssertGreaterThan(singles, 0, "fixture: no one-routine pool in the catalog")
+    }
+
+    func testEstimatedMinutesMatchesTheServedSession() throws {
+        let memory = TrainingMemory()
+        let profile = DemographicProfile.from(memory)
+        let (ids, _) = cyclingMaintenancePool()
+        try XCTSkipIf(ids.isEmpty, "fixture: no cycling in-season routines")
+        for id in ids + [311, 325] {
+            for week in [1, 4] {
+                let w = try XCTUnwrap(AuthoredRoutine.workout(
+                    forRoutineId: id, memory: memory, context: .empty, focus: .fullBodyA,
+                    profile: profile, planWeek: week), "routine \(id)")
+                let served = w.exercises.reduce(0) { $0 + AuthoredRoutine.estimatedSeconds($1) } / 60
+                XCTAssertEqual(AuthoredRoutineSelector.estimatedMinutes(
+                    forRoutineId: id, excluded: profile.excludedExerciseIds,
+                    allowed: profile.allowedEquipmentSlugs, preferences: RoutinePreferences.from(memory),
+                    experience: memory.experience, planWeek: week), served, "routine \(id) week \(week)")
+            }
+        }
+    }
 }

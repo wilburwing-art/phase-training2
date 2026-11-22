@@ -83,7 +83,7 @@ final class GeneratorWeekInvariantTests: XCTestCase {
 
     struct Week { let cell: Cell; let plan: WeekPlan }
 
-    private func plan(_ c: Cell, routines: [BundledRoutineRow], affinities: Set<String> = []) -> Week {
+    private func memory(_ c: Cell, affinities: Set<String> = []) -> TrainingMemory {
         var m = TrainingMemory()
         m.exerciseAffinities = Dictionary(uniqueKeysWithValues: affinities.map { ($0, 5) })
         let sport = Sport.catalog.first { $0.slug == c.sport } ?? Sport(slug: c.sport, name: c.sport)
@@ -99,6 +99,11 @@ final class GeneratorWeekInvariantTests: XCTestCase {
         if c.season == .eventPrep {
             m.peakDate = Calendar.current.date(byAdding: .day, value: 40, to: Date())
         }
+        return m
+    }
+
+    private func plan(_ c: Cell, routines: [BundledRoutineRow], affinities: Set<String> = []) -> Week {
+        let m = memory(c, affinities: affinities)
         var cal = Calendar.current; cal.firstWeekday = 2
         var comps = DateComponents(); comps.year = 2026; comps.month = 11; comps.day = 9
         let monday = cal.date(from: comps)!
@@ -191,6 +196,66 @@ final class GeneratorWeekInvariantTests: XCTestCase {
         XCTAssertGreaterThan(checked, 2000, "only \(checked) engine sessions checked")
         print("[GWI] session-length: \(bad.count) of \(checked) sessions out of band")
         XCTAssertTrue(bad.isEmpty, "\(bad.count) of \(checked) sessions out of band, first: \(bad.prefix(3))")
+    }
+
+    /// The authored half of the 2.1 length invariant (11c 3.5): an authored
+    /// lift day serves a routine whose estimated length sits within
+    /// `durationTolerance` of the closest candidate's distance to the budget.
+    /// The served minutes are not held to the budget itself: most pools have
+    /// nothing near 75.
+    func test_authoredSessionPicksTheRoutineClosestToBudget() {
+        var checked = 0, pooled = 0
+        var bad: [String] = []
+        var poolCache: [String: [Int]] = [:]
+        var minutesCache: [String: Int] = [:]
+        for w in weeks() {
+            let lifts = w.plan.days.compactMap { d -> Int? in
+                d.kind == .lift ? d.generatedWorkout?.authoredRoutineId : nil
+            }
+            guard !lifts.isEmpty else { continue }
+            // The memory and profile `Planner.generate` builds for this cell.
+            let m = memory(w.cell)
+            guard let sport = m.primarySport else { continue }
+            let profile = DemographicProfile.from(m)
+            let prefs = RoutinePreferences.from(m)
+            let season = m.seasonsBySport[sport] ?? m.defaultSeason
+            let week = m.weeksInCurrentPhase ?? 1
+            let key = "\(sport.slug)/\(season.rawValue)/\(w.cell.exp.rawValue)/\(w.cell.equipName)"
+            let pool = poolCache[key] ?? AuthoredRoutineSelector.candidates(
+                sportSlug: sport.slug, phase: season, experience: m.experience,
+                excludedExerciseIds: profile.excludedExerciseIds,
+                allowedEquipmentSlugs: profile.allowedEquipmentSlugs, preferences: prefs)
+            poolCache[key] = pool
+            func minutes(_ id: Int) -> Int {
+                let k = "\(id)/\(w.cell.exp.rawValue)/\(w.cell.equipName)/wk\(week)"
+                if let v = minutesCache[k] { return v }
+                let v = AuthoredRoutineSelector.estimatedMinutes(
+                    forRoutineId: id, excluded: profile.excludedExerciseIds,
+                    allowed: profile.allowedEquipmentSlugs, preferences: prefs,
+                    experience: m.experience, planWeek: week)
+                minutesCache[k] = v
+                return v
+            }
+            let budget = m.sessionMinutes
+            for served in lifts {
+                checked += 1
+                if pool.count > 1 { pooled += 1 }
+                guard pool.contains(served) else {
+                    bad.append("[\(w.cell)] served \(served) outside candidates \(pool)")
+                    continue
+                }
+                let best = pool.map { abs(minutes($0) - budget) }.min() ?? 0
+                let gap = abs(minutes(served) - budget)
+                if gap > best + AuthoredRoutineSelector.durationTolerance {
+                    bad.append("[\(w.cell)] served \(served) at \(minutes(served)) min, gap \(gap) vs best \(best) "
+                               + "over \(pool.map { "\($0):\(minutes($0))" })")
+                }
+            }
+        }
+        print("[GWI] authored-length: \(bad.count) of \(checked) (\(pooled) from pools of two or more)")
+        XCTAssertGreaterThan(checked, 0, "no authored lift days in the grid")
+        XCTAssertGreaterThan(pooled, 0, "no authored lift day drew from a pool of two or more")
+        XCTAssertTrue(bad.isEmpty, "\(bad.count) of \(checked) authored days off the closest length, first: \(bad.prefix(3))")
     }
 
     // MARK: - 1b. Deload dose (finding 9)

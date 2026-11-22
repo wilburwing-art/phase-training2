@@ -190,7 +190,9 @@ enum WorkoutGenerator {
                     experience: memory.experience,
                     excludedExerciseIds: profile.excludedExerciseIds,
                     allowedEquipmentSlugs: profile.allowedEquipmentSlugs,
-                    preferences: RoutinePreferences.from(memory)),
+                    preferences: RoutinePreferences.from(memory),
+                    sessionMinutes: recovery.timeBudget ?? memory.sessionMinutes,
+                    planWeek: memory.weeksInCurrentPhase ?? 1),
                let authored = AuthoredRoutine.workout(
                     forRoutineId: routineId, memory: memory, context: context,
                     focus: WorkoutFocus.lift(liftIndex: liftIndex, totalLifts: totalLifts),

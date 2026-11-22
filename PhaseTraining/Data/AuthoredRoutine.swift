@@ -61,10 +61,6 @@ enum AuthoredRoutineSelector {
         return !SportSeasonGenerator.supports(sportSlug)
     }
 
-    /// Pick an authored routine id for this (sport, phase, session slot), or
-    /// nil to fall through to the season engine. Deterministic: the same
-    /// (sport, phase, sessionIndex) always resolves to the same routine, and
-    /// multiple lift days in a phase rotate through the available routines.
     /// Minimum movements for a routine to be served as a day's workout. Mirrors
     /// the season engine's own floor (`targetMovementCount`'s `max(3, ...)`).
     /// The DB query applies it to the routine as authored; `viable` below
@@ -131,12 +127,16 @@ enum AuthoredRoutineSelector {
         (difficultyRank[difficulty ?? "intermediate"] ?? 1) <= ceiling
     }
 
-    static func select(sportSlug: String, phase: SeasonPhase, sessionIndex: Int,
-                       experience: ExperienceLevel? = nil,
-                       excludedExerciseIds: Set<Int> = [],
-                       allowedEquipmentSlugs: Set<String> = [],
-                       preferences: RoutinePreferences = .none) -> Int? {
-        guard isEnabled, shouldServeAuthored(sportSlug: sportSlug) else { return nil }
+    /// Routines this athlete may be served for (sport, phase), id ASC: the
+    /// sport's mapped phases, then (an unsupported sport only) any phase, then
+    /// (an outdoor authored sport only) the generic base. Empty means fall
+    /// through to the season engine.
+    static func candidates(sportSlug: String, phase: SeasonPhase,
+                           experience: ExperienceLevel? = nil,
+                           excludedExerciseIds: Set<Int> = [],
+                           allowedEquipmentSlugs: Set<String> = [],
+                           preferences: RoutinePreferences = .none) -> [Int] {
+        guard isEnabled, shouldServeAuthored(sportSlug: sportSlug) else { return [] }
         let db = CoachDatabase.shared
         var ids = viable(routines(db.authoredRoutineIds(sportSlug: sportSlug,
                                                         phaseLabels: phaseLabels(for: phase)),
@@ -148,7 +148,7 @@ enum AuthoredRoutineSelector {
             // THROUGH to the engine. An unsupported authored sport has no engine
             // backstop, so broaden to any full-session routine for the sport —
             // an authored-served sport must never yield an empty day.
-            guard !SportSeasonGenerator.supports(sportSlug) else { return nil }
+            guard !SportSeasonGenerator.supports(sportSlug) else { return [] }
             ids = viable(routines(db.authoredRoutineIds(sportSlug: sportSlug, phaseLabels: allPhaseLabels),
                                   for: experience, sportSlug: sportSlug),
                          excluding: excludedExerciseIds, allowed: allowedEquipmentSlugs,
@@ -171,10 +171,63 @@ enum AuthoredRoutineSelector {
                 // and falling through is the better answer.
                 ids = viable(db.authoredRoutineIds(sportSlug: genericBaseSlug, phaseLabels: allPhaseLabels),
                              excluding: excludedExerciseIds, allowed: allowedEquipmentSlugs,
-                         preferences: preferences, experience: experience)
+                             preferences: preferences, experience: experience)
             }
         }
+        return ids
+    }
+
+    /// How far, in minutes, a routine may sit from the budget beyond the
+    /// closest routine's distance and still be picked.
+    static let durationTolerance = 10
+
+    /// The ids whose estimated minutes sit within `durationTolerance` of the
+    /// closest one to `budget`, in their original order.
+    static func fitting(_ ids: [Int], budget: Int, minutes: (Int) -> Int) -> [Int] {
+        let gaps = ids.map { abs(minutes($0) - budget) }
+        guard let best = gaps.min() else { return [] }
+        return zip(ids, gaps).filter { $0.1 <= best + durationTolerance }.map(\.0)
+    }
+
+    /// Week-`planWeek` working minutes of a routine as this user is served it:
+    /// the same rows, sets and reps (and defaults) `AuthoredRoutine.workout`
+    /// serves, so the selector and the served session agree.
+    static func estimatedMinutes(forRoutineId id: Int, excluded: Set<Int>, allowed: Set<String>,
+                                 preferences: RoutinePreferences = .none,
+                                 experience: ExperienceLevel? = nil,
+                                 planWeek: Int? = nil) -> Int {
+        AuthoredRoutine.resolvedRows(forRoutineId: id, excluded: excluded, allowed: allowed,
+                                     preferences: preferences, experience: experience)
+            .reduce(0) { total, rr in
+                total + AuthoredRoutine.estimatedSeconds(sets: rr.row.sets(forWeek: planWeek) ?? 3,
+                                                         reps: rr.row.reps(forWeek: planWeek) ?? "8-12")
+            } / 60
+    }
+
+    /// Pick an authored routine id for this (sport, phase, session slot), or
+    /// nil to fall through to the season engine. Deterministic: the same
+    /// inputs always resolve to the same routine. With `sessionMinutes`, the
+    /// pool narrows to the routines whose length sits closest to it
+    /// (`fitting`); lift days in a phase rotate by `sessionIndex` over what is
+    /// left, id ASC.
+    static func select(sportSlug: String, phase: SeasonPhase, sessionIndex: Int,
+                       experience: ExperienceLevel? = nil,
+                       excludedExerciseIds: Set<Int> = [],
+                       allowedEquipmentSlugs: Set<String> = [],
+                       preferences: RoutinePreferences = .none,
+                       sessionMinutes: Int? = nil,
+                       planWeek: Int? = nil) -> Int? {
+        var ids = candidates(sportSlug: sportSlug, phase: phase, experience: experience,
+                             excludedExerciseIds: excludedExerciseIds,
+                             allowedEquipmentSlugs: allowedEquipmentSlugs, preferences: preferences)
         guard !ids.isEmpty else { return nil }
+        if let budget = sessionMinutes, ids.count > 1 {
+            ids = fitting(ids, budget: budget) {
+                estimatedMinutes(forRoutineId: $0, excluded: excludedExerciseIds,
+                                 allowed: allowedEquipmentSlugs, preferences: preferences,
+                                 experience: experience, planWeek: planWeek)
+            }
+        }
         // Non-negative modulo so a negative sessionIndex can't crash.
         return ids[((sessionIndex % ids.count) + ids.count) % ids.count]
     }
@@ -445,12 +498,16 @@ enum AuthoredRoutine {
     /// counts 90 s per set. Anchored at the start so "30-40% of your 2-minute
     /// max" counts as sets x 90 s.
     static func estimatedSeconds(_ ex: GeneratedExercise) -> Int {
+        estimatedSeconds(sets: ex.sets, reps: ex.reps)
+    }
+
+    static func estimatedSeconds(sets: Int, reps: String) -> Int {
         let pattern = #"^\s*(\d+)(?:\s*-\s*(\d+))?\s*min"#
-        if let m = ex.reps.range(of: pattern, options: [.regularExpression, .caseInsensitive]) {
-            let nums = ex.reps[m].split(whereSeparator: { !$0.isNumber }).compactMap { Int($0) }
-            if let top = nums.last { return ex.sets * top * 60 }
+        if let m = reps.range(of: pattern, options: [.regularExpression, .caseInsensitive]) {
+            let nums = reps[m].split(whereSeparator: { !$0.isNumber }).compactMap { Int($0) }
+            if let top = nums.last { return sets * top * 60 }
         }
-        return ex.sets * 90
+        return sets * 90
     }
 
     /// Drop trailing units until `estimate` fits `budget` minutes. A unit is a

@@ -26,7 +26,12 @@ season path omits). Miss → falls through to the season engine. Files:
    offSeason→[off_season,base], preSeason→[build], inSeason→[maintenance],
    eventPrep→[build,maintenance], maintenance→[maintenance,base]. Routine must be
    tagged to the sport via `routine_sports`→`sport_categories.id` AND carry a
-   matching `phase`. Multiple matches rotate by `sessionIndex % count`, id ASC.
+   matching `phase`. Multiple matches (`candidates`) first narrow by length
+   (11c 3.5): `select(sessionMinutes:planWeek:)` keeps the routines whose
+   `estimatedMinutes` gap to the budget is within `durationTolerance` (10 min)
+   of the closest one (`fitting`), then rotate by `sessionIndex % count`, id
+   ASC. `generateLift` passes the check-in time chip, else
+   `memory.sessionMinutes`. nil `sessionMinutes` rotates over every candidate.
 
 Kill-switch: UserDefaults `authored_routines_enabled` (default true).
 
