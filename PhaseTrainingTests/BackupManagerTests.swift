@@ -25,6 +25,39 @@ final class BackupManagerTests: XCTestCase {
         XCTAssertFalse(decoded.reminderEnabled)
     }
 
+    /// 11c 2.5: a routine with exercise rows survives snapshot, encode,
+    /// decode and restore with its rows in position order and every
+    /// prescription field (nil included) intact.
+    func test_customRoutineExercises_roundTripThroughBackup() throws {
+        let originalDB = UserDatabase(path: ":memory:")
+        let restoredDB = UserDatabase(path: ":memory:")
+        let created = Date(timeIntervalSince1970: 1_780_000_000)
+        originalDB.save(CustomRoutine(id: "r-full", name: "Garage Pull", exercises: [
+            CustomRoutineExercise(id: "e1", exerciseId: 202, name: "Curl", position: 1,
+                                  sets: nil, reps: nil, rest: nil, notes: "slow eccentric"),
+            CustomRoutineExercise(id: "e0", exerciseId: 101, name: "Row", position: 0,
+                                  sets: 4, reps: "6-8", rest: "2 min", notes: nil),
+        ], createdAt: created))
+
+        let envelope = BackupManager.snapshot(defaults: freshDefaults("original"), userDB: originalDB)
+        let decoded = try BackupManager.decode(try BackupManager.encode(envelope))
+        try BackupManager.restore(decoded, into: freshDefaults("restored"), userDB: restoredDB)
+
+        let got = try XCTUnwrap(restoredDB.routine(id: "r-full"))
+        XCTAssertEqual(got.name, "Garage Pull")
+        XCTAssertEqual(got.createdAt, created)
+        XCTAssertEqual(got.exercises.map(\.id), ["e0", "e1"])
+        XCTAssertEqual(got.exercises.map(\.exerciseId), [101, 202])
+        XCTAssertEqual(got.exercises[0].sets, 4)
+        XCTAssertEqual(got.exercises[0].reps, "6-8")
+        XCTAssertEqual(got.exercises[0].rest, "2 min")
+        XCTAssertNil(got.exercises[0].notes)
+        XCTAssertNil(got.exercises[1].sets)
+        XCTAssertNil(got.exercises[1].reps)
+        XCTAssertNil(got.exercises[1].rest)
+        XCTAssertEqual(got.exercises[1].notes, "slow eccentric")
+    }
+
     func test_fullDataRoundTrip_preservesEverything() throws {
         let original = freshDefaults("original")
         // Customs + saved sessions live in user.db. Each world (original vs.
