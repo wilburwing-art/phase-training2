@@ -143,6 +143,11 @@ struct RootTabView: View {
             sessionStore.onAbandonRecorded = { [weak planStore] entry in
                 planStore?.recordAbandonment(entry)
             }
+            // 11c 3.2 — a Pain stop's joints become a hurt report that
+            // MuscleRecovery reads, before onSessionSaved's applyRecovery.
+            sessionStore.onHurtReported = { [weak memoryStore] hurt in
+                memoryStore?.update { $0.feedback.append(hurt) }
+            }
             // The latest max-hang test sets hangboard added load.
             sessionStore.hangboardLoad = { [weak memoryStore] name in
                 memoryStore.flatMap { HangboardLoad.prescription(forExerciseNamed: name, memory: $0.memory) }

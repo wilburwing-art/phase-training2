@@ -35,14 +35,6 @@ struct PostWorkoutFeedbackSheet: View {
         ("too_hard", "Too hard"),
     ]
 
-    /// Curated short list of body regions the user can flag as hurt. These are
-    /// joint/region words (not muscle slugs) — same vocabulary the pre-workout
-    /// soreness sheet uses, kept consistent so coach summaries can join them.
-    private static let hurtAreaOptions: [String] = [
-        "lower back", "knee", "shoulder", "elbow",
-        "wrist", "neck", "hip", "ankle",
-    ]
-
     // MARK: - Body
 
     var body: some View {
@@ -116,7 +108,7 @@ struct PostWorkoutFeedbackSheet: View {
             }
             let columns = [GridItem(.adaptive(minimum: 100), spacing: 6)]
             LazyVGrid(columns: columns, alignment: .leading, spacing: 6) {
-                ForEach(Self.hurtAreaOptions, id: \.self) { area in
+                ForEach(FeedbackEntry.hurtAreaOptions, id: \.self) { area in
                     chip(label: area.capitalized, active: hurtAreas.contains(area)) {
                         toggleArea(area)
                     }

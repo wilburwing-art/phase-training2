@@ -886,6 +886,14 @@ struct FeedbackEntry: Codable, Identifiable, Hashable {
     var difficulty: String?
     var hurtAreas: [String] = []
     var notes: String?
+
+    /// Joints the athlete can flag as hurt, on the post-workout sheet and on
+    /// a Pain stop. Each maps to muscle buckets in
+    /// `MuscleRecovery.buckets(forHurtArea:)`.
+    static let hurtAreaOptions: [String] = [
+        "lower back", "knee", "shoulder", "elbow",
+        "wrist", "neck", "hip", "ankle",
+    ]
 }
 
 struct SorenessEntry: Codable, Identifiable, Hashable {

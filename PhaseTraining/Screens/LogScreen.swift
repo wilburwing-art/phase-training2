@@ -192,8 +192,8 @@ struct LogScreen: View {
             // AbandonedWorkoutEntry the rules engine + coach read.
             AbandonReasonSheet(
                 completionSummary: "\(store.stats(for: session).doneSets) of \(store.stats(for: session).totalSets) sets logged",
-                onConfirm: { reason, note in
-                    abandonWorkout(reason: reason, note: note)
+                onConfirm: { reason, note, hurtAreas in
+                    abandonWorkout(reason: reason, note: note, hurtAreas: hurtAreas)
                 },
                 onCancel: {}
             )
@@ -572,8 +572,8 @@ struct LogScreen: View {
     /// session through the normal completed path (logged sets are real
     /// history: PRs, volume, prior-best), then records the
     /// AbandonedWorkoutEntry. Callback to TodayTab drops back to Start.
-    func abandonWorkout(reason: AbandonReason, note: String?) {
-        store.saveAbandoned(session, reason: reason, note: note)
+    func abandonWorkout(reason: AbandonReason, note: String?, hurtAreas: [String]) {
+        store.saveAbandoned(session, reason: reason, note: note, hurtAreas: hurtAreas)
         // PR 9 — pain abandons soft-trigger a coach check-in: the
         // drawer opens with a pre-filled question the user can edit or
         // send. Gated on coach entitlement so a locked user isn't
@@ -581,6 +581,7 @@ struct LogScreen: View {
         // forced chat, no notification.
         if reason == .pain, conv.presented == false {
             var prefill = "I stopped today's workout early because of pain"
+            if !hurtAreas.isEmpty { prefill += " in my \(hurtAreas.joined(separator: " and "))" }
             if let note, !note.isEmpty { prefill += " (\(note))" }
             prefill += ". Can you adjust the rest of my week around it?"
             conv.present(withPrefill: prefill)

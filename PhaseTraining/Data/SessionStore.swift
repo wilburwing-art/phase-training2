@@ -31,6 +31,10 @@ final class SessionStore: ObservableObject {
     /// records the planned-vs-actual DayOutcome from it. Closure wiring keeps
     /// SessionStore plan-agnostic, same as `onAbandonRecorded`.
     var onSessionSaved: ((SavedSession, _ abandoned: Bool) -> Void)?
+    /// 11c 3.2 — a Pain stop's hurt report, fired before `onSessionSaved`
+    /// so the recovery rebuild it triggers already sees the report. The App
+    /// layer appends it to `memory.feedback`.
+    var onHurtReported: ((FeedbackEntry) -> Void)?
     /// Fired after saved history changes OUTSIDE a fresh save: a logged
     /// session edited in History or deleted. The sets behind muscle recovery
     /// changed, so RootTabView reruns `PlanStore.applyRecovery` from it.
@@ -584,7 +588,8 @@ final class SessionStore: ObservableObject {
     /// other session.
     @discardableResult
     func saveAbandoned(_ active: ActiveSession, reason: AbandonReason,
-                       note: String?, endTime: Date = Date()) -> SavedSession {
+                       note: String?, hurtAreas: [String] = [],
+                       endTime: Date = Date()) -> SavedSession {
         var abandonNote = "Stopped early: \(reason.label)"
         if let note, !note.isEmpty { abandonNote += ": \(note)" }
         let saved = commitCompleted(active, feel: reason.label, note: abandonNote, endTime: endTime)
@@ -600,6 +605,10 @@ final class SessionStore: ObservableObject {
         // tap on a ≥70% session is a completed (if short) workout.
         let isAbandonment = ratio < AbandonedWorkoutEntry.abandonmentThreshold
         defer { onSessionSaved?(saved, isAbandonment) }
+        if let hurt = AbandonedWorkoutEntry.painFeedback(reason: reason, hurtAreas: hurtAreas,
+                                                         sessionId: active.templateId, at: endTime) {
+            onHurtReported?(hurt)
+        }
         if isAbandonment {
             onAbandonRecorded?(
                 AbandonedWorkoutEntry(
@@ -607,7 +616,8 @@ final class SessionStore: ObservableObject {
                     plannedTitle: active.name,
                     reason: reason,
                     completionRatio: ratio,
-                    note: note
+                    note: note,
+                    hurtAreas: hurtAreas
                 )
             )
         }

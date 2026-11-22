@@ -338,6 +338,32 @@ final class BackupManagerTests: XCTestCase {
         XCTAssertEqual(decoded.memory?.age, 40)
     }
 
+    /// 11c 3.2: `AbandonedWorkoutEntry.hurtAreas` is new. A backup written
+    /// before it has no such key and still decodes, and a new one keeps the areas.
+    func test_decode_abandonmentWithoutHurtAreas_decodes_andNewAreasRoundTrip() throws {
+        var envelope = BackupEnvelope(
+            schemaVersion: BackupEnvelope.currentSchemaVersion,
+            exportedAt: Date(),
+            memory: nil, savedSessions: [], activeSession: nil,
+            customRoutines: [], plan: nil, overrides: nil,
+            reminderEnabled: false
+        )
+        envelope.abandonedWorkouts = [AbandonedWorkoutEntry(
+            date: Date(timeIntervalSince1970: 1_780_000_000), plannedTitle: "Legs",
+            reason: .pain, completionRatio: 0.2, note: "knee", hurtAreas: ["knee"])]
+        let data = try BackupManager.encode(envelope)
+        XCTAssertEqual(try BackupManager.decode(data).abandonedWorkouts.first?.hurtAreas, ["knee"])
+
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        var rows = try XCTUnwrap(json["abandonedWorkouts"] as? [[String: Any]])
+        XCTAssertNotNil(rows[0].removeValue(forKey: "hurtAreas"))
+        json["abandonedWorkouts"] = rows
+        let old = try BackupManager.decode(JSONSerialization.data(withJSONObject: json))
+        XCTAssertEqual(old.abandonedWorkouts.count, 1)
+        XCTAssertNil(old.abandonedWorkouts.first?.hurtAreas)
+        XCTAssertEqual(old.abandonedWorkouts.first?.note, "knee")
+    }
+
     func test_envelopeWithoutMemory_isNeverStale() {
         let envelope = BackupEnvelope(
             schemaVersion: BackupEnvelope.currentSchemaVersion,

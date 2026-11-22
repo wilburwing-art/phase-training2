@@ -14,11 +14,14 @@ struct AbandonReasonSheet: View {
     /// Done sets / total sets at the moment the sheet opened, for the
     /// one-line context under the title.
     let completionSummary: String
-    let onConfirm: (AbandonReason, String?) -> Void
+    /// Reason, trimmed note, and the joints picked for a Pain stop (empty
+    /// for every other reason).
+    let onConfirm: (AbandonReason, String?, [String]) -> Void
     let onCancel: () -> Void
 
     @State private var reason: AbandonReason?
     @State private var note: String = ""
+    @State private var hurtAreas: Set<String> = []
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -64,6 +67,10 @@ struct AbandonReasonSheet: View {
                 }
                 .padding(.horizontal, 20)
 
+                if reason == .pain {
+                    painAreas
+                }
+
                 TextField("Add a note (optional)", text: $note, axis: .vertical)
                     .styled(.body)
                     .foregroundStyle(Color.ink)
@@ -95,8 +102,9 @@ struct AbandonReasonSheet: View {
                     Button("Done") {
                         guard let reason else { return }
                         let trimmed = note.trimmingCharacters(in: .whitespacesAndNewlines)
+                        let areas = reason == .pain ? hurtAreas.sorted() : []
                         dismiss()
-                        onConfirm(reason, trimmed.isEmpty ? nil : trimmed)
+                        onConfirm(reason, trimmed.isEmpty ? nil : trimmed, areas)
                     }
                     .disabled(reason == nil)
                 }
@@ -104,12 +112,49 @@ struct AbandonReasonSheet: View {
         }
         .preferredColorScheme(.dark)
     }
+
+    /// 11c 3.2 — where it hurts. Same joints as the post-workout sheet; each
+    /// eases the muscles around it on the next session for 36 hours.
+    private var painAreas: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("WHERE DOES IT HURT? (OPTIONAL)")
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 100), spacing: 6)],
+                      alignment: .leading, spacing: 6) {
+                ForEach(FeedbackEntry.hurtAreaOptions, id: \.self) { area in
+                    let active = hurtAreas.contains(area)
+                    Button {
+                        if active { hurtAreas.remove(area) } else { hurtAreas.insert(area) }
+                    } label: {
+                        Text(area.capitalized)
+                            .font(.scaled("JetBrainsMono-Medium", size: 11))
+                            .foregroundStyle(active ? Color.accentInk : Color.ink2)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 8)
+                            .frame(maxWidth: .infinity)
+                            .background(active ? Color.accent : Color.elevated)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(active ? Color.clear : Color.lineStrong, lineWidth: 0.5)
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(active ? .isSelected : [])
+                    .accessibilityIdentifier("abandon-hurt-\(area.replacingOccurrences(of: " ", with: "-"))")
+                }
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 14)
+    }
 }
 
 #Preview {
     AbandonReasonSheet(
         completionSummary: "3 of 12 sets logged",
-        onConfirm: { _, _ in },
+        onConfirm: { _, _, _ in },
         onCancel: {}
     )
 }

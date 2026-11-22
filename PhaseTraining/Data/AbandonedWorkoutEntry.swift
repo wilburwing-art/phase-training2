@@ -58,15 +58,22 @@ struct AbandonedWorkoutEntry: Codable, Identifiable, Hashable {
     /// any reason). Trimmed; nil when empty.
     var note: String?
     var loggedAt: Date
+    /// Joints picked on the sheet for a Pain stop, from
+    /// `FeedbackEntry.hurtAreaOptions`. Optional so entries stored before
+    /// 11c 3.2 decode (synthesized Codable reads a missing key as nil).
+    var hurtAreas: [String]?
 
     init(date: Date, plannedTitle: String?, reason: AbandonReason,
-         completionRatio: Double, note: String? = nil, loggedAt: Date = Date()) {
+         completionRatio: Double, note: String? = nil, hurtAreas: [String] = [],
+         loggedAt: Date = Date()) {
         self.id = UUID()
         self.date = date
         self.plannedTitle = plannedTitle
         self.reason = reason
         self.completionRatio = min(max(completionRatio, 0), 1)
         self.note = note
+        let areas = reason == .pain ? Array(Set(hurtAreas)).sorted() : []
+        self.hurtAreas = areas.isEmpty ? nil : areas
         self.loggedAt = loggedAt
     }
 }
@@ -76,4 +83,17 @@ extension AbandonedWorkoutEntry {
     /// via Stop early, is an abandonment. Above it, the session is a
     /// completed (if short) workout and no entry is recorded.
     static let abandonmentThreshold = 0.70
+
+    /// The hurt report a Pain stop with areas adds to `TrainingMemory.feedback`,
+    /// where `MuscleRecovery.status` eases the muscles around each joint for
+    /// its 36 hour hurt window. Written for every Pain stop, above the
+    /// abandonment threshold too: the joint hurts either way. Difficulty
+    /// stays nil, so the planner's too-hard trim never counts a pain stop.
+    static func painFeedback(reason: AbandonReason, hurtAreas: [String],
+                             sessionId: String?, at date: Date) -> FeedbackEntry? {
+        let areas = Array(Set(hurtAreas)).sorted()
+        guard reason == .pain, !areas.isEmpty else { return nil }
+        return FeedbackEntry(date: date, sessionId: sessionId, difficulty: nil,
+                             hurtAreas: areas, notes: nil)
+    }
 }
