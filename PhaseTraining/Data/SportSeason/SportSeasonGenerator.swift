@@ -328,6 +328,13 @@ enum SportSeasonGenerator {
                             let ll = loadRank[$0.exerciseId] ?? 1, rl = loadRank[$1.exerciseId] ?? 1
                             if ll != rl { return ll < rl }
                         }
+                        // Recency, in the slot fill's order: a short slot
+                        // refilled with last week's movement while a fresh
+                        // one sat in the pool (403 of 3,294 accessory repeats,
+                        // 11c 3.8). Anchors skip it as in the slot fill.
+                        let lt = Self.rotationTier($0, athlete, anchor: anchorDemands.contains(demand))
+                        let rt = Self.rotationTier($1, athlete, anchor: anchorDemands.contains(demand))
+                        if lt != rt { return lt < rt }
                         return djb2("\(tie)-backfill-\($0.exerciseId)") < djb2("\(tie)-backfill-\($1.exerciseId)")
                     }) {
                     out.append(Pick(movement: m, demand: demand))

@@ -359,24 +359,12 @@ final class SeasonInvariantTests: XCTestCase {
         return out
     }
 
-    /// Sport, phase and equipment cells where the shortfall backfill
-    /// (`SportSeasonGenerator.swift:296-313`) fills a slot with last week's
-    /// movement while a fresh one with the slot's primary demand is in the
-    /// pool: backfill sorts on rejection, soreness and seed and has no
-    /// recency tier. 403 of 3,294 repeats on 2026-11-18; adding
-    /// `rotationTier` to that sort cleared all of them. Filed as 11c 3.8.
+    /// Sport, phase and equipment cells allowed to repeat an accessory over
+    /// a fresh primary-demand movement. Empty since 11c 3.8 put the recency
+    /// tier in the shortfall backfill sort (403 of 3,294 repeats before).
     /// A cell outside this list that breaks the contract fails, and a listed
-    /// cell that holds fails so the list shrinks with the fix.
-    static let knownBackfillRepeatCells: Set<String> = [
-        "alpine-skiing/event_prep/homebar", "alpine-skiing/in_season/bw", "alpine-skiing/in_season/homebar",
-        "alpine-skiing/maintenance/gym", "alpine-skiing/pre_season/bw",
-        "ski-mountaineering/event_prep/bw", "ski-mountaineering/event_prep/homebar",
-        "ski-mountaineering/maintenance/gym", "ski-mountaineering/maintenance/homebar",
-        "ski-mountaineering/pre_season/homebar",
-        "snow-sports/event_prep/bw", "snow-sports/event_prep/homebar", "snow-sports/in_season/bw",
-        "snow-sports/in_season/homebar", "snow-sports/maintenance/gym", "snow-sports/maintenance/homebar",
-        "snow-sports/pre_season/bw",
-    ]
+    /// cell that holds fails so the list shrinks with any future fix.
+    static let knownBackfillRepeatCells: Set<String> = []
 
     /// The rotation contract (`SportSeasonGenerator` candidate sort): recency
     /// ranks below the primary-demand match, so a sport-session accessory may
