@@ -1011,26 +1011,18 @@ final class PlannerTests: XCTestCase {
                        "Old logs must fall out of the 7-day window")
     }
 
-    func test_generatorContext_recentHardSportDays_dedupesByDay() {
-        // Two HARD logs on the same calendar day must count as ONE day —
-        // long sessions split into multiple entries shouldn't double-count.
-        let cal = Calendar.current
-        let now = cal.startOfDay(for: Date())
-        let dayMinus2 = cal.date(byAdding: .day, value: -2, to: now)!
-        let log1 = SportLogEntry(
-            date: dayMinus2, sport: climbingSport(),
-            durationMinutes: 60, intensity: .hard, note: nil,
-            loggedAt: dayMinus2.addingTimeInterval(3600)
+    func test_recentSignalBias_hardSportDedupesByDay() {
+        // Three HARD logs on one calendar day are one hard day, below the
+        // three-day trim: a long session split into entries must not trim.
+        var memory = TrainingMemory()
+        memory.liftDaysPerWeek = 4
+        let logs = [hardClimbLog(daysAgo: 2),
+                    hardClimbLog(daysAgo: 2),
+                    hardClimbLog(daysAgo: 2)]
+        let adjusted = Planner.applyRecentSignalBias(
+            memory: memory, feedback: [], sportLogs: logs
         )
-        let log2 = SportLogEntry(
-            date: dayMinus2, sport: climbingSport(),
-            durationMinutes: 30, intensity: .hard, note: nil,
-            loggedAt: dayMinus2.addingTimeInterval(7200)
-        )
-        let ctx = GeneratorContext.from(
-            sessions: [], soreness: [], feedback: [],
-            sportLogs: [log1, log2], now: now
-        )
-        XCTAssertEqual(ctx.recentHardSportDays, 1)
+        XCTAssertEqual(adjusted.liftDaysPerWeek, 4,
+                       "Same-day hard logs count as one day")
     }
 }

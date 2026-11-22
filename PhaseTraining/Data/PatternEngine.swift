@@ -22,6 +22,8 @@ enum SuggestionRule: String, Codable, CaseIterable {
     case droppedExercise
     /// The same bundled routine keeps getting opened and is not saved.
     case viewedRoutine
+    /// Workouts keep getting stopped because equipment was not there.
+    case equipmentUnavailable
 }
 
 enum SuggestionAction: Codable, Hashable {
@@ -32,6 +34,9 @@ enum SuggestionAction: Codable, Hashable {
     case sinkExercise(name: String)
     /// Copy a bundled coach.db routine into the user's saved workouts.
     case saveRoutine(routineId: Int, name: String)
+    /// Open the saved equipment for review. Writes nothing: the user edits
+    /// the list in `EquipmentEditorSheet`, so no workout is changed here.
+    case reviewEquipment
 }
 
 struct Suggestion: Identifiable, Hashable {
@@ -71,6 +76,7 @@ enum PatternEngine {
     static let overrunSessionsNeeded = 3
     static let overrunLookback = 5
     static let timeOutAbandonsNeeded = 2
+    static let equipmentAbandonsNeeded = 2
     static let dropsNeeded = 3
     static let routineVisitsNeeded = 3
 
@@ -91,6 +97,7 @@ enum PatternEngine {
         // Each candidate carries a qualifier over its own events so an
         // accepted suggestion can be re-tested on events after the accept.
         for (candidate, qualifies) in sessionLengthCandidates(input, cutoff: cutoff)
+            + equipmentCandidates(input, cutoff: cutoff)
             + droppedCandidates(input, cutoff: cutoff)
             + routineCandidates(input, cutoff: cutoff) {
             guard allowed(candidate, qualifies: qualifies, decisions: input.decisions, now: now) else { continue }
@@ -168,6 +175,25 @@ enum PatternEngine {
             eventDates: dates)
         let needed = byOverrun ? overrunSessionsNeeded : timeOutAbandonsNeeded
         return [(s, { $0.count >= needed })]
+    }
+
+    // MARK: - Rule: equipment keeps not being there
+
+    private static func equipmentCandidates(_ input: Inputs, cutoff: Date) -> [Candidate] {
+        let stops = input.abandoned
+            .filter { $0.date >= cutoff && $0.reason == .equipmentUnavailable }
+            .sorted { $0.date > $1.date }
+        guard stops.count >= equipmentAbandonsNeeded else { return [] }
+        let s = Suggestion(
+            // No subject: the saved equipment is one list.
+            id: SuggestionRule.equipmentUnavailable.rawValue,
+            rule: .equipmentUnavailable,
+            title: "Your plan keeps asking for equipment you don't have.",
+            evidence: "\(stops.count) workouts in the last 4 weeks stopped because equipment was unavailable.",
+            acceptLabel: "Review my equipment",
+            action: .reviewEquipment,
+            eventDates: stops.map(\.date))
+        return [(s, { $0.count >= equipmentAbandonsNeeded })]
     }
 
     // MARK: - Rule: a planned exercise keeps getting dropped

@@ -325,7 +325,7 @@ final class PlanStoreSeamsTests: XCTestCase {
                       "a session 3 days ago is inside the 28-day readiness window")
     }
 
-    func test_makeGeneratorContext_countsRecentHardSportDays() throws {
+    func test_makeGeneratorContext_readsSportLogStore() throws {
         let today = monday()
         let cal = Calendar.current
         let store = makeStore()
@@ -342,8 +342,8 @@ final class PlanStoreSeamsTests: XCTestCase {
         store.sportLogStore = sportLogs
 
         let ctx = store.makeGeneratorContext(memory: gymMemory(), today: today)
-        XCTAssertEqual(ctx.recentHardSportDays, 2,
-                       "two distinct hard days in window; the moderate day doesn't count")
+        XCTAssertTrue(ctx.hasReadinessData,
+                      "the store's sport logs reach the context: the moderate day is a readiness event")
     }
 
     // MARK: - buildGeneratorContext signals (via the public seam)

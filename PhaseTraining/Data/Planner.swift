@@ -334,9 +334,8 @@ enum Planner {
             if weight > 0 { tooHard += weight } else { tooEasy -= weight }
         }
 
-        // Distinct calendar days with at least one HARD sport log. Mirrors
-        // GeneratorContext.recentHardSportDays — we recompute here rather
-        // than depend on context so this function stays pure / testable.
+        // Distinct calendar days with at least one HARD sport log, deduped
+        // by start of day so one session split into two logs counts once.
         let hardSportDays = Set(
             sportLogs
                 .filter { $0.intensity == .hard && $0.date >= cutoff }

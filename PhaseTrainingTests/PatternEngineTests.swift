@@ -1,6 +1,7 @@
 // PatternEngineTests.swift — A4: suggestions from repeated behavior.
 //
-// Rules at, below and past their thresholds; the 28-day window; the cap;
+// Rules at, below and past their thresholds (session length, equipment
+// stops, dropped exercise, viewed routine); the 28-day window; the cap;
 // stable ids; dismiss cooldown and post-accept suppression; each accept action
 // through PlanStore; the bundled-to-saved routine copy; the check-in counter
 // with the new step; and the coach block leaving browse data out.
@@ -83,6 +84,41 @@ final class PatternEngineTests: XCTestCase {
         let o = (0..<3).map { outcome(Double($0 + 1), minutes: 200, target: 30) }
         let s = try XCTUnwrap(run(inputs(outcomes: o, minutes: 30)).first)
         XCTAssertEqual(s.action, .setSessionMinutes(20))
+    }
+
+    // MARK: - Equipment unavailable
+
+    private func stop(_ daysAgo: Double, _ reason: AbandonReason = .equipmentUnavailable) -> AbandonedWorkoutEntry {
+        AbandonedWorkoutEntry(date: self.daysAgo(daysAgo), plannedTitle: "A", reason: reason, completionRatio: 0.3)
+    }
+
+    func test_equipment_firesOnTwoStops_andNotOnOne() throws {
+        XCTAssertTrue(run(inputs(abandoned: [stop(2)])).isEmpty)
+        let s = try XCTUnwrap(run(inputs(abandoned: [stop(2), stop(9)])).first)
+        XCTAssertEqual(s.id, "equipmentUnavailable")
+        XCTAssertEqual(s.rule, .equipmentUnavailable)
+        XCTAssertEqual(s.action, .reviewEquipment)
+        XCTAssertEqual(s.acceptLabel, "Review my equipment")
+        XCTAssertEqual(s.evidence, "2 workouts in the last 4 weeks stopped because equipment was unavailable.")
+        XCTAssertEqual(s.eventDates, [daysAgo(2), daysAgo(9)])
+    }
+
+    func test_equipment_otherReasonsAndOldStopsDoNotCount() {
+        XCTAssertTrue(run(inputs(abandoned: [stop(2), stop(3, .feltOff), stop(4, .pain)])).isEmpty)
+        XCTAssertTrue(run(inputs(abandoned: [stop(2), stop(30)])).isEmpty, "the second stop is outside 28 days")
+    }
+
+    func test_equipment_andTimeOutStops_raiseTwoSeparateSuggestions() {
+        let a = [stop(1), stop(3), stop(2, .timeOut), stop(5, .timeOut)]
+        XCTAssertEqual(run(inputs(abandoned: a)).map(\.rule), [.sessionLength, .equipmentUnavailable])
+    }
+
+    func test_equipment_acceptedReturnsOnlyOnTwoNewStops() {
+        let accepted = [SuggestionDecision(suggestionId: "equipmentUnavailable", accepted: true, at: daysAgo(5))]
+        XCTAssertTrue(run(inputs(abandoned: [stop(1), stop(8), stop(10)], decisions: accepted)).isEmpty,
+                      "one stop since the accept")
+        XCTAssertEqual(run(inputs(abandoned: [stop(1), stop(3), stop(8)], decisions: accepted)).map(\.id),
+                       ["equipmentUnavailable"])
     }
 
     // MARK: - Dropped exercise
@@ -202,6 +238,18 @@ final class PatternEngineTests: XCTestCase {
         let saved = try XCTUnwrap(r.custom.routines.first { $0.name == "Saved" })
         XCTAssertEqual(saved.exercises.map(\.exerciseId), rows.sorted { $0.position < $1.position }.map(\.exerciseId))
         XCTAssertEqual(saved.exercises.map(\.position), Array(0..<rows.count))
+    }
+
+    func test_accept_reviewEquipment_writesNothingButRecordsTheDecision() {
+        let r = rig()
+        r.plan.abandonedWorkouts = [stop(1), stop(4)]
+        let before = r.memory.memory.equipment
+        let s = try! XCTUnwrap(r.plan.currentSuggestions(now: now).first)
+        XCTAssertEqual(s.action, .reviewEquipment)
+        XCTAssertTrue(r.plan.acceptSuggestion(s, now: now))
+        XCTAssertEqual(r.memory.memory.equipment, before)
+        XCTAssertEqual(r.memory.memory.suggestionDecisions.map(\.suggestionId), ["equipmentUnavailable"])
+        XCTAssertTrue(r.plan.currentSuggestions(now: now).isEmpty)
     }
 
     func test_accept_unknownRoutine_failsAndRecordsNothing() {

@@ -1,7 +1,8 @@
 // PlanStore+Suggestions.swift — A4: gather PatternEngine inputs, apply or
 // dismiss a suggestion. Every accept goes through a seam that already exists:
 // MemoryStore.update for sessionMinutes and exerciseAffinities, and
-// CustomRoutineStore.save for a saved routine.
+// CustomRoutineStore.save for a saved routine. Reviewing equipment writes
+// nothing here; the check-in screen opens the equipment editor.
 
 import Foundation
 
@@ -46,6 +47,10 @@ extension PlanStore {
             let rows = CoachDatabase.shared.exercises(forRoutineId: routineId)
             guard !rows.isEmpty, let customStore else { return false }
             customStore.save(CustomRoutine.from(bundledName: name, exercises: rows, now: now))
+        case .reviewEquipment:
+            // Nothing to write. The screen opens EquipmentEditorSheet; the
+            // accept is recorded so the card returns only on new stops.
+            break
         }
         record(s, accepted: true, now: now)
         return true

@@ -14,6 +14,7 @@ import SwiftUI
 
 struct CheckInPatternsScreen: View {
     @EnvironmentObject private var planStore: PlanStore
+    @EnvironmentObject private var memoryStore: MemoryStore
 
     @Binding var suggestions: [Suggestion]
     let onNext: () -> Void
@@ -21,6 +22,7 @@ struct CheckInPatternsScreen: View {
     let onClose: () -> Void
 
     @State private var failedIds: Set<String> = []
+    @State private var showEquipment = false
 
     var body: some View {
         CheckInScaffold(
@@ -43,6 +45,9 @@ struct CheckInPatternsScreen: View {
                         .foregroundStyle(Color.ink3)
                 }
             }
+        }
+        .sheet(isPresented: $showEquipment) {
+            EquipmentEditorSheet().environmentObject(memoryStore)
         }
     }
 
@@ -113,6 +118,7 @@ struct CheckInPatternsScreen: View {
 
     private func accept(_ s: Suggestion) {
         if planStore.acceptSuggestion(s) {
+            if s.action == .reviewEquipment { showEquipment = true }
             remove(s)
         } else {
             failedIds.insert(s.id)
@@ -135,6 +141,7 @@ struct CheckInPatternsScreen: View {
         case .sessionLength:   return "clock"
         case .droppedExercise: return "arrow.uturn.down"
         case .viewedRoutine:   return "bookmark"
+        case .equipmentUnavailable: return "dumbbell"
         }
     }
 }

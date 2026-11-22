@@ -120,15 +120,13 @@ final class ReadinessEventsTests: XCTestCase {
 
     func test_hardSportLog_doesNotProduceEvent() {
         // Sport = fatigue: a hard sport day must NOT raise the readiness
-        // signal (it already trims a lift day via recentHardSportDays —
-        // counting it here too would double-dip).
+        // signal (it already trims a lift day through
+        // Planner.applyRecentSignalBias; counting it here too would double-dip).
         let ctx = build(sportLogs: [sportLog(date: now().addingTimeInterval(-2 * 86_400),
                                              intensity: .hard)])
         XCTAssertFalse(ctx.hasReadinessData)
         XCTAssertEqual(ctx.readinessScore, 0.5, accuracy: 0.0001)
         XCTAssertEqual(ctx.readinessBreakdown, ReadinessSignal.neutral.breakdown)
-        // Contrast: the same log DOES feed the hard-sport fatigue counter.
-        XCTAssertEqual(ctx.recentHardSportDays, 1)
     }
 
     func test_mixedIntensitySportLogs_onlyNonHardCount() {

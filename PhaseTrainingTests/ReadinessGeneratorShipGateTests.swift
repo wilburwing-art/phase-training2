@@ -67,7 +67,7 @@ final class ReadinessGeneratorShipGateTests: XCTestCase {
 
         let detrainedCtx = GeneratorContext(
             priorBest: [:], recentSoreAreas: [],
-            stagnantExercises: [], recentHardSportDays: 0,
+            stagnantExercises: [],
             readinessScore: 0.15,
             readinessBreakdown: ReadinessBreakdown(density: 0.1, recency: 0.05, trend: 0.3),
             hasReadinessData: true
@@ -84,7 +84,7 @@ final class ReadinessGeneratorShipGateTests: XCTestCase {
 
         let activeCtx = GeneratorContext(
             priorBest: [:], recentSoreAreas: [],
-            stagnantExercises: [], recentHardSportDays: 0,
+            stagnantExercises: [],
             readinessScore: 0.85,
             readinessBreakdown: ReadinessBreakdown(density: 0.9, recency: 1.0, trend: 0.8),
             hasReadinessData: true

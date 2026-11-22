@@ -58,12 +58,6 @@ struct GeneratorContext: Equatable {
     /// no preference, no effect.
     var exerciseAffinities: [String: Int] = [:]
 
-    /// Distinct calendar days in the last 7 with a HARD sport log. Used by
-    /// the planner's recent-signal bias to trim lift volume when the user
-    /// is already carrying heavy non-lift load. Moderate / light sport days
-    /// don't count — only intensities the user labeled as hard.
-    var recentHardSportDays: Int
-
     /// Phase 2 readiness signal (0.0 = fully detrained → 0.5 = neutral / no
     /// data → 1.0 = high training state). Computed from native sessions +
     /// imported workouts + sport logs over a 28-day window. Drives volume,
@@ -93,7 +87,6 @@ struct GeneratorContext: Equatable {
     static let empty = GeneratorContext(
         priorBest: [:], recentSoreAreas: [],
         stagnantExercises: [],
-        recentHardSportDays: 0,
         readinessScore: 0.5,
         readinessBreakdown: ReadinessSignal.neutral.breakdown,
         hasReadinessData: false
@@ -102,7 +95,6 @@ struct GeneratorContext: Equatable {
     var isEmpty: Bool {
         priorBest.isEmpty &&
         recentSoreAreas.isEmpty && stagnantExercises.isEmpty &&
-        recentHardSportDays == 0 &&
         !hasReadinessData
     }
 }
@@ -277,9 +269,6 @@ extension GeneratorContext {
                 ? buildStagnantExercises(sessions: sessions, now: now)
                 : [],
             exerciseAffinities: includeParkedSignals ? exerciseAffinities : [:],
-            recentHardSportDays: buildRecentHardSportDays(sportLogs: sportLogs,
-                                                          cutoff: weekSoreCutoff,
-                                                          calendar: cal),
             readinessScore: signal.score,
             readinessBreakdown: signal.breakdown,
             hasReadinessData: hasData,
@@ -376,25 +365,6 @@ extension GeneratorContext {
             for (day, seconds) in source { byDay[day] = max(byDay[day] ?? 0, seconds) }
         }
         return byDay.map { ReadinessEvent(startTime: $0.key, duration: $0.value) }
-    }
-
-    // MARK: - recentHardSportDays
-
-    /// Count distinct calendar days within the 7-day window that have at
-    /// least one HARD sport log. We dedupe by start-of-day so the same
-    /// long climbing session split into two entries (rare but possible)
-    /// doesn't double-count.
-    private static func buildRecentHardSportDays(
-        sportLogs: [SportLogEntry],
-        cutoff: Date,
-        calendar: Calendar
-    ) -> Int {
-        let hardDays = Set(
-            sportLogs
-                .filter { $0.intensity == .hard && $0.date >= cutoff }
-                .map { calendar.startOfDay(for: $0.date) }
-        )
-        return hardDays.count
     }
 
     // MARK: - priorBest
