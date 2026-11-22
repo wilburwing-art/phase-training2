@@ -339,6 +339,20 @@ enum SportSeasonGenerator {
         if shortfall > 0 {
             picks += backfillCandidates(picks).prefix(shortfall)
         }
+        // 11c 3.7. A recovery block can empty a sport pool below the floor: a
+        // bodyweight skier with quads and glutes blocked and an achilles or
+        // wrist injury kept two movements, and the backfill above reads only
+        // the phase's weighted demands. Top the session up to the floor, first
+        // from the sport pool's other demands, then from the general-fitness
+        // core and upper-body work, never with a blocked prime mover. Legs
+        // recovering is a reason to train what is not, not to serve ten
+        // minutes.
+        if complement == nil, !athlete.blockedBuckets.isEmpty,
+           picks.count < AuthoredRoutineSelector.minimumMovements {
+            picks += recoveryTopUp(picks, athlete: athlete, sportPool: pool,
+                                   soreIds: soreIds, seed: seed,
+                                   squatCapped: squatCapped)
+        }
 
         picks = enforceFatigueCap(picks, cap: rule.sessionVolumeCap,
                                   phase: athlete.season, signature: signature)
@@ -1017,6 +1031,53 @@ enum SportSeasonGenerator {
             kept.remove(at: drop.offset)
         }
         return kept
+    }
+
+    /// The core and upper-body demands a recovery top-up draws on, in order.
+    static let recoveryTopUpDemands: [Demand] = [.core, .upperPush, .upperPull, .arms, .upperStrength, .prehab]
+
+    /// Movements that bring a recovery-blocked sport session up to
+    /// `AuthoredRoutineSelector.minimumMovements` (11c 3.7). The sport pool
+    /// passed in is already free of blocked prime movers; the general-fitness
+    /// pool is filtered the same way here. Sore movements and ones the user
+    /// rejected sink; the seed breaks ties, so the pick is deterministic.
+    private static func recoveryTopUp(_ chosen: [Pick], athlete: AthleteState,
+                                      sportPool: [SportMovement], soreIds: Set<Int>,
+                                      seed: String,
+                                      squatCapped: (SportMovement, Demand, [Pick]) -> Bool) -> [Pick] {
+        let owed = AuthoredRoutineSelector.minimumMovements - chosen.count
+        guard owed > 0 else { return [] }
+        let general = filteredPool(athlete, phase: athlete.season, poolSport: complementPoolSlug)
+        let blocked = movementIds(in: general, loading: athlete.blockedBuckets)
+        let generalSore = movementIds(in: general, loading: athlete.easedBuckets)
+        func rank(_ ms: [SportMovement], sore: Set<Int>, tag: String) -> [SportMovement] {
+            ms.sorted {
+                let l = isRejected($0, athlete), r = isRejected($1, athlete)
+                if l != r { return !l }
+                let ls = sore.contains($0.exerciseId), rs = sore.contains($1.exerciseId)
+                if ls != rs { return !ls }
+                return djb2("\(seed)-\(tag)-\($0.exerciseId)") < djb2("\(seed)-\(tag)-\($1.exerciseId)")
+            }
+        }
+        var out: [Pick] = []
+        var seen = Set(chosen.map(\.movement.exerciseId))
+        for m in rank(sportPool, sore: soreIds, tag: "topup") where out.count < owed {
+            guard let demand = m.primaryDemand, !seen.contains(m.exerciseId),
+                  !squatCapped(m, demand, chosen + out) else { continue }
+            out.append(Pick(movement: m, demand: demand))
+            seen.insert(m.exerciseId)
+        }
+        for demand in recoveryTopUpDemands where out.count < owed {
+            let candidates = general.filter {
+                $0.serves(demand) && !blocked.contains($0.exerciseId) && !seen.contains($0.exerciseId)
+            }
+            for m in rank(candidates, sore: generalSore, tag: "topup-\(demand.rawValue)") where out.count < owed {
+                out.append(Pick(movement: m, demand: demand))
+                seen.insert(m.exerciseId)
+                break
+            }
+        }
+        return out
     }
 
     private static func lighten(_ picks: [Pick]) -> [Pick] {

@@ -53,15 +53,6 @@ final class FilterCompositionTests: XCTestCase {
     private enum Soreness: String, CaseIterable { case none, eased, blocked }
     private static let soreAreas = ["quads", "glutes"]
 
-    /// Cells the soreness axis found under the movement floor on 2026-11-18
-    /// (20 days, all bodyweight with quads and glutes blocked, two movements
-    /// each), filed as 11c 3.7. Asserted exactly: fixing one without removing
-    /// it fails, and so does a new cell.
-    private static let knownShortBlockedCells: Set<String> = [
-        "alpine-skiing/achilles-tendinopathy", "alpine-skiing/wrist-sprain",
-        "snowboarding/achilles-tendinopathy", "snowboarding/wrist-sprain",
-    ]
-
     private static func sessionDay() -> Date {
         var c = DateComponents()
         c.year = 2026; c.month = 5; c.day = 11; c.hour = 8
@@ -86,8 +77,6 @@ final class FilterCompositionTests: XCTestCase {
         var checked = 0, declaredEmpty = 0
         let date = Self.sessionDay()
         var checkedBySoreness: [Soreness: Int] = [:]
-        var shortBlockedCells: Set<String> = []
-        var shortBlockedDays = 0
 
         for slug in plannable {
             guard SportCatalog.isPlannable(slug) else {
@@ -135,16 +124,11 @@ final class FilterCompositionTests: XCTestCase {
                                 continue
                             }
 
-                            let cell = "\(slug)/\(injury)"
-                            if w.exercises.count < AuthoredRoutineSelector.minimumMovements,
-                               soreness == .blocked, Self.knownShortBlockedCells.contains(cell) {
-                                shortBlockedCells.insert(cell)
-                                shortBlockedDays += 1
-                            } else {
-                                XCTAssertGreaterThanOrEqual(
-                                    w.exercises.count, AuthoredRoutineSelector.minimumMovements,
-                                    "\(ctx) served \(w.exercises.count) movements: '\(w.title)'")
-                            }
+                            // Bodyweight ski days with quads and glutes blocked
+                            // served two movements until 11c 3.7 topped them up.
+                            XCTAssertGreaterThanOrEqual(
+                                w.exercises.count, AuthoredRoutineSelector.minimumMovements,
+                                "\(ctx) served \(w.exercises.count) movements: '\(w.title)'")
 
                             let reqs = CoachDatabase.shared.requiredEquipmentSlugs(
                                 forExerciseIds: Set(w.exercises.map(\.exerciseId)))
@@ -173,9 +157,6 @@ final class FilterCompositionTests: XCTestCase {
         }
         print("FILTER-COMPOSITION checked \(checked) days, \(declaredEmpty) of them declared-empty")
         XCTAssertGreaterThan(checked, 5000, "grid collapsed — the fixture is not exercising what it claims")
-        print("FILTER-COMPOSITION short blocked days in known cells: \(shortBlockedDays)")
-        XCTAssertEqual(shortBlockedCells, Self.knownShortBlockedCells,
-                       "a known short cell now passes; remove it from knownShortBlockedCells")
         for level in Soreness.allCases {
             XCTAssertEqual(checkedBySoreness[level], checked / Soreness.allCases.count,
                            "soreness axis '\(level.rawValue)' did not run its share of the grid")
