@@ -20,18 +20,23 @@ final class ActivityKitRestHost: RestActivityHost {
         }
     }
 
+    // Both read `activities` before the Task starts. Read inside the Task,
+    // an endAll followed by a start (a new workout replacing a leftover
+    // activity) could end the activity that start just requested.
     func update(state: RestActivityState, staleDate: Date) {
         let content = ActivityContent(state: state, staleDate: staleDate)
+        let activities = Activity<RestActivityAttributes>.activities
         Task {
-            for activity in Activity<RestActivityAttributes>.activities {
+            for activity in activities {
                 await activity.update(content)
             }
         }
     }
 
     func endAll() {
+        let activities = Activity<RestActivityAttributes>.activities
         Task {
-            for activity in Activity<RestActivityAttributes>.activities {
+            for activity in activities {
                 await activity.end(nil, dismissalPolicy: .immediate)
             }
         }

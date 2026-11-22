@@ -297,6 +297,30 @@ final class RestActivityCoordinatorTests: XCTestCase {
         XCTAssertTrue(waitForActivities(count: 0), "activity survived appLaunched")
     }
 
+    // A new workout replacing a leftover activity calls endAll then start.
+    // Expected: the end touches only the activity that existed before it, so
+    // the new one survives (main CI run 45039481260 lost it).
+    func test_activityKitHost_endAllThenStart_keepsTheNewActivity() throws {
+        let host = ActivityKitRestHost()
+        try XCTSkipUnless(host.isAvailable, "Live Activities are off on this simulator")
+        host.endAll()
+        XCTAssertTrue(waitForActivities(count: 0))
+        defer { host.endAll(); _ = waitForActivities(count: 0) }
+
+        let state = RestActivityState(exerciseName: "Bench press", setNumber: 1, totalSets: 4,
+                                      restEndDate: Date().addingTimeInterval(30))
+        XCTAssertTrue(host.start(workoutName: "Upper A", state: state, staleDate: state.restEndDate))
+        XCTAssertTrue(waitForActivities(count: 1))
+        let old = Activity<RestActivityAttributes>.activities.first?.id
+
+        host.endAll()
+        XCTAssertTrue(host.start(workoutName: "Lower B", state: state, staleDate: state.restEndDate))
+        RunLoop.current.run(until: Date().addingTimeInterval(1))
+        let ids = Activity<RestActivityAttributes>.activities.map(\.id)
+        XCTAssertEqual(ids.count, 1)
+        XCTAssertNotEqual(ids.first, old)
+    }
+
     // Expected: restExpired after the rest end updates the live activity to
     // finished in place (one activity, finished true).
     func test_activityKitHost_restExpired_marksActivityFinished() throws {
