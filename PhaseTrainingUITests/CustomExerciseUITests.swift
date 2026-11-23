@@ -128,7 +128,7 @@ final class CustomExerciseUITests: XCTestCase {
         shot("5-history")
 
         // 6. A second session: search a fragment, open the custom row's detail.
-        let back = app.buttons.matching(NSPredicate(format: "label ENDSWITH %@", "Back")).firstMatch
+        let back = app.buttons["history-done"]
         XCTAssertTrue(back.waitForExistence(timeout: 5))
         back.tap()
         let today = app.tabBars.buttons["Today"]

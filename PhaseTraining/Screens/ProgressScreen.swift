@@ -47,6 +47,7 @@ struct ProgressScreen: View {
     @EnvironmentObject var store: SessionStore
     @EnvironmentObject var memoryStore: MemoryStore
     @EnvironmentObject var sportLogStore: SportLogStore
+    @EnvironmentObject var tabSelection: TabSelectionStore
 
     /// Build 92: history surfaced from here via "See all sessions" on the
     /// Recent Sessions card. Previously lived as a tab off the Today screen.
@@ -157,6 +158,21 @@ struct ProgressScreen: View {
                 bodyCompositionTrendCard
             }
             .padding(.horizontal, 20)
+            Button {
+                tabSelection.selected = .today
+            } label: {
+                Text("Go to Today")
+                    .font(.scaled("SpaceGrotesk-SemiBold", size: 15))
+                    .foregroundStyle(Color.accentInk)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 14)
+                    .background(Color.accent)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 8)
+            .accessibilityIdentifier("progress-empty-go-today")
+            .accessibilityLabel("Go to Today")
             Spacer()
         }
     }
@@ -328,4 +344,5 @@ struct ProgressScreen: View {
         .environmentObject(memory)
         .environmentObject(PlanStore(defaults: defaults))
         .environmentObject(SportLogStore(defaults: defaults))
+        .environmentObject(TabSelectionStore())
 }

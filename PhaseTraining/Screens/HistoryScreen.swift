@@ -94,23 +94,27 @@ struct HistoryScreen: View {
 
     private var topBar: some View {
         ZStack {
-            Text(initialExerciseFilter.map { _ in "Exercise history" } ?? "History")
-                .styled(.displayM)
-                .foregroundColor(.ink)
-
-            HStack {
-                Button { dismiss() } label: {
-                    Text("‹ Back")
-                        .styled(.body)
-                        .foregroundColor(.ink2)
-                        .padding(.vertical, 4)
-                        .padding(.trailing, 8)
-                }
-                .buttonStyle(.plain)
-                Spacer()
+            VStack(spacing: 2) {
+                Text(initialExerciseFilter.map { _ in "Exercise history" } ?? "History")
+                    .styled(.displayM)
+                    .foregroundColor(.ink)
                 Text(sessionCountLabel)
                     .styled(.micro)
                     .foregroundColor(.ink3)
+            }
+
+            HStack {
+                Spacer()
+                Button { dismiss() } label: {
+                    Text("Done")
+                        .styled(.body)
+                        .foregroundColor(.accent)
+                        .padding(.vertical, 4)
+                        .padding(.leading, 8)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("history-done")
+                .accessibilityLabel("Done, close history")
             }
         }
         .padding(.horizontal, 20)
@@ -133,6 +137,18 @@ struct HistoryScreen: View {
                 .styled(.body)
                 .foregroundColor(.ink3)
                 .multilineTextAlignment(.center)
+            Button {
+                tabSelection.selected = .today
+                dismiss()
+            } label: {
+                Text("Start a workout on Today")
+                    .styled(.body)
+                    .foregroundColor(.accent)
+                    .padding(.vertical, 8)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("history-empty-go-today")
+            .accessibilityLabel("Start a workout on Today")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.horizontal, 40)
@@ -144,15 +160,17 @@ struct HistoryScreen: View {
         let sessions = displayedSessions
         return ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                Text(initialExerciseFilter ?? "Past sessions")
-                    .styled(.displayM)
-                    .foregroundColor(.ink)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 20)
+                if let exercise = initialExerciseFilter {
+                    Text(exercise)
+                        .styled(.displayM)
+                        .foregroundColor(.ink)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                }
 
                 searchBar
                     .padding(.horizontal, 20)
-                    .padding(.top, 14)
+                    .padding(.top, initialExerciseFilter == nil ? 20 : 14)
 
                 tagFilterRow
 

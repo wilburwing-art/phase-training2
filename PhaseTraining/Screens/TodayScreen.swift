@@ -460,7 +460,14 @@ struct TodayScreen: View {
     private var primaryButton: some View {
         switch effectiveKind {
         case .lift:
-            workoutStartButton
+            VStack(spacing: 8) {
+                workoutStartButton
+                if let reason = startDisabledReason {
+                    routeToWeekRow(reason, id: "today-start-disabled-reason")
+                } else if planStore.plan == nil {
+                    routeToWeekRow("No plan yet. Generate one on Week", id: "today-no-plan-route")
+                }
+            }
         case .sport:
             // Only offer the log CTA when the day actually has a sport;
             // a bare sport day with no sport (rare — stale override) has
@@ -468,28 +475,55 @@ struct TodayScreen: View {
             if todayPlan?.sport != nil {
                 sportLogButton
             } else {
-                EmptyView()
+                VStack(spacing: 8) {
+                    Text("No sport set for today.")
+                        .styled(.body)
+                        .foregroundStyle(Color.ink3)
+                    trainAnywayButton(id: "today-sport-missing-route")
+                }
             }
         case .rest, .event:
             // Rest is the prescription, so this is deliberately secondary — but
             // it must exist. OverrideTodaySheet in start-now mode (targetDate
             // nil) already does exactly this job for the lift-day path.
-            Button {
-                showTrainAnyway = true
-            } label: {
-                Text("Train anyway")
-                    .font(.scaled("Inter-Regular", size: 13).weight(.bold))
-                    .foregroundStyle(Color.ink2)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12, style: .continuous)
-                            .stroke(Color.lineSoft, lineWidth: 1)
-                    )
-            }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("today-train-anyway")
+            trainAnywayButton(id: "today-train-anyway")
         }
+    }
+
+    private func routeToWeekRow(_ text: String, id: String) -> some View {
+        Button {
+            tabSelection.selected = .week
+        } label: {
+            Text(text)
+                .font(.scaled("Inter-Regular", size: 13).weight(.semibold))
+                .foregroundStyle(Color.accent)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 6)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(id)
+        .accessibilityLabel(text)
+        .accessibilityHint("Opens the Week tab")
+    }
+
+    private func trainAnywayButton(id: String) -> some View {
+        Button {
+            showTrainAnyway = true
+        } label: {
+            Text("Train anyway")
+                .font(.scaled("Inter-Regular", size: 13).weight(.bold))
+                .foregroundStyle(Color.ink2)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(Color.lineSoft, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(id)
+        .accessibilityLabel("Train anyway")
     }
 
     /// Read-and-log prescription for a sport day — e.g. a coach-scheduled MTB
@@ -578,6 +612,7 @@ struct TodayScreen: View {
         .buttonStyle(.plain)
         .disabled(template == nil)
         .accessibilityIdentifier("today-start-workout")
+        .accessibilityHint(startDisabledReason ?? "")
     }
 
     private func startWorkout() {

@@ -255,9 +255,21 @@ extension ProgressScreen {
         let rows = aggregates.strengthRows
         return Group {
             if memoryStore.memory.weightKg == nil {
-                // Don't show the card at all without bodyweight — the entire
-                // value-prop is the ratio, which is undefined without it.
-                EmptyView()
+                // Ratios are undefined without bodyweight, so the card stays
+                // visible as a prompt that opens the body-weight sheet.
+                card(title: "STRENGTH RATIOS") {
+                    Button {
+                        presentingBodyWeightSheet = true
+                    } label: {
+                        Text("Add body weight to see ratios")
+                            .font(.monoXS)
+                            .foregroundStyle(Color.accent)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("progress-ratios-add-weight")
+                    .accessibilityLabel("Add body weight")
+                }
             } else if rows.isEmpty {
                 card(title: "STRENGTH RATIOS") {
                     Text("Log Bench, Squat, Deadlift, OHP, or Pull-Up to see ratios.")

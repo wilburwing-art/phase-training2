@@ -52,6 +52,24 @@ extension TodayScreen {
         return nil
     }
 
+    /// Why Start is disabled, or nil when it is enabled. Plan exists, today
+    /// is a lift day and no workout is planned for it.
+    var startDisabledReason: String? {
+        Self.startDisabledReason(
+            hasPlan: planStore.plan != nil,
+            kind: effectiveKind,
+            hasTemplate: template != nil,
+            hasActive: store.active != nil
+        )
+    }
+
+    static func startDisabledReason(
+        hasPlan: Bool, kind: DayKind, hasTemplate: Bool, hasActive: Bool
+    ) -> String? {
+        guard hasPlan, !hasActive, kind == .lift, !hasTemplate else { return nil }
+        return "No workout planned for today. Open Week to pick one."
+    }
+
     private var totalSets: Int {
         template?.exercises.reduce(0) { $0 + $1.targetSets } ?? 0
     }
