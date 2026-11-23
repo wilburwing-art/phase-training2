@@ -28,7 +28,8 @@ final class LogFlowTests: XCTestCase {
 
     /// Launch into LogScreen with the deterministic superset demo session.
     /// Optional `fastRest: Int` clamps every exercise's rest interval.
-    private func launchInLog(fastRest: Int? = nil) -> XCUIApplication {
+    private func launchInLog(fastRest: Int? = nil,
+                             extraArguments: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments += [
             "--ui-test-onboarded",
@@ -38,6 +39,7 @@ final class LogFlowTests: XCTestCase {
         if let s = fastRest {
             app.launchArguments.append("--ui-test-rest-seconds=\(s)")
         }
+        app.launchArguments += extraArguments
         app.launch()
         // TodayTab routes to .log on bootstrap when store.active != nil.
         // Wait until the Finish button appears — that's our "in LogScreen" signal.
@@ -230,20 +232,22 @@ final class LogFlowTests: XCTestCase {
     }
 
     func testRestExpiryShowsDoneFlash() throws {
-        // The rest card lives for the rest length plus the 1.2 s DONE flash
-        // (RestTimerState.maybeFireRestExpiry), counted from the tap. With a
-        // 2 s rest that was 3.2 s, and on a cold CI runner the tap's idle wait
-        // could use it up, so the card was gone before the first query ran
-        // (main run 44793901523). A 6 s rest keeps the card up for 7.2 s.
+        // The DONE card normally shows for 1.2 s. On a cold CI runner the tap's
+        // idle wait and each accessibility query can each take longer than
+        // that, so the test missed the card on both attempts of main run
+        // 45094984296. `--ui-test-done-flash-seconds` holds DONE for 30 s, and
+        // `log-rest-add15` is on both the REST and DONE cards, so the first
+        // check holds however late the query runs.
         let restSeconds = 6
-        let app = launchInLog(fastRest: restSeconds)
+        let app = launchInLog(fastRest: restSeconds,
+                              extraArguments: ["--ui-test-done-flash-seconds=30"])
         tapSetCheck(app, ex: 2, set: 0)
         XCTAssertTrue(
-            app.buttons["log-rest-add15"].waitForExistence(timeout: 5),
+            app.buttons["log-rest-add15"].waitForExistence(timeout: 10),
             "rest card should appear after first set done"
         )
         XCTAssertTrue(
-            app.staticTexts["DONE"].waitForExistence(timeout: TimeInterval(restSeconds + 4)),
+            app.staticTexts["DONE"].waitForExistence(timeout: TimeInterval(restSeconds + 10)),
             "DONE flash card should appear once the \(restSeconds) s rest expires"
         )
     }

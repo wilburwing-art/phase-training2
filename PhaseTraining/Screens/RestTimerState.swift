@@ -85,6 +85,16 @@ struct RestTimerState: Equatable {
     /// then; on any other screen the chime is the alert.
     static var restTickOnScreen = false
 
+    /// How long the DONE card stays up after a rest expires. UI-test hook:
+    /// `--ui-test-done-flash-seconds=N` holds it longer so a slow simulator
+    /// query can still see it. No effect outside test runs.
+    static let expiredFlashSeconds: Double = {
+        let prefix = "--ui-test-done-flash-seconds="
+        guard let arg = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix(prefix) }),
+              let seconds = Double(arg.dropFirst(prefix.count)) else { return 1.2 }
+        return seconds
+    }()
+
     /// Fire date of the last expiry request, `now + seconds` from the
     /// caller's clock. nil after a cancel. Lets tests check that an injected
     /// clock reaches the notification.
@@ -324,7 +334,7 @@ extension LogScreen {
         guard elapsed >= Double(duration) else { return }
 
         rest.alertFiredFor = started
-        rest.expiredFlashUntil = date.addingTimeInterval(1.2)
+        rest.expiredFlashUntil = date.addingTimeInterval(RestTimerState.expiredFlashSeconds)
         // Leave the pending "Rest's up" notification alone: NotificationDelegate
         // presents it as a banner (with sound unless the cue speaks) even while
         // the app is open. Play our own sound only when neither the cue nor the

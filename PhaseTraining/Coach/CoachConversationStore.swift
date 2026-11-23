@@ -201,6 +201,9 @@ final class CoachConversationStore: ObservableObject {
     /// outlive `MemoryStore.wipeAllUserData()` and get written back on the next
     /// `save()`.
     func resetAll() {
+        // A save queued before the erase would land after it and write the
+        // old transcript back to `pt_coach_today`. Let it finish first.
+        Self.saveQueue.sync {}
         messages = []
         presented = false
         voicePresented = false
