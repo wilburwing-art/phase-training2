@@ -118,6 +118,10 @@ enum GoalMilestoneNotifier {
             content.sound = .default
             content.userInfo = ["deepLink": "phasetraining://progress"]
 
+            // No permission, no delivery: leave delivery and fired unrecorded.
+            let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+            guard status == .authorized || status == .provisional || status == .ephemeral else { continue }
+
             let request = UNNotificationRequest(
                 identifier: "pt.goal_milestone.\(goal.id.uuidString)",
                 content: content,

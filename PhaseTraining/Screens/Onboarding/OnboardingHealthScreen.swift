@@ -49,6 +49,10 @@ struct OnboardingHealthScreen: View {
                     action: { connect = false },
                     a11yId: "onboarding-health-off"
                 )
+                Text("Recovery data (HRV, resting heart rate, sleep) is a separate opt-in, offered later on Progress and in Profile → Health & Imports.")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }

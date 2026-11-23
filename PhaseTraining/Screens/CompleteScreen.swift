@@ -26,6 +26,7 @@
 // the happy path stays one tap (Done).
 
 import SwiftUI
+import UserNotifications
 
 struct CompleteScreen: View {
     @EnvironmentObject var store: SessionStore
@@ -68,6 +69,8 @@ struct CompleteScreen: View {
     @EnvironmentObject private var customStore: CustomRoutineStore
     /// True once this session has been copied into the Library.
     @State private var savedAsRoutine = false
+    /// One-time offer to turn on reminders after the first saved session.
+    @State private var showNotifPrePrompt = false
 
     init(session: ActiveSession, onSave: @escaping () -> Void, onDiscard: (() -> Void)? = nil) {
         self.session = session
@@ -176,6 +179,12 @@ struct CompleteScreen: View {
                         // feedback link and Discard run to about 220pt with
                         // the safe area). 140 left the note field and the
                         // mood line under the buttons at full scroll.
+                        if showNotifPrePrompt {
+                            notifPrePromptCard
+                                .padding(.horizontal, 20)
+                                .padding(.top, 18)
+                        }
+
                         Spacer().frame(height: 240)
                     }
                 }
@@ -196,6 +205,7 @@ struct CompleteScreen: View {
         }
         .preferredColorScheme(.dark)
         .onAppear(perform: autosaveIfNeeded)
+        .task { await evaluateNotifPrePrompt() }
         .onChange(of: feel) { _, _ in syncEdits() }
         .onChange(of: mood) { _, _ in syncEdits() }
         .onChange(of: note) { _, _ in syncEdits() }
@@ -219,6 +229,51 @@ struct CompleteScreen: View {
         } message: {
             Text("This removes the workout you just logged from your history.")
         }
+    }
+
+    // MARK: - Notification pre-prompt
+
+    private var notifPrePromptCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Want a nudge on training days?")
+                .styled(.body)
+                .foregroundStyle(Color.ink)
+            HStack(spacing: 10) {
+                Button {
+                    NotificationPrePrompt.markAnswered()
+                    showNotifPrePrompt = false
+                    Task { _ = await WeeklyReminderScheduler.enable() }
+                } label: {
+                    Text("Turn on reminders")
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Color.accentInk)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(Capsule().fill(Color.accent))
+                }
+                .accessibilityIdentifier("complete-notif-preprompt-on")
+                Button {
+                    NotificationPrePrompt.markAnswered()
+                    showNotifPrePrompt = false
+                } label: {
+                    Text("Not now")
+                        .foregroundStyle(Color.ink2)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                }
+                .accessibilityIdentifier("complete-notif-preprompt-off")
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.surface))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+    }
+
+    private func evaluateNotifPrePrompt() async {
+        let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+        showNotifPrePrompt = NotificationPrePrompt.shouldOffer(
+            completedSessions: store.savedSessions.count, status: status)
     }
 
     // MARK: - Sections

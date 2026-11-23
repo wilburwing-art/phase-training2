@@ -436,4 +436,31 @@ final class PhysiologyNightTests: XCTestCase {
         XCTAssertNil(store.lastRefresh)
         XCTAssertFalse(store.isEnabled)
     }
+
+    // MARK: - Recovery capture pre-prompt
+
+    func test_recoveryPrePrompt_freshShows() {
+        let suite = "PhysiologyNightTests.prePrompt"
+        let d = UserDefaults(suiteName: suite)!
+        d.removePersistentDomain(forName: suite)
+        defer { d.removePersistentDomain(forName: suite) }
+        XCTAssertTrue(RecoveryCapturePrePrompt.shouldOffer(captureEnabled: false, defaults: d))
+    }
+
+    func test_recoveryPrePrompt_enabledHides() {
+        let suite = "PhysiologyNightTests.prePrompt"
+        let d = UserDefaults(suiteName: suite)!
+        d.removePersistentDomain(forName: suite)
+        defer { d.removePersistentDomain(forName: suite) }
+        XCTAssertFalse(RecoveryCapturePrePrompt.shouldOffer(captureEnabled: true, defaults: d))
+    }
+
+    func test_recoveryPrePrompt_answeredHides() {
+        let suite = "PhysiologyNightTests.prePrompt"
+        let d = UserDefaults(suiteName: suite)!
+        d.removePersistentDomain(forName: suite)
+        defer { d.removePersistentDomain(forName: suite) }
+        RecoveryCapturePrePrompt.markAnswered(defaults: d)
+        XCTAssertFalse(RecoveryCapturePrePrompt.shouldOffer(captureEnabled: false, defaults: d))
+    }
 }

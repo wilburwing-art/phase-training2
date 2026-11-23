@@ -196,6 +196,7 @@ struct ProgressScreen: View {
                 skiSeasonCard
                 skiReadinessCard
                 muscleBalanceCard
+                RecoveryPrePromptRow()
                 ProgressRecoverySection()
                 perExerciseCard
                 prFeedCard

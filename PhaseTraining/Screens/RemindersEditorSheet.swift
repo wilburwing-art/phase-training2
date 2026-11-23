@@ -4,6 +4,7 @@
 // async WeeklyReminderScheduler.enable() / .disable() flow as before.
 
 import SwiftUI
+import UserNotifications
 
 struct RemindersEditorSheet: View {
     @EnvironmentObject private var store: MemoryStore
@@ -11,6 +12,8 @@ struct RemindersEditorSheet: View {
     @State private var remindersOn = WeeklyReminderScheduler.isEnabled
     @State private var remindersPending = false
     @State private var remindersFailed = false
+    @State private var notificationsDenied = false
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         NavigationStack {
@@ -49,10 +52,20 @@ struct RemindersEditorSheet: View {
                         }
                         .buttonStyle(.plain)
                         .disabled(remindersPending)
-                        if remindersFailed {
-                            Text("Couldn't enable. Notifications are off for this app; allow them in Settings to get the reminder.")
+                        if remindersFailed || notificationsDenied {
+                            Text("Notifications are off for this app in Settings. Allow them there to get the reminder.")
                                 .font(.monoXS)
                                 .foregroundStyle(Color.danger)
+                        }
+                        if notificationsDenied {
+                            Button("Open Settings") {
+                                if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
+                            }
+                            .font(.monoXS)
+                            .foregroundStyle(Color.accent)
+                            .accessibilityIdentifier("reminders-open-settings")
                         }
 
                         // PR 12 — per-class push governance. Toggling a
@@ -101,7 +114,19 @@ struct RemindersEditorSheet: View {
         .presentationDetents([.medium, .large])
         .presentationBackground(Color.bg)
         .preferredColorScheme(.dark)
-        .onAppear { remindersOn = WeeklyReminderScheduler.isEnabled }
+        .onAppear {
+            remindersOn = WeeklyReminderScheduler.isEnabled
+            Task { await refreshAuthorization() }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await refreshAuthorization() } }
+        }
+    }
+
+    private func refreshAuthorization() async {
+        let status = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+        notificationsDenied = status == .denied
+        if status != .denied { remindersFailed = false }
     }
 
     private func toggleReminders() {
