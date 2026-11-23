@@ -99,6 +99,16 @@ final class MemoryStore: ObservableObject {
         }
     }
 
+    /// Clears every case variant of `name` from the affinities, which returns
+    /// the exercise to no preference. Suggestion decisions stay as recorded.
+    func resumePlanning(_ name: String) {
+        update { m in
+            for key in m.exerciseAffinities.keys where key.lowercased() == name.lowercased() {
+                m.exerciseAffinities[key] = nil
+            }
+        }
+    }
+
     /// How many times the user must swap AWAY from an exercise before its
     /// affinity is nudged down by one. A single swap-away is "not today," not a
     /// vote against the exercise; repeated swaps-away are the durable negative.

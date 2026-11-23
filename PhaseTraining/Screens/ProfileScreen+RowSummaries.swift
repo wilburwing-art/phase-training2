@@ -103,9 +103,12 @@ extension ProfileScreen {
     }
 
     var dislikesSummary: String {
-        let count = store.memory.dislikes.count
+        let stopped = PatternEngine.stoppedExercises(
+            decisions: store.memory.suggestionDecisions,
+            affinities: store.memory.exerciseAffinities)
+        let count = store.memory.dislikes.count + stopped.count
         if count == 0 { return "None" }
-        if count == 1 { return store.memory.dislikes[0] }
+        if count == 1 { return store.memory.dislikes.first ?? stopped[0].name }
         return "\(count) items"
     }
 

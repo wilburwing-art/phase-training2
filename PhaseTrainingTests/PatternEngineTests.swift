@@ -267,6 +267,55 @@ final class PatternEngineTests: XCTestCase {
         XCTAssertTrue(r.plan.currentSuggestions(now: now).isEmpty)
     }
 
+    // MARK: - Stopped exercises
+
+    private func decision(_ id: String, accepted: Bool = true, daysAgo n: Double = 1) -> SuggestionDecision {
+        SuggestionDecision(suggestionId: id, accepted: accepted, at: daysAgo(n))
+    }
+
+    func test_stopped_acceptedAndSunk_listsWithRawKeyName() {
+        let list = PatternEngine.stoppedExercises(
+            decisions: [decision("droppedExercise:walking lunge")],
+            affinities: ["Walking Lunge": AthleteState.affinitySinkThreshold])
+        XCTAssertEqual(list, [StoppedExercise(name: "Walking Lunge", stoppedAt: daysAgo(1))])
+    }
+
+    func test_stopped_excludesDismissedOtherRuleAndUnsunk() {
+        let sunk = ["Walking Lunge": AthleteState.affinitySinkThreshold, "Goblet Squat": AthleteState.affinitySinkThreshold]
+        XCTAssertTrue(PatternEngine.stoppedExercises(
+            decisions: [decision("droppedExercise:walking lunge", accepted: false)], affinities: sunk).isEmpty)
+        XCTAssertTrue(PatternEngine.stoppedExercises(
+            decisions: [decision("sessionLength")], affinities: sunk).isEmpty)
+        XCTAssertTrue(PatternEngine.stoppedExercises(
+            decisions: [decision("droppedExercise:walking lunge")],
+            affinities: ["Walking Lunge": AthleteState.affinitySinkThreshold + 1]).isEmpty)
+    }
+
+    func test_stopped_twoAcceptsForOneSubject_keepNewest() {
+        let list = PatternEngine.stoppedExercises(
+            decisions: [decision("droppedExercise:walking lunge", daysAgo: 20),
+                        decision("droppedExercise:walking lunge", daysAgo: 3)],
+            affinities: ["Walking Lunge": AthleteState.affinitySinkThreshold])
+        XCTAssertEqual(list.map(\.stoppedAt), [daysAgo(3)])
+    }
+
+    func test_stopped_endToEnd_resumePlanningClearsItAndKeepsTheDecision() {
+        let r = rig()
+        r.memory.update { $0.exerciseAffinities = ["walking lunge": 1, "Walking Lunge": 1] }
+        r.plan.acceptSuggestion(suggestion(.sinkExercise(name: "Walking Lunge"), id: "droppedExercise:walking lunge"), now: now)
+        let m = r.memory.memory
+        XCTAssertEqual(PatternEngine.stoppedExercises(decisions: m.suggestionDecisions,
+                                                      affinities: m.exerciseAffinities).map(\.name),
+                       ["Walking Lunge"])
+        r.memory.resumePlanning("Walking Lunge")
+        let after = r.memory.memory
+        XCTAssertTrue(PatternEngine.stoppedExercises(decisions: after.suggestionDecisions,
+                                                     affinities: after.exerciseAffinities).isEmpty)
+        XCTAssertFalse(after.exerciseAffinities.keys.contains { $0.lowercased() == "walking lunge" })
+        XCTAssertEqual(after.suggestionDecisions.map(\.suggestionId), ["droppedExercise:walking lunge"])
+        XCTAssertEqual(after.suggestionDecisions.map(\.accepted), [true])
+    }
+
     func test_decisionsRoundTripThroughMemoryCoding() throws {
         var m = TrainingMemory()
         m.suggestionDecisions = [SuggestionDecision(suggestionId: "x", accepted: true, at: now)]

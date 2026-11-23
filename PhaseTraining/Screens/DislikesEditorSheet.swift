@@ -47,6 +47,7 @@ struct DislikesEditorSheet: View {
                                     .fixedSize(horizontal: false, vertical: true)
                             }
                         }
+                        stoppedSection
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 18)
@@ -73,6 +74,45 @@ struct DislikesEditorSheet: View {
         .presentationDetents([.medium, .large])
         .presentationBackground(Color.bg)
         .preferredColorScheme(.dark)
+    }
+
+    private var stopped: [StoppedExercise] {
+        PatternEngine.stoppedExercises(
+            decisions: store.memory.suggestionDecisions,
+            affinities: store.memory.exerciseAffinities)
+    }
+
+    @ViewBuilder
+    private var stoppedSection: some View {
+        let items = stopped
+        if !items.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("STOPPED FROM CHECK-IN")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+                    .padding(.top, 10)
+                ForEach(items, id: \.self) { item in
+                    HStack(alignment: .center, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(item.name)
+                                .styled(.body)
+                                .foregroundStyle(Color.ink)
+                            Text("Stopped \(Text(item.stoppedAt, format: .dateTime.month(.abbreviated).day()))")
+                                .font(.monoXS)
+                                .foregroundStyle(Color.ink3)
+                        }
+                        Spacer(minLength: 8)
+                        Button("Plan it again") { store.resumePlanning(item.name) }
+                            .foregroundStyle(Color.accent)
+                            .accessibilityLabel("Plan \(item.name) again")
+                    }
+                }
+                Text("You chose Stop planning it on these in a weekly check-in. Plan it again goes back to no preference.")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 
     private func tagList(

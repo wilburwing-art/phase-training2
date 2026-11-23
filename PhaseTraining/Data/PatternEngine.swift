@@ -64,7 +64,33 @@ struct SuggestionDecision: Codable, Hashable {
     }
 }
 
+struct StoppedExercise: Hashable {
+    var name: String
+    var stoppedAt: Date
+}
+
 enum PatternEngine {
+
+    /// Exercises the user stopped from a weekly check-in and that are still
+    /// sunk. Newest stop first.
+    static func stoppedExercises(decisions: [SuggestionDecision],
+                                 affinities: [String: Int]) -> [StoppedExercise] {
+        let prefix = "\(SuggestionRule.droppedExercise.rawValue):"
+        var newest: [String: Date] = [:]
+        for d in decisions where d.accepted && d.suggestionId.hasPrefix(prefix) {
+            let subject = String(d.suggestionId.dropFirst(prefix.count))
+            if let seen = newest[subject], seen >= d.at { continue }
+            newest[subject] = d.at
+        }
+        let folded = AthleteState.lowercasedAffinities(affinities)
+        return newest
+            .filter { (folded[$0.key] ?? 0) <= AthleteState.affinitySinkThreshold }
+            .map { subject, at in
+                let raw = affinities.keys.first { $0.lowercased() == subject }
+                return StoppedExercise(name: raw ?? subject, stoppedAt: at)
+            }
+            .sorted { $0.stoppedAt != $1.stoppedAt ? $0.stoppedAt > $1.stoppedAt : $0.name < $1.name }
+    }
 
     static let windowDays = 28
     static let maxSuggestions = 3
