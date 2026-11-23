@@ -51,6 +51,8 @@ struct ProfileScreen: View {
     @State private var presentingGoalPicker = false
     @State private var presentingRemindersEditor = false
     @State private var presentingVoiceSettings = false
+    @State private var presentingPlaces = false
+    @AppStorage(SessionLocationCapture.captureOffKey) private var locationCaptureOff = false
     @State private var presentingDataEditor = false
     /// Action to run once DataEditorSheet has finished dismissing — see the
     /// `.sheet(onDismiss:)` below.
@@ -75,6 +77,15 @@ struct ProfileScreen: View {
 
     // Danger zone: confirm before the irreversible full data wipe.
     @State private var showEraseConfirm = false
+
+    private var placesRowValue: String {
+        if locationCaptureOff { return "Off" }
+        switch PlaceClusterer.cluster(planStore.sessionPlaces).count {
+        case 0: return "None yet"
+        case 1: return "1 place"
+        case let n: return "\(n) places"
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -219,6 +230,11 @@ struct ProfileScreen: View {
                                         iCloudWrite: backup.lastICloudWrite,
                                         sessions: sessionStore.savedSessions) ? .accent : .ink3,
                                     action: { presentingDataEditor = true })
+                        SettingsRow(label: "Places",
+                                    value: placesRowValue,
+                                    icon: "mappin.and.ellipse",
+                                    action: { presentingPlaces = true })
+                            .accessibilityIdentifier("profile-places-row")
                         SettingsRow(label: "Privacy Policy",
                                     value: "What the app reads and sends",
                                     icon: "hand.raised",
@@ -245,6 +261,9 @@ struct ProfileScreen: View {
         }
         .statusBarBackdrop()
         // Editor sheets.
+        .sheet(isPresented: $presentingPlaces) {
+            PlacesSheet().environmentObject(planStore)
+        }
         .sheet(isPresented: $presentingSportsEditor) {
             SportsEditorSheet().environmentObject(store)
         }

@@ -153,7 +153,8 @@ final class PlanStore: ObservableObject {
     /// Written by `recordOutcome`; no production reader yet (A4).
     @Published var dayOutcomes: [DayOutcome] = []
     /// 3c capture — coarse session-start points, newest-first, 365-day window.
-    /// Written by `recordSessionPlace`; read only by the DEBUG Signals sheet.
+    /// Written by `recordSessionPlace`; read by the Places sheet and the DEBUG
+    /// Signals sheet.
     /// Never part of the coach snapshot.
     @Published var sessionPlaces: [SessionPlacePoint] = []
     /// The last workout move (Week-tab drag or "Move workout to…"). Drives the

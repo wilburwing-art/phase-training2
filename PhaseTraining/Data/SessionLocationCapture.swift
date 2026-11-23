@@ -5,7 +5,9 @@
 // workout starts, and nothing else: no continuous updates, no background
 // location, no geofences. "While using" permission is asked at the first
 // session start only, and only if iOS has never been asked; once the user
-// declines, nothing is captured and nothing is asked again.
+// declines, nothing is captured and nothing is asked again. The off switch
+// lives in Profile > Places (`captureOffKey`); while it is on there is no fix
+// and no permission prompt.
 //
 // It never blocks the workout. The request is fire-and-forget, gives up after
 // `timeout`, and drops a fix that arrives too long after the session began
@@ -27,6 +29,9 @@ final class SessionLocationCapture: NSObject, CLLocationManagerDelegate {
     /// up again (iOS would not show it twice anyway; this keeps the intent
     /// explicit and survives a status that reads notDetermined again).
     static let promptedKey = "pt_location_prompted"
+    /// Set when the user turns "Remember where workouts start" off in
+    /// Profile > Places. Read through `isCaptureOff`.
+    static let captureOffKey = "pt_location_capture_off"
     /// How long a requested fix may take before it is abandoned.
     static let timeout: TimeInterval = 20
     /// A fix later than this after the session began no longer says where the
@@ -58,11 +63,16 @@ final class SessionLocationCapture: NSObject, CLLocationManagerDelegate {
         return info.arguments.contains { $0.hasPrefix("--ui-test") }
     }
 
+    static func isCaptureOff(_ defaults: UserDefaults) -> Bool {
+        defaults.bool(forKey: captureOffKey)
+    }
+
     /// Start the one-shot capture for a session that just began. Returns at
     /// once; `completion` runs on the main thread only if a usable fix arrives.
     func captureAtSessionStart(sessionId: TimeInterval,
                                completion: @escaping (SessionPlacePoint) -> Void) {
         guard !Self.isDisabledForThisProcess else { return }
+        guard !Self.isCaptureOff(defaults) else { return }
         // A newer session replaces any capture still in flight.
         finish()
         pendingSessionId = sessionId

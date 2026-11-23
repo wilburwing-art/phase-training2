@@ -25,6 +25,18 @@ extension PlanStore {
         }
     }
 
+    /// Remove the points for the given sessions (one place's `sessionIds`).
+    func deleteSessionPlaces(sessionIds: Set<TimeInterval>) {
+        sessionPlaces.removeAll { sessionIds.contains($0.sessionId) }
+        saveSessionPlaces()
+    }
+
+    /// Remove every stored point, including ones the clusterer skips.
+    func deleteAllSessionPlaces() {
+        sessionPlaces = []
+        defaults.removeObject(forKey: Self.sessionPlacesKey)
+    }
+
     /// Shared by init and reloadFromDefaults (a restore must re-read it, or
     /// the next insert writes the stale in-memory copy over the restored log).
     static func loadSessionPlaces(_ defaults: UserDefaults, today: Date) -> [SessionPlacePoint] {

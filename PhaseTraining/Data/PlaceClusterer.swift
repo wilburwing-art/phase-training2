@@ -8,9 +8,10 @@
 // otherwise it starts a new one. Points are visited oldest first with a fixed
 // tie-break, so the same log always yields the same places.
 //
-// Capture and store only. Nothing reads the places yet (the 3c reader, home gym
-// and equipment-aware swaps, waits until places have accrued). Nothing here
-// leaves the device or enters the coach snapshot.
+// The Places sheet (Profile > Places) lists the clustered places and deletes
+// them; the DEBUG Signals sheet also reads the log. The planner and coach read
+// nothing yet (home gym and equipment-aware swaps wait until places have
+// accrued). Nothing here leaves the device or enters the coach snapshot.
 
 import Foundation
 

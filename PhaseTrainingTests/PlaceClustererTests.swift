@@ -178,6 +178,36 @@ final class PlaceClustererTests: XCTestCase {
         XCTAssertNil(defaults.object(forKey: PlanStore.sessionPlacesKey))
     }
 
+    func test_deleteSessionPlaces_removesOnlyThatPlace_andPersists() {
+        let defaults = freshDefaults()
+        let store = PlanStore(defaults: defaults, today: t0)
+        store.recordSessionPlace(pt(0, lat: gym.lat, lon: gym.lon, at: -5), now: t0)
+        store.recordSessionPlace(pt(1, lat: gym.lat, lon: gym.lon, at: -4), now: t0)
+        store.recordSessionPlace(pt(2, lat: crag.lat, lon: crag.lon, at: -3), now: t0)
+        let places = PlaceClusterer.cluster(store.sessionPlaces)
+        XCTAssertEqual(places.count, 2)
+        store.deleteSessionPlaces(sessionIds: Set(places[0].sessionIds))
+        XCTAssertEqual(store.sessionPlaces.map(\.latitude), [crag.lat])
+        XCTAssertEqual(PlanStore(defaults: defaults, today: t0).sessionPlaces, store.sessionPlaces)
+    }
+
+    func test_deleteAllSessionPlaces_removesTheKey() {
+        let defaults = freshDefaults()
+        let store = PlanStore(defaults: defaults, today: t0)
+        store.recordSessionPlace(pt(0, lat: gym.lat, lon: gym.lon, acc: 3_000), now: t0)
+        XCTAssertNotNil(defaults.object(forKey: PlanStore.sessionPlacesKey))
+        store.deleteAllSessionPlaces()
+        XCTAssertTrue(store.sessionPlaces.isEmpty)
+        XCTAssertNil(defaults.object(forKey: PlanStore.sessionPlacesKey))
+    }
+
+    func test_captureOffFlag_readsTheKey() {
+        let defaults = freshDefaults()
+        XCTAssertFalse(SessionLocationCapture.isCaptureOff(defaults))
+        defaults.set(true, forKey: SessionLocationCapture.captureOffKey)
+        XCTAssertTrue(SessionLocationCapture.isCaptureOff(defaults))
+    }
+
     func test_eraseAllData_sweepsTheLogKey() {
         let defaults = freshDefaults()
         PlanStore(defaults: defaults, today: t0).recordSessionPlace(pt(0, lat: gym.lat, lon: gym.lon), now: t0)
