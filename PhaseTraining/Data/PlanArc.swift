@@ -83,7 +83,7 @@ enum PlanArc {
 
     /// True when the week covered by `snapshot` was a build week.
     /// `sessions` is the full saved-session list; the snapshot joins it
-    /// by its own recorded ids.
+    /// by the week's date window.
     static func isBuildWeek(_ snapshot: WeekPlanSnapshot,
                             sessions: [SavedSession],
                             calendar: Calendar = .current) -> Bool {

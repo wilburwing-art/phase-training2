@@ -223,6 +223,25 @@ final class PlanHistoryTests: XCTestCase {
         XCTAssertEqual(shape?.completionRatio ?? 0, 2.0 / 3.0, accuracy: 0.01)
     }
 
+    func test_shape_countsSessionLoggedAfterSnapshot() {
+        let store = freshStore()
+        let cal = Calendar.current
+        let monday = Date().startOfTrainingWeek()
+        let sessionStore = SessionStore(defaults: UserDefaults(suiteName: "stub-\(UUID())")!)
+        store.sessionStore = sessionStore
+        store.setPlan(makePlan(weekStart: monday, liftDays: 3))
+        XCTAssertTrue(store.pastPlans[0].actualSessionIDs.isEmpty)
+
+        // Logged after the snapshot; no recapture runs.
+        sessionStore.savedSessions = [
+            makeSession(on: monday),
+            makeSession(on: cal.date(byAdding: .day, value: 1, to: monday)!),
+        ]
+        let shape = store.shape(forWeek: monday)
+        XCTAssertEqual(shape?.completedLiftDays, 2)
+        XCTAssertEqual(shape?.completionRatio ?? 0, 2.0 / 3.0, accuracy: 0.01)
+    }
+
     // MARK: - Persistence
 
     func test_persistsAcrossInstances() {
@@ -293,6 +312,31 @@ final class PlanHistoryTests: XCTestCase {
                       "Coach context should include the PAST WEEKS block when history exists")
         XCTAssertTrue(blob.contains("planned 3"),
                       "Block should report planned workout count")
+    }
+
+    func test_coachContext_pastWeeksCountsSessionLoggedAfterSnapshot() {
+        let cal = Calendar.current
+        let now = Date()
+        let priorMonday = cal.date(byAdding: .day, value: -7,
+                                   to: now.startOfTrainingWeek())!.startOfTrainingWeek()
+        // Captured Monday of that week, before anything was logged.
+        let snap = WeekPlanSnapshot.capture(makePlan(weekStart: priorMonday, liftDays: 3),
+                                            sessions: [], now: priorMonday)
+        let sessions = [
+            makeSession(on: priorMonday.addingTimeInterval(18 * 3600)),
+            makeSession(on: cal.date(byAdding: .day, value: 2, to: priorMonday)!),
+        ]
+        let blob = CoachContext.snapshot(
+            now: now,
+            activeTab: .today,
+            memory: TrainingMemory(),
+            plan: nil,
+            recentSessions: sessions,
+            recentFeedback: [],
+            recentSoreness: [],
+            pastPlans: [snap]
+        )
+        XCTAssertTrue(blob.contains("planned 3, completed 2 (67%)"), blob)
     }
 
     func test_coachContext_excludesCurrentWeekFromBlock() {

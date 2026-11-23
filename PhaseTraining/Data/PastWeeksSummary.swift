@@ -1,10 +1,8 @@
 // PastWeeksSummary.swift — planned versus done for completed weeks.
 //
-// Feeds the Progress "PLANNED / DONE" card. A snapshot's
-// `actualSessionIDs` is frozen when the snapshot is taken, so a week
-// snapshotted on Monday never lists the sessions logged later that week.
-// The rows re-join by date window instead: `capture` over every saved
-// session, stamped at the snapshot's own `capturedAt`.
+// Feeds the Progress "PLANNED / DONE" card. `completedSessionCount`
+// joins sessions by the week's date window, so a week snapshotted on
+// Monday still counts the sessions logged later that week.
 
 import Foundation
 
@@ -38,14 +36,10 @@ enum PastWeeksSummary {
             .sorted { $0.weekStart < $1.weekStart }
             .suffix(max(limit, 0))
         return past.map { snap in
-            let joined = WeekPlanSnapshot.capture(snap.plan,
-                                                  sessions: sessions,
-                                                  now: snap.capturedAt,
-                                                  calendar: calendar)
-            return PastWeekRow(
+            PastWeekRow(
                 weekStart: snap.weekStart,
                 planned: snap.plannedLiftDays + snap.plannedSportDays,
-                done: joined.completedSessionCount(in: sessions, calendar: calendar)
+                done: snap.completedSessionCount(in: sessions, calendar: calendar)
             )
         }
     }

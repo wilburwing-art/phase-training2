@@ -97,6 +97,17 @@ final class PlanArcTests: XCTestCase {
         XCTAssertFalse(PlanArc.isBuildWeek(snap, sessions: sessions, calendar: cal))
     }
 
+    func test_isBuildWeek_countsSessionsLoggedAfterSnapshot() {
+        // Snapshot taken Monday morning lists no sessions; the three logged
+        // later that week still make it a build week.
+        let (logged, sessions) = snapshot(weekStart: monday(), lifts: 4, done: 3)
+        let early = WeekPlanSnapshot(weekStart: logged.weekStart,
+                                     plan: logged.plan,
+                                     actualSessionIDs: [],
+                                     capturedAt: monday())
+        XCTAssertTrue(PlanArc.isBuildWeek(early, sessions: sessions, calendar: cal))
+    }
+
     // MARK: - Streak counting
 
     func test_consecutiveBuildWeeks_countsTrailingStreak() {

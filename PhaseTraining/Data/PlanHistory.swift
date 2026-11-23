@@ -34,11 +34,11 @@ struct WeekPlanSnapshot: Codable, Hashable, Identifiable {
     /// exact day-by-day shape from history without re-running the planner.
     let plan: WeekPlan
 
-    /// `SavedSession.id` values logged during this week's window. Joined
-    /// at read time — `SessionStore.savedSessions` is the source of truth
-    /// for the session details themselves. Storing IDs (not copies) keeps
-    /// the snapshot small + avoids divergence when the user edits a saved
-    /// session post-hoc.
+    /// `SavedSession.id` values in this week's window at `capturedAt`.
+    /// A record of the capture only: sessions logged after the last
+    /// capture of a week never join this list (`captureRolloverIfNeeded`
+    /// skips a week that already has a snapshot), so the readers below
+    /// join `SessionStore.savedSessions` by the week's date window instead.
     let actualSessionIDs: [TimeInterval]
 
     /// When we snapshotted. Used to disambiguate multiple captures of the
@@ -62,21 +62,25 @@ extension WeekPlanSnapshot {
         plan.days.filter { $0.kind == .sport }.count
     }
 
-    /// Number of distinct calendar days within this week that have an
-    /// associated session id. Doesn't validate session details — a
+    /// Sessions whose start falls in this week's window
+    /// (`weekStart` up to 7 days later), in `sessions` order.
+    func sessionsInWindow(_ sessions: [SavedSession],
+                          calendar: Calendar = .current) -> [SavedSession] {
+        let weekEnd = calendar.date(byAdding: .day, value: 7, to: weekStart) ?? weekStart
+        return sessions.filter { $0.startTime >= weekStart && $0.startTime < weekEnd }
+    }
+
+    /// Number of distinct calendar days within this week that have a
+    /// logged session. Doesn't validate session details — a
     /// 5-minute "warmup" session counts toward "did something". The
     /// coarseness is intentional; finer rules (volume, RPE) live in PR 7.
     func completedSessionCount(in sessions: [SavedSession],
                                calendar: Calendar = .current) -> Int {
-        let idSet = Set(actualSessionIDs)
         // Use start-of-day on the session date so two sessions on the
         // same calendar day collapse to one "completed day" — protects
         // against double-counting if the user splits a workout.
-        var doneDays = Set<Date>()
-        for s in sessions where idSet.contains(s.id) {
-            doneDays.insert(calendar.startOfDay(for: s.startTime))
-        }
-        return doneDays.count
+        Set(sessionsInWindow(sessions, calendar: calendar)
+            .map { calendar.startOfDay(for: $0.startTime) }).count
     }
 
     /// Completion ratio against the week's planned workout days
@@ -95,10 +99,9 @@ extension WeekPlanSnapshot {
     /// Sessions logged in this week's calendar window, ordered by date.
     /// Used by `shape(forWeek:)` consumers that need full session details
     /// rather than just counts.
-    func sessions(from store: [SavedSession]) -> [SavedSession] {
-        let idSet = Set(actualSessionIDs)
-        return store
-            .filter { idSet.contains($0.id) }
+    func sessions(from store: [SavedSession],
+                  calendar: Calendar = .current) -> [SavedSession] {
+        sessionsInWindow(store, calendar: calendar)
             .sorted { $0.startTime < $1.startTime }
     }
 }
@@ -171,7 +174,7 @@ struct WeekShape: Hashable {
         // looking at the plan's day kind, not the session's category —
         // a user who did sport on a planned lift day still counts as
         // "completed a workout that day" but bucketed under the planned kind.
-        let resolved = snapshot.sessions(from: sessions)
+        let resolved = snapshot.sessions(from: sessions, calendar: calendar)
         let doneDays: Set<Date> = Set(resolved.map { calendar.startOfDay(for: $0.startTime) })
 
         var liftDone = 0
