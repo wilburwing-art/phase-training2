@@ -1025,4 +1025,65 @@ final class PlannerTests: XCTestCase {
         XCTAssertEqual(adjusted.liftDaysPerWeek, 4,
                        "Same-day hard logs count as one day")
     }
+
+    // MARK: - Why this day (DayReason, 2026-11c 5.3)
+
+    func testRestDayFromMarkedOffShowsReasonLine() {
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        overrides.unavailableDays = [.wednesday]
+        let plan = Planner.generate(memory: fixtureMemory(), overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        let wed = plan.days.first { Weekday.from(date: $0.date, calendar: .current) == .wednesday }!
+        XCTAssertEqual(wed.kind, .rest)
+        XCTAssertEqual(DayReason.line(for: wed), "You marked Wed as off this week")
+    }
+
+    func testRestOverrideShowsReasonLine() {
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        let thu = Calendar.current.date(byAdding: .day, value: 3, to: mondayAnchor())!
+        overrides.dayOverrides[thu] = .rest
+        let plan = Planner.generate(memory: fixtureMemory(), overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        let day = plan.days.first { Calendar.current.isDate($0.date, inSameDayAs: thu) }!
+        XCTAssertEqual(day.kind, .rest)
+        XCTAssertEqual(DayReason.line(for: day), "You set this day to rest")
+    }
+
+    func testMovedLiftShowsReasonLine() {
+        var overrides = WeekOverrides(weekStart: mondayAnchor())
+        let sun = Calendar.current.date(byAdding: .day, value: 6, to: mondayAnchor())!
+        overrides.dayOverrides[sun] = .lift()
+        overrides.setKeptLiftIndex(0, for: sun)
+        let plan = Planner.generate(memory: fixtureMemory(), overrides: overrides,
+                                    routines: catalog(), today: mondayAnchor())
+        let day = plan.days.first { Calendar.current.isDate($0.date, inSameDayAs: sun) }!
+        XCTAssertEqual(day.kind, .lift)
+        XCTAssertEqual(DayReason.line(for: day), "You moved this workout here")
+    }
+
+    func testGeneratorProvenanceAndShapeTracesStayOffTheRow() {
+        let plan = Planner.generate(memory: fixtureMemory(), routines: catalog(), today: mondayAnchor())
+        for day in plan.days where day.generatedReason != nil {
+            guard let line = DayReason.line(for: day) else { continue }
+            XCTAssertFalse(line.contains(" slot from "), "shape trace leaked: \(line)")
+            if let prov = day.generatedWorkout?.provenance, !prov.isEmpty {
+                XCTAssertFalse(line.contains(prov), "provenance leaked: \(line)")
+            }
+        }
+    }
+
+    func testReasonLineKeepsAppendedSentenceAfterProvenance() {
+        let workout = GeneratedWorkout(title: "Lift", summary: "", exercises: [],
+                                       estimatedMinutes: 45,
+                                       provenance: "snow-sports · inbounds · demands: power")
+        let day = DayPlan(date: mondayAnchor(), kind: .lift, title: "Lift",
+                          generatedWorkout: workout,
+                          generatedReason: workout.provenance
+                            + " · Couldn't fit your Tue climbing day here"
+                            + " · Lightened: sits within a climbing recovery buffer")
+        XCTAssertEqual(DayReason.line(for: day), "Couldn't fit your Tue climbing day here")
+        let traceOnly = DayPlan(date: mondayAnchor(), kind: .rest, title: "Rest",
+                                generatedReason: "Rest slot from 3L/2S/2R")
+        XCTAssertNil(DayReason.line(for: traceOnly))
+    }
 }

@@ -169,6 +169,13 @@ struct WeekDayEditSheet: View {
                 Text("Currently: \(dayPlan.kind.label.lowercased()), \(dayPlan.title)")
                     .font(.monoXS)
                     .foregroundStyle(Color.ink3)
+                if let reason = DayReason.line(for: dayPlan) {
+                    Text(reason)
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("week-day-sheet-reason")
+                }
             }
         }
     }

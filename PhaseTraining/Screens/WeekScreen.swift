@@ -579,11 +579,20 @@ private struct DayRow: View {
                 SupportBadge(magnitude: mag)
             }
 
-            Text(day.title)
-                .styled(.displayS)
-                .foregroundStyle(Color.ink)
-                .lineLimit(1)
-                .truncationMode(.tail)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(day.title)
+                    .styled(.displayS)
+                    .foregroundStyle(Color.ink)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                if let reason {
+                    Text(reason)
+                        .font(.monoXS)
+                        .foregroundStyle(Color.ink3)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
+            }
 
             Spacer(minLength: 4)
 
@@ -626,6 +635,7 @@ private struct DayRow: View {
     private var accessibilitySummary: String {
         let f = DateFormatter(); f.dateFormat = "EEEE d"
         var parts = [f.string(from: day.date), day.kind.label, day.title]
+        if let reason { parts.append(reason) }
         if let mag = supportMagnitude { parts.append("support day, \(mag)") }
         if isToday { parts.append("today") }
         if day.protected { parts.append("protected") }
@@ -645,6 +655,8 @@ private struct DayRow: View {
         if isTargeted { return Color.accent }
         return isToday ? Color.accent : Color.line
     }
+
+    private var reason: String? { DayReason.line(for: day) }
 
     private var weekdayShort: String {
         WeekDateFormatters.weekdayShort.string(from: day.date).uppercased()
