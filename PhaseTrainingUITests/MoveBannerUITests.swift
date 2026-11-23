@@ -11,6 +11,9 @@ final class MoveBannerUITests: XCTestCase {
             "--ui-test-onboarded",
             "--ui-test-reset",
             "--seed-missed-consolidation-demo",
+            // A supported primary sport, as every onboarded user has. Without
+            // one the move's regenerate titles each lift "Rest" (11c 5.4).
+            "--seed-ski-primary",
         ]
         app.launch()
         return app
@@ -54,6 +57,16 @@ final class MoveBannerUITests: XCTestCase {
         let banner = app.buttons["move-banner-replan"]
         XCTAssertTrue(banner.waitForExistence(timeout: 5), "move banner should appear on the Week tab")
         attachScreenshot("move-banner")
+
+        // Row labels read "<day>, LIFT, <title>, ...": no lift row is titled Rest.
+        var liftRows = 0
+        for idx in 0..<7 {
+            let label = app.descendants(matching: .any)["week-day-row-\(idx)"].label
+            guard label.contains(", LIFT, ") else { continue }
+            liftRows += 1
+            XCTAssertFalse(label.contains(", LIFT, Rest"), "lift row titled Rest: \(label)")
+        }
+        XCTAssertGreaterThan(liftRows, 0, "no LIFT row found after the move")
 
         // Outlasts the old 6 second auto-clear.
         sleep(8)

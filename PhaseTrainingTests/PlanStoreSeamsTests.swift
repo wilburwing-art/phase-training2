@@ -216,6 +216,44 @@ final class PlanStoreSeamsTests: XCTestCase {
         XCTAssertEqual(store.plan?.days.map(\.title), kindOnly.plan?.days.map(\.title))
     }
 
+    /// 2026-11c 5.4: the `--seed-missed-consolidation-demo` week (persisted
+    /// plan, lift days titled by focus, no lift index), then a lift moved onto
+    /// a rest day. The move regenerates the week, so with no primary sport
+    /// every lift took the generator's "no-supported-sport" fallback, titled
+    /// "Rest". With a supported sport, as every onboarded user has, no lift
+    /// day reads "Rest".
+    func test_swap_inMissedConsolidationSeedWeek_liftDaysKeepWorkoutTitles() throws {
+        let cal = Calendar.current
+        let today = monday()
+        func date(_ o: Int) -> Date { cal.date(byAdding: .day, value: o, to: today)! }
+        func lift(_ o: Int, _ focus: WorkoutFocus) -> DayPlan {
+            DayPlan(date: date(o), kind: .lift, title: focus.title,
+                    generatedWorkout: GeneratedWorkout(
+                        title: focus.title, summary: "", exercises: [],
+                        estimatedMinutes: 60, provenance: "seed", focus: focus),
+                    generatedReason: "seed")
+        }
+        func rest(_ o: Int) -> DayPlan { DayPlan(date: date(o), kind: .rest, title: "Rest") }
+        let seeded = WeekPlan(days: [lift(-2, .push), rest(-1), lift(0, .pull), rest(1),
+                                     lift(2, .legs), lift(3, .upper), rest(4)],
+                              generatedAt: today, inputsHash: "ui-test-seed")
+        let defaults = freshDefaults()
+        let enc = JSONEncoder()
+        enc.dateEncodingStrategy = .secondsSince1970
+        defaults.set(try enc.encode(seeded), forKey: PlanStore.planKey)
+        let store = PlanStore(defaults: defaults, today: today)
+        XCTAssertEqual(store.plan?.days.count, 7, "seeded plan did not load")
+
+        store.swap(sourceDate: date(0), targetDate: date(1), memory: skiMemory(), today: today)
+
+        let lifts = try XCTUnwrap(store.plan?.days).filter { $0.kind == .lift }
+        XCTAssertFalse(lifts.isEmpty)
+        for day in lifts {
+            XCTAssertNotEqual(day.title, "Rest", "lift on \(day.date) titled Rest")
+        }
+        XCTAssertEqual(day(store, date(1))?.kind, .lift)
+    }
+
     // MARK: - Planner version stamp (migrateIfStale)
 
     /// A store opened on a plan saved under `plannerVersion`.
