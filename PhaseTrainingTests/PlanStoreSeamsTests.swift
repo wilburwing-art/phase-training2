@@ -222,7 +222,9 @@ final class PlanStoreSeamsTests: XCTestCase {
     /// every lift took the generator's "no-supported-sport" fallback, titled
     /// "Rest". With a supported sport, as every onboarded user has, no lift
     /// day reads "Rest".
-    func test_swap_inMissedConsolidationSeedWeek_liftDaysKeepWorkoutTitles() throws {
+    /// The `--seed-missed-consolidation-demo` week: lift days carry no
+    /// `liftIndex`, as the seed writes them.
+    private func missedConsolidationSeedStore(tag: String = #function) throws -> (PlanStore, (Int) -> Date) {
         let cal = Calendar.current
         let today = monday()
         func date(_ o: Int) -> Date { cal.date(byAdding: .day, value: o, to: today)! }
@@ -237,14 +239,18 @@ final class PlanStoreSeamsTests: XCTestCase {
         let seeded = WeekPlan(days: [lift(-2, .push), rest(-1), lift(0, .pull), rest(1),
                                      lift(2, .legs), lift(3, .upper), rest(4)],
                               generatedAt: today, inputsHash: "ui-test-seed")
-        let defaults = freshDefaults()
+        let defaults = freshDefaults(tag)
         let enc = JSONEncoder()
         enc.dateEncodingStrategy = .secondsSince1970
         defaults.set(try enc.encode(seeded), forKey: PlanStore.planKey)
         let store = PlanStore(defaults: defaults, today: today)
         XCTAssertEqual(store.plan?.days.count, 7, "seeded plan did not load")
+        return (store, date)
+    }
 
-        store.swap(sourceDate: date(0), targetDate: date(1), memory: skiMemory(), today: today)
+    func test_swap_inMissedConsolidationSeedWeek_liftDaysKeepWorkoutTitles() throws {
+        let (store, date) = try missedConsolidationSeedStore()
+        store.swap(sourceDate: date(0), targetDate: date(1), memory: skiMemory(), today: monday())
 
         let lifts = try XCTUnwrap(store.plan?.days).filter { $0.kind == .lift }
         XCTAssertFalse(lifts.isEmpty)
@@ -252,6 +258,17 @@ final class PlanStoreSeamsTests: XCTestCase {
             XCTAssertNotEqual(day.title, "Rest", "lift on \(day.date) titled Rest")
         }
         XCTAssertEqual(day(store, date(1))?.kind, .lift)
+    }
+
+    /// 11c 5.6: a lift moved in a week saved without lift indices keeps its
+    /// session, so the target reads as a move rather than a kind override.
+    func test_swap_inMissedConsolidationSeedWeek_targetReadsAsMovedWorkout() throws {
+        let (store, date) = try missedConsolidationSeedStore()
+        store.swap(sourceDate: date(0), targetDate: date(1), memory: skiMemory(), today: monday())
+
+        let target = try XCTUnwrap(day(store, date(1)))
+        XCTAssertEqual(target.kind, .lift)
+        XCTAssertEqual(target.generatedReason, "You moved this workout here")
     }
 
     // MARK: - Planner version stamp (migrateIfStale)

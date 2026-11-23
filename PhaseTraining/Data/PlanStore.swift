@@ -708,14 +708,23 @@ final class PlanStore: ObservableObject {
 
         let sourceOverride = DayKindOverride.from(plan: sourcePlan)
         let targetOverride = DayKindOverride.from(plan: targetPlan)
+        // A plan saved without lift indices (a test seed, or any day the
+        // planner did not stamp) falls back to the day's position among the
+        // week's lifts, which is how the planner assigns indices to an
+        // unmoved week.
+        let liftDays = plan.days.filter { $0.kind == .lift }.sorted { $0.date < $1.date }
+        func keptIndex(_ day: DayPlan) -> Int? {
+            guard day.kind == .lift else { return nil }
+            return day.liftIndex ?? liftDays.firstIndex { cal.isDate($0.date, inSameDayAs: day.date) }
+        }
 
         updateOverrides(memory: memory, today: today) { o in
             o.dayOverrides[cal.startOfDay(for: sourceDate)] = targetOverride
             o.dayOverrides[cal.startOfDay(for: targetDate)] = sourceOverride
             // Each side keeps the session it carried; a day that is no longer
             // a lift drops any index it held.
-            o.setKeptLiftIndex(targetPlan.kind == .lift ? targetPlan.liftIndex : nil, for: sourceDate, calendar: cal)
-            o.setKeptLiftIndex(sourcePlan.kind == .lift ? sourcePlan.liftIndex : nil, for: targetDate, calendar: cal)
+            o.setKeptLiftIndex(keptIndex(targetPlan), for: sourceDate, calendar: cal)
+            o.setKeptLiftIndex(keptIndex(sourcePlan), for: targetDate, calendar: cal)
         }
         lastMove = MoveReceipt(title: sourcePlan.title, from: sourceDate, to: targetDate)
     }
