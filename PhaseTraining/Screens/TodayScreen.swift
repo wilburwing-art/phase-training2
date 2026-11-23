@@ -89,7 +89,7 @@ struct TodayScreen: View {
     // MARK: - Body
 
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack {
             Color.bg.ignoresSafeArea()
 
             VStack(spacing: 0) {
@@ -180,26 +180,16 @@ struct TodayScreen: View {
                                 }
                             }
                         }
-                        Spacer().frame(height: 210)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.bottom, 14)
+                }
+                // The inset reserves exactly the bottom stack's height, so
+                // the last row clears it at every Dynamic Type size.
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    bottomStack
                 }
             }
-
-            // Bottom CTA — single primary action only. Build 91 dropped
-            // the secondary History button; history is accessed elsewhere
-            // (TBD — orphaned in code for now).
-            VStack(spacing: 10) {
-                primaryButton
-                // Rest and event days already offer "Train anyway", whose
-                // sheet carries Freestyle, so the pill shows on lift and
-                // sport days only.
-                if store.active == nil, effectiveKind != .rest, effectiveKind != .event {
-                    freestyleButton
-                }
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 24)
         }
         .statusBarBackdrop()
         .foregroundStyle(Color.ink)
@@ -456,6 +446,36 @@ struct TodayScreen: View {
 
     // MARK: - Buttons
 
+    /// One primary action, then at most one secondary below it. Every
+    /// secondary (Train anyway, Freestyle) uses `secondaryButton`.
+    private var bottomStack: some View {
+        VStack(spacing: 10) {
+            primaryButton
+            // Rest and event days already offer "Train anyway", whose
+            // sheet carries Freestyle, so Freestyle shows on lift and
+            // sport days only.
+            if store.active == nil, effectiveKind != .rest, effectiveKind != .event {
+                freestyleButton
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        .padding(.bottom, 24)
+        // Opaque under the buttons, fading out above them, so rows that
+        // scroll behind the stack never read through its text.
+        .background(
+            LinearGradient(
+                stops: [
+                    .init(color: Color.bg.opacity(0), location: 0),
+                    .init(color: Color.bg, location: 0.25),
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea(edges: .bottom)
+        )
+    }
+
     @ViewBuilder
     private var primaryButton: some View {
         switch effectiveKind {
@@ -508,22 +528,28 @@ struct TodayScreen: View {
     }
 
     private func trainAnywayButton(id: String) -> some View {
-        Button {
-            showTrainAnyway = true
-        } label: {
-            Text("Train anyway")
+        secondaryButton("Train anyway", id: id) { showTrainAnyway = true }
+    }
+
+    /// The one secondary style on Today: full width, outlined, under the
+    /// primary action.
+    private func secondaryButton(_ title: String, id: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
                 .font(.scaled("Inter-Regular", size: 13).weight(.bold))
                 .foregroundStyle(Color.ink2)
+                .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .stroke(Color.lineSoft, lineWidth: 1)
                 )
+                .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(id)
-        .accessibilityLabel("Train anyway")
+        .accessibilityLabel(title)
     }
 
     /// Read-and-log prescription for a sport day — e.g. a coach-scheduled MTB
@@ -577,22 +603,12 @@ struct TodayScreen: View {
     }
 
     /// Start an empty session and pick exercises as the gym allows. Shown on
-    /// every day kind, since "whatever machines are open" ignores the plan.
+    /// lift and sport days; rest and event days reach it through Train anyway.
     private var freestyleButton: some View {
-        Button {
+        secondaryButton("Freestyle: build it as you go", id: "today-freestyle") {
             store.saveActive(store.createFreestyleSession())
             onStart()
-        } label: {
-            Text("Freestyle: build it as you go")
-                .font(.scaled("Inter-Regular", size: 13).weight(.bold))
-                .foregroundStyle(Color.ink2)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 9)
-                .background(Color.surface, in: Capsule())
-                .overlay(Capsule().stroke(Color.lineSoft, lineWidth: 1))
         }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("today-freestyle")
     }
 
     private var workoutStartButton: some View {
