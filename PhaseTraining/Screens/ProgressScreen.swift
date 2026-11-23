@@ -189,6 +189,32 @@ struct ProgressScreen: View {
             || (skiSeasonSummary?.days ?? 0) > 0
     }
 
+    /// History from the header row, since "See all sessions" sits near the
+    /// bottom of a long scroll. Sits in the eyebrow row, which Progress
+    /// leaves empty on the trailing side.
+    private var historyHeaderButton: some View {
+        Button {
+            showingHistory = true
+        } label: {
+            HStack(spacing: 4) {
+                Text("HISTORY")
+                    .styled(.micro)
+                    .foregroundStyle(Color.accent)
+                Image(systemName: "chevron.right")
+                    .scaledSystemFont(10, weight: .semibold)
+                    .foregroundStyle(Color.accent)
+            }
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .padding(.trailing, 20)
+        .padding(.top, -3)
+        .accessibilityLabel("History")
+        .accessibilityHint("Shows every logged session")
+        .accessibilityIdentifier("progress-header-history")
+    }
+
     private var content: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
@@ -197,14 +223,15 @@ struct ProgressScreen: View {
                     title: "Last \(Self.weeks) weeks",
                     subtitle: nil
                 )
+                .overlay(alignment: .topTrailing) { historyHeaderButton }
                 .padding(.horizontal, -20)
                 SeasonPhaseBadge(style: .full, surface: "progress")
+                statStrip
                 if !sessions.isEmpty {
                     heatmapCard
                 }
                 SorenessCheckInPill()
                 goalsCard
-                statStrip
                 sessionsCard
                 volumeCard
                 strengthRatiosCard

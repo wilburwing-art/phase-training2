@@ -170,13 +170,8 @@ struct WeekScreen: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 8)
                 .transition(.opacity)
-                // Dismisses itself; a newer move restarts the timer.
-                .task(id: move) {
-                    try? await Task.sleep(for: .seconds(6))
-                    if planStore.lastMove == move {
-                        withMotion(.easeInOut(duration: 0.2), .movement) { planStore.lastMove = nil }
-                    }
-                }
+                // Stays until the user dismisses it, re-plans, or a newer move
+                // replaces it, so the Re-plan offer cannot expire mid-read.
             }
 
             if planStore.isArcDeloadWeek {
@@ -404,6 +399,17 @@ private struct MoveBanner: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("move-banner-replan")
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .scaledSystemFont(11, weight: .semibold)
+                    .foregroundStyle(Color.ink3)
+                    .frame(minWidth: 28, minHeight: 28)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Dismiss")
+            .accessibilityIdentifier("move-banner-close")
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)

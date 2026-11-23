@@ -114,6 +114,25 @@ final class ProgressScreenUITests: XCTestCase {
                       "See all sessions should present HistoryScreen" + elementDump(app))
     }
 
+    /// History from the header, without scrolling past the card stack.
+    func test_headerHistory_opensHistoryWithoutScrolling() throws {
+        let app = launch(seed: "--seed-progress-demo")
+        openProgress(in: app)
+
+        let history = app.buttons["progress-header-history"]
+        XCTAssertTrue(history.waitForExistence(timeout: 5),
+                      "header History should show on first paint" + elementDump(app))
+        XCTAssertTrue(history.isHittable, "header History should be on screen")
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "progress-header-history"
+        shot.lifetime = .keepAlways
+        add(shot)
+        history.tap()
+
+        XCTAssertTrue(app.staticTexts["History"].waitForExistence(timeout: 5),
+                      "header History should present HistoryScreen" + elementDump(app))
+    }
+
     /// History search narrows the list, a session saves to the Library once,
     /// and Repeat lands in Log with the session's exercises.
     func test_history_searchSaveAsRoutineAndRepeat() throws {

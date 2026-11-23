@@ -55,6 +55,11 @@ final class MoveBannerUITests: XCTestCase {
         XCTAssertTrue(banner.waitForExistence(timeout: 5), "move banner should appear on the Week tab")
         attachScreenshot("move-banner")
 
+        // Outlasts the old 6 second auto-clear.
+        sleep(8)
+        XCTAssertTrue(banner.exists, "move banner should stay until dismissed")
+        XCTAssertTrue(app.buttons["move-banner-close"].exists, "move banner should offer a close button")
+
         banner.tap()
         XCTAssertFalse(banner.waitForExistence(timeout: 2), "Re-plan week should clear the banner")
         attachScreenshot("after-replan")
