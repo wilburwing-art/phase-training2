@@ -134,6 +134,64 @@ extension ProgressScreen {
         }
     }
 
+    // MARK: - Planned versus done
+
+    @ViewBuilder
+    var pastWeeksCard: some View {
+        let rows = PastWeeksSummary.rows(snapshots: planStore.pastPlans,
+                                         sessions: sessions,
+                                         limit: Self.weeks)
+        if rows.isEmpty {
+            EmptyView()
+        } else {
+            card(title: "PLANNED / DONE") {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(alignment: .top, spacing: 6) {
+                        ForEach(rows) { row in
+                            VStack(spacing: 4) {
+                                pastWeekBar(row)
+                                    .frame(height: 70)
+                                Text(row.planned == 0 ? "rest" : "\(row.done)/\(row.planned)")
+                                    .font(.monoXS)
+                                    .foregroundStyle(Color.ink3)
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                    }
+                    HStack {
+                        Text("\(rows.count)w ago")
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
+                        Spacer()
+                        Text("last week")
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
+                    }
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Planned versus done")
+                .accessibilityValue(PastWeeksSummary.spoken(rows))
+                .accessibilityIdentifier("progress-past-weeks")
+            }
+        }
+    }
+
+    private func pastWeekBar(_ row: PastWeekRow) -> some View {
+        GeometryReader { geo in
+            let h = geo.size.height
+            let fillH = h * CGFloat(min(row.ratio, 1))
+            ZStack(alignment: .bottom) {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.elevated)
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(row.planned > 0 && row.done >= row.planned ? Color.accent : Color.accentDim)
+                    .frame(height: max(fillH, row.done == 0 ? 0 : 2))
+            }
+        }
+    }
+
     // MARK: - Volume trend
 
     var volumeCard: some View {

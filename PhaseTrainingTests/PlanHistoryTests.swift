@@ -317,3 +317,98 @@ final class PlanHistoryTests: XCTestCase {
                        "Snapshot of the current week should not appear in PAST WEEKS")
     }
 }
+
+// MARK: - Past weeks, planned versus done
+
+extension PlanHistoryTests {
+    private var pwCal: Calendar {
+        var c = Calendar(identifier: .gregorian)
+        c.timeZone = TimeZone(identifier: "UTC")!
+        c.firstWeekday = 2
+        return c
+    }
+
+    /// Fixed Monday, 2026-11-23 12:00 UTC.
+    private var pwToday: Date { Date(timeIntervalSince1970: 1_795_262_400) }
+
+    private func pwWeekStart(weeksAgo: Int) -> Date {
+        let cal = pwCal
+        let monday = pwToday.startOfTrainingWeek(calendar: cal)
+        return cal.date(byAdding: .day, value: -7 * weeksAgo, to: monday)!
+    }
+
+    private func pwPlan(weeksAgo: Int, lift: Int, sport: Int = 0) -> WeekPlan {
+        let cal = pwCal
+        let start = pwWeekStart(weeksAgo: weeksAgo)
+        let days = (0..<7).map { i -> DayPlan in
+            let kind: DayKind = i < lift ? .lift : (i < lift + sport ? .sport : .rest)
+            return DayPlan(date: cal.date(byAdding: .day, value: i, to: start)!,
+                           kind: kind, title: "t", routineId: nil,
+                           generatedWorkout: nil, generatedReason: "test")
+        }
+        return WeekPlan(days: days, generatedAt: pwToday, inputsHash: "test")
+    }
+
+    private func pwSnapshot(weeksAgo: Int, lift: Int, sport: Int = 0,
+                            sessions: [SavedSession] = []) -> WeekPlanSnapshot {
+        let start = pwWeekStart(weeksAgo: weeksAgo)
+        return WeekPlanSnapshot.capture(pwPlan(weeksAgo: weeksAgo, lift: lift, sport: sport),
+                                        sessions: sessions,
+                                        now: start.addingTimeInterval(3600),
+                                        calendar: pwCal)
+    }
+
+    private func pwSession(weeksAgo: Int, dayOffset: Int) -> SavedSession {
+        let d = pwCal.date(byAdding: .day, value: dayOffset, to: pwWeekStart(weeksAgo: weeksAgo))!
+        return makeSession(on: d.addingTimeInterval(9 * 3600))
+    }
+
+    func testPastWeekRowsCountSessionsLoggedAfterCapture() {
+        let snap = pwSnapshot(weeksAgo: 1, lift: 3)
+        XCTAssertTrue(snap.actualSessionIDs.isEmpty)
+        let sessions = [pwSession(weeksAgo: 1, dayOffset: 1), pwSession(weeksAgo: 1, dayOffset: 3)]
+        let rows = PastWeeksSummary.rows(snapshots: [snap], sessions: sessions,
+                                         today: pwToday, calendar: pwCal)
+        XCTAssertEqual(rows.count, 1)
+        XCTAssertEqual(rows[0].done, 2)
+        XCTAssertEqual(rows[0].planned, 3)
+    }
+
+    func testPastWeekRowsExcludeCurrentWeekAndOrderOldestFirst() {
+        let snaps = [pwSnapshot(weeksAgo: 0, lift: 3),
+                     pwSnapshot(weeksAgo: 1, lift: 3),
+                     pwSnapshot(weeksAgo: 3, lift: 3),
+                     pwSnapshot(weeksAgo: 2, lift: 3)]
+        let rows = PastWeeksSummary.rows(snapshots: snaps, sessions: [],
+                                         today: pwToday, calendar: pwCal)
+        XCTAssertEqual(rows.map(\.weekStart),
+                       [pwWeekStart(weeksAgo: 3), pwWeekStart(weeksAgo: 2), pwWeekStart(weeksAgo: 1)])
+    }
+
+    func testPastWeekRowsRestWeekHasZeroRatio() {
+        let snap = pwSnapshot(weeksAgo: 1, lift: 0)
+        let rows = PastWeeksSummary.rows(snapshots: [snap],
+                                         sessions: [pwSession(weeksAgo: 1, dayOffset: 2)],
+                                         today: pwToday, calendar: pwCal)
+        XCTAssertEqual(rows.count, 1)
+        XCTAssertEqual(rows[0].planned, 0)
+        XCTAssertEqual(rows[0].ratio, 0)
+    }
+
+    func testPastWeekRowsCapAtLimit() {
+        let snaps = (1...10).map { pwSnapshot(weeksAgo: $0, lift: 3) }
+        let rows = PastWeeksSummary.rows(snapshots: snaps, sessions: [],
+                                         today: pwToday, calendar: pwCal, limit: 8)
+        XCTAssertEqual(rows.count, 8)
+        XCTAssertEqual(rows.first?.weekStart, pwWeekStart(weeksAgo: 8))
+        XCTAssertEqual(rows.last?.weekStart, pwWeekStart(weeksAgo: 1))
+    }
+
+    func testPastWeeksSpokenNamesEachWeek() {
+        let snap = pwSnapshot(weeksAgo: 1, lift: 3, sport: 1)
+        let sessions = (0..<3).map { pwSession(weeksAgo: 1, dayOffset: $0) }
+        let rows = PastWeeksSummary.rows(snapshots: [snap], sessions: sessions,
+                                         today: pwToday, calendar: pwCal)
+        XCTAssertTrue(PastWeeksSummary.spoken(rows).contains("3 of 4"))
+    }
+}

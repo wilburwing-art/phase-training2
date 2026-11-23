@@ -48,6 +48,7 @@ struct ProgressScreen: View {
     @EnvironmentObject var memoryStore: MemoryStore
     @EnvironmentObject var sportLogStore: SportLogStore
     @EnvironmentObject var tabSelection: TabSelectionStore
+    @EnvironmentObject var planStore: PlanStore
 
     /// Build 92: history surfaced from here via "See all sessions" on the
     /// Recent Sessions card. Previously lived as a tab off the Today screen.
@@ -233,6 +234,7 @@ struct ProgressScreen: View {
                 SorenessCheckInPill()
                 goalsCard
                 sessionsCard
+                pastWeeksCard
                 volumeCard
                 strengthRatiosCard
                 fingerStrengthCard
