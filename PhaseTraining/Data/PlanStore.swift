@@ -150,7 +150,8 @@ final class PlanStore: ObservableObject {
     /// the planner's bias-against-repeatedly-abandoned-exercise path.
     @Published var abandonedWorkouts: [AbandonedWorkoutEntry]
     /// A2 — planned-vs-actual per saved session, newest-first, 90-day window.
-    /// Written by `recordOutcome`; no production reader yet (A4).
+    /// Written by `recordOutcome`; read by `CoachTurnRunner` (coach context)
+    /// and the DEBUG Signals sheet (`TwinScorecardSheet`).
     @Published var dayOutcomes: [DayOutcome] = []
     /// 3c capture — coarse session-start points, newest-first, 365-day window.
     /// Written by `recordSessionPlace`; read by the Places sheet and the DEBUG
