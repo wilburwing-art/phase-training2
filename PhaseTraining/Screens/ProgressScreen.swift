@@ -56,6 +56,7 @@ struct ProgressScreen: View {
     /// Your lifts: the exercise a TOP EXERCISES row opens, and the full list.
     @State var liftDetail: Exercise?
     @State var showingAllLifts = false
+    @State var showAllCheckIns = false
     @State var showingHistoryCheck = false
 
     // Sheet toggles for the body-weight / body-composition trend cards
@@ -248,6 +249,7 @@ struct ProgressScreen: View {
                 bodyWeightTrendCard
                 bodyCompositionTrendCard
                 feedbackCard
+                checkInsCard
                 recentSessionsCard
                 Spacer().frame(height: 60)
             }

@@ -260,6 +260,73 @@ extension ProgressScreen {
         .padding(.vertical, 10)
     }
 
+    // MARK: - Weekly check-ins
+
+    var checkInsCard: some View {
+        let all = CheckInHistory.rows(memoryStore.memory.weeklyCheckIns)
+        let shown = showAllCheckIns ? all : Array(all.prefix(4))
+        return card(title: "WEEKLY CHECK-INS") {
+            if all.isEmpty {
+                Text("None yet. Plan next week on the Week tab to start one.")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+            } else {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(shown.enumerated()), id: \.element.id) { idx, row in
+                        checkInRow(row)
+                        if idx < shown.count - 1 {
+                            Rectangle()
+                                .fill(Color.lineSoft)
+                                .frame(height: 0.5)
+                        }
+                    }
+                    if all.count > 4 {
+                        Button(showAllCheckIns ? "Show fewer" : "Show all (\(all.count))") {
+                            showAllCheckIns.toggle()
+                        }
+                        .font(.scaled("Inter-Regular", size: 12))
+                        .foregroundStyle(Color.ink2)
+                        .padding(.top, 10)
+                    }
+                }
+            }
+        }
+        .accessibilityIdentifier("progress-check-ins")
+    }
+
+    private func checkInRow(_ row: CheckInHistoryRow) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 6) {
+                if let r = row.rating {
+                    difficultyChip(r)
+                }
+                Text("WEEK OF \(Self.checkInDateText(row.weekStart).uppercased())")
+                    .styled(.micro)
+                    .foregroundStyle(Color.ink3)
+            }
+            if let i = row.intent {
+                Text(i)
+                    .font(.scaled("Inter-Regular", size: 12))
+                    .foregroundStyle(Color.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            if let n = row.notes {
+                Text(n)
+                    .font(.scaled("Inter-Regular", size: 12))
+                    .foregroundStyle(Color.ink2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 10)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(CheckInHistory.spoken(row, dateText: Self.checkInDateText))
+    }
+
+    private static func checkInDateText(_ date: Date) -> String {
+        date.formatted(.dateTime.month(.abbreviated).day())
+    }
+
     private func difficultyChip(_ d: String) -> some View {
         let (label, bg, fg): (String, Color, Color) = {
             switch d {
