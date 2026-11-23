@@ -36,6 +36,8 @@ struct ProfileScreen: View {
     // surfaces stay on this screen, bound to the coordinator's published
     // state; DataEditorSheet just fires callbacks.
     @StateObject private var backup = BackupCoordinator()
+    @AppStorage(WatchSyncCoordinator.appInstalledKey) private var watchAppInstalled = false
+    @State private var showingWatchInfo = false
 
     // Editor-sheet presentation flags.
     @State private var presentingSportsEditor = false
@@ -198,13 +200,23 @@ struct ProfileScreen: View {
                                         icon: "sparkles",
                                         action: { presentingPaywall = true })
                         }
+                        if watchAppInstalled {
+                            SettingsRow(label: "Apple Watch",
+                                        value: "App installed",
+                                        icon: "applewatch",
+                                        action: { showingWatchInfo = true })
+                                .accessibilityIdentifier("profile-watch-row")
+                        }
                         SettingsRow(label: "Data",
                                     value: BackupStatus.rowValue(
                                         lastExport: backup.lastBackupExport,
+                                        iCloudWrite: backup.lastICloudWrite,
+                                        iCloudSignedIn: backup.iCloudSignedIn,
                                         sessions: sessionStore.savedSessions),
                                     icon: "externaldrive",
                                     valueTint: BackupStatus.needsNudge(
                                         lastExport: backup.lastBackupExport,
+                                        iCloudWrite: backup.lastICloudWrite,
                                         sessions: sessionStore.savedSessions) ? .accent : .ink3,
                                     action: { presentingDataEditor = true })
                         SettingsRow(label: "Privacy Policy",
@@ -299,7 +311,18 @@ struct ProfileScreen: View {
                 .environmentObject(store)
                 .environmentObject(sessionStore)
         }
-        .onAppear { refreshHealthImportState() }
+        .onAppear {
+            refreshHealthImportState()
+            backup.refreshCloudStatus()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            backup.refreshCloudStatus()
+        }
+        .alert("Apple Watch", isPresented: $showingWatchInfo) {
+            Button("OK") {}
+        } message: {
+            Text("Start today's workout on the watch, or start it here and mark sets on either. Sets sync both ways.")
+        }
         .sheet(isPresented: $presentingBodyWeightLog) {
             BodyWeightLogSheet().environmentObject(store)
         }
@@ -559,7 +582,7 @@ struct ProfileScreen: View {
                 }
                 Button("Cancel", role: .cancel) {}
             } message: {
-                Text("This deletes your profile, weekly plan, saved sessions, custom routines, imported history, and reminder. You'll be returned to onboarding.")
+                Text("This deletes your profile, weekly plan, saved sessions, custom routines, imported history, and reminder. You'll be returned to onboarding. The weekly backup in iCloud Drive stays. Remove it in Settings > your name > iCloud > Manage Account Storage.")
             }
         }
     }

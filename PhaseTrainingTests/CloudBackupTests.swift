@@ -115,4 +115,9 @@ final class CloudBackupTests: XCTestCase {
                                    containerURL: { root })
         XCTAssertEqual(try modificationDate(backupFile(in: root)), first)
     }
+
+    func test_isSignedIn_followsTheIdentityToken() {
+        XCTAssertFalse(CloudBackup.isSignedIn(token: { nil }))
+        XCTAssertTrue(CloudBackup.isSignedIn(token: { "token" as NSString }))
+    }
 }

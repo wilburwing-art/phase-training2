@@ -379,16 +379,27 @@ final class BackupCoordinatorTests: XCTestCase {
         XCTAssertNil(BackupStatus.lastExport(defaults: w.defaults))
     }
 
-    func testDataRowReadsNeverThenADateThenTheBacklog() {
+    private var utc: Calendar {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "UTC")!
-        let locale = Locale(identifier: "en_US")
-        let now = Date(timeIntervalSince1970: 1_794_441_600)      // 2026-11-12 UTC
-        let exported = Date(timeIntervalSince1970: 1_793_664_000) // 2026-11-03 UTC
-        func row(_ last: Date?, _ sessions: [SavedSession]) -> String {
-            BackupStatus.rowValue(lastExport: last, sessions: sessions, now: now,
-                                  calendar: cal, locale: locale)
-        }
+        return cal
+    }
+    private let rowNow = Date(timeIntervalSince1970: 1_794_441_600)      // 2026-11-12 UTC
+    private let rowExported = Date(timeIntervalSince1970: 1_793_664_000) // 2026-11-03 UTC
+
+    private func row(_ last: Date?, _ sessions: [SavedSession]) -> String {
+        row(last, nil, true, sessions)
+    }
+
+    private func row(_ last: Date?, _ cloud: Date?, _ signedIn: Bool,
+                     _ sessions: [SavedSession]) -> String {
+        BackupStatus.rowValue(lastExport: last, iCloudWrite: cloud, iCloudSignedIn: signedIn,
+                              sessions: sessions, now: rowNow,
+                              calendar: utc, locale: Locale(identifier: "en_US"))
+    }
+
+    func testDataRowReadsNeverThenADateThenTheBacklog() {
+        let exported = rowExported
         XCTAssertEqual(row(nil, []), "Never exported")
         XCTAssertEqual(row(exported, []), "Exported Nov 3")
         XCTAssertEqual(row(Date(timeIntervalSince1970: 1_762_128_000), []), "Exported Nov 3, 2025")
@@ -396,9 +407,43 @@ final class BackupCoordinatorTests: XCTestCase {
         let before = (0..<12).map { session(endingAt: exported.timeIntervalSince1970 - Double($0 + 1) * 60) }
         let after = (0..<10).map { session(endingAt: exported.timeIntervalSince1970 + Double($0 + 1) * 60) }
         XCTAssertEqual(row(exported, before + Array(after.prefix(9))), "Exported Nov 3")
-        XCTAssertFalse(BackupStatus.needsNudge(lastExport: exported, sessions: before + Array(after.prefix(9))))
+        XCTAssertFalse(BackupStatus.needsNudge(lastExport: exported, iCloudWrite: nil,
+                                               sessions: before + Array(after.prefix(9))))
         XCTAssertEqual(row(exported, before + after), "10 workouts not backed up")
-        XCTAssertTrue(BackupStatus.needsNudge(lastExport: exported, sessions: before + after))
+        XCTAssertTrue(BackupStatus.needsNudge(lastExport: exported, iCloudWrite: nil, sessions: before + after))
         XCTAssertEqual(row(nil, before), "12 workouts not backed up")
+    }
+
+    func testDataRowReadsTheLaterOfTheExportAndTheICloudWrite() {
+        let exported = rowExported
+        let cloud = Date(timeIntervalSince1970: 1_794_096_000)   // 2026-11-08 UTC
+        let earlierCloud = Date(timeIntervalSince1970: 1_793_491_200) // 2026-11-01 UTC
+        XCTAssertEqual(row(exported, cloud, true, []), "iCloud backup Nov 8")
+        XCTAssertEqual(row(nil, cloud, true, []), "iCloud backup Nov 8")
+        XCTAssertEqual(row(exported, earlierCloud, true, []), "Exported Nov 3")
+
+        XCTAssertEqual(row(exported, cloud, false, []), "iCloud off · Exported Nov 3")
+        XCTAssertEqual(row(nil, nil, false, []), "iCloud off · Never exported")
+
+        // Ten sessions after the export but before the iCloud write: no nudge.
+        let between = (0..<10).map { session(endingAt: exported.timeIntervalSince1970 + Double($0 + 1) * 60) }
+        XCTAssertFalse(BackupStatus.needsNudge(lastExport: exported, iCloudWrite: cloud, sessions: between))
+        XCTAssertEqual(row(exported, cloud, true, between), "iCloud backup Nov 8")
+        XCTAssertTrue(BackupStatus.needsNudge(lastExport: exported, iCloudWrite: nil, sessions: between))
+        let afterCloud = (0..<10).map { session(endingAt: cloud.timeIntervalSince1970 + Double($0 + 1) * 60) }
+        XCTAssertEqual(row(exported, cloud, true, afterCloud), "10 workouts not backed up")
+    }
+
+    func testEraseClearsTheICloudWriteDate() {
+        let w = world()
+        w.defaults.set(5_000.0, forKey: CloudBackup.lastWriteKey)
+        let c = BackupCoordinator(defaults: w.defaults, signedIn: true)
+        XCTAssertNotNil(c.lastICloudWrite)
+        c.eraseAllData(store: w.memory, planStore: w.plan, sessionStore: w.sessions,
+                       customStore: w.custom, sportLogStore: w.sportLog,
+                       recentPicks: w.recentPicks, conversation: w.conversation,
+                       activityDetection: w.activity, defaults: w.defaults, userDB: w.db)
+        XCTAssertNil(c.lastICloudWrite)
+        XCTAssertNil(CloudBackup.lastWrite(defaults: w.defaults))
     }
 }

@@ -24,6 +24,10 @@ import WatchConnectivity
 final class WatchSyncCoordinator: NSObject, ObservableObject {
 
     static let stateKey = "pt_watch_sync_state"
+    /// Whether a paired watch has the app installed. No `pt_` prefix: this is
+    /// device state, so erase leaves it and a backup does not carry it to
+    /// another phone.
+    static let appInstalledKey = "watch.appInstalled"
 
     private let store: SessionStore
     private let planStore: PlanStore
@@ -185,20 +189,32 @@ final class WatchSyncCoordinator: NSObject, ObservableObject {
 
 extension WatchSyncCoordinator: WCSessionDelegate {
 
+    private func recordWatchState(_ wc: WCSession) {
+        defaults.set(wc.activationState == .activated && wc.isPaired && wc.isWatchAppInstalled,
+                     forKey: Self.appInstalledKey)
+    }
+
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState,
                  error: Error?) {
-        DispatchQueue.main.async { self.pushContext(self.store.active) }
+        DispatchQueue.main.async {
+            self.recordWatchState(session)
+            self.pushContext(self.store.active)
+        }
     }
 
     func sessionDidBecomeInactive(_ session: WCSession) {}
 
     func sessionDidDeactivate(_ session: WCSession) {
         // The user switched watches. Activate again for the new one.
+        DispatchQueue.main.async { self.defaults.set(false, forKey: Self.appInstalledKey) }
         session.activate()
     }
 
     func sessionWatchStateDidChange(_ session: WCSession) {
-        DispatchQueue.main.async { self.pushContext(self.store.active) }
+        DispatchQueue.main.async {
+            self.recordWatchState(session)
+            self.pushContext(self.store.active)
+        }
     }
 
     func sessionReachabilityDidChange(_ session: WCSession) {

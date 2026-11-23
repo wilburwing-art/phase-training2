@@ -27,6 +27,7 @@ import SwiftUI
 import UIKit
 
 struct LogScreen: View {
+    @AppStorage(WatchSyncCoordinator.appInstalledKey) private var watchAppInstalled = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     // T2-1 / T2-3 (declared here: LogSetRow.swift is an extension and
     // cannot hold stored properties). Column widths were hard pixel frames sized for the fixed
@@ -534,6 +535,12 @@ struct LogScreen: View {
             .accessibilityLabel(session.loggedFor == nil
                                 ? "Logged for today. Change the date"
                                 : "Logged for \(LoggedForSheet.label(session.loggedFor)). Change the date")
+            if watchAppInstalled {
+                Text("Also on your Apple Watch. Sets you mark there land here.")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+                    .accessibilityIdentifier("log-watch-hint")
+            }
             HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Text("\(session.exercises.count) exercises · \(stats.doneSets)/\(stats.totalSets) sets logged")
                     .styled(.body)

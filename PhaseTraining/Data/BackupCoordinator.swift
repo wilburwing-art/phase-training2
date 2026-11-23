@@ -32,9 +32,21 @@ final class BackupCoordinator: ObservableObject {
     /// The share sheet also carries the CSV export, which cannot restore the
     /// app and so does not count as a backup.
     private var sharingBackup = false
+    /// When the weekly iCloud file was last written, and whether an iCloud
+    /// account is signed in. Both feed the Profile Data row.
+    @Published private(set) var lastICloudWrite: Date?
+    @Published private(set) var iCloudSignedIn: Bool
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = .standard, signedIn: Bool = CloudBackup.isSignedIn()) {
         lastBackupExport = BackupStatus.lastExport(defaults: defaults)
+        lastICloudWrite = CloudBackup.lastWrite(defaults: defaults)
+        iCloudSignedIn = signedIn
+    }
+
+    func refreshCloudStatus(defaults: UserDefaults = .standard,
+                            signedIn: Bool = CloudBackup.isSignedIn()) {
+        lastICloudWrite = CloudBackup.lastWrite(defaults: defaults)
+        iCloudSignedIn = signedIn
     }
 
     // MARK: - Backup / restore
@@ -146,6 +158,7 @@ final class BackupCoordinator: ObservableObject {
     ) {
         MemoryStore.wipeAllUserData(defaults: defaults, userDB: userDB)
         lastBackupExport = nil
+        lastICloudWrite = nil
         store.reset()
         sessionStore.clearInMemoryState()
         customStore.reload()
@@ -184,23 +197,45 @@ enum BackupStatus {
         return sessions.filter { $0.endTime > lastExport }.count
     }
 
-    static func needsNudge(lastExport: Date?, sessions: [SavedSession]) -> Bool {
-        sessionsSince(lastExport, sessions: sessions) >= nudgeThreshold
+    /// The later of the manual export and the weekly iCloud file.
+    private static func latestBackup(_ lastExport: Date?, _ iCloudWrite: Date?) -> Date? {
+        switch (lastExport, iCloudWrite) {
+        case let (e?, c?): return max(e, c)
+        case let (e?, nil): return e
+        case let (nil, c?): return c
+        case (nil, nil): return nil
+        }
+    }
+
+    static func needsNudge(lastExport: Date?, iCloudWrite: Date?, sessions: [SavedSession]) -> Bool {
+        sessionsSince(latestBackup(lastExport, iCloudWrite), sessions: sessions) >= nudgeThreshold
     }
 
     /// Value text for the Profile Data row.
-    static func rowValue(lastExport: Date?, sessions: [SavedSession],
+    static func rowValue(lastExport: Date?, iCloudWrite: Date?, iCloudSignedIn: Bool,
+                         sessions: [SavedSession],
                          now: Date = Date(), calendar: Calendar = .current,
                          locale: Locale = .current) -> String {
-        let pending = sessionsSince(lastExport, sessions: sessions)
+        let latest = latestBackup(lastExport, iCloudWrite)
+        let pending = sessionsSince(latest, sessions: sessions)
         if pending >= nudgeThreshold { return "\(pending) workouts not backed up" }
-        guard let lastExport else { return "Never exported" }
-        let sameYear = calendar.component(.year, from: lastExport) == calendar.component(.year, from: now)
-        var style = Date.FormatStyle.dateTime.month(.abbreviated).day()
-        if !sameYear { style = style.year() }
-        style.locale = locale
-        style.calendar = calendar
-        style.timeZone = calendar.timeZone
-        return "Exported \(lastExport.formatted(style))"
+
+        func short(_ date: Date) -> String {
+            let sameYear = calendar.component(.year, from: date) == calendar.component(.year, from: now)
+            var style = Date.FormatStyle.dateTime.month(.abbreviated).day()
+            if !sameYear { style = style.year() }
+            style.locale = locale
+            style.calendar = calendar
+            style.timeZone = calendar.timeZone
+            return date.formatted(style)
+        }
+
+        if !iCloudSignedIn {
+            guard let lastExport else { return "iCloud off · Never exported" }
+            return "iCloud off · Exported \(short(lastExport))"
+        }
+        guard let latest else { return "Never exported" }
+        if let iCloudWrite, iCloudWrite == latest { return "iCloud backup \(short(iCloudWrite))" }
+        return "Exported \(short(latest))"
     }
 }

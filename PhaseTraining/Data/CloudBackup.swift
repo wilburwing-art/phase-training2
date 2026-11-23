@@ -3,7 +3,7 @@
 //
 // One file, overwritten each week. The write date lives in UserDefaults under
 // a `pt_` key, so "Erase all data" clears it. Erase does not touch the iCloud
-// file. The Profile Data row keeps reading the manual export date
+// file. The Profile Data row reads both this date and the manual export date
 // (`BackupStatus`).
 
 import Foundation
@@ -20,6 +20,13 @@ enum CloudBackup {
     static func lastWrite(defaults: UserDefaults = .standard) -> Date? {
         guard let stamp = defaults.object(forKey: lastWriteKey) as? Double else { return nil }
         return Date(timeIntervalSince1970: stamp)
+    }
+
+    /// Whether an iCloud account is signed in. Cheap and main-thread safe.
+    static func isSignedIn(
+        token: () -> Any? = { FileManager.default.ubiquityIdentityToken }
+    ) -> Bool {
+        token() != nil
     }
 
     static func isDue(lastWrite: Date?, now: Date = Date()) -> Bool {
