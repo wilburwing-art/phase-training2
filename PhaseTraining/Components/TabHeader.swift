@@ -46,27 +46,45 @@ struct TabHeader: View {
         self.wheel = wheel
     }
 
+    private var eyebrowText: some View {
+        Text(eyebrow)
+            .styled(.micro)
+            .foregroundStyle(Color.ink3)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func eyebrowTrailingText(_ text: String) -> some View {
+        Text(text)
+            .styled(.micro)
+            .foregroundStyle(Color.ink3)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Step 1: top pad 12 under status bar
             Color.clear.frame(height: 12)
 
-            // Step 2: HStack eyebrow left / eyebrowTrailing right
-            HStack {
-                Text(eyebrow)
-                    .styled(.micro)
-                    .foregroundStyle(Color.ink3)
-                Spacer(minLength: 0)
-                if let eyebrowTrailing {
-                    // One line, scaling down before wrapping: Today's trailing
-                    // now carries sport + phase (+ DELOAD), and "OLYMPIC
-                    // WEIGHTLIFTING · PRE-SEASON · DELOAD" would otherwise
-                    // push the date onto a second row.
-                    Text(eyebrowTrailing)
-                        .styled(.micro)
-                        .foregroundStyle(Color.ink3)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.85)
+            // Step 2: eyebrow left / eyebrowTrailing right on one row when
+            // both fit. Today's trailing carries sport + phase (+ DELOAD);
+            // when the pair does not fit on one row (long sport names, large
+            // Dynamic Type) the trailing drops under the date and wraps, so
+            // "MAINTENANCE" is never cut to "MAINTENAN...".
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    eyebrowText
+                    Spacer(minLength: 8)
+                    if let eyebrowTrailing {
+                        eyebrowTrailingText(eyebrowTrailing)
+                            .lineLimit(1)
+                            .fixedSize()
+                    }
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    eyebrowText
+                    if let eyebrowTrailing {
+                        eyebrowTrailingText(eyebrowTrailing)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
             }
 

@@ -540,6 +540,7 @@ struct TodayScreen: View {
                 .font(.scaled("Inter-Regular", size: 13).weight(.bold))
                 .foregroundStyle(Color.ink2)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
                 .overlay(
