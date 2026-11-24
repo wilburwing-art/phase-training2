@@ -5,8 +5,8 @@ name: test
 #            parallel (split 2026-11-19). Every push to main or an agent
 #            branch, every PR, manual runs. This is the only compiler agent
 #            sessions have, so it runs on every code push.
-#   ui-tests the XCUITest suite plus the tap-budget report, three shards
-#            in parallel (split 2026-11-19). PRs, pushes to main, nightly,
+#   ui-tests the XCUITest suite plus the tap-budget report, four shards
+#            in parallel (split 2026-11-19, fourth added 2026-11-24). PRs, pushes to main, nightly,
 #            and manual runs with ui=true. About 30 minutes per shard, which
 #            is why it does not gate every push.
 # Docs-only pushes skip both (paths-ignore). A newer push to the same ref
@@ -110,7 +110,7 @@ jobs:
       github.event_name == 'schedule' ||
       (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_dispatch' && inputs.ui)
-    # Three shards (split 2026-11-19), each with its own build (about 10
+    # Four shards (split 2026-11-19), each with its own build (about 10
     # minutes of setup on CI). One job outgrew 60 minutes: run 44586959390
     # spent 51 minutes in tests, started 41 of 47 suites and was cancelled
     # inside TapBudgetTests. Per-suite seconds from runs 44544230552 and
@@ -119,8 +119,12 @@ jobs:
     # 192, Phase2ReachUITests 186, ArcDeloadNoticeUITests 141,
     # MotivationBatchUITests 120, every other suite under 80. That gives about
     # 18 minutes of tests per shard. `flows` runs every suite not named in
-    # the other two, so a new UI suite lands there; a slow one moves to a
+    # the other shards, so a new UI suite lands there; a slow one moves to a
     # named shard and into flows' skip list.
+    # 2026-11-24: flows had grown to 39 suites, 26.1 minutes of tests (run
+    # 45209085302) and 31 to 37 minutes per job, the longest job in every
+    # run. `cards` takes its 12 slowest suites (13.2 minutes), leaving flows
+    # about 12.9.
     name: ui-tests (${{ matrix.shard }})
     strategy:
       fail-fast: false
@@ -138,6 +142,20 @@ jobs:
               -only-testing:PhaseTrainingUITests/PaywallHeroUITests
               -only-testing:PhaseTrainingUITests/Phase2ReachUITests
               -only-testing:PhaseTrainingUITests/ArcDeloadNoticeUITests
+          - shard: cards
+            tests: >-
+              -only-testing:PhaseTrainingUITests/ExerciseStrengthCardUITests
+              -only-testing:PhaseTrainingUITests/HistoryMoodUITests
+              -only-testing:PhaseTrainingUITests/ConsolidateFlowTests
+              -only-testing:PhaseTrainingUITests/HoldTimerUITests
+              -only-testing:PhaseTrainingUITests/HistoryCheckUITests
+              -only-testing:PhaseTrainingUITests/ExerciseNoteUITests
+              -only-testing:PhaseTrainingUITests/UnmatchedNamesUITests
+              -only-testing:PhaseTrainingUITests/AppLaunchSmokeTests
+              -only-testing:PhaseTrainingUITests/OnboardingLandingUITests
+              -only-testing:PhaseTrainingUITests/BuildAndStartWorkoutUITests
+              -only-testing:PhaseTrainingUITests/NowPlayingCardUITests
+              -only-testing:PhaseTrainingUITests/SkiCardsUITests
           - shard: flows
             tests: >-
               -only-testing:PhaseTrainingUITests
@@ -149,6 +167,18 @@ jobs:
               -skip-testing:PhaseTrainingUITests/PaywallHeroUITests
               -skip-testing:PhaseTrainingUITests/Phase2ReachUITests
               -skip-testing:PhaseTrainingUITests/ArcDeloadNoticeUITests
+              -skip-testing:PhaseTrainingUITests/ExerciseStrengthCardUITests
+              -skip-testing:PhaseTrainingUITests/HistoryMoodUITests
+              -skip-testing:PhaseTrainingUITests/ConsolidateFlowTests
+              -skip-testing:PhaseTrainingUITests/HoldTimerUITests
+              -skip-testing:PhaseTrainingUITests/HistoryCheckUITests
+              -skip-testing:PhaseTrainingUITests/ExerciseNoteUITests
+              -skip-testing:PhaseTrainingUITests/UnmatchedNamesUITests
+              -skip-testing:PhaseTrainingUITests/AppLaunchSmokeTests
+              -skip-testing:PhaseTrainingUITests/OnboardingLandingUITests
+              -skip-testing:PhaseTrainingUITests/BuildAndStartWorkoutUITests
+              -skip-testing:PhaseTrainingUITests/NowPlayingCardUITests
+              -skip-testing:PhaseTrainingUITests/SkiCardsUITests
     # 45: each shard should finish in about 28 minutes (10 setup, 18 tests),
     # with room for the per-case retries below.
     timeout-minutes: 45
