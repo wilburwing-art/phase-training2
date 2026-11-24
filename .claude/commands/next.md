@@ -17,9 +17,12 @@ Then run `~/.claude/scripts/next-item.sh` once. It prints pins, blocked
 items, the next open items in queue order, and the newest main run of
 `test` and `pages-build-deployment`. Do not rebuild that with `cat` and
 `grep`.
-Get a verdict on main from the `test` workflow before picking (the script's
-last lines, or
-`gh run list -b main -w test -L 1 --json databaseId,headSha,status,conclusion`).
+Get a verdict on main from the newest push run of the `test` workflow
+before picking (the script's last lines, or
+`gh run list -b main -w test -e push -L 1 --json databaseId,headSha,status,conclusion`).
+Ignore `schedule` runs: the nightly run skips the unit job, so it cannot
+tick an item, and waiting on it waits for a verdict that never covers the
+item's classes.
 A `pages-build-deployment` failure is red too: read
 `gh run view <id> --log-failed | grep -i liquid`, fix the doc or
 `docs/_config.yml`, and make that the session's item.
@@ -32,17 +35,19 @@ A `pages-build-deployment` failure is red too: read
   `NEXT_STATUS: waiting_ci` instead of waiting.
 - success, and an unticked item's text says "tick after <class> passes
   in main CI" for the code on this run's commit: confirm the class passed
-  in `gh run view <id> --log`, tick it, commit, and end with
+  in `gh run view <id> --log` (a skipped unit job does not count), tick it, commit, and end with
   `NEXT_STATUS: done`. That is this session's item.
 - failure: that failure is this session's item.
-- cancelled: treat it as red. The newest run has no newer push to
-  supersede it, so it hit a job timeout (30 min unit, 45 min per UI shard). Read
-  `gh run view <id> --json jobs` for the job that ran to its limit; that
-  timeout is this session's item.
+- cancelled: read `gh run view <id> --json jobs`. If a job ran to its
+  limit (30 min unit, 45 min per UI shard), that timeout is this session's
+  item. If no job hit its limit, a scheduled run on the same ref cancelled
+  it (shared concurrency group): run `gh run rerun <id>` and wait on it as
+  in_progress.
 - success: pick from the queue.
-A docs-only push starts no run, so the newest run belongs to the newest
-code commit. Every earlier session's push cancels the run before it
-(`cancel-in-progress` in test.yml), which is why only the newest run counts.
+A docs-only push starts no run, so the newest push run belongs to the
+newest code commit. Every push cancels the run before it on main, push or
+schedule (`cancel-in-progress` in test.yml), which is why only the newest
+push run counts.
 One backlog item per session. Pick the item from docs/QUEUE.md:
 1. The first item under Pinned that names no owner decision, device
    action or entitlement still owed, and no open prerequisite.
