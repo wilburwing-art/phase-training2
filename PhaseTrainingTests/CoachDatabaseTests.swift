@@ -62,4 +62,36 @@ final class CoachDatabaseTests: XCTestCase {
         XCTAssertFalse(mtb.isEmpty)
         XCTAssertTrue(mtb.allSatisfy { $0.rpe == nil }, "\(mtb.map(\.rpe))")
     }
+
+    // Backlog 2026-11c 6.5: catalog coaching text for the exercise detail.
+    private func catalogId(_ slug: String) -> Int? {
+        CoachDatabase.shared.listExercises().first { $0.slug == slug }?.id
+    }
+
+    func test_catalogNotes_readsEveryFieldForAFullyAnnotatedExercise() throws {
+        let id = try XCTUnwrap(catalogId("weighted-pull-up"))
+        let notes = try XCTUnwrap(CoachDatabase.shared.catalogNotes(forExerciseId: id))
+        XCTAssertEqual(notes.commonCompensations,
+                       ["kipping hip drive", "shrugging into ears", "elbows flaring wide"])
+        XCTAssertEqual(notes.injuryPreventionNotes?.hasPrefix("Protect finger flexors"), true)
+        XCTAssertEqual(notes.homeVariation, "Band-assisted pull-up with backpack load.")
+        XCTAssertNotNil(notes.timeEfficientVariation)
+        XCTAssertNotNil(notes.ageConsiderations)
+        XCTAssertNotNil(notes.deskWorkerNotes)
+    }
+
+    func test_catalogNotes_nilWhenTheRowHoldsNone() throws {
+        let id = try XCTUnwrap(catalogId("barbell-bench-press"))
+        XCTAssertNil(CoachDatabase.shared.catalogNotes(forExerciseId: id))
+        XCTAssertNil(CoachDatabase.shared.catalogNotes(forExerciseId: -1))
+    }
+
+    func test_catalogNotes_coverageMatchesTheCatalog() {
+        let all = CoachDatabase.shared.listExercises().compactMap {
+            CoachDatabase.shared.catalogNotes(forExerciseId: $0.id)
+        }
+        XCTAssertGreaterThan(all.filter { !$0.commonCompensations.isEmpty }.count, 150)
+        XCTAssertGreaterThan(all.filter { $0.homeVariation != nil }.count, 400)
+        XCTAssertTrue(all.allSatisfy { !$0.isEmpty })
+    }
 }

@@ -74,3 +74,30 @@ struct ExerciseSubstitute: Identifiable, Hashable {
 
     var matchPercent: Int { Int((score * 100).rounded()) }
 }
+
+/// Coaching text from the catalog that only the exercise detail shows:
+/// form faults, injury notes and situational variations. Read on demand by
+/// `CoachDatabase.catalogNotes(forExerciseId:)` so list queries stay narrow.
+struct ExerciseCatalogNotes: Hashable {
+    let commonCompensations: [String]
+    let injuryPreventionNotes: String?
+    let homeVariation: String?
+    let timeEfficientVariation: String?
+    let ageConsiderations: String?
+    let deskWorkerNotes: String?
+
+    /// Labelled situational notes in display order; rows with no text drop out.
+    var labeledRows: [(label: String, text: String)] {
+        [
+            (String(localized: "At home", comment: "Exercise detail variation label"), homeVariation),
+            (String(localized: "Short on time", comment: "Exercise detail variation label"), timeEfficientVariation),
+            (String(localized: "By age", comment: "Exercise detail note label"), ageConsiderations),
+            (String(localized: "Desk workers", comment: "Exercise detail note label"), deskWorkerNotes),
+        ].compactMap { label, text in text.map { (label, $0) } }
+    }
+
+    var isEmpty: Bool {
+        commonCompensations.isEmpty && injuryPreventionNotes == nil && homeVariation == nil
+            && timeEfficientVariation == nil && ageConsiderations == nil && deskWorkerNotes == nil
+    }
+}

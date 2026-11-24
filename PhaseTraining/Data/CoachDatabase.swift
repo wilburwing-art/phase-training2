@@ -843,6 +843,44 @@ final class CoachDatabase {
         return decodeExercise(stmt)
     } }
 
+    /// Catalog coaching text for one exercise (backlog 2026-11c 6.5). Blank
+    /// strings read as nil; nil when the row is missing or holds none of it.
+    func catalogNotes(forExerciseId id: Int) -> ExerciseCatalogNotes? { withLock {
+        guard let db else { return nil }
+        let sql = """
+        SELECT common_compensations, injury_prevention_notes, home_variation,
+               time_efficient_variation, age_considerations, desk_worker_notes
+        FROM exercises WHERE id = ?
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else {
+            logReadFailure("catalogNotes(forExerciseId:) prepare", db: db)
+            return nil
+        }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_int64(stmt, 1, Int64(id))
+        guard sqlite3_step(stmt) == SQLITE_ROW else { return nil }
+        func nonBlank(_ col: Int32) -> String? {
+            guard let t = text(stmt, col)?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !t.isEmpty else { return nil }
+            return t
+        }
+        let compensations: [String] = text(stmt, 0)
+            .flatMap { $0.data(using: .utf8) }
+            .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String] }
+            .map { $0.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty } }
+            ?? []
+        let notes = ExerciseCatalogNotes(
+            commonCompensations: compensations,
+            injuryPreventionNotes: nonBlank(1),
+            homeVariation: nonBlank(2),
+            timeEfficientVariation: nonBlank(3),
+            ageConsiderations: nonBlank(4),
+            deskWorkerNotes: nonBlank(5)
+        )
+        return notes.isEmpty ? nil : notes
+    } }
+
     func modalityCounts() -> [(modality: String, count: Int)] { withLock {
         guard let db else { return [] }
         let sql = "SELECT modality, COUNT(*) FROM exercises GROUP BY modality ORDER BY 2 DESC"

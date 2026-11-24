@@ -61,6 +61,9 @@ private struct ExerciseDetailContent: View {
     /// "More like this" (on-device embeddings). Empty until computed, and stays
     /// empty when the system has no embedding asset, which hides the section.
     @State private var similar: [Exercise] = []
+    /// Catalog coaching text (faults, injury notes, variations); nil hides
+    /// those sections, which is the case for custom exercises.
+    @State private var catalogNotes: ExerciseCatalogNotes?
     @EnvironmentObject private var memoryStore: MemoryStore
     @EnvironmentObject private var sessionStore: SessionStore
     @Environment(\.dismiss) private var dismiss
@@ -120,10 +123,34 @@ private struct ExerciseDetailContent: View {
                         }
                     }
                 }
+                if let notes = catalogNotes, !notes.commonCompensations.isEmpty {
+                    section(title: "Common faults") {
+                        bulletList(notes.commonCompensations)
+                    }
+                    .accessibilityIdentifier("detail-common-faults")
+                }
+                if let injury = catalogNotes?.injuryPreventionNotes {
+                    section(title: "Injury prevention") {
+                        Text(injury)
+                            .styled(.body)
+                            .foregroundStyle(Color.ink2)
+                    }
+                    .accessibilityIdentifier("detail-injury-prevention")
+                }
                 if hasDefaults {
                     section(title: "Defaults") {
                         defaultsGrid
                     }
+                }
+                if let notes = catalogNotes, !notes.labeledRows.isEmpty {
+                    section(title: "Variations and notes") {
+                        VStack(alignment: .leading, spacing: 12) {
+                            ForEach(notes.labeledRows, id: \.label) { row in
+                                labeledNote(row.label, row.text)
+                            }
+                        }
+                    }
+                    .accessibilityIdentifier("detail-variations")
                 }
                 watchDemoButton
                 if hasFreeTextChain {
@@ -176,6 +203,9 @@ private struct ExerciseDetailContent: View {
             }
             if muscles.isEmpty {
                 muscles = CoachDatabase.shared.musclesForExercise(exercise.id)
+            }
+            if catalogNotes == nil && !exercise.isCustom {
+                catalogNotes = CoachDatabase.shared.catalogNotes(forExerciseId: exercise.id)
             }
         }
         .confirmationDialog("Delete \(exercise.name)?", isPresented: $confirmingDelete,
@@ -446,6 +476,34 @@ private struct ExerciseDetailContent: View {
                 .foregroundStyle(Color.ink3)
             content()
         }
+    }
+
+    private func bulletList(_ items: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(items, id: \.self) { item in
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text("·")
+                        .font(.monoS)
+                        .foregroundStyle(Color.ink3)
+                        .accessibilityHidden(true)
+                    Text(item.prefix(1).uppercased() + item.dropFirst())
+                        .styled(.body)
+                        .foregroundStyle(Color.ink2)
+                }
+            }
+        }
+    }
+
+    private func labeledNote(_ label: String, _ text: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label.uppercased())
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            Text(text)
+                .styled(.body)
+                .foregroundStyle(Color.ink2)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private var hasDefaults: Bool {
