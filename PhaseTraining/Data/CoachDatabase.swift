@@ -1183,6 +1183,45 @@ final class CoachDatabase {
         return out
     } }
 
+    /// Prehab and rehab exercises per injury slug, for the read-only list on
+    /// the injury card. Contraindicated rows are excluded (they feed the
+    /// filter above). The row `notes` column mixes clinical text with curation
+    /// history, so only the exercise name and role are returned. Sorted by
+    /// role order (prehab, early rehab, late rehab), then name. Slugs with no
+    /// rows are absent from the result.
+    func supportiveExercises(bySlug slugs: Set<String>) -> [String: [InjurySupportExercise]] { withLock {
+        guard !slugs.isEmpty, let db else { return [:] }
+        let placeholders = slugs.map { _ in "?" }.joined(separator: ",")
+        let sql = """
+        SELECT ci.slug, e.id, e.name, eir.role
+        FROM exercise_injury_relevance eir
+        JOIN common_injuries ci ON ci.id = eir.injury_id
+        JOIN exercises e ON e.id = eir.exercise_id
+        WHERE eir.role IN ('prehab','rehab_early','rehab_late')
+          AND ci.slug IN (\(placeholders))
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [:] }
+        defer { sqlite3_finalize(stmt) }
+        for (i, slug) in slugs.enumerated() {
+            sqlite3_bind_text(stmt, Int32(i + 1), slug, -1, SQLITE_TRANSIENT)
+        }
+        var out: [String: [InjurySupportExercise]] = [:]
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            guard let slug = text(stmt, 0), !slug.isEmpty,
+                  let role = InjurySupportExercise.Role(rawValue: text(stmt, 3) ?? "") else { continue }
+            out[slug, default: []].append(InjurySupportExercise(
+                exerciseId: Int(sqlite3_column_int64(stmt, 1)),
+                name: text(stmt, 2) ?? "",
+                role: role
+            ))
+        }
+        for key in out.keys {
+            out[key]?.sort { ($0.role.order, $0.name) < ($1.role.order, $1.name) }
+        }
+        return out
+    } }
+
     /// Every muscle_groups row as (slug, name) pairs. Filters out container
     /// rollups (`full-body`, `upper-body`, `lower-body`, `arms`, `core`,
     /// `back`) — the Recovery view wants leaf muscles, not the buckets the

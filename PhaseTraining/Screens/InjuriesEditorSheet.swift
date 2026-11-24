@@ -16,6 +16,8 @@ struct InjuriesEditorSheet: View {
     /// injury slug -> contraindicated exercise ids, for the coverage line.
     /// One query on appear over every slug in the catalog; the sheet is small.
     @State private var contraindicatedByInjury: [String: Set<Int>] = [:]
+    /// injury slug -> prehab and rehab exercises, loaded with the line above.
+    @State private var supportiveByInjury: [String: [InjurySupportExercise]] = [:]
     @State private var presentingInjuryPicker = false
 
     var body: some View {
@@ -50,6 +52,7 @@ struct InjuriesEditorSheet: View {
                 if contraindicatedByInjury.isEmpty {
                     let slugs = Set(CoachDatabase.shared.listInjuries().map(\.slug))
                     contraindicatedByInjury = CoachDatabase.shared.contraindicatedExerciseIds(bySlug: slugs)
+                    supportiveByInjury = CoachDatabase.shared.supportiveExercises(bySlug: slugs)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -157,6 +160,36 @@ struct InjuriesEditorSheet: View {
         .accessibilityElement(children: .combine)
     }
 
+    /// Read-only prehab and rehab exercises for this injury, one block per
+    /// role. Nothing renders for an injury with no rows (30 of 56 today).
+    /// Display only: the generator does not pick from these.
+    @ViewBuilder
+    private func supportiveList(slug: String) -> some View {
+        let rows = supportiveByInjury[slug] ?? []
+        if !rows.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(InjurySupportExercise.Role.allCases, id: \.self) { role in
+                    let names = rows.filter { $0.role == role }.map(\.name)
+                    if !names.isEmpty {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(role.label.uppercased())
+                                .styled(.micro)
+                                .foregroundStyle(Color.ink3)
+                            ForEach(names, id: \.self) { name in
+                                Text(name)
+                                    .font(.scaled("Inter-Regular", size: 13))
+                                    .foregroundStyle(Color.ink2)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityIdentifier("injury-\(slug)-\(role.rawValue)")
+                    }
+                }
+            }
+        }
+    }
+
     /// Card per active injury — title + remove button + inline severity / side
     /// chip rows + optional onset date row. Each row shows every option as its
     /// own chip (plus "-" for unset); one tap selects, tapping the selected
@@ -186,6 +219,7 @@ struct InjuriesEditorSheet: View {
             // errors hurt people and is not auto-filled; what IS safe is
             // saying which case this is, per injury, where the user can see it.
             injuryCoverageLine(slug: injury.slug)
+            supportiveList(slug: injury.slug)
             HStack(spacing: 14) {
                 metaPicker(title: "Severity",
                            options: InjurySeverity.allCases.map(\.label),

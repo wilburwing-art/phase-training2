@@ -26,3 +26,34 @@ struct CommonInjury: Identifiable, Hashable {
         (bodyRegion ?? "Other").capitalized
     }
 }
+
+/// One prehab or rehab exercise for an injury, from
+/// `exercise_injury_relevance`. Read-only display data for the injury card;
+/// the generator does not pick from it yet.
+struct InjurySupportExercise: Hashable {
+    enum Role: String, CaseIterable {
+        case prehab
+        case rehabEarly = "rehab_early"
+        case rehabLate = "rehab_late"
+
+        var label: String {
+            switch self {
+            case .prehab: return "Prehab"
+            case .rehabEarly: return "Early rehab"
+            case .rehabLate: return "Late rehab"
+            }
+        }
+
+        var order: Int {
+            switch self {
+            case .prehab: return 0
+            case .rehabEarly: return 1
+            case .rehabLate: return 2
+            }
+        }
+    }
+
+    let exerciseId: Int
+    let name: String
+    let role: Role
+}
