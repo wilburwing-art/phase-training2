@@ -62,6 +62,12 @@ OUTPUT
    files and types it touches, the skill to load, the test classes that show
    it is done, and logic (builder-heavy) or UI (builder). Size items so one
    /next session finishes one item (about 2 to 10 h). Split anything larger.
+   Each named test class must exist
+   (`grep -rlE "(class|struct) <Name>\b" PhaseTrainingTests PhaseTrainingUITests`).
+   A class the item creates is written `new <Name>`.
+   "Owner reviews before the commit" does not block an item. Write the build
+   item so it commits, and put the review in Phase 0 as its own
+   "(owner decision)" line that names the commit to revert.
 2. An item that needs an owner decision, a device action or an entitlement
    says so in its own text, so /next skips it. List those decisions in a
    Phase 0 as one-line choices with two named options, recommendation first.

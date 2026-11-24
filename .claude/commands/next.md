@@ -7,8 +7,22 @@ periodization generator, multi-sport conflict resolver, overload math,
 SQLite schema (user.db migrations), offline sync.
 
 SCOPE
-Before picking, get a verdict on main from the `test` workflow:
-`gh run list -b main -w test -L 1 --json databaseId,headSha,status,conclusion`.
+Run `git status --short` first. If tracked files under `PhaseTraining/`,
+`Shared/`, `PhaseTrainingWatch/` or the test targets are modified, an
+earlier session stopped mid-item. If main CI is green, that item is this
+session's item: finish it. Otherwise run
+`git stash push -m "next: <item id>" -- <those paths>` and name the stash
+in the final message and in NEXT_STATUS.
+Then run `~/.claude/scripts/next-item.sh` once. It prints pins, blocked
+items, the next open items in queue order, and the newest main run of
+`test` and `pages-build-deployment`. Do not rebuild that with `cat` and
+`grep`.
+Get a verdict on main from the `test` workflow before picking (the script's
+last lines, or
+`gh run list -b main -w test -L 1 --json databaseId,headSha,status,conclusion`).
+A `pages-build-deployment` failure is red too: read
+`gh run view <id> --log-failed | grep -i liquid`, fix the doc or
+`docs/_config.yml`, and make that the session's item.
 - queued or in_progress: wait for it to finish. Use Bash with
   run_in_background and an until-loop on `gh run view <id> --json status`,
   then re-read the conclusion. Pick nothing while it runs.
