@@ -34,11 +34,15 @@ struct RoutineExercise: Identifiable, Hashable {
     /// routine_exercises.sets_by_week: the program's own set count per plan
     /// week, week 1 first. Nil serves `sets` every week.
     let setsByWeek: [Int]?
+    /// routine_exercises.rpe: target effort as the program writes it ("6-7").
+    /// Nil where the program states none.
+    let rpe: String?
 
     init(id: Int, exerciseId: Int, name: String, position: Int,
          sets: Int? = nil, reps: String? = nil, rest: String? = nil,
          notes: String? = nil, supersetGroup: Int? = nil,
-         repsByWeek: [String]? = nil, setsByWeek: [Int]? = nil) {
+         repsByWeek: [String]? = nil, setsByWeek: [Int]? = nil,
+         rpe: String? = nil) {
         self.id = id
         self.exerciseId = exerciseId
         self.name = name
@@ -50,6 +54,7 @@ struct RoutineExercise: Identifiable, Hashable {
         self.supersetGroup = supersetGroup
         self.repsByWeek = repsByWeek
         self.setsByWeek = setsByWeek
+        self.rpe = rpe
     }
 
     /// The reps text for a 1-indexed plan week. Weeks past the written ones

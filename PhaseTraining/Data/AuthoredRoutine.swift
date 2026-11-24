@@ -452,7 +452,7 @@ enum AuthoredRoutine {
                 reps: reps,
                 restSeconds: parseRest(re.rest) ?? 90,
                 notes: note.isEmpty ? nil : note,
-                rpe: nil,
+                rpe: re.rpe,
                 tempo: nil,
                 source: .recipe,
                 supersetGroup: re.supersetGroup

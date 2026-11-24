@@ -43,4 +43,23 @@ final class CoachDatabaseTests: XCTestCase {
             XCTAssertTrue(zip(keys, keys.dropFirst()).allSatisfy { $0 <= $1 }, "\(slug) rows out of order: \(rows)")
         }
     }
+
+    // Backlog 2026-11c 3.8: routine_exercises.rpe holds the program's own
+    // stated effort and is NULL wherever the program states none.
+    func test_routineExercises_rpeReadsTheProgramsStatedEffort() {
+        let climbing = CoachDatabase.shared.exercises(forRoutineId: 1)
+        XCTAssertFalse(climbing.isEmpty)
+        XCTAssertTrue(climbing.allSatisfy { $0.rpe == "6-7" }, "\(climbing.map(\.rpe))")
+
+        let splitboard = CoachDatabase.shared.exercises(forRoutineId: 297)
+        XCTAssertEqual(splitboard.first { $0.position == 1 }?.rpe, "6-7")
+        XCTAssertTrue(splitboard.filter { $0.position != 1 }.allSatisfy { $0.rpe == nil },
+                      "only the goblet squat row states RPE: \(splitboard.map(\.rpe))")
+    }
+
+    func test_routineExercises_rpeIsNilWhereTheProgramStatesNone() {
+        let mtb = CoachDatabase.shared.exercises(forRoutineId: 299)
+        XCTAssertFalse(mtb.isEmpty)
+        XCTAssertTrue(mtb.allSatisfy { $0.rpe == nil }, "\(mtb.map(\.rpe))")
+    }
 }

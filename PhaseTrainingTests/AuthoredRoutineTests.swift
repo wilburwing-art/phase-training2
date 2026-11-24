@@ -179,6 +179,26 @@ final class AuthoredRoutineTests: XCTestCase {
         XCTAssertTrue((workout?.title ?? "").contains("MTB Pre-Season"))
     }
 
+    func testAuthoredRowsServeTheProgramsStatedRPE() {
+        // Backlog 2026-11c 3.8: routine #1 says "Keep RPE 6-7 in-season", so
+        // every served row carries it the way an engine row carries its RPE.
+        var memory = TrainingMemory()
+        memory.equipment = [.fullGym]
+        memory.primarySport = Sport.resolve(slug: "climbing")
+        let workout = AuthoredRoutine.workout(
+            forRoutineId: 1, memory: memory, context: .empty, focus: .fullBodyA,
+            profile: DemographicProfile.from(memory))
+        XCTAssertFalse(workout?.exercises.isEmpty ?? true)
+        XCTAssertTrue(workout?.exercises.allSatisfy { $0.rpe == "6-7" } ?? false,
+                      "\(workout?.exercises.map(\.rpe) ?? [])")
+
+        let mtb = AuthoredRoutine.workout(
+            forRoutineId: 299, memory: memory, context: .empty, focus: .fullBodyA,
+            profile: DemographicProfile.from(memory))
+        XCTAssertTrue(mtb?.exercises.allSatisfy { $0.rpe == nil } ?? false,
+                      "a routine that states no effort serves none")
+    }
+
     func testMountainBikingHasEveryPhaseCovered() {
         // base / build / maintenance / off_season all resolve for MTB now.
         for phase in [SeasonPhase.offSeason, .preSeason, .inSeason, .maintenance, .eventPrep] {

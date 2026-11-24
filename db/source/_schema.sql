@@ -209,6 +209,9 @@ CREATE TABLE routine_exercises (
   -- JSON array of the set count per plan week, week 1 first. NULL means the
   -- row serves `sets` every week. Weeks past the end hold the last entry.
   sets_by_week             TEXT,
+  -- Target effort as the program writes it ("6-7", "7"). Filled only where
+  -- the program's own text states an RPE; NULL everywhere else.
+  rpe                      TEXT,
   UNIQUE (routine_id, position)
 );
 
