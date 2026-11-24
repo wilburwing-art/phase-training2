@@ -111,7 +111,7 @@ Suggestions and scaling only. The engine never writes a workout.
 
 ## Phase 7: features competitors ship (no owner decision)
 
-- [ ] **7.1 Shortcuts and App Intents (5 h, logic, builder-heavy).** "Start today's workout" and "Log body weight" as `AppIntent` with `AppShortcutsProvider` (zero AppIntent code today; `docs/briefs/today-widget.md:137` deferred the start intent). Pairs with the Today widget; reads the App Group snapshot. Runs `xcodegen generate`: yes. Tests: `TodayWidgetSnapshotTests` plus a new new `StartWorkoutIntentTests`.
+- [ ] **7.1 Shortcuts and App Intents (5 h, logic, builder-heavy).** "Start today's workout" and "Log body weight" as `AppIntent` with `AppShortcutsProvider` (zero AppIntent code today; `docs/briefs/today-widget.md:137` deferred the start intent). Pairs with the Today widget; reads the App Group snapshot. Runs `xcodegen generate`: yes. Tests: `TodayWidgetSnapshotTests` plus a new `StartWorkoutIntentTests`.
 - [ ] **7.2 Workout summary share card (4 h, UI, builder).** Render a Complete-screen summary with `ImageRenderer` (used only in `MuscleChipGeneratorView.swift:216`) and share it through `ShareSheet.swift`. No account, no network. Tests: `snapshot_ui`; a unit test on the summary text builder.
 
 ## Not scheduled
