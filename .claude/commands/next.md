@@ -28,7 +28,7 @@ A `pages-build-deployment` failure is red too: read
   then re-read the conclusion. Pick nothing while it runs.
 - failure: that failure is this session's item.
 - cancelled: treat it as red. The newest run has no newer push to
-  supersede it, so it hit a job timeout (25 min unit, 45 min per UI shard). Read
+  supersede it, so it hit a job timeout (30 min unit, 45 min per UI shard). Read
   `gh run view <id> --json jobs` for the job that ran to its limit; that
   timeout is this session's item.
 - success: pick from the queue.
