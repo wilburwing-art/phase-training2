@@ -25,7 +25,15 @@ A `pages-build-deployment` failure is red too: read
 `docs/_config.yml`, and make that the session's item.
 - queued or in_progress: wait for it to finish. Use Bash with
   run_in_background and an until-loop on `gh run view <id> --json status`,
-  then re-read the conclusion. Pick nothing while it runs.
+  then re-read the conclusion. Pick nothing while it runs. Stay in the
+  turn until that task reports: in `claude -p` an ended turn with a
+  background task still running leaves the process idle and prints
+  nothing. If the run will outlast this session, end with
+  `NEXT_STATUS: waiting_ci` instead of waiting.
+- success, and an unticked item's text says "tick after <class> passes
+  in main CI" for the code on this run's commit: confirm the class passed
+  in `gh run view <id> --log`, tick it, commit, and end with
+  `NEXT_STATUS: done`. That is this session's item.
 - failure: that failure is this session's item.
 - cancelled: treat it as red. The newest run has no newer push to
   supersede it, so it hit a job timeout (30 min unit, 45 min per UI shard). Read
@@ -175,6 +183,10 @@ test classes the backlog item names, yourself, in a free slot:
   -only-testing:PhaseTrainingTests/<ClassName> for each class named
 Send the full log to a file and grep it as CLAUDE.md says.
 - All named classes green: tick the item.
+- The local runner cannot run them (a Phase 0 device action says so):
+  push the code unticked, note "tick after <class> passes in main CI" in
+  the item, and end with `NEXT_STATUS: uncommitted`. Do not wait on CI in
+  this session; next-loop sleeps and the next /next ticks it.
 - Any red: do not tick. Send one follow-up brief, or if the cause is
   outside the item, leave it unticked and add the failure as a new item.
 - The item names no test class: write one that fails without the change,
