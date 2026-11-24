@@ -473,3 +473,25 @@ extension DayPlan {
         return nil
     }
 }
+
+extension DayPlan {
+    /// The coach.db routine this day serves: the authored workout's routine,
+    /// or the routineId fallback when no workout was generated.
+    var servedRoutineId: Int? {
+        if let g = generatedWorkout { return g.authoredRoutineId }
+        return routineId
+    }
+
+    /// The served routine's source credit, verbatim. nil on generated days.
+    var routineSourceCredit: String? {
+        servedRoutineId.flatMap(AuthoredRoutine.sourceCredit(forRoutineId:))
+    }
+
+    /// Credit for a session started from this day. nil when the session ran
+    /// some other workout (a library routine, freestyle, a swap).
+    func routineSourceCredit(forSessionTemplateId templateId: String, planWeek: Int?) -> String? {
+        guard servedRoutineId != nil,
+              workoutTemplate(planWeek: planWeek)?.id == templateId else { return nil }
+        return routineSourceCredit
+    }
+}

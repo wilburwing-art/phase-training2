@@ -285,6 +285,16 @@ struct RoutinePreferences: Equatable {
 
 enum AuthoredRoutine {
 
+    /// A routine's source credit, verbatim from coach.db `routines.source_name`.
+    /// Shown as written on the day preview and Complete because several carry
+    /// licensed program names (MTI, Uphill Athlete). nil when the routine has
+    /// none or the id is unknown.
+    static func sourceCredit(forRoutineId id: Int) -> String? {
+        guard let source = CoachDatabase.shared.authoredRoutineMeta(id: id)?.source,
+              !source.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+        return source
+    }
+
     /// Build a `GeneratedWorkout` from a coach.db routine, layering a per-user
     /// "target: X lb" weight rec onto each strength row from the user's prior
     /// best (via `WorkoutGenerator.progressiveOverloadHint`) WITHOUT changing

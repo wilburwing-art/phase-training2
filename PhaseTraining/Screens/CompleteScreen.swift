@@ -156,6 +156,12 @@ struct CompleteScreen: View {
                             .padding(.horizontal, 20)
                             .padding(.top, 20)
 
+                        if let credit = routineSourceCredit {
+                            RoutineSourceCreditLine(credit: credit)
+                                .padding(.horizontal, 20)
+                                .padding(.top, 12)
+                        }
+
                         // Changes the coach staged by voice mid-workout (voice 3.3).
                         PendingCoachProposalsSection()
 
@@ -229,6 +235,15 @@ struct CompleteScreen: View {
         } message: {
             Text("This removes the workout you just logged from your history.")
         }
+    }
+
+    /// The planned routine's source credit (11c 6.6), when this session ran
+    /// the day's authored routine.
+    private var routineSourceCredit: String? {
+        let date = session.loggedFor?.start ?? session.startTime
+        let day = planStore.plan?.days.first { Calendar.current.isDate($0.date, inSameDayAs: date) }
+        return day?.routineSourceCredit(forSessionTemplateId: session.templateId,
+                                        planWeek: memoryStore.memory.weeksInCurrentPhase)
     }
 
     // MARK: - Notification pre-prompt

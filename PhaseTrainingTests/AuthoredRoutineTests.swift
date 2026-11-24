@@ -1016,4 +1016,39 @@ final class AuthoredRoutineTests: XCTestCase {
             }
         }
     }
+
+    // MARK: - Source credit (11c 6.6)
+
+    func testSourceCreditIsVerbatimSourceName() {
+        XCTAssertEqual(AuthoredRoutine.sourceCredit(forRoutineId: 325),
+                       "MTI In-Season Strength for Endurance Athletes V3 (distilled)")
+        XCTAssertNil(AuthoredRoutine.sourceCredit(forRoutineId: 1), "routine 1 has no source_name")
+        XCTAssertNil(AuthoredRoutine.sourceCredit(forRoutineId: -1))
+    }
+
+    func testDayCreditCoversAuthoredWorkoutAndRoutineIdDays() throws {
+        let memory = TrainingMemory()
+        let w = try XCTUnwrap(AuthoredRoutine.workout(
+            forRoutineId: 325, memory: memory, context: .empty, focus: .fullBodyA,
+            profile: DemographicProfile.from(memory)))
+        let authored = DayPlan(date: Date(), kind: .lift, title: "Day", generatedWorkout: w)
+        let byId = DayPlan(date: Date(), kind: .lift, title: "Day", routineId: 325)
+        let credit = "MTI In-Season Strength for Endurance Athletes V3 (distilled)"
+        XCTAssertEqual(authored.routineSourceCredit, credit)
+        XCTAssertEqual(byId.routineSourceCredit, credit)
+
+        var generated = w
+        generated.authoredRoutineId = nil
+        let plain = DayPlan(date: Date(), kind: .lift, title: "Day", routineId: 325,
+                            generatedWorkout: generated)
+        XCTAssertNil(plain.routineSourceCredit, "a generated workout outranks the routineId fallback")
+    }
+
+    func testCompleteCreditOnlyForTheDaysOwnWorkout() throws {
+        let day = DayPlan(date: Date(), kind: .lift, title: "Day", routineId: 325)
+        let id = try XCTUnwrap(day.workoutTemplate(planWeek: 1)?.id)
+        XCTAssertEqual(day.routineSourceCredit(forSessionTemplateId: id, planWeek: 1),
+                       "MTI In-Season Strength for Endurance Athletes V3 (distilled)")
+        XCTAssertNil(day.routineSourceCredit(forSessionTemplateId: "freestyle", planWeek: 1))
+    }
 }

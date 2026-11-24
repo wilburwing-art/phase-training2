@@ -243,6 +243,9 @@ struct DayWorkoutPreviewSheet: View {
             Text(summaryLine(template))
                 .font(.scaled("Inter-Regular", size: 13))
                 .foregroundStyle(Color.ink2)
+            if let credit = day.routineSourceCredit {
+                RoutineSourceCreditLine(credit: credit)
+            }
         }
     }
 
@@ -550,5 +553,27 @@ struct DayWorkoutPreviewSheet: View {
         guard let s else { return nil }
         let digits = s.prefix(while: { $0.isNumber })
         return Int(digits)
+    }
+}
+
+/// A coach.db routine's source credit, printed verbatim (11c 6.6). Shared by
+/// the day preview and Complete.
+struct RoutineSourceCreditLine: View {
+    let credit: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("SOURCE")
+                .styled(.micro)
+                .foregroundStyle(Color.ink3)
+            Text(credit)
+                .font(.monoXS)
+                .foregroundStyle(Color.ink3)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Source: \(credit)")
+        .accessibilityIdentifier("routine-source-credit")
     }
 }
