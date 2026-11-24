@@ -44,6 +44,19 @@ STEP 2: CHECK EACH OF THESE AGAINST THE EVIDENCE
    Sonnet lead would have done (UI or wiring item, no design).
 8. Command drift: anything a session did that contradicts the repo
    commands, or that they leave unstated.
+9. Quality, three counts for the window:
+   - Rework: for each tick commit, a later commit in the window that
+     changes one of its non-doc files and names its item id or says fix
+     or regression (`git log <hash>.. --format='%h %s' -- <its files>`).
+     Name each pair.
+   - Red main: `test` runs on main that ended failure or cancelled, and
+     the commit each ran on.
+   - Report drift: sessions where the lead sent a follow-up brief because
+     the builder's report did not match the diff. Open a raw transcript
+     only for sessions whose tool counts show 3 or more Agent calls or any
+     SendMessage.
+   A count above zero is a finding when the cause is a command gap (a
+   missing required class, a brief that left the file list open).
 Drop any finding you cannot point at with a session id, a commit hash or
 a `file:line`. If nothing changed since the last report in docs/retro/,
 say "no change" with the baseline line and stop.
@@ -52,7 +65,9 @@ STEP 3: REPORT
 Ranked by cost to the owner, at most five findings. Each: what happened,
 the evidence, and the exact edit that fixes it (which file and the text to
 add or change). Then one baseline line: median minutes, turns, output
-tokens and cache reads per /next session, so the next retro can compare.
+tokens and cache reads per /next session, plus the rework, red main and
+report drift counts from check 9, so the next retro can compare. Fewer
+minutes with more rework counts as slower.
 Then the owner-decision list from check 2, oldest first, one line each.
 
 Apply nothing in this step. Interactive runs end with: reply "apply" with

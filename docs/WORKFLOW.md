@@ -69,8 +69,9 @@ The current order lives in `docs/QUEUE.md`. Reorder it by hand.
    - **builder** (Sonnet) for UI and wiring.
    - **builder-heavy** (Opus, sparingly) for the generator, overload math, migrations and sync.
 
-   Each builder runs its own tests, does not commit, and sends one final report.
+   Each builder runs its own tests, does not commit, and sends one final report. It stops after the same test fails the same way three times.
 5. Simulator slots: A `3CF80E1F…` with `DerivedData-A`, B `0929A7A4…` with `DerivedData-B`. At most 2 builds at once.
+   A diff touching user.db migrations, Erase All Data, background writers or backup adds that area's required test classes to done (list in `next.md`, REQUIRED CLASSES BY AREA).
 6. Reviews the diff (logic files read in full), runs the item's named test classes itself, ticks the checkbox only when they pass, and pushes to main.
 7. Queue upkeep goes in the same commit:
    - removes the pin
@@ -85,3 +86,4 @@ The current order lives in `docs/QUEUE.md`. Reorder it by hand.
 - skipped verification
 - expensive sessions
 - drift between what sessions did and what the commands say
+- rework, red main runs and builder reports that did not match the diff, counted per window next to the cost baseline

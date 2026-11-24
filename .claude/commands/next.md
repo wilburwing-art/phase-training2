@@ -80,6 +80,25 @@ Write the design into docs/briefs/<item>.md. Each brief names:
 - whether this builder runs `xcodegen generate` (only one builder per item)
 Pass builders the path to the brief. Do not paste its text.
 
+REQUIRED CLASSES BY AREA
+These areas hold user data, and a regression there reaches users as lost
+or resurrected data. When the item's diff touches one, add its classes to
+the brief's done criteria and to the test gate, even if the backlog item
+does not name them:
+- user.db schema or a migration (`UserDatabase*.swift`, a new column, a
+  version bump): UserDatabaseMigrationTests, BackupManagerTests. A new
+  column also needs its old-version fixture checked: a fixture for an
+  earlier version must not already hold the column (2a7b58f).
+- Erase All Data, store reset, or any store that writes in the background
+  (a save queue, a Task that persists after an await): EraseAllDataTests,
+  StoreResetTests. A new background writer is drained or cancelled by
+  erase, with a test that erases while its save is in flight (c6aa45b).
+- Backup, restore or iCloud (`Backup*.swift`, `CloudBackup.swift`, any
+  field added to a backed-up payload): BackupManagerTests,
+  BackupCoordinatorTests, CloudBackupTests.
+Re-check these names with `grep -l "class <Name>" PhaseTrainingTests/`
+when a class is renamed, and update this list in the same commit.
+
 DELEGATION
 Builders and scouts are subagents spawned with the Agent tool.
 - builder-heavy (Opus, sparingly): logic items from your design notes
@@ -96,7 +115,11 @@ once, at review. If a ruling needs code, send one follow-up brief with
 every change in it.
 
 TESTS AND SIMULATORS
-Builders run their own targeted test classes and do not commit. Each
+Builders run their own targeted test classes and do not commit. A builder
+whose test run fails the same way three times stops fixing and sends its
+final report: the failing test, the last error line, and what it tried.
+Same way means the same test and the same assertion or error. You decide
+the next step at review. Each
 running agent gets its own simulator and DerivedData, named in its brief.
 
 Slot A: iPhone 17 Pro

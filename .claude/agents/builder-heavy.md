@@ -35,6 +35,7 @@ Tests
   `grep -nE "failed \(|with [1-9][0-9]* (test )?failure|error:" <log>`
 - A command that errors before running tests is a failure, so confirm the log shows the test class executed.
 - If the lead says another test run is in progress on the simulator, build only and say the tests were not run.
+- If a test run fails the same way three times (same test, same assertion or error), stop fixing and send your final report: the failing test, the last error line, and what you tried.
 
 Do not commit, push or bump the build number. The lead reviews the diff against the backlog item first.
 
