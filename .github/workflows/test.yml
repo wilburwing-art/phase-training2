@@ -189,6 +189,14 @@ jobs:
         # a single-shot rig flake gets absorbed transparently. Apple-
         # supported since Xcode 13.
         #
+        # Per-case timeouts: a case past 180 s fails by name and is retried,
+        # so one hung case costs about 9 minutes instead of the job. Run
+        # 45580604970 (c58ab85) had one flows case stall 915 s with no
+        # output and the shard was cancelled at 45 min. Slowest normal case
+        # is CustomExerciseUITests at 236 s, which sets its own 420 s
+        # allowance; every other case ran under 98 s in runs 45574504764
+        # and four before it. XCTest rounds allowances up to the minute.
+        #
         # Those retries need a live runner. When the runner itself dies
         # ("Test crashed with signal term."), the relaunched runner logs
         # "Executed 0 tests" and the case is never retried (run 44805314849).
@@ -207,6 +215,9 @@ jobs:
             -resultBundlePath build/TestResults.xcresult \
             -retry-tests-on-failure \
             -test-iterations 3 \
+            -test-timeouts-enabled YES \
+            -default-test-execution-time-allowance 180 \
+            -maximum-test-execution-time-allowance 600 \
             CODE_SIGNING_ALLOWED=NO \
             | tee build/raw-test.log \
             | xcbeautify --renderer github-actions \
@@ -224,6 +235,9 @@ jobs:
             -destination "platform=iOS Simulator,id=${{ steps.setup.outputs.udid }}" \
             $retry \
             -resultBundlePath build/RetryResults.xcresult \
+            -test-timeouts-enabled YES \
+            -default-test-execution-time-allowance 180 \
+            -maximum-test-execution-time-allowance 600 \
             CODE_SIGNING_ALLOWED=NO \
             | tee -a build/raw-test.log \
             | xcbeautify --renderer github-actions

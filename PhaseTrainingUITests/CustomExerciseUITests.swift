@@ -8,6 +8,9 @@ final class CustomExerciseUITests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
+        // CI's default allowance is 180 s; the create-log-delete case has
+        // run 236 s (11e 1.15).
+        executionTimeAllowance = 420
     }
 
     private func shot(_ name: String) {
