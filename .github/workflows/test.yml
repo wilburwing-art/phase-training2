@@ -287,6 +287,17 @@ jobs:
           name: TestResults-${{ matrix.shard }}.xcresult
           path: build/TestResults.xcresult
 
+      - name: Upload taps xcresult on success
+        # A green taps run still holds the Freestyle picker case's activity
+        # log, which shows whether the event-loop idle timeout recurred on a
+        # slow pass (11e 1.16). About 145 MB a run, so it keeps 7 days.
+        if: success() && matrix.shard == 'taps'
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults-${{ matrix.shard }}.xcresult
+          path: build/TestResults.xcresult
+          retention-days: 7
+
       - name: Upload crash re-run xcresult
         if: always()
         uses: actions/upload-artifact@v4
