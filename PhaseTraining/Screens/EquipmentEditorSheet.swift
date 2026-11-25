@@ -17,6 +17,9 @@ struct EquipmentEditorSheet: View {
     /// "PICK WHAT YOU HAVE" grid disappeared mid-edit, and the Dumbbells preset
     /// lit up instead. Deselecting everything did the same via the empty array.
     @State private var tierSelection: EquipmentTier?
+    /// Exercises each item adds over the bodyweight floor, read once from
+    /// coach.db when the sheet opens.
+    @State private var unlocks: Equipment.Unlocks?
 
     var body: some View {
         NavigationStack {
@@ -58,10 +61,16 @@ struct EquipmentEditorSheet: View {
                                 .styled(.micro)
                                 .foregroundStyle(Color.ink3)
                                 .padding(.top, 6)
+                            if let unlocks {
+                                Text("Bodyweight covers \(unlocks.floor) exercises. The number on each item is how many more it adds by itself.")
+                                    .styled(.body)
+                                    .foregroundStyle(Color.ink3)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
                             WrappingFlow(spacing: 8) {
                                 ForEach(Equipment.allCases.filter { $0 != .fullGym }) { eq in
                                     OnboardingChip(
-                                        label: eq.label,
+                                        label: chipLabel(eq),
                                         selected: store.memory.equipment.contains(eq),
                                         action: { toggleCustomEquipment(eq) }
                                     )
@@ -86,6 +95,14 @@ struct EquipmentEditorSheet: View {
         .presentationDetents([.medium, .large])
         .presentationBackground(Color.bg)
         .preferredColorScheme(.dark)
+        .onAppear {
+            if unlocks == nil { unlocks = Equipment.unlocks() }
+        }
+    }
+
+    private func chipLabel(_ eq: Equipment) -> String {
+        guard let n = unlocks?.added[eq] else { return eq.label }
+        return "\(eq.label) +\(n)"
     }
 
     private var currentTier: EquipmentTier {
@@ -130,6 +147,29 @@ struct EquipmentEditorSheet: View {
             }
             mem.markStated(.equipment)
         }
+    }
+}
+
+// MARK: - Unlock counts
+
+extension Equipment {
+    /// `floor` is the exercise count the always-available slugs allow.
+    /// `added[eq]` is how many more exercises picking only `eq` on top of
+    /// that floor allows. `.bodyweight` and `.fullGym` carry no entry.
+    struct Unlocks: Equatable {
+        let floor: Int
+        let added: [Equipment: Int]
+    }
+
+    static func unlocks(catalog: CoachDatabase = .shared) -> Unlocks {
+        let floorSlugs = bodyweightAlwaysAvailable
+        let floor = catalog.exerciseCount(fittingEquipmentSlugs: floorSlugs)
+        var added: [Equipment: Int] = [:]
+        for eq in allCases where eq != .bodyweight && eq != .fullGym {
+            let n = catalog.exerciseCount(fittingEquipmentSlugs: floorSlugs.union(eq.specificCoachDbSlugs))
+            added[eq] = n - floor
+        }
+        return Unlocks(floor: floor, added: added)
     }
 }
 

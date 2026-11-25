@@ -1487,6 +1487,32 @@ final class CoachDatabase {
 
     // MARK: - Equipment lookups
 
+    /// Number of catalog exercises whose every required equipment slug
+    /// (is_required = 1) lies inside `allowed`. Exercises with no required
+    /// row count as bodyweight and always fit. Feeds the per-item unlock
+    /// counts on the equipment editor (`Equipment.unlockCounts`).
+    func exerciseCount(fittingEquipmentSlugs allowed: Set<String>) -> Int { withLock {
+        guard let db else { return 0 }
+        let placeholders = allowed.map { _ in "?" }.joined(separator: ",")
+        let outside = allowed.isEmpty ? "" : "AND eq.slug NOT IN (\(placeholders))"
+        let sql = """
+        SELECT COUNT(*) FROM exercises e
+        WHERE NOT EXISTS (
+          SELECT 1 FROM exercise_equipment ee
+          JOIN equipment eq ON eq.id = ee.equipment_id
+          WHERE ee.exercise_id = e.id AND ee.is_required = 1 \(outside)
+        )
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return 0 }
+        defer { sqlite3_finalize(stmt) }
+        for (i, slug) in allowed.enumerated() {
+            sqlite3_bind_text(stmt, Int32(i + 1), slug, -1, SQLITE_TRANSIENT)
+        }
+        guard sqlite3_step(stmt) == SQLITE_ROW else { return 0 }
+        return Int(sqlite3_column_int64(stmt, 0))
+    } }
+
     /// Per-exercise required equipment slugs (is_required = 1). Single-shot
     /// batch query keyed on coach.db exercise.id. Equipment that's tagged
     /// optional (is_required = 0) is intentionally excluded — an exercise

@@ -28,6 +28,8 @@ struct HealthWorkoutSyncSection: View {
     @State private var lastError: String?
     @State private var summary: (count: Int, oldest: Date?, newest: Date?, lastImported: Date?)?
     @State private var debugReadiness: ReadinessSignal?
+    /// Last 28 days of imported workouts, newest first, for the RECENT list.
+    @State private var recent: [ImportedWorkout] = []
     /// Set once a sync completes. Lets the empty state distinguish "you
     /// haven't synced yet" from "synced, but Health returned nothing" — the
     /// latter usually means read access is off (HK won't tell us directly).
@@ -37,6 +39,9 @@ struct HealthWorkoutSyncSection: View {
         VStack(alignment: .leading, spacing: 28) {
             headerSection
             statusSection
+            if !recent.isEmpty {
+                recentSection
+            }
             syncSection
             if let err = lastError {
                 errorSection(message: err)
@@ -104,6 +109,32 @@ struct HealthWorkoutSyncSection: View {
                 Text("Last sync: \(short(last))")
                     .font(.caption)
                     .foregroundColor(.ink2)
+            }
+        }
+    }
+
+    private var recentSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("LAST 28 DAYS")
+                .font(.caption.bold())
+                .foregroundColor(.ink2)
+            if let total = ImportedWorkoutEnergy.totalKcal(recent) {
+                Text("\(total.formatted()) kcal burned")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundColor(.ink)
+                    .accessibilityIdentifier("health-sync-total-kcal")
+            }
+            ForEach(recent.prefix(ImportedWorkoutEnergy.listLimit), id: \.id) { w in
+                HStack {
+                    Text(short(w.startTime))
+                        .font(.caption)
+                        .foregroundColor(.ink)
+                    Spacer(minLength: 8)
+                    Text(ImportedWorkoutEnergy.detail(w))
+                        .font(.caption.monospaced())
+                        .foregroundColor(.ink2)
+                }
+                .accessibilityElement(children: .combine)
             }
         }
     }
@@ -212,10 +243,11 @@ struct HealthWorkoutSyncSection: View {
 
     private func refreshSummary() {
         summary = UserDatabase.shared.importedWorkoutSummary()
+        let imported = UserDatabase.shared.recentImportedWorkouts(within: 28)
+        recent = imported
         #if DEBUG
         // Recompute readiness off the same window — read-only diagnostic.
         let memory = store.memory
-        let imported = UserDatabase.shared.recentImportedWorkouts(within: 28)
         let context = GeneratorContext.from(
             sessions: sessionStore.savedSessions,
             soreness: memory.soreness,
@@ -234,5 +266,30 @@ struct HealthWorkoutSyncSection: View {
         let f = DateFormatter()
         f.dateStyle = .medium
         return f.string(from: date)
+    }
+}
+
+/// Labels for imported workouts on the Health sync screen. `energy_kcal`
+/// is optional (CSV rows and some Health sources carry none), so the total
+/// counts only rows that have it and is nil when none do.
+enum ImportedWorkoutEnergy {
+    static let listLimit = 10
+
+    static func totalKcal(_ workouts: [ImportedWorkout]) -> Int? {
+        let values = workouts.compactMap(\.energyKcal)
+        guard !values.isEmpty else { return nil }
+        return Int(values.reduce(0, +).rounded())
+    }
+
+    /// "Cardio · 42 min · 350 kcal". Minutes and kcal drop out when zero
+    /// or missing.
+    static func detail(_ w: ImportedWorkout) -> String {
+        var parts = [w.kind.rawValue.capitalized]
+        let minutes = Int((w.duration / 60).rounded())
+        if minutes > 0 { parts.append("\(minutes) min") }
+        if let kcal = w.energyKcal, kcal > 0 {
+            parts.append("\(Int(kcal.rounded())) kcal")
+        }
+        return parts.joined(separator: " · ")
     }
 }

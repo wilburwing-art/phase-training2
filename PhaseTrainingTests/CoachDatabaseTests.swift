@@ -137,4 +137,34 @@ final class CoachDatabaseTests: XCTestCase {
         let known = Set(CoachDatabase.shared.listInjuries().map(\.slug))
         XCTAssertTrue(Set(all.keys).isSubset(of: known))
     }
+
+    // MARK: - Equipment unlock counts (6.8)
+
+    func test_exerciseCount_everySlugAllowedCountsTheWholeCatalog() {
+        let db = CoachDatabase.shared
+        let none = db.exerciseCount(fittingEquipmentSlugs: [])
+        let floor = db.exerciseCount(fittingEquipmentSlugs: Equipment.bodyweightAlwaysAvailable)
+        let gym = db.exerciseCount(fittingEquipmentSlugs: Equipment.bodyweightAlwaysAvailable
+            .union(Equipment.allCases.flatMap(\.specificCoachDbSlugs)))
+        XCTAssertGreaterThan(none, 0, "exercises with no required equipment row disappeared")
+        XCTAssertGreaterThanOrEqual(floor, none)
+        XCTAssertGreaterThan(gym, floor)
+    }
+
+    func test_unlocks_everyItemAddsExercisesOverTheFloor() {
+        let u = Equipment.unlocks()
+        XCTAssertGreaterThan(u.floor, 0)
+        XCTAssertNil(u.added[.bodyweight])
+        XCTAssertNil(u.added[.fullGym])
+        let items = Equipment.allCases.filter { $0 != .bodyweight && $0 != .fullGym }
+        XCTAssertEqual(Set(u.added.keys), Set(items))
+        for eq in items {
+            XCTAssertGreaterThan(u.added[eq] ?? 0, 0, "\(eq.label) unlocks nothing on its own")
+        }
+    }
+
+    func test_unlocks_dumbbellsAddMoreThanAWeightVest() {
+        let u = Equipment.unlocks()
+        XCTAssertGreaterThan(u.added[.dumbbells] ?? 0, u.added[.weightVest] ?? 0)
+    }
 }
