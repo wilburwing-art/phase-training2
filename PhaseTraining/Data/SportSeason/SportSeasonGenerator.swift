@@ -106,6 +106,10 @@ enum SportSeasonGenerator {
         // sized them differently, and the cut read 0.58 to 0.89 (11e 1.5).
         let seedWeek = cycle.state == .deload ? max(1, athlete.weekNumber - 1) : athlete.weekNumber
         let seed = "\(athlete.sportSlug)-\(athlete.season.rawValue)-w\(seedWeek)" + slotTag
+        // The seed alone doesn't hold it: in the app last week's accessories
+        // are in `recentMovementIDs`, so rotation would rank them below fresh
+        // ones. A deload week skips the recency tier, as anchors do (11e 1.7).
+        let skipRecency = cycle.state == .deload
         // Anchor lifts are seeded by the mesocycle block, not the week, so the
         // same squat or press comes back in weeks 1 to 3 and the athlete can
         // add load to it (finding 9). Accessories keep the weekly seed.
@@ -246,8 +250,8 @@ enum SportSeasonGenerator {
                     // only movement the user dislikes is still served.
                     // Anchors skip the recency tier for the same reason they
                     // skip the weekly seed: last week's squat is this week's.
-                    let lt = rotationTier(lhs, athlete, anchor: isAnchor)
-                    let rt = rotationTier(rhs, athlete, anchor: isAnchor)
+                    let lt = rotationTier(lhs, athlete, anchor: isAnchor || skipRecency)
+                    let rt = rotationTier(rhs, athlete, anchor: isAnchor || skipRecency)
                     if lt != rt { return lt < rt }
                     if preferLowFatigue && lhs.fatigueCost != rhs.fatigueCost {
                         return lhs.fatigueCost < rhs.fatigueCost             // lighter first
@@ -332,8 +336,8 @@ enum SportSeasonGenerator {
                         // refilled with last week's movement while a fresh
                         // one sat in the pool (403 of 3,294 accessory repeats,
                         // 11c 3.8). Anchors skip it as in the slot fill.
-                        let lt = Self.rotationTier($0, athlete, anchor: anchorDemands.contains(demand))
-                        let rt = Self.rotationTier($1, athlete, anchor: anchorDemands.contains(demand))
+                        let lt = Self.rotationTier($0, athlete, anchor: skipRecency || anchorDemands.contains(demand))
+                        let rt = Self.rotationTier($1, athlete, anchor: skipRecency || anchorDemands.contains(demand))
                         if lt != rt { return lt < rt }
                         return djb2("\(tie)-backfill-\($0.exerciseId)") < djb2("\(tie)-backfill-\($1.exerciseId)")
                     }) {

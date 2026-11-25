@@ -102,12 +102,14 @@ final class GeneratorWeekInvariantTests: XCTestCase {
         return m
     }
 
-    private func plan(_ c: Cell, routines: [BundledRoutineRow], affinities: Set<String> = []) -> Week {
+    private func plan(_ c: Cell, routines: [BundledRoutineRow], affinities: Set<String> = [],
+                      recentlyPicked: Set<Int> = []) -> Week {
         let m = memory(c, affinities: affinities)
         var cal = Calendar.current; cal.firstWeekday = 2
         var comps = DateComponents(); comps.year = 2026; comps.month = 11; comps.day = 9
         let monday = cal.date(from: comps)!
-        return Week(cell: c, plan: Planner.generate(memory: m, routines: routines, today: monday))
+        return Week(cell: c, plan: Planner.generate(memory: m, routines: routines,
+                                                           recentlyPicked: recentlyPicked, today: monday))
     }
 
     private static var cache: [Week]?
@@ -271,7 +273,20 @@ final class GeneratorWeekInvariantTests: XCTestCase {
     /// deload week over the week before it. The audit measured a 46% cut for
     /// ski and 13% for climbing before `deloadSetsFactor`.
     func test_deloadWeekCutsSetsByOneShareAcrossSports() {
+        assertDeloadBand(rotated: false)
+    }
+
+    /// In the app the week before's accessories are in `recentMovementIDs`
+    /// when the deload week is planned. The deload week still serves that
+    /// week's session at 70% of its sets, so rotation must not swap them
+    /// out (11e 1.7).
+    func test_deloadWeekCutsSetsByOneShareUnderRotation() {
+        assertDeloadBand(rotated: true)
+    }
+
+    private func assertDeloadBand(rotated: Bool) {
         let routines = CoachDatabase.shared.listRoutines()
+        var swapped = 0
         var ratios: [(String, Double)] = []
         var bad: [String] = []
         var failingSports: Set<String> = []
@@ -281,9 +296,16 @@ final class GeneratorWeekInvariantTests: XCTestCase {
                     Cell(sport: s, season: phase, exp: e, equipName: "gym", equip: [.fullGym],
                          days: 4, minutes: 45, week: wk)
                 }
-                let before = engineSets(plan(cell(cycle - 1), routines: routines))
-                let deload = engineSets(plan(cell(cycle), routines: routines))
+                let beforeWeek = plan(cell(cycle - 1), routines: routines)
+                let recent = rotated
+                    ? Set(beforeWeek.plan.days.compactMap(\.generatedWorkout).flatMap(\.exercises).map(\.exerciseId))
+                    : []
+                let deloadWeek = plan(cell(cycle), routines: routines, recentlyPicked: recent)
+                let before = engineSets(beforeWeek)
+                let deload = engineSets(deloadWeek)
                 guard before > 0 else { continue }
+                let ids = { (w: Week) in Set(self.engineSessions(w).flatMap(\.exercises).map(\.exerciseId)) }
+                if ids(beforeWeek) != ids(deloadWeek) { swapped += 1 }
                 let r = Double(deload) / Double(before)
                 let tag = "\(s)/\(phase.rawValue)/\(e.rawValue)"
                 ratios.append((tag, r))
@@ -296,7 +318,8 @@ final class GeneratorWeekInvariantTests: XCTestCase {
         } }
         XCTAssertGreaterThan(ratios.count, 20, "only \(ratios.count) sport x phase cells had engine sets")
         let lo = ratios.map(\.1).min() ?? 0, hi = ratios.map(\.1).max() ?? 0
-        print("[GWI] deload: \(ratios.count) cells, share \(String(format: "%.2f", lo))...\(String(format: "%.2f", hi)), \(bad.count) outside 0.60...0.80")
+        print("[GWI] deload rotated=\(rotated): \(swapped) of \(ratios.count) weeks changed movements")
+        print("[GWI] deload rotated=\(rotated): \(ratios.count) cells, share \(String(format: "%.2f", lo))...\(String(format: "%.2f", hi)), \(bad.count) outside 0.60...0.80")
         // 0.60...0.80 is the one band: 0.7 per row, rounded on 2 to 5 set
         // rows, with cited protocol rows exempt. Measured 0.60...0.79 over
         // 126 cells on 58dcb08.
