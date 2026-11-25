@@ -345,6 +345,12 @@ final class SessionStore: ObservableObject {
         return (savedSessions + imported).sorted { $0.startTime > $1.startTime }
     }
 
+    /// Imported workouts (Health, CSV cardio) for the History list only.
+    /// They carry no sets, so they stay out of `displaySessions`.
+    func historyImportedWorkouts() -> [ImportedWorkout] {
+        userDB.allImportedWorkouts()
+    }
+
     /// Best weight per (exercise, reps) across imported sessions, the
     /// baseline imported history adds to PR detection.
     private func importedBests(usesImperial: Bool) -> [String: [Int: Double]] {

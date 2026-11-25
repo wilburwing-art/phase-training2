@@ -29,6 +29,8 @@ struct HistoryScreen: View {
     @State private var savedAsRoutine: Set<TimeInterval> = []
     /// Session waiting on the "replace the workout in progress?" confirm.
     @State private var repeatTarget: SavedSession?
+    /// Imported workouts (Health, CSV cardio), read when the screen opens.
+    @State private var importedWorkouts: [ImportedWorkout] = []
 
     init(initialExerciseFilter: String? = nil) {
         self.initialExerciseFilter = initialExerciseFilter
@@ -53,6 +55,18 @@ struct HistoryScreen: View {
         }
     }
 
+    /// Imported workouts in the unfiltered list. An exercise drill-in has no
+    /// place for them, since they carry no exercises.
+    private var scopedWorkouts: [ImportedWorkout] {
+        initialExerciseFilter == nil ? importedWorkouts : []
+    }
+
+    /// Imported workouts carry no name, exercise, note or tag to match, so
+    /// any search or tag filter hides them.
+    private var displayedWorkouts: [ImportedWorkout] {
+        filter.isActive ? [] : scopedWorkouts
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             topBar
@@ -62,13 +76,14 @@ struct HistoryScreen: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
 
-            if scopedSessions.isEmpty {
+            if scopedSessions.isEmpty && scopedWorkouts.isEmpty {
                 emptyState
             } else {
                 content
             }
         }
         .background(Color.bg.ignoresSafeArea())
+        .task { importedWorkouts = store.historyImportedWorkouts() }
         .confirmationDialog(
             "Replace the workout in progress?",
             isPresented: Binding(
@@ -123,7 +138,9 @@ struct HistoryScreen: View {
 
     private var sessionCountLabel: String {
         let n = displayedSessions.count
-        return "\(n) SESSION\(n == 1 ? "" : "S")"
+        let label = "\(n) SESSION\(n == 1 ? "" : "S")"
+        let w = displayedWorkouts.count
+        return w == 0 ? label : "\(label) · \(w) IMPORTED WORKOUT\(w == 1 ? "" : "S")"
     }
 
     // MARK: - Empty state
@@ -157,7 +174,7 @@ struct HistoryScreen: View {
     // MARK: - Content
 
     private var content: some View {
-        let sessions = displayedSessions
+        let entries = HistoryEntries.merge(sessions: displayedSessions, workouts: displayedWorkouts)
         return ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 if let exercise = initialExerciseFilter {
@@ -184,15 +201,18 @@ struct HistoryScreen: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
 
-                if sessions.isEmpty {
+                if entries.isEmpty {
                     noMatches
                 } else {
                     LazyVStack(spacing: 0) {
-                        ForEach(Array(sessions.enumerated()), id: \.element.id) { idx, session in
-                            sessionRow(
-                                session: session,
-                                isLast: idx == sessions.count - 1
-                            )
+                        ForEach(Array(entries.enumerated()), id: \.element.id) { idx, entry in
+                            let isLast = idx == entries.count - 1
+                            switch entry {
+                            case .session(let session):
+                                sessionRow(session: session, isLast: isLast)
+                            case .workout(let workout):
+                                workoutRow(workout, isLast: isLast)
+                            }
                         }
                     }
                     .padding(.horizontal, 20)
@@ -418,6 +438,34 @@ struct HistoryScreen: View {
             }
         }
         .padding(.vertical, 14)
+        .overlay(alignment: .bottom) {
+            if !isLast {
+                Rectangle().fill(Color.lineSoft).frame(height: 0.5)
+            }
+        }
+    }
+
+    // MARK: - Imported workout row (read-only, no sets to expand)
+
+    private func workoutRow(_ w: ImportedWorkout, isLast: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(HistoryEntries.title(w))
+                .styled(.displayS)
+                .foregroundColor(.ink)
+            HStack(spacing: 8) {
+                Text(dateLabel(w.startTime))
+                    .styled(.body)
+                    .foregroundColor(.ink3)
+                dot
+                Text(ImportedWorkoutEnergy.detail(w))
+                    .styled(.monoXS)
+                    .foregroundColor(.ink3)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 14)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("history-workout-\(w.id)")
         .overlay(alignment: .bottom) {
             if !isLast {
                 Rectangle().fill(Color.lineSoft).frame(height: 0.5)
