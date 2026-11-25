@@ -316,6 +316,41 @@ final class PatternEngineTests: XCTestCase {
         XCTAssertEqual(after.suggestionDecisions.map(\.accepted), [true])
     }
 
+    func test_prune_keepsOldAcceptedStopWhileSunk() {
+        let old = decision("droppedExercise:walking lunge", daysAgo: 27 * 7)
+        let sunk = ["Walking Lunge": AthleteState.affinitySinkThreshold]
+        let kept = SuggestionDecision.prune([old], affinities: sunk, now: now)
+        XCTAssertEqual(kept, [old])
+        XCTAssertEqual(PatternEngine.stoppedExercises(decisions: kept, affinities: sunk).map(\.name),
+                       ["Walking Lunge"])
+    }
+
+    func test_prune_dropsOldStopOnceUnsunkAndOldDismissOrOtherRule() {
+        let sunk = ["Walking Lunge": AthleteState.affinitySinkThreshold]
+        let old = 27.0 * 7
+        XCTAssertTrue(SuggestionDecision.prune([decision("droppedExercise:walking lunge", daysAgo: old)],
+                                               affinities: ["Walking Lunge": AthleteState.affinitySinkThreshold + 1],
+                                               now: now).isEmpty)
+        XCTAssertTrue(SuggestionDecision.prune([decision("droppedExercise:walking lunge", daysAgo: old)],
+                                               now: now).isEmpty)
+        XCTAssertTrue(SuggestionDecision.prune([decision("droppedExercise:walking lunge", accepted: false, daysAgo: old)],
+                                               affinities: sunk, now: now).isEmpty)
+        XCTAssertTrue(SuggestionDecision.prune([decision("sessionLength", daysAgo: old)],
+                                               affinities: sunk, now: now).isEmpty)
+    }
+
+    func test_record_keepsOldStopForSunkExercise() {
+        let r = rig()
+        let old = decision("droppedExercise:walking lunge", daysAgo: 27 * 7)
+        r.memory.update {
+            $0.exerciseAffinities = ["Walking Lunge": AthleteState.affinitySinkThreshold]
+            $0.suggestionDecisions = [old]
+        }
+        r.plan.dismissSuggestion(suggestion(.setSessionMinutes(45), id: "sessionLength"), now: now)
+        XCTAssertEqual(r.memory.memory.suggestionDecisions.map(\.suggestionId),
+                       ["droppedExercise:walking lunge", "sessionLength"])
+    }
+
     func test_decisionsRoundTripThroughMemoryCoding() throws {
         var m = TrainingMemory()
         m.suggestionDecisions = [SuggestionDecision(suggestionId: "x", accepted: true, at: now)]

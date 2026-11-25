@@ -63,7 +63,8 @@ extension PlanStore {
     private func record(_ s: Suggestion, accepted: Bool, now: Date) {
         memoryStore?.update { m in
             m.suggestionDecisions.append(SuggestionDecision(suggestionId: s.id, accepted: accepted, at: now))
-            m.suggestionDecisions = SuggestionDecision.prune(m.suggestionDecisions, now: now)
+            m.suggestionDecisions = SuggestionDecision.prune(m.suggestionDecisions,
+                                                             affinities: m.exerciseAffinities, now: now)
         }
     }
 }

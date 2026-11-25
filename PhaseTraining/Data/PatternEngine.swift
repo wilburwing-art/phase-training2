@@ -57,10 +57,23 @@ struct SuggestionDecision: Codable, Hashable {
     var accepted: Bool
     var at: Date
 
-    /// 26 weeks, the same window as weeklyCheckIns.
-    static func prune(_ decisions: [SuggestionDecision], now: Date = Date()) -> [SuggestionDecision] {
+    /// 26 weeks, the same window as weeklyCheckIns. An accepted
+    /// `droppedExercise:` stop outlives the window while its exercise is
+    /// still sunk in `affinities`: it is the row
+    /// `PatternEngine.stoppedExercises` lists for undo.
+    static func prune(_ decisions: [SuggestionDecision],
+                      affinities: [String: Int] = [:],
+                      now: Date = Date()) -> [SuggestionDecision] {
         let cutoff = now.addingTimeInterval(-26 * 7 * 86_400)
-        return decisions.filter { $0.at >= cutoff }
+        let prefix = "\(SuggestionRule.droppedExercise.rawValue):"
+        let folded = AthleteState.lowercasedAffinities(affinities)
+        return decisions.filter { d in
+            if d.at >= cutoff { return true }
+            guard d.accepted, d.suggestionId.hasPrefix(prefix) else { return false }
+            let subject = String(d.suggestionId.dropFirst(prefix.count))
+            guard let score = folded[subject] else { return false }
+            return score <= AthleteState.affinitySinkThreshold
+        }
     }
 }
 
