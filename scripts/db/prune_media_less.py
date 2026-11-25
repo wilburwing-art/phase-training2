@@ -79,7 +79,6 @@ def main() -> int:
         "exercise_equipment": ["exercise_id"],
         "exercise_muscles": ["exercise_id"],
         "exercise_movement_patterns": ["exercise_id"],
-        "exercise_phases": ["exercise_id"],
         "exercise_injury_relevance": ["exercise_id"],
         "exercise_sport_relevance": ["exercise_id"],
         "exercise_substitutions": ["exercise_id", "substitute_id"],

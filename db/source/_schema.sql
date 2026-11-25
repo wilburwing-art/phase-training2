@@ -64,14 +64,6 @@ CREATE TABLE exercise_muscles (
   PRIMARY KEY (exercise_id, muscle_group_id)
 );
 
-CREATE TABLE exercise_phases (
-  exercise_id     INTEGER NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,
-  phase           TEXT NOT NULL CHECK (phase IN ('off_season','base','build','peak','race','recovery','maintenance')),
-  priority        TEXT CHECK (priority IN ('primary','supplementary','optional')),
-  volume_guidance TEXT,
-  PRIMARY KEY (exercise_id, phase)
-);
-
 CREATE TABLE exercise_sport_relevance (
   exercise_id                INTEGER NOT NULL REFERENCES exercises(id) ON DELETE CASCADE,
   sport_id                   INTEGER NOT NULL REFERENCES sport_categories(id) ON DELETE CASCADE,

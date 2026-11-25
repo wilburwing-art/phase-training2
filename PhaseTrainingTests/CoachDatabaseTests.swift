@@ -2,6 +2,7 @@
 // directly, starting with the prehab and rehab list on the injury card
 // (backlog 2026-11c 6.4).
 
+import SQLite3
 import XCTest
 @testable import PhaseTraining
 
@@ -166,5 +167,26 @@ final class CoachDatabaseTests: XCTestCase {
     func test_unlocks_dumbbellsAddMoreThanAWeightVest() {
         let u = Equipment.unlocks()
         XCTAssertGreaterThan(u.added[.dumbbells] ?? 0, u.added[.weightVest] ?? 0)
+    }
+
+    // MARK: - Dropped tables (6.9)
+
+    func test_bundledCatalog_holdsNoExercisePhasesTable() throws {
+        let path = try XCTUnwrap(Bundle.main.path(forResource: "coach", ofType: "db"))
+        var handle: OpaquePointer?
+        XCTAssertEqual(sqlite3_open_v2(path, &handle, SQLITE_OPEN_READONLY, nil), SQLITE_OK)
+        defer { sqlite3_close(handle) }
+        var stmt: OpaquePointer?
+        XCTAssertEqual(sqlite3_prepare_v2(handle,
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?", -1, &stmt, nil), SQLITE_OK)
+        defer { sqlite3_finalize(stmt) }
+        func tableCount(_ name: String) -> Int32 {
+            sqlite3_reset(stmt)
+            sqlite3_bind_text(stmt, 1, name, -1, unsafeBitCast(-1, to: sqlite3_destructor_type.self))
+            XCTAssertEqual(sqlite3_step(stmt), SQLITE_ROW)
+            return sqlite3_column_int(stmt, 0)
+        }
+        XCTAssertEqual(tableCount("exercises"), 1, "the probe cannot see the catalog")
+        XCTAssertEqual(tableCount("exercise_phases"), 0)
     }
 }

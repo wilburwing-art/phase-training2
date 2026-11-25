@@ -40,7 +40,6 @@ TABLES = [
     # Exercise records
     "exercises",
     "exercise_aliases",
-    "exercise_phases",
     # Exercise relations
     "exercise_equipment",
     "exercise_muscles",

@@ -12,11 +12,11 @@ All `exercise_*` join tables and `routine_exercises` declare `ON DELETE CASCADE`
 
 ```
 exercise_aliases, exercise_equipment, exercise_injury_relevance,
-exercise_movement_patterns, exercise_muscles, exercise_phases,
+exercise_movement_patterns, exercise_muscles,
 exercise_sport_relevance, exercise_substitutions, routine_exercises
 ```
 
-So `DELETE FROM exercises WHERE …` automatically drops every dependent row in those nine tables. You do NOT need to delete from them explicitly. The only post-step is sweeping routines that have zero remaining exercises.
+So `DELETE FROM exercises WHERE …` automatically drops every dependent row in those eight tables. You do NOT need to delete from them explicitly. The only post-step is sweeping routines that have zero remaining exercises.
 
 ## Recipe
 

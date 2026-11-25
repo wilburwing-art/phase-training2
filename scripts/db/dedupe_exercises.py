@@ -52,7 +52,6 @@ RENAMES: dict[int, dict] = {
 # Format: (json_filename, [list-of-exercise-fk-columns], [unique-key-columns])
 RELATED: list[tuple[str, list[str], list[str] | None]] = [
     ("exercise_aliases",            ["exercise_id"], ["exercise_id", "alias"]),
-    ("exercise_phases",             ["exercise_id"], ["exercise_id", "phase"]),
     ("exercise_equipment",          ["exercise_id"], ["exercise_id", "equipment_id"]),
     ("exercise_muscles",            ["exercise_id"], ["exercise_id", "muscle_group_id", "role"]),
     ("exercise_movement_patterns",  ["exercise_id"], ["exercise_id", "movement_pattern_id"]),
