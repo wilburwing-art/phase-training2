@@ -31,8 +31,10 @@ on:
         type: boolean
         default: false
 
+# The nightly run gets its own group. In a shared group a late cron start
+# cancelled the push run on main mid-UI-suite (run 44583334374, 2026-11-19).
 concurrency:
-  group: test-${{ github.ref }}
+  group: test-${{ github.ref }}-${{ github.event_name == 'schedule' && 'nightly' || 'push' }}
   cancel-in-progress: true
 
 jobs:

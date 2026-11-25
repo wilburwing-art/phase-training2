@@ -40,14 +40,15 @@ A `pages-build-deployment` failure is red too: read
 - failure: that failure is this session's item.
 - cancelled: read `gh run view <id> --json jobs`. If a job ran to its
   limit (30 min unit, 45 min per UI shard), that timeout is this session's
-  item. If no job hit its limit, a scheduled run on the same ref cancelled
-  it (shared concurrency group): run `gh run rerun <id>` and wait on it as
+  item. If no job hit its limit, a workflow_dispatch run on main or a
+  hand cancel stopped it: run `gh run rerun <id>` and wait on it as
   in_progress.
 - success: pick from the queue.
 A docs-only push starts no run, so the newest push run belongs to the
-newest code commit. Every push cancels the run before it on main, push or
-schedule (`cancel-in-progress` in test.yml), which is why only the newest
-push run counts.
+newest code commit. Every push cancels the push run before it on main
+(`cancel-in-progress` in test.yml), which is why only the newest push run
+counts. Nightly runs sit in their own concurrency group and cancel no
+push run (11e 1.11).
 One backlog item per session. Pick the item from docs/QUEUE.md:
 1. The first item under Pinned that names no owner decision, device
    action or entitlement still owed, and no open prerequisite.
