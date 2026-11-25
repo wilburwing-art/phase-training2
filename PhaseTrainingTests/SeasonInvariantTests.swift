@@ -304,7 +304,8 @@ final class SeasonInvariantTests: XCTestCase {
         }
         let equipment: [(String, [Equipment])] = [
             ("gym", [.fullGym]), ("homebar", [.dumbbells, .pullUpBar, .bands]), ("bw", [.bodyweight])]
-        typealias Week = (ids: Set<Int>, accessories: [(id: Int, demand: Demand, session: Set<Int>, pool: [SportMovement])])
+        typealias Week = (ids: Set<Int>, accessories: [(id: Int, demand: Demand, session: Set<Int>, pool: [SportMovement])],
+                          deload: Bool)
         var out: [WeekPair] = []
         for s in sports { for p in SeasonPhase.allCases { for e in ExperienceLevel.allCases {
             for eq in equipment { for days in [2, 3, 4] { for week in 1...4 {
@@ -346,10 +347,14 @@ final class SeasonInvariantTests: XCTestCase {
                             acc.append((x.exerciseId, d, session, pool))
                         }
                     }
-                    return ids.isEmpty ? nil : (ids, acc)
+                    let deload = SportSeasonGenerator.cycleStatus(athlete).state == .deload
+                    return ids.isEmpty ? nil : (ids, acc, deload)
                 }
+                // A deload week keeps the week before's accessories on purpose
+                // (11e 1.7) and `GeneratorWeekInvariantTests` holds that, so
+                // the rotation checks here cover build weeks only.
                 guard let a = run(week: week, recent: []), let b = run(week: week + 1, recent: a.ids),
-                      !b.accessories.isEmpty else { continue }
+                      !b.deload, !b.accessories.isEmpty else { continue }
                 out.append(WeekPair(
                     cell: "\(s)/\(p.rawValue)/\(e.rawValue)/\(eq.0)/\(days)lift/wk\(week)->\(week + 1)",
                     sport: s, tier: eq.0, phase: p, accessories: b.accessories, weekN: a.ids))
