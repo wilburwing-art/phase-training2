@@ -495,6 +495,7 @@ struct Sport: Codable, Hashable, Identifiable {
         let normalized = renamedSlugs[dashed] ?? dashed
         if let known = catalog.first(where: { $0.slug == normalized }) { return known }
         if let known = catalog.first(where: { $0.slug == raw }) { return known }
+        if let known = SportPickerCatalog.sport(slug: normalized) { return known }
         return Sport(slug: normalized, name: raw.replacingOccurrences(of: "_", with: " ")
                                                 .replacingOccurrences(of: "-", with: " ")
                                                 .capitalized)
@@ -505,7 +506,10 @@ struct Sport: Codable, Hashable, Identifiable {
         try c.encode(slug)
     }
 
-    /// Curated subset of coach.db sport_categories — the ones onboarding offers.
+    /// Display-name override list and the source for non-picker callers
+    /// (`WeekDayEventSheets`, `PhaseTrainingApp` seeding, previews). The
+    /// onboarding and Profile pickers read `SportPickerCatalog`, which takes
+    /// the name from here when the slug is listed and from coach.db otherwise.
     /// Slugs match `coach.db` `sport_categories.slug` exactly so the Planner can
     /// join on it (`SportCatalogSlugTests` fails on any drift). "general-fitness"
     /// is a real row (755) with no sport-relevance tags on purpose: it is the

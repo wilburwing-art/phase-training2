@@ -497,6 +497,27 @@ final class CoachDatabase {
         return out
     } }
 
+    /// Every sport_categories row with its parent slug, ordered by
+    /// `sort_order, name`. SportPickerCatalog groups these into sections.
+    func sportCategoryRows() -> [(slug: String, name: String, parentSlug: String?, sortOrder: Int)] { withLock {
+        guard let db else { return [] }
+        let sql = """
+        SELECT c.slug, c.name, p.slug, COALESCE(c.sort_order, 0)
+        FROM sport_categories c
+        LEFT JOIN sport_categories p ON p.id = c.parent_id
+        ORDER BY COALESCE(c.sort_order, 0), c.name
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        var out: [(slug: String, name: String, parentSlug: String?, sortOrder: Int)] = []
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            guard let slug = text(stmt, 0), let name = text(stmt, 1) else { continue }
+            out.append((slug, name, text(stmt, 2), Int(sqlite3_column_int64(stmt, 3))))
+        }
+        return out
+    } }
+
     /// Total catalog size. The Library eyebrow only needs the number, and was
     /// materializing all 582 rows (21 columns each, fully decoded) to call
     /// `.count` on the array.

@@ -10,6 +10,7 @@ import SwiftUI
 struct SportsEditorSheet: View {
     @EnvironmentObject private var store: MemoryStore
     @Environment(\.dismiss) private var dismiss
+    @State private var searchText = ""
 
     var body: some View {
         NavigationStack {
@@ -17,16 +18,26 @@ struct SportsEditorSheet: View {
                 Color.bg.ignoresSafeArea()
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("SPORTS")
-                            .styled(.micro)
-                            .foregroundStyle(Color.ink3)
-                        WrappingFlow(spacing: 8) {
-                            ForEach(Sport.catalog.filter { SportCatalog.isPlannable($0.slug) }) { sport in
-                                OnboardingChip(
-                                    label: sport.name,
-                                    selected: store.memory.sports.contains(sport),
-                                    action: { toggleSport(sport) }
-                                )
+                        SportSearchField(text: $searchText)
+                        let sections = SportPickerCatalog.sections(matching: searchText)
+                        if sections.isEmpty {
+                            SportPickerEmptyLine()
+                        }
+                        ForEach(sections) { section in
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text(section.root.name.uppercased())
+                                    .styled(.micro)
+                                    .foregroundStyle(Color.ink3)
+                                    .accessibilityAddTraits(.isHeader)
+                                WrappingFlow(spacing: 8) {
+                                    ForEach(section.sports) { sport in
+                                        OnboardingChip(
+                                            label: sport.name,
+                                            selected: store.memory.sports.contains(sport),
+                                            action: { toggleSport(sport) }
+                                        )
+                                    }
+                                }
                             }
                         }
                         if store.memory.sports.count == 1 {

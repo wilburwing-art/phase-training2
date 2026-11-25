@@ -9,6 +9,7 @@ struct OnboardingSportsScreen: View {
     @Binding var draft: TrainingMemory
     let onNext: () -> Void
     let onBack: () -> Void
+    @State private var searchText = ""
 
     var body: some View {
         OnboardingScaffold(
@@ -26,15 +27,25 @@ struct OnboardingSportsScreen: View {
             onBack: onBack
         ) {
             VStack(alignment: .leading, spacing: 16) {
-                OnboardingSectionLabel(text: "Sports")
-                WrappingFlow(spacing: 8) {
-                    ForEach(Sport.catalog.filter { SportCatalog.isPlannable($0.slug) }) { sport in
-                        OnboardingChip(
-                            label: sport.name,
-                            selected: draft.sports.contains(sport),
-                            action: { toggle(sport) },
-                            a11yId: "onboarding-sport-\(sport.slug)"
-                        )
+                SportSearchField(text: $searchText)
+                let sections = SportPickerCatalog.sections(matching: searchText)
+                if sections.isEmpty {
+                    SportPickerEmptyLine()
+                }
+                ForEach(sections) { section in
+                    VStack(alignment: .leading, spacing: 10) {
+                        OnboardingSectionLabel(text: section.root.name)
+                            .accessibilityAddTraits(.isHeader)
+                        WrappingFlow(spacing: 8) {
+                            ForEach(section.sports) { sport in
+                                OnboardingChip(
+                                    label: sport.name,
+                                    selected: draft.sports.contains(sport),
+                                    action: { toggle(sport) },
+                                    a11yId: "onboarding-sport-\(sport.slug)"
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -69,6 +80,40 @@ struct OnboardingSportsScreen: View {
             draft.sports.append(sport)
             if draft.primarySport == nil { draft.primarySport = sport }
         }
+    }
+}
+
+// MARK: - Search field and empty line (shared with SportsEditorSheet)
+
+struct SportSearchField: View {
+    @Binding var text: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass")
+                .scaledSystemFont(14, within: 42)
+                .foregroundStyle(Color.ink3)
+            TextField("", text: $text,
+                      prompt: Text("Search sports").foregroundColor(Color.ink3))
+                .styled(.body)
+                .foregroundStyle(Color.ink)
+                .autocorrectionDisabled()
+                .textInputAutocapitalization(.never)
+                .accessibilityIdentifier("sport-search")
+        }
+        .padding(.horizontal, 14)
+        .frame(height: 42)
+        .background(Color.surface)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.lineStrong, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+struct SportPickerEmptyLine: View {
+    var body: some View {
+        Text("No sport matches. More are added as programs land.")
+            .styled(.body)
+            .foregroundStyle(Color.ink3)
     }
 }
 
