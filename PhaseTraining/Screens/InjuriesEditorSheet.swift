@@ -65,6 +65,7 @@ struct InjuriesEditorSheet: View {
             }
             .sheet(isPresented: $presentingInjuryPicker) {
                 InjuryPickerSheet(
+                    sportSlugs: Set(store.memory.sports.map(\.slug)),
                     initialSelection: selectedSlugs,
                     onCommit: { newSlugs in commitInjuries(newSlugs) }
                 )

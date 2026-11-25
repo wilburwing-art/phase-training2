@@ -57,3 +57,48 @@ struct InjurySupportExercise: Hashable {
     let name: String
     let role: Role
 }
+
+/// One sport's typical recovery from coach.db `sport_recovery_profiles`.
+/// `ideal_supplement_timing` is left out on purpose (backlog 11c 6.7).
+struct SportRecoveryProfile: Hashable {
+    let sportSlug: String
+    let typicalRecoveryHours: Int?
+    /// Raw tokens, e.g. "heavy_squat".
+    let avoidBeforeSession: [String]
+
+    /// "heavy_squat" -> "Heavy squat"; the word "cns" renders "CNS".
+    static func label(forToken token: String) -> String {
+        let words = token.split(separator: "_").map { $0 == "cns" ? "CNS" : String($0) }
+        guard let first = words.first else { return token }
+        let head = first == "CNS" ? first : first.prefix(1).uppercased() + first.dropFirst()
+        return ([head] + words.dropFirst()).joined(separator: " ")
+    }
+
+    var avoidLabels: [String] { avoidBeforeSession.map(Self.label(forToken:)) }
+}
+
+/// How often an injury shows up in one sport, from `injury_sport_prevalence`.
+struct InjuryPrevalence: Hashable {
+    enum Level: String, CaseIterable {
+        case common, occasional, rare
+
+        var label: String {
+            switch self {
+            case .common: return "Common"
+            case .occasional: return "Occasional"
+            case .rare: return "Rare"
+            }
+        }
+
+        var order: Int {
+            switch self {
+            case .common: return 0
+            case .occasional: return 1
+            case .rare: return 2
+            }
+        }
+    }
+
+    let sportSlug: String
+    let level: Level
+}

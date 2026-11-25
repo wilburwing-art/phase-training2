@@ -94,4 +94,47 @@ final class CoachDatabaseTests: XCTestCase {
         XCTAssertGreaterThan(all.filter { $0.homeVariation != nil }.count, 400)
         XCTAssertTrue(all.allSatisfy { !$0.isEmpty })
     }
+
+    // Backlog 2026-11c 6.7
+    func test_sportRecovery_and_prevalence_emptySlugSetReturnsEmpty() {
+        XCTAssertTrue(CoachDatabase.shared.sportRecoveryProfiles(forSportSlugs: []).isEmpty)
+        XCTAssertTrue(CoachDatabase.shared.injuryPrevalence(forSportSlugs: []).isEmpty)
+    }
+
+    func test_sportRecovery_runningReadsHoursAndTokens() throws {
+        let all = CoachDatabase.shared.sportRecoveryProfiles(forSportSlugs: ["running"])
+        let p = try XCTUnwrap(all["running"])
+        XCTAssertEqual(p.typicalRecoveryHours, 24)
+        XCTAssertEqual(p.avoidBeforeSession, ["heavy_squat", "heavy_deadlift", "high_volume_plyo"])
+        XCTAssertEqual(p.avoidLabels.first, "Heavy squat")
+    }
+
+    func test_sportRecovery_tokenLabels() {
+        XCTAssertEqual(SportRecoveryProfile.label(forToken: "high_cns"), "High CNS")
+        XCTAssertEqual(SportRecoveryProfile.label(forToken: "cns"), "CNS")
+    }
+
+    func test_sportRecovery_missingSlugsAreAbsent() {
+        let all = CoachDatabase.shared.sportRecoveryProfiles(
+            forSportSlugs: ["general-fitness", "not-a-sport", "running"])
+        XCTAssertNil(all["general-fitness"])
+        XCTAssertNil(all["not-a-sport"])
+        XCTAssertNotNil(all["running"])
+    }
+
+    func test_injuryPrevalence_runningAndClimbing() throws {
+        let all = CoachDatabase.shared.injuryPrevalence(forSportSlugs: ["running", "climbing"])
+        XCTAssertTrue(try XCTUnwrap(all["patellar-tendinopathy"])
+            .contains(InjuryPrevalence(sportSlug: "running", level: .common)))
+        XCTAssertTrue(try XCTUnwrap(all["finger-pulley"])
+            .contains(InjuryPrevalence(sportSlug: "climbing", level: .common)))
+        XCTAssertTrue(try XCTUnwrap(all["slap-tear"])
+            .contains(InjuryPrevalence(sportSlug: "climbing", level: .occasional)))
+        for rows in all.values {
+            let sorted = rows.sorted { ($0.level.order, $0.sportSlug) < ($1.level.order, $1.sportSlug) }
+            XCTAssertEqual(rows, sorted)
+        }
+        let known = Set(CoachDatabase.shared.listInjuries().map(\.slug))
+        XCTAssertTrue(Set(all.keys).isSubset(of: known))
+    }
 }

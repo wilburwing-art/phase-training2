@@ -17,12 +17,14 @@
 import SwiftUI
 
 struct InjuryPickerSheet: View {
+    let sportSlugs: Set<String>
     let initialSelection: Set<String>
     let onCommit: (Set<String>) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var selected: Set<String> = []
     @State private var searchText: String = ""
+    @State private var prevalenceByInjury: [String: [InjuryPrevalence]] = [:]
 
     private var grouped: [(region: String, items: [CommonInjury])] {
         let all = CoachDatabase.shared.listInjuries()
@@ -86,7 +88,12 @@ struct InjuryPickerSheet: View {
         }
         .presentationBackground(Color.bg)
         .preferredColorScheme(.dark)
-        .onAppear { selected = initialSelection }
+        .onAppear {
+            selected = initialSelection
+            if !sportSlugs.isEmpty {
+                prevalenceByInjury = CoachDatabase.shared.injuryPrevalence(forSportSlugs: sportSlugs)
+            }
+        }
     }
 
     // MARK: - Pieces
@@ -124,6 +131,16 @@ struct InjuryPickerSheet: View {
         }
     }
 
+    /// "Common in Running, Climbing · Occasional in Golf". Rare is dropped.
+    private func prevalenceHint(for injury: CommonInjury) -> String? {
+        guard let rows = prevalenceByInjury[injury.slug] else { return nil }
+        let parts = [InjuryPrevalence.Level.common, .occasional].compactMap { level -> String? in
+            let names = rows.filter { $0.level == level }.map { Sport.resolve(slug: $0.sportSlug).name }
+            return names.isEmpty ? nil : "\(level.label) in \(names.joined(separator: ", "))"
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
     private func row(_ injury: CommonInjury) -> some View {
         let isSelected = selected.contains(injury.slug)
         return Button {
@@ -134,10 +151,18 @@ struct InjuryPickerSheet: View {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .scaledSystemFont(18)
                     .foregroundStyle(isSelected ? Color.accent : Color.ink3)
-                Text(injury.name)
-                    .styled(.body)
-                    .foregroundStyle(Color.ink)
-                    .multilineTextAlignment(.leading)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(injury.name)
+                        .styled(.body)
+                        .foregroundStyle(Color.ink)
+                        .multilineTextAlignment(.leading)
+                    if let hint = prevalenceHint(for: injury) {
+                        Text(hint)
+                            .font(.monoXS)
+                            .foregroundStyle(Color.ink3)
+                            .multilineTextAlignment(.leading)
+                    }
+                }
                 Spacer(minLength: 6)
             }
             .padding(12)

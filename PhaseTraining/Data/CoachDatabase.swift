@@ -1260,6 +1260,70 @@ final class CoachDatabase {
         return out
     } }
 
+    /// Typical recovery hours and pre-session cautions for each given sport
+    /// slug, from `sport_recovery_profiles`. Slugs with no row, or a row with
+    /// neither hours nor tokens, are absent.
+    func sportRecoveryProfiles(forSportSlugs slugs: Set<String>) -> [String: SportRecoveryProfile] { withLock {
+        guard !slugs.isEmpty, let db else { return [:] }
+        let placeholders = slugs.map { _ in "?" }.joined(separator: ",")
+        let sql = """
+        SELECT sc.slug, srp.typical_recovery_hours, srp.avoid_before_session
+        FROM sport_recovery_profiles srp
+        JOIN sport_categories sc ON sc.id = srp.sport_id
+        WHERE sc.slug IN (\(placeholders))
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [:] }
+        defer { sqlite3_finalize(stmt) }
+        for (i, slug) in slugs.enumerated() {
+            sqlite3_bind_text(stmt, Int32(i + 1), slug, -1, SQLITE_TRANSIENT)
+        }
+        var out: [String: SportRecoveryProfile] = [:]
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            guard let slug = text(stmt, 0), !slug.isEmpty else { continue }
+            let hours: Int? = sqlite3_column_type(stmt, 1) == SQLITE_NULL
+                ? nil : Int(sqlite3_column_int64(stmt, 1))
+            let tokens = text(stmt, 2)
+                .flatMap { $0.data(using: .utf8) }
+                .flatMap { try? JSONDecoder().decode([String].self, from: $0) } ?? []
+            if hours == nil && tokens.isEmpty { continue }
+            out[slug] = SportRecoveryProfile(sportSlug: slug, typicalRecoveryHours: hours,
+                                             avoidBeforeSession: tokens)
+        }
+        return out
+    } }
+
+    /// Per-injury prevalence in the given sports, keyed by injury slug, from
+    /// `injury_sport_prevalence`. Each list is sorted by level, then sport slug.
+    func injuryPrevalence(forSportSlugs slugs: Set<String>) -> [String: [InjuryPrevalence]] { withLock {
+        guard !slugs.isEmpty, let db else { return [:] }
+        let placeholders = slugs.map { _ in "?" }.joined(separator: ",")
+        let sql = """
+        SELECT ci.slug, sc.slug, isp.prevalence
+        FROM injury_sport_prevalence isp
+        JOIN common_injuries ci ON ci.id = isp.injury_id
+        JOIN sport_categories sc ON sc.id = isp.sport_id
+        WHERE sc.slug IN (\(placeholders))
+        """
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &stmt, nil) == SQLITE_OK else { return [:] }
+        defer { sqlite3_finalize(stmt) }
+        for (i, slug) in slugs.enumerated() {
+            sqlite3_bind_text(stmt, Int32(i + 1), slug, -1, SQLITE_TRANSIENT)
+        }
+        var out: [String: [InjuryPrevalence]] = [:]
+        while sqlite3_step(stmt) == SQLITE_ROW {
+            guard let injury = text(stmt, 0), !injury.isEmpty,
+                  let sport = text(stmt, 1), !sport.isEmpty,
+                  let level = InjuryPrevalence.Level(rawValue: text(stmt, 2) ?? "") else { continue }
+            out[injury, default: []].append(InjuryPrevalence(sportSlug: sport, level: level))
+        }
+        for key in out.keys {
+            out[key]?.sort { ($0.level.order, $0.sportSlug) < ($1.level.order, $1.sportSlug) }
+        }
+        return out
+    } }
+
     /// Every muscle_groups row as (slug, name) pairs. Filters out container
     /// rollups (`full-body`, `upper-body`, `lower-body`, `arms`, `core`,
     /// `back`) — the Recovery view wants leaf muscles, not the buckets the

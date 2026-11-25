@@ -52,6 +52,19 @@ struct SportsEditorSheet: View {
                                 }
                             }
                         }
+                        if !recoveryProfiles.isEmpty {
+                            Text("RECOVERY")
+                                .styled(.micro)
+                                .foregroundStyle(Color.ink3)
+                                .padding(.top, 8)
+                            VStack(spacing: 8) {
+                                ForEach(store.memory.sports) { sport in
+                                    if let profile = recoveryProfiles[sport.slug] {
+                                        recoveryCard(sport: sport, profile: profile)
+                                    }
+                                }
+                            }
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 18)
@@ -70,6 +83,37 @@ struct SportsEditorSheet: View {
         .presentationDetents([.medium, .large])
         .presentationBackground(Color.bg)
         .preferredColorScheme(.dark)
+    }
+
+    private var recoveryProfiles: [String: SportRecoveryProfile] {
+        CoachDatabase.shared.sportRecoveryProfiles(
+            forSportSlugs: Set(store.memory.sports.map(\.slug)))
+    }
+
+    private func recoveryCard(sport: Sport, profile: SportRecoveryProfile) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(sport.name)
+                .styled(.body)
+                .foregroundStyle(Color.ink)
+            if let hours = profile.typicalRecoveryHours {
+                Text("Typically recovers in \(hours) h")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink2)
+            }
+            if !profile.avoidLabels.isEmpty {
+                Text("Go easy before a session: \(profile.avoidLabels.joined(separator: ", "))")
+                    .font(.monoXS)
+                    .foregroundStyle(Color.ink3)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.surface)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.line, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("sport-recovery-\(sport.slug)")
     }
 
     /// Same toggle behavior as the inline ProfileScreen version: clears
