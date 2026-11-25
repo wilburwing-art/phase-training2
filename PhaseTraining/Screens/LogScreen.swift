@@ -140,6 +140,7 @@ struct LogScreen: View {
         .selectsAllOnFocusInNumberFields()
         .onAppear(perform: loadIfNeeded)
         .task { await voice.prepare() }
+        .task { await openPickerForEmptySession() }
         .onDisappear { voice.cancel() }
         .onChange(of: workout.rest) { _, _ in
             // Lock Screen / Dynamic Island rest timer. One report covers start,
@@ -684,11 +685,23 @@ struct LogScreen: View {
 
     // MARK: - Loading
 
+    /// How long the empty-session picker waits after the screen appears.
+    /// TodayTab fades into Log over 0.18 s. A sheet presented inside that
+    /// fade left the app without an idle event loop for 60 s on CI (run
+    /// 45588713411, FreestyleWorkoutUITests), so the sheet opens after it.
+    static let emptySessionPickerDelay: Duration = .milliseconds(300)
+
+    /// A freestyle session starts empty: open the picker so the first
+    /// exercise is one tap away.
+    private func openPickerForEmptySession() async {
+        guard workout.session.exercises.isEmpty else { return }
+        try? await Task.sleep(for: Self.emptySessionPickerDelay)
+        guard !Task.isCancelled, workout.session.exercises.isEmpty else { return }
+        addingExercise = true
+    }
+
     private func loadIfNeeded() {
         guard !didLoad else { return }
-        // A freestyle session starts empty: open the picker so the first
-        // exercise is one tap away.
-        if workout.session.exercises.isEmpty { addingExercise = true }
         // UI-test hook: --ui-test-rest-seconds=N clamps every exercise's rest
         // so timer-expiry tests can fire in ~2s instead of 60-90s. Has no
         // effect outside test runs.
