@@ -88,7 +88,16 @@ struct HoldTimerSheet: View {
             .flatMap { Int($0.dropFirst(prefix.count)) }
     }()
 
+    /// UI-test hook: --ui-test-hang-seconds=N overrides the hang phase alone,
+    /// so a test can keep HOLD on screen longer than XCUITest's poll interval.
+    private static let uiTestHangSeconds: Int? = {
+        let prefix = "--ui-test-hang-seconds="
+        return ProcessInfo.processInfo.arguments.first { $0.hasPrefix(prefix) }
+            .flatMap { Int($0.dropFirst(prefix.count)) }
+    }()
+
     private func seconds(_ phase: Phase) -> Int {
+        if phase == .hang, let s = Self.uiTestHangSeconds { return s }
         if let s = Self.uiTestSeconds { return s }
         switch phase {
         case .ready: return Self.getReadySeconds

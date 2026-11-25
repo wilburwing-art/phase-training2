@@ -11,7 +11,8 @@ final class HoldTimerUITests: XCTestCase {
     func test_holdTimerRunsASetAndMarksItDone() {
         let app = XCUIApplication()
         app.launchArguments += ["--ui-test-onboarded", "--ui-test-reset", "--seed-hang-demo",
-                                "--ui-test-hold-seconds=1", "--ui-test-suppress-auto-rest"]
+                                "--ui-test-hold-seconds=1", "--ui-test-hang-seconds=5",
+                                "--ui-test-suppress-auto-rest"]
         app.launch()
         XCTAssertTrue(app.buttons["log-finish"].waitForExistence(timeout: 8))
 
@@ -24,13 +25,14 @@ final class HoldTimerUITests: XCTestCase {
         let start = app.buttons["hold-timer-start"]
         XCTAssertTrue(start.waitForExistence(timeout: 5))
         start.tap()
-        XCTAssertTrue(app.staticTexts["HOLD"].waitForExistence(timeout: 4), "get ready hands over to the hold")
+        XCTAssertTrue(app.staticTexts["HOLD"].waitForExistence(timeout: 6), "get ready hands over to the hold")
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = "hold-timer-hang"
         shot.lifetime = .keepAlways
         add(shot)
+        // The 5 s hang runs out before Mark done appears.
         let done = app.buttons["hold-timer-mark-done"]
-        XCTAssertTrue(done.waitForExistence(timeout: 6))
+        XCTAssertTrue(done.waitForExistence(timeout: 12))
         done.tap()
 
         XCTAssertTrue(app.buttons["log-finish"].waitForExistence(timeout: 5))

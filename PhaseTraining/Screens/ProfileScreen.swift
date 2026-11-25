@@ -204,8 +204,12 @@ struct ProfileScreen: View {
                                     action: { presentingHealthImports = true })
                         // Nothing is for sale until a gate closes or App Store
                         // products load; before that the paywall is a dead end.
+                        // --ui-test-show-subscription shows the row before
+                        // products load, so the paywall test does not depend
+                        // on StoreKit test mode timing (FB22237318).
                         if CoachEntitlement.proRequired || SupportEntitlement.proRequired
-                            || !subStore.products.isEmpty {
+                            || !subStore.products.isEmpty
+                            || ProcessInfo.processInfo.arguments.contains("--ui-test-show-subscription") {
                             SettingsRow(label: "Subscription",
                                         value: subscriptionRowValue,
                                         icon: "sparkles",
