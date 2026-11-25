@@ -100,11 +100,16 @@ jobs:
             | xcbeautify --renderer github-actions
 
       - name: Upload xcresult on failure
-        if: failure()
+        # cancelled() covers the timeout-minutes cancel. xcbeautify prints
+        # nothing until the run ends, so the raw log's "Test Case ...
+        # started" lines are the only record of which suite stalled (11e 1.13).
+        if: failure() || cancelled()
         uses: actions/upload-artifact@v4
         with:
           name: UnitTestResults-${{ matrix.shard }}.xcresult
-          path: build/UnitTestResults.xcresult
+          path: |
+            build/UnitTestResults.xcresult
+            build/raw-unit-test.log
 
   ui-tests:
     runs-on: macos-26
@@ -276,7 +281,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload xcresult on failure
-        if: failure()
+        if: failure() || cancelled()
         uses: actions/upload-artifact@v4
         with:
           name: TestResults-${{ matrix.shard }}.xcresult
