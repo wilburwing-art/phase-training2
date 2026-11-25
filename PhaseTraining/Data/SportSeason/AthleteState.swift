@@ -75,6 +75,11 @@ struct AthleteState: Equatable {
     /// (SPEC `recentMovementIDs`). Threaded in by the caller; [] in eval.
     let recentMovementIDs: Set<Int>
 
+    /// Exercise ids this session served last week
+    /// (`GeneratorContext.weekBeforeLiftIds`). A deload week ranks them
+    /// first; [] skips that ranking.
+    var weekBeforeMovementIDs: Set<Int> = []
+
     /// Per-movement preference from swaps and "recommend more / less"
     /// (`TrainingMemory.exerciseAffinities`), keyed by LOWERCASED exercise name.
     /// Positive breaks ties inside the recency tier; <= `affinitySinkThreshold`

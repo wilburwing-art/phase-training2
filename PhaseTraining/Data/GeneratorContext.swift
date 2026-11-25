@@ -84,6 +84,24 @@ struct GeneratorContext: Equatable {
     /// Longest any load can stay unrecovered (60h × 1.75) is under five days.
     static let exposureWindowDays = 7.0
 
+    /// Exercise ids each lift session served last week, keyed by lift index.
+    /// A deload week ranks its session's ids first, so it lands on the
+    /// session the athlete was served after rotation (11e 1.14). Empty when
+    /// no snapshot of the week before exists.
+    var weekBeforeLiftIds: [Int: Set<Int>] = [:]
+
+    /// The lift sessions of `plan`, keyed by lift index (date order when a
+    /// day carries none).
+    static func liftIds(of plan: WeekPlan) -> [Int: Set<Int>] {
+        let lifts = plan.days.filter { $0.kind == .lift && $0.generatedWorkout != nil }
+            .sorted { $0.date < $1.date }
+        var out: [Int: Set<Int>] = [:]
+        for (i, d) in lifts.enumerated() {
+            out[d.liftIndex ?? i] = Set(d.generatedWorkout?.exercises.map(\.exerciseId) ?? [])
+        }
+        return out
+    }
+
     static let empty = GeneratorContext(
         priorBest: [:], recentSoreAreas: [],
         stagnantExercises: [],

@@ -103,13 +103,16 @@ final class GeneratorWeekInvariantTests: XCTestCase {
     }
 
     private func plan(_ c: Cell, routines: [BundledRoutineRow], affinities: Set<String> = [],
-                      recentlyPicked: Set<Int> = []) -> Week {
+                      recentlyPicked: Set<Int> = [], weekBefore: Week? = nil) -> Week {
         let m = memory(c, affinities: affinities)
         var cal = Calendar.current; cal.firstWeekday = 2
         var comps = DateComponents(); comps.year = 2026; comps.month = 11; comps.day = 9
         let monday = cal.date(from: comps)!
+        var context = GeneratorContext.empty
+        if let weekBefore { context.weekBeforeLiftIds = GeneratorContext.liftIds(of: weekBefore.plan) }
         return Week(cell: c, plan: Planner.generate(memory: m, routines: routines,
-                                                           recentlyPicked: recentlyPicked, today: monday))
+                                                    recentlyPicked: recentlyPicked, today: monday,
+                                                    context: context))
     }
 
     private static var cache: [Week]?
@@ -282,6 +285,40 @@ final class GeneratorWeekInvariantTests: XCTestCase {
     /// out (11e 1.7).
     func test_deloadWeekCutsSetsByOneShareUnderRotation() {
         assertDeloadBand(rotated: true)
+    }
+
+    /// In the app week N-1 was itself planned with week N-2's picks recent,
+    /// so rotation may have swapped some of its accessories. The deload week
+    /// must land on the session N-1 actually served, which `PlanStore` hands
+    /// it from the week before's snapshot (11e 1.14).
+    func test_deloadWeekRepeatsTheRotatedWeekBefore() {
+        let routines = CoachDatabase.shared.listRoutines()
+        let ids = { (w: Week) in Set(self.engineSessions(w).flatMap(\.exercises).map(\.exerciseId)) }
+        let all = { (w: Week) in Set(w.plan.days.compactMap(\.generatedWorkout).flatMap(\.exercises).map(\.exerciseId)) }
+        var checked = 0
+        var changed: [String] = []
+        for s in Self.sports { for (phase, cycle) in Self.deloadPhases {
+            for e in [ExperienceLevel.beginner, .intermediate, .advanced] {
+                func cell(_ wk: Int) -> Cell {
+                    Cell(sport: s, season: phase, exp: e, equipName: "gym", equip: [.fullGym],
+                         days: 4, minutes: 45, week: wk)
+                }
+                let twoBefore = plan(cell(cycle - 2), routines: routines)
+                let beforeWeek = plan(cell(cycle - 1), routines: routines, recentlyPicked: all(twoBefore))
+                let deloadWeek = plan(cell(cycle), routines: routines,
+                                      recentlyPicked: all(beforeWeek).union(all(twoBefore)),
+                                      weekBefore: beforeWeek)
+                guard !ids(beforeWeek).isEmpty else { continue }
+                checked += 1
+                let a = ids(beforeWeek), b = ids(deloadWeek)
+                if a != b {
+                    changed.append("[\(s)/\(phase.rawValue)/\(e.rawValue)] -\(a.subtracting(b).sorted()) +\(b.subtracting(a).sorted())")
+                }
+            }
+        } }
+        print("[GWI] deload after rotated week: \(changed.count) of \(checked) weeks changed movements")
+        XCTAssertGreaterThan(checked, 20, "only \(checked) cells had engine sessions")
+        XCTAssertTrue(changed.isEmpty, "\(changed.count) of \(checked) deload weeks serve other movements than the week before, first: \(changed.prefix(3))")
     }
 
     private func assertDeloadBand(rotated: Bool) {

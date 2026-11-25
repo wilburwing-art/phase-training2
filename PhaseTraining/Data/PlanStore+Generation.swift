@@ -222,7 +222,7 @@ extension PlanStore {
         // Imported strength history pools with native sessions in
         // ProvenStrength (priorBest).
         let importedSets = UserDatabase.shared.allImportedSets()
-        return GeneratorContext.from(
+        var context = GeneratorContext.from(
             sessions: sessionStore.savedSessions,
             soreness: memory.soreness,
             feedback: memory.feedback,
@@ -233,6 +233,14 @@ extension PlanStore {
             now: today,
             includeParkedSignals: includeParkedSignals
         )
+        // The week before's sessions, as last captured, for the deload week
+        // (11e 1.14). Only the calendar week right before this one counts.
+        let thisWeek = today.startOfTrainingWeek()
+        if let lastWeek = Calendar.current.date(byAdding: .day, value: -7, to: thisWeek),
+           let snap = pastPlans.first(where: { Calendar.current.isDate($0.weekStart, inSameDayAs: lastWeek) }) {
+            context.weekBeforeLiftIds = GeneratorContext.liftIds(of: snap.plan)
+        }
+        return context
     }
 
     /// Public seam: build the same GeneratorContext the auto-regen path uses,

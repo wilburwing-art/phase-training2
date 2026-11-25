@@ -360,6 +360,29 @@ final class PlanHistoryTests: XCTestCase {
         XCTAssertFalse(blob.contains("PAST WEEKS"),
                        "Snapshot of the current week should not appear in PAST WEEKS")
     }
+
+    // MARK: - Week-before sessions for the deload week (11e 1.14)
+
+    func test_generatorContext_carriesTheWeekBeforesLiftSessions() {
+        let store = freshStore()
+        store.sessionStore = SessionStore(defaults: UserDefaults(suiteName: "stub-\(UUID())")!)
+        var m = TrainingMemory()
+        let sport = Sport.catalog.first { $0.slug == "alpine-skiing" }!
+        m.primarySport = sport
+        m.sports = [sport]
+        m.equipment = [.fullGym]
+        m.liftDaysPerWeek = 3
+        let thisMonday = Date().startOfTrainingWeek()
+        let lastMonday = Calendar.current.date(byAdding: .day, value: -7, to: thisMonday)!
+        let lastWeek = store.generate(from: m, today: lastMonday)
+        let ids = GeneratorContext.liftIds(of: lastWeek)
+        XCTAssertFalse(ids.isEmpty, "last week planned no lift sessions")
+
+        XCTAssertEqual(store.makeGeneratorContext(memory: m, today: thisMonday).weekBeforeLiftIds, ids)
+        let inTwoWeeks = Calendar.current.date(byAdding: .day, value: 7, to: thisMonday)!
+        XCTAssertEqual(store.makeGeneratorContext(memory: m, today: inTwoWeeks).weekBeforeLiftIds, [:],
+                       "only the calendar week right before counts")
+    }
 }
 
 // MARK: - Past weeks, planned versus done

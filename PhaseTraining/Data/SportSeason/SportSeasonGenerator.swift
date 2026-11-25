@@ -109,6 +109,10 @@ enum SportSeasonGenerator {
         // The seed alone doesn't hold it: in the app last week's accessories
         // are in `recentMovementIDs`, so rotation would rank them below fresh
         // ones. A deload week skips the recency tier, as anchors do (11e 1.7).
+        // Last week was itself planned with older picks recent, so where
+        // rotation changed its accessories the seed lands elsewhere: the
+        // deload week ranks the movements its session served last week first
+        // (`weekBeforeMovementIDs`, 11e 1.14).
         let skipRecency = cycle.state == .deload
         // Anchor lifts are seeded by the mesocycle block, not the week, so the
         // same squat or press comes back in weeks 1 to 3 and the athlete can
@@ -250,8 +254,8 @@ enum SportSeasonGenerator {
                     // only movement the user dislikes is still served.
                     // Anchors skip the recency tier for the same reason they
                     // skip the weekly seed: last week's squat is this week's.
-                    let lt = rotationTier(lhs, athlete, anchor: isAnchor || skipRecency)
-                    let rt = rotationTier(rhs, athlete, anchor: isAnchor || skipRecency)
+                    let lt = rotationTier(lhs, athlete, anchor: isAnchor || skipRecency, deload: skipRecency)
+                    let rt = rotationTier(rhs, athlete, anchor: isAnchor || skipRecency, deload: skipRecency)
                     if lt != rt { return lt < rt }
                     if preferLowFatigue && lhs.fatigueCost != rhs.fatigueCost {
                         return lhs.fatigueCost < rhs.fatigueCost             // lighter first
@@ -336,8 +340,10 @@ enum SportSeasonGenerator {
                         // refilled with last week's movement while a fresh
                         // one sat in the pool (403 of 3,294 accessory repeats,
                         // 11c 3.8). Anchors skip it as in the slot fill.
-                        let lt = Self.rotationTier($0, athlete, anchor: skipRecency || anchorDemands.contains(demand))
-                        let rt = Self.rotationTier($1, athlete, anchor: skipRecency || anchorDemands.contains(demand))
+                        let lt = Self.rotationTier($0, athlete, anchor: skipRecency || anchorDemands.contains(demand),
+                                                   deload: skipRecency)
+                        let rt = Self.rotationTier($1, athlete, anchor: skipRecency || anchorDemands.contains(demand),
+                                                   deload: skipRecency)
                         if lt != rt { return lt < rt }
                         return djb2("\(tie)-backfill-\($0.exerciseId)") < djb2("\(tie)-backfill-\($1.exerciseId)")
                     }) {
@@ -810,8 +816,12 @@ enum SportSeasonGenerator {
 
     /// 0 fresh, 1 recently picked, 2 rejected by the user's affinity. An
     /// anchor is never "recent": it is meant to repeat inside its block.
-    static func rotationTier(_ m: SportMovement, _ athlete: AthleteState, anchor: Bool = false) -> Int {
+    static func rotationTier(_ m: SportMovement, _ athlete: AthleteState, anchor: Bool = false,
+                             deload: Bool = false) -> Int {
         if isRejected(m, athlete) { return 2 }
+        if deload && !athlete.weekBeforeMovementIDs.isEmpty {
+            return athlete.weekBeforeMovementIDs.contains(m.exerciseId) ? 0 : 1
+        }
         return !anchor && athlete.recentMovementIDs.contains(m.exerciseId) ? 1 : 0
     }
 

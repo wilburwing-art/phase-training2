@@ -115,13 +115,15 @@ enum WorkoutGenerator {
         func athlete() -> AthleteState {
             var m = memory
             if let budget = recovery.timeBudget { m.sessionMinutes = budget }
-            return AthleteState.from(
+            var state = AthleteState.from(
                 m,
                 variant: memory.primaryVariant,
                 weekNumber: memory.weeksInCurrentPhase ?? 1,
                 recentMovementIDs: recentlyPicked,
                 readiness: context.hasReadinessData ? context.readinessScore : nil,
                 recovery: recovery)
+            state.weekBeforeMovementIDs = context.weekBeforeLiftIds[liftIndex] ?? []
+            return state
         }
         // Sport session or complement session (SessionMix). Only the sport
         // sessions go to the authored routines and the sport's own engine
