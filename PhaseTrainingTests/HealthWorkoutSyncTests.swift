@@ -1,6 +1,7 @@
 // HealthWorkoutSyncTests: the kcal labels on the Health sync screen's
 // LAST 28 DAYS list (backlog 2026-11c 6.8), and imported workouts merged
-// into the History list (6.11).
+// into the History list (6.11), without a Health strength workout that
+// doubles a CSV set-import session (6.12).
 
 import XCTest
 @testable import PhaseTraining
@@ -60,6 +61,28 @@ final class HealthWorkoutSyncTests: XCTestCase {
         XCTAssertEqual(ImportedWorkoutEnergy.detail(workouts[0]), "Cardio · 42 min · 350 kcal")
         XCTAssertEqual(HistoryEntries.title(workouts[0]), "Apple Health workout")
         XCTAssertEqual(ImportedWorkoutEnergy.detail(workouts[1]), "Cardio · 20 min")
+    }
+
+    func test_historyMerge_dropsHealthStrengthWorkoutOverlappingACSVSession() {
+        let start = Date().addingTimeInterval(-86_400)
+        let csv = SavedSession(templateId: ImportedHistorySessions.templatePrefix + ImportSource.fitbodCSV.rawValue,
+                               name: "Fitbod workout", category: "Imported", startTime: start,
+                               exercises: [], endTime: start, duration: 0)
+        let sameLift = ImportedWorkout(id: "HK-lift", source: .healthKit, kind: .strength,
+                                       startTime: start.addingTimeInterval(90 * 60), duration: 3_000, energyKcal: 250)
+        let laterLift = ImportedWorkout(id: "HK-later", source: .healthKit, kind: .strength,
+                                        startTime: start.addingTimeInterval(3 * 3_600), duration: 3_000, energyKcal: 250)
+        let ride = ImportedWorkout(id: "HK-ride", source: .healthKit, kind: .cardio,
+                                   startTime: start.addingTimeInterval(30 * 60), duration: 1_800, energyKcal: 200)
+
+        XCTAssertEqual(HistoryEntries.merge(sessions: [csv], workouts: [sameLift]).map(\.id),
+                       ["session-\(csv.id)"])
+        XCTAssertEqual(Set(HistoryEntries.merge(sessions: [csv], workouts: [sameLift, laterLift, ride]).map(\.id)),
+                       ["session-\(csv.id)", "workout-HK-later", "workout-HK-ride"])
+        // A session logged in this app does not hide a Health workout.
+        let native = SavedSession(templateId: "t", name: "Upper", category: "strength", startTime: start,
+                                  exercises: [], feel: nil, note: nil, endTime: start, duration: 0)
+        XCTAssertEqual(HistoryEntries.merge(sessions: [native], workouts: [sameLift]).count, 2)
     }
 
     func test_historyImportedWorkouts_readsEveryStoredRow_andDisplaySessionsStaySetsOnly() {
