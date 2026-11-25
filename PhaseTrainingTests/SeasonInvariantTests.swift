@@ -11,6 +11,10 @@ import XCTest
 /// Every assertion here is oracle-free. A failure names the cell.
 final class SeasonInvariantTests: XCTestCase {
 
+    override func setUpWithError() throws {
+        try CoachDatabaseReadGuard.requireReadable()
+    }
+
     private struct Cell: CustomStringConvertible {
         let sport: String, phase: SeasonPhase, experience: ExperienceLevel
         let equipment: [Equipment], minutes: Int, slot: Int, totalLifts: Int

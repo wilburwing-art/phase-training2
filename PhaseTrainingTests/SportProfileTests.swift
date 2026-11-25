@@ -8,6 +8,10 @@ import XCTest
 /// maintenance (deload) rule in every season.
 final class SportProfileTests: XCTestCase {
 
+    override func setUpWithError() throws {
+        try CoachDatabaseReadGuard.requireReadable()
+    }
+
     // MARK: - 1. One table
 
     /// Every membership decision reads the profile table, for every slug the

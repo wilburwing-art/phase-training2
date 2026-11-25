@@ -146,7 +146,10 @@ Every xcodebuild call passes -destination 'platform=iOS Simulator,id=<UDID>'
 and the matching -derivedDataPath. At most two agents build or test at
 once, one per slot. A third waits for a final report to free a slot.
 Your own runs use a free slot. If you use XcodeBuildMCP, set its session
-defaults to that slot first.
+defaults to that slot first. An XcodeBuildMCP install or launch counts as
+a build on that slot: it replaces the bundled coach.db under a running
+test host, which reads as `code 6922` (SQLITE_IOERR_VNODE) from
+`CoachDatabaseReadGuard` (11e 1.10).
 
 STATUS
 Post only when state changes: a brief handed out, a report received, a

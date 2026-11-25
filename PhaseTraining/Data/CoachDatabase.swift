@@ -346,6 +346,39 @@ final class CoachDatabase {
 
     var isOpen: Bool { db != nil }
 
+    /// Result of `readCheck()`. `code` is the SQLite extended result code of
+    /// the failing call, or `SQLITE_OK` when both counts were read.
+    struct ReadCheck {
+        let exerciseCount: Int64
+        let routineCount: Int64
+        let code: Int32
+        let message: String
+    }
+
+    /// Counts exercises and routines on the open handle and keeps the SQLite
+    /// error the other reads turn into empty arrays. Test suites call it in
+    /// setUp so a catalog that stopped reading fails once, by name, instead of
+    /// as thousands of empty-session assertions (11e 1.10).
+    func readCheck() -> ReadCheck { withLock {
+        guard let db else {
+            return ReadCheck(exerciseCount: 0, routineCount: 0, code: SQLITE_CANTOPEN,
+                             message: "coach.db did not open")
+        }
+        var counts: [Int64] = []
+        for table in ["exercises", "routines"] {
+            var stmt: OpaquePointer?
+            defer { sqlite3_finalize(stmt) }
+            guard sqlite3_prepare_v2(db, "SELECT COUNT(*) FROM \(table)", -1, &stmt, nil) == SQLITE_OK,
+                  sqlite3_step(stmt) == SQLITE_ROW else {
+                return ReadCheck(exerciseCount: counts.first ?? 0, routineCount: 0,
+                                 code: sqlite3_extended_errcode(db),
+                                 message: "\(table): " + String(cString: sqlite3_errmsg(db)))
+            }
+            counts.append(sqlite3_column_int64(stmt, 0))
+        }
+        return ReadCheck(exerciseCount: counts[0], routineCount: counts[1], code: SQLITE_OK, message: "ok")
+    } }
+
     /// - Parameters:
     ///   - goals: pass `.some([])` for the catch-all bucket (goal IS NULL OR
     ///     not in any tile); `.some([slugs])` for specific tiles; nil = no
