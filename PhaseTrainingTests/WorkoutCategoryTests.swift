@@ -121,14 +121,23 @@ final class WorkoutCategoryTests: XCTestCase {
     /// golf, road-running under running) DO tile alongside their parent;
     /// the overlap is intentional, since a routine can be linked at both
     /// levels and users think in real sports, not taxonomy roots.
+    /// Depth comes from the catalog's parent chain. A hand list went stale:
+    /// fell-running, trad-climbing, ice-climbing, disc-golf and topgolf are
+    /// depth 1, and the test went red once 11e 3.5 tagged fell-running.
     func testDeepSportSpecializationsExcluded() {
         let sports = CoachDatabase.shared.listRoutineSports()
-        let depth2 = ["sport-lead", "sport-top-rope", "bouldering-indoor",
-                      "bouldering-outdoor", "trad-climbing", "ice-climbing",
-                      "mountain-running", "fell-running", "disc-golf", "topgolf"]
-        for slug in depth2 {
-            XCTAssertFalse(sports.contains { $0.slug == slug },
-                           "depth-2 variant '\(slug)' leaked into sport tiles")
+        let parents = CoachDatabase.shared.sportParentSlugs()
+        func depth(_ slug: String) -> Int {
+            var d = 0, cur = slug
+            while let p = parents[cur], d < 10 { d += 1; cur = p }
+            return d
+        }
+        for slug in ["sport-lead", "bouldering-indoor", "mountain-running"] {
+            XCTAssertEqual(depth(slug), 2, "\(slug) is a known depth-2 variant")
+        }
+        for sport in sports {
+            XCTAssertLessThanOrEqual(depth(sport.slug), 1,
+                                     "depth-\(depth(sport.slug)) variant '\(sport.slug)' leaked into sport tiles")
         }
         let depth1 = ["snowboarding", "sport-climbing", "bouldering",
                       "golf-amateur", "road-running", "tennis"]
