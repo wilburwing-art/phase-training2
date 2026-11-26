@@ -51,6 +51,20 @@ final class SportPickerCatalogTests: XCTestCase {
         }
     }
 
+    /// Backlog 2026-11e 3.3: the MTI triathlon and adventure race plans
+    /// (`scripts/db/distill_multisport.py`). None of the three had routines
+    /// before it.
+    func testMultiSportFamilyIsInThePicker() {
+        let slugs = Set(allSports.map(\.slug))
+        for slug in ["multi-sport-endurance", "triathlon", "adventure-racing"] {
+            XCTAssertTrue(slugs.contains(slug), slug)
+            XCTAssertGreaterThanOrEqual(
+                CoachDatabase.shared.authoredRoutineIds(sportSlug: slug, phaseLabels: ["build"]).count, 2, slug)
+        }
+        XCTAssertEqual(
+            CoachDatabase.shared.authoredRoutineIds(sportSlug: "triathlon", phaseLabels: ["maintenance"]).count, 2)
+    }
+
     func testFencingIsHiddenWhileUnderTheFloor() {
         // Fencing's one routine is 20 min, under the 25-minute floor. This
         // flips when fencing gets routines.
