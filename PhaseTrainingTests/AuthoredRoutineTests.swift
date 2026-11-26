@@ -338,7 +338,7 @@ final class AuthoredRoutineTests: XCTestCase {
     /// gap. 11e Phases 3 and 4 distill the missing phases; each sport leaves
     /// this set when it covers all of them.
     static let knownPhaseGapSports: Set<String> = [
-        "equestrian", "golf", "martial-arts", "multi-sport-endurance", "racquet-sports",
+        "equestrian", "fishing-hunting", "golf", "martial-arts", "multi-sport-endurance", "racquet-sports",
         "skating-wheeled", "strength-fitness-sports", "surf-wave-sports", "swimming",
         "yoga-movement",
     ]

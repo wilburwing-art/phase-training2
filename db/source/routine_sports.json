@@ -2734,5 +2734,245 @@
   {
     "routine_id": 403,
     "sport_id": 587
+  },
+  {
+    "routine_id": 404,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 404,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 404,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 405,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 405,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 405,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 406,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 406,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 406,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 407,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 407,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 407,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 408,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 408,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 408,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 409,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 409,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 409,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 410,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 410,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 410,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 411,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 411,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 411,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 412,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 412,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 412,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 413,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 413,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 413,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 414,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 414,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 414,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 415,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 415,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 415,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 416,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 416,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 416,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 417,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 417,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 417,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 418,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 418,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 418,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 419,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 419,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 419,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 420,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 420,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 420,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 421,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 421,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 421,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 422,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 422,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 422,
+    "sport_id": 723
+  },
+  {
+    "routine_id": 423,
+    "sport_id": 720
+  },
+  {
+    "routine_id": 423,
+    "sport_id": 724
+  },
+  {
+    "routine_id": 423,
+    "sport_id": 723
   }
 ]
