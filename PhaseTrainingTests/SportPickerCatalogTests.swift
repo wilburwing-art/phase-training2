@@ -18,6 +18,27 @@ final class SportPickerCatalogTests: XCTestCase {
         }
     }
 
+    /// Backlog 2026-11e bucket A: the 36 sports that already had 2+ qualifying
+    /// routines at b128f61. Item 2.1 spot-checked their routines; each one is
+    /// offered in the onboarding and profile picker.
+    func testBucketASportsAreInThePicker() {
+        let bucketA = [
+            "baseball-adult", "basketball", "bjj", "bjj-gi", "calisthenics",
+            "comp-climbing", "cyclocross", "dragon-boat", "equestrian", "golf",
+            "golf-amateur", "golf-traditional", "gravel-cycling", "gymnastics-adult",
+            "judo", "kayaking", "marathon", "martial-arts", "mma", "parkour",
+            "pickleball", "pilates", "powerlifting", "racquet-sports", "road-cycling",
+            "road-running", "rowing", "rugby", "soccer", "squash",
+            "strength-fitness-sports", "strongman", "tennis", "volleyball", "yoga",
+            "yoga-movement",
+        ]
+        XCTAssertEqual(bucketA.count, 36)
+        let slugs = Set(allSports.map(\.slug))
+        for slug in bucketA {
+            XCTAssertTrue(slugs.contains(slug), slug)
+        }
+    }
+
     func testFencingIsHiddenWhileUnderTheFloor() {
         // Fencing's one routine is 20 min, under the 25-minute floor. This
         // flips when fencing gets routines.

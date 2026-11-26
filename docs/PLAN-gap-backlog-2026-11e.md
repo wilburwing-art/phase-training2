@@ -67,7 +67,7 @@ described in the 11d header, with no lines from the grep.
 
 ## Phase 2: bucket A goes live (Content)
 
-- [ ] **2.1 Spot-check the 36 bucket A sports (Content, 2 h, after 1.1).** For each one, list its qualifying routines, and confirm each routine's name and notes match the sport. Untag the ones that don't, and record what was untagged. Done: `DB`, the 1.3 count does not rise (an untag can drop a sport below 2), and the simulator picker shows the A sports.
+- [ ] **2.1 Spot-check the 36 bucket A sports (Content, 2 h, after 1.1).** Built 2026-11-25, unticked. All 36 still have 2+ qualifying routines (99 sport-routine tags read, name, description, notes and exercise list). Rule used: keep a tag when the exercises fit the sport's demands even if the name names a sibling sport, untag when the routine targets a different population. Untagged: pilates from 272 "Over-50 Yoga Practitioner Strength" (age and sport specific to yoga); pilates keeps 256 and 257. Kept, with reason: yoga on 257 "Pilates Supplemental Strength" (its only off_season/base routine, so the untag would open an off-season gap in `AuthoredRoutineTests.testEveryServedSportHasAServableRoutineInEveryPhase`; the posterior-chain note applies to yoga too), pilates on 256 "Yogi Hamstring Strength" (the hamstring gap 257 names for Pilates), volleyball on 237 "Basketball Vertical Jump" (shared jump demand), pickleball on 60 and 64 (tennis blocks, same family), judo and mma on 200 and 202 (grappling), powerlifting on 98 "CrossFit Posterior Chain Day" (deadlift work), cyclocross on 25 "MTB Upper-Body + Grip" (off-road handling). `DB` passes and still prints 165 uncovered. The picker check is `SportPickerCatalogTests.testBucketASportsAreInThePicker` (new), which asserts all 36 slugs appear in `SportPickerCatalog.sections`; a simulator click-through was not possible (no tap tool, and synthetic clicks landed in another window). The local runner hung before connecting (1.8), so: tick after `SportPickerCatalogTests` and `AuthoredRoutineTests` pass in main CI on this commit. For each one, list its qualifying routines, and confirm each routine's name and notes match the sport. Untag the ones that don't, and record what was untagged. Done: `DB`, the 1.3 count does not rise (an untag can drop a sport below 2), and the simulator picker shows the A sports.
 
 ## Phase 3: MTI distillation, bucket B (Content)
 
@@ -235,7 +235,7 @@ Plain bullets, no boxes. /next works the phase items above. Update a line's buck
 
 - **Yoga & Movement** (`yoga-movement`, id 600) A. 3 routines. Profile row through the family, then spot-check.
 - **Yoga** (`yoga`, id 601) A. 5 routines. Profile row through the family, then spot-check.
-- **Pilates** (`pilates`, id 608) A. 3 routines. Profile row through the family, then spot-check.
+- **Pilates** (`pilates`, id 608) A. 2 routines (272 untagged in 2.1). Profile row through the family, then spot-check.
 - **Tai Chi / Qigong** (`tai-chi-qigong`, id 611) C. External source needed. Has 1 routine now.
 - **Movement Culture** (`movement-culture`, id 612) C. External source needed.
 - **Adult Gymnastics** (`gymnastics-adult`, id 613) A. 2 routines. Profile row through the family, then spot-check.
