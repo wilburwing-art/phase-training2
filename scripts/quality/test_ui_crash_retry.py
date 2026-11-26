@@ -115,6 +115,61 @@ class UICrashRetryTests(unittest.TestCase):
         self.assertEqual(ucr.main(["x", "--json", path]), 1)
         self.assertEqual(ucr.main(["x", "--json", "/nonexistent.json"]), 2)
 
+    def test_annotations_name_each_failed_case_once_per_message(self):
+        lines = ucr.failure_annotations(fixture("xcresult-tests-assertion.json"))
+        self.assertEqual(
+            lines,
+            [
+                "::error::PhaseTrainingUITests/LogFlowTests/testRestExpiryShowsDoneFlash: "
+                "LogFlowTests.swift:209: XCTAssertTrue failed - rest card should appear "
+                "after first set done",
+                "::error::PhaseTrainingUITests/LogFlowTests/testRestExpiryShowsDoneFlash: "
+                "LogFlowTests.swift:213: XCTAssertTrue failed - DONE flash card should "
+                "appear within ~3s",
+            ],
+        )
+
+    def test_annotations_name_the_timed_out_case(self):
+        tests = fixture("xcresult-tests-timeout.json")
+        suites(tests).extend(suites(fixture("xcresult-tests-crash.json")))
+        self.assertEqual(
+            ucr.failure_annotations(tests),
+            [
+                "::error::PhaseTrainingUITests/MotivationBatchUITests/"
+                "test_progressStrengthRowShowsSelfDelta: "
+                "Test exceeded execution time allowance of 3 minutes",
+                "::error::PhaseTrainingUITests/KettleSportUITests/"
+                "test_snowSportDay_presentsWithCarvingKettle: "
+                "Test crashed with signal term.",
+            ],
+        )
+
+    def test_annotations_escape_newlines_and_percent(self):
+        tests = fixture("xcresult-tests-crash.json")
+        for suite in suites(tests):
+            for case in suite["children"]:
+                if case.get("result") == "Failed":
+                    case["children"] = [
+                        {"nodeType": "Failure Message", "name": "100% sure\nsecond line"}
+                    ]
+        (line,) = ucr.failure_annotations(tests)
+        self.assertTrue(line.endswith(": 100%25 sure%0Asecond line"), line)
+
+    def test_annotations_empty_when_nothing_failed(self):
+        tests = fixture("xcresult-tests-assertion.json")
+        for suite in suites(tests):
+            suite["children"] = [
+                c for c in suite["children"] if c.get("result") != "Failed"
+            ]
+        self.assertEqual(ucr.failure_annotations(tests), [])
+
+    def test_main_annotate_exit_codes(self):
+        path = os.path.join(HERE, "fixtures", "xcresult-tests-assertion.json")
+        self.assertEqual(ucr.main(["x", "--annotate", "--json", path]), 0)
+        self.assertEqual(
+            ucr.main(["x", "--annotate", "--json", "/nonexistent.json"]), 2
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

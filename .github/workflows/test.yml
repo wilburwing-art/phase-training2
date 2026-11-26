@@ -233,10 +233,16 @@ jobs:
             | xcbeautify --renderer github-actions \
             || status=$?
           [ "$status" -eq 0 ] && exit 0
+          # xcbeautify can print a killed case as passed and put the only
+          # error on a case that passed (run 45869446240), so a red exit
+          # first names the bundle's failed cases. A re-run that goes green
+          # prints none.
           if ! retry=$(python3 scripts/quality/ui_crash_retry.py build/TestResults.xcresult); then
+            python3 scripts/quality/ui_crash_retry.py --annotate build/TestResults.xcresult || true
             exit "$status"
           fi
           echo "::warning::Test runner crashed or a case timed out; re-running once: ${retry//$'\n'/ }"
+          status=0
           # One arg per line, no spaces or globs, so word splitting is wanted.
           # shellcheck disable=SC2086
           xcodebuild test \
@@ -250,7 +256,11 @@ jobs:
             -maximum-test-execution-time-allowance 600 \
             CODE_SIGNING_ALLOWED=NO \
             | tee -a build/raw-test.log \
-            | xcbeautify --renderer github-actions
+            | xcbeautify --renderer github-actions \
+            || status=$?
+          [ "$status" -eq 0 ] && exit 0
+          python3 scripts/quality/ui_crash_retry.py --annotate build/RetryResults.xcresult || true
+          exit "$status"
 
       # The three tap-budget steps read TapBudgetTests' markers, so they
       # run only on the shard that runs that suite.

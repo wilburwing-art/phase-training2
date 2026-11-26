@@ -11,11 +11,19 @@ This script reads the result bundle and prints one -only-testing argument
 per such case so the workflow can re-run them once. A case that hangs
 again on the re-run keeps the shard red.
 
+--annotate prints one GitHub `::error::` line per failed case and distinct
+failure message instead. xcbeautify can print an allowance-killed case as
+passed and put the step's only error on a case that passed (main run
+45869446240), so the workflow calls this on a red shard to name the real
+failures.
+
 Usage:
   python3 scripts/quality/ui_crash_retry.py build/TestResults.xcresult
   python3 scripts/quality/ui_crash_retry.py --json tests.json
+  python3 scripts/quality/ui_crash_retry.py --annotate build/TestResults.xcresult
+  python3 scripts/quality/ui_crash_retry.py --annotate --json tests.json
 
-Exit codes:
+Exit codes (--annotate: 0 when the bundle was read, 2 when it was not):
   0  every failed case is a crash or a timeout; the -only-testing args
      are on stdout
   1  at least one failed case has another failure, or nothing failed;
@@ -74,6 +82,24 @@ def rerun_args(tests):
     return args or None
 
 
+def _escape(text):
+    return text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
+def failure_annotations(tests):
+    """Return one `::error::` line per failed case and distinct failure message."""
+    lines = []
+    for root in tests.get("testNodes", []):
+        for bundle, case in _failed_cases(root):
+            ident = f"{bundle}/{case.get('nodeIdentifier', '').removesuffix('()')}"
+            messages = list(dict.fromkeys(_failure_messages(case))) or ["failed, no message"]
+            for message in messages:
+                line = f"::error::{_escape(ident)}: {_escape(message)}"
+                if line not in lines:
+                    lines.append(line)
+    return lines
+
+
 def load_bundle(path):
     out = subprocess.run(
         ["xcrun", "xcresulttool", "get", "test-results", "tests", "--path", path],
@@ -85,6 +111,9 @@ def load_bundle(path):
 
 
 def main(argv):
+    annotate = len(argv) > 1 and argv[1] == "--annotate"
+    if annotate:
+        argv = argv[:1] + argv[2:]
     try:
         if len(argv) == 3 and argv[1] == "--json":
             with open(argv[2]) as f:
@@ -97,6 +126,11 @@ def main(argv):
     except (OSError, ValueError, subprocess.CalledProcessError) as e:
         print(f"ui_crash_retry: cannot read results: {e}", file=sys.stderr)
         return 2
+    if annotate:
+        lines = failure_annotations(tests)
+        if lines:
+            print("\n".join(lines))
+        return 0
     args = rerun_args(tests)
     if args is None:
         return 1
