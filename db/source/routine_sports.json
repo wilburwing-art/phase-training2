@@ -2114,5 +2114,101 @@
   {
     "routine_id": 340,
     "sport_id": 510
+  },
+  {
+    "routine_id": 341,
+    "sport_id": 481
+  },
+  {
+    "routine_id": 342,
+    "sport_id": 481
+  },
+  {
+    "routine_id": 342,
+    "sport_id": 164
+  },
+  {
+    "routine_id": 343,
+    "sport_id": 482
+  },
+  {
+    "routine_id": 343,
+    "sport_id": 485
+  },
+  {
+    "routine_id": 343,
+    "sport_id": 151
+  },
+  {
+    "routine_id": 344,
+    "sport_id": 482
+  },
+  {
+    "routine_id": 344,
+    "sport_id": 485
+  },
+  {
+    "routine_id": 344,
+    "sport_id": 151
+  },
+  {
+    "routine_id": 345,
+    "sport_id": 482
+  },
+  {
+    "routine_id": 345,
+    "sport_id": 485
+  },
+  {
+    "routine_id": 345,
+    "sport_id": 151
+  },
+  {
+    "routine_id": 346,
+    "sport_id": 484
+  },
+  {
+    "routine_id": 347,
+    "sport_id": 484
+  },
+  {
+    "routine_id": 348,
+    "sport_id": 151
+  },
+  {
+    "routine_id": 348,
+    "sport_id": 155
+  },
+  {
+    "routine_id": 348,
+    "sport_id": 159
+  },
+  {
+    "routine_id": 349,
+    "sport_id": 151
+  },
+  {
+    "routine_id": 349,
+    "sport_id": 155
+  },
+  {
+    "routine_id": 349,
+    "sport_id": 159
+  },
+  {
+    "routine_id": 350,
+    "sport_id": 155
+  },
+  {
+    "routine_id": 350,
+    "sport_id": 159
+  },
+  {
+    "routine_id": 351,
+    "sport_id": 164
+  },
+  {
+    "routine_id": 352,
+    "sport_id": 164
   }
 ]

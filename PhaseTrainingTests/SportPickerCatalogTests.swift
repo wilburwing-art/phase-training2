@@ -65,6 +65,22 @@ final class SportPickerCatalogTests: XCTestCase {
             CoachDatabase.shared.authoredRoutineIds(sportSlug: "triathlon", phaseLabels: ["maintenance"]).count, 2)
     }
 
+    /// Backlog 2026-11e 3.4: the hiking and mountaineering children share the
+    /// MTI objective-plan routines (`scripts/db/distill_hike_mountain.py`).
+    /// Seven of the eight had no routines before it.
+    func testHikeAndMountainChildrenAreInThePicker() {
+        let slugs = Set(allSports.map(\.slug))
+        for slug in [
+            "day-hiking", "backpacking", "fastpacking", "international-trekking",
+            "non-tech-mountaineering", "technical-mountaineering",
+            "expedition-mountaineering", "scrambling",
+        ] {
+            XCTAssertTrue(slugs.contains(slug), slug)
+            XCTAssertGreaterThanOrEqual(
+                CoachDatabase.shared.authoredRoutineIds(sportSlug: slug, phaseLabels: ["build"]).count, 2, slug)
+        }
+    }
+
     func testFencingIsHiddenWhileUnderTheFloor() {
         // Fencing's one routine is 20 min, under the 25-minute floor. This
         // flips when fencing gets routines.
