@@ -102,6 +102,15 @@ final class SportPickerCatalogTests: XCTestCase {
         }
     }
 
+    func testGrapplingChildrenAreInThePicker() {
+        let slugs = Set(allSports.map(\.slug))
+        for slug in ["bjj", "bjj-gi", "bjj-nogi", "judo", "wrestling", "sambo"] {
+            XCTAssertTrue(slugs.contains(slug), slug)
+            XCTAssertGreaterThanOrEqual(
+                CoachDatabase.shared.authoredRoutineIds(sportSlug: slug, phaseLabels: ["build"]).count, 2, slug)
+        }
+    }
+
     func testFencingIsHiddenWhileUnderTheFloor() {
         // Fencing's one routine is 20 min, under the 25-minute floor. This
         // flips when fencing gets routines.

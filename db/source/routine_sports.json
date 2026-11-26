@@ -2386,5 +2386,293 @@
   {
     "routine_id": 376,
     "sport_id": 220
+  },
+  {
+    "routine_id": 377,
+    "sport_id": 261
+  },
+  {
+    "routine_id": 377,
+    "sport_id": 262
+  },
+  {
+    "routine_id": 377,
+    "sport_id": 263
+  },
+  {
+    "routine_id": 377,
+    "sport_id": 265
+  },
+  {
+    "routine_id": 377,
+    "sport_id": 266
+  },
+  {
+    "routine_id": 377,
+    "sport_id": 285
+  },
+  {
+    "routine_id": 378,
+    "sport_id": 261
+  },
+  {
+    "routine_id": 378,
+    "sport_id": 262
+  },
+  {
+    "routine_id": 378,
+    "sport_id": 263
+  },
+  {
+    "routine_id": 378,
+    "sport_id": 265
+  },
+  {
+    "routine_id": 378,
+    "sport_id": 266
+  },
+  {
+    "routine_id": 378,
+    "sport_id": 285
+  },
+  {
+    "routine_id": 379,
+    "sport_id": 261
+  },
+  {
+    "routine_id": 379,
+    "sport_id": 262
+  },
+  {
+    "routine_id": 379,
+    "sport_id": 263
+  },
+  {
+    "routine_id": 379,
+    "sport_id": 265
+  },
+  {
+    "routine_id": 379,
+    "sport_id": 266
+  },
+  {
+    "routine_id": 379,
+    "sport_id": 285
+  },
+  {
+    "routine_id": 380,
+    "sport_id": 261
+  },
+  {
+    "routine_id": 380,
+    "sport_id": 262
+  },
+  {
+    "routine_id": 380,
+    "sport_id": 263
+  },
+  {
+    "routine_id": 380,
+    "sport_id": 265
+  },
+  {
+    "routine_id": 380,
+    "sport_id": 266
+  },
+  {
+    "routine_id": 380,
+    "sport_id": 285
+  },
+  {
+    "routine_id": 381,
+    "sport_id": 261
+  },
+  {
+    "routine_id": 381,
+    "sport_id": 262
+  },
+  {
+    "routine_id": 381,
+    "sport_id": 263
+  },
+  {
+    "routine_id": 381,
+    "sport_id": 265
+  },
+  {
+    "routine_id": 381,
+    "sport_id": 266
+  },
+  {
+    "routine_id": 381,
+    "sport_id": 285
+  },
+  {
+    "routine_id": 382,
+    "sport_id": 261
+  },
+  {
+    "routine_id": 382,
+    "sport_id": 262
+  },
+  {
+    "routine_id": 382,
+    "sport_id": 263
+  },
+  {
+    "routine_id": 382,
+    "sport_id": 265
+  },
+  {
+    "routine_id": 382,
+    "sport_id": 266
+  },
+  {
+    "routine_id": 382,
+    "sport_id": 285
+  },
+  {
+    "routine_id": 383,
+    "sport_id": 261
+  },
+  {
+    "routine_id": 383,
+    "sport_id": 262
+  },
+  {
+    "routine_id": 383,
+    "sport_id": 263
+  },
+  {
+    "routine_id": 383,
+    "sport_id": 265
+  },
+  {
+    "routine_id": 383,
+    "sport_id": 266
+  },
+  {
+    "routine_id": 383,
+    "sport_id": 285
+  },
+  {
+    "routine_id": 384,
+    "sport_id": 261
+  },
+  {
+    "routine_id": 384,
+    "sport_id": 262
+  },
+  {
+    "routine_id": 384,
+    "sport_id": 263
+  },
+  {
+    "routine_id": 384,
+    "sport_id": 265
+  },
+  {
+    "routine_id": 384,
+    "sport_id": 266
+  },
+  {
+    "routine_id": 384,
+    "sport_id": 285
+  },
+  {
+    "routine_id": 385,
+    "sport_id": 261
+  },
+  {
+    "routine_id": 385,
+    "sport_id": 262
+  },
+  {
+    "routine_id": 385,
+    "sport_id": 263
+  },
+  {
+    "routine_id": 385,
+    "sport_id": 265
+  },
+  {
+    "routine_id": 385,
+    "sport_id": 266
+  },
+  {
+    "routine_id": 385,
+    "sport_id": 285
+  },
+  {
+    "routine_id": 386,
+    "sport_id": 261
+  },
+  {
+    "routine_id": 386,
+    "sport_id": 262
+  },
+  {
+    "routine_id": 386,
+    "sport_id": 263
+  },
+  {
+    "routine_id": 386,
+    "sport_id": 265
+  },
+  {
+    "routine_id": 386,
+    "sport_id": 266
+  },
+  {
+    "routine_id": 386,
+    "sport_id": 285
+  },
+  {
+    "routine_id": 387,
+    "sport_id": 261
+  },
+  {
+    "routine_id": 387,
+    "sport_id": 262
+  },
+  {
+    "routine_id": 387,
+    "sport_id": 263
+  },
+  {
+    "routine_id": 387,
+    "sport_id": 265
+  },
+  {
+    "routine_id": 387,
+    "sport_id": 266
+  },
+  {
+    "routine_id": 387,
+    "sport_id": 285
+  },
+  {
+    "routine_id": 388,
+    "sport_id": 261
+  },
+  {
+    "routine_id": 388,
+    "sport_id": 262
+  },
+  {
+    "routine_id": 388,
+    "sport_id": 263
+  },
+  {
+    "routine_id": 388,
+    "sport_id": 265
+  },
+  {
+    "routine_id": 388,
+    "sport_id": 266
+  },
+  {
+    "routine_id": 388,
+    "sport_id": 285
   }
 ]
