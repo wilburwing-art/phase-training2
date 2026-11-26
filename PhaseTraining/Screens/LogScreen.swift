@@ -139,7 +139,10 @@ struct LogScreen: View {
         // go heavier should not start with a row of backspaces.
         .selectsAllOnFocusInNumberFields()
         .onAppear(perform: loadIfNeeded)
-        .task { await voice.prepare() }
+        // The mic is set up on the first press (VoiceLogModel.pressDown), not
+        // here. The first Log open on a fresh simulator paid the speech and
+        // synthesizer setup while the picker sheet came up, and the app went
+        // 30 s without an idle event loop (11e 1.16, run 45755849745).
         .task { await openPickerForEmptySession() }
         .onDisappear { voice.cancel() }
         .onChange(of: workout.rest) { _, _ in
