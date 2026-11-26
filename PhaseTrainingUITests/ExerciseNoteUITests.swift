@@ -13,7 +13,7 @@ final class ExerciseNoteUITests: XCTestCase {
         app.launch()
         XCTAssertTrue(app.buttons["log-finish"].waitForExistence(timeout: 8))
 
-        app.staticTexts["log-exercise-name-0"].press(forDuration: 1.0)
+        pressWhenHittable(app.staticTexts["log-exercise-name-0"])
         let addNote = app.buttons["Add note"]
         XCTAssertTrue(addNote.waitForExistence(timeout: 3))
         addNote.tap()
@@ -32,7 +32,16 @@ final class ExerciseNoteUITests: XCTestCase {
         shot.lifetime = .keepAlways
         add(shot)
 
-        app.staticTexts["log-exercise-name-0"].press(forDuration: 1.0)
+        pressWhenHittable(app.staticTexts["log-exercise-name-0"])
         XCTAssertTrue(app.buttons["Edit note"].waitForExistence(timeout: 3), "the menu says Edit once a note exists")
+    }
+
+    /// Log fades in from Today (0.18 s). A press during the fade fails with
+    /// "Not hittable" (push run 45772390021), so wait for the row to settle.
+    private func pressWhenHittable(_ el: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
+        let hittable = XCTNSPredicateExpectation(predicate: NSPredicate(format: "isHittable == true"), object: el)
+        XCTAssertEqual(XCTWaiter().wait(for: [hittable], timeout: 5), .completed,
+                       "\(el) never became hittable", file: file, line: line)
+        el.press(forDuration: 1.0)
     }
 }
