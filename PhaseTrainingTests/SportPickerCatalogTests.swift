@@ -39,6 +39,18 @@ final class SportPickerCatalogTests: XCTestCase {
         }
     }
 
+    /// Backlog 2026-11e 3.1: the surf family shares the MTI Surf Pre-Season V2
+    /// routines (`scripts/db/distill_surf.py`). Bodysurfing and skimboarding
+    /// had no routines before it.
+    func testSurfFamilyIsInThePicker() {
+        let slugs = Set(allSports.map(\.slug))
+        for slug in ["surf-wave-sports", "surfing", "bodyboarding", "bodysurfing", "skimboarding"] {
+            XCTAssertTrue(slugs.contains(slug), slug)
+            XCTAssertGreaterThanOrEqual(
+                CoachDatabase.shared.authoredRoutineIds(sportSlug: slug, phaseLabels: ["build"]).count, 2, slug)
+        }
+    }
+
     func testFencingIsHiddenWhileUnderTheFloor() {
         // Fencing's one routine is 20 min, under the 25-minute floor. This
         // flips when fencing gets routines.
