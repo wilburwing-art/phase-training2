@@ -93,6 +93,15 @@ final class SportPickerCatalogTests: XCTestCase {
         }
     }
 
+    func testNordicAndBackcountrySkiAreInThePicker() {
+        let slugs = Set(allSports.map(\.slug))
+        for slug in ["xc-skiing", "backcountry-touring", "telemark-skiing"] {
+            XCTAssertTrue(slugs.contains(slug), slug)
+            XCTAssertGreaterThanOrEqual(
+                CoachDatabase.shared.authoredRoutineIds(sportSlug: slug, phaseLabels: ["build"]).count, 2, slug)
+        }
+    }
+
     func testFencingIsHiddenWhileUnderTheFloor() {
         // Fencing's one routine is 20 min, under the 25-minute floor. This
         // flips when fencing gets routines.
