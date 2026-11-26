@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
-"""Decide whether a red UI-test shard failed only on test-runner crashes.
+"""Decide whether a red UI-test shard failed only on cases xcodebuild never retried.
 
-xcodebuild's -retry-tests-on-failure re-runs a failed case only when the
-runner survives to report it. When the runner dies ("Test crashed with
-signal term."), the relaunched runner logs "Executed 0 tests" and the case
-gets no retry (main run 44805314849, KettleSportUITests). This script reads
-the result bundle and prints one -only-testing argument per crashed case so
-the workflow can re-run them once.
+xcodebuild's -retry-tests-on-failure skips two kinds of failure:
+- a runner crash ("Test crashed with signal term."): the relaunched runner
+  logs "Executed 0 tests" (main run 44805314849, KettleSportUITests);
+- an execution time allowance kill ("Test exceeded execution time
+  allowance of 3 minutes"): the case runs once (main run 45869446240,
+  MotivationBatchUITests at 211 s after seven runs at 52 to 66 s).
+This script reads the result bundle and prints one -only-testing argument
+per such case so the workflow can re-run them once. A case that hangs
+again on the re-run keeps the shard red.
 
 Usage:
   python3 scripts/quality/ui_crash_retry.py build/TestResults.xcresult
   python3 scripts/quality/ui_crash_retry.py --json tests.json
 
 Exit codes:
-  0  every failed case is a crash; the -only-testing args are on stdout
-  1  at least one failed case has a non-crash failure, or nothing failed;
+  0  every failed case is a crash or a timeout; the -only-testing args
+     are on stdout
+  1  at least one failed case has another failure, or nothing failed;
      the shard result stands
   2  the bundle could not be read
 """
@@ -23,7 +27,10 @@ import json
 import subprocess
 import sys
 
-CRASH_MARKER = "Test crashed with signal"
+RERUN_MARKERS = (
+    "Test crashed with signal",
+    "Test exceeded execution time allowance",
+)
 
 
 def _failure_messages(node):
@@ -46,13 +53,17 @@ def _failed_cases(node, bundle=None):
         yield from _failed_cases(child, bundle)
 
 
-def crash_only_retry_args(tests):
-    """Return -only-testing args when every failed case crashed, else None."""
+def _rerunnable(message):
+    return any(marker in message for marker in RERUN_MARKERS)
+
+
+def rerun_args(tests):
+    """Return -only-testing args when every failed case crashed or timed out, else None."""
     args = []
     for root in tests.get("testNodes", []):
         for bundle, case in _failed_cases(root):
             messages = list(_failure_messages(case))
-            if not messages or not all(CRASH_MARKER in m for m in messages):
+            if not messages or not all(_rerunnable(m) for m in messages):
                 return None
             ident = case.get("nodeIdentifier", "").removesuffix("()")
             if not bundle or not ident:
@@ -86,7 +97,7 @@ def main(argv):
     except (OSError, ValueError, subprocess.CalledProcessError) as e:
         print(f"ui_crash_retry: cannot read results: {e}", file=sys.stderr)
         return 2
-    args = crash_only_retry_args(tests)
+    args = rerun_args(tests)
     if args is None:
         return 1
     print("\n".join(args))

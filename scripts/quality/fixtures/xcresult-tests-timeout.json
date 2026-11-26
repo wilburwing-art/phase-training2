@@ -1,0 +1,77 @@
+{
+  "devices": [
+    {
+      "architecture": "arm64",
+      "deviceId": "27012C89-9706-4CDE-88BB-4B380B6C743A",
+      "deviceName": "iPhone 17 Pro",
+      "modelName": "iPhone 17 Pro",
+      "osBuildNumber": "23E254a",
+      "osVersion": "26.4.1",
+      "platform": "iOS Simulator"
+    }
+  ],
+  "testNodes": [
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "duration": "36s",
+                  "durationInSeconds": 36.154515981674194,
+                  "name": "test_completeScreenMoodChipTogglesAndSticks()",
+                  "nodeIdentifier": "MotivationBatchUITests/test_completeScreenMoodChipTogglesAndSticks()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/MotivationBatchUITests/test_completeScreenMoodChipTogglesAndSticks",
+                  "nodeType": "Test Case",
+                  "result": "Passed"
+                },
+                {
+                  "children": [
+                    {
+                      "name": "Test exceeded execution time allowance of 3 minutes",
+                      "nodeType": "Failure Message"
+                    }
+                  ],
+                  "duration": "3m",
+                  "durationInSeconds": 180,
+                  "name": "test_progressStrengthRowShowsSelfDelta()",
+                  "nodeIdentifier": "MotivationBatchUITests/test_progressStrengthRowShowsSelfDelta()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/MotivationBatchUITests/test_progressStrengthRowShowsSelfDelta",
+                  "nodeType": "Test Case",
+                  "result": "Failed"
+                },
+                {
+                  "duration": "43s",
+                  "durationInSeconds": 43.25484502315521,
+                  "name": "test_todayEyebrowCountdownAndAffinitySheet()",
+                  "nodeIdentifier": "MotivationBatchUITests/test_todayEyebrowCountdownAndAffinitySheet()",
+                  "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/MotivationBatchUITests/test_todayEyebrowCountdownAndAffinitySheet",
+                  "nodeType": "Test Case",
+                  "result": "Passed"
+                }
+              ],
+              "name": "MotivationBatchUITests",
+              "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests/MotivationBatchUITests",
+              "nodeType": "Test Suite",
+              "result": "Failed"
+            }
+          ],
+          "name": "PhaseTrainingUITests",
+          "nodeIdentifierURL": "test://com.apple.xcode/PhaseTraining/PhaseTrainingUITests",
+          "nodeType": "UI test bundle",
+          "result": "Failed"
+        }
+      ],
+      "name": "PhaseTraining",
+      "nodeType": "Test Plan",
+      "result": "Failed"
+    }
+  ],
+  "testPlanConfigurations": [
+    {
+      "configurationId": "1",
+      "configurationName": "Test Scheme Action"
+    }
+  ]
+}

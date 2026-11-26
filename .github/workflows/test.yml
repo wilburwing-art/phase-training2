@@ -196,8 +196,10 @@ jobs:
         # a single-shot rig flake gets absorbed transparently. Apple-
         # supported since Xcode 13.
         #
-        # Per-case timeouts: a case past 180 s fails by name and is retried,
-        # so one hung case costs about 9 minutes instead of the job. Run
+        # Per-case timeouts: a case past 180 s fails by name, so one hung
+        # case costs 3 minutes instead of the job. xcodebuild does not
+        # retry an allowance kill (run 45869446240, MotivationBatchUITests
+        # at 211 s), so ui_crash_retry.py re-runs it once below. Run
         # 45580604970 (c58ab85) had one flows case stall 915 s with no
         # output and the shard was cancelled at 45 min. Slowest normal case
         # is CustomExerciseUITests at 236 s, which sets its own 420 s
@@ -207,9 +209,10 @@ jobs:
         # Those retries need a live runner. When the runner itself dies
         # ("Test crashed with signal term."), the relaunched runner logs
         # "Executed 0 tests" and the case is never retried (run 44805314849).
-        # If every failed case is such a crash, ui_crash_retry.py prints
-        # their -only-testing args and they re-run once; the shard takes
-        # the re-run's result. Any other failure keeps the first result.
+        # If every failed case is such a crash or an allowance kill,
+        # ui_crash_retry.py prints their -only-testing args and they re-run
+        # once; the shard takes the re-run's result. Any other failure
+        # keeps the first result.
         run: |
           set -o pipefail
           mkdir -p build
@@ -233,7 +236,7 @@ jobs:
           if ! retry=$(python3 scripts/quality/ui_crash_retry.py build/TestResults.xcresult); then
             exit "$status"
           fi
-          echo "::warning::Test runner crashed; re-running once: ${retry//$'\n'/ }"
+          echo "::warning::Test runner crashed or a case timed out; re-running once: ${retry//$'\n'/ }"
           # One arg per line, no spaces or globs, so word splitting is wanted.
           # shellcheck disable=SC2086
           xcodebuild test \

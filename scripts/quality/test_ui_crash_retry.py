@@ -3,9 +3,10 @@
 
 Run directly:  python3 scripts/quality/test_ui_crash_retry.py
 
-The two fixtures are trimmed `xcresulttool get test-results tests` output
-from real main runs: 44805314849 (flows shard, runner crash) and
-44793901523 (taps shard, assertion failure on all three iterations).
+The three fixtures are trimmed `xcresulttool get test-results tests` output
+from real main runs: 44805314849 (flows shard, runner crash),
+44793901523 (taps shard, assertion failure on all three iterations) and
+45869446240 (taps shard, execution time allowance kill).
 """
 
 import copy
@@ -33,7 +34,7 @@ def suites(tests):
 
 class UICrashRetryTests(unittest.TestCase):
     def test_crash_failure_yields_only_testing_arg(self):
-        args = ucr.crash_only_retry_args(fixture("xcresult-tests-crash.json"))
+        args = ucr.rerun_args(fixture("xcresult-tests-crash.json"))
         self.assertEqual(
             args,
             [
@@ -42,9 +43,29 @@ class UICrashRetryTests(unittest.TestCase):
             ],
         )
 
+    def test_timeout_yields_only_testing_arg(self):
+        args = ucr.rerun_args(fixture("xcresult-tests-timeout.json"))
+        self.assertEqual(
+            args,
+            [
+                "-only-testing:PhaseTrainingUITests/MotivationBatchUITests/"
+                "test_progressStrengthRowShowsSelfDelta"
+            ],
+        )
+
+    def test_crash_plus_timeout_yields_two_args(self):
+        tests = fixture("xcresult-tests-crash.json")
+        suites(tests).extend(suites(fixture("xcresult-tests-timeout.json")))
+        self.assertEqual(len(ucr.rerun_args(tests)), 2)
+
+    def test_timeout_plus_assertion_yields_none(self):
+        tests = fixture("xcresult-tests-timeout.json")
+        suites(tests).extend(suites(fixture("xcresult-tests-assertion.json")))
+        self.assertIsNone(ucr.rerun_args(tests))
+
     def test_assertion_failure_yields_none(self):
         self.assertIsNone(
-            ucr.crash_only_retry_args(fixture("xcresult-tests-assertion.json"))
+            ucr.rerun_args(fixture("xcresult-tests-assertion.json"))
         )
 
     def test_skipped_cases_are_not_failures(self):
@@ -55,12 +76,12 @@ class UICrashRetryTests(unittest.TestCase):
             suite["children"] = [
                 c for c in suite["children"] if c.get("result") != "Failed"
             ]
-        self.assertIsNone(ucr.crash_only_retry_args(tests))
+        self.assertIsNone(ucr.rerun_args(tests))
 
     def test_crash_plus_assertion_yields_none(self):
         tests = fixture("xcresult-tests-crash.json")
         suites(tests).extend(suites(fixture("xcresult-tests-assertion.json")))
-        self.assertIsNone(ucr.crash_only_retry_args(tests))
+        self.assertIsNone(ucr.rerun_args(tests))
 
     def test_two_crashes_yield_two_args(self):
         tests = fixture("xcresult-tests-crash.json")
@@ -71,7 +92,7 @@ class UICrashRetryTests(unittest.TestCase):
                 "KettleSportUITests", "OtherUITests"
             )
         suites(tests).append(extra)
-        args = ucr.crash_only_retry_args(tests)
+        args = ucr.rerun_args(tests)
         self.assertEqual(len(args), 2)
         self.assertIn(
             "-only-testing:PhaseTrainingUITests/OtherUITests/"
@@ -85,7 +106,7 @@ class UICrashRetryTests(unittest.TestCase):
             for case in suite["children"]:
                 if case.get("result") == "Failed":
                     case["children"] = []
-        self.assertIsNone(ucr.crash_only_retry_args(tests))
+        self.assertIsNone(ucr.rerun_args(tests))
 
     def test_main_exit_codes(self):
         path = os.path.join(HERE, "fixtures", "xcresult-tests-crash.json")
