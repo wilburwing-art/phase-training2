@@ -186,6 +186,15 @@ jobs:
         # Unit tests for the runner-crash parser the next step calls.
         run: python3 scripts/quality/test_ui_crash_retry.py
 
+      - name: Start the simulator boot
+        # simctl boot returns in about 5 s and the data migration that
+        # follows runs on its own for 1 to 3 min. Starting it here lets it
+        # overlap the build. Run 45988921160 booted after the build: the
+        # warm step took 125 to 188 s and screens ran 5.9 min over
+        # 45955599356, whose single xcodebuild test step booted the
+        # simulator while it built.
+        run: xcrun simctl boot "${{ steps.setup.outputs.udid }}" || true
+
       - name: Build for testing
         run: |
           set -o pipefail
@@ -204,14 +213,16 @@ jobs:
         # wait for it here so the first case's launch does not also pay
         # for the boot. Run 45983741141 also installed and launched the
         # app here: 80 to 140 s per shard, and screens ran 3.3 min over
-        # 45955599356, so this step boots only.
+        # 45955599356, so this step only waits for the boot started before
+        # the build.
         # A failure here only warns: the test step's launch-timeout re-run
         # still covers a cold first case.
         run: |
           udid="${{ steps.setup.outputs.udid }}"
           start=$(date +%s)
-          # boot exits non-zero on an already-booted simulator; bootstatus
-          # is the check.
+          # boot exits non-zero on an already-booted simulator; it stays
+          # here in case the earlier boot step failed. bootstatus is the
+          # check.
           xcrun simctl boot "$udid" 2>/dev/null || true
           if ! xcrun simctl bootstatus "$udid" -b; then
             echo "::warning::Simulator warm-up failed; the first UI case launches cold."
