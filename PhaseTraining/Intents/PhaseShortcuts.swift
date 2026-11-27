@@ -1,6 +1,6 @@
 import AppIntents
 
-// 11c 7.1 adds its shortcuts here; an app may have only one AppShortcutsProvider.
+// Every App Shortcut lives here; an app may have only one AppShortcutsProvider.
 struct PhaseShortcuts: AppShortcutsProvider {
     /// "Talk to coach" is listed only in builds compiled with `COACH_PHRASE`.
     /// Project.yml sets it for Debug; release.yml sets it on the archive only
@@ -49,6 +49,24 @@ struct PhaseShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "What's next",
             systemImageName: "list.bullet"
+        )
+        AppShortcut(
+            intent: StartWorkoutIntent(),
+            phrases: [
+                "Start today's workout in \(.applicationName)",
+                "Start my workout in \(.applicationName)",
+            ],
+            shortTitle: "Start workout",
+            systemImageName: "figure.strengthtraining.traditional"
+        )
+        AppShortcut(
+            intent: LogBodyWeightIntent(),
+            phrases: [
+                "Log body weight in \(.applicationName)",
+                "Log my weight in \(.applicationName)",
+            ],
+            shortTitle: "Log weight",
+            systemImageName: "scalemass"
         )
         #if COACH_PHRASE
         AppShortcut(

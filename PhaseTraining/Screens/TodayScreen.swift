@@ -325,6 +325,24 @@ struct TodayScreen: View {
             // which case keep their edits rather than clobber them).
             if !didModify { editableTemplate = newTemplate }
         }
+        .onReceive(StartWorkoutLaunch.shared.$pending) { pending in
+            // StartWorkoutIntent (11c 7.1) asked to start. @Published emits
+            // before the value lands, so take it on the next turn.
+            guard pending else { return }
+            Task { @MainActor in startFromIntentIfPending() }
+        }
+        .onChange(of: template != nil) { _, hasTemplate in
+            // On a cold launch the template can arrive after the flag.
+            if hasTemplate { startFromIntentIfPending() }
+        }
+    }
+
+    /// Starts today's workout when the start intent's flag is up and there is
+    /// one to start. A running workout is the shell's to take.
+    private func startFromIntentIfPending() {
+        guard StartWorkoutLaunch.shared.pending, store.active == nil, template != nil,
+              StartWorkoutLaunch.shared.consume() else { return }
+        startWorkout()
     }
 
     // MARK: - Detected-activity banner glue

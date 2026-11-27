@@ -6,7 +6,7 @@ struct PhaseTrainingApp: App {
     @AppStorage(CoachConsent.storageKey) private var coachConsentGranted: Bool = false
 
     @StateObject private var session: SessionStore
-    @StateObject private var memory  = MemoryStore()
+    @StateObject private var memory: MemoryStore
     @StateObject private var plan    = PlanStore()
     @StateObject private var custom  = CustomRoutineStore()
     @StateObject private var recentPicks = RecentPicksStore()
@@ -186,6 +186,10 @@ struct PhaseTrainingApp: App {
         let sessionStore = SessionStore()
         _session = StateObject(wrappedValue: sessionStore)
         ActiveWorkoutRegistry.shared.store = sessionStore
+        // Same reason: the body-weight intent writes through the live store.
+        let memoryStore = MemoryStore()
+        _memory = StateObject(wrappedValue: memoryStore)
+        BodyWeightIntentActions.store = memoryStore
     }
 
     #if DEBUG

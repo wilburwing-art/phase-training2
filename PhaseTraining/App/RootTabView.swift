@@ -115,6 +115,17 @@ struct RootTabView: View {
                 conv.voicePresented = true
             }
         }
+        .onReceive(StartWorkoutLaunch.shared.$showToday) { show in
+            // StartWorkoutIntent (11c 7.1) runs: show Today. A running workout needs
+            // no start, since TodayTab routes to the log by itself, so take that flag here.
+            // @Published emits before the value lands, so take it on the next turn.
+            guard show else { return }
+            Task { @MainActor in
+                guard StartWorkoutLaunch.shared.consumeShowToday() else { return }
+                tabSelection.selected = .today
+                if sessionStore.active != nil { _ = StartWorkoutLaunch.shared.consume() }
+            }
+        }
         #if DEBUG
         .task {
             // UITest hook (DEBUG-only): open the voice check-in on launch.
