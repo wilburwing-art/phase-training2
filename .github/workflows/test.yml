@@ -186,6 +186,43 @@ jobs:
         # Unit tests for the runner-crash parser the next step calls.
         run: python3 scripts/quality/test_ui_crash_retry.py
 
+      - name: Build for testing
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing \
+            -project PhaseTraining.xcodeproj \
+            -scheme PhaseTraining \
+            -destination "platform=iOS Simulator,id=${{ steps.setup.outputs.udid }}" \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcbeautify --renderer github-actions
+
+      - name: Warm the simulator
+        # Three of eight push runs before 11e 1.25 went red on a shard's
+        # first case timing out its launch on the fresh simulator
+        # (45919860804, 45951067374, 45955599356). Boot the simulator and
+        # launch the built app once here so the first case launches warm.
+        # The app is uninstalled after, so the first case still gets the
+        # fresh container it had before. A failure here only warns: the
+        # test step's launch-timeout re-run still covers a cold first case.
+        run: |
+          udid="${{ steps.setup.outputs.udid }}"
+          app=build/DerivedData/Build/Products/Debug-iphonesimulator/PhaseTraining.app
+          start=$(date +%s)
+          # boot exits non-zero on an already-booted simulator; bootstatus
+          # is the check.
+          xcrun simctl boot "$udid" 2>/dev/null || true
+          if xcrun simctl bootstatus "$udid" -b \
+             && xcrun simctl install "$udid" "$app" \
+             && xcrun simctl launch "$udid" com.phasetraining.app; then
+            sleep 20
+            xcrun simctl terminate "$udid" com.phasetraining.app || true
+            xcrun simctl uninstall "$udid" com.phasetraining.app || true
+          else
+            echo "::warning::Simulator warm-up failed; the first UI case launches cold."
+          fi
+          echo "Warm-up took $(( $(date +%s) - start )) s"
+
       - name: Run UI tests
         # -retry-tests-on-failure + -test-iterations 3: retry only the
         # individual failing test cases (not the whole suite), up to 2
@@ -222,10 +259,11 @@ jobs:
           set -o pipefail
           mkdir -p build
           status=0
-          xcodebuild test \
+          xcodebuild test-without-building \
             -project PhaseTraining.xcodeproj \
             -scheme PhaseTraining \
             -destination "platform=iOS Simulator,id=${{ steps.setup.outputs.udid }}" \
+            -derivedDataPath build/DerivedData \
             ${{ matrix.tests }} \
             -resultBundlePath build/TestResults.xcresult \
             -retry-tests-on-failure \
@@ -250,10 +288,11 @@ jobs:
           status=0
           # One arg per line, no spaces or globs, so word splitting is wanted.
           # shellcheck disable=SC2086
-          xcodebuild test \
+          xcodebuild test-without-building \
             -project PhaseTraining.xcodeproj \
             -scheme PhaseTraining \
             -destination "platform=iOS Simulator,id=${{ steps.setup.outputs.udid }}" \
+            -derivedDataPath build/DerivedData \
             $retry \
             -resultBundlePath build/RetryResults.xcresult \
             -test-timeouts-enabled YES \
