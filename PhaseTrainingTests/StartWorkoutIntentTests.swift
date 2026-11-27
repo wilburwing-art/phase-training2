@@ -148,6 +148,60 @@ final class StartWorkoutIntentTests: XCTestCase {
         XCTAssertTrue(launch.consume(now: asked.addingTimeInterval(StartWorkoutLaunch.pendingLifetime - 1)))
     }
 
+    // MARK: - Live plan (11c 7.3)
+
+    private func liftWeek(title: String) -> WeekPlan {
+        let monday = cal.startOfDay(for: Date().startOfTrainingWeek())
+        let days = (0..<7).map { i -> DayPlan in
+            let date = cal.date(byAdding: .day, value: i, to: monday)!
+            let ex = [GeneratedExercise(id: "a", exerciseId: 1, name: "Bench", isCompound: true,
+                                        sets: 4, reps: "5", restSeconds: 120)]
+            let workout = GeneratedWorkout(title: title, summary: "", exercises: ex,
+                                           estimatedMinutes: 45, provenance: "test")
+            return DayPlan(date: date, kind: .lift, title: "Lift", generatedWorkout: workout)
+        }
+        return WeekPlan(days: days, generatedAt: Date(), inputsHash: "test")
+    }
+
+    private func makePlanStore() -> PlanStore {
+        let name = "start-workout-intent-plan-\(UUID().uuidString)"
+        suiteNames.append(name)
+        return PlanStore(defaults: UserDefaults(suiteName: name)!)
+    }
+
+    /// The template `TodayScreen.template` starts with no active session.
+    private func startedName(_ planStore: PlanStore) -> String? {
+        planStore.plan?.today(calendar: cal)?.workoutTemplate(planWeek: nil)?.name
+    }
+
+    func test_planChangeAfterSnapshot_lineNamesTheStartedTemplate() throws {
+        let planStore = makePlanStore()
+        planStore.plan = liftWeek(title: "Upper Day 1")
+        let stale = try XCTUnwrap(TodayWidgetPublisher.snapshot(planStore: planStore, sessions: [], calendar: cal))
+        planStore.plan = liftWeek(title: "Lower Day 2")
+
+        let snap = StartWorkoutLaunch.todaySnapshot(planStore: planStore, sessions: [],
+                                                    stored: { stale }, calendar: cal)
+        let line = StartWorkoutLaunch().request(snapshot: snap, hasActiveWorkout: false, onboarded: true,
+                                                now: Date(), calendar: cal)
+        XCTAssertEqual(startedName(planStore), "Lower Day 2")
+        XCTAssertEqual(line, StartWorkoutLaunch.startingLine("Lower Day 2"))
+    }
+
+    func test_noLiveStore_readsStoredSnapshot() {
+        let stored = snapshot(.lift, title: "Upper Day 1")
+        let snap = StartWorkoutLaunch.todaySnapshot(planStore: nil, sessions: [],
+                                                    stored: { stored }, calendar: cal)
+        XCTAssertEqual(snap, stored)
+    }
+
+    func test_liveStoreWithoutPlan_ignoresStoredSnapshot() {
+        let snap = StartWorkoutLaunch.todaySnapshot(planStore: makePlanStore(), sessions: [],
+                                                    stored: { self.snapshot(.lift, title: "Upper Day 1") },
+                                                    calendar: cal)
+        XCTAssertNil(snap)
+    }
+
     // MARK: - Body weight
 
     func test_weight_kgUser_logsKg() throws {

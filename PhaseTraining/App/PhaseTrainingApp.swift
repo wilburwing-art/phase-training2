@@ -7,7 +7,7 @@ struct PhaseTrainingApp: App {
 
     @StateObject private var session: SessionStore
     @StateObject private var memory: MemoryStore
-    @StateObject private var plan    = PlanStore()
+    @StateObject private var plan: PlanStore
     @StateObject private var custom  = CustomRoutineStore()
     @StateObject private var recentPicks = RecentPicksStore()
     @StateObject private var tabSelection = TabSelectionStore()
@@ -190,6 +190,10 @@ struct PhaseTrainingApp: App {
         let memoryStore = MemoryStore()
         _memory = StateObject(wrappedValue: memoryStore)
         BodyWeightIntentActions.store = memoryStore
+        // Same reason: the start intent names the workout from the live plan.
+        let planStore = PlanStore()
+        _plan = StateObject(wrappedValue: planStore)
+        StartWorkoutLaunch.planStore = planStore
     }
 
     #if DEBUG

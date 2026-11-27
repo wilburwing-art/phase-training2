@@ -106,6 +106,17 @@ final class TodayWidgetPublisher {
         return Set(sessionCounts.filter { $0.value > 0 }.keys)
     }
 
+    /// The snapshot `publish` would write for the stores as they are now.
+    static func snapshot(planStore: PlanStore, sessions: [SavedSession],
+                         calendar: Calendar) -> TodayWidgetSnapshot? {
+        let plan = planStore.plan
+        return snapshot(plan: plan,
+                        completedDays: completedDays(plan: plan, sessions: sessions,
+                                                     abandoned: planStore.abandonedWorkouts, calendar: calendar),
+                        calendar: calendar,
+                        planWeek: planStore.memoryStore?.memory.weeksInCurrentPhase)
+    }
+
     static func snapshot(plan: WeekPlan?,
                          completedDays: Set<Date>,
                          calendar: Calendar,

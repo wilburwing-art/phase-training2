@@ -14,9 +14,14 @@ struct StartWorkoutIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
+        let sessions = ActiveWorkoutRegistry.shared.store
+        let snapshot = StartWorkoutLaunch.todaySnapshot(
+            planStore: StartWorkoutLaunch.planStore,
+            sessions: sessions?.savedSessions ?? [],
+            stored: { TodayWidgetSnapshot.load(from: UserDefaults(suiteName: TodayWidgetSnapshot.appGroup)) })
         let line = StartWorkoutLaunch.shared.request(
-            snapshot: TodayWidgetSnapshot.load(from: UserDefaults(suiteName: TodayWidgetSnapshot.appGroup)),
-            hasActiveWorkout: ActiveWorkoutRegistry.shared.store?.active != nil,
+            snapshot: snapshot,
+            hasActiveWorkout: sessions?.active != nil,
             onboarded: BodyWeightIntentActions.store?.isOnboarded ?? false)
         return .result(dialog: IntentDialog(stringLiteral: line))
     }
@@ -47,7 +52,22 @@ final class StartWorkoutLaunch: ObservableObject {
     static func startingLine(_ title: String) -> String { "Starting \(title)." }
     static func todayIsLine(_ title: String) -> String { "Today is \(title)." }
 
+    /// The app's live `PlanStore`. Set in `PhaseTrainingApp.init`, before any
+    /// view, so the intent names the workout Today starts (11c 7.3).
+    static var planStore: PlanStore?
+
     init() {}
+
+    /// Today as the app sees it now. With a live plan store this is built from
+    /// the plan `TodayScreen` starts from, so the line cannot name a workout
+    /// the widget snapshot still holds after a plan change. The App Group
+    /// snapshot is read only when no store is registered.
+    static func todaySnapshot(planStore: PlanStore?, sessions: [SavedSession],
+                              stored: () -> TodayWidgetSnapshot?,
+                              calendar: Calendar = .current) -> TodayWidgetSnapshot? {
+        guard let planStore else { return stored() }
+        return TodayWidgetPublisher.snapshot(planStore: planStore, sessions: sessions, calendar: calendar)
+    }
 
     /// Decides what the run does from today's widget snapshot, raises the
     /// flags, and returns what Siri says.
