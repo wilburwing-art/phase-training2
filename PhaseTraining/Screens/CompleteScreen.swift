@@ -71,6 +71,8 @@ struct CompleteScreen: View {
     @State private var savedAsRoutine = false
     /// One-time offer to turn on reminders after the first saved session.
     @State private var showNotifPrePrompt = false
+    /// Items for the share sheet: the rendered card first, then the text.
+    @State private var shareItems: [Any]? = nil
 
     init(session: ActiveSession, onSave: @escaping () -> Void, onDiscard: (() -> Void)? = nil) {
         self.session = session
@@ -152,6 +154,10 @@ struct CompleteScreen: View {
                                 .padding(.top, 16)
                         }
 
+                        shareButton
+                            .padding(.horizontal, 20)
+                            .padding(.top, 8)
+
                         exerciseSummary
                             .padding(.horizontal, 20)
                             .padding(.top, 20)
@@ -224,6 +230,10 @@ struct CompleteScreen: View {
                 sessionId: session.templateId,
                 onDone: { showFeedbackSheet = false }
             )
+        }
+        .sheet(isPresented: Binding(get: { shareItems != nil },
+                                    set: { if !$0 { shareItems = nil } })) {
+            ShareSheet(items: shareItems ?? [])
         }
         .alert("Discard workout?", isPresented: $showDiscardConfirm) {
             Button("Discard", role: .destructive) {
@@ -649,6 +659,47 @@ struct CompleteScreen: View {
             .buttonStyle(.plain)
             .disabled(savedAsRoutine)
             .accessibilityIdentifier("complete-save-routine")
+        }
+    }
+
+    /// Share the finished workout as a local image plus text. Hidden when no
+    /// set is done or after discard.
+    @ViewBuilder
+    private var shareButton: some View {
+        if !discarded, stats.doneSets > 0 {
+            Button(action: presentShare) {
+                HStack(spacing: 6) {
+                    Image(systemName: "square.and.arrow.up")
+                        .scaledSystemFont(13, weight: .medium)
+                    Text("Share workout")
+                }
+                .font(.scaled("Inter-Regular", size: 13).weight(.medium))
+                .foregroundStyle(Color.accent)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("complete-share")
+        }
+    }
+
+    private func presentShare() {
+        let summary = WorkoutShareSummary.make(
+            sessionName: session.name,
+            date: session.loggedFor?.start ?? session.startTime,
+            elapsedSeconds: elapsedSeconds,
+            doneSets: stats.doneSets,
+            workingVolume: session.workingVolume(usesImperial: memoryStore.memory.usesImperial),
+            usesImperial: memoryStore.memory.usesImperial,
+            prs: prs.map { .init(name: $0.name, diff: $0.diff, unit: $0.unit) },
+            exercises: session.exercises.map {
+                .init(name: $0.name, doneSets: $0.sets.filter(\.done).count)
+            }
+        )
+        if let image = WorkoutShareCard.image(for: summary) {
+            shareItems = [image, summary.shareText]
+        } else {
+            shareItems = [summary.shareText]
         }
     }
 
