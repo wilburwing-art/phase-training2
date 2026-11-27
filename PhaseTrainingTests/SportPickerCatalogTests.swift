@@ -230,6 +230,22 @@ final class SportPickerCatalogTests: XCTestCase {
         }
     }
 
+    /// Backlog 2026-11e 4.4. Five water and wind sports reach 2+ qualifying
+    /// routines from external sources. Wing foiling, hydrofoiling, spearfishing
+    /// and swimrun moved to bucket D; water polo and artistic swimming wait on 4.11.
+    func testWaterAndWindSportsAreInThePicker() {
+        let slugs = Set(allSports.map(\.slug))
+        let covered = ["windsurfing", "kitesurfing", "wakeboarding", "wakesurfing", "freediving"]
+        for slug in covered {
+            XCTAssertTrue(slugs.contains(slug), slug)
+            XCTAssertTrue(SportCatalog.isPlannable(slug), slug)
+            XCTAssertGreaterThanOrEqual(
+                CoachDatabase.shared.authoredRoutineIds(
+                    sportSlug: slug, phaseLabels: AuthoredRoutineSelector.allPhaseLabels).count, 2,
+                slug)
+        }
+    }
+
     func testSearchIsCaseAndWhitespaceInsensitive() {
         let a = SportPickerCatalog.sections(matching: "tennis")
         let b = SportPickerCatalog.sections(matching: "TENNIS ")
