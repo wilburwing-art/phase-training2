@@ -81,6 +81,34 @@ class UICrashRetryTests(unittest.TestCase):
             ],
         )
 
+    def test_launch_timeout_with_progress_and_screenshot_yields_arg(self):
+        # Main run 45951067374: the first screens case logged three
+        # messages from one cold launch, and the re-run was refused.
+        tests = fixture("xcresult-tests-timeout.json")
+        for suite in suites(tests):
+            for case in suite["children"]:
+                if case.get("result") == "Failed":
+                    case["children"] = [
+                        {
+                            "name": "Failed to get screenshot: Timed out "
+                            "while requesting screenshot.",
+                            "nodeType": "Failure Message",
+                        },
+                        {
+                            "name": "Failed to launch <XCUIApplicationImpl: "
+                            "0x10a50a0c0 com.phasetraining.app> via Xcode: "
+                            "Timed out while launching application via Xcode.",
+                            "nodeType": "Failure Message",
+                        },
+                        {
+                            "name": "Failed to get launch progress for "
+                            "<XCUIApplicationImpl: 0x10a50a0c0 "
+                            "com.phasetraining.app>: No failure details provided",
+                            "nodeType": "Failure Message",
+                        },
+                    ]
+        self.assertEqual(len(ucr.rerun_args(tests)), 1)
+
     def test_launch_timeout_plus_assertion_yields_none(self):
         tests = fixture("xcresult-tests-timeout.json")
         for suite in suites(tests):

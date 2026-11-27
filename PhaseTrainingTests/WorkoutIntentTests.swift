@@ -332,7 +332,7 @@ final class WorkoutIntentTests: XCTestCase {
     func test_talkToCoachPhraseFollowsTheBuildGate() {
         XCTAssertTrue(PhaseShortcuts.listsTalkToCoach, "Debug builds set COACH_PHRASE")
         XCTAssertEqual(PhaseShortcuts.appShortcuts.count,
-                       PhaseShortcuts.listsTalkToCoach ? 5 : 4)
+                       PhaseShortcuts.listsTalkToCoach ? 7 : 6)
         XCTAssertEqual(TalkToCoachIntent.isDiscoverable, PhaseShortcuts.listsTalkToCoach)
     }
 }
