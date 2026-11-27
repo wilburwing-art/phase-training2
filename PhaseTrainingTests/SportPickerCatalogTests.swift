@@ -180,6 +180,22 @@ final class SportPickerCatalogTests: XCTestCase {
         }
     }
 
+    /// Backlog 2026-11e 4.8: golf fitness and senior golf get the Lephart 2007
+    /// and White 2026 routines (`scripts/db/distill_golf.py`). golf-fitness had
+    /// none before it, and golf-senior's two were mobility and warm-up.
+    func testGolfFitnessAndSeniorGolfAreInThePicker() {
+        let slugs = Set(allSports.map(\.slug))
+        for slug in ["golf-fitness", "golf-senior"] {
+            XCTAssertTrue(slugs.contains(slug), slug)
+            XCTAssertFalse(SportPickerCatalog.sections(matching: slug.replacingOccurrences(of: "-", with: " ")).isEmpty, slug)
+            for phase in [["off_season", "base"], ["build"], ["maintenance"]] {
+                XCTAssertFalse(
+                    CoachDatabase.shared.authoredRoutineIds(sportSlug: slug, phaseLabels: phase).isEmpty,
+                    "\(slug)/\(phase)")
+            }
+        }
+    }
+
     func testSearchIsCaseAndWhitespaceInsensitive() {
         let a = SportPickerCatalog.sections(matching: "tennis")
         let b = SportPickerCatalog.sections(matching: "TENNIS ")

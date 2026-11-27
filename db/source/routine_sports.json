@@ -3214,5 +3214,45 @@
   {
     "routine_id": 466,
     "sport_id": 355
+  },
+  {
+    "routine_id": 467,
+    "sport_id": 331
+  },
+  {
+    "routine_id": 467,
+    "sport_id": 332
+  },
+  {
+    "routine_id": 468,
+    "sport_id": 331
+  },
+  {
+    "routine_id": 468,
+    "sport_id": 332
+  },
+  {
+    "routine_id": 469,
+    "sport_id": 331
+  },
+  {
+    "routine_id": 469,
+    "sport_id": 332
+  },
+  {
+    "routine_id": 470,
+    "sport_id": 332
+  },
+  {
+    "routine_id": 471,
+    "sport_id": 331
+  },
+  {
+    "routine_id": 472,
+    "sport_id": 331
+  },
+  {
+    "routine_id": 473,
+    "sport_id": 331
   }
 ]
