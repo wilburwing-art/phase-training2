@@ -4,7 +4,7 @@
 Adds three authored `build` routines from the Mountain Tactical Institute
 Kayak/Paddling Pre-Season plan (6 weeks, gym sessions only: the assessment on
 sessions 1/9/17 and the two strength endurance session shapes). Each is tagged
-to paddle-sports, kayaking and sup. The plan has no in-season content, so no
+to paddle-sports, kayaking, sup, canoeing and rafting. The plan has no in-season content, so no
 `maintenance` routine is written. Water sessions are not distilled.
 
 Catalog exercises only. Each movement is checked against the expected catalog
@@ -23,7 +23,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SOURCE = REPO_ROOT / "db" / "source"
 
-PADDLE_SPORTS = [380, 381, 395]  # paddle-sports, kayaking, sup
+PADDLE_SPORTS = [380, 381, 395, 390, 400]  # paddle-sports, kayaking, sup, canoeing, rafting
 
 CREDIT = "MTI Kayak/Paddling Pre-Season (distilled)"
 
