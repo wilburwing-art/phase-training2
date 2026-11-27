@@ -3158,5 +3158,61 @@
   {
     "routine_id": 452,
     "sport_id": 457
+  },
+  {
+    "routine_id": 453,
+    "sport_id": 272
+  },
+  {
+    "routine_id": 454,
+    "sport_id": 272
+  },
+  {
+    "routine_id": 455,
+    "sport_id": 272
+  },
+  {
+    "routine_id": 456,
+    "sport_id": 289
+  },
+  {
+    "routine_id": 457,
+    "sport_id": 289
+  },
+  {
+    "routine_id": 458,
+    "sport_id": 289
+  },
+  {
+    "routine_id": 459,
+    "sport_id": 694
+  },
+  {
+    "routine_id": 460,
+    "sport_id": 694
+  },
+  {
+    "routine_id": 461,
+    "sport_id": 694
+  },
+  {
+    "routine_id": 462,
+    "sport_id": 661
+  },
+  {
+    "routine_id": 463,
+    "sport_id": 661
+  },
+  {
+    "routine_id": 464,
+    "sport_id": 355
+  },
+  {
+    "routine_id": 465,
+    "sport_id": 355
+  },
+  {
+    "routine_id": 466,
+    "sport_id": 355
   }
 ]

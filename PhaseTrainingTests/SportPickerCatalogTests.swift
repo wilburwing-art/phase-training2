@@ -159,11 +159,25 @@ final class SportPickerCatalogTests: XCTestCase {
         }
     }
 
-    func testFencingIsHiddenWhileUnderTheFloor() {
-        // Fencing's one routine is 20 min, under the 25-minute floor. This
-        // flips when fencing gets routines.
-        XCTAssertFalse(SportCatalog.isPlannable("fencing"))
-        XCTAssertTrue(SportPickerCatalog.sections(matching: "fencing").isEmpty)
+    func testParaglidingIsHiddenWhileUnderTheFloor() {
+        // Paragliding's one routine is under the 25-minute floor. This flips
+        // when 11e 4.5 distills paragliding routines.
+        XCTAssertFalse(SportCatalog.isPlannable("paragliding"))
+        XCTAssertTrue(SportPickerCatalog.sections(matching: "paragliding").isEmpty)
+    }
+
+    /// Backlog 2026-11e 4.1: the external-source pilot. Each sport has 2+
+    /// qualifying routines from `scripts/db/distill_pilot_external.py`.
+    func testExternalPilotSportsAreInThePicker() {
+        let slugs = Set(allSports.map(\.slug))
+        for slug in ["boxing", "fencing", "dressage", "dinghy-sailing", "table-tennis"] {
+            XCTAssertTrue(slugs.contains(slug), slug)
+            XCTAssertFalse(SportPickerCatalog.sections(matching: slug.replacingOccurrences(of: "-", with: " ")).isEmpty, slug)
+            XCTAssertGreaterThanOrEqual(
+                CoachDatabase.shared.authoredRoutineIds(
+                    sportSlug: slug, phaseLabels: AuthoredRoutineSelector.allPhaseLabels).count, 2,
+                slug)
+        }
     }
 
     func testSearchIsCaseAndWhitespaceInsensitive() {

@@ -44,6 +44,7 @@ described in the 11d header, with no lines from the grep.
 - [x] **#1 Family profile rows (owner decision).** Yes, 2026-11-18. Do you approve these defaults for the 15 family roots with no `SportProfile` row (rules `.general`, signature, family)? Martial arts: contactStrength, upperDominant. Golf: core, legsDominant. Racquet: power, legsDominant. Surf and wave: pullEndurance, upperDominant. Swimming: pullEndurance, upperDominant. Multi-sport endurance: legEndurance, legsDominant. Team and rec: power, legsDominant. Skating and wheeled: legEndurance, legsDominant. Yoga and movement: bodyTension, upperDominant. Strength sports: maxStrength, legsDominant. Sailing and air: core, legsDominant. Equestrian: core, legsDominant. Archery and shooting: pullEndurance, upperDominant. Fishing and hunting: legEndurance, legsAndCarry. Dance: legEndurance, legsDominant. Yes unblocks 1.1 as written. Changes get edited into 1.1 first.
 - [x] **#2 Parent overrides (owner decision).** Yes, 2026-11-18: the three overrides apply. Map via ferrata to scrambling, geocaching to day hiking, and bikejoring to mountain biking? Or keep the strict parent rule, which leaves geocaching and bikejoring with no program, because `misc-outdoor` has none? Yes edits item 5.1. No marks those three as unsupported in 5.1.
 - [x] **#3 Pilot set (owner decision).** Yes, 2026-11-18: table tennis stays, tennis stays in A. Run the external pilot on boxing, fencing, dressage, dinghy sailing and table tennis? Or keep tennis in it? Tennis was in the plan, but it already has 5 routines (bucket A). Yes runs 4.1 as listed. Tennis swaps it in for table tennis.
+- [ ] **#4 Pilot review (owner decision).** Read the 4.1 review note and the routines 453 to 466 in the app. Accept the source standard as applied (journal papers and theses with affiliations, one governing body slide, two joined papers for table tennis)? Accepting unblocks 4.2 to 4.7 at that standard. Tightening it (credentials printed on the paper, one source per session) reopens 4.1 for boxing and table tennis and moves sports with no such source to D.
 
 ## Phase 1: wiring (Logic, UI)
 
@@ -105,8 +106,15 @@ Read sessions with `sqlite3 ~/repos/training-kb/data/training.db "SELECT raw_tex
 
 Source standard: the author is named with credentials, and the venue is named (a journal, a book, a coach's own site, or a community page with its review count). Record the citation in `source_name` and the URL in `source_url`. Distill movements and doses only. Copy no prose. A sport with no source that meets the standard after one search pass moves to D, and the move is noted on its tracker line.
 
-- [ ] **4.1 Pilot (6 h).** boxing, fencing, dressage, dinghy-sailing, table-tennis. Owner reviews the 5 sports' routines before 4.2 starts. Done: `DB`, plus a review note in this doc under 4.1.
-- [ ] **4.2 Combat sports (6 h, after 4.1).** muay-thai, kickboxing, karate, taekwondo, krav-maga, aikido, kung-fu, capoeira, hema, kendo, iaido.
+- [ ] **4.1 Pilot (6 h).** boxing, fencing, dressage, dinghy-sailing, table-tennis. Owner reviews the 5 sports' routines before 4.2 starts. Done: `DB`, plus a review note in this doc under 4.1. Built 2026-11-27: `scripts/db/distill_pilot_external.py` adds fourteen routines (453 to 466), each tagged to its pilot slug only; family roots and siblings are left to 4.2 to 4.7 and 5.1. Every routine carries `source_name` and `source_url`. Measured after the build: boxing 4 qualifying routines, fencing 3, dressage 3, table-tennis 3, dinghy-sailing 2; coverage 99 of 217 sports. `SportPickerCatalogTests.testFencingIsHiddenWhileUnderTheFloor` became `testParaglidingIsHiddenWhileUnderTheFloor` (fencing now has routines), and `testExternalPilotSportsAreInThePicker` checks all five. Local `xcodebuild test` hung before connecting (1.8), so: tick after `SportPickerCatalogTests` and `AuthoredRoutineTests` pass in main CI.
+  - **Review note for the owner (read before 4.2).** One search pass per sport, about 15 fetches each. What each sport got, and where the source falls short of the standard:
+    - Boxing: 453 Max Strength Day (`base`) from Ma, Guo and Wang, J Sport Health Sci 2017, the training protocol of a supplement trial in amateur boxers; the block has no season label, so `base` is our call. 454 and 455 (`build`) from Finlay, Int J Strength Cond 2025, a 4 week pre-tournament contrast programme (3x5 throughout, no load or rest printed, so the notes say 5RM and 2 to 3 minutes). Finlay's credentials are a role (S&C coach, applied sport scientist), no certification found. Ruddock et al., Strength Cond J 2016 (professional boxing) meets the standard but its repository blocks fetches; read it in a browser if you want a better boxing base. In season stays on 205.
+    - Fencing: 456 to 458, all `maintenance`, from Turner et al., Strength Cond J 2013, Table 8 (the in-season example). Read in the NSCA Japan translation; the English full text was paywalled or blocked. The table's sessions hold 2 lifts each, so strength sessions 1 and 2 and sessions 3 and 4 are joined. Split snatch is served as Power Snatch. Off-season and pre-season fall back to these routines (tier 2) until a block source turns up.
+    - Dressage: 459 (`base`) and 460 (`build`) from Lee, UNC Chapel Hill MA thesis 2015 (journal version Comp Exerc Physiol 2015), an 8 week home band program for dressage riders split at week 4. Band movements map to cable and machine rows (seated row, cable rotation, machine adduction); each note names the band version. 461 (`maintenance`) from Hyttinen, Ahtiainen and Hakkinen, Comp Exerc Physiol 2025, a gym program for show jumping and eventing riders; the circuit loses two movements with no catalog row.
+    - Dinghy sailing: 462 (`base`) from Ali Brown (BSc), World Sailing S&C coach course, the ILCA sailor template slide, labelled an example. 463 (`maintenance`) from Michael Blackburn (PhD Human Movement Studies, 2006 Laser world champion), Sail Magazine, a bodyweight and shock cord circuit. No `build` routine: pre-season falls back to these two.
+    - Table tennis: 464 and 465 (`base`) join the high-load arm of Qu et al., Front Physiol 2026 (squat, leg press, leg extension, 4x8 at 80%) with Dong et al., PLOS ONE 2025 core weeks 1 to 3 and 4 to 6. 466 (`build`) is Dong weeks 7 to 12. Both papers print affiliations, not degrees. The joining of two papers in one session is ours. The best credentialed source, Lum (CSCS, Singapore Sports Institute), NSCA Coach 2013, is members-only. No `maintenance` routine: in season falls back.
+    - Rejected after reading: Boxing News (Goff, no credentials), Fencing Australia flyer, Merrimack fencing site (no credentials), PingSkills, Skadefri table tennis (a short warm-up), North Sails, Sail1Design, SpinSheet, Hampson and Randle 2015 (full text blocked), International Sailing Academy (no credentials).
+- [ ] **4.2 Combat sports (6 h, after 4.1).** muay-thai, kickboxing, karate, taekwondo, krav-maga, aikido, kung-fu, capoeira, hema, kendo, iaido. Waits on Phase 0 #4 (owner decision).
 - [ ] **4.3 Racquet and team sports (6 h).** padel, badminton, racquetball, disc-golf, softball, ultimate-frisbee, hockey, lacrosse, cricket, team-handball.
 - [ ] **4.4 Water and wind (6 h).** windsurfing, kitesurfing, wing-foiling, wakeboarding, wakesurfing, hydrofoiling, freediving, spearfishing, water-polo, artistic-swimming, swimrun.
 - [ ] **4.5 Snow, wheels, air (6 h).** freestyle-skiing, ski-jumping, nordic-combined, roller-skiing, skateboarding, inline-skating, bmx, paragliding, hang-gliding, keelboat-racing, catamaran-sailing.
@@ -135,7 +143,7 @@ Plain bullets, no boxes. /next works the phase items above. Update a line's buck
 - **Wrestling** (`wrestling`, id 266) B. MTI: Tactical BJJ packet (579 to 583). Has 1 routine now.
 - **Muay Thai** (`muay-thai`, id 270) C. External source needed. Has 1 routine now.
 - **Kickboxing** (`kickboxing`, id 271) C. External source needed. Has 1 routine now.
-- **Boxing** (`boxing`, id 272) C. External source needed. **Pilot.** Has 1 routine now.
+- **Boxing** (`boxing`, id 272) C. **Pilot.** 4.1 added 453 to 455 (Ma 2017, Finlay 2025); 4 qualifying routines with 205.
 - **Mixed Martial Arts** (`mma`, id 275) A. 3 routines. Profile row through the family, then spot-check.
 - **Karate** (`karate`, id 277) C. External source needed. Has 1 routine now.
 - **Taekwondo** (`taekwondo`, id 281) C. External source needed. Has 1 routine now.
@@ -144,7 +152,7 @@ Plain bullets, no boxes. /next works the phase items above. Update a line's buck
 - **Aikido** (`aikido`, id 286) C. External source needed.
 - **Kung Fu / Wushu** (`kung-fu`, id 287) C. External source needed.
 - **Capoeira** (`capoeira`, id 288) C. External source needed.
-- **Fencing** (`fencing`, id 289) C. External source needed. **Pilot.**
+- **Fencing** (`fencing`, id 289) C. **Pilot.** 4.1 added 456 to 458 (Turner 2013), `maintenance` only.
 - **HEMA** (`hema`, id 293) C. External source needed.
 - **Kendo** (`kendo`, id 294) C. External source needed.
 - **Iaido** (`iaido`, id 295) C. External source needed.
@@ -170,7 +178,7 @@ Plain bullets, no boxes. /next works the phase items above. Update a line's buck
 - **Badminton** (`badminton`, id 350) C. External source needed. Has 1 routine now.
 - **Squash** (`squash`, id 353) A. 2 routines. Profile row through the family, then spot-check.
 - **Racquetball** (`racquetball`, id 354) C. External source needed. Has 1 routine now.
-- **Table Tennis** (`table-tennis`, id 355) C. External source needed. **Pilot.**
+- **Table Tennis** (`table-tennis`, id 355) C. **Pilot.** 4.1 added 464 to 466 (Qu 2026, Dong 2025), no `maintenance`.
 - **Beach Tennis** (`beach-tennis`, id 356) D. Maps to parent racquet-sports.
 - **Tennis Singles** (`tennis-singles`, id 342) D. Maps to parent tennis.
 - **Tennis Doubles** (`tennis-doubles`, id 343) D. Maps to parent tennis.
@@ -267,7 +275,7 @@ Plain bullets, no boxes. /next works the phase items above. Update a line's buck
 ### Sailing & Air Sports
 
 - **Sailing & Air Sports** (`sailing-air-sports`, id 660) D. Family root. Tag the dinghy-sailing routines once they land.
-- **Dinghy Sailing** (`dinghy-sailing`, id 661) C. External source needed. **Pilot.**
+- **Dinghy Sailing** (`dinghy-sailing`, id 661) C. **Pilot.** 4.1 added 462 and 463 (World Sailing, Blackburn), no `build`.
 - **Keelboat Racing** (`keelboat-racing`, id 662) C. External source needed.
 - **Catamaran Sailing** (`catamaran-sailing`, id 663) C. External source needed.
 - **Land Sailing** (`land-sailing`, id 664) D. Maps to parent sailing-air-sports.
@@ -280,7 +288,7 @@ Plain bullets, no boxes. /next works the phase items above. Update a line's buck
 - **Trail Riding** (`equestrian-trail`, id 691) C. External source needed. Has 1 routine now.
 - **Endurance Riding** (`equestrian-endurance`, id 692) C. External source needed. Has 1 routine now.
 - **Eventing** (`equestrian-eventing`, id 693) C. External source needed. Has 1 routine now.
-- **Dressage** (`dressage`, id 694) C. External source needed. **Pilot.**
+- **Dressage** (`dressage`, id 694) C. **Pilot.** 4.1 added 459 to 461 (Lee 2015, Hyttinen 2025).
 - **Show Jumping** (`show-jumping`, id 695) C. External source needed.
 - **Polo** (`polo`, id 696) C. External source needed. Has 1 routine now.
 
