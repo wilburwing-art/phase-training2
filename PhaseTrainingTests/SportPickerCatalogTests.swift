@@ -214,6 +214,22 @@ final class SportPickerCatalogTests: XCTestCase {
         }
     }
 
+    /// Backlog 2026-11e 4.3. Seven racquet and team sports reach 2+ qualifying
+    /// routines from external sources. Racquetball, disc golf and ultimate
+    /// moved to bucket D.
+    func testRacquetAndTeamSportsAreInThePicker() {
+        let slugs = Set(allSports.map(\.slug))
+        let covered = ["padel", "badminton", "softball", "hockey", "lacrosse", "cricket", "team-handball"]
+        for slug in covered {
+            XCTAssertTrue(slugs.contains(slug), slug)
+            XCTAssertTrue(SportCatalog.isPlannable(slug), slug)
+            XCTAssertGreaterThanOrEqual(
+                CoachDatabase.shared.authoredRoutineIds(
+                    sportSlug: slug, phaseLabels: AuthoredRoutineSelector.allPhaseLabels).count, 2,
+                slug)
+        }
+    }
+
     func testSearchIsCaseAndWhitespaceInsensitive() {
         let a = SportPickerCatalog.sections(matching: "tennis")
         let b = SportPickerCatalog.sections(matching: "TENNIS ")
