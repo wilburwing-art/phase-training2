@@ -7,6 +7,11 @@ xcodebuild's -retry-tests-on-failure skips two kinds of failure:
 - an execution time allowance kill ("Test exceeded execution time
   allowance of 3 minutes"): the case runs once (main run 45869446240,
   MotivationBatchUITests at 211 s after seven runs at 52 to 66 s).
+A launch timeout ("Timed out while launching application via Xcode")
+does get retried, but the retries land on the same cold simulator a few
+seconds later and fail the same way (main run 45919860804,
+AppLaunchSmokeTests failed all three iterations at about 100 s each
+while the 39 cases after it passed), so it is re-run once at the end too.
 This script reads the result bundle and prints one -only-testing argument
 per such case so the workflow can re-run them once. A case that hangs
 again on the re-run keeps the shard red.
@@ -38,6 +43,7 @@ import sys
 RERUN_MARKERS = (
     "Test crashed with signal",
     "Test exceeded execution time allowance",
+    "Timed out while launching application",
 )
 
 

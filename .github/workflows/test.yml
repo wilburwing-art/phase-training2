@@ -211,7 +211,10 @@ jobs:
         # "Executed 0 tests" and the case is never retried (run 44805314849).
         # If every failed case is such a crash or an allowance kill,
         # ui_crash_retry.py prints their -only-testing args and they re-run
-        # once; the shard takes the re-run's result. Any other failure
+        # once; the shard takes the re-run's result. A launch timeout
+        # ("Timed out while launching application") re-runs too: xcodebuild
+        # retries it at once on the same cold simulator, and run
+        # 45919860804 failed all three tries. Any other failure
         # keeps the first result.
         run: |
           set -o pipefail

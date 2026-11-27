@@ -53,6 +53,52 @@ class UICrashRetryTests(unittest.TestCase):
             ],
         )
 
+    def test_launch_timeout_yields_only_testing_arg(self):
+        # Main run 45919860804: the first flows case failed all three
+        # iterations with a launch timeout plus an allowance kill.
+        tests = fixture("xcresult-tests-timeout.json")
+        for suite in suites(tests):
+            for case in suite["children"]:
+                if case.get("result") == "Failed":
+                    case["children"] = [
+                        {
+                            "name": "Failed to launch <XCUIApplicationImpl: "
+                            "0x1079300c0 com.phasetraining.app> via Xcode: "
+                            "Timed out while launching application via Xcode.",
+                            "nodeType": "Failure Message",
+                        },
+                        {
+                            "name": "Test exceeded execution time allowance "
+                            "of 3 minutes",
+                            "nodeType": "Failure Message",
+                        },
+                    ]
+        self.assertEqual(
+            ucr.rerun_args(tests),
+            [
+                "-only-testing:PhaseTrainingUITests/MotivationBatchUITests/"
+                "test_progressStrengthRowShowsSelfDelta"
+            ],
+        )
+
+    def test_launch_timeout_plus_assertion_yields_none(self):
+        tests = fixture("xcresult-tests-timeout.json")
+        for suite in suites(tests):
+            for case in suite["children"]:
+                if case.get("result") == "Failed":
+                    case["children"] = [
+                        {
+                            "name": "Failed to launch via Xcode: Timed out "
+                            "while launching application via Xcode.",
+                            "nodeType": "Failure Message",
+                        },
+                        {
+                            "name": "XCTAssertTrue failed",
+                            "nodeType": "Failure Message",
+                        },
+                    ]
+        self.assertIsNone(ucr.rerun_args(tests))
+
     def test_crash_plus_timeout_yields_two_args(self):
         tests = fixture("xcresult-tests-crash.json")
         suites(tests).extend(suites(fixture("xcresult-tests-timeout.json")))
