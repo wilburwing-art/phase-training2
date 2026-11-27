@@ -202,9 +202,11 @@ jobs:
         # first case timing out its launch on the fresh simulator
         # (45919860804, 45951067374, 45955599356). Boot the simulator and
         # launch the built app once here so the first case launches warm.
-        # The app is uninstalled after, so the first case still gets the
-        # fresh container it had before. A failure here only warns: the
-        # test step's launch-timeout re-run still covers a cold first case.
+        # The app stays installed: every UI case launches with
+        # --ui-test-reset, which wipes UserDefaults and user.db, and run
+        # 45977170404 spent 30 to 110 s per shard on terminate + uninstall.
+        # A failure here only warns: the test step's launch-timeout re-run
+        # still covers a cold first case.
         run: |
           udid="${{ steps.setup.outputs.udid }}"
           app=build/DerivedData/Build/Products/Debug-iphonesimulator/PhaseTraining.app
@@ -217,7 +219,6 @@ jobs:
              && xcrun simctl launch "$udid" com.phasetraining.app; then
             sleep 20
             xcrun simctl terminate "$udid" com.phasetraining.app || true
-            xcrun simctl uninstall "$udid" com.phasetraining.app || true
           else
             echo "::warning::Simulator warm-up failed; the first UI case launches cold."
           fi
