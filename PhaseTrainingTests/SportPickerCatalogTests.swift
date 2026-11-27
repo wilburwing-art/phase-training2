@@ -196,6 +196,24 @@ final class SportPickerCatalogTests: XCTestCase {
         }
     }
 
+    /// Backlog 2026-11e 4.2: combat sports from `scripts/db/distill_combat.py`.
+    /// Six reach 2+ qualifying routines; capoeira and kendo have one each and
+    /// show in the picker on it. Krav maga, aikido and iaido moved to bucket D.
+    func testCombatSportsAreInThePicker() {
+        let slugs = Set(allSports.map(\.slug))
+        let covered = ["muay-thai", "kickboxing", "karate", "taekwondo", "kung-fu", "hema"]
+        for slug in covered + ["capoeira", "kendo"] {
+            XCTAssertTrue(slugs.contains(slug), slug)
+            XCTAssertTrue(SportCatalog.isPlannable(slug), slug)
+        }
+        for slug in covered {
+            XCTAssertGreaterThanOrEqual(
+                CoachDatabase.shared.authoredRoutineIds(
+                    sportSlug: slug, phaseLabels: AuthoredRoutineSelector.allPhaseLabels).count, 2,
+                slug)
+        }
+    }
+
     func testSearchIsCaseAndWhitespaceInsensitive() {
         let a = SportPickerCatalog.sections(matching: "tennis")
         let b = SportPickerCatalog.sections(matching: "TENNIS ")
