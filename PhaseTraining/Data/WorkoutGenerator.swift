@@ -179,9 +179,26 @@ enum WorkoutGenerator {
             // session its back and arms to the recovery gate.
             let push = pushElsewhere + patternSets([pressed], SportSeasonGenerator.pushPatterns)
             let pull = pullElsewhere + patternSets([pressed], SessionMix.pullPatterns)
-            guard push > pull, memory.seasonForPlanner != .inSeason, memory.seasonForPlanner != .maintenance,
-                  let upper = slot.focus.withPulling else { return pressed }
-            return balanced(ComplementSlot(focus: upper, repeatNumber: slot.repeatNumber))
+            guard let upper = slot.focus.withPulling else { return pressed }
+            let pulling = { balanced(ComplementSlot(focus: upper, repeatNumber: slot.repeatNumber)) }
+            let pullDay = push > pull && memory.seasonForPlanner != .inSeason
+                && memory.seasonForPlanner != .maintenance
+            let served = pullDay ? pulling() : pressed
+            // A deload week serves the session the week before served (11e
+            // 1.14). Its engine sets are cut to 70% and an authored sport
+            // day's are not, so the week's push and pull can land on the
+            // other side of 1:1 and switch the pulling variant on or off: a
+            // swimmer's deload complement day added a Dumbbell Single-Arm Row
+            // (11e 1.23). With last week's session in hand, take the variant
+            // closer to it.
+            let weekBefore = context.weekBeforeLiftIds[liftIndex] ?? []
+            guard !weekBefore.isEmpty, SportSeasonGenerator.cycleStatus(athlete()).state == .deload
+            else { return served }
+            let other = pullDay ? pressed : pulling()
+            func distance(_ w: GeneratedWorkout) -> Int {
+                Set(w.exercises.map(\.exerciseId)).symmetricDifference(weekBefore).count
+            }
+            return distance(other) < distance(served) ? other : served
         case .sport(let index, let of):
             sportIndex = index
             sportSessions = of
