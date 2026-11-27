@@ -15,7 +15,15 @@ The plan prepares a candidate for a selection test. These routines are for a rec
 swimmer's pre-season, so the volumes are cut (fewer rounds, lower rep totals) and each note says
 what the source prescribes.
 
-Not distilled:
+Backlog 2026-11e 4.9 adds two `maintenance` routines, so inSeason has its own sessions. The source
+is Marques, Yanez-Garcia, Marinho, Gonzalez-Badillo and Rodriguez-Rosell, J Hum Kinet 74:71-84
+(2020), Table 2: 20 weeks of in-season strength and plyometric work, twice a week, for elite junior
+swimmers. The paper prints affiliations (University of Beira Interior, CIDESD, Universidad Pablo de
+Olavide), not degrees. Its two 9 week cycles run the same six lifts each session with the load
+rising week to week. The first routine holds the week 1 to 4 doses, the second the week 5 to 9
+doses. Rotation alternates them; each note says the source runs them in sequence.
+
+Not distilled from the rescue swimmer plan:
 - Every run: the 400 m warm-up lap, the 1.5 mile test run, the 3 to 5 mile moderate runs, the
   800 m intervals and the runs between calisthenics blocks.
 - Every pool session (3, 7, 9, 13, 15, 21, 25, 27, 31, 33, 39), the 450 m timed swim, the 25
@@ -106,6 +114,55 @@ ROUTINES = [
         ],
     ),
 ]
+
+INSEASON_CREDIT = ("Marques, Yanez-Garcia, Marinho, Gonzalez-Badillo and Rodriguez-Rosell, "
+                   "J Hum Kinet 74:71-84, 2020 (distilled)")
+INSEASON_URL = "https://doi.org/10.2478/hukin-2020-0015"
+FAST = "move the load as fast as you can, stop the set if speed drops"
+
+ROUTINES += [
+    dict(
+        name="Swim In-Season: Light Fast Strength A",
+        phase="maintenance", credit=INSEASON_CREDIT, url=INSEASON_URL, sports=SWIM, minutes=60,
+        created="2026-11-27 00:00:00",
+        notes="Source: Marques et al. 2020, Table 2, weeks 1 to 4 of a 20 week in-season program for elite junior "
+              "swimmers, run twice a week on non-consecutive days alongside full pool training. Loads stay light and "
+              "every rep is lifted at full intended speed, so the session adds little fatigue to swim practice. Do "
+              "the lifts in order and finish every set of one before starting the next, 2 to 3 minutes between sets. "
+              "Squat and squat jump loads are a percent of your squat 1RM; bench and shoulder press loads are a percent "
+              "of your bench 1RM. Pull-up sets are a percent of your max pull-ups. The source runs these doses first "
+              "and the B doses after, then repeats both 5 percent heavier on squat and bench in a second 9 week cycle. "
+              "Warm up with 5 minutes of easy jogging and 5 minutes of joint mobility.",
+        movements=[
+            (57, "Barbell Back Squat", 3, "6-8", FAST, "40-45% of squat 1RM, full depth. The source used a Smith machine"),
+            (1034, "Jump Squat", 3, "3-4", FAST, "Loaded with 15% of squat 1RM on the back, land soft and reset"),
+            (230, "Squat Jump (Counter-Movement)", 3, "4-5", FAST, "Bodyweight, jump as high as you can each rep"),
+            (900, "Barbell Bench Press", 3, "8-10", FAST, "45-50% of bench 1RM"),
+            (922, "Pull-Up", 3, "50% of test max", FAST, "Per set, from your max pull-up test. Week 4 of the source goes to 60%"),
+            (904, "Barbell Overhead Press (Strict)", 3, "8-10", FAST, "20-25% of bench 1RM"),
+        ],
+    ),
+    dict(
+        name="Swim In-Season: Light Fast Strength B",
+        phase="maintenance", credit=INSEASON_CREDIT, url=INSEASON_URL, sports=SWIM, minutes=60,
+        created="2026-11-27 00:00:00",
+        notes="Source: Marques et al. 2020, Table 2, weeks 5 to 9 of a 20 week in-season program for elite junior "
+              "swimmers, twice a week. Same six lifts as A at higher loads and fewer reps, every rep at full intended "
+              "speed. The source adds a fourth set to squat, bench and shoulder press in weeks 8 and 9; do that once "
+              "the 3 sets feel fast. Squat and squat jump loads are a percent of your squat 1RM, bench and shoulder "
+              "press a percent of your bench 1RM, pull-ups a percent of your max. After week 9 the source takes a "
+              "recovery week, retests squat and bench, and repeats the cycle 5 percent heavier. Warm up with 5 "
+              "minutes of easy jogging and 5 minutes of joint mobility.",
+        movements=[
+            (57, "Barbell Back Squat", 3, "4-6", FAST, "50-55% of squat 1RM, full depth. The source used a Smith machine"),
+            (1034, "Jump Squat", 3, "3-4", FAST, "Loaded with 25% of squat 1RM on the back, land soft and reset"),
+            (230, "Squat Jump (Counter-Movement)", 3, "4-5", FAST, "Bodyweight, jump as high as you can each rep"),
+            (900, "Barbell Bench Press", 3, "6-8", FAST, "55-60% of bench 1RM"),
+            (922, "Pull-Up", 4, "60-75% of test max", FAST, "Per set, from your max pull-up test. 4 sets at 60%, then 3 sets at 75%"),
+            (904, "Barbell Overhead Press (Strict)", 3, "6-8", FAST, "30-35% of bench 1RM"),
+        ],
+    ),
+]
 CREATED = "2026-11-26 00:00:00"
 
 
@@ -172,8 +229,8 @@ def main():
             difficulty="intermediate", phase=spec["phase"],
             duration_minutes=spec["minutes"], frequency="1-2x/week",
             environment="gym", time_commitment=f'{spec["minutes"]} min',
-            notes=spec["notes"], source_name=spec["credit"],
-            created_at=CREATED, updated_at=CREATED,
+            notes=spec["notes"], source_name=spec["credit"], source_url=spec.get("url"),
+            created_at=spec.get("created", CREATED), updated_at=spec.get("created", CREATED),
         )
         routines.append(row)
         for sport in spec["sports"]:

@@ -339,9 +339,25 @@ final class AuthoredRoutineTests: XCTestCase {
     /// this set when it covers all of them.
     static let knownPhaseGapSports: Set<String> = [
         "equestrian", "fishing-hunting", "golf", "martial-arts", "multi-sport-endurance", "racquet-sports",
-        "skating-wheeled", "strength-fitness-sports", "surf-wave-sports", "swimming",
+        "skating-wheeled", "strength-fitness-sports", "surf-wave-sports",
         "yoga-movement",
     ]
+
+    /// 11e 4.9: the in-season swim routines (Marques et al. 2020) serve inSeason
+    /// for all three swim slugs, rotating between the A and B doses.
+    func testInSeasonSwimWeekServesTheMarquesRoutines() {
+        for slug in ["swimming", "lap-swimming", "open-water-swimming"] {
+            XCTAssertEqual(
+                Set(CoachDatabase.shared.authoredRoutineIds(
+                    sportSlug: slug, phaseLabels: AuthoredRoutineSelector.phaseLabels(for: .inSeason))),
+                [474, 475], slug)
+            XCTAssertEqual(
+                Set([0, 1].compactMap {
+                    AuthoredRoutineSelector.select(sportSlug: slug, phase: .inSeason, sessionIndex: $0)
+                }),
+                [474, 475], slug)
+        }
+    }
 
     func testInSeasonMountaineeringWeekServesThe3bRoutines() {
         XCTAssertEqual(
