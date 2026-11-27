@@ -216,7 +216,8 @@ jobs:
         # retries it at once on the same cold simulator, and run
         # 45919860804 failed all three tries. The launch-progress and
         # screenshot timeouts that come with it re-run too (run
-        # 45951067374). Any other failure keeps the first result.
+        # 45951067374), and so does "Stall on main thread" (run
+        # 45955599356). Any other failure keeps the first result.
         run: |
           set -o pipefail
           mkdir -p build

@@ -109,6 +109,33 @@ class UICrashRetryTests(unittest.TestCase):
                     ]
         self.assertEqual(len(ucr.rerun_args(tests)), 1)
 
+    def test_launch_timeout_with_main_thread_stall_yields_arg(self):
+        # Main run 45955599356: the first taps case timed out on a cold
+        # launch and also logged "Stall on main thread", and the re-run
+        # was refused.
+        tests = fixture("xcresult-tests-timeout.json")
+        for suite in suites(tests):
+            for case in suite["children"]:
+                if case.get("result") == "Failed":
+                    case["children"] = [
+                        {
+                            "name": "Failed to launch <XCUIApplicationImpl: "
+                            "0x105413000 com.phasetraining.app> via Xcode: "
+                            "Timed out while launching application via Xcode.",
+                            "nodeType": "Failure Message",
+                        },
+                        {
+                            "name": "Stall on main thread.",
+                            "nodeType": "Failure Message",
+                        },
+                        {
+                            "name": "Test exceeded execution time allowance "
+                            "of 3 minutes",
+                            "nodeType": "Failure Message",
+                        },
+                    ]
+        self.assertEqual(len(ucr.rerun_args(tests)), 1)
+
     def test_launch_timeout_plus_assertion_yields_none(self):
         tests = fixture("xcresult-tests-timeout.json")
         for suite in suites(tests):

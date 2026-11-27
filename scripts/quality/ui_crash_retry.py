@@ -50,6 +50,7 @@ RERUN_MARKERS = (
     "Timed out while launching application",
     "Failed to get launch progress",
     "Timed out while requesting screenshot",
+    "Stall on main thread",
 )
 
 
