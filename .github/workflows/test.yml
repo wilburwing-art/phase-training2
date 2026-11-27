@@ -201,25 +201,19 @@ jobs:
         # Three of eight push runs before 11e 1.25 went red on a shard's
         # first case timing out its launch on the fresh simulator
         # (45919860804, 45951067374, 45955599356). Boot the simulator and
-        # launch the built app once here so the first case launches warm.
-        # The app stays installed: every UI case launches with
-        # --ui-test-reset, which wipes UserDefaults and user.db, and run
-        # 45977170404 spent 30 to 110 s per shard on terminate + uninstall.
+        # wait for it here so the first case's launch does not also pay
+        # for the boot. Run 45983741141 also installed and launched the
+        # app here: 80 to 140 s per shard, and screens ran 3.3 min over
+        # 45955599356, so this step boots only.
         # A failure here only warns: the test step's launch-timeout re-run
         # still covers a cold first case.
         run: |
           udid="${{ steps.setup.outputs.udid }}"
-          app=build/DerivedData/Build/Products/Debug-iphonesimulator/PhaseTraining.app
           start=$(date +%s)
           # boot exits non-zero on an already-booted simulator; bootstatus
           # is the check.
           xcrun simctl boot "$udid" 2>/dev/null || true
-          if xcrun simctl bootstatus "$udid" -b \
-             && xcrun simctl install "$udid" "$app" \
-             && xcrun simctl launch "$udid" com.phasetraining.app; then
-            sleep 20
-            xcrun simctl terminate "$udid" com.phasetraining.app || true
-          else
+          if ! xcrun simctl bootstatus "$udid" -b; then
             echo "::warning::Simulator warm-up failed; the first UI case launches cold."
           fi
           echo "Warm-up took $(( $(date +%s) - start )) s"
