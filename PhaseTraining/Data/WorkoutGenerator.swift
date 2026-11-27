@@ -189,16 +189,24 @@ enum WorkoutGenerator {
             // day's are not, so the week's push and pull can land on the
             // other side of 1:1 and switch the pulling variant on or off: a
             // swimmer's deload complement day added a Dumbbell Single-Arm Row
-            // (11e 1.23). With last week's session in hand, take the variant
-            // closer to it.
+            // (11e 1.23). The same mixed cut and uncut sets move the push
+            // range `balanced` asks for, so even the pressing variant can be
+            // rebuilt around other movements. With last week's session in
+            // hand, serve whichever build of this day is closest to it: the
+            // unbalanced session, either variant balanced, or the pulling
+            // variant before balancing. Ties keep the usual pick.
             let weekBefore = context.weekBeforeLiftIds[liftIndex] ?? []
             guard !weekBefore.isEmpty, SportSeasonGenerator.cycleStatus(athlete()).state == .deload
             else { return served }
-            let other = pullDay ? pressed : pulling()
+            let upperSlot = ComplementSlot(focus: upper, repeatNumber: slot.repeatNumber)
+            let candidates = [served, pullDay ? pressed : pulling(), session,
+                              SportSeasonGenerator.generateSession(
+                                  athlete(), sessionIndex: 0, strategy: strategy,
+                                  complement: upperSlot, pushSets: pushSets)]
             func distance(_ w: GeneratedWorkout) -> Int {
                 Set(w.exercises.map(\.exerciseId)).symmetricDifference(weekBefore).count
             }
-            return distance(other) < distance(served) ? other : served
+            return candidates.min { distance($0) < distance($1) } ?? served
         case .sport(let index, let of):
             sportIndex = index
             sportSessions = of

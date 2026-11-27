@@ -313,6 +313,16 @@ final class GeneratorWeekInvariantTests: XCTestCase {
                 let a = ids(beforeWeek), b = ids(deloadWeek)
                 if a != b {
                     changed.append("[\(s)/\(phase.rawValue)/\(e.rawValue)] -\(a.subtracting(b).sorted()) +\(b.subtracting(a).sorted())")
+                    // Per lift: which session moved, and what it is.
+                    let before = GeneratorContext.liftIds(of: beforeWeek.plan)
+                    let deload = GeneratorContext.liftIds(of: deloadWeek.plan)
+                    let kinds = Dictionary(deloadWeek.plan.days.compactMap { d in
+                        d.liftIndex.map { ($0, d.generatedWorkout?.provenance ?? "-") }
+                    }, uniquingKeysWith: { a, _ in a })
+                    for k in Set(before.keys).union(deload.keys).sorted() where before[k] != deload[k] {
+                        let x = before[k] ?? [], y = deload[k] ?? []
+                        print("[GWI] deload diff \(s)/\(phase.rawValue)/\(e.rawValue) lift \(k) (\(kinds[k] ?? "?")): before \(x.sorted()) deload \(y.sorted())")
+                    }
                 }
             }
         } }
