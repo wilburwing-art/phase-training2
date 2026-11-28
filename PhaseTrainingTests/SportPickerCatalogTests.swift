@@ -246,6 +246,19 @@ final class SportPickerCatalogTests: XCTestCase {
         }
     }
 
+    func testSnowWheelsAndAirSportsAreInThePicker() {
+        let slugs = Set(allSports.map(\.slug))
+        let covered = ["skateboarding", "inline-skating", "catamaran-sailing"]
+        for slug in covered {
+            XCTAssertTrue(slugs.contains(slug), slug)
+            XCTAssertTrue(SportCatalog.isPlannable(slug), slug)
+            XCTAssertGreaterThanOrEqual(
+                CoachDatabase.shared.authoredRoutineIds(
+                    sportSlug: slug, phaseLabels: AuthoredRoutineSelector.allPhaseLabels).count, 2,
+                slug)
+        }
+    }
+
     func testSearchIsCaseAndWhitespaceInsensitive() {
         let a = SportPickerCatalog.sections(matching: "tennis")
         let b = SportPickerCatalog.sections(matching: "TENNIS ")

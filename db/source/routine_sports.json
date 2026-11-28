@@ -3518,5 +3518,37 @@
   {
     "routine_id": 535,
     "sport_id": 464
+  },
+  {
+    "routine_id": 536,
+    "sport_id": 588
+  },
+  {
+    "routine_id": 537,
+    "sport_id": 581
+  },
+  {
+    "routine_id": 538,
+    "sport_id": 581
+  },
+  {
+    "routine_id": 539,
+    "sport_id": 586
+  },
+  {
+    "routine_id": 540,
+    "sport_id": 586
+  },
+  {
+    "routine_id": 541,
+    "sport_id": 663
+  },
+  {
+    "routine_id": 542,
+    "sport_id": 663
+  },
+  {
+    "routine_id": 543,
+    "sport_id": 663
   }
 ]
