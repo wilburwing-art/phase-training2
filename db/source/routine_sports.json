@@ -3550,5 +3550,89 @@
   {
     "routine_id": 543,
     "sport_id": 663
+  },
+  {
+    "routine_id": 544,
+    "sport_id": 631
+  },
+  {
+    "routine_id": 545,
+    "sport_id": 635
+  },
+  {
+    "routine_id": 546,
+    "sport_id": 635
+  },
+  {
+    "routine_id": 547,
+    "sport_id": 635
+  },
+  {
+    "routine_id": 548,
+    "sport_id": 635
+  },
+  {
+    "routine_id": 549,
+    "sport_id": 635
+  },
+  {
+    "routine_id": 550,
+    "sport_id": 611
+  },
+  {
+    "routine_id": 551,
+    "sport_id": 611
+  },
+  {
+    "routine_id": 552,
+    "sport_id": 612
+  },
+  {
+    "routine_id": 553,
+    "sport_id": 612
+  },
+  {
+    "routine_id": 554,
+    "sport_id": 616
+  },
+  {
+    "routine_id": 555,
+    "sport_id": 616
+  },
+  {
+    "routine_id": 556,
+    "sport_id": 734
+  },
+  {
+    "routine_id": 557,
+    "sport_id": 734
+  },
+  {
+    "routine_id": 558,
+    "sport_id": 734
+  },
+  {
+    "routine_id": 559,
+    "sport_id": 730
+  },
+  {
+    "routine_id": 559,
+    "sport_id": 735
+  },
+  {
+    "routine_id": 560,
+    "sport_id": 730
+  },
+  {
+    "routine_id": 560,
+    "sport_id": 735
+  },
+  {
+    "routine_id": 561,
+    "sport_id": 730
+  },
+  {
+    "routine_id": 561,
+    "sport_id": 735
   }
 ]
