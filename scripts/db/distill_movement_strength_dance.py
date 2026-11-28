@@ -276,10 +276,9 @@ ROUTINES = [
               "left out except for the squat-position row. Source: underswitch and side kick through map to Mountain "
               "Climber.",
         movements=[
-            (120, "Bear Crawl", 2, "10 to 15 s hold", HARD, "Source: Beast (hover) and Beast 2 activations, 2 sets each, 30 to 60 s rest; nearest row"),
+            (120, "Bear Crawl", 2, "10 to 15 s hold, then 10 yds forward and back", HARD, "Source: Beast (hover) and Beast 2 activations, 2 sets each, then the forward and reverse Beast traveling form, 1 to 3 sets, 30 to 60 s rest; nearest row, one row for both so the session holds no movement twice"),
             (1020, "Glute Bridge", 2, "10 to 15 s hold", HARD, "Source: Crab and Crab 2 activations, 2 sets each, 30 to 60 s rest; nearest row"),
             (1088, "Squat (Bodyweight)", 1, "3 to 5", STEADY, "Source: ape reach form stretch, 1 set; nearest row, hands low in a deep squat"),
-            (120, "Bear Crawl", 2, "10 yds forward and back", HARD, "Source: forward and reverse Beast traveling form, 1 to 3 sets, 30 to 60 s rest"),
             (1053, "Mountain Climber", 2, "10 to 20", HARD, "Source: underswitch and side kick through, 10 to 20 each, 1 to 3 sets; nearest row"),
         ],
     ),
@@ -298,10 +297,9 @@ ROUTINES = [
               "reach, side kick through to full scorpion, and front step through to front kick through have no catalog "
               "row; the kick-through combos are covered by the mountain climber row.",
         movements=[
-            (120, "Bear Crawl", 3, "10 s hold", HARD, "Source: circuit 1 Beast activation, 15 s rest; nearest row"),
+            (120, "Bear Crawl", 3, "10 s hold, then 20 (10 forward, 10 back)", HARD, "Source: circuit 1 Beast activation and circuit 2 forward and reverse Beast traveling form, 15 s rest; nearest row, one row for both so the session holds no movement twice"),
             (1020, "Glute Bridge", 3, "10", HARD, "Source: circuit 1 Crab reach, 15 s rest; nearest row"),
             (226, "Cossack Squat", 3, "10", HARD, "Source: circuit 1 Lateral Ape, 15 s rest; nearest row"),
-            (120, "Bear Crawl", 3, "20 (10 forward, 10 back)", HARD, "Source: circuit 2 forward and reverse Beast traveling form; 15 s rest"),
             (1053, "Mountain Climber", 3, "5 to 10 per side", HARD, "Source: the two switch and transition combos, 2 to 3 sets, 60 s rest; nearest row"),
         ],
     ),
