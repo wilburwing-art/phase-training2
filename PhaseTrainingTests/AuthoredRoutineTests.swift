@@ -107,7 +107,7 @@ final class AuthoredRoutineTests: XCTestCase {
     func testPlannableExcludesUnknownAndUncoveredSports() {
         XCTAssertFalse(SportCatalog.isPlannable("nonexistent-sport-xyz"))
         XCTAssertFalse(SportCatalog.isPlannable("misc-outdoor"), "no family row reaches it")
-        // Has a family row (racquet) but no routines of its own until 11e 5.1.
+        // Has a family row (racquet) but no routines of its own until 11e 6.6.
         XCTAssertFalse(SportCatalog.isPlannable("tennis-clay"))
     }
 

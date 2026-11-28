@@ -232,7 +232,7 @@ final class SportPickerCatalogTests: XCTestCase {
 
     /// Backlog 2026-11e 4.4. Five water and wind sports reach 2+ qualifying
     /// routines from external sources. Wing foiling, hydrofoiling, spearfishing
-    /// and swimrun moved to bucket D; water polo and artistic swimming wait on 4.11.
+    /// and swimrun moved to bucket D; water polo and artistic swimming wait on 11e Phase 6.
     func testWaterAndWindSportsAreInThePicker() {
         let slugs = Set(allSports.map(\.slug))
         let covered = ["windsurfing", "kitesurfing", "wakeboarding", "wakesurfing", "freediving"]

@@ -126,21 +126,108 @@ Source standard: the author is named with credentials, and the venue is named (a
 - [x] **4.8 Golf fitness and senior golf (3 h).** Replaces 3.9, whose MTI source (SF45 Golf, 432) is a general 45+ plan named for the NATO letter. Find a real golf S&C source (a credentialed golf fitness coach or a journal program), distill at least 2 qualifying routines per sport across off-season or base, build and maintenance, and tag golf-fitness (331) and golf-senior (332). Measured 2026-11-26 in `db/coach.db`: golf-fitness has 0 routines, golf-senior has 2 (both `maintenance`). Done: `DB`, and `SportPickerCatalogTests` gains a test that both sports show in the picker. Built 2026-11-27: `scripts/db/distill_golf.py` adds seven routines (467 to 473). 467 (`off_season`, home) from Lephart et al., J Strength Cond Res 2007, Table 4, the 8 week off-season band, stretch and balance program for recreational golfers (University of Pittsburgh affiliations printed, no degrees). 468 to 473 from White, University of Essex PhD thesis 2026: Table 2.1 prints doses and example exercises by quality and training status, so the grouping into sessions and the phase of each are ours (each note says so); 473 joins the chapter 5 and 6 in-season priming doses. Nothing in either source is age-specific: golf-senior gets the novice rows and the band program (467, 468, 469, 470), golf-fitness gets those plus the intermediate rows (467, 468, 469, 471, 472, 473). Measured after the build: golf-fitness 6 qualifying routines, golf-senior 4, each with a routine in off-season or base, build and maintenance; `validate_coverage.py` reads 116 uncovered. Sources rejected after reading: the Essex priming sessions alone (one lift, about 10 minutes, under the 25 minute floor), Nick Buchan on mytpi.com (TPI certified, no sessions printed), Thompson and Osness 2004 and Thompson et al. 2007 (senior golfers, paywalled, programs only in review summaries), Du Bois et al. 2021 (program printed in a 2019 protocol paper not found). These sources meet the Phase 4 standard as applied in 4.1; if Phase 0 #4 tightens it to printed credentials, both fall short and 4.8 reopens. `testGolfFitnessAndSeniorGolfAreInThePicker` added. Local `xcodebuild test` compiled the test target and then hung before connecting (1.8), so: tick after `SportPickerCatalogTests` and `AuthoredRoutineTests` pass in main CI. Ticked 2026-11-27: main CI run 46000374823 on d34dbfc1 ran AuthoredRoutineTests (60 tests, 0 failures) and SportPickerCatalogTests (21 tests, 0 failures, `testGolfFitnessAndSeniorGolfAreInThePicker` passed).
 - [x] **4.9 Swimming in-season routines (3 h).** Found in 3.13. Swimming (450), lap-swimming (451) and open-water-swimming (457) have no qualifying `maintenance` routine: 91 Swimmer Shoulder Prehab (15 min, 1 exercise, prehab goal) and 93 Pre-Swim Warmup (10 min, 1 exercise) fail the `authoredRoutineIds` filter, so inSeason serves another phase's routine. The MTI swim plans hold no in-season block: 184 is pool-only (3.2) and 64 is selection prep (3.13). Find a coach-published in-season dryland program for swimmers and distill at least 2 `maintenance` routines into `scripts/db/distill_swim.py`. Done: `DB`, each of the three slugs has 2+ qualifying `maintenance` routines, swimming leaves `AuthoredRoutineTests.knownPhaseGapSports`, and `AuthoredRoutineTests` passes. Built 2026-11-27: `distill_swim.py` adds 474 and 475 (`maintenance`, 60 min, 6 lifts each) from Marques, Yanez-Garcia, Marinho, Gonzalez-Badillo and Rodriguez-Rosell, J Hum Kinet 74:71-84, 2020, Table 2 (20 weeks in-season, twice a week, light loads at full intended speed), with `source_url` set to the DOI. 474 holds the week 1 to 4 doses and 475 the week 5 to 9 doses. The source runs them in sequence; rotation alternates them, and each note says so. The paper prints affiliations, not degrees, the same gap Phase 0 #4 asks about. Measured: swimming, lap-swimming and open-water-swimming each have 2 qualifying `maintenance` routines. `DB` passes. Swimming left `knownPhaseGapSports`, and `testInSeasonSwimWeekServesTheMarquesRoutines` pins 474 and 475 for all three slugs. Rejected after reading: Williams (NSCA PTQ 1.1, CSCS), whose tables are labelled off-season; Bishop et al., Strength Cond J 2013 (NSCA Japan translation), whose sessions carry no phase; Lopes et al., J Exerc Sci Fit 2020, which has no season label. Local `xcodebuild test` hung before connecting (1.8), so: tick after `AuthoredRoutineTests` passes in main CI. 2026-11-27, push run 46007155103 (ad47590d): `AuthoredRoutineTests` 61 of 61 passed in `test (core)`, `testInSeasonSwimWeekServesTheMarquesRoutines` among them; all five jobs green.
 
-Open items below run in US participation order (owner request 2026-11-27), with 4.13 first because it guards every later routine commit. Basis: dog agility 1.23M AKC entries (2014); water polo 42,000 USA Water Polo members (2024); artistic swimming 5,842 USA Artistic Swimming members (2024). No US count was found for capoeira, kendo or roller skiing, so 4.10 above 4.12 is an estimate.
-
 - [ ] **4.13 Routine 541 repeats one exercise, and nothing rejects that at build time (1 h).** Found in 4.6, whose movement-culture routines 552 and 553 listed Bear Crawl (120) twice and turned main CI run 46091975842 red (`FilterCompositionTests.test_everyPlannableSportSurvivesInjuryAndEquipmentTogether`, 336 "duplicate movement in one session" failures). Measured 2026-11-27 over `db/source/routine_exercises.json`: routine 541 (Catamaran Sailing: F50 Grinder Strength and Conditioning, 4.5) holds exercise 907 at positions 3 and 4 (the slow rep and the 7 rep set of one superset), and routine 35 (Achilles / Calf Rehab Protocol, recovery) holds 111 at positions 1 and 2 (straight and bent knee). 541 passed CI only because the grid never served it. Merge 541's two rows into one, decide whether recovery routines are exempt, and add a check to `scripts/db/build_db.py` that fails on a repeated (routine_id, exercise_id) in any non-exempt routine. Done: `build_db.py` exits non-zero on a planted duplicate, the rebuilt db holds none, and `FilterCompositionTests` and `AuthoredRoutineTests` pass.
-- [ ] **4.14 Second routine for dog agility (2 h).** Found in 4.7. Dog agility (753) has one qualifying routine (572, Westerfeld, USDAA 2025, `base`), so it stays in the `validate_coverage.py` uncovered count. Rejected in 4.7: Ketteler on akc.org 2019 (author has no credentials; about 10 minutes of content), the USDAA Wellness Wednesday handler fitness post (unnamed editor, no exercises; the guest, Chris Kerton, Team GB handler fitness coach, is the lead to follow), Clean Run August 2020 handler program (403). Find one more source at the Phase 0 #4 standard on the handler's conditioning, ideally a `build` or `maintenance` block, or move the sport to D on its tracker line. Done: `DB`, dog-agility reaches 2 qualifying routines or its tracker line says D, and `SportPickerCatalogTests` passes.
-- [ ] **4.11 Second routines for water polo and artistic swimming (2 h).** Found in 4.4. Water polo (463) has one qualifying routine (534, Malliaros et al. 2025, `build`) and artistic swimming (464) one (535, Fan et al. 2024, `base`), so both stay in the `validate_coverage.py` uncovered count. Rejected in 4.4: Saez de Villarreal et al. J Strength Cond Res 2014 and 2015 (paywalled), Barber in Swimming World (no doses), Folker on the BridgeAthletic blog (no sets or reps), a 2016 water polo concurrent strength paper on core.ac.uk (403 on fetch, not read), two Egyptian journal artistic swimming papers on eijssa (articles 410803 and 346939, ECONNRESET twice; retry first), an Applied Sciences 2025 duet case study (403). Find one more source per sport at the Phase 0 #4 standard and add a routine in a phase the sport lacks, or move the sport to D on its tracker line. Done: `DB`, each sport reaches 2 qualifying routines or its tracker line says D, and `SportPickerCatalogTests` passes.
-- [ ] **4.10 Second routines for capoeira and kendo (2 h).** Found in 4.2. Capoeira (288) has one qualifying routine (495, Araujo et al. 2015, core only) and kendo (294) one (499, Takahashi beginner circuit), so both stay in the `validate_coverage.py` uncovered count. Rejected in 4.2: da Silva and de Souza Jr, EFDeportes 2011 (no exercises printed), Taylor's Capoeira Conditioning (not readable), the Kendo Jidai menus behind the subscriber paywall, Takahashi's Bushizo trunk set (about 10 minutes), the Finnish Kendo Association coaching comparison (not read). Find one more source per sport at the Phase 0 #4 standard and add a routine in a phase the sport lacks (capoeira and kendo have `base` only), or move the sport to D on its tracker line. Done: `DB`, each sport reaches 2 qualifying routines or its tracker line says D, and `SportPickerCatalogTests` passes.
-- [ ] **4.12 Second routine for roller skiing (2 h).** Found in 4.5. Roller-skiing (588) has one qualifying routine (536, Carlsson et al. 2017, `build`), so it stays in the `validate_coverage.py` uncovered count. Rejected in 4.5: Stoggl and Holmberg J Sports Sci Med 2022 (review table only, never names roller skiing as covered), Vahtra et al. Sports (Basel) 2022 (no exercise list), Borve et al. 2017 (double poling only), Vikmoen et al. 2017 (duathletes). Find one more source at the Phase 0 #4 standard that names roller skiing, ideally an `off_season` or `maintenance` block. Done: `DB`, `qualifying_routine_counts` shows roller-skiing at 2 or more, and `SportPickerCatalogTests` adds roller-skiing to `testSnowWheelsAndAirSportsAreInThePicker`.
 
-## Phase 5: parent mapping, bucket D (Content)
+## Phase 6: inherit or own program, in US popularity order (Content)
 
-- [ ] **5.1 Tag children to their parent's routines (2 h, after Phase 4).** One script, `scripts/db/tag_family_children.py`, with the mapping table taken from the D lines below. It adds `routine_sports` rows only. Done: `DB`, and the 1.3 count reads 0.
+Owner request 2026-11-27: work the 81 sports without a program (`validate_coverage.py` at 45d4235f: 68 with no routines, 13 with one) in US participation order, and research each one to decide whether it inherits its parent's program. The C and D buckets on the tracker lines are provisional until a sport's item runs. This phase replaces 4.10, 4.11, 4.12, 4.14 and the old 5.1.
+
+Each item takes about 1 h of research (read the parent's qualifying routines against the sport's main movements, energy systems and injury sites), plus about 2 h if the sport gets its own program. Done is one of:
+- Inherit: the tracker line says D with one sentence on why the parent's routines fit, the sport is a row in `scripts/db/tag_family_children.py` (the first inherit item creates it; it adds `routine_sports` rows only), and `DB` passes.
+- Own program: the tracker line says C with a source at the Phase 0 #4 standard, the sport reaches 2 qualifying routines, and `DB` and `T(SportPickerCatalogTests)` pass.
+
+Figure kinds: P is a participation survey (did it at least once that year), M is governing-body membership, X is event entries or attendance, derived is arithmetic on a published figure, parent means the sport has no figure of its own and uses its parent's. Rows marked est. have no published US figure and are placed by judgment. Ties keep catalog order. Rows 1 to 27 are queued here; 28 to 81 wait under Not scheduled in rank order because open gap items cap at 30. Move the top waiting row up by hand when a 6.x item ticks.
+
+Sources: [USTA 2024 tennis](https://www.usta.com/en/home/stay-current/national/u-s-tennis-participation-surges-to-new-high-of-25-million-players.html), [SFIA 2025 topline](https://sfia.org/resources/sfias-topline-participation-report-shows-247-1-million-americans-were-active-in-20), [NGF golf](https://www.ngf.org/golf-participation-growing-diversifying/), [NSSF clays](https://www.nssf.org/articles/nssfs-2024-shooting-sports-participation-trends-the-dead-pair-podcast/), [NSGA shooting 2026](https://www.nssf.org/research/nsga-participation-reports/), [SFIA soccer](https://sfia.org/resources/soccer-participation-in-u-s-reaches-record-high-ahead-of-2026-world-cup/), [SIA 2025-26](https://www.sgieurope.com/consumer/sia-us-snowsports-participants-reach-3196-million/123489.article), [SIA touring 2019-20](https://snowsports.org/snowsports-industries-america-releases-new-2019-2020-participation-study/), [RBFF fishing](https://www.nmma.org/press/article/25183), [climbing via SFIA](https://camperchamp.com/usa/rock-climbing-statistics/), [badminton](https://sgbonline.com/exec-tennis-participation-builds-on-pandemic-boost-expanding-6-percent-in-2025/), [racquetball](https://www.sportsdestinations.com/sports/individual-sports/fast-sport-slow-decline-can-racquetball-survive-34176), [ultimate](https://ultiworld.com/2026/04/22/ultimate-participation-down-40-since-2020-according-to-industry-report/), [group cycling](https://statista.com/statistics/756665/group-stationary-cycling-participants-us), [BMX](https://statista.com/statistics/763726/bmx-bicycling-participants-us), [snowshoeing](https://frontofficesports.com/?p=46257), [sailing](https://statista.com/statistics/191300/participants-in-sailing-in-the-us-since-2006), [skateboarding](https://statista.com/statistics/191308/participants-in-skateboarding-in-the-us-since-2006), [PeopleForBikes 2024](https://peopleforbikes.org/news/bicycling-participation-report-2024), [AKC agility](https://www.akc.org/expert-advice/news/events/9-dog-agility-stats-prove-odds-favor/), [UDisc](https://udisc.com/disc-golf-growth-report/2025), [geocaching](https://www.searchlogistics.com/learn/statistics/geocache-statistics/), [WAKA](https://www.newsweek.com/id/46412), [USA Water Polo 2024](https://assets.contentstack.io/v3/assets/blt9e58afd92a18a0fc/blt602aa4974300b167/685b1f18013b082b6153b45a/USA_Water_Polo_2024.pdf), [USA Artistic Swimming 2024](https://assets.contentstack.io/v3/assets/blt9e58afd92a18a0fc/bltfd662d3503e289c4/685b1fa7511995892fcdd49b/USA_Artistic_Swimming_2024.pdf), [USHPA](https://issuu.com/us_hang_gliding_paragliding), [NAIDC via IDTANA](https://idtana.org/), [USATF Masters](https://usatf.org/News/2024/Top-Masters-Athletes-Vie-for-the-2024-USATF-Master), [capoeira](https://pmc.ncbi.nlm.nih.gov/articles/PMC10379664), [ski jumping](https://www.aol.com/lifestyle/meet-team-usas-nordic-cross-182810187.html).
+
+- [ ] **6.1 Archery & Shooting (`archery-shooting`, 710).** US: 52.7M sport and target shooting (NSSF 2026 report, P). Family root, no parent: inheriting means tagging its children's routines.
+- [ ] **6.2 Topgolf / Range (`topgolf`, 330).** US: 36.2M off-course golf, 2024 (NGF, P). Parent: `golf`.
+- [ ] **6.3 Tennis Singles (`tennis-singles`, 342).** US: 25.7M tennis, 2024 (USTA/PAC, P, parent). Parent: `tennis`.
+- [ ] **6.4 Tennis Doubles (`tennis-doubles`, 343).** US: 25.7M tennis, 2024 (USTA/PAC, P, parent). Parent: `tennis`.
+- [ ] **6.5 Hard Court Tennis (`tennis-hard`, 345).** US: 25.7M tennis, 2024 (USTA/PAC, P, parent). Parent: `tennis`.
+- [ ] **6.6 Clay Court Tennis (`tennis-clay`, 344).** US: 25.7M tennis, 2024 (USTA/PAC, P, parent). Parent: `tennis`.
+- [ ] **6.7 E-Bike (Road/Gravel) (`e-bike-road-gravel`, 30).** US: about 21M, derived: 19.4% e-bike share (2023) of 112M riders (PeopleForBikes 2024, P, derived). Parent: `cycling`.
+- [ ] **6.8 Pickleball Doubles (`pickleball-doubles`, 348).** US: 19.8M pickleball, 2024 (SFIA, P, parent). Parent: `pickleball`.
+- [ ] **6.9 Pickleball Singles (`pickleball-singles`, 347).** US: 19.8M pickleball, 2024 (SFIA, P, parent). Parent: `pickleball`.
+- [ ] **6.10 Recreational Soccer (`soccer-recreational`, 532).** US: 16.7M outdoor soccer, 2025 (SFIA, P, parent). Parent: `soccer`. Has 1 qualifying routine.
+- [ ] **6.11 Sporting Clays (`sporting-clays`, 715).** US: 14M, 2024 (NSSF summary, P). Parent: `archery-shooting`.
+- [ ] **6.12 Recreational Alpine (`alpine-recreational`, 207).** US: 13.2M alpine skiing, 2025-26 (SIA, P, parent). Parent: `alpine-skiing`. Has 1 qualifying routine.
+- [ ] **6.13 Downhill Skiing (`alpine-downhill`, 205).** US: 13.2M alpine skiing, 2025-26 (SIA, P, parent). Parent: `alpine-skiing`.
+- [ ] **6.14 Trap Shooting (`trap-shooting`, 716).** US: 11M to 12M, 2024 (NSSF summary, P). Parent: `archery-shooting`.
+- [ ] **6.15 Skeet Shooting (`skeet-shooting`, 717).** US: 11M to 12M, 2024 (NSSF summary, P). Parent: `archery-shooting`.
+- [ ] **6.16 Skating & Wheeled (`skating-wheeled`, 580).** US: 8.92M skateboarding, 2023 (Outdoor Foundation, P, largest child). Family root, no parent: inheriting means tagging its children's routines. Has 1 qualifying routine.
+- [ ] **6.17 Fly Fishing (`fly-fishing`, 721).** US: 8.0M, 2024 (RBFF and Outdoor Foundation, P). Parent: `fishing-hunting`.
+- [ ] **6.18 Bouldering Indoor (`bouldering-indoor`, 102).** US: about 6.3M indoor climbing, 2024, derived from SFIA 2025 7.1M and +13.1% (P, derived). Parent: `bouldering`.
+- [ ] **6.19 Sport Top Rope (`sport-top-rope`, 106).** US: about 6.3M indoor climbing, 2024, derived as above (P, derived). Parent: `sport-climbing`.
+- [ ] **6.20 Indoor Cycling (`indoor-cycling`, 28).** US: 6.23M group stationary cycling, 2023 (SFIA via Statista, P). Parent: `cycling`.
+- [ ] **6.21 Badminton Doubles (`badminton-doubles`, 352).** US: 6.2M badminton, 2024 (SFIA via USTA report, P, parent). Parent: `badminton`.
+- [ ] **6.22 Badminton Singles (`badminton-singles`, 351).** US: 6.2M badminton, 2024 (SFIA via USTA report, P, parent). Parent: `badminton`.
+- [ ] **6.23 BMX (`bmx`, 25).** US: 4.5M, 2023 (Statista, P). Parent: `cycling`.
+- [ ] **6.24 Snowshoeing (`snowshoeing`, 228).** US: 3.6M to 4.5M, 2023 (Snow Sports Insights and Outdoor Foundation, P). Parent: `snow-sports`.
+- [ ] **6.25 Sailing & Air Sports (`sailing-air-sports`, 660).** US: 4.1M sailing, 2023 (Outdoor Foundation, P, largest child). Family root, no parent: inheriting means tagging its children's routines.
+- [ ] **6.26 Racquetball (`racquetball`, 354).** US: 3.5M, flat 2018 to 2023 (SFIA, P). Parent: `racquet-sports`. Has 1 qualifying routine.
+- [ ] **6.27 Team / Rec League Sports (`team-rec-sports`, 530).** US: est.; family root of rec leagues, no single figure. Family root, no parent: inheriting means tagging its children's routines.
 
 ## Not scheduled
 
 - MTI content for the five season-engine sports with zero routines. Engine-built days work for them now. Sources are in hand: Rock Climb Pre-Season V3 (231) for trad, Alpine Rock Climb (219) for alpine, Ice/Mixed Pre-Season (233) and Expedition Ice/Mixed (232) for ice and mixed, Randonee Race (271) and Colorado Grand Traverse Ski Mountaineering (269) for skimo. Needs an owner call on serving written routines first for those sports (the `writtenFirst` flag).
+
+### Phase 6 waiting rows, in rank order
+
+28. Traditional Climbing (`trad-climbing`, 107). US: 2.9M trad, ice and mountaineering, 2025 (SFIA via secondary, P, parent). Parent: `climbing`. Blocked: needs the owner call on `writtenFirst` (see Not scheduled).
+29. Alpine Climbing (`alpine-climbing`, 109). US: 2.9M trad, ice and mountaineering, 2025 (SFIA via secondary, P, parent). Parent: `climbing`. Blocked: needs the owner call on `writtenFirst` (see Not scheduled).
+30. Ice Climbing (`ice-climbing`, 110). US: 2.9M trad, ice and mountaineering, 2025 (SFIA via secondary, P, parent). Parent: `climbing`. Blocked: needs the owner call on `writtenFirst` (see Not scheduled).
+31. Mixed Climbing (`mixed-climbing`, 111). US: 2.9M trad, ice and mountaineering, 2025 (SFIA via secondary, P, parent). Parent: `climbing`. Blocked: needs the owner call on `writtenFirst` (see Not scheduled).
+32. Bouldering Outdoor (`bouldering-outdoor`, 103). US: about 2.7M sport and boulder, 2024, derived from SFIA 2025 3.2M and +20.1% (P, derived). Parent: `bouldering`.
+33. Sport Lead (`sport-lead`, 105). US: about 2.7M sport and boulder, 2024, derived as above (P, derived). Parent: `sport-climbing`.
+34. Ultimate Frisbee (`ultimate-frisbee`, 544). US: 2.05M, 2024 (SFIA via Ultiworld, P). Parent: `team-rec-sports`.
+35. Disc Golf (`disc-golf`, 329). US: over 1.2M UDisc app users, 2024, worldwide; PDGA over 50,000 active US members, 2021 (UDisc, Wikipedia, M). Parent: `golf`.
+36. Dog Sports (Agility) (`dog-agility`, 753). US: 1.23M AKC entries, 2014 (AKC, X). Parent: `misc-outdoor`. Has 1 qualifying routine. Prior search in 4.14: Rejected in 4.7: Ketteler on akc.org 2019 (author has no credentials; about 10 minutes of content), the USDAA Wellness Wednesday handler fitness post (unnamed editor, no exercises; the guest, Chris Kerton, Team GB handler fitness coach, is the lead to follow), Clean Run August 2020 handler program (403).
+37. Freestyle Skiing (`freestyle-skiing`, 208). US: est.; a subset of 13.2M alpine (SIA counts freeski inside alpine). Parent: `snow-sports`.
+38. Salsa / Bachata (`salsa-bachata`, 733). US: est.; no national social dance count found. Parent: `dance-fitness`.
+39. Ballroom / Latin (`ballroom-latin`, 731). US: est.; no national social dance count found. Parent: `dance-fitness`.
+40. Swing / Lindy Hop (`swing-dance`, 732). US: est.; no national social dance count found. Parent: `dance-fitness`.
+41. Butterfly (`swim-butterfly`, 455). US: est.; a stroke within lap swimming, no figure of its own. Parent: `lap-swimming`.
+42. Ski Mountaineering (`ski-mountaineering`, 163). US: 705K alpine touring, 2019-20 (SIA, P, upper bound). Parent: `mountaineering`. Blocked: needs the owner call on `writtenFirst` (see Not scheduled).
+43. Splitboarding (`splitboarding`, 226). US: 652K snowboard touring, 2019-20 (SIA, P). Parent: `snowboarding`.
+44. Geocaching (`geocaching`, 752). US: 444K active players, 2019 (secondary, unverified source). Owner decision #2 maps it to day hiking; confirm or overturn.
+45. Dodgeball / Kickball (`dodgeball-kickball`, 555). US: est.; WAKA about 20,000 players, undated (one league body, M). Parent: `team-rec-sports`.
+46. Krav Maga (`krav-maga`, 284). US: est.; no count found. Parent: `martial-arts`.
+47. Aikido (`aikido`, 286). US: est.; no count found. Parent: `martial-arts`.
+48. Spearfishing (`spearfishing`, 722). US: est.; no count found. Parent: `fishing-hunting`.
+49. Slacklining / Highlining (`slacklining`, 751). US: est.; no count found. Parent: `misc-outdoor`.
+50. Canyoneering (`canyoneering`, 165). US: est.; no count found. Parent: `mountaineering`.
+51. Miscellaneous Outdoor (`misc-outdoor`, 750). US: est.; family root, no figure. Family root, no parent: inheriting means tagging its children's routines.
+52. Beach Tennis (`beach-tennis`, 356). US: est.; no count found. Parent: `racquet-sports`.
+53. Wing Foiling (`wing-foiling`, 437). US: est.; no count found. Parent: `surf-wave-sports`. Has 1 qualifying routine.
+54. Hydrofoiling (`hydrofoiling`, 440). US: est.; no count found. Parent: `surf-wave-sports`.
+55. Highland Games (`highland-games`, 641). US: est.; NASGA publishes no athlete total. Parent: `strength-fitness-sports`. Has 1 qualifying routine.
+56. Via Ferrata (`via-ferrata`, 117). US: est.; no count found. Owner decision #2 maps it to scrambling; confirm or overturn.
+57. Altitude Acclimatization (`altitude-acclimatization`, 166). US: est.; a mountaineering prep block, no participant measure. Parent: `mountaineering`.
+58. Water Polo (`water-polo`, 463). US: 42,000 members, 2024 (USA Water Polo, M). Parent: `swimming`. Has 1 qualifying routine. Prior search in 4.11: Rejected in 4.4: Saez de Villarreal et al. J Strength Cond Res 2014 and 2015 (paywalled), Barber in Swimming World (no doses), Folker on the BridgeAthletic blog (no sets or reps), a 2016 water polo concurrent strength paper on core.ac.uk (403 on fetch, not read), two Egyptian journal artistic swimming papers on eijssa (articles 410803 and 346939, ECONNRESET twice; retry first), an Applied Sciences 2025 duet case study (403).
+59. Keelboat Racing (`keelboat-racing`, 662). US: est.; no count found. Parent: `sailing-air-sports`.
+60. Capoeira (`capoeira`, 288). US: est.; no US count found (8M worldwide, 6M in Brazil, per one paper). Parent: `martial-arts`. Has 1 qualifying routine. Prior search in 4.10: Rejected in 4.2: da Silva and de Souza Jr, EFDeportes 2011 (no exercises printed), Taylor's Capoeira Conditioning (not readable), the Kendo Jidai menus behind the subscriber paywall, Takahashi's Bushizo trunk set (about 10 minutes), the Finnish Kendo Association coaching comparison (not read).
+61. Irish Dance (`irish-dance`, 736). US: est.; 3,000 to 4,000 dancers at the North American championships (X). Parent: `dance-fitness`.
+62. Comp Boulder (`comp-boulder`, 115). US: est.; USA Climbing publishes no member total. Parent: `comp-climbing`. Has 1 qualifying routine.
+63. Comp Lead (`comp-lead`, 114). US: est.; USA Climbing publishes no member total. Parent: `comp-climbing`.
+64. Comp Speed (`comp-speed`, 116). US: est.; USA Climbing publishes no member total. Parent: `comp-climbing`.
+65. Canicross (`canicross`, 72). US: est.; no count found. Parent: `running`.
+66. Deep Water Soloing (`deep-water-soloing`, 112). US: est.; no count found. Parent: `climbing`.
+67. Kendo (`kendo`, 294). US: est.; AUSKF publishes no member total. Parent: `martial-arts`. Has 1 qualifying routine. Prior search in 4.10, listed under capoeira.
+68. Paragliding (`paragliding`, 665). US: under 10,000 USHPA members, hang gliding and paragliding together (M). Parent: `sailing-air-sports`.
+69. Hang Gliding (`hang-gliding`, 666). US: under 10,000 USHPA members, hang gliding and paragliding together (M). Parent: `sailing-air-sports`.
+70. Artistic Swimming (`artistic-swimming`, 464). US: 5,842 members, 2024 (USA Artistic Swimming, M). Parent: `swimming`. Has 1 qualifying routine. Prior search in 4.11, listed under water polo.
+71. Rogaine (`rogaine`, 514). US: est.; no count found. Parent: `multi-sport-endurance`.
+72. SwimRun (`swimrun`, 513). US: est.; no count found. Parent: `multi-sport-endurance`.
+73. Sprinting (Masters) (`sprinting-masters`, 67). US: est.; 1,333 athletes at 2024 USATF Masters outdoor nationals (X). Parent: `running`.
+74. Iaido (`iaido`, 295). US: est.; no count found. Parent: `martial-arts`.
+75. Bikejoring (`bikejoring`, 754). US: est.; no count found. Owner decision #2 maps it to mountain biking; confirm or overturn.
+76. Mountain Boarding (`mountain-boarding`, 589). US: est.; no count found. Parent: `skating-wheeled`.
+77. Land Sailing (`land-sailing`, 664). US: est.; no count found. Parent: `sailing-air-sports`.
+78. Sandboarding (`sandboarding`, 590). US: est.; no count found. Parent: `skating-wheeled`.
+79. Roller Skiing (`roller-skiing`, 588). US: est.; no count found. Parent: `skating-wheeled`. Has 1 qualifying routine. Prior search in 4.12: Rejected in 4.5: Stoggl and Holmberg J Sports Sci Med 2022 (review table only, never names roller skiing as covered), Vahtra et al. Sports (Basel) 2022 (no exercise list), Borve et al. 2017 (double poling only), Vikmoen et al. 2017 (duathletes).
+80. Ski Jumping (`ski-jumping`, 229). US: est.; national team of 6 is the only figure found. Parent: `snow-sports`.
+81. Nordic Combined (`nordic-combined`, 230). US: est.; no count found. Parent: `snow-sports`.
 
 ## Per-sport tracker
 
@@ -162,10 +249,10 @@ Plain bullets, no boxes. /next works the phase items above. Update a line's buck
 - **Sambo** (`sambo`, id 285) B. MTI: Tactical BJJ packet (579 to 583).
 - **Aikido** (`aikido`, id 286) D. No source met the standard in 4.2. Maps to parent martial-arts.
 - **Kung Fu / Wushu** (`kung-fu`, id 287) C. Esposito et al. 2025, Wushu Sanda (4.2): 493 and 494, `base` and `build`.
-- **Capoeira** (`capoeira`, id 288) C. Araujo et al. 2015 (4.2): 495 only, 1 qualifying; needs a second source (4.10).
+- **Capoeira** (`capoeira`, id 288) C. Araujo et al. 2015 (4.2): 495 only, 1 qualifying; inherit or own program is Phase 6 row 60.
 - **Fencing** (`fencing`, id 289) C. **Pilot.** 4.1 added 456 to 458 (Turner 2013), `maintenance` only.
 - **HEMA** (`hema`, id 293) C. Scott, Sprezzatura Sports (4.2): 496 to 498, one per phase.
-- **Kendo** (`kendo`, id 294) C. Takahashi, Kendo Jidai (4.2): 499 only, 1 qualifying; needs a second source (4.10).
+- **Kendo** (`kendo`, id 294) C. Takahashi, Kendo Jidai (4.2): 499 only, 1 qualifying; inherit or own program is Phase 6 row 67.
 - **Iaido** (`iaido`, id 295) D. No source met the standard in 4.2. Maps to parent martial-arts.
 - **BJJ Gi** (`bjj-gi`, id 262) A. 2 routines. Profile row through the family, then spot-check.
 - **BJJ No-Gi** (`bjj-nogi`, id 263) D. Maps to parent bjj.
@@ -220,8 +307,8 @@ Plain bullets, no boxes. /next works the phase items above. Update a line's buck
 - **Lap Swimming** (`lap-swimming`, id 451) B. MTI: USCG Rescue Swimmer V2 (64), 3.13; Swimming Improvement (184) is pool-only (3.2). Has 3 routines now (90, 91, 93), none `build`.
 - **Open Water Swimming** (`open-water-swimming`, id 457) B. MTI: USCG Rescue Swimmer V2 (64), 3.13; Swimming Improvement (184) is pool-only (3.2). Has 3 routines now (90, 91, 93), none `build`.
 - **Freediving** (`freediving`, id 460) C. Brad James on alchemy.gr, and Adams and Adams, Alert Diver 2017 (4.4): 531 to 533; 3 qualifying.
-- **Water Polo** (`water-polo`, id 463) C. Malliaros et al., Sports (Basel) 2025 (4.4): 534; 1 qualifying, second routine in 4.11.
-- **Artistic Swimming** (`artistic-swimming`, id 464) C. Fan et al., Front Sports Act Living 2024 (4.4): 535; 1 qualifying, second routine in 4.11.
+- **Water Polo** (`water-polo`, id 463) C. Malliaros et al., Sports (Basel) 2025 (4.4): 534; 1 qualifying; inherit or own program is Phase 6 row 58.
+- **Artistic Swimming** (`artistic-swimming`, id 464) C. Fan et al., Front Sports Act Living 2024 (4.4): 535; 1 qualifying; inherit or own program is Phase 6 row 70.
 - **Butterfly** (`swim-butterfly`, id 455) D. Maps to parent lap-swimming.
 
 ### Multi-Sport Endurance
@@ -256,7 +343,7 @@ Plain bullets, no boxes. /next works the phase items above. Update a line's buck
 - **Skateboarding** (`skateboarding`, id 581) C. Glade (Men's Health) and Brown (Jenkem) (4.5): 537 and 538; 2 qualifying.
 - **Inline Skating** (`inline-skating`, id 586) C. Hildebrand, Inline Planet (4.5): 539 and 540; 2 qualifying.
 - **Roller Derby** (`roller-derby`, id 587) B. MTI: Roller Derby Pre-Season (406). Has 1 routine now.
-- **Roller Skiing** (`roller-skiing`, id 588) C. Carlsson et al., Eur J Appl Physiol 2017 (4.5): 536; 1 qualifying, second routine in 4.12.
+- **Roller Skiing** (`roller-skiing`, id 588) C. Carlsson et al., Eur J Appl Physiol 2017 (4.5): 536; 1 qualifying; inherit or own program is Phase 6 row 79.
 - **Mountain Boarding** (`mountain-boarding`, id 589) D. Maps to parent skating-wheeled.
 - **Sandboarding** (`sandboarding`, id 590) D. Maps to parent skating-wheeled.
 
@@ -334,7 +421,7 @@ Plain bullets, no boxes. /next works the phase items above. Update a line's buck
 - **Miscellaneous Outdoor** (`misc-outdoor`, id 750) D. Family root with no program of its own; its children map elsewhere (#2). Stays unplannable.
 - **Slacklining / Highlining** (`slacklining`, id 751) D. No source met the standard in 4.7. Parent misc-outdoor has no program.
 - **Geocaching** (`geocaching`, id 752) D. Maps to day-hiking (#2).
-- **Dog Sports (Agility)** (`dog-agility`, id 753) C. Westerfeld, USDAA 2025 (4.7): 572; 1 qualifying, second routine in 4.14.
+- **Dog Sports (Agility)** (`dog-agility`, id 753) C. Westerfeld, USDAA 2025 (4.7): 572; 1 qualifying; inherit or own program is Phase 6 row 36.
 - **Bikejoring** (`bikejoring`, id 754) D. Maps to mountain-biking (#2).
 
 ### Cycling
